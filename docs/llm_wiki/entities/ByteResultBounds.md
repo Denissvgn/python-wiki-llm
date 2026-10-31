@@ -17,7 +17,7 @@ Serialized-byte bound with its independent hard limit.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

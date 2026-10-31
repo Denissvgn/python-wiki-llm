@@ -56,7 +56,7 @@ Common envelope returned by the shared bounded query dispatcher.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

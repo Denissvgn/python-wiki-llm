@@ -30,6 +30,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. hash_file"]
@@ -63,23 +72,23 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_file | sha256_bytes | 901 | `sha256_bytes(path.read_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
-| hash_file | path.read_bytes | 901 | `path.read_bytes(data not statically known)` |
+| hash_file | sha256_bytes | 946 | `sha256_bytes(path.read_bytes(...))` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 221 | `hashlib.sha256(value)` |
+| hash_file | path.read_bytes | 946 | `path.read_bytes(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `hash_file` | 901 |
+| filesystem_read | `path.read_bytes` | `hash_file` | 946 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
 
 ## Behavior
 

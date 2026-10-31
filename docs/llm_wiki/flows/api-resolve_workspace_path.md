@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. resolve_workspace_path"]
@@ -53,21 +62,21 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_workspace_path | workspace_root.resolve | 533 | `workspace_root.resolve(data not statically known)` |
-| resolve_workspace_path | (…).resolve | 534 | `(resolved_root / relative).resolve(data not statically known)` |
-| resolve_workspace_path | target.relative_to | 536 | `target.relative_to(resolved_root)` |
+| resolve_workspace_path | workspace_root.resolve | 541 | `workspace_root.resolve(data not statically known)` |
+| resolve_workspace_path | (…).resolve | 542 | `(resolved_root / relative).resolve(data not statically known)` |
+| resolve_workspace_path | target.relative_to | 544 | `target.relative_to(resolved_root)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `resolve_workspace_path` | `workspace_root.resolve` | 533 |
-| unresolved_call | `resolve_workspace_path` | `(resolved_root / relative).resolve` | 534 |
-| unresolved_call | `resolve_workspace_path` | `target.relative_to` | 536 |
+| unresolved_call | `resolve_workspace_path` | `workspace_root.resolve` | 541 |
+| unresolved_call | `resolve_workspace_path` | `(resolved_root / relative).resolve` | 542 |
+| unresolved_call | `resolve_workspace_path` | `target.relative_to` | 544 |
 
 ## Behavior
 

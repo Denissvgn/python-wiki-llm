@@ -1,6 +1,6 @@
 # TableDescriptionCell
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:176`
+**Location:** `src/llm_wiki_cli/services/markdown_sections.py:177`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -24,7 +24,7 @@ One table Description cell without lossy duplicate-key collapse.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

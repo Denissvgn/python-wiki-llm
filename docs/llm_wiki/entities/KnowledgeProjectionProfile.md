@@ -18,7 +18,7 @@ Out-of-band projection policies; never selected by artifact metadata.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

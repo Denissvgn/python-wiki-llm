@@ -26,12 +26,14 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
+| `.bootstrap_recovery` | `pending_bootstrap`, `bootstrap_write_operation`, `pending_bootstrap` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
-| `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `top_level_package` |
+| `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `startup_cycle_groups`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
+| `.dockerfile_parser` | `DOCKERFILE_STAGES_SCHEMA` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
 | `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
@@ -45,7 +47,7 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
 | `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
-| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
+| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
@@ -93,27 +95,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (37) |
+| Outbound | `src` (39) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 742 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1020 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3161 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4454 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4480 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4493 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4500 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4508 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4514 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4525 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4536 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4544 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4551 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 785 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1063 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3307 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4692 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4718 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4732 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4739 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4747 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4753 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4764 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4775 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4783 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4790 | — | — |
 
 ## Functions
 
@@ -143,8 +145,9 @@ flowchart LR
 | `build_entity_page_map` | `(inventory: dict) -> dict[tuple[str, str], str]` | — | Return ``{(class_name, filepath): page_stem}`` qualifying collisions. |
 | `_build_relationships` | `(inventory: dict, module_page_map: dict[str, str] \| None = None, *, target_entities: set[tuple[str, str]] \| None = None, resolver: ModulePathResolver \| None = None) -> dict` | — | Cross-reference imports against known entity identities to build a usage graph. |
 | `_format_signature` | `(fn: dict) -> str` | — | Build a readable function signature string. |
+| `_append_declared_overloads` | `(lines, records, label)` | — | Render public overload declarations without replacing implementation rows. |
 | `_table_text` | `(value: object) -> str` | — | — |
-| `_table_inline_code` | `(value: object) -> str` | — | — |
+| `_table_inline_code` | `(value: object, *, table: bool = True) -> str` | — | — |
 | `_haskell_declaration_label` | `(kind: object) -> str` | — | — |
 | `_haskell_function_label` | `(kind: object) -> str` | — | — |
 | `_dash` | `(value: object) -> str` | — | — |
@@ -229,6 +232,8 @@ flowchart LR
 | `_effect_label` | `(effect: Mapping) -> str` | — | — |
 | `_effects_cell` | `(effects: list[Mapping]) -> str` | — | — |
 | `_bounded_data_flow_diagram` | `(data_flow: Mapping, module_page_map: Mapping[str, str] \| None, diagram_style: Mapping[str, Any] \| None) -> _BoundedGeneratedDiagram` | — | Keep all step nodes and the longest fitting transfer/boundary prefixes. |
+| `_flow_analysis_limitations` | `(data_flow: Mapping) -> list[str]` | — | — |
+| `_append_flow_analysis_coverage` | `(lines: list[str], data_flow: Mapping) -> bool` | — | — |
 | `_generate_data_flow_section` | `(data_flow: Mapping, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> list[str]` | — | — |
 | `_generate_flow_md` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None, *, data_flow: Mapping \| None = None, diagram_style: Mapping[str, Any] \| None = None, api_contract_operations: Sequence[Mapping[str, Any]] \| None = None) -> str` | — | Generate a user-flow page with a Mermaid sequence diagram from *flow*. |
 | `_preserve_level_two_section` | `(existing: str, generated: str, heading: str) -> str` | — | Carry one human-owned level-two section into regenerated Markdown. |
@@ -286,7 +291,9 @@ flowchart LR
 | `_append_dockerfile_unsupported_copies` | `(lines: list[str], copies: list[dict], filename: str, unsupported_sources: dict[str, dict[str, object]] \| None) -> None` | — | — |
 | `_append_dockerfile_labels` | `(lines: list[str], labels: dict[str, str]) -> None` | — | — |
 | `_append_dockerfile_healthcheck` | `(lines: list[str], healthcheck: str) -> None` | — | — |
-| `_generate_dockerfile_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate markdown for a Dockerfile. |
+| `_append_dockerfile_declarations` | `(lines, filename, info, module_links, unsupported_sources)` | — | Render parsed source fields in the caller's explicitly scoped section. |
+| `_append_dockerfile_scoped_stages` | `(lines, filename, info, module_links, unsupported_sources)` | — | — |
+| `_generate_dockerfile_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a stage-owned source view, retaining safe legacy handling. |
 | `_generate_compose_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None) -> str` | — | Generate markdown for a docker-compose / compose file. |
 | `_data_flow_summary` | `(*, generated: bool, analyzed: int = 0, boundary_effects: int = 0, gaps: int = 0) -> dict` | — | — |
 | `_with_unsupported_sources` | `(payload: dict, unsupported_sources: dict[str, dict[str, object]]) -> dict` | — | — |
@@ -323,7 +330,7 @@ flowchart LR
 | `_write_bootstrap_index` | `(state: _BootstrapRunState, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult) -> None` | — | — |
 | `_append_bootstrap_log` | `(state: _BootstrapRunState, inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int, *, generation_inputs: Mapping[str, object], plugin_lock_path: str \| None, plugin_lock_hash: str \| None) -> None` | — | — |
 | `_source_snapshot_log_lines` | `(snapshot: SourceSnapshot, *, generation_inputs: Mapping[str, object] \| None = None, plugin_lock_path: str \| None = None, plugin_lock_hash: str \| None = None) -> str` | — | Render portable public provenance for an evaluated source snapshot. |
-| `_emit_bootstrap_complete` | `(state: _BootstrapRunState, inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int) -> None` | — | — |
+| `_bootstrap_complete_message` | `(inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int) -> str` | — | — |
 | `_update_bootstrap_agent_constraints` | `(state: _BootstrapRunState) -> None` | — | — |
 | `_bootstrap_manifest_generation_state` | `(state: _BootstrapRunState, api_contract_result: _ApiContractResult, infrastructure_result: _InfrastructureResult, *, previous_manifest: SyncManifest \| None) -> tuple[dict[str, dict[str, object]], dict[str, object]]` | — | — |
 | `_load_previous_bootstrap_manifest` | `(wiki_dir: Path) -> SyncManifest \| None` | — | — |
@@ -339,7 +346,7 @@ flowchart LR
 | `_preflight_public_bootstrap` | `(options: _BootstrapRunOptions) -> None` | — | Reject overwrite and existing wiki content without reading source. |
 | `_preflight_bootstrap_source_selection` | `(options: _BootstrapRunOptions) -> None` | — | Protect private workspace refreshes from configured-to-broad downgrade. |
 | `_execute_bootstrap_options` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False) -> BootstrapResult` | — | — |
-| `_execute_bootstrap_options_locked` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False, write_basis = None) -> BootstrapResult` | — | — |
+| `_execute_bootstrap_options_locked` | `(state: _BootstrapRunState, *, write_basis = None) -> BootstrapResult` | — | — |
 | `_preflight_bootstrap_governance` | `(wiki_dir: Path) -> None` | — | Reject corrupt or missing committed governance before creating pages. |
 | `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |
 | `_execute_documentation_workspace_refresh` | `(request: BootstrapRequest, *, workspace_root: str \| Path, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Refresh an isolated documentation-workspace snapshot. |

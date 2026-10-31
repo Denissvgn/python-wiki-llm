@@ -84,9 +84,9 @@ flowchart LR
 | [_BuildContext](../entities/BuildContext.md) | 200 | — | — |
 | [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 208 | — | — |
 | [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 215 | `ValueError` | — |
-| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 315 | — | — |
-| [_IndexValidationProof](../entities/IndexValidationProof.md) | 361 | — | — |
-| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 382 | — | — |
+| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 324 | — | — |
+| [_IndexValidationProof](../entities/IndexValidationProof.md) | 370 | — | — |
+| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 391 | — | — |
 
 ## Functions
 
@@ -97,6 +97,7 @@ flowchart LR
 | `knowledge_index_to_payload` | `(value: KnowledgeIndex \| object) -> dict[str, Any]` | — | Validate and return the canonical JSON-compatible builder payload. |
 | `_model_to_payload` | `(model: KnowledgeIndex) -> dict[str, Any]` | — | Project model fields without a second parser pass; callers validate inputs. |
 | `_validated_index_serialization` | `(value: object) -> tuple[KnowledgeIndex, bytes]` | — | Validate untrusted input once and return its model and canonical bytes. |
+| `_validated_index_data` | `(value: object) -> tuple[KnowledgeIndex, Mapping[str, Any], bytes]` | — | Retain the immutable canonical payload produced by one full validation. |
 | `_knowledge_validation_operation` | `(wiki_root: Path)` | `@contextmanager` | Own a short-lived final-model handoff; perform no filesystem reads. |
 | `_has_validation_operation` | `(wiki_root: Path) -> bool` | — | — |
 | `_validator_identity` | `() -> tuple` | — | — |

@@ -26,6 +26,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. is_placeholder_description"]
@@ -48,19 +57,19 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_placeholder_description | value.strip | 530 | `value.strip(data not statically known)` |
-| is_placeholder_description | _AUTO_GENERATED_RE.match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
+| is_placeholder_description | value.strip | 538 | `value.strip(data not statically known)` |
+| is_placeholder_description | _AUTO_GENERATED_RE.match | 541 | `_AUTO_GENERATED_RE.match(stripped)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_placeholder_description` | `value.strip` | 530 |
-| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 533 |
+| unresolved_call | `is_placeholder_description` | `value.strip` | 538 |
+| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 541 |
 
 ## Behavior
 

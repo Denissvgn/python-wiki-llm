@@ -25,7 +25,7 @@ _Auto-generated from `RelationshipRecord` in `src/llm_wiki_cli/services/knowledg
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

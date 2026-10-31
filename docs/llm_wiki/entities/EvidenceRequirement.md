@@ -19,7 +19,7 @@ Identifies one observable evidence requirement by stable ID, facet, selector and
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

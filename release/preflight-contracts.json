@@ -392,15 +392,15 @@
     {
       "applicability": "normal",
       "capabilities": [
-        "python",
         "git",
         "native-linux",
         "native-macos",
-        "node-typescript"
+        "node-typescript",
+        "python"
       ],
       "condition": "${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "656786ad54627a7d3e93c6c003aa9c950f46628f8c725e30579505c4e0f90c79",
+      "declaration_sha256": "b50ed729c476d40c6a95b3ee15a5ee75649761359434fdb0b0ec69f13506a4f6",
       "environments": [
         "ubuntu-24.04",
         "macos-15"
@@ -501,14 +501,14 @@
     {
       "applicability": "conditional-normal",
       "capabilities": [
-        "python",
         "git",
         "native-windows",
-        "node-typescript"
+        "node-typescript",
+        "python"
       ],
       "condition": "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'\n    && (needs.freeze.outputs.core-layout == 'unsharded'\n        || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "dfcbf71ba8e4e317a71417a2815faeb7fd232350be254cc54088ac5ba73452ef",
+      "declaration_sha256": "98683791ee7bfc6bd0c92ac0cc5f72ed8de6a53471416386a9f06df31cc37d04",
       "environments": [
         "windows-2025"
       ],

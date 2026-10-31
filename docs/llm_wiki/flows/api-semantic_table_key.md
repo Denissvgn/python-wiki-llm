@@ -32,6 +32,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 2, emitted: 2, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. semantic_table_key"]
@@ -63,25 +72,25 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_table_key | re.sub | 520 | `re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)` |
-| semantic_table_key | key.replace(…).replace(…).replace | 521 | `key.replace('`', '').replace('*', '').replace('\\\|', '\|')` |
-| semantic_table_key | key.replace(…).replace | 521 | `key.replace('`', '').replace('*', '')` |
-| semantic_table_key | key.replace | 521 | `key.replace('`', '')` |
-| semantic_table_key | key.strip | 522 | `key.strip(data not statically known)` |
+| semantic_table_key | re.sub | 528 | `re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)` |
+| semantic_table_key | key.replace(…).replace(…).replace | 529 | `key.replace('`', '').replace('*', '').replace('\\\|', '\|')` |
+| semantic_table_key | key.replace(…).replace | 529 | `key.replace('`', '').replace('*', '')` |
+| semantic_table_key | key.replace | 529 | `key.replace('`', '')` |
+| semantic_table_key | key.strip | 530 | `key.strip(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `semantic_table_key` | `re.sub` | 520 |
-| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace('*', '').replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.strip` | 522 |
+| external_call | `semantic_table_key` | `re.sub` | 528 |
+| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace('*', '').replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.strip` | 530 |
 
 ## Behavior
 

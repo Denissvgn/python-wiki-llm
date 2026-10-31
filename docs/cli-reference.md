@@ -155,11 +155,31 @@ llm-wiki bootstrap --format json --source-adapter
 `bootstrap` is first-use only. It accepts a nonexistent or empty target and the
 exact untouched scaffold created by `llm-wiki init`. If the target already
 contains a manifest, legacy or partial pages, custom prose, governance, or
-verification state, it stops before source extraction or target writes. Use
-`sync --jobs 1` for a maintained wiki and `migrate --dry-run` before migrating an
+verification state unrelated to an interrupted bootstrap, it stops before
+source extraction or target writes. Use `sync --jobs 1` for a maintained wiki
+and `migrate --dry-run` before migrating an
 older or partial layout. The retained `--overwrite` compatibility option always
 fails; neither that option nor a request phrased as “re-bootstrap” authorizes
 replacement.
+
+Bootstrap acquires both writer locks before changing wiki content. If a lock
+cannot be opened, fix its access permissions and retry the same command. If
+bootstrap is interrupted later, retrying uses its local recovery journal to
+restore only unchanged output from that operation, then captures fresh source
+evidence. Edited pages or unrelated files stop recovery before restoration.
+Preserve the entire incomplete wiki outside the configured wiki path before
+starting over when those edits need to be kept. Keep the recovery journal until
+setup succeeds; it is stored under `.git/bootstrap-recovery` when a `.git`
+directory is available, otherwise under `llm-wiki/bootstrap-recovery` in the
+system temporary directory. Recovery state stays outside a non-Git source tree.
+
+An older failed bootstrap without a journal cannot be identified safely from
+its generated pages alone. For a confirmed new setup containing only that
+failed output, preserve the incomplete directory elsewhere and bootstrap a
+fresh target. `sync` retains unknown provenance when seeding existing pages;
+`--no-cache` and `--rebuild-knowledge` do not recover the missing evidence.
+An established adopted wiki with missing authority still requires its complete
+committed recovery snapshot.
 
 With built-in extractors and complete source evidence, full bootstrap records
 validated knowledge and matching reuse metadata with the generated pages. The
@@ -472,8 +492,49 @@ llm-wiki extract --src-dir . --summary --output sources/code.json --read-only
 llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 ```
 
+`--paths` selects emitted code, Docker/Compose records, and unsupported-source
+advisories by source-relative file path. Referenced Docker build contexts and
+`COPY` sources do not add files to that selection. Explicit ignored files can be
+inspected with `--paths`; configured source-selection exclusions still apply.
+`--changed` applies the same
+scope to files changed in the last commit; when a Git diff is unavailable or
+source-selection controls changed, extraction reevaluates the selected source
+tree. Use `--paths` for an exact file selection.
+`--package` uses the nearest recognized Python project marker (`pyproject.toml`
+or `setup.py`) to select Python code and infrastructure; nested projects own their own
+files. Its name must be a non-empty string; blank selectors are rejected before
+extraction. It can return infrastructure without code records. Combining package and
+path/change selectors takes their intersection. Project manifests and lockfiles
+remain context for package ownership and dependency reconciliation.
+In the Python API, an empty `paths` list selects no files; omitting `paths`
+selects the source tree.
+Scoped entry points bind to selected files. Unresolved project-script declarations
+remain visible when their `pyproject.toml` is selected, including full-tree reads.
+Distinct unresolved script names remain separate entries even when they share a
+callable name such as `main`; their handler analysis remains unavailable.
+
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.
+Deep flow output separates evaluated flow assembly from source effect analysis.
+Its additive `analysis` object (`llm-wiki-callable-effect-coverage/v1`) reports
+`evaluated`, `partial`, `unavailable`, or `not_applicable` effect coverage,
+with callable-record and collector-total availability for each step. Known
+limitations also appear in generated flow pages, including when no effects or
+call-resolution gaps were captured. Empty observations from an unavailable
+collector do not establish an empty handler body or runtime completeness.
+Known collector omissions remain visible as partial coverage with observed,
+emitted, and omitted counts. Collector subtotals include only source steps
+with available totals; unknown counts remain unavailable.
+Dockerfile records carry `stage_schema_version: "llm-wiki-dockerfile-stages/v1"`.
+Each stage owns its configuration declarations and ordered source instructions.
+An earlier named `FROM` stage is linked through `base_stage`; `COPY --from`
+records a file transfer. Infrastructure pages show each stage separately and
+identify inherited stages and unknown external defaults. The view records source
+declarations; effective image settings also depend on Docker's inheritance/reset
+rules, variable expansion, and build arguments. Flat configuration fields are
+qualified by `configuration_scope: "final-stage-declarations"` and `final_stage`.
+Aggregate copies and build arguments retain their owning stage and source line;
+global pre-FROM arguments are also available in `global_build_args`.
 To inspect one file without rebuilding the wiki, use
 `llm-wiki extract --src-dir . --paths src/dyn.mjs --deep --read-only`.
 The command prints JSON and uses the same prepared helper cache as other source
@@ -483,6 +544,37 @@ Unresolved JavaScript `import()` and computed `require()` calls remain explicit
 gap records in `imports`; they do not establish a resolved dependency or runtime
 completeness. Generated import tables label these gaps with their reason and
 source line.
+TypeScript deep declarations retain optional (`?`) and rest (`...`) parameter
+markers, generic binder declarations in `type_params`, and type-alias expressions
+in `target`. Interfaces keep their declaration kind in entity pages and module
+summaries. Alias expressions are limited to 4,096 Unicode characters; longer
+definitions carry `target_truncated: true` and a full-expression `target_sha256`.
+Their pages disclose the bounded preview and refer to source for the remainder.
+The digest keeps changes outside the preview visible to freshness comparisons.
+Deep function and class-method records retain declared overloads in `overloads`,
+including their source lines, generic binders, optional/rest markers and result
+types. Implementation records keep their existing identities for call analysis.
+Reference pages distinguish the implementation row from the generated overload
+declarations. The generated section has an explicit ownership marker; unmarked
+`Overloads` sections retain their authored content. Generic arguments in declared base and interface applications are
+retained; relationship lookup uses the named base identity.
+TypeScript imports retain explicit type-only binding and declaration markers
+as `type_only` and `type_only_declaration`. Their `runtime` qualification is
+`erased`, `conditional`, or `present`. Declaration-level `import type` and
+declaration-file imports are excluded from startup constraints. A specifier-only
+`import { type T }` can retain module evaluation, and ordinary binding imports
+depend on compiler emission, so both remain qualified as compiler-dependent.
+Bare side-effect imports remain startup constraints. The dependency view keeps
+explicit type dependencies and type cycles alongside the full coupling graph;
+load-order and cycle diagnostics distinguish possible runtime cycles from
+guaranteed-erased dependencies. Deep dependency output exposes these projections
+as optional `import_time_edges` (possible startup constraints), `type_only_edges`, `conditional_import_time_edges`, `type_cycles`,
+`preserved_cycles`, and `conditional_cycles` fields. Preserved startup cycles
+remain visible when compiler-dependent imports join them into a larger possible
+cycle group; `cycles` continues to describe the full possible startup projection.
+Import `scope` values must be strings when supplied. Malformed scope metadata
+cannot establish known inventory evidence; unclassified scopes remain possible
+startup dependencies unless a separate qualification guarantees erasure.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.
@@ -644,6 +736,21 @@ For automatic preparation during project setup, use
 `llm-wiki init --prepare-extractors`. This reuses valid helpers and prepares only
 missing or stale ones. `prepare-extractors` also checks the current build
 toolchain when explicitly rebuilding or refreshing the cache.
+
+TypeScript and JavaScript preparation records the complete cached `node_modules`
+tree, including sibling and nested dependencies. A dependency change makes that
+helper unavailable until explicit preparation succeeds again. Older receipts
+remain readable for diagnosis but cannot establish this complete identity;
+rerun `prepare-extractors --language typescript` with the same cache base after
+updating the CLI. Read-only commands do not migrate receipts or install packages.
+Go, Rust and Haskell retain their existing receipt formats.
+
+The TypeScript identity read is limited to 10,000 entries, 128 MiB total,
+32 MiB per file and 32 path components; receipt metadata is limited to 1 MiB.
+Links, reparse points, hard links,
+special files and detected changes during observation refuse qualification.
+These are observed cached bytes, independent of the active Node runtime and
+not proof of package authenticity.
 
 ```bash
 llm-wiki prepare-extractors --src-dir .
@@ -1342,10 +1449,26 @@ outside this budget. Estimated mode uses UTF-8 byte length divided by four,
 rounded up, and always reports `exact_compliance: false`.
 
 The v3 envelope reports a conservative `used_tokens` upper bound that can be
-recounted with the named counter. Whole source entries are reduced or omitted
-under pressure, with omissions disclosed. Required evidence is retained. If the
+recounted with the named counter. Broad fitting jointly reduces source detail,
+optional native relationships, and whole native concept/page groups. Relevance
+tiers take precedence; requested currentness preference applies within a tier.
+Within an equal rank, optional relationships and deep source detail yield before
+native concepts and whole source summaries. When available, a useful source row
+and a fully qualified native group remain. Explicit target enrichment is retained.
+Native collection maxima are ceilings rather than fixed budget reservations.
+Source omissions/detail reductions and independent native bounds disclose the
+actual selection; neither omitted evidence nor an unavailable result is a
+negative fact. Scoped task/session requirement semantics are separate. If the
 remaining envelope cannot fit, stdout is empty, stderr contains a JSON
 `cannot-fit` result, and the command exits `3` without writing an output file.
+Its bounded `diagnostics` bind the request and counter, describe exhausted
+selection reductions, and disclose source/native counts and serialized JSON
+component sizes. Component bytes are not additive tokenizer costs. Failure
+usage describes the rejected candidate, not emitted context or a global minimum.
+Choose a scoped task/session or documentation query matching the requirements,
+or explicitly authorize a larger complete-output budget and independently fit
+and recount it. Keep required native evidence and its qualifications. Do not
+repeat an unchanged broad read or execute generated recovery commands.
 Legacy v1/v2 allocation and qualified-packet schemas remain available.
 
 Explicit changes also opt into v3, using estimated mode unless exact mode is
@@ -1594,7 +1717,14 @@ and load order. It also exposes direct page tools including `get_flow(flow_id)` 
 Use `query_graph({"type": "callers", "value": "run", "limit": 20})` for
 bounded graph queries; supported types are `flow_for_entrypoint`,
 `data_flow_for_entrypoint`, `callers`, `callees`, `dependency_neighborhood`,
-and `pages_for_symbol`. Bounded query collections expose exact
+and `pages_for_symbol`. Class lookups support the same source-qualified route as
+callables, such as `{"type": "pages_for_symbol", "value": "src/models.py:Item"}`.
+The source path and class name must match exactly. Names shared by files and
+callable/class collisions remain ambiguous. Repeated class declarations retain
+the existing graph's file/name identity. Missing or invalid source routes do not
+fall back to another file. Related pages retain their source identity and
+existing bounds.
+Bounded query collections expose exact
 `bounds.<response-path>` totals, returned counts, and truncation. Context
 payloads, lint summaries, and status
 information report the same canonical surfaces. HTTP mode is intended for local
@@ -1809,6 +1939,20 @@ controller-owned in the workspace. After an accepted semantic Markdown edit,
 the controller refreshes the native projection and re-anchors generated
 ownership before later validation or dispatch; workers never edit or report
 those generated files as their own changes.
+
+Generated ownership evidence includes a `coverage` disclosure alongside the
+legacy `fingerprints` map. It hashes five root files (manifest, surface,
+knowledge, governance and verification) when present, plus generated Markdown
+sections. The disclosure also names the ordinary maintenance adoption marker
+and immutable manifest objects, knowledge objects, packs, pack indexes and index
+pages, which this inventory does not fingerprint or include in root-file rollback.
+These roles describe custody;
+they do not establish that an artifact exists or has passed validation.
+Native readers and the maintenance owner guard retain their separate validation
+obligations, including ordinary pending and acknowledged review history.
+Workers may not create, change, remove or replace these native paths. The
+controller publishes new content-addressed objects through the native writers;
+the inventory grants no additional write, deletion or review authority.
 
 Preparation also writes a priority-blind calibration flow census and an
 evidence-only current-versus-candidate shadow under `.llm-wiki-docs/evidence/`.
@@ -2281,6 +2425,22 @@ user-flow pages, workflow pages, infrastructure notes, and dependency/load-order
 architecture pages all count as relevant review coverage when they describe the
 changed code or dependency relationship.
 
+When configured source selection excludes every requested changed path, review
+reports that exclusion before deep extraction or unrelated helper requirements.
+It distinguishes physical file metadata, selection and an extraction inventory
+that was not evaluated. Native impact and wiki accuracy remain unknown; empty
+impact arrays do not establish that a change has no effect. The configured
+source snapshot is still discovered and captured, so this is not a narrow
+filesystem scan. Metadata disclosure is bounded to 100 paths and 32 source-relative
+components, with exact omission counts and no excluded file-content reads.
+
+Mixed changes, selected paths and selection-control changes retain the full
+inventory and applicable helper requirements. Helpers are never prepared and
+source selection is never overridden implicitly. For configured selection,
+`impact-json` adds `review_scope` with path states, scope counts and actual
+inventory cost; plain review retains its existing JSON envelope and finding
+fields. Metadata limitations do not change path admission or extraction bounds.
+
 `impact-json` returns the stable `llm-wiki-impact/v1` payload, with direct
 source-to-page mappings, candidate dependency edges and manifests, static
 FastAPI operations, findings, limitations, and an impact identity. Equivalent
@@ -2547,6 +2707,38 @@ managed instruction block or change its compact/expanded delivery, use
 `llm-wiki upgrade` and the lifecycle guidance under [`skills`](cli-reference.md#skills).
 
 ## `knowledge`
+
+### Git delivery completeness
+
+```bash
+llm-wiki knowledge git-check --wiki-dir wiki
+llm-wiki knowledge git-check --wiki-dir wiki --staged
+```
+
+The read-only diagnostic follows the validated native snapshot, including
+referenced packs, manifest catalogs, governance records, Markdown and assets.
+It reports `delivery_state` as `git-eligible`, `local-only`, `mixed` or
+`indeterminate`, with counts and bounded ignored-path samples. Effective Git
+rules include nested ignores, repository excludes and global excludes. A check
+of only the wiki directory and `index.md` cannot establish completeness.
+
+Without `--staged`, a known local-only or mixed state is advisory and exits 0;
+inspect `delivery_state` before separately authorized staging. Intentionally
+local-only wikis can still pass local integrity checks. With `--staged`, success
+requires Git eligibility and every required file in the index with current
+content. The active Git index is checked, including a temporary index used for
+a partial commit. Unexpected staged governance or maintenance-adoption files
+also fail when the validated snapshot requires their absence.
+Native and binary bytes must match exactly; Markdown newline
+normalization is accepted. Missing, unmerged or mismatched files fail, and an
+unavailable or changing snapshot/index is indeterminate. Unreferenced caches
+and orphan objects are outside this snapshot check.
+
+Run the staged gate after authorized staging and before commit or delivery.
+Neither command authorizes Git writes, changes ignore rules, force-adds files,
+prepares helpers, accesses the network or changes the storage format.
+
+### Coverage and governance
 
 Read eligibility and freshness diagnostics without enabling governance:
 

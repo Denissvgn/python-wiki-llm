@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-10-30
+
+### Added
+
+- Read-only native wiki Git-delivery diagnostics identify ignored required
+  artifacts and incomplete staged snapshots. Handoff guidance checks all
+  referenced files while preserving intentionally local-only wikis.
+
+### Fixed
+
+- Native wiki Git-delivery checks follow temporary staging indexes and preserve
+  authority absence, path safety and request-time mutation checks.
+
+- TypeScript reference pages preserve optional/rest parameters, generics, alias
+  expressions and interface identity.
+- Explicit type-only TypeScript imports remain type dependencies and no longer
+  create runtime startup cycles.
+- Dockerfile documentation retains stage ownership and inherited configuration
+  without combining independent build stages.
+- JavaScript HTTP flow pages disclose missing handler and effect-analysis
+  coverage instead of treating empty observations as complete analysis.
+- Exact-path extraction applies the same selection to infrastructure output.
+- Snapshot queries reuse validated immutable knowledge and graph models within
+  a request while retaining integrity, custody and compatibility checks.
+- Bootstrap recovery handles interrupted ownership setup without replacing
+  existing wiki history.
+- Combined native and source context respects one shared response budget.
+
+- Symbol page lookup accepts source-qualified class names while retaining
+  ambiguity for duplicate definitions and existing callable lookup behavior.
+
+- Reviews of changes excluded by configured source selection disclose their
+  limited scope before unrelated extraction, while mixed changes retain full
+  source and helper checks.
+
+- Documentation ownership reports disclose ordinary authority markers and
+  immutable storage outside the root-file fingerprint and rollback inventory,
+  while preserving native write restrictions and legacy evidence.
+
+- Release coordination reads authenticated final qualification bundles through
+  a dedicated bounded reader while retaining source and producer artifact limits.
+
+- TypeScript and JavaScript helper reuse verifies the complete prepared
+  dependency tree. Legacy preparation receipts remain available for diagnosis
+  and require an explicit refresh before reuse.
+
 ## [3.3.0] - 2026-10-25
 
 ### Fixed
@@ -1571,7 +1617,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0

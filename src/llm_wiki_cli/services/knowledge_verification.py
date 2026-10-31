@@ -17,6 +17,7 @@ from .knowledge_consumption import (
     KnowledgeReadView,
     MachineVerificationAvailability,
     MachineVerificationReadView,
+    _validated_artifacts_for_view,
 )
 from .knowledge_evidence import hash_json
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
@@ -96,6 +97,7 @@ def load_machine_verification_read_view(
         )
 
     hashes = manifest.artifact_hashes
+    artifacts = _validated_artifacts_for_view(knowledge_view)
 
     def context(scope_locator: str | None):
         return build_artifact_verification_context(
@@ -105,6 +107,7 @@ def load_machine_verification_read_view(
             evaluated_envelope_hash=hashes.evaluated_envelope_hash,
             governance_hash=hashes.governance_hash,
             scope_locator=scope_locator,
+            _validated_artifacts=artifacts,
         )
 
     bundle_context = context(None)
@@ -126,7 +129,11 @@ def load_machine_verification_read_view(
                 scope_known = True
                 scope_kind = "concept"
                 break
-    current_context = context(selected_locator) if scope_known else bundle_context
+    current_context = (
+        context(selected_locator)
+        if scope_known and selected_locator is not None
+        else bundle_context
+    )
     evaluation = evaluate_verification_receipt(receipt, current_context)
     summary = machine_verification_summary(
         receipt,

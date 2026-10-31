@@ -550,6 +550,82 @@ jobs:
           --repo . --group inventory --group defaults
           --output "${RUNNER_TEMP}/preflight-contracts-${{ matrix.lane }}"
 
+      - name: Verify scoped evidence repair on native Windows and Linux
+        id: scoped-evidence
+        if: ${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}
+        shell: bash
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
+            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/scoped-evidence-${{ matrix.lane }}.xml"
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit "../evidence/native-regressions/scoped-evidence-${{ matrix.lane }}.xml" \
+            --lane "scoped-evidence-${{ matrix.lane }}" --allowlist release/skip-allowlist.json \
+            --minimum-collected 146 --minimum-passed 146 \
+            --output "../evidence/native-regressions/scoped-evidence-${{ matrix.lane }}-result.json"
+        working-directory: candidate
+      - name: Retain native scoped evidence repair results
+        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-scoped-evidence-${{ matrix.lane }}-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/scoped-evidence-${{ matrix.lane }}.xml
+            evidence/native-regressions/scoped-evidence-${{ matrix.lane }}-result.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Check recursion coverage boundaries before the full Linux suite
+        id: coverage-boundary
+        if: ${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}
+        env:
+          COVERAGE_FILE: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion/coverage.data
+          COVERAGE_BOUNDARY_OUTPUT: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion
+        run: |
+          mkdir -p ../evidence/native-regressions
+          mkdir -p "${COVERAGE_BOUNDARY_OUTPUT}"
+          python -m pytest \
+            tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
+            -q -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            --cov-report= --cov-fail-under=0 \
+            --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
+          python -I - <<'PY'
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from release import core_shard_runner as runner
+          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
+          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          runner.q.write_json(output / "source-boundary.json", {
+              "scope": "focused source probe; full native and hosted gates remain required",
+              "measured_files": len(rows), "source_root": package.as_posix(),
+          })
+          PY
+        working-directory: candidate
+      - name: Retain native Linux coverage boundary evidence
+        if: ${{ always() && matrix.coverage && (steps.coverage-boundary.outcome == 'success' || steps.coverage-boundary.outcome
+          == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-linux-coverage-boundary-${{ github.run_attempt }}
+          path: evidence/native-regressions/coverage-recursion/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Run strict core suite with canonical coverage
         if: ${{ matrix.coverage && !inputs.discovery-mode }}
         env:
@@ -627,6 +703,7 @@ jobs:
             evidence/${{ matrix.lane }}-helpers.json
             evidence/result-${{ matrix.lane }}.json
             evidence/coverage-${{ matrix.lane }}.xml
+            evidence/native-regressions/
           if-no-files-found: error
           retention-days: 14
 
@@ -935,6 +1012,122 @@ jobs:
           -o xfail_strict=true
           --junitxml="../evidence/core-windows-3.13.xml"
 
+      - name: Verify scoped evidence repair on native Windows and Linux
+        id: scoped-evidence
+        if: ${{ !inputs.discovery-mode }}
+        shell: bash
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
+            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/scoped-evidence-core-windows-3.13.xml"
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit "../evidence/native-regressions/scoped-evidence-core-windows-3.13.xml" \
+            --lane "scoped-evidence-core-windows-3.13" --allowlist release/skip-allowlist.json \
+            --minimum-collected 146 --minimum-passed 146 \
+            --output "../evidence/native-regressions/scoped-evidence-core-windows-3.13-result.json"
+        working-directory: candidate
+      - name: Retain native scoped evidence repair results
+        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-scoped-evidence-core-windows-3.13-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/scoped-evidence-core-windows-3.13.xml
+            evidence/native-regressions/scoped-evidence-core-windows-3.13-result.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Verify stdin harness inside a native Windows venv
+        id: stdio-venv
+        if: ${{ !inputs.discovery-mode }}
+        timeout-minutes: 10
+        shell: bash
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m venv "${RUNNER_TEMP}/stdio-venv"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ".[dev]"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pytest \
+            tests/test_readonly_subprocess_stdin.py -q \
+            -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/stdio-venv.xml" \
+            | tee "../evidence/native-regressions/stdio-venv.log"
+        working-directory: candidate
+      - name: Upload native Windows venv probe evidence
+        if: ${{ always() && (steps.stdio-venv.outcome == 'success' || steps.stdio-venv.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-stdio-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/stdio-venv.xml
+            evidence/native-regressions/stdio-venv.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Check release corrections on native Windows
+        id: native-corrections
+        if: ${{ !inputs.discovery-mode }}
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |-
+          mkdir -p ../evidence/native-regressions
+          python -m pytest tests/test_wiki_review_snapshot.py tests/test_default_development_workflow.py tests/test_current_install_defaults.py tests/test_storage_lock_diagnostics.py tests/test_real_caller_action_fixture.py tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py tests/test_preflight_contracts.py tests/test_preflight_runner.py tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true --junitxml="../evidence/native-regressions/native-corrections.xml"
+        working-directory: candidate
+      - name: Retain native Windows correction evidence
+        if: ${{ always() && (steps.native-corrections.outcome == 'success' || steps.native-corrections.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-corrections-${{ github.run_attempt }}
+          path: evidence/native-regressions/native-corrections.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify installed provider artifacts on native Windows
+        id: provider-artifacts
+        if: ${{ !inputs.discovery-mode }}
+        shell: bash
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m pip install "build==1.5.0" "pyright==1.1.411"
+          python -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
+          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          python tests/run_provider_artifact_checks.py \
+            --artifacts "${RUNNER_TEMP}/provider-dist" \
+            --work "${RUNNER_TEMP}/provider-consumers" \
+            --output "../evidence/native-regressions/provider-evidence" \
+            --version "${version}"
+        working-directory: candidate
+      - name: Upload native Windows provider evidence
+        if: |-
+          ${{ always() &&
+              (steps.provider-artifacts.outcome == 'success' ||
+               steps.provider-artifacts.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-provider-${{ github.run_attempt }}
+          path: evidence/native-regressions/provider-evidence
+          if-no-files-found: error
+          retention-days: 14
       - name: Verify JavaScript evidence on native Windows
         working-directory: candidate
         env:
@@ -1054,6 +1247,7 @@ jobs:
             evidence/aggregation.json
             evidence/javascript-evidence-windows.xml
             evidence/javascript-evidence-windows-result.json
+            evidence/native-regressions/
           if-no-files-found: error
           retention-days: 14
 

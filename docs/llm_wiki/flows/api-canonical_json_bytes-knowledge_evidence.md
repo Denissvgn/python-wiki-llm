@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. canonical_json_bytes"]
@@ -54,20 +63,20 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| canonical_json_bytes | canonical_json_text(…).encode | 189 | `canonical_json_text(value).encode('utf-8')` |
-| canonical_json_bytes | canonical_json_text | 189 | `canonical_json_text(value)` |
-| canonical_json_text | json.dumps | 177 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| canonical_json_bytes | canonical_json_text(…).encode | 194 | `canonical_json_text(value).encode('utf-8')` |
+| canonical_json_bytes | canonical_json_text | 194 | `canonical_json_text(value)` |
+| canonical_json_text | json.dumps | 182 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `canonical_json_bytes` | `canonical_json_text(value).encode` | 189 |
-| external_call | `canonical_json_text` | `json.dumps` | 177 |
+| unresolved_call | `canonical_json_bytes` | `canonical_json_text(value).encode` | 194 |
+| external_call | `canonical_json_text` | `json.dumps` | 182 |
 
 ## Behavior
 

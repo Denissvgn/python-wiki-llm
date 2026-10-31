@@ -23,6 +23,7 @@ from .knowledge_evidence import hash_json, sha256_bytes
 from .markdown_sections import (
     GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
+    GENERATED_OVERLOADS_HEADING,
     SECTION_ORDER_DOMAIN,
     MarkdownSection,
     MarkdownSectionDocument,
@@ -162,6 +163,7 @@ _ENTITY_GENERATED_HEADINGS = frozenset(
         "Declaration",
         "Model Configuration",
         "Validators",
+        GENERATED_OVERLOADS_HEADING,
         "Relationships",
     )
 )
@@ -175,6 +177,7 @@ _MODULE_GENERATED_HEADINGS = frozenset(
         "Imports",
         "Declarations",
         "Module Signals",
+        GENERATED_OVERLOADS_HEADING,
         "Local dependency map",
     )
 )
@@ -1180,6 +1183,25 @@ def merge_semantic_markdown(
     return SemanticMergeResult(merged, preserved)
 
 
+def _retain_unmarked_overload_guidance(existing: str, result: SemanticMergeResult) -> SemanticMergeResult:
+    """The new generated overload section cannot consume authored namesakes."""
+    document = parse_markdown_document(existing, "llm-wiki://overload-guidance")
+    retained = [section.exact_text.rstrip() for section in document.sections
+                if section.level == 2 and section.title.casefold() == "overloads"]
+    if not retained:
+        return result
+    generated = parse_markdown_document(result.text, "llm-wiki://overload-guidance-result")
+    namesakes = [section for section in generated.sections
+                 if section.level == 2 and section.title.casefold() == "overloads"]
+    if [section.exact_text.rstrip() for section in namesakes] == retained:
+        return result
+    text = generated.normalized_markdown
+    for section in reversed(namesakes):
+        text = text[:section.start] + text[section.end:]
+    text = text.rstrip() + "\n\n" + "\n\n".join(retained) + "\n"
+    return SemanticMergeResult(text, result.preserved + len(retained))
+
+
 def merge_entity_semantics(
     existing: str,
     generated: str,
@@ -1191,7 +1213,7 @@ def merge_entity_semantics(
     attributes = semantics.get("attributes", {})
     methods = semantics.get("methods", {})
     description = semantics.get("description")
-    return merge_semantic_markdown(
+    merged = merge_semantic_markdown(
         existing,
         generated,
         ("Attributes", "Methods"),
@@ -1201,6 +1223,7 @@ def merge_entity_semantics(
             "Methods": dict(methods) if isinstance(methods, Mapping) else {},
         },
     )
+    return _retain_unmarked_overload_guidance(existing, merged)
 
 
 def merge_module_semantics(
@@ -1214,7 +1237,7 @@ def merge_module_semantics(
     classes = semantics.get("classes", {})
     functions = semantics.get("functions", {})
     description = semantics.get("description")
-    return merge_semantic_markdown(
+    merged = merge_semantic_markdown(
         existing,
         generated,
         ("Classes", "Functions"),
@@ -1224,6 +1247,7 @@ def merge_module_semantics(
             "Functions": dict(functions) if isinstance(functions, Mapping) else {},
         },
     )
+    return _retain_unmarked_overload_guidance(existing, merged)
 
 
 def replace_generated_section(

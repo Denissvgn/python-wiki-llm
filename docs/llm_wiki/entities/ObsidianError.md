@@ -15,7 +15,7 @@ Raised for invalid Obsidian export/check requests.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

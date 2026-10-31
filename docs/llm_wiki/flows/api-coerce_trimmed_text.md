@@ -26,6 +26,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 2, emitted: 2, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. coerce_trimmed_text"]
@@ -48,18 +57,18 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| coerce_trimmed_text | str(…).strip | 945 | `str(value).strip(data not statically known)` |
-| coerce_trimmed_text | str | 945 | `str(value)` |
+| coerce_trimmed_text | str(…).strip | 953 | `str(value).strip(data not statically known)` |
+| coerce_trimmed_text | str | 953 | `str(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `coerce_trimmed_text` | `str(value).strip` | 945 |
+| unresolved_call | `coerce_trimmed_text` | `str(value).strip` | 953 |
 
 ## Behavior
 

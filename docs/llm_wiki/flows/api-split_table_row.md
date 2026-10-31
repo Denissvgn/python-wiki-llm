@@ -46,6 +46,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 8, emitted: 8, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. split_table_row"]
@@ -111,35 +120,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| split_table_row | line.strip | 467 | `line.strip(data not statically known)` |
-| split_table_row | stripped.startswith | 468 | `stripped.startswith('\|')` |
-| split_table_row | stripped.endswith | 468 | `stripped.endswith('\|')` |
-| split_table_row | len | 475 | `len(body)` |
-| split_table_row | len | 477 | `len(body)` |
-| split_table_row | current.extend | 478 | `current.extend((...))` |
+| split_table_row | line.strip | 475 | `line.strip(data not statically known)` |
+| split_table_row | stripped.startswith | 476 | `stripped.startswith('\|')` |
+| split_table_row | stripped.endswith | 476 | `stripped.endswith('\|')` |
 | split_table_row | len | 483 | `len(body)` |
-| split_table_row | current.append | 486 | `current.append(...)` |
-| split_table_row | cells.append | 494 | `cells.append(...)` |
-| split_table_row | (…).join(…).strip | 494 | `''.join(current).strip(data not statically known)` |
-| split_table_row | ''.join | 494 | `''.join(current)` |
+| split_table_row | len | 485 | `len(body)` |
+| split_table_row | current.extend | 486 | `current.extend((...))` |
+| split_table_row | len | 491 | `len(body)` |
+| split_table_row | current.append | 494 | `current.append(...)` |
+| split_table_row | cells.append | 502 | `cells.append(...)` |
+| split_table_row | (…).join(…).strip | 502 | `''.join(current).strip(data not statically known)` |
+| split_table_row | ''.join | 502 | `''.join(current)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `current.extend` | `split_table_row` | 478 |
-| mutation | `current.append` | `split_table_row` | 486 |
-| mutation | `cells.append` | `split_table_row` | 494 |
-| mutation | `current.append` | `split_table_row` | 497 |
-| mutation | `cells.append` | `split_table_row` | 499 |
+| mutation | `current.extend` | `split_table_row` | 486 |
+| mutation | `current.append` | `split_table_row` | 494 |
+| mutation | `cells.append` | `split_table_row` | 502 |
+| mutation | `current.append` | `split_table_row` | 505 |
+| mutation | `cells.append` | `split_table_row` | 507 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `split_table_row` | `line.strip` | 467 |
-| unresolved_call | `split_table_row` | `stripped.startswith` | 468 |
-| unresolved_call | `split_table_row` | `stripped.endswith` | 468 |
+| unresolved_call | `split_table_row` | `line.strip` | 475 |
+| unresolved_call | `split_table_row` | `stripped.startswith` | 476 |
+| unresolved_call | `split_table_row` | `stripped.endswith` | 476 |
 | step_limit | `split_table_row` | `first 12 steps` | 0 |
 
 ## Behavior

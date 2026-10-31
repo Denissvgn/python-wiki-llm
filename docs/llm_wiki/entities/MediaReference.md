@@ -26,7 +26,7 @@ _Auto-generated from `MediaReference` in `src/llm_wiki_cli/services/wiki_media.p
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

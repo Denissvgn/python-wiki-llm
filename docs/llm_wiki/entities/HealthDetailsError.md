@@ -15,7 +15,7 @@ Detailed health data is incomplete, unsupported or inconsistent.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

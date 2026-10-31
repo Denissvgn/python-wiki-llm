@@ -92,19 +92,9 @@ EXPECTED_CURRENT_SECTIONS = {
 
 
 EXPECTED_HYGIENE_SECTION = """## Repository content hygiene
-- Create internal docs (ADRs, plans, backlogs, reports, implementation notes)
-  only after the exact target passes `git check-ignore -q -- <path>`. With
-  missing Git or an unignored/indeterminate target, use an already ignored or
-  user-approved non-repository path. Never publish, stage, force-add, or change
-  `.gitignore`, attributes, or global excludes; ignore changes do not authorize
-  publication.
-- Public documentation (README, published docs/wiki/site, release material) must
-  not mention internal development phases or tests. Redirect incompatible
-  material to an ignore-verified internal artifact, or report the conflict.
-- Code/test surfaces (comments, docstrings, identifiers, fixtures) must not carry
-  actual epic/milestone/phase names, backlog/task IDs, or planning provenance.
-  Generic policy/product terms are valid. Do not copy or expand out-of-scope
-  conflicts; report them instead of broadening cleanup.
+- Internal docs: only after the exact target passes `git check-ignore -q -- <path>`. For missing Git or an unignored/indeterminate target: ignored or user-approved non-repository path. Never publish, stage, force-add, or change `.gitignore`, attributes, or global excludes.
+- Public documentation (README, published docs/wiki/site, release material) must not mention internal development phases or tests. Route internally or report the conflict.
+- Code/test surfaces (comments, docstrings, identifiers, fixtures) must not carry actual epic/milestone/phase names, backlog/task IDs, or planning provenance. Generic policy/product terms are valid. Report out-of-scope conflicts; no copying/expansion/cleanup.
 
 """
 

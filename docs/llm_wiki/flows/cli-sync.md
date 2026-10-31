@@ -2,19 +2,21 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 69 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 71 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api_contracts](../modules/api_contracts.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -93,11 +95,11 @@ sequenceDiagram
     participant p4 as _absolute_path
     participant p5 as _prepare_sync_run
     participant p6 as guard_maintenance_owner
-    participant p7 as prepare_boundary
-    participant p8 as governance_writer_lock
-    participant p9 as storage_writer_lock
-    participant p10 as _cache_options_from_args
-    participant p11 as snapshot_wiki
+    participant p7 as governance_writer_lock
+    participant p8 as storage_writer_lock
+    participant p9 as prepare_boundary
+    participant p10 as snapshot_wiki
+    participant p11 as _cache_options_from_args
     participant p12 as _recovery_directory
     participant p13 as extraction_job_request_from_args
     participant p14 as save_recovery_snapshot
@@ -113,8 +115,8 @@ sequenceDiagram
     participant p24 as ensure_guarded_directory
     participant p25 as _load_or_seed_manifest
     participant p26 as _repair_path
-    participant p27 as load_adoption_marker
-    participant p28 as SyncManifest.load
+    participant p27 as guard_incomplete_bootstrap
+    participant p28 as load_adoption_marker
     participant p29 as print (src/llm_wiki_cli/commands/sync_cmd.py:run)
     participant p30 as application.changed_files.extend
     p0->>p1: _sync_run_options_from_args
@@ -123,11 +125,11 @@ sequenceDiagram
     p2->>p4: _absolute_path
     p3->>p5: _prepare_sync_run
     p2->>p6: guard_maintenance_owner
-    p3->>p7: prepare_boundary
-    p2->>p8: governance_writer_lock
-    p2->>p9: storage_writer_lock
-    p1->>p10: _cache_options_from_args
-    p2->>p11: snapshot_wiki
+    p2->>p7: governance_writer_lock
+    p2->>p8: storage_writer_lock
+    p3->>p9: prepare_boundary
+    p2->>p10: snapshot_wiki
+    p1->>p11: _cache_options_from_args
     p2->>p12: _recovery_directory
     p1->>p13: extraction_job_request_from_args
     p2->>p14: save_recovery_snapshot
@@ -136,22 +138,22 @@ sequenceDiagram
     p3->>p17: _run_prepared_sync
     p1->>p18: repair_paths
     p1->>p19: validate_source_root
-    p10->>p20: cache_options_from_args
+    p11->>p20: cache_options_from_args
     p19->>p21: validate_path
     p5->>p22: assert_no_pending_page_moves
-    p7->>p23: _require
+    p9->>p23: _require
     p14->>p24: ensure_guarded_directory
     p5->>p25: _load_or_seed_manifest
     p18->>p26: _repair_path
-    p6->>p27: load_adoption_marker
-    p6->>p28: SyncManifest.load
+    p6->>p27: guard_incomplete_bootstrap
+    p6->>p28: load_adoption_marker
     p0-->>p29: print (src/llm_wiki_cli/commands/sync_cmd.py:run)(..., file=sys.stderr)
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6211 interactions; 6181 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6188 interactions; 6158 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2176 (2175 omitted); unresolved 1 of 1894 (1893 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2177 (2176 omitted); unresolved 1 of 1862 (1861 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1376 groups; 1368 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1382 groups; 1374 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -173,6 +175,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2150; effect analysis evaluated: 1473, partial: 102, unavailable: 575. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1575 source steps with known totals: observed: 9847, emitted: 9333, omitted: 514. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_sync_run_options_from_args` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_cache_options_from_args` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `cache_options_from_args` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `bool (src/llm_wiki_cli/services…y:cache_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]
@@ -251,7 +281,7 @@ flowchart LR
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2428 | `getattr(args, 'no_plugins', False)` |
 | _sync_run_options_from_args | _cache_options_from_args | 2429 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 306 | `cache_options_from_args(args)` |
-| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
+| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 312 | `bool(getattr(...))` |
 
 ### Boundary effects
 

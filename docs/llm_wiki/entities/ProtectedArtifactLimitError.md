@@ -15,7 +15,7 @@ Raised when an artifact or protected root exceeds its byte limit.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

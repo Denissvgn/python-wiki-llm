@@ -22,7 +22,7 @@ Independent v5 compatibility result for standalone adoption.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

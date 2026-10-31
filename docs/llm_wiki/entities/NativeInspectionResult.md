@@ -25,7 +25,7 @@ Bounded component results sharing one source/wiki read scope.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

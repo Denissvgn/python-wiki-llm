@@ -36,7 +36,7 @@ _Auto-generated from `_ApplyDiffContext` in `src/llm_wiki_cli/commands/sync_cmd.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

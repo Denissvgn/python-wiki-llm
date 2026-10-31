@@ -37,6 +37,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. preserve_level_two_section_exact"]
@@ -77,31 +86,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| preserve_level_two_section_exact | re.compile | 720 | `re.compile(...)` |
-| preserve_level_two_section_exact | re.escape | 721 | `re.escape(heading)` |
-| preserve_level_two_section_exact | pattern.search | 724 | `pattern.search(existing)` |
-| preserve_level_two_section_exact | pattern.search | 725 | `pattern.search(generated)` |
-| preserve_level_two_section_exact | old_match.group | 728 | `old_match.group(0)` |
-| preserve_level_two_section_exact | new_match.group | 729 | `new_match.group(0)` |
-| preserve_level_two_section_exact | new_match.start | 732 | `new_match.start(data not statically known)` |
-| preserve_level_two_section_exact | new_match.end | 734 | `new_match.end(data not statically known)` |
+| preserve_level_two_section_exact | re.compile | 728 | `re.compile(...)` |
+| preserve_level_two_section_exact | re.escape | 729 | `re.escape(heading)` |
+| preserve_level_two_section_exact | pattern.search | 732 | `pattern.search(existing)` |
+| preserve_level_two_section_exact | pattern.search | 733 | `pattern.search(generated)` |
+| preserve_level_two_section_exact | old_match.group | 736 | `old_match.group(0)` |
+| preserve_level_two_section_exact | new_match.group | 737 | `new_match.group(0)` |
+| preserve_level_two_section_exact | new_match.start | 740 | `new_match.start(data not statically known)` |
+| preserve_level_two_section_exact | new_match.end | 742 | `new_match.end(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `preserve_level_two_section_exact` | `re.compile` | 720 |
-| external_call | `preserve_level_two_section_exact` | `re.escape` | 721 |
-| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 724 |
-| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 725 |
-| unresolved_call | `preserve_level_two_section_exact` | `old_match.group` | 728 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.group` | 729 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.start` | 732 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.end` | 734 |
+| external_call | `preserve_level_two_section_exact` | `re.compile` | 728 |
+| external_call | `preserve_level_two_section_exact` | `re.escape` | 729 |
+| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 732 |
+| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 733 |
+| unresolved_call | `preserve_level_two_section_exact` | `old_match.group` | 736 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.group` | 737 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.start` | 740 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.end` | 742 |
 
 ## Behavior
 

@@ -46,6 +46,34 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 7; effect analysis evaluated: 1, partial: 1, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 16, emitted: 15, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `is_portable_path_component` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_portable_path_component` | `available` | `partial` | `available` | `12` | `11` | `1` |
+| `component.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `unicodedata.normalize` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `component.endswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. is_portable_path_component"]
@@ -113,7 +141,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

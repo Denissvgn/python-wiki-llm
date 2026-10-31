@@ -20,7 +20,7 @@ One snapshot-only read view and its aggregate operational summary.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

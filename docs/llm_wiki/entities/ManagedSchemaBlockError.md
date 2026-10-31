@@ -15,7 +15,7 @@ Raised when a malformed managed block cannot be replaced safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

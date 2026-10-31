@@ -116,9 +116,9 @@ sequenceDiagram
     p0-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 4716 interactions; 4686 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4835 interactions; 4805 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1499 (1498 omitted); unresolved 1 of 1083 (1082 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1510 (1509 omitted); unresolved 1 of 1106 (1105 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,7 +132,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_source_hashes` | 32 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
-> Omission summary shows 8 of 1110 groups; 1102 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1126 groups; 1118 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,6 +140,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2220; effect analysis evaluated: 1327, partial: 50, unavailable: 843. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1377 source steps with known totals: observed: 7362, emitted: 6956, omitted: 406. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_knowledge_generation_plan` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…knowledge_generation_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_knowledge_validation_operation` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `wiki_root.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_IndexValidationOperation` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_INDEX_VALIDATION_OPERATION.set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_INDEX_VALIDATION_OPERATION.reset` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. build_knowledge_generation_plan"]
@@ -194,18 +222,18 @@ flowchart LR
 | build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 192 | `isinstance(inputs, KnowledgeGenerationInputs)` |
 | build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 193 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
 | build_knowledge_generation_plan | _knowledge_validation_operation | 195 | `_knowledge_validation_operation(...)` |
-| _knowledge_validation_operation | isinstance (src/llm_wiki_cli/services…edge_validation_operation) | 330 | `isinstance(wiki_root, Path)` |
-| _knowledge_validation_operation | wiki_root.is_absolute | 330 | `wiki_root.is_absolute(data not statically known)` |
-| _knowledge_validation_operation | TypeError (src/llm_wiki_cli/services…edge_validation_operation) | 331 | `TypeError('validation operation requires an absolute wiki root')` |
-| _knowledge_validation_operation | _IndexValidationOperation | 332 | `_IndexValidationOperation(wiki_root)` |
-| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.set | 333 | `_INDEX_VALIDATION_OPERATION.set(operation)` |
-| _knowledge_validation_operation | object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation) | 337 | `object.__setattr__(operation, '_active', False)` |
-| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.reset | 338 | `_INDEX_VALIDATION_OPERATION.reset(token)` |
+| _knowledge_validation_operation | isinstance (src/llm_wiki_cli/services…edge_validation_operation) | 339 | `isinstance(wiki_root, Path)` |
+| _knowledge_validation_operation | wiki_root.is_absolute | 339 | `wiki_root.is_absolute(data not statically known)` |
+| _knowledge_validation_operation | TypeError (src/llm_wiki_cli/services…edge_validation_operation) | 340 | `TypeError('validation operation requires an absolute wiki root')` |
+| _knowledge_validation_operation | _IndexValidationOperation | 341 | `_IndexValidationOperation(wiki_root)` |
+| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.set | 342 | `_INDEX_VALIDATION_OPERATION.set(operation)` |
+| _knowledge_validation_operation | object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation) | 346 | `object.__setattr__(operation, '_active', False)` |
+| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.reset | 347 | `_INDEX_VALIDATION_OPERATION.reset(token)` |
 | build_knowledge_generation_plan | Path(…).absolute | 195 | `Path(inputs.wiki_dir).absolute(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -213,11 +241,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `build_knowledge_generation_plan` | `isinstance` | 192 |
 | external_call | `build_knowledge_generation_plan` | `TypeError` | 193 |
-| external_call | `_knowledge_validation_operation` | `isinstance` | 330 |
-| unresolved_call | `_knowledge_validation_operation` | `wiki_root.is_absolute` | 330 |
-| external_call | `_knowledge_validation_operation` | `TypeError` | 331 |
-| external_call | `_knowledge_validation_operation` | `object.__setattr__` | 337 |
-| unresolved_call | `_knowledge_validation_operation` | `_INDEX_VALIDATION_OPERATION.reset` | 338 |
+| external_call | `_knowledge_validation_operation` | `isinstance` | 339 |
+| unresolved_call | `_knowledge_validation_operation` | `wiki_root.is_absolute` | 339 |
+| external_call | `_knowledge_validation_operation` | `TypeError` | 340 |
+| external_call | `_knowledge_validation_operation` | `object.__setattr__` | 346 |
+| unresolved_call | `_knowledge_validation_operation` | `_INDEX_VALIDATION_OPERATION.reset` | 347 |
 | unresolved_call | `build_knowledge_generation_plan` | `Path(inputs.wiki_dir).absolute` | 195 |
 | step_limit | `build_knowledge_generation_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_generation_plan` | `depth limit` | 0 |

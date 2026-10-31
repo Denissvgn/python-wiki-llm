@@ -102,6 +102,9 @@ def guard_maintenance_owner(wiki_dir: str | Path, manifest=None):
     from .maintenance_state import maintenance_state_hash, validate_maintenance_state
 
     root = _absolute_path(Path(wiki_dir))
+    from .bootstrap_recovery import guard_incomplete_bootstrap
+
+    guard_incomplete_bootstrap(root)
     marker = load_adoption_marker(root)
     try:
         if manifest is None:
@@ -134,14 +137,16 @@ def guard_maintenance_owner(wiki_dir: str | Path, manifest=None):
     return marker
 
 
-def snapshot_wiki(wiki_dir: str | Path) -> dict[str, bytes]:
+def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> dict[str, bytes]:
     root = _absolute_path(Path(wiki_dir))
     if not root.exists():
         return {}
     result = {}
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
-        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"} or relative.startswith((".llm-wiki-locks/", ".llm-wiki-page-moves-")):
+        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"}:
+            continue
+        if not include_transient and relative.startswith((".llm-wiki-locks/", ".llm-wiki-page-moves-")):
             continue
         if first_unsafe_path_component(path) is not None:
             raise MaintenanceProtocolError("unsafe-wiki", "Maintenance preimage cannot follow symbolic links")
@@ -159,6 +164,7 @@ class WikiWriteBasis:
     source_snapshot: SourceSnapshot | None = None
     recovery_directory: Path | None = None
     eligible_images: dict[str, list[str | None]] | None = None
+    include_transient: bool = False
     preimages: dict[str, bytes] = field(init=False)
 
     def __post_init__(self):
@@ -217,7 +223,7 @@ class WikiWriteBasis:
 
     def assert_current(self) -> None:
         self.assert_source_current()
-        if snapshot_wiki(self.root) != self.expected:
+        if snapshot_wiki(self.root, include_transient=self.include_transient) != self.expected:
             raise MaintenanceProtocolError("wiki-changed", "Wiki changed outside its captured publication operation")
 
     def assert_source_current(self) -> None:
@@ -260,10 +266,6 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
 
     root = _absolute_path(Path(wiki_dir))
     if dry_run:
-        guard_maintenance_owner(root)
-        yield None
-        return
-    if load_adoption_marker(root) is None:
         guard_maintenance_owner(root)
         yield None
         return

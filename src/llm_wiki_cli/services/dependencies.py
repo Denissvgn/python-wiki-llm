@@ -51,6 +51,7 @@ from .python_imports import is_python_source
 from .python_stdlib import python_stdlib_module_names as _python_stdlib
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .validation import (
+    nearest_path_scope,
     path_is_under as shared_path_is_under,
     path_is_under_scope as shared_path_is_under_scope,
     positive_int_or_none,
@@ -148,9 +149,13 @@ def build_dependency_graph(
     "nodes": [...], "unresolved": [{"file", "module", "name"}, ...]}`` with every
     list stably ordered. ``edges`` is every resolvable import, which is the
     coupling view used for fan-in/fan-out and impact analysis;
-    ``import_time_edges`` is the subset that actually runs when a module loads,
-    which is the view load order and cycle detection need. An import record with
-    no ``scope`` counts as import-time, so inventories from extractors that do
+    ``import_time_edges`` is the subset that can run when a module loads,
+    which is the view load order and cycle detection need. Optional
+    ``type_only_edges`` retain type bindings (and declaration-file imports),
+    while ``conditional_import_time_edges`` qualify compiler-dependent emission.
+    A definitely present import to the same target overrides that uncertainty.
+    An import record without scope or runtime qualifications counts as
+    import-time, so inventories from extractors that do
     not classify imports keep the historical behavior of the two being equal.
     A supported code-language inventory entry that has no ``imports`` field still
     appears as an isolated node. Entries that explicitly provide an ``imports``
@@ -167,6 +172,9 @@ def build_dependency_graph(
 
     edges: set[tuple[str, str]] = set()
     import_time_edges: set[tuple[str, str]] = set()
+    type_only_edges: set[tuple[str, str]] = set()
+    conditional_edges: set[tuple[str, str]] = set()
+    present_edges: set[tuple[str, str]] = set()
     unresolved: list[dict] = []
     nodes: set[str] = set()
 
@@ -204,15 +212,22 @@ def build_dependency_graph(
                 continue
             for target in targets:
                 if target != filepath:
-                    edges.add((filepath, target))
+                    edge = (filepath, target)
+                    edges.add(edge)
+                    if imp.get("type_only") is True or imp.get("runtime") == "erased":
+                        type_only_edges.add(edge)
                     if executes_at_import(imp):
-                        import_time_edges.add((filepath, target))
+                        import_time_edges.add(edge)
+                        if imp.get("runtime") == "conditional":
+                            conditional_edges.add(edge)
+                        else:
+                            present_edges.add(edge)
 
     for source, target in edges:
         nodes.add(source)
         nodes.add(target)
 
-    return {
+    result = {
         "edges": sorted(edges),
         "import_time_edges": sorted(import_time_edges),
         "nodes": sorted(nodes),
@@ -220,6 +235,11 @@ def build_dependency_graph(
             unresolved, key=lambda u: (u["file"], u["module"], u["name"])
         ),
     }
+    if type_only_edges:
+        result["type_only_edges"] = sorted(type_only_edges)
+    if conditional_edges - present_edges:
+        result["conditional_import_time_edges"] = sorted(conditional_edges - present_edges)
+    return result
 
 
 _DEPENDENCY_OBSERVATIONS_SCHEMA = "llm-wiki-dependency-observations/v1"
@@ -397,6 +417,8 @@ def build_dependency_observations(
                     "candidates": candidates,
                     "target_path": target_path,
                     "resolution": resolution,
+                    **{key: raw_import[key] for key in ("type_only", "type_only_declaration", "runtime")
+                       if key in raw_import},
                     **({"reason": raw_import["reason"]} if raw_import.get("reason") else {}),
                 }
             )
@@ -2150,31 +2172,15 @@ def _path_under_scope(filepath: str, scope_root: str) -> bool:
 def _nearest_manifest_scope(
     manifest: Optional[_Manifest], filepath: str
 ) -> Optional[_ManifestScope]:
-    if manifest is None:
-        return None
-    matches = [
-        scope for scope in manifest.scopes if _path_under_scope(filepath, scope.root)
-    ]
-    if not matches:
-        return None
-    return max(matches, key=lambda scope: (scope.root.count("/"), len(scope.root)))
+    scopes = manifest.scopes if manifest is not None else ()
+    root = nearest_path_scope(filepath, (scope.root for scope in scopes))
+    return next((scope for scope in scopes if scope.root == root), None)
 
 
 def _scope_label(scope: Optional[_ManifestScope]) -> str | None:
     if scope is None:
         return None
     return scope.root
-
-
-def _scope_was_scanned(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool:
-    """Whether any extracted source file for this language sits under *scope*.
-
-    "Declared but not imported" is only meaningful when the importing code was
-    actually read. A manifest whose sources were never extracted — excluded from
-    project-source discovery, or skipped because its toolchain is not installed —
-    would otherwise report every one of its declared dependencies as unused.
-    """
-    return any(_path_under_scope(path, scope.root) for path in scanned_files)
 
 
 def _scope_manifest_paths(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]:
@@ -2238,6 +2244,10 @@ def _explicit_missing_scope_source(root: Path, manifests: list[Path], language: 
     return []
 
 
+def _source_scope_owners(paths: tuple[str, ...], scope_roots: set[str]) -> dict[str, str | None]:
+    return {path: nearest_path_scope(path, scope_roots) for path in paths}
+
+
 def describe_unscanned_scopes(
     project_root: str | Path, language: str, scopes: list[str],
     source_snapshot: SourceSnapshot | None = None,
@@ -2249,6 +2259,10 @@ def describe_unscanned_scopes(
     snapshot = source_snapshot or build_source_snapshot(root)
     same_root = snapshot.root == root
     paths = _scope_manifest_paths(root, language, snapshot) if same_root else []
+    scope_roots = {"" if path.parent == root else path.parent.relative_to(root).as_posix() for path in paths}
+    source_paths = snapshot.language_paths(language) if same_root else ()
+    unsupported_paths = [p.rel_path for files in snapshot.unsupported_files_by_language.values() for p in files] if same_root else []
+    owners = _source_scope_owners((*source_paths, *unsupported_paths), scope_roots)
     results = []
     for scope in scopes:
         # Rust's legacy empty scope denotes the complete language, potentially
@@ -2257,9 +2271,10 @@ def describe_unscanned_scopes(
         owned = [_owned_scope_sources(root, p, language) for p in manifests]
         sources = [p for group in owned for p in group]
         missing = [p.relative_to(root).as_posix() for p in sources if not p.is_file()]
-        selected = [p for p in snapshot.language_paths(language) if _path_under_scope(p, scope)] if same_root else []
-        unsupported = [p.rel_path for files in snapshot.unsupported_files_by_language.values()
-                       for p in files if _path_under_scope(p.rel_path, scope)] if same_root else []
+        selected = [p for p in source_paths if _path_under_scope(p, scope)
+                    and (language == "rust" or owners[p] in {None, scope})]
+        unsupported = [p for p in unsupported_paths if _path_under_scope(p, scope)
+                       and (language == "rust" or owners[p] in {None, scope})]
         declared_missing = _explicit_missing_scope_source(root, manifests, language, snapshot)
         owner = "llm-wiki-helper" if owned and all(owned) else "unknown"
         if owner == "llm-wiki-helper" and missing:
@@ -2312,6 +2327,8 @@ def _reconcile_scoped_language(
             nearest_cache[filepath] = _nearest_manifest_scope(manifest, filepath)
         return nearest_cache[filepath]
 
+    # Only source owned by a manifest supplies evidence for its unused verdicts.
+    scanned_scopes = {_scope_label(nearest(path)) for path in scanned_files}
     undeclared: set[str] = set()
     undeclared_files: defaultdict[str, list[str]] = defaultdict(list)
     undeclared_scopes: defaultdict[str, set[str | None]] = defaultdict(set)
@@ -2328,7 +2345,7 @@ def _reconcile_scoped_language(
     unused_scopes: defaultdict[str, set[str | None]] = defaultdict(set)
     unscanned_scopes: set[str] = set()
     for scope in manifest.scopes:
-        if not _scope_was_scanned(scope, scanned_files):
+        if scope.root not in scanned_scopes:
             if scope.required:
                 unscanned_scopes.add(scope.root)
             continue
@@ -2924,10 +2941,14 @@ def analyze_dependencies(
     "side_effects", "reconciliation"}``; deterministic and never raises on slim
     inventories.
 
-    ``cycles`` and ``load_order`` describe module load: they use only imports
-    that run at import time, so a group joined solely by lazy or
-    ``TYPE_CHECKING`` imports is not reported as a cycle whose order is
-    indeterminate — it has a valid order. Those groups are kept separately in
+    ``cycles`` and ``load_order`` describe possible module load: they exclude
+    guaranteed-erased TypeScript declarations and imports classified as lazy or
+    ``TYPE_CHECKING``. Such a group is not reported as an indeterminate startup
+    cycle. Optional ``type_cycles``, ``preserved_cycles``, and
+    ``conditional_cycles`` distinguish type binding cycles, cycles among
+    preserved startup edges, and compiler-dependent startup cycle candidates.
+    A larger candidate never suppresses a smaller preserved cycle. Other
+    non-startup coupling groups are kept separately in
     ``deferred_cycles`` so the information is surfaced rather than dropped.
     ``metrics`` stays on the full edge set, since fan-in/fan-out measures
     coupling and a lazy import is still a real dependency.
@@ -2942,7 +2963,7 @@ def analyze_dependencies(
     deferred_cycles = [
         cycle for cycle in detect_cycles(graph) if tuple(cycle) not in import_time_groups
     ]
-    return {
+    result = {
         "graph": graph,
         "cycles": cycles,
         "deferred_cycles": deferred_cycles,
@@ -2956,6 +2977,31 @@ def analyze_dependencies(
             source_snapshot=source_snapshot,
         ),
     }
+    if graph.get("type_only_edges"):
+        result["type_cycles"] = detect_cycles({"nodes": graph["nodes"], "edges": graph["type_only_edges"]})
+    if graph.get("conditional_import_time_edges"):
+        conditional = set(graph["conditional_import_time_edges"])
+        confirmed = {**graph, "edges": [edge for edge in graph["import_time_edges"] if edge not in conditional]}
+        result["preserved_cycles"] = detect_cycles(confirmed)
+        confirmed_groups = {tuple(group) for group in result["preserved_cycles"]}
+        result["conditional_cycles"] = [group for group in cycles if tuple(group) not in confirmed_groups]
+    return result
+
+
+def startup_cycle_groups(analysis: Mapping) -> list[tuple[list[str], bool]]:
+    """Retain preserved subcycles alongside larger compiler-dependent groups.
+
+    The boolean qualifies compiler emission, rather than runtime reachability.
+    Legacy analyses without the additive preserved projection keep their old
+    cycle groups, with any explicitly conditional groups qualified separately.
+    """
+    conditional = analysis.get("conditional_cycles", []) or []
+    conditional_keys = {tuple(group) for group in conditional}
+    preserved = analysis.get("preserved_cycles")
+    if preserved is None:
+        preserved = [group for group in analysis.get("cycles", []) or []
+                     if tuple(group) not in conditional_keys]
+    return [(list(group), False) for group in preserved] + [(list(group), True) for group in conditional]
 
 
 def top_level_package(filepath: str) -> str:

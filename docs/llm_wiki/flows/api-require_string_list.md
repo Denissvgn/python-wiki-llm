@@ -32,6 +32,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 10, emitted: 10, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_string_list"]
@@ -65,23 +74,23 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string_list | require_list | 991 | `require_list(value, error=error)` |
-| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 802 | `isinstance(value, list)` |
-| require_string_list | require_string | 993 | `require_string(item, error=error)` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
+| require_string_list | require_list | 999 | `require_list(value, error=error)` |
+| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 810 | `isinstance(value, list)` |
+| require_string_list | require_string | 1001 | `require_string(item, error=error)` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_list` | `isinstance` | 802 |
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
+| external_call | `require_list` | `isinstance` | 810 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
 
 ## Behavior
 

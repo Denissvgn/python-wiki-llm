@@ -22,7 +22,7 @@ _Auto-generated from `SiteExportOperation` in `src/llm_wiki_cli/services/site_ex
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

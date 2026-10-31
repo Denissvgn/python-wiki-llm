@@ -43,7 +43,7 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.analysis_compatibility` | `comparison_entrypoint` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.data_flow` | `analyze_data_flow` |
-| `.dependencies` | `analyze_dependencies`, `describe_unscanned_scopes` |
+| `.dependencies` | `analyze_dependencies`, `describe_unscanned_scopes`, `startup_cycle_groups` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT` |
 | `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts`, `_iter_callables` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |

@@ -23,7 +23,7 @@ One collected canonical-page view reused by projection builders.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

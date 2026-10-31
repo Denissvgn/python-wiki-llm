@@ -15,7 +15,7 @@ Raised when arguments or a submitted request contract are invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

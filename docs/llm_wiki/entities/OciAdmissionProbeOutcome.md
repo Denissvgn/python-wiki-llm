@@ -29,7 +29,7 @@ Execution and result evidence for admission; never an authority grant.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

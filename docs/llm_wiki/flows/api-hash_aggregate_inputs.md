@@ -54,6 +54,33 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 9; effect analysis evaluated: 6, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+
+Collector observations for 6 source steps with known totals: observed: 17, emitted: 17, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `hash_aggregate_inputs` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_hash_structured` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_json_tree` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `walk` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. hash_aggregate_inputs"]
@@ -118,11 +145,11 @@ flowchart LR
 | _validate_json_tree | set | 1630 | `set(data not statically known)` |
 | _validate_json_tree | walk | 1671 | `walk(value, field_name)` |
 | _hash_structured | sha256_bytes | 1610 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -131,7 +158,7 @@ flowchart LR
 | external_call | `hash_aggregate_inputs` | `isinstance` | 872 |
 | unresolved_call | `_hash_structured` | `payload.values` | 1608 |
 | unresolved_call | `_validate_json_tree` | `walk` | 1671 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
 | step_limit | `hash_aggregate_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

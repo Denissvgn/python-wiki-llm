@@ -1,0 +1,41 @@
+{
+  "schema_version": "context-budget-regression-corpus/v1",
+  "native_heavy": {
+    "source_files": 8,
+    "classes_per_file": 4,
+    "identifier_suffix": "With_explicitly_qualified_state_and_provenance_for_context_budget_corpus",
+    "changed_source": "z_changed.py",
+    "budget_tokens": 8000,
+    "expected": {
+      "minimum_source_rows": 1,
+      "minimum_native_concepts": 1,
+      "minimum_native_pages": 1,
+      "retained_source": "z_changed.py",
+      "retained_native_source": "z_changed.py",
+      "native_truncation_required": true
+    }
+  },
+  "source_heavy": {
+    "source_files": 40,
+    "classes_per_file": 4,
+    "methods_per_class": 16,
+    "changed_source_calls": 1000,
+    "changed_source": "z_changed.py",
+    "budget_tokens": 8000,
+    "expected": {
+      "minimum_source_rows": 1,
+      "retained_source": "z_changed.py",
+      "source_truncation_required": true
+    }
+  },
+  "metadata_heavy": {
+    "source_files": 80,
+    "filename_padding": 96,
+    "budget_tokens": 1000,
+    "expected": {
+      "cannot_fit": true,
+      "source_identity_and_omissions_retained": true,
+      "partial_context_bytes": 0
+    }
+  }
+}

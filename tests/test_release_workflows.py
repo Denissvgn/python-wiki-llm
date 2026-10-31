@@ -160,6 +160,8 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
     job = _yaml("ci.yml")["jobs"]["typecheck"]
     assert job["runs-on"] == "ubuntu-24.04"
     assert not job.get("continue-on-error")
+    assert job["needs"] == "plan"
+    assert job["if"] == "${{ needs.plan.outputs.typecheck == 'true' }}"
     install = next(step for step in job["steps"] if step.get("name") == "Install release typing dependencies")
     assert '".[dev,mcp,tokens]"' in install["run"]
     assert "--require-hashes -r release/requirements.txt" in install["run"]
@@ -177,6 +179,7 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
     assert lint["run"].split("-m ruff check", 1)[1].split("|", 1)[0].split() == [
         "src", "tests", "examples", "integrations/github-action/render_summary.py",
         "release/preflight.py", "release/preflight_contracts.py", "release/preflight_runner.py",
+        "release/pr_ci.py", "release/pr_ci_pytest.py", "release/pr_ci_impact.py",
     ]
 
 
@@ -281,8 +284,10 @@ def test_action_selftest_uses_step_scoped_runner_temp_and_negative_cases() -> No
     assert text.count('test "${STEP_OUTCOME}" = "failure"') == 3
     triggers = workflow.get("on", workflow.get(True))
     assert triggers is not None
-    assert triggers["push"]["branches"] == ["main"]
-    assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
+    assert set(triggers) == {"workflow_call", "workflow_dispatch"}
+    caller = _yaml("ci.yml")["jobs"]["action"]
+    assert caller["uses"] == "./.github/workflows/action-selftest.yml"
+    assert caller["if"] == "${{ needs.plan.outputs.action == 'true' }}"
     assert workflow["concurrency"]["cancel-in-progress"] == (
         "${{ github.event_name == 'pull_request' }}"
     )
@@ -292,56 +297,63 @@ def test_ci_pins_the_package_build_tool() -> None:
     workflow = _yaml("ci.yml")
     package_build = next(
         step
-        for step in workflow["jobs"]["test"]["steps"]
+        for step in workflow["jobs"]["package"]["steps"]
         if step.get("name") == "Check package builds"
     )
-    assert package_build["if"] == "${{ matrix.package }}"
+    assert "if" not in package_build
+    assert workflow["jobs"]["package"]["if"] == "${{ needs.plan.outputs.package == 'true' }}"
     assert 'python -m pip install "build==1.5.0"' in package_build["run"]
     assert "--no-cache-dir" not in package_build["run"]
 
 
 def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evidence():
-    job = _yaml("ci.yml")["jobs"]["test"]
+    job = _yaml("release-qualification.yml")["jobs"]["core-windows"]
     check = _named_step(job, "Verify installed provider artifacts on native Windows")
     assert check["id"] == "provider-artifacts"
-    assert check["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert check["if"] == "${{ !inputs.discovery-mode }}"
+    assert check["working-directory"] == "candidate"
     assert "tests/run_provider_artifact_checks.py" in check["run"]
     assert '"pyright==1.1.411"' in check["run"]
     upload = _named_step(job, "Upload native Windows provider evidence")
     assert " ".join(upload["if"].split()) == (
-        "${{ always() && matrix.lane == 'core-windows-3.13' && "
+        "${{ always() && "
         "(steps.provider-artifacts.outcome == 'success' || "
         "steps.provider-artifacts.outcome == 'failure') }}"
     )
     assert upload["with"]["if-no-files-found"] == "error"
 
 
-def test_native_origin_contract_runs_before_the_full_windows_suite():
-    steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
+def test_release_retains_native_windows_correction_evidence():
+    steps = _yaml("release-qualification.yml")["jobs"]["core-windows"]["steps"]
     early = _named_step({"steps": steps}, "Check release corrections on native Windows")
     assert "tests/test_real_caller_action_fixture.py" in early["run"]
     assert early["id"] == "native-corrections"
-    assert '--junitxml="${{ runner.temp }}/native-corrections.xml"' in early["run"]
+    assert '--junitxml="../evidence/native-regressions/native-corrections.xml"' in early["run"]
     assert {
         "tests/test_scoped_sync_repair.py",
         "tests/test_sync_guard_diagnostics.py",
         "tests/test_preflight_contracts.py",
         "tests/test_preflight_runner.py",
     } <= set(early["run"].split())
-    assert early["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert early["if"] == "${{ !inputs.discovery-mode }}"
+    assert early["working-directory"] == "candidate"
     assert steps.index(early) < next(
-        index for index, step in enumerate(steps) if step.get("name") == "Run strict suite"
+        index for index, step in enumerate(steps) if step.get("name") == "Verify JavaScript evidence on native Windows"
     )
     evidence = _named_step({"steps": steps}, "Retain native Windows correction evidence")
     assert "always()" in evidence["if"]
     assert "steps.native-corrections.outcome" in evidence["if"]
-    assert evidence["with"]["path"] == "${{ runner.temp }}/native-corrections.xml"
+    assert evidence["with"]["path"] == "evidence/native-regressions/native-corrections.xml"
 
 
 def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
-    job = _yaml("ci.yml")["jobs"]["test"]
+    job = _yaml("release-qualification.yml")["jobs"]["core"]
     probe = _named_step(job, "Verify scoped evidence repair on native Windows and Linux")
-    assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' || matrix.lane == 'core-ubuntu-3.10' }}"
+    assert probe["if"] == "${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}"
+    windows = _named_step(_yaml("release-qualification.yml")["jobs"]["core-windows"], "Verify scoped evidence repair on native Windows and Linux")
+    assert windows["if"] == "${{ !inputs.discovery-mode }}"
+    assert windows["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
+    assert "--minimum-collected 146 --minimum-passed 146" in windows["run"]
     assert probe["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
     assert "LLM_WIKI_CACHE_DIR" not in job.get("env", {})
     script = probe["run"]
@@ -370,14 +382,14 @@ def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
 
 
 def test_recursion_coverage_probe_preserves_the_full_linux_gate():
-    steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
+    steps = _yaml("release-qualification.yml")["jobs"]["core"]["steps"]
     early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")
-    full = _named_step({"steps": steps}, "Run strict suite with coverage")
-    assert early["if"] == "${{ matrix.coverage }}"
+    full = _named_step({"steps": steps}, "Run strict core suite with canonical coverage")
+    assert early["if"] == "${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}"
     assert "tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap" in early["run"]
     assert "runner.coverage_rows" in early["run"]
     assert "runner.source_manifest(package)" in early["run"]
-    assert early["env"]["COVERAGE_FILE"] == "${{ runner.temp }}/coverage-recursion/coverage.data"
+    assert early["env"]["COVERAGE_FILE"] == "${{ github.workspace }}/evidence/native-regressions/coverage-recursion/coverage.data"
     assert "--cov-fail-under=0" in early["run"]
     assert "--cov-fail-under=87" in full["run"]
     assert "COVERAGE_FILE" not in full.get("env", {})
@@ -405,7 +417,7 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
     }
     owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
     assert "tests/test_ts_extract.py" in owner["run"]
-    for workflow, job_name in (("ci.yml", "test"), ("release-qualification.yml", "core-windows")):
+    for workflow, job_name in (("release-qualification.yml", "core-windows"),):
         job = _yaml(workflow)["jobs"][job_name]
         steps = job["steps"]
         probe = _named_step(job, "Verify JavaScript evidence on native Windows")
@@ -422,19 +434,15 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
         assert '--discovery' not in script
         assert not any(item["lane"] == "javascript-evidence-windows" for item in entries)
         assert 'GITHUB_ENV' not in script
-        if workflow == "ci.yml":
-            assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
-            assert steps.index(probe) < next(i for i, s in enumerate(steps) if s.get("name") == "Run strict suite")
-        else:
-            assert probe["working-directory"] == "candidate"
-            assert "if" not in probe
-            # Aggregation refuses an occupied output directory. The supplemental
-            # JUnit writer must run after either core producer creates evidence.
-            aggregate = _named_step(job, "Verify and aggregate the complete Windows core lane")
-            assert "--output evidence" in aggregate["run"]
-            assert steps.index(aggregate) < steps.index(probe)
-            assert steps.index(_named_step(job, "Run strict core suite without coverage instrumentation")) < steps.index(probe)
-            assert steps.index(probe) < steps.index(_named_step(job, "Enforce exact skip tuples and minimum inventory"))
+        assert probe["working-directory"] == "candidate"
+        assert "if" not in probe
+        # Aggregation refuses an occupied output directory. The supplemental
+        # JUnit writer must run after either core producer creates evidence.
+        aggregate = _named_step(job, "Verify and aggregate the complete Windows core lane")
+        assert "--output evidence" in aggregate["run"]
+        assert steps.index(aggregate) < steps.index(probe)
+        assert steps.index(_named_step(job, "Run strict core suite without coverage instrumentation")) < steps.index(probe)
+        assert steps.index(probe) < steps.index(_named_step(job, "Enforce exact skip tuples and minimum inventory"))
 
 
 def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
@@ -1452,31 +1460,8 @@ def test_release_runners_and_ci_runners_are_explicit() -> None:
 
 def test_core_qualification_preserves_the_supported_cross_platform_contract() -> None:
     ci = _yaml("ci.yml")
-    ci_matrix = ci["jobs"]["test"]["strategy"]["matrix"]["include"]
-    assert ci_matrix == [
-        {
-            "lane": "core-ubuntu-3.10",
-            "os": "ubuntu-24.04",
-            "python-version": "3.10",
-            "coverage": True,
-            "package": True,
-        },
-        {
-            "lane": "core-windows-3.13",
-            "os": "windows-2025",
-            "python-version": "3.13",
-            "coverage": False,
-            "package": False,
-        },
-        {
-            "lane": "core-macos-3.14",
-            "os": "macos-15",
-            "python-version": "3.14",
-            "coverage": False,
-            "package": False,
-        },
-    ]
-
+    assert ci["jobs"]["test"]["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
+    assert ci["jobs"]["test"]["if"] == "${{ needs.plan.outputs.has-tests == 'true' }}"
     qualification = _yaml("release-qualification.yml")
     core = qualification["jobs"]["core"]
     assert core["strategy"]["matrix"]["include"] == [
@@ -1545,7 +1530,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     assert "--cov" not in uninstrumented["run"]
 
 
-def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> None:
+def test_routine_ci_runs_only_validated_selected_contracts() -> None:
     workflow = _yaml("ci.yml")
     assert workflow["concurrency"] == {
         "group": (
@@ -1555,51 +1540,22 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
         "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
     }
     job = workflow["jobs"]["test"]
-    assert job["name"] == (
-        "test (${{ matrix.os }}, ${{ matrix.python-version }})"
-    )
-    setup = next(
-        step
-        for step in job["steps"]
-        if str(step.get("uses", "")).startswith("actions/setup-python@")
-    )
-    assert setup["with"]["cache"] == "pip"
-    assert setup["with"]["cache-dependency-path"] == "pyproject.toml"
-    install = _named_step(job, "Install dependencies")
-    assert 'pip install -e ".[dev,tokens]"' in install["run"]
-    assert "--no-cache-dir" not in install["run"]
-
-    coverage = _named_step(job, "Run strict suite with coverage")
-    plain = _named_step(job, "Run strict suite")
-    assert coverage["if"] == "${{ matrix.coverage }}"
-    assert plain["if"] == "${{ !matrix.coverage }}"
-    for step in (coverage, plain):
-        command = step["run"]
-        for flag in (
-            "--strict-config",
-            "--strict-markers",
-            "-W error",
-            "-o xfail_strict=true",
-            "--junitxml=",
-        ):
-            assert flag in command
-    assert "--cov-fail-under=87" in coverage["run"]
-    assert "--cov" not in plain["run"]
-
-    verifier = _named_step(job, "Enforce exact skips and minimum inventory")
-    for required in (
-        "verify-junit",
-        '--lane "${{ matrix.lane }}"',
-        "--minimum-collected 5322",
-        "--minimum-passed 5070",
-    ):
-        assert required in verifier["run"]
-    package = _named_step(job, "Check package builds")
-    assert package["if"] == "${{ matrix.package }}"
-    assert "verify_installed_knowledge_schema.py" in package["run"]
-    diagnostics = _named_step(job, "Upload failed lane diagnostics")
-    assert diagnostics["if"] == "failure()"
-
+    assert job["name"] == "Selected tests (${{ matrix.lane }})"
+    assert job["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
+    assert job["needs"] == "plan"
+    install = _named_step(job, "Install exact candidate noneditably")
+    assert 'pip install ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
+    assert install["env"]["PR_CI_PROFILE"] == "${{ matrix.profile }}"
+    selected = _named_step(job, "Run and account for every selected case")
+    assert "pr_ci.py run --root ." in selected["run"]
+    assert '--expected-sha256 "${PLAN_SHA256}"' in selected["run"]
+    assert "BASE_POLICY_SHA256" in selected["env"]
+    assert "Base-owned selection driver or plan digest differs" in selected["run"]
+    assert not any("python -m pytest tests -q" in str(s.get("run", "")) for s in job["steps"])
+    evidence = _named_step(job, "Retain selected case evidence")
+    assert evidence["if"] == "${{ always() }}" and evidence["with"]["if-no-files-found"] == "error"
+    for key in ("mcp-sdk", "p0-oci-integration"):
+        assert workflow["jobs"][key]["if"] == "${{ needs.plan.outputs." + key + " == 'true' }}"
     for job_name in ("test", "mcp-sdk", "p0-oci-integration"):
         cached_job = workflow["jobs"][job_name]
         cached_setup = next(
@@ -1922,7 +1878,7 @@ def test_packed_range_link_skips_match_their_parameterized_contract() -> None:
         }
         for link in sorted(parameters.args[1])
     ]
-    for workflow, job in (("ci.yml", "test"), ("release-qualification.yml", "core")):
+    for workflow, job in (("release-qualification.yml", "core"),):
         lanes = _yaml(workflow)["jobs"][job]["strategy"]["matrix"]["include"]
         assert any(lane["lane"] == "core-ubuntu-3.10" for lane in lanes)
 
@@ -2123,10 +2079,11 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
     }
 
 
-def test_windows_pr_ci_covers_the_noneditable_venv_probe_topology() -> None:
-    job = _yaml("ci.yml")["jobs"]["test"]
+def test_windows_release_covers_the_noneditable_venv_probe_topology() -> None:
+    job = _yaml("release-qualification.yml")["jobs"]["core-windows"]
     probe = _named_step(job, "Verify stdin harness inside a native Windows venv")
-    assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert probe["if"] == "${{ !inputs.discovery-mode }}"
+    assert probe["working-directory"] == "candidate"
     assert "python -m venv" in probe["run"]
     assert 'stdio-venv/Scripts/python.exe" -m pip install ".[dev]"' in probe["run"]
     assert "tests/test_readonly_subprocess_stdin.py" in probe["run"]

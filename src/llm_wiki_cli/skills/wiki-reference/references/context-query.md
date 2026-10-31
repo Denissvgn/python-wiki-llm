@@ -196,6 +196,32 @@ the canonical Qualified Context Packet; select that field for packet validation
 or reuse. For Python/MCP `build_budgeted_context`, supply `budget_mode: "estimated"`
 and `knowledge_mode: "auto"` with the budget and scope; omit protocol versions.
 
+Broad fitting selects source detail and whole qualified native groups together.
+Relevance comes before currentness, and currentness preference stays within its
+relevance tier. Optional relationships and deep source detail yield before whole
+concepts or source summaries. The fitter preserves useful source/native evidence
+when available and keeps explicit target evidence. Native collection maxima are
+ceilings; inspect independent native bounds and source omissions after fitting.
+Every retained native row keeps its qualifications. A missing optional row is
+omitted evidence, not a negative fact. Scoped task/session requirements retain
+their separate semantics.
+
+The 8,000-token example is an initial bound, not a fit guarantee. A broad
+`cannot-fit` refusal emits no context. Its accounted usage describes a rejected
+candidate, not emitted context or a mathematical minimum for other selections
+or counters. Read the bounded refusal diagnostics and choose one recovery:
+
+- Use a task-scoped context/session or bounded documentation query matching the
+  actual requirements. Preserve required native evidence, snapshot/currentness
+  qualifications and all omissions; the scoped request has its own binding.
+- Explicitly authorize a larger complete-output budget and independently fit
+  and recount that new request using the pinned counter. Success at the larger
+  budget does not satisfy the earlier bound.
+
+Do not repeat the unchanged broad scan, switch native knowledge off, drop
+requirements, choose a legacy protocol, or execute a generated recovery command
+to bypass the refusal. Error diagnostics do not authorize mutation or setup.
+
 Raw canonical delivery remains available through Python `build_qualified_context`,
 MCP `get_context_packet`, or CLI `--format packet` without complete-output
 accounting. The packet binds normalized request, source basis, wiki/knowledge

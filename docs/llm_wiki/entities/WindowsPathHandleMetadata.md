@@ -20,7 +20,7 @@ Metadata with consistent semantics across Windows path and handle stats.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

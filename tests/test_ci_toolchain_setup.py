@@ -218,7 +218,8 @@ def fake_lock(tmp_path: Path) -> Path:
             },
             "go": {
                 "artifact": go_artifact,
-                "platform_artifacts": {"darwin_arm64": go_artifact},
+                # These archives contain native shell shims, not Go binaries.
+                "platform_artifacts": {"darwin_arm64": go_artifact, "linux_arm64": go_artifact},
                 "version": GO_VERSION,
                 "version_output": f"go version go{GO_VERSION}",
             },
@@ -269,10 +270,15 @@ def _run_setup(
     *arguments: object,
     environment: dict[str, str] | None = None,
     github_actions: bool = False,
+    simulate_supported_go_target: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     command_environment = dict(
         os.environ if environment is None else environment
     )
+    if simulate_supported_go_target and platform.system() == "Linux" and platform.machine() in {"aarch64", "arm64"}:
+        # Asset-selection simulation only: the fixture executes native shell
+        # shims, never an x86 compiler, image or instruction-set emulator.
+        command_environment = _with_fake_uname(harness.root.parent, command_environment, system="Linux", machine="x86_64")
     if not github_actions:
         for name in (
             "GITHUB_ACTIONS",
@@ -358,6 +364,17 @@ def _github_environment(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str
         "RUNNER_TEMP": str(runner_temp),
     }
     return runner_temp, github_path, github_env, environment
+
+
+@pytest.mark.parametrize("mode", ["qualification-go", "extractor-go"])
+def test_unsupported_arm64_go_refusal_precedes_cache_or_environment_writes(fake_lock, setup_harness, tmp_path, mode):
+    environment = _with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine="aarch64")
+    install_root = setup_harness.root / "ignored" / "unsupported-go-target"
+    environment_file = setup_harness.root / "ignored" / "unsupported-go-target.env"
+    completed = _run_setup(setup_harness, *_local_arguments(mode=mode, install_root=install_root, environment_file=environment_file, lock=fake_lock), environment=environment)
+    assert completed.returncode != 0
+    assert f"no locked {mode} artifact for Linux/aarch64" in completed.stderr
+    assert not install_root.exists() and not environment_file.exists()
 
 
 def test_routine_local_setup_uses_lock_and_writes_sourceable_environment(
@@ -513,7 +530,8 @@ def test_qualification_go_is_isolated_and_exports_exact_go_path(
             install_root=install_root,
             environment_file=environment_file,
             lock=fake_lock,
-        )
+        ),
+        simulate_supported_go_target=True,
     )
 
     _assert_success(completed)
@@ -582,6 +600,7 @@ def test_github_setup_persists_tools_across_steps(
         setup_harness.python,
         environment=environment,
         github_actions=True,
+        simulate_supported_go_target=mode in {"qualification-go", "extractor-go"},
     )
 
     _assert_success(completed)
@@ -789,7 +808,8 @@ def test_corrupt_locked_download_fails_before_install_or_environment_publish(
             install_root=install_root,
             environment_file=environment_file,
             lock=fake_lock,
-        )
+        ),
+        simulate_supported_go_target=mode in {"qualification-go", "extractor-go"},
     )
 
     assert completed.returncode != 0
@@ -1229,6 +1249,8 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     script = SETUP_SCRIPT.read_text(encoding="utf-8")
     lock = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
     serialized_values = json.dumps(lock)
+    # Synthetic portability fixtures do not expand the production target set.
+    assert "linux_arm64" not in lock["toolchains"]["go"]["platform_artifacts"]
 
     for toolchain in ("node", "go"):
         artifact = lock["toolchains"][toolchain]["platform_artifacts"][
@@ -1279,7 +1301,12 @@ def test_setup_has_no_privileged_or_qualification_only_dependency_surface() -> N
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
         encoding="utf-8"
     )
-    assert "ghc" not in ci.lower()
+    import yaml
+    job = yaml.safe_load(ci)["jobs"]["test"]
+    ghc = next(step for step in job["steps"] if step.get("name") == "Install selected locked haskell compiler")
+    assert ghc["if"] == "${{ matrix.haskell }}"
+    assert "toolchains.haskell.artifact" in ghc["run"]
+    assert 'test "$(uname -m)" = x86_64' in ghc["run"]
 
 
 def test_local_python_contract_is_project_virtualenv_only() -> None:

@@ -21,7 +21,7 @@ Package-relative destination for content leaving generated prose.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 3, emitted: 3, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. is_table_separator"]
@@ -53,21 +62,21 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_table_separator | all | 514 | `all(...)` |
-| is_table_separator | re.fullmatch | 514 | `re.fullmatch(':?-{3,}:?', cell.replace(...))` |
-| is_table_separator | cell.replace | 514 | `cell.replace(' ', '')` |
+| is_table_separator | all | 522 | `all(...)` |
+| is_table_separator | re.fullmatch | 522 | `re.fullmatch(':?-{3,}:?', cell.replace(...))` |
+| is_table_separator | cell.replace | 522 | `cell.replace(' ', '')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `is_table_separator` | `all` | 514 |
-| external_call | `is_table_separator` | `re.fullmatch` | 514 |
-| unresolved_call | `is_table_separator` | `cell.replace` | 514 |
+| external_call | `is_table_separator` | `all` | 522 |
+| external_call | `is_table_separator` | `re.fullmatch` | 522 |
+| unresolved_call | `is_table_separator` | `cell.replace` | 522 |
 
 ## Behavior
 

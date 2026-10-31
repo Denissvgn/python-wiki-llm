@@ -32,7 +32,7 @@ Complete in-memory inputs for one evaluated envelope.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

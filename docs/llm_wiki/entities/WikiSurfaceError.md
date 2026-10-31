@@ -15,7 +15,7 @@ Raised for invalid wiki surface lookups.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

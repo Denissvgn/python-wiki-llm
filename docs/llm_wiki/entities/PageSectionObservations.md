@@ -1,6 +1,6 @@
 # PageSectionObservations
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:111`
+**Location:** `src/llm_wiki_cli/services/section_ownership.py:112`
 **Kind:** Class
 **Bases:** —
 **Module:** [section_ownership](../modules/section_ownership.md)

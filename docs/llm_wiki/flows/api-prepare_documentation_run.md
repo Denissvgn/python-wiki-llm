@@ -2,11 +2,12 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [current_contracts](../modules/current_contracts.md), and 30 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 32 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
 - [current_contracts](../modules/current_contracts.md)
@@ -62,18 +63,18 @@ sequenceDiagram
     participant p11 as _validate_root_isolation
     participant p12 as _open_input_root_descriptor
     participant p13 as _adopt_validated_wiki_snapshot
-    participant p14 as guard_maintenance_owner
+    participant p14 as pending_bootstrap
     participant p15 as _paths_overlap
     participant p16 as _collect_input_tree
-    participant p17 as _preflight_public_bootstrap
-    participant p18 as _load_and_validate_metadata
-    participant p19 as _preflight_bootstrap_source_selection
+    participant p17 as guard_maintenance_owner
+    participant p18 as _preflight_public_bootstrap
+    participant p19 as _load_and_validate_metadata
     participant p20 as _is_relative_to
     participant p21 as _assert_input_directory
     participant p22 as _unknown_entries
     participant p23 as maintenance_write_operation
     participant p24 as _inspect_markdown
-    participant p25 as _execute_bootstrap_options_locked
+    participant p25 as bootstrap_write_operation
     participant p26 as _semantic_page_records
     participant p27 as _resolve_metadata_freshness
     participant p28 as _enforce_freshness_policy
@@ -92,18 +93,18 @@ sequenceDiagram
     p3->>p11: _validate_root_isolation
     p3->>p12: _open_input_root_descriptor
     p3->>p13: _adopt_validated_wiki_snapshot
-    p7->>p14: guard_maintenance_owner
+    p7->>p14: pending_bootstrap
     p11->>p15: _paths_overlap
     p13->>p16: _collect_input_tree
-    p7->>p17: _preflight_public_bootstrap
-    p13->>p18: _load_and_validate_metadata
-    p7->>p19: _preflight_bootstrap_source_selection
+    p7->>p17: guard_maintenance_owner
+    p7->>p18: _preflight_public_bootstrap
+    p13->>p19: _load_and_validate_metadata
     p11->>p20: _is_relative_to
     p12->>p21: _assert_input_directory
     p13->>p22: _unknown_entries
     p7->>p23: maintenance_write_operation
     p13->>p24: _inspect_markdown
-    p7->>p25: _execute_bootstrap_options_locked
+    p7->>p25: bootstrap_write_operation
     p13->>p26: _semantic_page_records
     p13->>p27: _resolve_metadata_freshness
     p13->>p28: _enforce_freshness_policy
@@ -111,23 +112,23 @@ sequenceDiagram
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1125 interactions; 1095 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1213 interactions; 1183 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 267 (266 omitted); unresolved 1 of 356 (355 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 292 (291 omitted); unresolved 1 of 367 (366 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_run/prepare.py:prepare_documentation_run` | 1 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 155 |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 156 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | external | 5 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 75 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 76 | - | external | 4 |
-> Omission summary shows 8 of 268 groups; 260 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 75 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 76 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
+> Omission summary shows 8 of 304 groups; 296 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -135,6 +136,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 555; effect analysis evaluated: 360, partial: 29, unavailable: 166. Counts include steps omitted from the displayed trace.
+
+Collector observations for 389 source steps with known totals: observed: 2281, emitted: 2143, omitted: 138. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `prepare_documentation_run` | `available` | `partial` | `available` | `24` | `9` | `15` |
+| `_RefreshArchiveTransaction` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_InitialPrepareTransaction` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_prepare_documentation_run_impl` | `available` | `partial` | `available` | `37` | `20` | `17` |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `site_name.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. prepare_documentation_run"]
@@ -227,13 +256,13 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `imported_pages.extend` | `_prepare_documentation_run_impl` | 478 |
-| filesystem_read | `generated_ownership_path.read_bytes` | `_prepare_documentation_run_impl` | 549 |
-| filesystem_read | `source_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 553 |
-| filesystem_read | `source_plugins_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 557 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 605 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 607 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 609 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 623 |
+| filesystem_read | `generated_ownership_path.read_bytes` | `_prepare_documentation_run_impl` | 552 |
+| filesystem_read | `source_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 556 |
+| filesystem_read | `source_plugins_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 560 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 608 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 610 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 612 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 626 |
 
 ### Static analysis gaps
 

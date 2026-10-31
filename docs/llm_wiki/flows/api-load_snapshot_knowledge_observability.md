@@ -2,11 +2,12 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), and 37 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 38 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -118,9 +119,9 @@ sequenceDiagram
     p1-->>p30: Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)
 ```
 
-> Call sequence diagram shows 30 of 2682 interactions; 2652 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2643 interactions; 2613 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 834 (833 omitted); unresolved 1 of 669 (668 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 799 (798 omitted); unresolved 1 of 657 (656 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -134,7 +135,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_override_text` | 8 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 15 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
 | `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 708 groups; 700 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 709 groups; 701 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -142,6 +143,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1188; effect analysis evaluated: 678, partial: 49, unavailable: 461. Counts include steps omitted from the displayed trace.
+
+Collector observations for 727 source steps with known totals: observed: 4377, emitted: 3978, omitted: 399. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_snapshot_knowledge_observability` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolve_source_selection` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_override_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `override.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. load_snapshot_knowledge_observability"]
@@ -209,7 +238,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

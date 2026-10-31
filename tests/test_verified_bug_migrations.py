@@ -2,7 +2,6 @@
 
 from dataclasses import replace
 from pathlib import Path
-import shutil
 from types import SimpleNamespace
 
 import pytest
@@ -58,8 +57,8 @@ def test_javascript_health_refresh_and_first_sync_converge(
 ):
     helper_root = resolve_helper_cache_root(Path(__file__).resolve().parents[1])
     assert helper_root is not None
-    cache_dir = tmp_path / "helper-cache"
-    shutil.copytree(helper_root, cache_dir / helper_root.name)
+    # Consume the validated prepared cache at its bound location.
+    cache_dir = helper_root.parent
     monkeypatch.setenv(ENV_CACHE_DIR, str(cache_dir))
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()

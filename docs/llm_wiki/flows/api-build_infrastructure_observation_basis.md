@@ -93,6 +93,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 37; effect analysis evaluated: 26, partial: 3, unavailable: 8. Counts include steps omitted from the displayed trace.
+
+Collector observations for 29 source steps with known totals: observed: 141, emitted: 126, omitted: 15. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_infrastructure_observation_basis` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `_validate_source_path` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_known_syntax` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. build_infrastructure_observation_basis"]
@@ -146,8 +174,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_observation_basis | _validate_source_path | 438 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 823 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_infrastructure_observation_basis | _validate_source_path | 443 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 868 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
@@ -160,7 +188,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

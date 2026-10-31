@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 120; effect analysis evaluated: 58, partial: 11, unavailable: 51. Counts include steps omitted from the displayed trace.
+
+Collector observations for 69 source steps with known totals: observed: 473, emitted: 456, omitted: 17. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `atomic_write_private_bytes` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `Path (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_atomic_write_private_bytes_windows` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `guard_windows_directory_chain` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. atomic_write_private_bytes"]

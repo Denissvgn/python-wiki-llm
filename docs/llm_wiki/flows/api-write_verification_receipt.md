@@ -82,9 +82,9 @@ sequenceDiagram
     p0-->>p30: root.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 226 interactions; 196 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 232 interactions; 202 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 80 (79 omitted); unresolved 1 of 38 (37 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 82 (81 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,6 +106,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 109; effect analysis evaluated: 63, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
+
+Collector observations for 64 source steps with known totals: observed: 243, emitted: 242, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `write_verification_receipt` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `serialize_verification_receipt` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `formatted_json_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `formatted_json_text(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `formatted_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `verification_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. write_verification_receipt"]
@@ -161,29 +189,29 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| write_verification_receipt | serialize_verification_receipt | 981 | `serialize_verification_receipt(receipt)` |
-| serialize_verification_receipt | formatted_json_bytes | 790 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
-| formatted_json_bytes | formatted_json_text(…).encode | 210 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | formatted_json_text | 210 | `formatted_json_text(value)` |
-| formatted_json_text | json.dumps | 196 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_verification_receipt | verification_receipt_to_payload | 790 | `verification_receipt_to_payload(value)` |
-| verification_receipt_to_payload | validate_verification_receipt | 781 | `validate_verification_receipt(value)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 806 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 805 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1101 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1103 | `dict(receipt.evaluated_snapshot)` |
+| write_verification_receipt | serialize_verification_receipt | 1010 | `serialize_verification_receipt(receipt)` |
+| serialize_verification_receipt | formatted_json_bytes | 819 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
+| formatted_json_bytes | formatted_json_text(…).encode | 215 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | formatted_json_text | 215 | `formatted_json_text(value)` |
+| formatted_json_text | json.dumps | 201 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| serialize_verification_receipt | verification_receipt_to_payload | 819 | `verification_receipt_to_payload(value)` |
+| verification_receipt_to_payload | validate_verification_receipt | 810 | `validate_verification_receipt(value)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 210 |
-| external_call | `formatted_json_text` | `json.dumps` | 196 |
-| external_call | `validate_verification_receipt` | `isinstance` | 806 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 215 |
+| external_call | `formatted_json_text` | `json.dumps` | 201 |
+| external_call | `validate_verification_receipt` | `isinstance` | 835 |
 | step_limit | `write_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `write_verification_receipt` | `depth limit` | 0 |
 

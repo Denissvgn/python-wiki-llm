@@ -21,7 +21,7 @@ _Auto-generated from `_GitResult` in `src/llm_wiki_cli/services/wiki_git_policy.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

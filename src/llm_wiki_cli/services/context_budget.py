@@ -28,6 +28,49 @@ class BudgetedContext:
     rendered: str
     accounting: Mapping[str, Any]
     error: str | None = None
+    diagnostics: Mapping[str, Any] | None = None
+
+
+def refusal_diagnostics(payload, request, counter, accounting, *, policy):
+    """Describe a rejected candidate without emitting source or native rows."""
+    knowledge = payload.get("knowledge", {})
+    files = payload["files"]
+
+    def json_bytes(value):
+        return len(json.dumps(value, ensure_ascii=False, sort_keys=True,
+                              separators=(",", ":"), allow_nan=False).encode("utf-8"))
+
+    return {
+        "schema_version": "llm-wiki-context-budget-refusal/v1",
+        "request_id": request_identity(request),
+        "selection_policy": policy,
+        "reason": "permitted-selection-reductions-exhausted",
+        "accounting_meaning": "rejected-candidate-not-emitted-context-or-global-minimum",
+        "counter_id": counter.identity,
+        "budget_mode": request["budget_mode"],
+        "emitted_context_bytes": 0,
+        "source": {"total": len(files) + len(payload["omitted_files"]),
+                   "returned": len(files), "omitted": len(payload["omitted_files"])},
+        "native": {"mode": knowledge.get("mode", request.get("knowledge_mode", "off")),
+                   "status": knowledge.get("status", "disabled"),
+                   "availability": knowledge.get("availability", "not-evaluated"),
+                   "bounds": copy.deepcopy(knowledge.get("bounds", {}))},
+        "component_bytes": {
+            "measurement": "canonical-json-fragments-not-additive-token-costs",
+            "source_entries": json_bytes(files),
+            "native_knowledge": json_bytes(knowledge),
+            "omitted_files": json_bytes(payload["omitted_files"]),
+            "source_priorities": json_bytes(payload.get("source_priorities", {})),
+        },
+        "recovery": [
+            {"id": "scoped-evidence", "automatic": False,
+             "new_request_binding_required": True,
+             "description": "Choose a task-scoped context/session or bounded documentation query matching the actual requirements; preserve native requirements and all evidence qualifications."},
+            {"id": "explicit-larger-budget", "automatic": False,
+             "new_request_binding_required": True,
+             "description": "Explicitly authorize a larger complete-output budget, then independently fit and recount it with the pinned counter. The failed request remains unsatisfied."},
+        ],
+    }
 
 
 def validate_request(data: Mapping[str, Any]) -> dict[str, Any]:
@@ -91,11 +134,109 @@ def _accounted_render(render, accounting, counter):
     raise ValueError("Token accounting did not converge")
 
 
+class _JointSelection:
+    """Spend one budget across whole native groups and source detail.
+
+    Relevance wins before currentness. Within the same rank, optional native
+    relationships and source detail yield before concepts and whole sources.
+    A useful source and native group remain when available; explicit target
+    enrichment and its selected coordinates are never reduced.
+    """
+
+    def __init__(self, payload, request, freshness):
+        self.payload, self.request = payload, request
+        self.freshness = freshness if request.get("prefer_fresh") else {}
+        self.priorities = payload.get("source_priorities", {})
+        files = payload["files"]
+        self.required_sources = {min(files, key=self.rank)} if files else set()
+        knowledge = payload.get("knowledge", {})
+        self.required_native = set()
+        if knowledge.get("status") == "selected":
+            concepts = knowledge["selection"]["concepts"]
+            best = min(concepts, key=lambda row: (*self.rank(row["source_path"]), row["locator"]))
+            self.required_native.add(best["locator"])
+            self.required_sources.add(best["source_path"])
+            # An explicit query's complete target evidence stays in enrichment.
+            # Retain matching broad groups too, rather than treating a requested
+            # coordinate as an optional row merely to satisfy the budget.
+            references = set()
+
+            def visit(value):
+                if isinstance(value, Mapping):
+                    for child in value.values():
+                        visit(child)
+                elif isinstance(value, (list, tuple)):
+                    for child in value:
+                        visit(child)
+                elif isinstance(value, str):
+                    references.add(value)
+
+            visit(payload.get("graphs", {}))
+            visit(payload.get("surface", {}))
+            for row in concepts:
+                if row["locator"] in references or row["canonical_path"] in references:
+                    self.required_native.add(row["locator"])
+                    self.required_sources.add(row["source_path"])
+
+    def rank(self, path):
+        priority = self.priorities.get(path, self.payload["files"].get(path, {}).get("priority", "low"))
+        return ({"high": 0, "medium": 1, "low": 2}.get(priority, 2),
+                self.freshness.get(path, 1))
+
+    def reduce(self):
+        choices = []
+        files = self.payload["files"]
+        for order, (path, row) in enumerate(files.items()):
+            if row["detail"] != "summary":
+                choices.append(((*self.rank(path), 4, order), "source", path))
+            elif path not in self.required_sources:
+                choices.append(((*self.rank(path), 2, order), "source", path))
+        knowledge = self.payload.get("knowledge", {})
+        if knowledge.get("status") == "selected":
+            selection = knowledge["selection"]
+            concepts = selection["concepts"]
+            by_locator = {row["locator"]: row for row in concepts}
+            by_path = {row["canonical_path"]: row["locator"] for row in concepts}
+
+            def endpoint(value):
+                if isinstance(value, str):
+                    return value if value in by_locator else None
+                if isinstance(value, Mapping):
+                    locator = value.get("locator")
+                    return locator if locator in by_locator else by_path.get(value.get("canonical_path"))
+                return None
+
+            for order, row in enumerate(concepts):
+                if row["locator"] not in self.required_native:
+                    choices.append(((*self.rank(row["source_path"]), 3, order), "native", row["locator"]))
+            for order, row in enumerate(selection["relationships"]):
+                incident = (endpoint(row.get("from")), endpoint(row.get("target")))
+                rank = min((self.rank(by_locator[locator]["source_path"])
+                            for locator in incident if locator is not None), default=(3, 1))
+                choices.append(((*rank, 5, order), "relationship", order))
+        if not choices:
+            return None
+        _rank, kind, selected = max(choices, key=lambda row: row[0])
+        if kind == "source":
+            return selected
+        retained = {row["locator"] for row in knowledge["selection"]["concepts"]}
+        if kind == "native":
+            retained.remove(selected)
+        else:
+            knowledge["selection"]["relationships"].pop(selected)
+        self.payload["knowledge"] = context._select_native_context_groups(
+            knowledge, retained, self.priorities,
+        )
+        return False
+
+
 def fit_payload(
     payload, request, warnings, counter, *, packet_renderer=None, changes=None,
     envelope_renderer=None,
     freshness_rank_by_source=None,
     source_json_lower_bound=False,
+    broad_refusal_diagnostics=False,
+    joint_native_source=False,
 ):
     """Select whole source entries; keep all enrichment and omission evidence."""
     payload = copy.deepcopy(payload)
@@ -155,8 +296,9 @@ def fit_payload(
                 + "\n"
             )
         response = context._protocol_success_payload(legacy_request, payload, warnings)
-        if packet_renderer is not None:
+        if joint_native_source or packet_renderer is not None:
             response["source_priorities"] = payload.get("source_priorities", {})
+        if packet_renderer is not None:
             value = {**envelope, "packet": packet_renderer(legacy_request, response)}
         else:
             value = {**envelope, "context": response}
@@ -181,25 +323,37 @@ def fit_payload(
         # arbitrary tokenizers/counters need complete rendering on every step.
         sizes = {path: entry_bytes(path, entry) for path, entry in payload["files"].items()}
     size_total = sum(sizes.values()) if sizes is not None else 0
+    joint = _JointSelection(payload, request, freshness_rank_by_source) if joint_native_source else None
 
     while True:
-        if sizes is None or size_total + max(0, len(sizes) - 1) + 2 <= budget * 4:
+        counted_candidate = sizes is None or size_total + max(0, len(sizes) - 1) + 2 <= budget * 4
+        if counted_candidate:
             rendered = _accounted_render(render, accounting, counter)
             if accounting["used_tokens"] <= budget:
                 return BudgetedContext(True, rendered, dict(accounting))
         files = payload["files"]
-        if not files:
+        selected = joint.reduce() if joint is not None else None
+        if selected is False:
+            continue
+        if not files or joint is not None and selected is None:
+            # Even an estimator lower-bound shortcut must report the complete
+            # last rejected candidate, not an uncounted or stale estimate.
+            if not counted_candidate:
+                _accounted_render(render, accounting, counter)
             return BudgetedContext(
-                False, "", {**accounting, "exact_compliance": False}, "cannot-fit"
+                False, "", {**accounting, "exact_compliance": False}, "cannot-fit",
+                refusal_diagnostics(payload, request, counter, accounting,
+                                    policy="joint-native-source/v1" if joint is not None else "source-tail-reduction/v1")
+                if broad_refusal_diagnostics else None,
             )
-        if freshness_rank_by_source and request.get("prefer_fresh"):
+        if joint is None and freshness_rank_by_source and request.get("prefer_fresh"):
             order = {path: index for index, path in enumerate(files)}
             priorities = {"high": 0, "medium": 1, "low": 2}
             files = payload["files"] = dict(sorted(files.items(), key=lambda item: (
                 priorities.get(item[1]["priority"], 2),
                 freshness_rank_by_source.get(item[0], 1), order[item[0]],
             )))
-        path = next(reversed(files))
+        path = selected if joint is not None else next(reversed(files))
         entry = files[path]
         detail = entry["detail"]
         if detail == "summary":
@@ -296,8 +450,10 @@ def build_budgeted_context(
         changes=changes,
         freshness_rank_by_source=freshness_ranks,
         source_json_lower_bound=True,
+        broad_refusal_diagnostics=True,
+        joint_native_source=True,
     )
-    if result.ok and request["format"] == "packet":
+    if result.ok:
         validate_budgeted_context(result.rendered, request, counter=counter)
     packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
     packets._assert_wiki_unchanged(
@@ -380,6 +536,14 @@ def validate_budgeted_context(
             raise ValueError("Invalid embedded context")
     else:
         inner = None
+    if normalized["format"] in {"json", "markdown"}:
+        response = payload["context"] if normalized["format"] == "json" else payload["metadata"]
+        if not isinstance(response, Mapping):
+            raise ValueError("Invalid context metadata")
+        packets._validate_explicit_knowledge_response(
+            response["knowledge"], normalized,
+            source_priorities=response.get("source_priorities"),
+        )
     if inner is not None:
         fields = ("focus", "filters", "prefer_fresh", "knowledge_mode") if normalized["format"] == "packet" else ("focus", "filters", "prefer_fresh")
         for field in fields:
@@ -436,6 +600,7 @@ def run(args, request=None):
                     "ok": False,
                     "error": result.error,
                     "accounting": result.accounting,
+                    "diagnostics": result.diagnostics,
                 }
             ),
             file=sys.stderr,

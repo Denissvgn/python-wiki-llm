@@ -24,7 +24,7 @@ Validated publication receipt loaded from an exported mirror.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -23,7 +23,7 @@ Bytes, size, and hashes derived from one pinned evidence handle.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

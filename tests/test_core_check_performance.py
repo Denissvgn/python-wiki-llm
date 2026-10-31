@@ -341,15 +341,16 @@ def test_comparison_runs_before_merge_only_for_affected_checks():
     workflow = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())
     jobs = workflow["jobs"]
     freeze = jobs["core-check-inputs"]
-    assert freeze["if"] == "${{ github.event_name == 'pull_request' }}"
+    assert freeze["if"] == "${{ needs.plan.outputs.core-check-inputs == 'true' }}"
+    assert freeze["needs"] == "plan"
     changes = next(step for step in freeze["steps"] if step.get("id") == "changes")
     assert (
-        "git diff --name-only" in changes["run"]
-        and "tests/python_source_inventory.py" in changes["run"]
+        'echo "enabled=true"' in changes["run"]
+        and changes["name"] == "Use the trusted affected-contract decision"
     )
     job = jobs["core-check-comparison"]
-    assert job["needs"] == "core-check-inputs"
-    assert "outputs.enabled == 'true'" in job["if"]
+    assert job["needs"] == ["plan", "core-check-inputs"]
+    assert "needs.plan.outputs.core-check-comparison == 'true'" in job["if"]
     assert job["strategy"]["max-parallel"] == 3
     assert [
         (p["os"], p["python"], p["coverage"])

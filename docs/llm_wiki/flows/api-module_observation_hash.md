@@ -32,8 +32,8 @@ sequenceDiagram
     participant p18 as _failure
     participant p19 as require_nonempty_text
     participant p20 as _optional_record_array
-    participant p21 as _validate_optional_string_array
-    participant p22 as _validate_optional_strings
+    participant p21 as _validate_optional_strings
+    participant p22 as _validate_optional_string_array
     participant p23 as _validate_optional_booleans
     participant p24 as _validate_string_array
     participant p25 as _record_object
@@ -62,10 +62,10 @@ sequenceDiagram
     p6->>p18: _failure
     p10->>p19: require_nonempty_text
     p8->>p20: _optional_record_array
-    p11->>p21: _validate_optional_string_array
-    p9->>p22: _validate_optional_strings
+    p9->>p21: _validate_optional_strings
+    p11->>p22: _validate_optional_string_array
     p9->>p23: _validate_optional_booleans
-    p21->>p24: _validate_string_array
+    p22->>p24: _validate_string_array
     p20->>p25: _record_object
     p1->>p26: require_bool
     p5->>p27: sha256_bytes
@@ -74,9 +74,9 @@ sequenceDiagram
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 181 interactions; 151 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 240 interactions; 210 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 39 (38 omitted); unresolved 1 of 39 (38 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 17 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 58 groups; 50 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 138; effect analysis evaluated: 136, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 137 source steps with known totals: observed: 688, emitted: 684, omitted: 4. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `module_observation_hash` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_validate_inventory_complete` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `require_bool` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_module_observation` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_normalize_module_observation` | `available` | `partial` | `available` | `24` | `20` | `4` |
+| `_inventory_language` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `_InventoryNormalizationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. module_observation_hash"]
@@ -167,35 +195,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| module_observation_hash | _validate_inventory_complete | 273 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 802 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 804 | `TypeError('inventory_complete must be a boolean')` |
-| module_observation_hash | normalize_module_observation | 276 | `normalize_module_observation(file_data)` |
-| normalize_module_observation | _normalize_module_observation | 237 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 452 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 535 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 536 | `_failure('', 'object-required', 'inventory object', file_data)` |
-| _failure | _InventoryNormalizationError | 161 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 537 | `file_data.get('language', MISSING_VALUE)` |
+| module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 818 | `isinstance(value, bool)` |
+| _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
+| module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
+| normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 457 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 540 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 541 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `file_data.get('language', MISSING_VALUE)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 469 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 475 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 497 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 504 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 474 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 480 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 502 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 509 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 810 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 804 |
-| external_call | `_inventory_language` | `isinstance` | 535 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 537 |
+| external_call | `require_bool` | `isinstance` | 818 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 849 |
+| external_call | `_inventory_language` | `isinstance` | 540 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 542 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `module_observation_hash` | `depth limit` | 0 |
 

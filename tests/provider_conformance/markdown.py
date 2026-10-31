@@ -33,6 +33,7 @@ def tables(text: str) -> list[dict]:
                 child.content
                 for child in (token.children or [])
                 if child.type in {"text", "code_inline", "html_inline"}
+                and not (child.type == "html_inline" and child.content in {"<pre>", "</pre>", "<code>", "</code>"})
             )
             if in_heading:
                 section = content
@@ -41,7 +42,25 @@ def tables(text: str) -> list[dict]:
     return result
 
 
-def split_balanced(text: str, separator=",") -> list[str]:
+def code_values(token) -> list[str]:
+    """Decode code spans and whitespace-preserving HTML code cells."""
+    values, parts = [], None
+    for child in token.children or []:
+        if child.type == "code_inline":
+            values.append(child.content)
+        elif child.type == "html_inline" and child.content == "<code>":
+            parts = []
+        elif child.type == "html_inline" and child.content == "</code>" and parts is not None:
+            values.append("".join(parts))
+            parts = None
+        elif parts is not None and child.type == "text":
+            parts.append(child.content)
+    if parts is not None:
+        raise Incomplete("Unclosed rendered code value")
+    return values
+
+
+def split_balanced(text: str, separator=",", *, rust_lifetimes=False) -> list[str]:
     """Split a rendered signature without erasing literal or grouping content."""
     result, start, stack, quote, escape = [], 0, [], None, False
     for index, char in enumerate(text):
@@ -56,7 +75,7 @@ def split_balanced(text: str, separator=",") -> list[str]:
         if char in {"'", '"', "`"}:
             # Rust lifetimes are identifiers, not quoted strings.
             if (
-                char == "'"
+                rust_lifetimes and char == "'"
                 and re.match(r"'[A-Za-z_]\w*(?!')", text[index:])
                 and "'" not in text[index + 1 :].split(",", 1)[0]
             ):
@@ -99,6 +118,30 @@ def signature(text: str, lang: str) -> dict:
     is_async = text.startswith("(async) ")
     if is_async:
         text = text[len("(async) ") :]
+    type_params = []
+    if lang == "typescript" and text.startswith("<"):
+        stack, quote, escaped = [], None, False
+        for index, char in enumerate(text):
+            if quote:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            elif char in "\"'`":
+                quote = char
+            elif char in "([{<":
+                stack.append(char)
+            elif char in ")]}>":
+                if char == ">" and index and text[index - 1] in "=-":
+                    continue
+                if not stack or stack.pop() != {")": "(", "]": "[", "}": "{", ">": "<"}[char]:
+                    raise Incomplete(f"Unbalanced generic declaration: {text}")
+                if not stack:
+                    type_params = split_balanced(text[1:index])
+                    text = text[index + 1:]
+                    break
     if not text.startswith("("):
         raise Incomplete(f"Unrecognized rendered signature: {text}")
     # The generator puts the result after the matching outer parameter group.
@@ -111,7 +154,7 @@ def signature(text: str, lang: str) -> dict:
                 escaped = True
             elif char == quote:
                 quote = None
-        elif char in "\"'":
+        elif char in "\"'`":
             if (
                 char == "'"
                 and lang == "rust"
@@ -128,7 +171,7 @@ def signature(text: str, lang: str) -> dict:
                 break
     if end is None:
         raise Incomplete(f"Unbalanced rendered signature: {text}")
-    raw_params = split_balanced(text[1:end]) if text[1:end].strip() else []
+    raw_params = split_balanced(text[1:end], rust_lifetimes=lang == "rust") if text[1:end].strip() else []
     params, keyword_only = [], False
     for raw in raw_params:
         if raw == "/":
@@ -142,7 +185,7 @@ def signature(text: str, lang: str) -> dict:
         default = None
         if "=" in (annotation if colon else head):
             value = annotation if colon else head
-            parts = split_balanced(value, "=")
+            parts = split_balanced(value, "=", rust_lifetimes=lang == "rust")
             if len(parts) == 2:
                 if colon:
                     annotation = parts[0]
@@ -155,7 +198,11 @@ def signature(text: str, lang: str) -> dict:
             kind, name = "var_keyword", name[2:]
         elif name.startswith("*"):
             kind, name, keyword_only = "var_positional", name[1:], True
-        item = {"name": name, "type": annotation.strip() if colon else ""}
+        item: dict[str, str | bool] = {"name": name, "type": annotation.strip() if colon else ""}
+        if lang == "typescript":
+            item["optional"] = name.endswith("?")
+            item["rest"] = name.startswith("...")
+            item["name"] = name.removeprefix("...").removesuffix("?")
         if lang == "python":
             item["kind"] = kind
         if default is not None:
@@ -165,6 +212,7 @@ def signature(text: str, lang: str) -> dict:
     if tail and not tail.startswith("-> "):
         raise Incomplete(f"Unexpected return delimiter: {text}")
     return {
+        **({"type_params": type_params} if type_params else {}),
         "params": params,
         "return_type": tail[3:].strip() if tail else "",
         "is_async": is_async,

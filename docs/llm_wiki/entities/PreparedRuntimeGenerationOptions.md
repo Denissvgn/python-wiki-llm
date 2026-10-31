@@ -21,7 +21,7 @@ Canonical writer/reader inputs for the generation-options commitment.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

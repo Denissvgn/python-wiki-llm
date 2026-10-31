@@ -22,7 +22,7 @@ _Auto-generated from `PythonCallContext` in `src/llm_wiki_cli/services/python_ca
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

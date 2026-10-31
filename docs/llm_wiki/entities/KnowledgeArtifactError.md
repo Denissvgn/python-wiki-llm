@@ -1,6 +1,6 @@
 # KnowledgeArtifactError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:85`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:88`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

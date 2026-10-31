@@ -30,6 +30,26 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 1, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `extract_fastapi_declarations` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `ast.parse` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_FastAPIScanner` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `scanner.visit` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `scanner.result` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. extract_fastapi_declarations"]
@@ -66,7 +86,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

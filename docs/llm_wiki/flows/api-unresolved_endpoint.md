@@ -106,6 +106,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 98; effect analysis evaluated: 63, partial: 4, unavailable: 31. Counts include steps omitted from the displayed trace.
+
+Collector observations for 67 source steps with known totals: observed: 317, emitted: 301, omitted: 16. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `unresolved_endpoint` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_normalise_endpoint` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_enum` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. unresolved_endpoint"]
@@ -163,27 +191,27 @@ flowchart LR
 |---|---|---:|---|
 | unresolved_endpoint | list | 296 | `list(candidates)` |
 | unresolved_endpoint | _normalise_endpoint | 297 | `_normalise_endpoint(value, 'endpoint')` |
-| _normalise_endpoint | _object | 1411 | `_object(value, path)` |
-| _object | require_mapping | 2309 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2311 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2313 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2315 | `dict(selected)` |
-| _normalise_endpoint | _enum | 1412 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
+| _normalise_endpoint | _object | 1431 | `_object(value, path)` |
+| _object | require_mapping | 2329 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
+| _object | KnowledgeGraphError | 2331 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2333 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2335 | `dict(selected)` |
+| _normalise_endpoint | _enum | 1432 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
 | step_limit | `unresolved_endpoint` | `first 12 steps` | 0 |
 | truncated_flow | `unresolved_endpoint` | `depth limit` | 0 |
 

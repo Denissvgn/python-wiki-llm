@@ -1,6 +1,6 @@
 # _IndexValidationOperation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:315`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:324`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -22,7 +22,7 @@ _Auto-generated from `_IndexValidationOperation` in `src/llm_wiki_cli/services/k
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -1702,18 +1702,13 @@ def strip_governance_projection(knowledge: KnowledgeIndex) -> KnowledgeIndex:
     )
 
 
-def apply_governance_projection(
+def _governance_concept_summaries(
     knowledge: KnowledgeIndex,
-    ledger: GovernanceLedger,
-    *,
-    event_limit: int = DEFAULT_EVENT_LIMIT,
-) -> KnowledgeIndex:
-    """Build the complete disposable governance projection from the ledger."""
-
-    limit = _event_limit(event_limit)
-    base = strip_governance_projection(knowledge)
-    current = validate_governance_ledger(ledger)
-    references = concept_references_from_knowledge(base)
+    current: GovernanceLedger,
+    limit: int,
+) -> dict[str, dict[str, object]]:
+    """Derive authority-owned values without copying or rebuilding the graph."""
+    references = concept_references_from_knowledge(knowledge)
     active_by_locator = {reference.locator: reference for reference in references}
     allocations_by_locator = {
         allocation.locator: allocation
@@ -1739,8 +1734,7 @@ def apply_governance_projection(
         reviews_by_uid[event.concept_uid].append(event)
 
     concept_summaries: dict[str, dict[str, object]] = {}
-    projected_concepts: list[ConceptRecord] = []
-    for concept in base.concepts:
+    for concept in knowledge.concepts:
         allocation = allocations_by_locator[concept.locator]
         reference = active_by_locator[concept.locator]
         if (
@@ -1764,7 +1758,7 @@ def apply_governance_projection(
             reviews_by_uid[allocation.uid],
             key=lambda item: (item.authored_at, item.event_id),
         ):
-            validity = evaluate_review_event(event, current, base)
+            validity = evaluate_review_event(event, current, knowledge)
             review_items.append(_review_event_summary(event, validity))
         summary: dict[str, object] = {
             "uid": allocation.uid,
@@ -1788,18 +1782,16 @@ def apply_governance_projection(
         if successor_uid is not None:
             summary["successor_uid"] = successor_uid
         concept_summaries[concept.locator] = summary
-        concept_extensions = dict(concept.extensions)
-        concept_extensions[GOVERNANCE_EXTENSION_KEY] = summary
-        projected_concepts.append(
-            replace(
-                concept,
-                lifecycle=state,
-                extensions=concept_extensions,
-            )
-        )
 
-    governance_hash = current.content_hash()
-    projection = {
+    return concept_summaries
+
+
+def _governance_projection_payload(
+    current: GovernanceLedger,
+    concept_summaries: Mapping[str, dict[str, object]],
+    governance_hash: str,
+) -> dict[str, object]:
+    return {
         "schema_version": GOVERNANCE_SCHEMA_VERSION,
         "bundle_id": current.bundle_id,
         "input_hash": governance_hash,
@@ -1808,6 +1800,34 @@ def apply_governance_projection(
             for locator in sorted(concept_summaries)
         },
     }
+
+
+def apply_governance_projection(
+    knowledge: KnowledgeIndex,
+    ledger: GovernanceLedger,
+    *,
+    event_limit: int = DEFAULT_EVENT_LIMIT,
+) -> KnowledgeIndex:
+    """Build the complete disposable governance projection from the ledger."""
+
+    limit = _event_limit(event_limit)
+    base = strip_governance_projection(knowledge)
+    current = validate_governance_ledger(ledger)
+    concept_summaries = _governance_concept_summaries(base, current, limit)
+    projected_concepts = [
+        replace(
+            concept,
+            lifecycle=Lifecycle(str(concept_summaries[concept.locator]["lifecycle"])),
+            extensions={
+                **concept.extensions,
+                GOVERNANCE_EXTENSION_KEY: concept_summaries[concept.locator],
+            },
+        )
+        for concept in base.concepts
+    ]
+
+    governance_hash = current.content_hash()
+    projection = _governance_projection_payload(current, concept_summaries, governance_hash)
     extensions = dict(base.extensions)
     extensions[GOVERNANCE_EXTENSION_KEY] = projection
     extensions = _add_supersession_edges(
@@ -1842,8 +1862,16 @@ def validate_governance_projection(
     *,
     ledger: GovernanceLedger | None = None,
     event_limit: int | None = None,
+    _validated_artifacts: object | None = None,
 ) -> Mapping[str, object] | None:
     """Validate projection/core parity and optionally exact ledger parity."""
+
+    if _validated_artifacts is not None:
+        from .knowledge_artifacts import require_validated_artifacts
+
+        artifacts = require_validated_artifacts(_validated_artifacts)
+        if artifacts.knowledge is not knowledge:
+            raise TypeError("governance validation requires its exact validated knowledge")
 
     if not isinstance(knowledge, KnowledgeIndex):
         raise TypeError("knowledge must be a KnowledgeIndex")
@@ -1989,42 +2017,89 @@ def validate_governance_projection(
             if selected_limit is not None
             else next(iter(declared_limits), DEFAULT_EVENT_LIMIT)
         )
-        expected = apply_governance_projection(
-            strip_governance_projection(knowledge),
-            validated_ledger,
-            event_limit=exact_limit,
+        if _validated_artifacts is not None:
+            _validate_governance_ledger_parity(
+                knowledge, projection, validated_ledger, exact_limit,
+            )
+        else:
+            expected = apply_governance_projection(
+                strip_governance_projection(knowledge),
+                validated_ledger,
+                event_limit=exact_limit,
+            )
+            if (
+                expected.extensions.get(GOVERNANCE_EXTENSION_KEY) != projection
+                or expected.bundle.snapshot.extensions.get(
+                    GOVERNANCE_HASH_EXTENSION_KEY
+                )
+                != snapshot_hash
+                or tuple(
+                    (
+                        concept.locator,
+                        concept.lifecycle,
+                        concept.extensions.get(GOVERNANCE_EXTENSION_KEY),
+                    )
+                    for concept in expected.concepts
+                )
+                != tuple(
+                    (
+                        concept.locator,
+                        concept.lifecycle,
+                        concept.extensions.get(GOVERNANCE_EXTENSION_KEY),
+                    )
+                    for concept in knowledge.concepts
+                )
+                or _governance_supersession_edge_payloads(expected)
+                != _governance_supersession_edge_payloads(knowledge)
+            ):
+                raise GovernanceError(
+                    "governance_projection",
+                    "does not match the authoritative ledger",
+                    code="governance-projection-mismatch",
+                )
+    return projection
+
+
+def _validate_governance_ledger_parity(
+    knowledge: KnowledgeIndex,
+    projection: Mapping[str, object],
+    ledger: GovernanceLedger,
+    limit: int,
+) -> None:
+    """Compare exact ledger-derived values against an already validated graph.
+
+    Structural graph validation and enclosing-concept bindings were completed
+    by the artifact validator. Only authority-owned summaries and supersession
+    records can change when deriving this projection from the live ledger.
+    Review evidence uses structural facets and section records, which are
+    unchanged by stripping governance fields.
+    """
+    summaries = _governance_concept_summaries(knowledge, ledger, limit)
+    governance_hash = ledger.content_hash()
+    if _governance_projection_payload(ledger, summaries, governance_hash) != projection:
+        raise GovernanceError(
+            "governance_projection", "does not match the authoritative ledger",
+            code="governance-projection-mismatch",
         )
-        if (
-            expected.extensions.get(GOVERNANCE_EXTENSION_KEY) != projection
-            or expected.bundle.snapshot.extensions.get(
-                GOVERNANCE_HASH_EXTENSION_KEY
-            )
-            != snapshot_hash
-            or tuple(
-                (
-                    concept.locator,
-                    concept.lifecycle,
-                    concept.extensions.get(GOVERNANCE_EXTENSION_KEY),
-                )
-                for concept in expected.concepts
-            )
-            != tuple(
-                (
-                    concept.locator,
-                    concept.lifecycle,
-                    concept.extensions.get(GOVERNANCE_EXTENSION_KEY),
-                )
-                for concept in knowledge.concepts
-            )
-            or _governance_supersession_edge_payloads(expected)
-            != _governance_supersession_edge_payloads(knowledge)
-        ):
+    supersessions = _supersession_records(ledger)
+    expected_edges: tuple[str, ...] = ()
+    if supersessions:
+        graph = knowledge.extensions.get("llm-wiki/typed-graph-v1")
+        if not isinstance(graph, Mapping):
             raise GovernanceError(
-                "governance_projection",
-                "does not match the authoritative ledger",
+                "governance_projection", "does not match the authoritative ledger",
                 code="governance-projection-mismatch",
             )
-    return projection
+        expected_edges = tuple(sorted(
+            canonical_json_text(edge) for edge in _supersession_edges(
+                supersessions, graph["input_hashes"]["concept-map"], governance_hash,
+            )
+        ))
+    if expected_edges != _governance_supersession_edge_payloads(knowledge):
+        raise GovernanceError(
+            "governance_projection", "does not match the authoritative ledger",
+            code="governance-projection-mismatch",
+        )
 
 
 def governance_hash_from_knowledge(
@@ -2311,25 +2386,14 @@ def _add_supersession_edges(
     inventory_hash: object = None,
 ) -> dict[str, Any]:
     graph = extensions.get("llm-wiki/typed-graph-v1")
-    lifecycle = lifecycle_state_by_uid(ledger)
-    supersessions = [
-        (uid, successor_uid, event)
-        for uid, (state, successor_uid, event) in lifecycle.items()
-        if (
-            state is Lifecycle.SUPERSEDED
-            and successor_uid is not None
-            and event is not None
-        )
-    ]
+    supersessions = _supersession_records(ledger)
     if not isinstance(graph, Mapping) and not supersessions:
         return extensions
     from .knowledge_graph import (
-        DEFAULT_EVIDENCE_LIMIT,
         GRAPH_INPUT_NAMES,
         GraphConcept,
         KnowledgeGraphInputs,
         materialize_typed_graph,
-        relationship_edge_key,
         validate_typed_graph,
     )
 
@@ -2378,6 +2442,41 @@ def _add_supersession_edges(
         if isinstance(edge, Mapping)
     ]
     aggregate_hash = graph_payload["input_hashes"]["concept-map"]
+    edges.extend(_supersession_edges(supersessions, aggregate_hash, governance_hash))
+    graph_payload["edges"] = edges
+    extensions["llm-wiki/typed-graph-v1"] = validate_typed_graph(
+        graph_payload,
+        concept_kinds={
+            concept.locator: (
+                concept.concept_kind.value
+                if isinstance(concept.concept_kind, ConceptKind)
+                else concept.concept_kind
+            )
+            for concept in concepts
+        },
+    )
+    return extensions
+
+
+def _supersession_records(
+    ledger: GovernanceLedger,
+) -> list[tuple[str, str, LifecycleEvent]]:
+    return [
+        (uid, successor_uid, event)
+        for uid, (state, successor_uid, event) in lifecycle_state_by_uid(ledger).items()
+        if state is Lifecycle.SUPERSEDED and successor_uid is not None and event is not None
+    ]
+
+
+def _supersession_edges(
+    supersessions: Sequence[tuple[str, str, LifecycleEvent]],
+    aggregate_hash: str,
+    governance_hash: str,
+) -> list[dict[str, Any]]:
+    """Build only the authority-owned edges for both projection and custody."""
+    from .knowledge_graph import DEFAULT_EVIDENCE_LIMIT, relationship_edge_key
+
+    edges: list[dict[str, Any]] = []
     for uid, successor_uid, event in supersessions:
         source = {"kind": "concept", "uid": uid}
         target = {"kind": "concept", "uid": successor_uid}
@@ -2418,19 +2517,34 @@ def _add_supersession_edges(
                 },
             }
         )
-    graph_payload["edges"] = edges
-    extensions["llm-wiki/typed-graph-v1"] = validate_typed_graph(
-        graph_payload,
-        concept_kinds={
-            concept.locator: (
-                concept.concept_kind.value
-                if isinstance(concept.concept_kind, ConceptKind)
-                else concept.concept_kind
+    return edges
+
+
+def _validate_selected_supersession_edges(
+    edges: Sequence[Mapping[str, Any]],
+    *,
+    states: Mapping[str, tuple[Lifecycle, str | None, LifecycleEvent | None]],
+    concept_map_hash: str,
+    governance_hash: str,
+) -> None:
+    """Check consumed authority-owned edges without claiming unread graph parity."""
+    for edge in edges:
+        if edge.get("kind") != "supersedes" or edge.get("origin") != "governance":
+            continue
+        uid = edge["from"].get("uid")
+        state = states.get(uid) if isinstance(uid, str) else None
+        if (state is None or state[0] is not Lifecycle.SUPERSEDED
+                or state[1] is None or state[2] is None):
+            raise GovernanceError(
+                "governance_projection", "selected supersession does not match the authoritative ledger",
+                code="governance-projection-mismatch",
             )
-            for concept in concepts
-        },
-    )
-    return extensions
+        expected = _supersession_edges([(uid, state[1], state[2])], concept_map_hash, governance_hash)[0]
+        if canonical_json_text(edge) != canonical_json_text(expected):
+            raise GovernanceError(
+                "governance_projection", "selected supersession does not match the authoritative ledger",
+                code="governance-projection-mismatch",
+            )
 
 
 def _governance_supersession_edge_payloads(

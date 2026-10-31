@@ -44,6 +44,17 @@ def capture(fixture_path: Path, output: Path, helper_cache_dir: str) -> dict:
         "fixture_sha256": hashlib.sha256(raw).hexdigest(),
         "observations": observations, "components": components,
     }
+    if languages & {"typescript", "javascript"}:
+        from llm_wiki_cli.services import extractor_helpers
+
+        cache = extractor_helpers.resolve_helper_cache_root(".", helper_cache_dir)
+        prepared = None if cache is None else extractor_helpers._manifest_current(cache, "typescript")
+        if prepared is None:
+            raise ValueError("native helper dependency identity is unavailable")
+        record["helper_artifact"] = {
+            "scope": prepared["artifact_scope"],
+            "fingerprint": prepared["artifact_fingerprint"],
+        }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record

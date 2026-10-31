@@ -15,7 +15,7 @@ Raised when one or more required extractors fail.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

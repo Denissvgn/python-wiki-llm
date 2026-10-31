@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 672 | [Open section](#entities) |
-| Modules | 253 | [Open section](#modules) |
-| Workflows | 229 | [Open section](#workflows) |
+| Entities | 673 | [Open section](#entities) |
+| Modules | 257 | [Open section](#modules) |
+| Workflows | 237 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -299,6 +299,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InventoryRequest](entities/InventoryRequest.md)
 - [InventoryResult](entities/InventoryResult.md)
 - [JoinedPage](entities/JoinedPage.md)
+- [JointSelection](entities/JointSelection.md)
 - [JsonSpool](entities/JsonSpool.md)
 - [KnowledgeAggregateSummary](entities/KnowledgeAggregateSummary.md)
 - [KnowledgeArtifactError](entities/KnowledgeArtifactError.md)
@@ -701,6 +702,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
 - [api_diff_cmd](modules/api_diff_cmd.md) - Compare supplied local OpenAPI exports without invoking target code.
 - [api_types](modules/api_types.md) - Static return contracts for the supported Python API.
+- [bootstrap_recovery](modules/bootstrap_recovery.md) - Recover only journaled first-use output before capturing fresh evidence.
 - [bootstrap_runtime](modules/bootstrap_runtime.md) - `src/llm_wiki_cli/services/bootstrap_runtime.py`
 - [bootstrap_service](modules/bootstrap_service.md) - Typed request/result contract for deterministic wiki bootstrap.
 - [broker](modules/broker.md) - Provider-neutral OCI broker for qualifying documentation calibration agents.
@@ -731,6 +733,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [dependency_versions](modules/dependency_versions.md) - Lossless, scope-aware dependency version observations.
 - [detectors](modules/detectors.md) - Sample entry-point detector hooks for LLM Wiki plugins.
 - [diagrams](modules/diagrams.md) - Pure Mermaid diagram renderers.
+- [dockerfile_parser](modules/dockerfile_parser.md) - Stage-owned Dockerfile source observations without image evaluation.
 - [docs_cmd](modules/docs_cmd.md) - Commands for deterministic standalone documentation workspaces.
 - [doctor_cmd](modules/doctor_cmd.md) - CLI adapter for the read-only knowledge health report.
 - [doctor_service](modules/doctor_service.md) - Read-only composition for the repository knowledge health report.
@@ -929,12 +932,14 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [token_counting](modules/token_counting.md) - Trusted host counters. No repository-discovered code or network loading.
 - [trigger_cmd](modules/trigger_cmd.md) - `src/llm_wiki_cli/commands/trigger_cmd.py`
 - [ts_extractor](modules/ts_extractor.md) - TypeScript AST extractor for agent-wiki-cli.
+- [typescript_helper_identity](modules/typescript_helper_identity.md) - Bounded observations of the complete prepared TypeScript dependency tree.
 - [uninstall_cmd](modules/uninstall_cmd.md) - `src/llm_wiki_cli/commands/uninstall_cmd.py`
 - [upgrade_cmd](modules/upgrade_cmd.md) - llm-wiki upgrade — refresh all framework-managed artifacts in place.
 - [validation](modules/validation.md) - Shared, side-effect-free validators for service-layer contracts.
 - [verification_contracts](modules/verification_contracts.md) - Pure, application-owned machine-verification contracts.
 - [verify](modules/verify.md) - Documentation-run verify services.
 - [versioning](modules/versioning.md) - `src/llm_wiki_cli/services/versioning.py`
+- [wiki_git_delivery](modules/wiki_git_delivery.md) - Read-only completeness of an owned native snapshot under effective Git policy.
 - [wiki_git_policy](modules/wiki_git_policy.md) - Read-only Git policy for handing generated wiki files to version control.
 - [wiki_lifecycle](modules/wiki_lifecycle.md) - Read-only classification for wiki bootstrap, sync, and migration routing.
 - [wiki_media](modules/wiki_media.md) - Media reference parsing for wiki pages and agent-owned assets.
@@ -952,6 +957,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ContextSession___init__](workflows/ContextSession___init__.md) - entry: `context_session.ContextSession.__init__`
 - [ContextSession__canonical_receipt](workflows/ContextSession__canonical_receipt.md) - entry: `context_session.ContextSession._canonical_receipt`
 - [ContextSession__read](workflows/ContextSession__read.md) - entry: `context_session.ContextSession._read`
+- [DocumentationGraphQueryService__build_knowledge_indexes](workflows/DocumentationGraphQueryService__build_knowledge_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_knowledge_indexes`
+- [DocumentationGraphQueryService__build_typed_graph_indexes](workflows/DocumentationGraphQueryService__build_typed_graph_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_typed_graph_indexes`
 - [McpWikiService_build_budgeted_context](workflows/McpWikiService_build_budgeted_context.md) - entry: `mcp_server.McpWikiService.build_budgeted_context`
 - [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
 - [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
@@ -978,7 +985,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [attach_maintenance_view_from_inputs](workflows/attach_maintenance_view_from_inputs.md) - entry: `maintenance_status.attach_maintenance_view_from_inputs`
 - [audit_knowledge_stream](workflows/audit_knowledge_stream.md) - entry: `knowledge_stream_audit.audit_knowledge_stream`
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
+- [bootstrap_write_operation](workflows/bootstrap_write_operation.md) - entry: `bootstrap_recovery.bootstrap_write_operation`
 - [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
+- [build_artifact_verification_context](workflows/build_artifact_verification_context.md) - entry: `verification_contracts.build_artifact_verification_context`
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
@@ -1047,6 +1056,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
+- [first_use_guidance](workflows/first_use_guidance.md) - entry: `bootstrap_runtime._first_use_guidance`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
 - [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
@@ -1061,6 +1071,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [inspect_targets](workflows/inspect_targets.md) - entry: `analysis_targets.inspect_targets`
+- [inspect_wiki_git_delivery](workflows/inspect_wiki_git_delivery.md) - entry: `wiki_git_delivery.inspect_wiki_git_delivery`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`
 - [is_pristine_wiki_target](workflows/is_pristine_wiki_target.md) - entry: `wiki_lifecycle.is_pristine_wiki_target`
@@ -1120,6 +1131,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
 - [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`
+- [recover](workflows/recover.md) - entry: `bootstrap_recovery._recover`
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
 - [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
@@ -1144,6 +1156,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [run_verify](workflows/run_verify.md) - entry: `knowledge_cmd._run_verify`
 - [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
 - [save](workflows/save.md) - entry: `sync_analysis_cache.save`
+- [save_record](workflows/save_record.md) - entry: `bootstrap_recovery._save_record`
 - [save_recovery_snapshot](workflows/save_recovery_snapshot.md) - entry: `maintenance_protocol.save_recovery_snapshot`
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`

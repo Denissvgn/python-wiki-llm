@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import json
 import sys
 import types
@@ -2902,9 +2901,9 @@ class TestMcpCli:
         assert exc.value.code == 0
         assert "--transport" in capsys.readouterr().out
 
-    def test_missing_sdk_error_is_actionable(self, tmp_project, capsys):
-        if importlib.util.find_spec("mcp") is not None:
-            pytest.skip("MCP SDK is installed in this environment.")
+    def test_missing_sdk_error_is_actionable(self, tmp_project, capsys, monkeypatch):
+        # Exercise the real import failure even in an SDK-enabled CI profile.
+        monkeypatch.setitem(sys.modules, "mcp", None)
 
         with pytest.raises(SystemExit) as exc:
             mcp_cmd.run(_args())

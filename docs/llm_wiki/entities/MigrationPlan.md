@@ -38,7 +38,7 @@ Computed migration operations, shared by apply and dry-run paths.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

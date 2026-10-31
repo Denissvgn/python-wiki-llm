@@ -12,12 +12,14 @@ from .concept_identity import natural_key_for
 from .knowledge_envelope import EvaluatedEnvelope
 from .knowledge_governance import (
     GOVERNANCE_FILENAME, parse_governance_ledger, lifecycle_state_by_uid,
+    _validate_selected_supersession_edges,
 )
 from .contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
     LOGICAL_SCHEMA, MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
     KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, canonical_bytes, digest,
+    _selected_collections,
 )
 from .knowledge_storage_io import StorageReadSession
 from .knowledge_packs import PACKED_SCHEMAS, open_knowledge_store
@@ -128,18 +130,25 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
         if isinstance(collections, (str, bytes)):
             raise KnowledgeStorageError("collections", "requires a collection of record collection names")
         collections = tuple(collections)
-    # Graph anchors are validation dependencies even when concepts are omitted
-    # from the caller's output projection. Keep their reads in this capture.
-    seed_collections = collections
-    if include_graph and collections is not None and "concepts" not in collections:
-        seed_collections = (*collections, "concepts")
+        _selected_collections(collections)
+    # Only concepts seed graph routes. Materializing requested edges here would
+    # repeat their expansion and validation in the final selection and spend
+    # its budget twice. Anchors remain captured validation dependencies even
+    # when the caller omits concepts from the output projection.
+    seed_collections = ("concepts",) if include_graph else collections
     selected = reader.select(keys, max_records=max_records, collections=seed_collections)
     if include_graph:
         seeds = selected.to_payload()
-        locators = [row["value"]["locator"] for row in seeds["records"]["concepts"]]
         expanded = set(keys)
-        for locator in locators:
-            expanded.update({"concept:" + locator, "out:concept:" + locator, "in:concept:" + locator})
+        for row in seeds["records"]["concepts"]:
+            concept = row["value"]
+            coordinates = {concept["locator"]}
+            governance = concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
+            if isinstance(governance, dict) and isinstance(governance.get("uid"), str):
+                coordinates.add(governance["uid"])
+            expanded.add("concept:" + concept["locator"])
+            for coordinate in coordinates:
+                expanded.update({"out:concept:" + coordinate, "in:concept:" + coordinate})
         if len(expanded) > 100:
             raise KnowledgeStorageError("selectors", "graph expansion exceeds the selector limit", code="storage-budget-exhausted")
         selected = reader.select(expanded, max_records=max_records, collections=collections)
@@ -147,6 +156,7 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
             result = selected.to_payload()
             result["lookup_complete"] = False
             selected = KnowledgeSlice(canonical_bytes(result))
+    selected_payload = selected.to_payload()
     from .implementation_evidence import (
         IMPLEMENTATION_KEY, DECLARATIONS_KEY, validate_concept_implementation, validate_implementation_collection,
     )
@@ -195,7 +205,7 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
     maintenance_validation = None
     from .maintenance_projection import RECORD_KEY, BINDING_KEY
 
-    orphan_projection = any(RECORD_KEY in concept.get("extensions", {}) for concept in reader.consumed_concepts.values()) or any(row["id"] == BINDING_KEY for row in selected.to_payload()["records"]["extensions"])
+    orphan_projection = any(RECORD_KEY in concept.get("extensions", {}) for concept in reader.consumed_concepts.values()) or any(row["id"] == BINDING_KEY for row in selected_payload["records"]["extensions"])
     if maintenance_binding is None and orphan_projection:
         raise KnowledgeStorageError("maintenance", "selected maintenance projection requires an adopted owner and marker")
     if maintenance_binding is not None:
@@ -248,6 +258,13 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
                 if (summary.get("aliases") != expected_aliases or summary.get("lifecycle") != state.value
                         or concept["lifecycle"] != state.value or summary.get("successor_uid") != successor):
                     raise KnowledgeStorageError("governance", "selected identity/lifecycle differs from its authority")
+            edges = [row["value"] for row in selected_payload["records"]["edges"]]
+            if edges:
+                _validate_selected_supersession_edges(
+                    edges, states=states,
+                    concept_map_hash=reader.root["metadata"]["graph"]["input_hashes"]["concept-map"],
+                    governance_hash=marker.governance_hash,
+                )
         except ValueError as exc:
             raise KnowledgeStorageError("governance", str(exc)) from exc
     elif any(GOVERNANCE_EXTENSION_KEY in c.get("extensions", {}) for c in reader.consumed_concepts.values()):

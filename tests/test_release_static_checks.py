@@ -109,6 +109,7 @@ def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(
         sys.executable, "-m", "ruff", "check", "src", "tests", "examples",
         "integrations/github-action/render_summary.py", "release/preflight.py",
         "release/preflight_contracts.py", "release/preflight_runner.py",
+        "release/pr_ci.py", "release/pr_ci_pytest.py", "release/pr_ci_impact.py",
     )
     assert all(
         check.command[0] == sys.executable

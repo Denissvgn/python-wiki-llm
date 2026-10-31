@@ -1,6 +1,6 @@
 # CommitStage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:103`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:106`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -21,7 +21,7 @@ Fault-injection points reached after each successful atomic replacement.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

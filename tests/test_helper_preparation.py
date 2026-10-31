@@ -16,6 +16,10 @@ from llm_wiki_cli.services.source_selection import SourceSelectionError
 
 def _prepare_fixture(language, cache_root):
     root = cache_root / language / "fixture"
+    toolchain = "node v24.18.0; npm 11.16.0"
+    key = helpers.helper_cache_key(language, toolchain_version=toolchain)
+    if language == "typescript":
+        root = cache_root / language / key
     root.mkdir(parents=True, exist_ok=True)
     if language == "typescript":
         artifact = root / "node_modules" / "ts-morph"
@@ -30,13 +34,16 @@ def _prepare_fixture(language, cache_root):
         cache_root,
         language,
         {
-            "version": helpers.HELPER_MANIFEST_VERSION,
+            "version": helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else helpers.HELPER_MANIFEST_VERSION,
             "language": language,
             "platform": helpers.platform_id(),
             "source_fingerprint": helpers.helper_source_fingerprint(language),
-            "artifact_fingerprint": helpers.helper_artifact_fingerprint(artifact),
+            "artifact_fingerprint": (helpers.ts_identity.dependency_fingerprint(root / "node_modules")
+                                     if language == "typescript" else helpers.helper_artifact_fingerprint(artifact)),
             "root": str(root),
             "path": str(artifact),
+            **({"artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE, "key": key,
+                "toolchain": toolchain} if language == "typescript" else {}),
         },
     )
     return helpers.HelperPrepareResult(language, "prepared", "ok", str(artifact))
@@ -56,6 +63,7 @@ def test_prepares_missing_reuses_current_and_repairs_stale(
     tmp_path, monkeypatch, language, suffix
 ):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     (tmp_path / ".git").mkdir()
     (tmp_path / f"main.{suffix}").write_text("fixture", encoding="utf-8")
     builds = []
@@ -112,6 +120,7 @@ def test_build_io_failure_is_reported_and_other_helpers_are_prepared(
     tmp_path, monkeypatch
 ):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     (tmp_path / ".git").mkdir()
     (tmp_path / "main.ts").write_text("fixture", encoding="utf-8")
     (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
@@ -180,6 +189,7 @@ def test_init_uses_stored_selection_and_explicit_cache(tmp_project, monkeypatch)
 def test_init_failure_does_not_publish_scaffold_and_can_be_retried(
     tmp_project, monkeypatch, capsys
 ):
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     Path("main.ts").write_text("fixture", encoding="utf-8")
     monkeypatch.setattr(
         helpers,

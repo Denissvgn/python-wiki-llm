@@ -26,7 +26,7 @@ The optional `diagnostics` flag selects attributable per-file outcomes for the e
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

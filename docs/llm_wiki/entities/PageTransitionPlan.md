@@ -22,7 +22,7 @@ _Auto-generated from `PageTransitionPlan` in `src/llm_wiki_cli/services/sync_tra
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

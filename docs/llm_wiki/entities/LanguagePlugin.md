@@ -1,6 +1,6 @@
 # _LanguagePlugin
 
-**Location:** `src/llm_wiki_cli/services/dependencies.py:807`
+**Location:** `src/llm_wiki_cli/services/dependencies.py:829`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_dependencies](../modules/services_dependencies.md)
@@ -22,7 +22,7 @@ A manifest parser + import classifier for one language family.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

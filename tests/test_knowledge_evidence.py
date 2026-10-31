@@ -282,6 +282,74 @@ def test_module_import_or_signature_change_changes_observation(mutate):
     assert _module_hash(changed) != _module_hash(inventory)
 
 
+@pytest.mark.parametrize("record", [
+    {"type_only": True, "runtime": "conditional"},
+    {"type_only": True, "type_only_declaration": True, "runtime": "erased"},
+    {"runtime": "present"},
+])
+def test_typescript_import_qualification_is_structural_freshness_evidence(record):
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B"}]}
+    changed = deepcopy(inventory)
+    changed["imports"][0].update(record)
+    normalized = normalize_module_observation(changed)
+    assert normalized is not None
+    assert all(normalized["imports"][0][key] == value for key, value in record.items())
+    assert _module_hash(changed) != _module_hash(inventory)
+    assert semantic_hash_for_file(changed) != semantic_hash_for_file(inventory)
+
+
+@pytest.mark.parametrize("record", [
+    {"type_only": 1}, {"type_only_declaration": "true"}, {"runtime": None},
+    {"runtime": "unknown"}, {"runtime": []},
+    {"type_only_declaration": True},
+    {"type_only_declaration": True, "type_only": False, "runtime": "erased"},
+    {"type_only_declaration": True, "type_only": True, "runtime": "conditional"},
+])
+def test_malformed_import_qualification_cannot_establish_known_evidence(record):
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B", **record}]}
+    basis = _module_basis(inventory)
+    assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+@pytest.mark.parametrize("language", ["python", "typescript", "javascript"])
+@pytest.mark.parametrize("scope", [None, [], {}, True, 7])
+def test_non_string_import_scope_cannot_establish_known_evidence(language, scope):
+    inventory = {"language": language, "classes": [], "functions": [],
+                 "imports": [{"module": "dependency", "name": "Value", "scope": scope}]}
+    basis = _module_basis(inventory)
+    assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+    if language == "typescript":
+        inventory["imports"][0].update(type_only=True, type_only_declaration=True, runtime="erased")
+        basis = _module_basis(inventory)
+        assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+def test_unknown_string_import_scope_stays_structural_and_conservative():
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B", "scope": "future-scope"}]}
+    normalized = normalize_module_observation(inventory)
+    assert normalized is not None and normalized["imports"][0]["scope"] == "future-scope"
+
+
+@pytest.mark.parametrize("language", ["python", "typescript", "javascript"])
+@pytest.mark.parametrize("scope", ["deferred", "type_checking", "future-scope"])
+def test_string_scope_subclasses_share_the_plain_json_evidence_contract(language, scope):
+    class ImportScope(str):
+        def __eq__(self, other: object) -> bool:
+            return super().__eq__(other)
+
+    ordinary = {"language": language, "classes": [], "functions": [],
+                "imports": [{"module": "dependency", "name": "Value", "scope": scope}]}
+    specialized = {**ordinary, "imports": [{**ordinary["imports"][0], "scope": ImportScope(scope)}]}
+    normalized = normalize_module_observation(specialized)
+    assert normalized is not None
+    assert normalized == normalize_module_observation(ordinary)
+    assert _module_hash(specialized) == _module_hash(ordinary)
+    assert semantic_hash_for_file(specialized) == semantic_hash_for_file(ordinary)
+
+
 def test_semantic_prose_and_call_details_are_outside_structural_hash_domain():
     inventory = _inventory("python")
     changed = deepcopy(inventory)
@@ -721,3 +789,89 @@ def test_registered_family_missing_null_boolean_and_zero_remain_distinct(languag
     assert _entity_basis(missing, name).is_known
     missing['classes'][0]['attributes'][0]['required'] = None
     assert _entity_basis(missing, name).unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+def test_typescript_declaration_details_are_structural_and_validated():
+    record = {'language': 'typescript', 'classes': [], 'functions': [
+        {'name': 'collect', 'params': [{'name': 'items', 'type': 'T[]', 'rest': True}], 'type_params': ['T extends string']}
+    ]}
+    before = _module_hash(record)
+    assert before is not None
+    for change in ('rest', 'optional', 'generic'):
+        altered = deepcopy(record)
+        fn = altered['functions'][0]
+        if change == 'generic':
+            fn['type_params'] = ['T extends number']
+        else:
+            fn['params'][0][change] = False if change == 'rest' else True
+        assert _module_hash(altered) != before
+    for field in ('rest', 'optional'):
+        invalid = deepcopy(record)
+        invalid['functions'][0]['params'][0][field] = 'true'
+        assert _module_hash(invalid) is None
+    alias = {'language': 'typescript', 'classes': [
+        {'name': 'Large', 'kind': 'type_alias', 'target': 'p' * 4096, 'target_truncated': True,
+         'target_sha256': sha256_bytes(b'complete original definition')}
+    ], 'functions': []}
+    original = _entity_hash(alias, 'Large')
+    alias['classes'][0]['target_sha256'] = sha256_bytes(b'complete changed definition')
+    assert _entity_hash(alias, 'Large') != original
+    assert _module_hash(alias) is not None
+    alias['classes'][0].pop('target_sha256')
+    assert _entity_hash(alias, 'Large') is None
+
+
+@pytest.mark.parametrize('target', [None, '', 'short', 'x' * 4097])
+def test_bounded_alias_requires_a_complete_preview_record(target):
+    alias = {'name': 'A', 'kind': 'type_alias', 'target_truncated': True,
+             'target_sha256': sha256_bytes(b'complete expression')}
+    if target is not None:
+        alias['target'] = target
+    record = {'language': 'typescript', 'classes': [alias], 'functions': []}
+    assert _module_hash(record) is None
+    assert _entity_hash(record, 'A') is None
+
+
+def test_complete_alias_digest_must_match_the_definition():
+    alias = {'name': 'A', 'kind': 'type_alias', 'target': '"ready"',
+             'target_sha256': sha256_bytes(b'"ready"')}
+    record = {'language': 'typescript', 'classes': [alias], 'functions': []}
+    assert _module_hash(record) is not None and _entity_hash(record, 'A') is not None
+    alias['target'] = '"changed"'
+    assert _module_hash(record) is None and _entity_hash(record, 'A') is None
+
+
+def test_overload_contracts_participate_in_observations():
+    overload = {'name': 'read', 'line': 2, 'params': [{'name': 'value', 'type': 'T', 'optional': True}], 'type_params': ['T'], 'return_type': 'T'}
+    fn = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}], 'overloads': [overload]}
+    data = {'language': 'typescript', 'classes': [], 'functions': [fn]}
+    before = _module_hash(data)
+    assert before is not None
+    altered = deepcopy(data)
+    altered['functions'][0]['overloads'][0]['params'][0]['optional'] = False
+    assert _module_hash(altered) != before
+    entity = {'language': 'typescript', 'classes': [{'name': 'Client', 'methods': [fn]}], 'functions': []}
+    original = _entity_hash(entity, 'Client')
+    assert original is not None
+    entity['classes'][0]['methods'][0]['overloads'][0]['type_params'] = ['T extends string']
+    assert _entity_hash(entity, 'Client') != original
+
+
+@pytest.mark.parametrize('change', ['name', 'line-bool', 'line-zero', 'nested', 'not-array', 'missing-parent-line'])
+def test_malformed_overload_records_do_not_become_known(change):
+    overload: dict = {'name': 'read', 'line': 2, 'params': []}
+    fn: dict = {'name': 'read', 'line': 3, 'overloads': [overload]}
+    if change == 'name':
+        overload['name'] = 'different'
+    elif change == 'line-bool':
+        overload['line'] = True
+    elif change == 'line-zero':
+        overload['line'] = 0
+    elif change == 'nested':
+        overload['overloads'] = []
+    elif change == 'missing-parent-line':
+        fn.pop('line')
+    else:
+        fn['overloads'] = {}
+    data = {'language': 'typescript', 'classes': [], 'functions': [fn]}
+    assert _module_hash(data) is None

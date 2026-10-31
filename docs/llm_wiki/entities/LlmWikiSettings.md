@@ -1,7 +1,7 @@
 # LlmWikiSettings
 
 **Location:** `integrations/obsidian/llm-wiki/src/main.ts:12`
-**Kind:** Class
+**Kind:** Interface
 **Bases:** —
 **Module:** [src_main](../modules/src_main.md)
 
@@ -23,7 +23,7 @@ _Auto-generated from `LlmWikiSettings` in `integrations/obsidian/llm-wiki/src/ma
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

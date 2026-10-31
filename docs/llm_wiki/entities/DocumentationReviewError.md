@@ -15,7 +15,7 @@ Raised when review evidence cannot satisfy the ledger contract.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

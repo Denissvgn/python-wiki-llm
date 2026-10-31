@@ -12,10 +12,10 @@ and their output is shown in Obsidian notices or a modal.
 
 ## Imports
 
-| Source | Symbols |
-|--------|---------|
-| `child_process` | `execFile` |
-| `obsidian` | `App`, `MarkdownView`, `Modal`, `Notice`, `Plugin`, `PluginSettingTab`, `Setting` |
+| Source | Symbols | Type-only | Runtime emission |
+|--------|---------|-----------|------------------|
+| `child_process` | `execFile` | — | compiler-dependent |
+| `obsidian` | `App`, `MarkdownView`, `Modal`, `Notice`, `Plugin`, `PluginSettingTab`, `Setting` | — | compiler-dependent |
 
 ## Module Signals
 
@@ -42,7 +42,7 @@ and their output is shown in Obsidian notices or a modal.
 | [OutputModal](../entities/OutputModal.md) | Class | 116 | `Modal` | — |
 | [LlmWikiPlugin](../entities/LlmWikiPlugin.md) | Class | 129 | `Plugin` | — |
 | [LlmWikiSettingTab](../entities/LlmWikiSettingTab.md) | Class | 219 | `PluginSettingTab` | — |
-| [LlmWikiSettings](../entities/LlmWikiSettings.md) | Class | 12 | — | — |
+| [LlmWikiSettings](../entities/LlmWikiSettings.md) | Interface | 12 | — | — |
 
 ## Functions
 

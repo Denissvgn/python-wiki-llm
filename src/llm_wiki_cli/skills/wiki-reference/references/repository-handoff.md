@@ -1,5 +1,11 @@
 # Repository handoff
 
+## Contents
+
+- [Internal report targets](#internal-report-targets)
+- [Determine delivery state](#determine-delivery-state)
+- [Governance and external-workspace boundaries](#governance-and-external-workspace-boundaries)
+
 Read this topic before the first managed wiki write and again immediately
 before delivery. It owns the Git-delivery decision; it does not authorize a
 write, stage, commit, ignore-policy change, network operation, or any other
@@ -26,17 +32,39 @@ default path:
 git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md
 ```
 
-Interpret the result without overriding repository policy:
+This is an initial path-policy probe before writing. Exit 1 says nothing about
+required descendants: `*.zip`, for example, can hide native packs while both
+probes are eligible. Exit 0 means local-only; any other failure, missing
+Git/worktree, or contradictory evidence is indeterminate. Fail closed to the local-only handoff.
 
-| Result | Delivery state | Permitted handoff |
-| --- | --- | --- |
-| Exit 0 | Local-only | Update and validate the wiki, then report its local paths and validation result. Do not stage, commit, force-add, or change ignore/exclude policy. |
-| Exit 1 | Conditionally Git-eligible | This is eligibility evidence, not authorization. Commit only when the user and applicable local rules permit it. Stage the configured wiki root and keep an authorized wiki commit separate from code changes. |
-| Any other exit, missing Git/worktree, or contradictory evidence | Indeterminate | Fail closed to the local-only handoff. |
+After sync and local validation, inspect the complete required native snapshot:
 
-Repeat the check immediately before handoff. If the wiki root and any
-canonical child produce different ignore results, treat the state as mixed and
-local-only. Never stage a partial native snapshot.
+```bash
+llm-wiki knowledge git-check --wiki-dir <wiki-dir>
+```
+
+| `delivery_state` | Permitted handoff |
+| --- | --- |
+| `git-eligible` | Every required native artifact, referenced Markdown page and asset is eligible under effective Git ignore rules. This grants no staging or commit authority. |
+| `local-only` | All required files are ignored. Continue local maintenance and validation; report local paths. |
+| `mixed` | Some required files are ignored. Keep the snapshot local; never stage a partial native snapshot. |
+| `indeterminate` | Git or native snapshot completeness could not be established. Fail closed to the local-only handoff. |
+
+The diagnostic is read-only and advisory: exit 0 can describe a known local-only
+or mixed snapshot. Inspect the state, counts and bounded ignored-path samples.
+It follows committed native roots and their referenced objects rather than
+scanning unrelated caches, orphan objects or every repository source file.
+Missing/corrupt native storage remains indeterminate; use its owning recovery
+route. The check neither changes ignore policy nor chooses another storage format.
+
+Repeat immediately before handoff. After separately authorized staging, use
+`--staged` to require every required file in the index with current content.
+The active Git index is checked, including temporary indexes for partial
+commits. Staged authority files must match the validated snapshot's presence
+or absence of governance and maintenance adoption.
+Native commitments and binary objects must match exactly; Markdown line-ending
+normalization is accepted. Missing, unmerged, filtered or mismatched staged
+content fails the gate; unavailable object databases are indeterminate.
 
 Git is the authority for delivery state because it includes nested
 `.gitignore`, `.git/info/exclude`, and configured exclude-file rules. Do not
@@ -60,11 +88,17 @@ Review and delivery evidence depends on the classified state:
 | Indeterminate | Direct inspection and command output, labeled with the unresolved repository state | Use the local-only result; never guess that staging is safe. |
 | `external_agent_docs` workspace | Packet-authorized workspace baseline/diff and recorded source/input hashes | Return workspace outputs to the supervisor; never require or mutate target Git state. |
 
-Only if the state is conditionally eligible (exit 1) **and** the user plus
+Only if `delivery_state` is `git-eligible` **and** the user plus
 applicable local rules authorize a separate wiki commit may the workflow run:
 
 ```bash
-git add <wiki-dir>/
+git add -- <wiki-dir>/
+llm-wiki knowledge git-check --wiki-dir <wiki-dir> --staged
+```
+
+Stop if the staged gate fails. Only after it succeeds, commit:
+
+```bash
 git commit -m "docs(wiki): <short description of what changed and why>"
 ```
 

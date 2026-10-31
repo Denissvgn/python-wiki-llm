@@ -25,10 +25,7 @@ def test_native_shadow_has_complete_bounded_matrices_and_attempt_specific_artifa
     value = workflow()
     assert value["permissions"] == {"contents": "read"}
     events = value.get("on", value.get(True))
-    assert set(events) == {"pull_request", "workflow_dispatch"}
-    assert "release/core_shard_runner.py" in events["pull_request"]["paths"]
-    assert "tests/test_core_shard_workflow.py" in events["pull_request"]["paths"]
-    assert "tests/xml_writer_fixtures.py" in events["pull_request"]["paths"]
+    assert set(events) == {"workflow_dispatch"}  # Full references run only as an explicit release verification.
     jobs = value["jobs"]
     for name, replicas in (("reference", 1), ("shards", 2), ("compare", 1)):
         job = jobs[name]
@@ -128,7 +125,8 @@ def test_shadow_never_qualifies_and_ubuntu_macos_keep_the_full_core_contract():
     ]
     assert len(commands) == 2
     assert any("--cov-fail-under=87" in command for command in commands)
-    assert "core_shard" not in str(core)
+    assert "core_shard_runner.py execute" not in str(core)
+    assert "core_shard_runner as runner" in str(core)  # Only the independent coverage-boundary reader.
     assert "needs.core.result" in str(qualification["jobs"]["bundle"])
 
 

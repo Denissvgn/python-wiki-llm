@@ -366,3 +366,170 @@ def test_balanced_source_fences_are_preserved():
 
     prose = "Example:\n````text\n``` is not the closing marker\n````\n\nMore prose."
     assert _sanitize_source_doc_markdown(prose) == prose
+
+
+def test_typescript_signature_decoder_retains_binders_and_calling_convention():
+    value = signature('<T extends (value: string) => Box<U>, U = "a b">(prefix?: T, ...items: U[]) -> U', 'typescript')
+    assert value['type_params'] == ['T extends (value: string) => Box<U>', 'U = "a b"']
+    assert value['params'] == [
+        {'name': 'prefix', 'type': 'T', 'optional': True, 'rest': False},
+        {'name': 'items', 'type': 'U[]', 'optional': False, 'rest': True},
+    ]
+    from tests.provider_conformance.inventory import compare_parameters
+    for field in ('optional', 'rest'):
+        damaged = deepcopy(value['params'])
+        damaged[0 if field == 'optional' else 1].pop(field)
+        okay, reason = compare_parameters(value['params'], damaged, 'typescript', lambda *args: None)
+        assert not okay and reason == 'parameter-' + field
+
+
+def test_typescript_generic_literals_with_commas_are_not_rust_lifetimes():
+    result = signature("<T = 'a,b'>(value?: T = 'a,b') -> T", 'typescript')
+    assert result['type_params'] == ["T = 'a,b'"]
+    assert result['params'] == [{'name': 'value', 'type': 'T', 'optional': True, 'rest': False, 'default': "'a,b'"}]
+    rust = signature("(value: &'a str, next: &'b str) -> &'a str", 'rust')
+    assert [p['type'] for p in rust['params']] == ["&'a str", "&'b str"]
+
+
+def test_typescript_oracle_checks_raw_binders_and_full_bounded_definition_digest():
+    import hashlib
+    from tests.provider_conformance.inventory import compare_records
+    source = {'kind': 'class', 'declaration_kind': 'type_alias',
+              'type_parameters': ['T extends {\n value: string\n}'],
+              'type': '"' + '雪' * 4096 + '"'}
+    actual = {'declaration_kind': 'type_alias', 'type_params': source['type_parameters'],
+              'target': source['type'][:4096], 'target_truncated': True,
+              'target_sha256': 'sha256:' + hashlib.sha256(source['type'].encode()).hexdigest()}
+    def check(value):
+        return compare_records(source, value, 'typescript', lambda *args: None, fact='A', representation='inventory')
+    assert all(f.status == 'pass' for f in check(actual))
+    corrupted = deepcopy(actual)
+    corrupted['target_sha256'] = 'sha256:' + '0' * 64
+    assert any(f.status == 'fail' and f.reason == 'bounded-alias-prefix' for f in check(corrupted))
+    source['type_parameters'] = []
+    actual['type_params'] = ['invented']
+    assert any(f.status == 'fail' and f.reason == 'generic-binder-declarations' for f in check(actual))
+
+
+def test_independent_frontend_preserves_source_line_endings(tmp_path, monkeypatch):
+    path = tmp_path / 'types.ts'
+    content = b'export type Name = `first\r\nsecond`;\r\n'
+    path.write_bytes(content)
+    frontend = Frontends({}, tmp_path / 'oracle')
+    seen = []
+    def batch(language, jobs):
+        seen.extend(jobs)
+        return [{'declarations': [], 'imports': []}]
+    monkeypatch.setattr(frontend, 'batch', batch)
+    frontend.observe(path)
+    assert seen[0]['text'].encode() == content
+
+
+def test_typescript_metadata_decoder_reads_shared_paragraphs_and_stops_at_prose(tmp_path):
+    from tests.provider_conformance.trace import markdown_observations
+    (tmp_path / 'modules').mkdir()
+    (tmp_path / 'entities').mkdir()
+    (tmp_path / 'modules/types.md').write_text('''# types
+
+## Classes
+
+| Class | Kind | Line | Bases / Target | Description |
+|---|---|---|---|---|
+| Mode | Type alias | 1 | — | — |
+''')
+    (tmp_path / 'entities/Mode.md').write_text('''# Mode
+
+**Location:** `types.ts:1`
+**Kind:** Type alias
+**Bases:** —
+**Module:** types
+**Target:**
+
+```typescript
+"fast" | "safe"
+```
+**Type parameters:** <pre><code>T extends &#96;first&#10;second&#96;, U = &#39;a,b&#39;</code></pre>
+
+## Description
+
+**Kind:** Class
+**Type parameters:** `invented`
+''')
+    surface = {'pages': [
+        {'kind': 'modules', 'source_path': 'types.ts', 'canonical_path': 'modules/types.md'},
+        {'kind': 'entities', 'source_path': 'types.ts', 'canonical_path': 'entities/Mode.md', 'title': 'Mode'},
+    ]}
+    row = markdown_observations(tmp_path, surface, 'types.ts', 'typescript')[0]
+    assert row['declaration_kind'] == 'type_alias'
+    assert row['target'] == '"fast" | "safe"'
+    assert row['type_params'] == ['T extends `first\nsecond`', "U = 'a,b'"]
+
+
+@pytest.mark.parametrize('separator', ['\x85', '\u2028', '\u2029'])
+def test_unicode_separators_are_literal_generic_metadata_content(tmp_path, separator):
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md, _generate_module_md
+    from tests.provider_conformance.trace import markdown_observations
+    record = {'name': 'Box', 'kind': 'interface', 'type_params': ['T extends `first\n' + separator + 'second`']}
+    (tmp_path / 'modules').mkdir()
+    (tmp_path / 'entities').mkdir()
+    (tmp_path / 'modules/types.md').write_text(_generate_module_md('types.ts', {'classes': [record], 'functions': []}))
+    (tmp_path / 'entities/Box.md').write_text(_generate_entity_md(record, 'types.ts', {}))
+    surface = {'pages': [
+        {'kind': 'modules', 'source_path': 'types.ts', 'canonical_path': 'modules/types.md'},
+        {'kind': 'entities', 'source_path': 'types.ts', 'canonical_path': 'entities/Box.md', 'title': 'Box'},
+    ]}
+    row = markdown_observations(tmp_path, surface, 'types.ts', 'typescript')[0]
+    assert row['type_params'] == record['type_params']
+
+
+def test_bounded_markdown_line_normalization_keeps_preview_and_digest_checks_distinct():
+    import hashlib
+    from tests.provider_conformance.inventory import compare_records
+    target = '`' + 'x' * 4094 + '\r\ntail`'
+    source = {'kind': 'class', 'declaration_kind': 'type_alias', 'type_parameters': [], 'type': target}
+    actual = {'declaration_kind': 'type_alias', 'target_truncated': True,
+              'target': target[:4096].replace('\r', '\n')}
+    def check(value, representation):
+        return compare_records(source, value, 'typescript', lambda *args: None, fact='A', representation=representation)
+    assert all(f.status == 'pass' for f in check(actual, 'markdown'))
+    damaged = deepcopy(actual)
+    damaged['target'] = damaged['target'].removesuffix('\n')
+    assert any(f.status == 'fail' for f in check(damaged, 'markdown'))
+    actual['target_sha256'] = 'sha256:' + hashlib.sha256(target.encode()).hexdigest()
+    assert any(f.status == 'fail' for f in check(actual, 'inventory'))
+    actual['target'] = target[:4096]
+    assert all(f.status == 'pass' for f in check(actual, 'inventory'))
+
+
+def test_source_oracle_matches_nested_overloads_by_source_line():
+    from tests.provider_conformance.inventory import flatten, paired
+    data = {'classes': [], 'functions': [
+        {'name': 'read', 'line': 5, 'params': [], 'overloads': [
+            {'name': 'read', 'line': 1, 'params': [{'name': 'value', 'type': 'T', 'optional': True}], 'type_params': ['T']},
+            {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'number'}]},
+        ]}
+    ]}
+    actual = flatten(data)
+    expected = [{'kind': 'function', 'owner': '', 'name': 'read', 'line': line} for line in (1, 3, 5)]
+    coordinates = []
+    for _, source, observed in paired(expected, actual):
+        assert observed is not None
+        coordinates.append((source['line'], observed['line']))
+    assert coordinates == [(1, 1), (3, 3), (5, 5)]
+
+
+def test_same_line_overloads_keep_source_order_before_the_implementation():
+    from tests.provider_conformance.inventory import flatten, paired
+    def params(annotation):
+        return [{'name': 'value', 'type': annotation}]
+    data = {'classes': [], 'functions': [
+        {'name': 'read', 'line': 1, 'params': params('unknown'), 'overloads': [
+            {'name': 'read', 'line': 1, 'params': params('string')},
+            {'name': 'read', 'line': 1, 'params': params('number')},
+        ]}
+    ]}
+    expected = [{'kind': 'function', 'owner': '', 'name': 'read', 'line': 1, 'params': params(t)}
+                for t in ('string', 'number', 'unknown')]
+    for _, source, observed in paired(expected, flatten(data)):
+        assert observed is not None
+        assert source['params'] == observed['params']

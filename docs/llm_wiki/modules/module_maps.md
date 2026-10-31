@@ -63,5 +63,5 @@ flowchart LR
 | `_module_undeclared_packages` | `(module: str, used_packages: Iterable[str], reconciliation_data: Mapping) -> set[str]` | — | — |
 | `_package_buckets` | `(files: Iterable[str]) -> list[dict]` | — | — |
 | `_package_nodes_and_edges` | `(module: str, inbound: Iterable[str], outbound: Iterable[str]) -> tuple[list[str], list[tuple[str, str]]]` | — | — |
-| `_module_summary` | `(module: str, edges: list[tuple[str, str]], cycle_groups: list[set[str]], reconciliation: Mapping, node_limit: int) -> dict` | — | — |
+| `_module_summary` | `(module: str, edges: list[tuple[str, str]], cycle_groups: list[set[str]], reconciliation: Mapping, node_limit: int, startup_edges: list[tuple[str, str]]) -> dict` | — | — |
 | `build_module_dependency_maps` | `(analysis: Mapping, *, node_limit: int = _DEFAULT_NODE_LIMIT) -> dict[str, dict]` | — | Build bounded local dependency summaries for each internal module. |

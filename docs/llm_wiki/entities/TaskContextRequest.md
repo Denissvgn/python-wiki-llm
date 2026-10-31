@@ -17,7 +17,7 @@ The versioned task request, combining bounded intent, exact anchors, observable 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

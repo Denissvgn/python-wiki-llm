@@ -15,7 +15,7 @@ Signals host cancellation before publication of a task result. Cancellation disc
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

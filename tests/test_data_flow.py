@@ -446,6 +446,7 @@ def test_detailed_data_flow_reports_every_bound_and_uses_none_for_unknown_lines(
     detailed = analyze_data_flow_detailed(inventory, flow, external_edges)
 
     assert set(legacy) == {
+        "analysis",
         "id",
         "entry",
         "steps",
@@ -607,8 +608,11 @@ def test_detailed_data_flow_uses_raw_effect_totals_from_extractor_sidecar(tmp_pa
         "limitations": [
             "limit-applies-per-effect-kind-per-emitted-step",
             "static-effects-do-not-claim-runtime-completeness",
+            "upstream-effect-collector-limit-reached",
         ],
     }
+    assert "upstream-effect-collector-limit-reached" not in detailed["coverage"]["effects"]["by_kind"]["inputs"]["limitations"]
+    assert "upstream-effect-collector-limit-reached" not in detailed["coverage"]["boundaries"]["limitations"]
 
 
 def test_detailed_data_flow_propagates_exact_reachable_flow_step_count():

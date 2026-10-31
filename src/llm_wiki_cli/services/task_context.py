@@ -629,7 +629,9 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
                     raise ValueError("static graph limitation was lost")
             if fact["facet"] == "typed-relationships":
                 for edge in observed["edges"]:
-                    if edge.get("resolution") not in {"resolved", "unresolved", "ambiguous", "external"} or not isinstance(edge.get("coverage"), dict):
+                    if (not isinstance(edge, dict)
+                            or edge.get("resolution") not in {"resolved", "unresolved", "ambiguous", "external"}
+                            or not isinstance(edge.get("coverage"), dict)):
                         raise ValueError("typed edge qualification was lost")
         requirements = {item["id"]: item for item in normalized["requirements"]}
         if [item["requirement_id"] for item in payload["coverage"]] != list(requirements):

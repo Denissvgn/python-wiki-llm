@@ -103,7 +103,7 @@ sequenceDiagram
     p4-->>p30: raw_value.strip
 ```
 
-> Call sequence diagram shows 30 of 858 interactions; 828 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 860 interactions; 830 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 328 (327 omitted); unresolved 1 of 197 (196 omitted). These counts cover the captured static trace.
 
@@ -127,6 +127,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 336; effect analysis evaluated: 242, partial: 15, unavailable: 79. Counts include steps omitted from the displayed trace.
+
+Collector observations for 257 source steps with known totals: observed: 1689, emitted: 1639, omitted: 50. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `reset_breaker` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `save_state` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_state_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `tempfile.mkstemp` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fdopen` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.dump` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.unlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

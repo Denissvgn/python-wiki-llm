@@ -21,7 +21,7 @@ Reversible source-schema mutation held until cleanup is committed.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

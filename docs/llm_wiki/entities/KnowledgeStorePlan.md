@@ -1,6 +1,6 @@
 # KnowledgeStorePlan
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:195`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:205`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -22,7 +22,7 @@ Holds the encoded root, exact immutable object bytes and storage statistics for 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -95,6 +95,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 60; effect analysis evaluated: 26, partial: 3, unavailable: 31. Counts include steps omitted from the displayed trace.
+
+Collector observations for 29 source steps with known totals: observed: 135, emitted: 120, omitted: 15. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `natural_key_for (src/llm_wiki_cli/services/concept_identity.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `validate_concept_kind` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)"]
@@ -164,7 +192,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

@@ -74,9 +74,9 @@ sequenceDiagram
     p1-->>p30: root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 304 interactions; 274 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 310 interactions; 280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 100 (99 omitted); unresolved 1 of 110 (109 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 102 (101 omitted); unresolved 1 of 114 (113 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 95; effect analysis evaluated: 77, partial: 1, unavailable: 17. Counts include steps omitted from the displayed trace.
+
+Collector observations for 78 source steps with known totals: observed: 462, emitted: 461, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list_bundled_skills` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `root.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.iterdir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `skill_dir.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.is_file` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_parse_skill_frontmatter` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `content.replace(…).replace(…).split` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `content.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

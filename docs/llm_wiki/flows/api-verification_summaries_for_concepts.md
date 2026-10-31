@@ -79,6 +79,15 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 8; effect analysis evaluated: 8, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 8 source steps with known totals: observed: 47, emitted: 47, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. verification_summaries_for_concepts"]
@@ -129,36 +138,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 167 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| verification_summaries_for_concepts | TypeError | 168 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
-| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 174 | `isinstance(selected, MachineVerificationReadView)` |
-| verification_summaries_for_concepts | TypeError | 175 | `TypeError('evaluated must be a MachineVerificationReadView')` |
-| verification_summaries_for_concepts | MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 178 | `MappingProxyType({...})` |
-| verification_summaries_for_concepts | concept.extensions.get | 181 | `concept.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
-| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 182 | `isinstance(governance, Mapping)` |
-| verification_summaries_for_concepts | governance.get | 182 | `governance.get('uid')` |
-| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 184 | `isinstance(uid, str)` |
-| verification_summaries_for_concepts | MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 191 | `MappingProxyType({...})` |
-| verification_summaries_for_concepts | _frozen_summaries | 197 | `_frozen_summaries(...)` |
+| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 174 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| verification_summaries_for_concepts | TypeError | 175 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 181 | `isinstance(selected, MachineVerificationReadView)` |
+| verification_summaries_for_concepts | TypeError | 182 | `TypeError('evaluated must be a MachineVerificationReadView')` |
+| verification_summaries_for_concepts | MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 185 | `MappingProxyType({...})` |
+| verification_summaries_for_concepts | concept.extensions.get | 188 | `concept.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
+| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 189 | `isinstance(governance, Mapping)` |
+| verification_summaries_for_concepts | governance.get | 189 | `governance.get('uid')` |
+| verification_summaries_for_concepts | isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 191 | `isinstance(uid, str)` |
+| verification_summaries_for_concepts | MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts) | 198 | `MappingProxyType({...})` |
+| verification_summaries_for_concepts | _frozen_summaries | 204 | `_frozen_summaries(...)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `verification_summaries_for_concepts` | `isinstance` | 167 |
-| external_call | `verification_summaries_for_concepts` | `TypeError` | 168 |
 | external_call | `verification_summaries_for_concepts` | `isinstance` | 174 |
 | external_call | `verification_summaries_for_concepts` | `TypeError` | 175 |
-| external_call | `verification_summaries_for_concepts` | `MappingProxyType` | 178 |
-| unresolved_call | `verification_summaries_for_concepts` | `concept.extensions.get` | 181 |
-| external_call | `verification_summaries_for_concepts` | `isinstance` | 182 |
-| unresolved_call | `verification_summaries_for_concepts` | `governance.get` | 182 |
-| external_call | `verification_summaries_for_concepts` | `isinstance` | 184 |
-| external_call | `verification_summaries_for_concepts` | `MappingProxyType` | 191 |
+| external_call | `verification_summaries_for_concepts` | `isinstance` | 181 |
+| external_call | `verification_summaries_for_concepts` | `TypeError` | 182 |
+| external_call | `verification_summaries_for_concepts` | `MappingProxyType` | 185 |
+| unresolved_call | `verification_summaries_for_concepts` | `concept.extensions.get` | 188 |
+| external_call | `verification_summaries_for_concepts` | `isinstance` | 189 |
+| unresolved_call | `verification_summaries_for_concepts` | `governance.get` | 189 |
+| external_call | `verification_summaries_for_concepts` | `isinstance` | 191 |
+| external_call | `verification_summaries_for_concepts` | `MappingProxyType` | 198 |
 | step_limit | `verification_summaries_for_concepts` | `first 12 steps` | 0 |
 
 ## Behavior

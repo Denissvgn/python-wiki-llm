@@ -62,6 +62,33 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 13; effect analysis evaluated: 8, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+Collector observations for 8 source steps with known totals: observed: 37, emitted: 37, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `repository_identities_match` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_repository_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_nonempty_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. repository_identities_match"]
@@ -124,14 +151,14 @@ flowchart LR
 | _repository_identity | _nonempty_string | 1823 | `_nonempty_string(value, path)` |
 | _nonempty_string | _string | 1730 | `_string(value, path)` |
 | _string | require_string | 1719 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
 | _string | KnowledgeModelError | 1721 | `KnowledgeModelError(path, 'must be a string')` |
 | _string | KnowledgeModelError | 1722 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -139,8 +166,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `repository_identities_match` | `isinstance` | 503 |
 | external_call | `repository_identities_match` | `TypeError` | 506 |
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
 | step_limit | `repository_identities_match` | `first 12 steps` | 0 |
 
 ## Behavior

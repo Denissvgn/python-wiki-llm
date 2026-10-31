@@ -22,6 +22,7 @@ context while retaining the legacy meaning of `present`.
 |--------|---------|
 | `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `build_gitignore_matcher`, `is_agent_worktree_path` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Mapping` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
@@ -55,7 +56,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `executes_at_import` | `(import_record: object) -> bool` | — | Return whether an inventory import record runs when its module loads. |
+| `executes_at_import` | `(import_record: object) -> bool` | — | Return whether an import can run when its module loads. |
 | `normalize_include_tests` | `(include_tests: Iterable[str] \| None) -> frozenset[str]` | — | Return the normalized set of languages whose test files are included. |
 | `inventory_language_for_path` | `(language: str, path: str \| Path) -> str` | — | Return the precise inventory language label for a discovered file. |
 | `is_generated_javascript_bundle_path` | `(path: str \| Path) -> bool` | — | Return True for generated/minified JavaScript static asset bundles. |

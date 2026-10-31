@@ -2,10 +2,11 @@
 
 **Entry point:** `commit_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [common](../modules/common.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 11 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 12 more
 
 **Complete modules touched:**
 
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [common](../modules/common.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
@@ -40,26 +41,26 @@ sequenceDiagram
     participant p8 as _absolute_path
     participant p9 as _apply_write
     participant p10 as ensure_guarded_directory
-    participant p11 as _verify_persisted
-    participant p12 as SyncManifest.load
+    participant p11 as guard_incomplete_bootstrap
+    participant p12 as _verify_persisted
     participant p13 as read_guarded
-    participant p14 as governance_lock
-    participant p15 as validate_maintenance_adoption
-    participant p16 as canonical_bytes
-    participant p17 as _validate_range
-    participant p18 as _detached
-    participant p19 as write_bytes_atomic
-    participant p20 as guard_windows_directory_chain
-    participant p21 as maintenance_core
-    participant p22 as open_windows_readonly_file
-    participant p23 as _assert_windows_file_binding
-    participant p24 as StorageReadSession.read
-    participant p25 as SyncManifest.from_payload
-    participant p26 as StorageReadSession.recheck
-    participant p27 as _raise_io_error
-    participant p28 as _require_relative_name
+    participant p14 as SyncManifest.load
+    participant p15 as governance_lock
+    participant p16 as validate_maintenance_adoption
+    participant p17 as canonical_bytes
+    participant p18 as _validate_range
+    participant p19 as _detached
+    participant p20 as write_bytes_atomic
+    participant p21 as pending_bootstrap
+    participant p22 as guard_windows_directory_chain
+    participant p23 as maintenance_core
+    participant p24 as open_windows_readonly_file
+    participant p25 as _assert_windows_file_binding
+    participant p26 as StorageReadSession.read
+    participant p27 as SyncManifest.from_payload
+    participant p28 as StorageReadSession.recheck
     participant p29 as isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
-    participant p30 as path.exists
+    participant p30 as path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
     p0->>p1: storage_writer_lock
     p0->>p2: load_adoption_marker
     p0->>p3: guard_maintenance_owner
@@ -70,31 +71,31 @@ sequenceDiagram
     p1->>p8: _absolute_path
     p5->>p9: _apply_write
     p4->>p10: ensure_guarded_directory
-    p5->>p11: _verify_persisted
-    p3->>p12: SyncManifest.load
+    p3->>p11: guard_incomplete_bootstrap
+    p5->>p12: _verify_persisted
     p2->>p13: read_guarded
-    p1->>p14: governance_lock
-    p2->>p15: validate_maintenance_adoption
-    p2->>p16: canonical_bytes
-    p13->>p17: _validate_range
-    p15->>p18: _detached
-    p9->>p19: write_bytes_atomic
-    p13->>p20: guard_windows_directory_chain
-    p15->>p21: maintenance_core
-    p13->>p22: open_windows_readonly_file
-    p13->>p23: _assert_windows_file_binding
-    p12->>p24: StorageReadSession.read
-    p12->>p25: SyncManifest.from_payload
-    p12->>p26: StorageReadSession.recheck
-    p13->>p27: _raise_io_error
-    p24->>p28: _require_relative_name
+    p3->>p14: SyncManifest.load
+    p1->>p15: governance_lock
+    p2->>p16: validate_maintenance_adoption
+    p2->>p17: canonical_bytes
+    p13->>p18: _validate_range
+    p16->>p19: _detached
+    p9->>p20: write_bytes_atomic
+    p11->>p21: pending_bootstrap
+    p13->>p22: guard_windows_directory_chain
+    p16->>p23: maintenance_core
+    p13->>p24: open_windows_readonly_file
+    p13->>p25: _assert_windows_file_binding
+    p14->>p26: StorageReadSession.read
+    p14->>p27: SyncManifest.from_payload
+    p14->>p28: StorageReadSession.recheck
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)
-    p2-->>p30: path.exists
+    p2-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 815 interactions; 785 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 854 interactions; 824 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 340 (339 omitted); unresolved 1 of 145 (144 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 355 (354 omitted); unresolved 1 of 154 (153 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:storage_writer_lock` | 8 | - | external | 2 |
-> Omission summary shows 8 of 196 groups; 188 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 213 groups; 205 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -116,6 +117,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 346; effect analysis evaluated: 190, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
+
+Collector observations for 203 source steps with known totals: observed: 1004, emitted: 979, omitted: 25. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `storage_writer_lock` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. commit_knowledge_artifacts"]
@@ -172,13 +201,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 715 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 716 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 717 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 718 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 719 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 720 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | storage_writer_lock | 726 | `storage_writer_lock(root)` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 727 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 728 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 729 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 730 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 731 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 732 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | storage_writer_lock | 738 | `storage_writer_lock(root)` |
 | storage_writer_lock | _absolute_path | 49 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -194,12 +223,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 715 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 716 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 717 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 718 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 719 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 720 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 727 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 728 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 729 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 730 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 731 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 732 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |

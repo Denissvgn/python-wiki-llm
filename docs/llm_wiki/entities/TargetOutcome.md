@@ -22,7 +22,7 @@ _Auto-generated from `_TargetOutcome` in `src/llm_wiki_cli/services/knowledge_li
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

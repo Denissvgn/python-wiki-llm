@@ -98,6 +98,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 52; effect analysis evaluated: 47, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+Collector observations for 47 source steps with known totals: observed: 149, emitted: 149, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `compute_sync_diff` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `SyncDiff` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_recorded_entity_pages` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_RecordedEntityPages` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `Counter (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. compute_sync_diff"]

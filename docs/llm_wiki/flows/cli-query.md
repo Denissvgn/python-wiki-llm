@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [query_cmd](../modules/query_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 32 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 33 more
 
 **Complete modules touched:**
 
@@ -39,6 +39,7 @@
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [typescript_helper_identity](../modules/typescript_helper_identity.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
@@ -113,9 +114,9 @@ sequenceDiagram
     p3-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1754 interactions; 1724 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1814 interactions; 1784 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 687 (686 omitted); unresolved 1 of 479 (478 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 705 (704 omitted); unresolved 1 of 506 (505 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
-> Omission summary shows 8 of 389 groups; 381 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 407 groups; 399 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -137,6 +138,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 604; effect analysis evaluated: 396, partial: 34, unavailable: 174. Counts include steps omitted from the displayed trace.
+
+Collector observations for 430 source steps with known totals: observed: 2824, emitted: 2577, omitted: 247. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `load_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `getattr (src/llm_wiki_cli/services…uest_json.py:load_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `parse_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `len (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `raw.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

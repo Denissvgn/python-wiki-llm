@@ -2,13 +2,14 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 59 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 61 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -18,6 +19,7 @@
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [entrypoints](../modules/entrypoints.md)
@@ -97,15 +99,15 @@ sequenceDiagram
     participant p17 as validate_source_root
     participant p18 as _validate_protocol_request
     participant p19 as guard_maintenance_owner
-    participant p20 as resolve_source_selection
-    participant p21 as capture_source_selection_inputs
-    participant p22 as validate_changes
-    participant p23 as validate_live_query_source_selection
-    participant p24 as build_source_snapshot
-    participant p25 as validate_context_packet
-    participant p26 as _guard_windows_inputs
-    participant p27 as _assert_source_unchanged
-    participant p28 as retained_empty_module_paths_from_wiki
+    participant p20 as refusal_diagnostics
+    participant p21 as resolve_source_selection
+    participant p22 as capture_source_selection_inputs
+    participant p23 as validate_changes
+    participant p24 as validate_live_query_source_selection
+    participant p25 as build_source_snapshot
+    participant p26 as validate_context_packet
+    participant p27 as _guard_windows_inputs
+    participant p28 as _assert_source_unchanged
     participant p29 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
     participant p30 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
@@ -127,22 +129,22 @@ sequenceDiagram
     p3->>p17: validate_source_root
     p2->>p18: _validate_protocol_request
     p3->>p19: guard_maintenance_owner
-    p3->>p20: resolve_source_selection
-    p3->>p21: capture_source_selection_inputs
-    p2->>p22: validate_changes
-    p3->>p23: validate_live_query_source_selection
-    p3->>p24: build_source_snapshot
-    p8->>p25: validate_context_packet
-    p3->>p26: _guard_windows_inputs
-    p3->>p27: _assert_source_unchanged
-    p3->>p28: retained_empty_module_paths_from_wiki
+    p7->>p20: refusal_diagnostics
+    p3->>p21: resolve_source_selection
+    p3->>p22: capture_source_selection_inputs
+    p2->>p23: validate_changes
+    p3->>p24: validate_live_query_source_selection
+    p3->>p25: build_source_snapshot
+    p8->>p26: validate_context_packet
+    p3->>p27: _guard_windows_inputs
+    p3->>p28: _assert_source_unchanged
     p1-->>p29: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3585 interactions; 3555 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3618 interactions; 3588 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1228 (1227 omitted); unresolved 1 of 1147 (1146 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1249 (1248 omitted); unresolved 1 of 1136 (1135 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 866 groups; 858 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 887 groups; 879 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -164,6 +166,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1234; effect analysis evaluated: 849, partial: 54, unavailable: 331. Counts include steps omitted from the displayed trace.
+
+Collector observations for 903 source steps with known totals: observed: 5580, emitted: 5313, omitted: 267. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_budgeted_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `validate_request` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `set (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. build_budgeted_context (src/llm_wiki_cli/api.py)"]
@@ -232,34 +262,34 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1341 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
-| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 230 | `validate_request(...)` |
-| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(data, Mapping)` |
-| validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `any(...)` |
-| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(key, str)` |
-| validate_request | ProtocolRequestError | 35 | `context.ProtocolRequestError('Request must be an object with string keys', 'request')` |
-| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 36 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
-| validate_request | ProtocolRequestError | 37 | `context.ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
-| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 39 | `set(data)` |
-| validate_request | ProtocolRequestError | 41 | `context.ProtocolRequestError(..., ...)` |
-| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 42 | `sorted(unknown)` |
+| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 384 | `validate_request(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `isinstance(data, Mapping)` |
+| validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `any(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `isinstance(key, str)` |
+| validate_request | ProtocolRequestError | 78 | `context.ProtocolRequestError('Request must be an object with string keys', 'request')` |
+| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 79 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
+| validate_request | ProtocolRequestError | 80 | `context.ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
+| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 82 | `set(data)` |
+| validate_request | ProtocolRequestError | 84 | `context.ProtocolRequestError(..., ...)` |
+| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 85 | `sorted(unknown)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `legacy.update` | `build_budgeted_context` | 271 |
-| mutation | `legacy.pop` | `validate_request` | 50 |
-| mutation | `legacy.pop` | `validate_request` | 51 |
-| mutation | `legacy.pop` | `validate_request` | 52 |
+| mutation | `legacy.update` | `build_budgeted_context` | 425 |
+| mutation | `legacy.pop` | `validate_request` | 93 |
+| mutation | `legacy.pop` | `validate_request` | 94 |
+| mutation | `legacy.pop` | `validate_request` | 95 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_request` | `isinstance` | 34 |
-| external_call | `validate_request` | `any` | 34 |
-| unresolved_call | `validate_request` | `data.get` | 36 |
-| external_call | `validate_request` | `sorted` | 42 |
+| external_call | `validate_request` | `isinstance` | 77 |
+| external_call | `validate_request` | `any` | 77 |
+| unresolved_call | `validate_request` | `data.get` | 79 |
+| external_call | `validate_request` | `sorted` | 85 |
 | step_limit | `build_budgeted_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_budgeted_context` | `depth limit` | 0 |
 

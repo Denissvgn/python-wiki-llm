@@ -24,6 +24,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. search_wiki"]
@@ -43,17 +52,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| search_wiki | service.search_wiki | 1493 | `service.search_wiki(query, kinds=kinds, limit=limit, mode=mode, include_source=include_source, discovery=discovery)` |
+| search_wiki | service.search_wiki | 1494 | `service.search_wiki(query, kinds=kinds, limit=limit, mode=mode, include_source=include_source, discovery=discovery)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `search_wiki` | `service.search_wiki` | 1493 |
+| unresolved_call | `search_wiki` | `service.search_wiki` | 1494 |
 
 ## Behavior
 

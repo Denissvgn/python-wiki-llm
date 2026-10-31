@@ -1,8 +1,8 @@
 # Fully resolved FastAPI tutorial dependencies for the release static job.
-# Target: CPython 3.13 on Linux x86_64; hashes identify downloaded wheels.
+# Target: CPython 3.13 on Linux x86_64 and ARM64; hashes identify downloaded wheels.
 # The optional cross-platform tutorial input remains requirements.txt.
 # Regenerate by resolving requirements.txt with pip download --only-binary=:all:
-# --python-version 3.13 on Linux x86_64, then hash every resolved wheel.
+# --python-version 3.13 on each target architecture, then hash every resolved wheel.
 
 annotated-doc==0.0.5 \
     --hash=sha256:117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101
@@ -17,7 +17,8 @@ idna==3.19 \
 pydantic==2.13.5 \
     --hash=sha256:346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73
 pydantic-core==2.46.5 \
-    --hash=sha256:6f7b393a8b3da82f5c1fc0751e6d01ac6c55b93c18226a60bdfba4a724efafd1
+    --hash=sha256:6f7b393a8b3da82f5c1fc0751e6d01ac6c55b93c18226a60bdfba4a724efafd1 \
+    --hash=sha256:193375f3548919d3f0b60936ca113ada3e38f264f91b9b8e0508efaad57be931
 starlette==1.6.0 \
     --hash=sha256:a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c
 typing-extensions==4.16.0 \

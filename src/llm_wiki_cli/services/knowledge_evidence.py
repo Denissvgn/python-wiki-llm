@@ -66,6 +66,9 @@ _MODULE_ENTITY_FIELDS = (
     "model_kind",
     "bases",
     "target",
+    "target_truncated",
+    "target_sha256",
+    "type_params",
 )
 _MODULE_FUNCTION_FIELDS = (
     "name",
@@ -76,6 +79,8 @@ _MODULE_FUNCTION_FIELDS = (
     "is_async",
     "async",
     "decorators",
+    "type_params",
+    "overloads",
 )
 _MODULE_CONSTANT_FIELDS = ("name",)
 _MODULE_CALL_FIELDS = ("name", "attr", "target")
@@ -563,7 +568,25 @@ def _record_name(record: Mapping[str, Any], pointer="") -> str:
 def _validate_module_entity_record(record: Mapping[str, Any], pointer="") -> None:
     _record_name(record, pointer)
     _validate_optional_strings(record, ("kind", "model_kind", "target"), pointer)
+    _validate_optional_booleans(record, ("target_truncated",), pointer)
+    if (record.get("target_truncated") or "target_sha256" in record) and not is_valid_sha256(record.get("target_sha256")):
+        raise _failure(_pointer(pointer, "target_sha256"), "sha256-required", "complete definition digest", record.get("target_sha256", MISSING_VALUE))
+    if record.get("target_truncated") or "target_sha256" in record:
+        target = record.get("target", MISSING_VALUE)
+        if not isinstance(target, str):
+            raise _failure(_pointer(pointer, "target"), "string-required", "alias definition or preview", target)
+        if record.get("target_truncated"):
+            if len(target) != 4096:
+                raise _failure(_pointer(pointer, "target"), "bounded-preview-length", "4,096 Unicode code points", target)
+        else:
+            try:
+                target_hash = sha256_bytes(target.encode("utf-8"))
+            except UnicodeEncodeError:
+                raise _failure(_pointer(pointer, "target"), "utf8-text", "UTF-8 alias definition", target) from None
+            if record["target_sha256"] != target_hash:
+                raise _failure(_pointer(pointer, "target_sha256"), "definition-digest-mismatch", "digest of the complete definition", record["target_sha256"])
     _validate_optional_string_array(record, "bases", pointer)
+    _validate_optional_string_array(record, "type_params", pointer)
 
 
 def _validate_entity_record(record: Mapping[str, Any], pointer="") -> None:
@@ -602,12 +625,26 @@ def _validate_callable_record(record: Mapping[str, Any], pointer="") -> None:
     _validate_optional_strings(record, ("kind", "return_type", "signature"), pointer)
     _validate_optional_booleans(record, ("async", "is_async"), pointer)
     _validate_optional_string_array(record, "decorators", pointer)
+    _validate_optional_string_array(record, "type_params", pointer)
     params = _optional_record_array(record, "params", pointer)
     for index, param in enumerate(params):
         position = _pointer(_pointer(pointer, "params"), index)
         if not isinstance(param.get("name"), str):
             raise _failure(_pointer(position, "name"), "string-required", "string", param.get("name", MISSING_VALUE))
         _validate_optional_strings(param, ("default", "kind", "type"), position)
+        _validate_optional_booleans(param, ("optional", "rest"), position)
+    overloads = _optional_record_array(record, "overloads", pointer)
+    if overloads and (type(record.get("line")) is not int or record["line"] <= 0):
+        raise _failure(_pointer(pointer, "line"), "positive-integer", "implementation source line", record.get("line", MISSING_VALUE))
+    for index, overload in enumerate(overloads):
+        position = _pointer(_pointer(pointer, "overloads"), index)
+        if "overloads" in overload:
+            raise _failure(_pointer(position, "overloads"), "nested-overloads", "flat declared overload signatures", overload["overloads"])
+        if overload.get("name") != record["name"]:
+            raise _failure(_pointer(position, "name"), "callable-name-mismatch", "parent callable name", overload.get("name", MISSING_VALUE))
+        if type(overload.get("line")) is not int or overload["line"] <= 0:
+            raise _failure(_pointer(position, "line"), "positive-integer", "overload source line", overload.get("line", MISSING_VALUE))
+        _validate_callable_record(overload, position)
 
 
 def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer="") -> None:
@@ -634,10 +671,17 @@ def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer
             if "scope" in record and record["scope"] != "deferred":
                 raise _failure(_pointer(pointer, "scope"), "explicit-import-gap", "deferred or omitted", record["scope"])
         raise _failure(_pointer(pointer, "module"), "import-module", "nonempty string or valid explicit unresolved-call gap", module)
-    _validate_optional_strings(record, ("name", "type"), pointer)
+    _validate_optional_strings(record, ("name", "type", "scope"), pointer)
     if "alias" in record and record["alias"] is not None:
         _validate_optional_strings(record, ("alias",), pointer)
-    _validate_optional_booleans(record, ("qualified",), pointer)
+    _validate_optional_booleans(record, ("qualified", "type_only", "type_only_declaration"), pointer)
+    if "runtime" in record and record["runtime"] not in ("erased", "conditional", "present"):
+        raise _failure(_pointer(pointer, "runtime"), "import-runtime", "erased, conditional, or present", record["runtime"])
+    if record.get("type_only_declaration") is True:
+        if record.get("type_only") is not True:
+            raise _failure(_pointer(pointer, "type_only"), "type-only-declaration", "true for a type-only declaration", record.get("type_only", MISSING_VALUE))
+        if record.get("runtime") != "erased":
+            raise _failure(_pointer(pointer, "runtime"), "type-only-declaration", "erased for a type-only declaration", record.get("runtime", MISSING_VALUE))
 
 
 def _validate_constant_record(record: Mapping[str, Any], pointer="") -> None:
@@ -718,7 +762,8 @@ _POINTER_FIELDS = frozenset({
     "decorators", "module", "type", "alias", "qualified", "resolution", "reason", "scope", "attributes", "methods",
     "default", "default_factory", "serialization_alias", "tag", "validation_alias", "value", "annotated_metadata",
     "examples", "literal_values", "constraints", "unknowns", "nullable", "optional", "required", "validator", "fields",
-    "options", "model_config", "deriving", "type_params", "exported", "attr",
+    "options", "model_config", "deriving", "type_params", "overloads", "exported", "attr", "rest", "target_truncated", "target_sha256",
+    "type_only", "type_only_declaration", "runtime",
 })
 
 

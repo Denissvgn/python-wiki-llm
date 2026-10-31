@@ -89,9 +89,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 723 interactions; 693 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 727 interactions; 697 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 564 (563 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 567 (566 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,6 +111,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 137; effect analysis evaluated: 135, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 136 source steps with known totals: observed: 315, emitted: 311, omitted: 4. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `main` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `_build_parser` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `argparse.ArgumentParser` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_register_commands` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `_add_init_command` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. main"]
@@ -182,7 +210,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2656 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2667 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 266 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 267 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 270 | `parser.add_subparsers(dest='command', required=True)` |
@@ -198,12 +226,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2664 |
-| output | `print` | `main` | 2667 |
-| output | `print` | `main` | 2670 |
-| environment_read | `os.environ.get` | `main` | 2673 |
 | output | `print` | `main` | 2675 |
 | output | `print` | `main` | 2678 |
+| output | `print` | `main` | 2681 |
+| environment_read | `os.environ.get` | `main` | 2684 |
+| output | `print` | `main` | 2686 |
+| output | `print` | `main` | 2689 |
 
 ### Static analysis gaps
 

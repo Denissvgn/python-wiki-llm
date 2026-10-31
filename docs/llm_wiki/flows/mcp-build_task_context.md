@@ -40,6 +40,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 8, emitted: 8, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. build_task_context"]
@@ -84,31 +93,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_task_context | _native_tool_call | 1598 | `_native_tool_call(service.build_task_context, request)` |
-| _native_tool_call | callback | 1347 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1355 | `str(exc)` |
-| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1359 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1361 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1361 | `json.dumps(failure, sort_keys=True)` |
-| build_task_context | isinstance | 1599 | `isinstance(result, str)` |
-| build_task_context | CallToolResult (src/llm_wiki_cli/services…rver.py:build_task_context) | 1599 | `CallToolResult(content=[...])` |
-| build_task_context | TextContent (src/llm_wiki_cli/services…rver.py:build_task_context) | 1599 | `TextContent(type='text', text=result)` |
+| build_task_context | _native_tool_call | 1599 | `_native_tool_call(service.build_task_context, request)` |
+| _native_tool_call | callback | 1348 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1356 | `str(exc)` |
+| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1360 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1362 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1362 | `json.dumps(failure, sort_keys=True)` |
+| build_task_context | isinstance | 1600 | `isinstance(result, str)` |
+| build_task_context | CallToolResult (src/llm_wiki_cli/services…rver.py:build_task_context) | 1600 | `CallToolResult(content=[...])` |
+| build_task_context | TextContent (src/llm_wiki_cli/services…rver.py:build_task_context) | 1600 | `TextContent(type='text', text=result)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1347 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1359 |
-| external_call | `_native_tool_call` | `TextContent` | 1361 |
-| external_call | `_native_tool_call` | `json.dumps` | 1361 |
-| external_call | `build_task_context` | `isinstance` | 1599 |
-| external_call | `build_task_context` | `CallToolResult` | 1599 |
-| external_call | `build_task_context` | `TextContent` | 1599 |
+| unresolved_call | `_native_tool_call` | `callback` | 1348 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1360 |
+| external_call | `_native_tool_call` | `TextContent` | 1362 |
+| external_call | `_native_tool_call` | `json.dumps` | 1362 |
+| external_call | `build_task_context` | `isinstance` | 1600 |
+| external_call | `build_task_context` | `CallToolResult` | 1600 |
+| external_call | `build_task_context` | `TextContent` | 1600 |
 
 ## Behavior
 

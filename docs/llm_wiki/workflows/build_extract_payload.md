@@ -14,18 +14,19 @@
 4. `common.normalize_include_tests`
 5. `services_dependencies.analyze_dependencies`
 6. `api_contracts.build_api_contracts`
-7. `api_contracts.build_api_contracts`
-8. `plugins.runtime_project_plugins_enabled`
-9. `entrypoints.detect_entry_points`
-10. `entrypoints.read_console_scripts`
-11. `api_contracts.attach_routes_to_entry_points`
-12. `data_flow.build_data_flow_context`
-13. `data_flow.analyze_data_flow_detailed`
-14. `entrypoints.build_flow_detailed`
-15. `data_flow.analyze_data_flow`
-16. `entrypoints.build_flow`
-17. `services_dependencies.analyze_dependencies`
-18. `source_snapshot.unsupported_source_summary`
+7. `source_snapshot.unsupported_source_summary`
+8. `source_snapshot.unsupported_source_summary`
+9. `api_contracts.build_api_contracts`
+10. `plugins.runtime_project_plugins_enabled`
+11. `entrypoints.read_console_scripts`
+12. `entrypoints.detect_entry_points`
+13. `api_contracts.attach_routes_to_entry_points`
+14. `data_flow.build_data_flow_context`
+15. `data_flow.analyze_data_flow_detailed`
+16. `entrypoints.build_flow_detailed`
+17. `data_flow.analyze_data_flow`
+18. `entrypoints.build_flow`
+19. `services_dependencies.analyze_dependencies`
 
 ## Touches
 

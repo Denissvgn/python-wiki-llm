@@ -18,7 +18,7 @@ A recorded checker result at one evaluated snapshot.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

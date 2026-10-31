@@ -15,7 +15,7 @@ A matched static-input snapshot changed before publication.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

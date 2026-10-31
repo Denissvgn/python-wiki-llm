@@ -181,7 +181,7 @@ def test_upstream_bounds_are_separate_and_not_all_attributed_to_depth():
 def test_empty_same_file_cycles_and_depth_truncation_keep_original_owner_semantics():
     empty = build_flow_detailed(entry(), [])
     assert overview(empty).counts["captured"] == 0
-    assert "No outbound calls were detected by static analysis" in runtime._generate_flow_md(empty)
+    assert "No outbound call observations are available in this static trace" in runtime._generate_flow_md(empty)
     edges = [edge("main", "work"), edge("work", "main")]
     cyclic = build_flow_detailed(entry(), edges)
     original = deepcopy(cyclic)

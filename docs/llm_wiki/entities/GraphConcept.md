@@ -24,7 +24,7 @@ One already-built concept coordinate used for endpoint lifting.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

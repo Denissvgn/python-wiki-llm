@@ -24,7 +24,7 @@ Additive source-bound static segment; absent coverage means unavailable.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

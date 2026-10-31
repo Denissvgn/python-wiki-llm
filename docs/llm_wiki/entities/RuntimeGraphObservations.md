@@ -30,7 +30,7 @@ _Auto-generated from `_RuntimeGraphObservations` in `src/llm_wiki_cli/commands/s
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

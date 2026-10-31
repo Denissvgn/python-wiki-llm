@@ -1,6 +1,6 @@
 # DocumentationQueryError
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:129`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:135`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_queries](../modules/documentation_queries.md)

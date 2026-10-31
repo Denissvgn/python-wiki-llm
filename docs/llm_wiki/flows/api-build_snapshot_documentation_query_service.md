@@ -2,11 +2,12 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 33 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 34 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
@@ -78,7 +79,7 @@ sequenceDiagram
     participant p25 as evaluate_knowledge_freshness
     participant p26 as marker_from_validated_state
     participant p27 as compare_knowledge_implementation
-    participant p28 as load_adoption_marker
+    participant p28 as guard_incomplete_bootstrap
     participant p29 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
     participant p30 as current.exists
     p0->>p1: _wiki_anchor
@@ -108,14 +109,14 @@ sequenceDiagram
     p15->>p25: evaluate_knowledge_freshness
     p18->>p26: marker_from_validated_state
     p19->>p27: compare_knowledge_implementation
-    p17->>p28: load_adoption_marker
+    p17->>p28: guard_incomplete_bootstrap
     p1-->>p29: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
     p1-->>p30: current.exists
 ```
 
-> Call sequence diagram shows 30 of 1212 interactions; 1182 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1225 interactions; 1195 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 444 (443 omitted); unresolved 1 of 239 (238 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 445 (444 omitted); unresolved 1 of 240 (239 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 265 groups; 257 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 271 groups; 263 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -137,6 +138,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 541; effect analysis evaluated: 287, partial: 32, unavailable: 222. Counts include steps omitted from the displayed trace.
+
+Collector observations for 319 source steps with known totals: observed: 2254, emitted: 2024, omitted: 230. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_wiki_anchor` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `directory_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_domain_hash` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `canonical_json_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. build_snapshot_documentation_query_service"]
@@ -199,13 +228,13 @@ flowchart LR
 | _wiki_anchor | root.exists | 5120 | `root.exists(data not statically known)` |
 | _wiki_anchor | _domain_hash | 5121 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
 | _domain_hash | sha256_bytes | 5272 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 216 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value)` |
 | _domain_hash | canonical_json_bytes | 5273 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -214,8 +243,8 @@ flowchart LR
 | unresolved_call | `directory_identity` | `path.stat` | 699 |
 | unresolved_call | `_wiki_anchor` | `current.exists` | 5117 |
 | unresolved_call | `_wiki_anchor` | `root.exists` | 5120 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |
 | truncated_flow | `build_snapshot_documentation_query_service` | `depth limit` | 0 |
 

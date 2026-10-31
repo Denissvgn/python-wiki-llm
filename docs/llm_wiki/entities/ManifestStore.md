@@ -20,7 +20,7 @@ Carries bounded indexed manifest root bytes and immutable catalog bytes. Legacy 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

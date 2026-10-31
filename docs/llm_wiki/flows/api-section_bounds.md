@@ -49,6 +49,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. section_bounds"]
@@ -98,35 +107,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| section_bounds | heading.casefold | 661 | `heading.casefold(data not statically known)` |
-| section_bounds | enumerate | 662 | `enumerate(lines)` |
-| section_bounds | _LEGACY_HEADING_RE.match | 663 | `_LEGACY_HEADING_RE.match(line.strip(...))` |
-| section_bounds | line.strip | 663 | `line.strip(data not statically known)` |
-| section_bounds | len | 666 | `len(match.group(...))` |
-| section_bounds | match.group | 666 | `match.group(1)` |
-| section_bounds | match.group(…).strip().casefold | 667 | `match.group(2).strip().casefold(data not statically known)` |
-| section_bounds | match.group(…).strip | 667 | `match.group(2).strip(data not statically known)` |
-| section_bounds | match.group | 667 | `match.group(2)` |
-| section_bounds | len | 670 | `len(lines)` |
-| section_bounds | range | 671 | `range(..., len(...))` |
+| section_bounds | heading.casefold | 669 | `heading.casefold(data not statically known)` |
+| section_bounds | enumerate | 670 | `enumerate(lines)` |
+| section_bounds | _LEGACY_HEADING_RE.match | 671 | `_LEGACY_HEADING_RE.match(line.strip(...))` |
+| section_bounds | line.strip | 671 | `line.strip(data not statically known)` |
+| section_bounds | len | 674 | `len(match.group(...))` |
+| section_bounds | match.group | 674 | `match.group(1)` |
+| section_bounds | match.group(…).strip().casefold | 675 | `match.group(2).strip().casefold(data not statically known)` |
+| section_bounds | match.group(…).strip | 675 | `match.group(2).strip(data not statically known)` |
+| section_bounds | match.group | 675 | `match.group(2)` |
+| section_bounds | len | 678 | `len(lines)` |
+| section_bounds | range | 679 | `range(..., len(...))` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `section_bounds` | `heading.casefold` | 661 |
-| external_call | `section_bounds` | `enumerate` | 662 |
-| unresolved_call | `section_bounds` | `_LEGACY_HEADING_RE.match` | 663 |
-| unresolved_call | `section_bounds` | `line.strip` | 663 |
-| unresolved_call | `section_bounds` | `match.group` | 666 |
-| unresolved_call | `section_bounds` | `match.group(2).strip().casefold` | 667 |
-| unresolved_call | `section_bounds` | `match.group(2).strip` | 667 |
-| unresolved_call | `section_bounds` | `match.group` | 667 |
-| external_call | `section_bounds` | `range` | 671 |
+| unresolved_call | `section_bounds` | `heading.casefold` | 669 |
+| external_call | `section_bounds` | `enumerate` | 670 |
+| unresolved_call | `section_bounds` | `_LEGACY_HEADING_RE.match` | 671 |
+| unresolved_call | `section_bounds` | `line.strip` | 671 |
+| unresolved_call | `section_bounds` | `match.group` | 674 |
+| unresolved_call | `section_bounds` | `match.group(2).strip().casefold` | 675 |
+| unresolved_call | `section_bounds` | `match.group(2).strip` | 675 |
+| unresolved_call | `section_bounds` | `match.group` | 675 |
+| external_call | `section_bounds` | `range` | 679 |
 | step_limit | `section_bounds` | `first 12 steps` | 0 |
 
 ## Behavior

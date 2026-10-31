@@ -15,7 +15,7 @@ A stale generated page cannot be removed without explicit authority.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

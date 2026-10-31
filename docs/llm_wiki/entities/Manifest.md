@@ -1,6 +1,6 @@
 # _Manifest
 
-**Location:** `src/llm_wiki_cli/services/dependencies.py:785`
+**Location:** `src/llm_wiki_cli/services/dependencies.py:807`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_dependencies](../modules/services_dependencies.md)
@@ -33,7 +33,7 @@ languages where nested manifests apply only to files below their directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
@@ -97,4 +97,4 @@ flowchart LR
 | `_parse_manifests` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
 | `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

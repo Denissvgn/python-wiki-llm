@@ -91,9 +91,9 @@ sequenceDiagram
     p3-->>p30: fact.pop('citation_refs')
 ```
 
-> Call sequence diagram shows 30 of 283 interactions; 253 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 284 interactions; 254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 71 (70 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 126 (125 omitted); unresolved 1 of 71 (70 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,6 +115,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 88; effect analysis evaluated: 55, partial: 3, unavailable: 30. Counts include steps omitted from the displayed trace.
+
+Collector observations for 58 source steps with known totals: observed: 341, emitted: 336, omitted: 5. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `expand_compact_task_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_compact_task_context` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `render_compact_task_context` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `_validated` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `normalize_task_request` | `available` | `partial` | `available` | `23` | `21` | `2` |
+| `exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `raw.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. expand_compact_task_context (src/llm_wiki_cli/api.py)"]

@@ -560,7 +560,10 @@ class TestGeneratePromptBuildPrompt:
         ) in prompt
         assert "Exit status 1" in prompt
         assert "Exit status 0 or any other outcome" in prompt
-        assert "eligibility, not authorization" in prompt
+        assert "not descendant completeness or authorization" in prompt
+        assert "delivery_state: git-eligible" in prompt
+        assert "--staged || exit 1" in prompt
+        assert prompt.index("git add --") < prompt.index("--staged || exit 1") < prompt.index("LLM_WIKI_AUTO_COMMIT=1 git commit")
         assert "git add -- docs/llm_wiki/" in prompt
         assert "git add -- docs/llm_wiki/ CHANGELOG.md" not in prompt
         assert "Never force-add" in prompt

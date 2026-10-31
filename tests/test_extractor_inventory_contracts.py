@@ -139,6 +139,14 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "classes[].methods[].source_file",
         "main_block_calls",
         "params[].kind",
+        "params[].optional",
+        "params[].rest",
+        "functions[].type_params",
+        "functions[].overloads",
+        "classes[].methods[].type_params",
+        "classes[].methods[].overloads",
+        "classes[].target_truncated",
+        "classes[].target_sha256",
         "api_contracts",
     }
 

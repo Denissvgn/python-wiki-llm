@@ -69,6 +69,6 @@ flowchart LR
 | `_load_manifest` | `(root: Path) -> tuple[SyncManifest \| None, KnowledgeLoadIssue \| None]` | — | — |
 | `_current_markdown` | `(root: Path, supplied: Mapping[str, str \| bytes] \| None) -> dict[str, str \| bytes]` | — | — |
 | `_marker_issues` | `(committed_surface: str, committed_knowledge: str, committed_envelope: str, actual_surface: str, actual_knowledge: str, actual_envelope: str, committed_governance: str \| None = None, actual_governance: str \| None = None) -> tuple[KnowledgeLoadIssue, ...]` | — | — |
-| `_live_governance_issues` | `(root: Path, knowledge: KnowledgeIndex, *, committed_hash: str \| None, projected_hash: str \| None) -> tuple[tuple[KnowledgeLoadIssue, ...], KnowledgeLoadState \| None]` | — | Validate the non-rebuildable live ledger without exposing stale state. |
+| `_live_governance_issues` | `(root: Path, knowledge: KnowledgeIndex, *, committed_hash: str \| None, projected_hash: str \| None, validated_artifacts: ValidatedKnowledgeArtifacts) -> tuple[tuple[KnowledgeLoadIssue, ...], KnowledgeLoadState \| None]` | — | Validate the non-rebuildable live ledger without exposing stale state. |
 | `_page_parity_message` | `(surface_paths: set[str], live_paths: set[str]) -> str` | — | — |
 | `_issue_from_artifact_error` | `(code: str, artifact_path: str, error: KnowledgeArtifactError) -> KnowledgeLoadIssue` | — | — |

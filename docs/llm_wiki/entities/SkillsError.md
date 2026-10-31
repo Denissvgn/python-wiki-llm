@@ -15,7 +15,7 @@ Raised for invalid skill list/export/install requests.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

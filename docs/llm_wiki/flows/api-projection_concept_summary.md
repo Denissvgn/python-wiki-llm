@@ -106,6 +106,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 349; effect analysis evaluated: 301, partial: 6, unavailable: 42. Counts include steps omitted from the displayed trace.
+
+Collector observations for 307 source steps with known totals: observed: 1214, emitted: 1188, omitted: 26. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `projection_concept_summary` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…rojection_concept_summary)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_projection_structure` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_require_sha256` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_sha256` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. projection_concept_summary"]
@@ -171,11 +199,11 @@ flowchart LR
 | _validate_projection_structure | KnowledgeProjectionError | 821 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
 | _validate_projection_structure | _require_sha256 | 826 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
 | _require_sha256 | require_sha256 | 2240 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1138 | `isinstance(value, str)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1146 | `isinstance(value, str)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -185,7 +213,7 @@ flowchart LR
 | external_call | `projection_concept_summary` | `TypeError` | 415 |
 | external_call | `_validate_projection_structure` | `isinstance` | 808 |
 | external_call | `_validate_projection_structure` | `isinstance` | 820 |
-| external_call | `require_sha256` | `isinstance` | 1138 |
+| external_call | `require_sha256` | `isinstance` | 1146 |
 | step_limit | `projection_concept_summary` | `first 12 steps` | 0 |
 | truncated_flow | `projection_concept_summary` | `depth limit` | 0 |
 

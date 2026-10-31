@@ -26,6 +26,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 2, emitted: 2, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. is_valid_sha256"]
@@ -48,19 +57,19 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_valid_sha256 | isinstance | 171 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 171 | `_SHA256_RE.fullmatch(value)` |
+| is_valid_sha256 | isinstance | 176 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 176 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `is_valid_sha256` | `isinstance` | 171 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 171 |
+| external_call | `is_valid_sha256` | `isinstance` | 176 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 176 |
 
 ## Behavior
 

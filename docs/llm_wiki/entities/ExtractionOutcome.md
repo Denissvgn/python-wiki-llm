@@ -1,6 +1,6 @@
 # _ExtractionOutcome
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:279`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:280`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -27,7 +27,7 @@ _Auto-generated from `_ExtractionOutcome` in `src/llm_wiki_cli/services/extracti
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

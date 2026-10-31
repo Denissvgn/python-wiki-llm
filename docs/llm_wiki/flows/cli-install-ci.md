@@ -93,9 +93,9 @@ sequenceDiagram
     p1-->>p30: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 658 interactions; 628 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 666 interactions; 636 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 208 (207 omitted); unresolved 1 of 152 (151 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 210 (209 omitted); unresolved 1 of 158 (157 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -117,6 +117,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 299; effect analysis evaluated: 157, partial: 9, unavailable: 133. Counts include steps omitted from the displayed trace.
+
+Collector observations for 166 source steps with known totals: observed: 906, emitted: 865, omitted: 41. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `install_ci_workflow` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `normalize_action_ref` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.lower` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_portable_project_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_without_github_expression` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_project_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

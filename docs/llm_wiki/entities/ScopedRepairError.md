@@ -15,7 +15,7 @@ The requested repair cannot preserve its declared scope.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

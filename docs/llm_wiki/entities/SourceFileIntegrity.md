@@ -24,7 +24,7 @@ Filesystem identity used for cheap between-stage mutation checks.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

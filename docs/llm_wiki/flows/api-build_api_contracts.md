@@ -85,9 +85,9 @@ sequenceDiagram
     p1-->>p30: resolved.suffix.lower
 ```
 
-> Call sequence diagram shows 30 of 962 interactions; 932 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 960 interactions; 930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 353 (352 omitted); unresolved 1 of 421 (420 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 351 (350 omitted); unresolved 1 of 419 (418 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 7 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | unresolved | 1 |
-> Omission summary shows 8 of 170 groups; 162 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -109,6 +109,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 191; effect analysis evaluated: 140, partial: 15, unavailable: 36. Counts include steps omitted from the displayed trace.
+
+Collector observations for 155 source steps with known totals: observed: 1101, emitted: 1061, omitted: 40. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_api_contracts` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `load_openapi_document` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `_resolve_openapi_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).expanduser` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `candidate.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).relative_to(…).as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).relative_to` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. build_api_contracts"]

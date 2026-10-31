@@ -1,6 +1,6 @@
 # _ManifestScope
 
-**Location:** `src/llm_wiki_cli/services/dependencies.py:771`
+**Location:** `src/llm_wiki_cli/services/dependencies.py:793`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_dependencies](../modules/services_dependencies.md)
@@ -26,7 +26,7 @@ A scoped dependency manifest rooted at a project-relative directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
@@ -40,14 +40,12 @@ flowchart LR
     n4["_parse_python_manifest (src/llm_wiki_cli/services/dependencies.py)"]
     n5["_parse_ts_manifest (src/llm_wiki_cli/services/dependencies.py)"]
     n6["_scope_label (src/llm_wiki_cli/services/dependencies.py)"]
-    n7["_scope_was_scanned (src/llm_wiki_cli/services/dependencies.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
-    n7 --> n0
     click n0 "../modules/services_dependencies.md"
     click n1 "../modules/services_dependencies.md"
     click n2 "../modules/services_dependencies.md"
@@ -55,7 +53,6 @@ flowchart LR
     click n4 "../modules/services_dependencies.md"
     click n5 "../modules/services_dependencies.md"
     click n6 "../modules/services_dependencies.md"
-    click n7 "../modules/services_dependencies.md"
 ```
 
 ### Summary
@@ -74,4 +71,3 @@ flowchart LR
 | `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
 | `_parse_ts_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
 | `_scope_label` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
-| `_scope_was_scanned` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |

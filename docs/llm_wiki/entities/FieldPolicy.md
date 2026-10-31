@@ -23,7 +23,7 @@ _Auto-generated from `FieldPolicy` in `src/llm_wiki_cli/services/packet_field_po
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

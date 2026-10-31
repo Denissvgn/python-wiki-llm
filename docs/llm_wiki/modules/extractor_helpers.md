@@ -28,11 +28,19 @@ invalid receipts retain the exact cache-only preparation route; a current receip
 with a runtime mismatch directs the caller to select the recorded runtime rather
 than suggesting that preparation changes PATH. Inspection writes no cache state.
 
+TypeScript preparation uses a distinct receipt/key for complete
+dependency-tree custody. Legacy receipts remain available for diagnosis but
+require explicit preparation before reuse; old cache roots are retained. Other
+helper receipt contracts remain unchanged. Reads neither migrate nor prepare a
+helper, and the active Node runtime remains a separate requirement.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `typescript_helper_identity` |
 | `.inventory_cache` | `ENV_CACHE_DIR` |
+| `.io` | `first_unsafe_path_component` |
 | `.paths` | `render_shell_command` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
@@ -66,15 +74,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (2) |
+| Outbound | `src` (4) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 50 | — | — |
+| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 53 | — | — |
 
 ## Functions
 
@@ -102,6 +110,7 @@ flowchart LR
 | `_manifest_path` | `(cache_root: Path, language: str) -> Path` | — | — |
 | `_load_manifest` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
 | `_write_manifest` | `(cache_root: Path, language: str, data: dict[str, Any]) -> None` | — | — |
+| `_typescript_receipt_root` | `(cache_root: Path, manifest: dict[str, Any]) -> Path \| None` | — | — |
 | `_manifest_current` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
 | `helper_preparation_argv` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> list[str]` | — | Describe cache-only recovery for one helper without executing or writing. |
 | `helper_preparation_failure_hint` | `(language: str) -> str` | — | — |

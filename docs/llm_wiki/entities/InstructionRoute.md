@@ -24,7 +24,7 @@ Route that must occur in a particular rendered section.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Raised when a lifecycle transition is illegal or stale.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -46,7 +46,7 @@ requires built-in producers and cannot request storage or surface-policy changes
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

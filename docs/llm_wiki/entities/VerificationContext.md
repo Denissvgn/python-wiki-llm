@@ -24,12 +24,13 @@ All already evaluated inputs available to pure checkers.
 | `scope_locator` | `str \| None` | `None` | — |
 | `artifact_integrity` | `bool` | `True` | — |
 | `artifact_diagnostics` | `tuple[VerificationDiagnostic, ...]` | `()` | — |
+| `_validated_artifacts` | `InitVar[object \| None]` | `None` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__post_init__` | `() -> None` | — | — |
+| `__post_init__` | `(_validated_artifacts: object \| None = None) -> None` | — | — |
 | `evidence_hash` | `() -> str` | `@property` | — |
 | `snapshot_hash` | `() -> str` | `@property` | — |
 
@@ -76,7 +77,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [verification_contracts](../modules/verification_contracts.md) | 3 | `artifact_diagnostics`, `artifact_integrity`, `evaluated_snapshot`, `evidence`, `knowledge`, `knowledge_hash`, `scope_hash`, `scope_locator`, `scope_uid` |
+| [verification_contracts](../modules/verification_contracts.md) | 3 | `_validated_artifacts`, `artifact_diagnostics`, `artifact_integrity`, `evaluated_snapshot`, `evidence`, `knowledge`, `knowledge_hash`, `scope_hash`, `scope_locator`, `scope_uid` |
 
 ### References
 

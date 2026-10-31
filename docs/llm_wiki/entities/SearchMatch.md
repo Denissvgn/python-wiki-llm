@@ -22,7 +22,7 @@ A canonical wiki result coordinate with title and snippet. Ranked matches additi
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

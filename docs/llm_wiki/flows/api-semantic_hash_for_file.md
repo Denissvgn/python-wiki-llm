@@ -43,6 +43,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 5; effect analysis evaluated: 5, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 5 source steps with known totals: observed: 16, emitted: 16, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. semantic_hash_for_file"]
@@ -96,33 +105,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_hash_for_file | without_line_metadata | 886 | `without_line_metadata(file_data)` |
-| without_line_metadata | isinstance | 872 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 874 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 875 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 875 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 878 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 879 | `without_line_metadata(item)` |
-| semantic_hash_for_file | json.dumps(…).encode | 889 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
-| semantic_hash_for_file | json.dumps | 889 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
-| semantic_hash_for_file | sha256_bytes | 894 | `sha256_bytes(legacy_bytes)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| semantic_hash_for_file | without_line_metadata | 931 | `without_line_metadata(file_data)` |
+| without_line_metadata | isinstance | 917 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 919 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 920 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 920 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 923 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
+| semantic_hash_for_file | json.dumps(…).encode | 934 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
+| semantic_hash_for_file | json.dumps | 934 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
+| semantic_hash_for_file | sha256_bytes | 939 | `sha256_bytes(legacy_bytes)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 872 |
-| external_call | `without_line_metadata` | `sorted` | 875 |
-| unresolved_call | `without_line_metadata` | `value.items` | 875 |
-| external_call | `without_line_metadata` | `isinstance` | 878 |
-| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 889 |
-| external_call | `semantic_hash_for_file` | `json.dumps` | 889 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `without_line_metadata` | `isinstance` | 917 |
+| external_call | `without_line_metadata` | `sorted` | 920 |
+| unresolved_call | `without_line_metadata` | `value.items` | 920 |
+| external_call | `without_line_metadata` | `isinstance` | 923 |
+| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 934 |
+| external_call | `semantic_hash_for_file` | `json.dumps` | 934 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
 | step_limit | `semantic_hash_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

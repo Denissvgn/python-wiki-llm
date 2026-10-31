@@ -11,7 +11,9 @@ from .knowledge_storage import (
     COLLECTIONS, KnowledgeStorageError, _Encoder, _concept_aliases, _node_aliases, _owner,
     canonical_bytes, digest, _text, _LOOKUP_GROUP_TARGET,
 )
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from .contracts import (
+    GOVERNANCE_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY,
+)
 
 
 def expected_records(payload, basis, *, spills=None):
@@ -36,6 +38,9 @@ def expected_records(payload, basis, *, spills=None):
         aliases = spills.enter_context(SortedRuns())
     for concept in payload["concepts"]:
         owners[concept["locator"]] = _owner(concept)
+        governance = concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
+        if isinstance(governance, dict) and isinstance(governance.get("uid"), str):
+            owners[governance["uid"]] = _owner(concept)
         pages[concept["document"]["canonical_path"]] = _owner(concept)
 
     def record(kind, rid, owner, value, keys):
@@ -69,8 +74,11 @@ def expected_records(payload, basis, *, spills=None):
             if source_keys:
                 owner = source_keys[0]
             else:
-                locator = _text(node.get("locator") if isinstance(node, dict) else node, "edge.from")
-                owner = owners.get(locator, min(keys) if keys else "edge:" + edge["key"])
+                coordinate = _text(
+                    node.get("locator", node.get("uid")) if isinstance(node, dict) else node,
+                    "edge.from",
+                )
+                owner = owners.get(coordinate, min(keys) if keys else "edge:" + edge["key"])
             aliases_for_edge = {owner, *("out:" + k for k in keys), *("in:" + k for k in _node_aliases(edge["target"]))}
             yield record("edges", edge["key"], owner, edge, aliases_for_edge)
     sections = extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)

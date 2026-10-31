@@ -2,12 +2,13 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 59 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 60 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -101,11 +102,11 @@ sequenceDiagram
     participant p21 as governance_writer_lock
     participant p22 as storage_writer_lock
     participant p23 as snapshot_wiki
-    participant p24 as _commit_sharded
-    participant p25 as _recovery_directory
+    participant p24 as _recovery_directory
+    participant p25 as _commit_sharded
     participant p26 as _commit_flat
-    participant p27 as _planned_write
-    participant p28 as save_recovery_snapshot
+    participant p27 as save_recovery_snapshot
+    participant p28 as _planned_write
     participant p29 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     participant p30 as core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     p0->>p1: _detached
@@ -131,18 +132,18 @@ sequenceDiagram
     p9->>p21: governance_writer_lock
     p9->>p22: storage_writer_lock
     p9->>p23: snapshot_wiki
-    p16->>p24: _commit_sharded
-    p9->>p25: _recovery_directory
+    p9->>p24: _recovery_directory
+    p16->>p25: _commit_sharded
     p16->>p26: _commit_flat
-    p15->>p27: _planned_write
-    p9->>p28: save_recovery_snapshot
+    p9->>p27: save_recovery_snapshot
+    p15->>p28: _planned_write
     p0-->>p29: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 2850 interactions; 2820 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2909 interactions; 2879 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 958 (957 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 962 (961 omitted); unresolved 1 of 697 (696 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 675 groups; 667 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 684 groups; 676 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -164,6 +165,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1251; effect analysis evaluated: 834, partial: 50, unavailable: 367. Counts include steps omitted from the displayed trace.
+
+Collector observations for 884 source steps with known totals: observed: 5428, emitted: 5106, omitted: 322. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `acknowledge_maintenance` | `available` | `partial` | `available` | `13` | `10` | `3` |
+| `type (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_detached` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `require` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `type (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `maintenance_core` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `MaintenanceCore` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. acknowledge_maintenance"]
@@ -233,7 +262,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

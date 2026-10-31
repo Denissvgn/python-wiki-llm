@@ -17,7 +17,7 @@ Additive captured-source coverage for static call queries.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -32,6 +32,27 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 4; effect analysis evaluated: 2, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `checker_contract` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_checker_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_CHECKER_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `UnknownVerificationCheckerError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. checker_contract"]
@@ -66,22 +87,22 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| checker_contract | _checker_id | 671 | `_checker_id(checker_id, 'checker_id')` |
-| _checker_id | isinstance | 1359 | `isinstance(value, str)` |
-| _checker_id | _CHECKER_ID_RE.fullmatch | 1359 | `_CHECKER_ID_RE.fullmatch(value)` |
-| _checker_id | VerificationContractError | 1360 | `VerificationContractError(...)` |
-| checker_contract | UnknownVerificationCheckerError | 675 | `UnknownVerificationCheckerError(checker_id)` |
+| checker_contract | _checker_id | 700 | `_checker_id(checker_id, 'checker_id')` |
+| _checker_id | isinstance | 1388 | `isinstance(value, str)` |
+| _checker_id | _CHECKER_ID_RE.fullmatch | 1388 | `_CHECKER_ID_RE.fullmatch(value)` |
+| _checker_id | VerificationContractError | 1389 | `VerificationContractError(...)` |
+| checker_contract | UnknownVerificationCheckerError | 704 | `UnknownVerificationCheckerError(checker_id)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_checker_id` | `isinstance` | 1359 |
-| unresolved_call | `_checker_id` | `_CHECKER_ID_RE.fullmatch` | 1359 |
+| external_call | `_checker_id` | `isinstance` | 1388 |
+| unresolved_call | `_checker_id` | `_CHECKER_ID_RE.fullmatch` | 1388 |
 
 ## Behavior
 

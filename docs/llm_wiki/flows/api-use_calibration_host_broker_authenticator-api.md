@@ -94,6 +94,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 39; effect analysis evaluated: 17, partial: 3, unavailable: 19. Counts include steps omitted from the displayed trace.
+
+Collector observations for 20 source steps with known totals: observed: 150, emitted: 102, omitted: 48. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_require_bounded_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_bounded_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)"]
@@ -153,25 +181,25 @@ flowchart LR
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text) | 650 | `isinstance(value, str)` |
-| require_bounded_text | len | 651 | `len(value)` |
-| require_bounded_text | len | 652 | `len(value)` |
-| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
-| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text) | 658 | `isinstance(value, str)` |
+| require_bounded_text | len | 659 | `len(value)` |
+| require_bounded_text | len | 660 | `len(value)` |
+| require_bounded_text | value.strip | 661 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 664 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `use_calibration_host_broker_authenticator` | `isinstance` | 195 |
-| external_call | `require_bounded_text` | `isinstance` | 650 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_bounded_text` | `isinstance` | 658 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 661 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 | step_limit | `use_calibration_host_broker_authenticator` | `first 12 steps` | 0 |
 
 ## Behavior

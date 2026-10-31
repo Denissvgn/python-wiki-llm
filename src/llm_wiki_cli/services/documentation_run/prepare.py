@@ -544,7 +544,10 @@ def _prepare_documentation_run_impl(
     generated_ownership_path = (
         workspace_root / RUN_CONTROL_DIR / "evidence" / "generated-ownership.json"
     )
-    _write_json(generated_ownership_path, {"fingerprints": generated_baseline})
+    _write_json(
+        generated_ownership_path,
+        {"fingerprints": generated_baseline, "coverage": _native_ownership_coverage()},
+    )
     integrity_anchors = {
         "generated_ownership": hash_bytes(generated_ownership_path.read_bytes()),
     }

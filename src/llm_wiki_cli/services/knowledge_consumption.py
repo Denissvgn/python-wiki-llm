@@ -39,6 +39,7 @@ from .knowledge_model import (
 from .sync_manifest import SyncManifest
 
 if TYPE_CHECKING:
+    from .knowledge_artifacts import ValidatedKnowledgeArtifacts
     from .implementation_evidence import ImplementationReport
 
 
@@ -356,6 +357,39 @@ class KnowledgeReadView:
     @property
     def findings(self) -> tuple[KnowledgeLoadIssue, ...]:
         return self.projection_findings
+
+
+def _validated_artifacts_for_view(
+    view: KnowledgeReadView,
+) -> ValidatedKnowledgeArtifacts | None:
+    """Reuse only the validator-issued values bound to this captured view."""
+    from .knowledge_artifacts import require_validated_artifacts
+
+    try:
+        artifacts = require_validated_artifacts(view.validated_artifacts)
+    except TypeError:
+        return None
+    marker = (
+        None if view.manifest_basis is None else view.manifest_basis.artifact_hashes
+    )
+    if (
+        artifacts.knowledge is not view.knowledge
+        or artifacts.surface_payload is not view.surface
+        or marker is None
+        or (
+            marker.surface_index_hash,
+            marker.knowledge_index_hash,
+            marker.evaluated_envelope_hash,
+            marker.governance_hash,
+        ) != (
+            artifacts.surface_index_hash,
+            artifacts.knowledge_index_hash,
+            artifacts.evaluated_envelope_hash,
+            artifacts.governance_hash,
+        )
+    ):
+        return None
+    return artifacts
 
 
 def _machine_invalidation_reasons(value: object) -> tuple[str, ...]:

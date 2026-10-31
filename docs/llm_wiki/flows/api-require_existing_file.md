@@ -24,6 +24,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 3, emitted: 3, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_existing_file"]
@@ -43,17 +52,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_existing_file | path.is_file | 589 | `path.is_file(data not statically known)` |
+| require_existing_file | path.is_file | 597 | `path.is_file(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_existing_file` | `path.is_file` | 589 |
+| unresolved_call | `require_existing_file` | `path.is_file` | 597 |
 
 ## Behavior
 

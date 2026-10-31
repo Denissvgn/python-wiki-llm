@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 101; effect analysis evaluated: 59, partial: 1, unavailable: 41. Counts include steps omitted from the displayed trace.
+
+Collector observations for 60 source steps with known totals: observed: 220, emitted: 219, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `serialize_verification_receipt` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `formatted_json_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `formatted_json_text(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `formatted_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `verification_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. serialize_verification_receipt"]
@@ -152,30 +180,30 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_verification_receipt | formatted_json_bytes | 790 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
-| formatted_json_bytes | formatted_json_text(…).encode | 210 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | formatted_json_text | 210 | `formatted_json_text(value)` |
-| formatted_json_text | json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text) | 196 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_verification_receipt | verification_receipt_to_payload | 790 | `verification_receipt_to_payload(value)` |
-| verification_receipt_to_payload | validate_verification_receipt | 781 | `validate_verification_receipt(value)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 806 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 805 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1101 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1103 | `dict(receipt.evaluated_snapshot)` |
-| _receipt_to_payload | check.to_payload | 1107 | `check.to_payload(data not statically known)` |
+| serialize_verification_receipt | formatted_json_bytes | 819 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
+| formatted_json_bytes | formatted_json_text(…).encode | 215 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | formatted_json_text | 215 | `formatted_json_text(value)` |
+| formatted_json_text | json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text) | 201 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| serialize_verification_receipt | verification_receipt_to_payload | 819 | `verification_receipt_to_payload(value)` |
+| verification_receipt_to_payload | validate_verification_receipt | 810 | `validate_verification_receipt(value)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
+| _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 210 |
-| external_call | `formatted_json_text` | `json.dumps` | 196 |
-| external_call | `validate_verification_receipt` | `isinstance` | 806 |
-| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1107 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 215 |
+| external_call | `formatted_json_text` | `json.dumps` | 201 |
+| external_call | `validate_verification_receipt` | `isinstance` | 835 |
+| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1136 |
 | step_limit | `serialize_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_verification_receipt` | `depth limit` | 0 |
 

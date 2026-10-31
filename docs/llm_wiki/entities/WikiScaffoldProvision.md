@@ -21,7 +21,7 @@ Additive scaffold entries created by one guarded provisioning pass.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

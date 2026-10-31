@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.markdown_sections import (
     description_table_cells,
@@ -7,9 +9,38 @@ from llm_wiki_cli.services.markdown_sections import (
     parse_markdown_document,
     parse_markdown_sections,
     preserve_level_two_section_exact,
+    preserve_table_description_cells,
+    replace_section_body,
     split_table_row,
     table_description_cells,
 )
+
+
+@pytest.mark.parametrize("separator", ["\x85", "\u2028", "\u2029"])
+def test_unicode_content_survives_section_and_table_rewrites(separator):
+    # These are source characters inside a rendered code value, not CommonMark
+    # line endings. A following heading-like substring must stay inline too.
+    value = f"<pre><code>first{separator}## inline</code></pre>"
+    markdown = (
+        f"# Entity\n\n**Type parameters:** {value}\n\n"
+        "## Methods\n\n| Method | Signature | Description |\n|---|---|---|\n"
+        f"| `read` | {value} | — |\n\n"
+        "## Relationships\n\nold\n"
+    )
+    document = parse_markdown_document(markdown, "llm-wiki://entities/example")
+    assert [section.title for section in document] == ["Entity", "Methods", "Relationships"]
+    cells = description_table_cells(document[1].exact_text)
+    assert len(cells) == 1 and cells[0].cells[1] == value
+    rewritten, count = preserve_table_description_cells(markdown, "Methods", {"read": "Authored description."})
+    assert count == 1 and rewritten.count(value) == 2
+    assert table_description_cells(rewritten, "Methods") == {"read": "Authored description."}
+    rewritten = replace_section_body(rewritten, "Relationships", f"new {value}")
+    assert rewritten.count(value) == 3
+    assert f"new {value}" in rewritten
+    projection = mixed_table_projection(document[1].exact_text)
+    structural_lines = projection.structural_projection["lines"]
+    assert isinstance(structural_lines, list)
+    assert any(value in line for line in structural_lines)
 
 
 def test_hierarchy_normalizes_line_endings_and_commits_exact_section_bytes():

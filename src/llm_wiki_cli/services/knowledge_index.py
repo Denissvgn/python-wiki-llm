@@ -306,9 +306,18 @@ def _model_to_payload(model: KnowledgeIndex) -> dict[str, Any]:
 
 def _validated_index_serialization(value: object) -> tuple[KnowledgeIndex, bytes]:
     """Validate untrusted input once and return its model and canonical bytes."""
+    model, _, content = _validated_index_data(value)
+    return model, content
+
+
+def _validated_index_data(
+    value: object,
+) -> tuple[KnowledgeIndex, Mapping[str, Any], bytes]:
+    """Retain the immutable canonical payload produced by one full validation."""
     model = freeze(validate_knowledge_index(value))
-    content = _serialize_payload(_model_to_payload(model))
-    return model, content.encode("utf-8")
+    payload = freeze(_model_to_payload(model))
+    content = _serialize_payload(payload)
+    return model, payload, content.encode("utf-8")
 
 
 @dataclass(frozen=True)
@@ -347,7 +356,7 @@ def _validator_identity() -> tuple:
     from . import contracts, knowledge_model
 
     functions = (parse_knowledge_index, knowledge_model.parse_knowledge_index,
-                 validate_knowledge_index, _validate_builder_model, _validated_index_serialization, _serialize_payload,
+                 validate_knowledge_index, _validate_builder_model, _validated_index_serialization, _validated_index_data, _serialize_payload,
                  _model_to_payload, _knowledge_index_to_payload_unchecked)
     return (KNOWLEDGE_SCHEMA_VERSION, contracts.KNOWLEDGE_SCHEMA_VERSION,
             knowledge_model.KNOWLEDGE_SCHEMA_VERSION,

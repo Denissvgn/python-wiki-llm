@@ -1,6 +1,7 @@
 name: Context health action
 
 on:
+  workflow_call:
   workflow_dispatch:
     inputs:
       provider-ref:
@@ -8,34 +9,8 @@ on:
         type: string
         required: true
         default: "63c8fa7b264610b57f0f1e24c9327eb92d8b0819"
-  push:
-    branches: [main]
-    paths:
-      - .github/scripts/setup-llm-wiki-ci-toolchains.sh
-      - integrations/github-action/**
-      - integrations/wiki-integrity/**
-      - tests/provider_conformance/**
-      - release/qualification.py
-      - release/toolchain-lock.json
-      - src/llm_wiki_cli/**
-      - tests/fixtures/context-health-action/source/**
-      - pyproject.toml
-      - .github/workflows/action-selftest.yml
-  pull_request:
-    paths:
-      - .github/scripts/setup-llm-wiki-ci-toolchains.sh
-      - integrations/github-action/**
-      - integrations/wiki-integrity/**
-      - tests/provider_conformance/**
-      - release/qualification.py
-      - release/toolchain-lock.json
-      - src/llm_wiki_cli/**
-      - tests/fixtures/context-health-action/source/**
-      - pyproject.toml
-      - .github/workflows/action-selftest.yml
-
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: context-health-action-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:

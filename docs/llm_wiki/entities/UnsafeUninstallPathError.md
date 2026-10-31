@@ -15,7 +15,7 @@ Raised when an uninstall-owned path could escape the project tree.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

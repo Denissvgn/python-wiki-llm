@@ -34,6 +34,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 11, emitted: 11, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. should_preserve_semantic_value"]
@@ -69,26 +78,26 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| should_preserve_semantic_value | is_placeholder_description | 543 | `is_placeholder_description(existing)` |
-| is_placeholder_description | value.strip | 530 | `value.strip(data not statically known)` |
-| is_placeholder_description | _AUTO_GENERATED_RE.match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 545 | `(existing or '').strip(data not statically known)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 546 | `(generated or '').strip(data not statically known)` |
-| should_preserve_semantic_value | old_generated.strip | 549 | `old_generated.strip(data not statically known)` |
+| should_preserve_semantic_value | is_placeholder_description | 551 | `is_placeholder_description(existing)` |
+| is_placeholder_description | value.strip | 538 | `value.strip(data not statically known)` |
+| is_placeholder_description | _AUTO_GENERATED_RE.match | 541 | `_AUTO_GENERATED_RE.match(stripped)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 553 | `(existing or '').strip(data not statically known)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 554 | `(generated or '').strip(data not statically known)` |
+| should_preserve_semantic_value | old_generated.strip | 557 | `old_generated.strip(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_placeholder_description` | `value.strip` | 530 |
-| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 533 |
-| unresolved_call | `should_preserve_semantic_value` | `(existing or '').strip` | 545 |
-| unresolved_call | `should_preserve_semantic_value` | `(generated or '').strip` | 546 |
-| unresolved_call | `should_preserve_semantic_value` | `old_generated.strip` | 549 |
+| unresolved_call | `is_placeholder_description` | `value.strip` | 538 |
+| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 541 |
+| unresolved_call | `should_preserve_semantic_value` | `(existing or '').strip` | 553 |
+| unresolved_call | `should_preserve_semantic_value` | `(generated or '').strip` | 554 |
+| unresolved_call | `should_preserve_semantic_value` | `old_generated.strip` | 557 |
 
 ## Behavior
 

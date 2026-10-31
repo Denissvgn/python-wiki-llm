@@ -34,6 +34,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 14, emitted: 14, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. traverse_typed_graph"]
@@ -69,25 +78,25 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | _native_tool_call | 1447 | `_native_tool_call(service.traverse_typed_graph, locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
-| _native_tool_call | callback | 1347 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1355 | `str(exc)` |
-| _native_tool_call | CallToolResult | 1359 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent | 1361 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1361 | `json.dumps(failure, sort_keys=True)` |
+| traverse_typed_graph | _native_tool_call | 1448 | `_native_tool_call(service.traverse_typed_graph, locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
+| _native_tool_call | callback | 1348 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1356 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1360 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1362 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1362 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1347 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1359 |
-| external_call | `_native_tool_call` | `TextContent` | 1361 |
-| external_call | `_native_tool_call` | `json.dumps` | 1361 |
+| unresolved_call | `_native_tool_call` | `callback` | 1348 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1360 |
+| external_call | `_native_tool_call` | `TextContent` | 1362 |
+| external_call | `_native_tool_call` | `json.dumps` | 1362 |
 
 ## Behavior
 

@@ -85,6 +85,15 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 8, emitted: 8, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. build_documentation_agent_packet"]
@@ -161,8 +170,8 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | filesystem_read | `before_path.read_bytes` | `build_documentation_agent_packet` | 166 |
-| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 295 |
-| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 299 |
+| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 296 |
+| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 300 |
 
 ### Static analysis gaps
 

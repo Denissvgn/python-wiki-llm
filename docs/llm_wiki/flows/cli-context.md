@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 35 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 36 more
 
 **Complete modules touched:**
 
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -116,9 +117,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1424 interactions; 1394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1505 interactions; 1475 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 495 (494 omitted); unresolved 1 of 440 (439 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 515 (514 omitted); unresolved 1 of 457 (456 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,7 +133,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 277 groups; 269 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 286 groups; 278 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,6 +141,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 534; effect analysis evaluated: 373, partial: 31, unavailable: 130. Counts include steps omitted from the displayed trace.
+
+Collector observations for 404 source steps with known totals: observed: 2913, emitted: 2625, omitted: 288. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run (src/llm_wiki_cli/services/context_service.py)` | `available` | `partial` | `available` | `23` | `21` | `2` |
+| `getattr (src/llm_wiki_cli/services/context_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_run_protocol` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
+| `getattr (src/llm_wiki_cli/services…_service.py:_run_protocol)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_read_protocol_request` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `sys.stdin.read` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run (src/llm_wiki_cli/services/context_service.py)"]
@@ -218,10 +247,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3598 | `getattr(args, 'request', None)` |
-| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3599 | `_run_protocol(args)` |
-| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3439 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3442 | `_read_protocol_request(args.request, packet_defaults=...)` |
+| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3650 | `getattr(args, 'request', None)` |
+| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3651 | `_run_protocol(args)` |
+| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3491 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3494 | `_read_protocol_request(args.request, packet_defaults=...)` |
 | _read_protocol_request | sys.stdin.read | 1092 | `sys.stdin.read(data not statically known)` |
 | _read_protocol_request | Path(…).read_text | 1094 | `Path(source).read_text(encoding='utf-8')` |
 | _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1094 | `Path(source)` |
@@ -234,21 +263,21 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3615 |
-| output | `print` | `run` | 3618 |
-| output | `print` | `run` | 3662 |
-| output | `print` | `run` | 3665 |
-| output | `print` | `run` | 3672 |
-| output | `print` | `run` | 3674 |
-| output | `print` | `run` | 3683 |
-| output | `print` | `run` | 3685 |
+| output | `print` | `run` | 3667 |
+| output | `print` | `run` | 3670 |
+| output | `print` | `run` | 3714 |
+| output | `print` | `run` | 3717 |
+| output | `print` | `run` | 3724 |
+| output | `print` | `run` | 3726 |
+| output | `print` | `run` | 3735 |
+| output | `print` | `run` | 3737 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3598 |
-| external_call | `_run_protocol` | `getattr` | 3439 |
+| external_call | `run` | `getattr` | 3650 |
+| external_call | `_run_protocol` | `getattr` | 3491 |
 | external_call | `_read_protocol_request` | `sys.stdin.read` | 1092 |
 | unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1094 |
 | external_call | `_read_protocol_request` | `json.loads` | 1100 |

@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 2, emitted: 2, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. trim_blank_lines"]
@@ -53,20 +62,20 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| trim_blank_lines | len | 684 | `len(lines)` |
-| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1) | 685 | `lines[start].strip(data not statically known)` |
-| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines) | 687 | `lines[end - 1].strip(data not statically known)` |
+| trim_blank_lines | len | 692 | `len(lines)` |
+| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1) | 693 | `lines[start].strip(data not statically known)` |
+| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines) | 695 | `lines[end - 1].strip(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `trim_blank_lines` | `lines[start].strip` | 685 |
-| unresolved_call | `trim_blank_lines` | `lines[end - 1].strip` | 687 |
+| unresolved_call | `trim_blank_lines` | `lines[start].strip` | 693 |
+| unresolved_call | `trim_blank_lines` | `lines[end - 1].strip` | 695 |
 
 ## Behavior
 

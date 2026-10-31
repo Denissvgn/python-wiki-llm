@@ -29,6 +29,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 10, emitted: 10, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_positive_int"]
@@ -59,20 +68,20 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_positive_int | require_nonnegative_int | 848 | `require_nonnegative_int(value, error=invalid_error)` |
-| require_nonnegative_int | require_int | 826 | `require_int(value, error=error)` |
-| require_int | isinstance | 818 | `isinstance(value, bool)` |
-| require_int | isinstance | 818 | `isinstance(value, int)` |
+| require_positive_int | require_nonnegative_int | 856 | `require_nonnegative_int(value, error=invalid_error)` |
+| require_nonnegative_int | require_int | 834 | `require_int(value, error=error)` |
+| require_int | isinstance | 826 | `isinstance(value, bool)` |
+| require_int | isinstance | 826 | `isinstance(value, int)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_int` | `isinstance` | 818 |
+| external_call | `require_int` | `isinstance` | 826 |
 
 ## Behavior
 

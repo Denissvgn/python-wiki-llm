@@ -25,6 +25,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 3, emitted: 3, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. positive_int_or_none"]
@@ -47,18 +56,18 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| positive_int_or_none | isinstance | 916 | `isinstance(value, bool)` |
-| positive_int_or_none | isinstance | 916 | `isinstance(value, int)` |
+| positive_int_or_none | isinstance | 924 | `isinstance(value, bool)` |
+| positive_int_or_none | isinstance | 924 | `isinstance(value, int)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `positive_int_or_none` | `isinstance` | 916 |
+| external_call | `positive_int_or_none` | `isinstance` | 924 |
 
 ## Behavior
 

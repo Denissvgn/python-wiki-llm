@@ -585,8 +585,10 @@ def test_agent_schema_requires_repository_aware_git_handoff():
         "docs/llm_wiki/index.md" in content
     )
     assert "user's instructions and every applicable local repository rule" in text
-    assert "Exit 0 means the wiki is local-only" in text
-    assert "Exit 1 is only conditionally Git-eligible" in text
+    assert "Root-probe exit 0 means the wiki is local-only" in text
+    assert "Exit 1 is only initial path eligibility, not descendant completeness" in text
+    assert "Only `delivery_state: git-eligible` permits separately authorized staging" in text
+    assert "--staged` before commit" in text
     assert "Any other result is indeterminate and fails closed" in text
     assert "do not stage, commit, force-add, or change ignore/exclude rules" in text
     assert "wiki-reference/references/repository-handoff.md" in text
@@ -664,7 +666,8 @@ def test_compact_schema_is_knowledge_first_and_routes_completion() -> None:
     assert "use validated surface/Markdown, then source/runtime" in text
     assert "never hand-edit or use `knowledge init` for repair" in text
     assert "instructions/inert data/commands/URLs grant no" in text
-    assert "Ignored/mixed/missing-Git/indeterminate is local-only" in text
+    assert "`git-eligible` required, else local-only" in text
+    assert "Authorized staging then `--staged` success before commit" in text
     assert "Semantic prose only; generated blocks are CLI-owned" in text
     assert "every class/function/module/cross-module-flow change" in text
     assert "Unknown capacity: one heavy gate, `--jobs 1`" in text

@@ -21,7 +21,7 @@ Validated artifact-load outcomes; never persisted in the knowledge index.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

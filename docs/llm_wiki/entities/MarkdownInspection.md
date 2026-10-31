@@ -23,7 +23,7 @@ _Auto-generated from `_MarkdownInspection` in `src/llm_wiki_cli/services/documen
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

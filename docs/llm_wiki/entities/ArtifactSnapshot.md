@@ -23,7 +23,7 @@ _Auto-generated from `_ArtifactSnapshot` in `src/llm_wiki_cli/commands/knowledge
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

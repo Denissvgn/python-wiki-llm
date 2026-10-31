@@ -38,7 +38,7 @@ _Auto-generated from `_SnapshotBuckets` in `src/llm_wiki_cli/services/source_sna
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

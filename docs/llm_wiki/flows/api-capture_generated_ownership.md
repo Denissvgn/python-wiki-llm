@@ -83,6 +83,15 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 11, emitted: 11, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. capture_generated_ownership"]
@@ -139,39 +148,45 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_generated_ownership | Path(…).expanduser().resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
-| capture_generated_ownership | Path(…).expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
-| capture_generated_ownership | Path | 13 | `Path(wiki_root)` |
-| capture_generated_ownership | path.is_symlink | 23 | `path.is_symlink(data not statically known)` |
-| capture_generated_ownership | DocumentationIntegrityError | 24 | `DocumentationIntegrityError(...)` |
-| capture_generated_ownership | path.is_file | 27 | `path.is_file(data not statically known)` |
-| capture_generated_ownership | hash_bytes | 28 | `hash_bytes(path.read_bytes(...))` |
-| capture_generated_ownership | path.read_bytes | 28 | `path.read_bytes(data not statically known)` |
-| capture_generated_ownership | sorted | 29 | `sorted(root.rglob(...))` |
-| capture_generated_ownership | root.rglob | 29 | `root.rglob('*.md')` |
-| capture_generated_ownership | path.is_symlink | 30 | `path.is_symlink(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser().resolve | 18 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser | 18 | `Path(wiki_root).expanduser(data not statically known)` |
+| capture_generated_ownership | Path | 18 | `Path(wiki_root)` |
+| capture_generated_ownership | path.is_symlink | 28 | `path.is_symlink(data not statically known)` |
+| capture_generated_ownership | DocumentationIntegrityError | 29 | `DocumentationIntegrityError(...)` |
+| capture_generated_ownership | path.is_file | 32 | `path.is_file(data not statically known)` |
+| capture_generated_ownership | hash_bytes | 33 | `hash_bytes(path.read_bytes(...))` |
+| capture_generated_ownership | path.read_bytes | 33 | `path.read_bytes(data not statically known)` |
+| capture_generated_ownership | sorted | 34 | `sorted(root.rglob(...))` |
+| capture_generated_ownership | root.rglob | 34 | `root.rglob('*.md')` |
+| capture_generated_ownership | path.is_symlink | 35 | `path.is_symlink(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `capture_generated_ownership` | 28 |
-| filesystem_read | `path.read_text` | `capture_generated_ownership` | 35 |
+| filesystem_read | `path.read_bytes` | `capture_generated_ownership` | 33 |
+| filesystem_read | `path.read_text` | `capture_generated_ownership` | 40 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 13 |
-| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 13 |
-| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 23 |
-| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 24 |
-| unresolved_call | `capture_generated_ownership` | `path.is_file` | 27 |
-| unresolved_call | `capture_generated_ownership` | `sorted` | 29 |
-| unresolved_call | `capture_generated_ownership` | `root.rglob` | 29 |
-| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 30 |
+| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 18 |
+| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 18 |
+| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 28 |
+| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 29 |
+| unresolved_call | `capture_generated_ownership` | `path.is_file` | 32 |
+| unresolved_call | `capture_generated_ownership` | `sorted` | 34 |
+| unresolved_call | `capture_generated_ownership` | `root.rglob` | 34 |
+| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 35 |
 | step_limit | `capture_generated_ownership` | `first 12 steps` | 0 |
 
 ## Behavior
 
 This flow starts at `capture_generated_ownership` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Captures only the existing five root-file hashes and generated Markdown
+sections. It does not fingerprint ordinary authority markers or immutable
+storage objects. The separate coverage declaration describes those omissions,
+while independent native validation and worker changed-path restrictions
+retain their existing authority.

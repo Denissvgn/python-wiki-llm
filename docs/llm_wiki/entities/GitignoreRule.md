@@ -23,7 +23,7 @@ _Auto-generated from `_GitignoreRule` in `src/llm_wiki_cli/config.py`._
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

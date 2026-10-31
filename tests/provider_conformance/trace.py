@@ -5,9 +5,10 @@ from __future__ import annotations
 from collections import Counter
 import re
 from pathlib import Path
+from markdown_it import MarkdownIt
 
 from .inventory import compare_records, paired, supported_source
-from .markdown import named_rows, signature, tables
+from .markdown import code_values, named_rows, signature, split_balanced, tables
 from .model import Finding, Incomplete, compare_sets, digest
 from .python_ast import calls
 
@@ -79,6 +80,12 @@ def markdown_observations(
         if row.get("Signature") not in (None, "", "—"):
             item.update(signature(row["Signature"], lang))
         result.append(item)
+    declarations = []
+    for row in named_rows(body, "Overloads <!-- llm-wiki-generated:overloads -->", "Function"):
+        item = {"kind": "function", "owner": "", "name": row["Function"], "line": int(row["Line"])}
+        item.update(signature(row["Signature"], lang))
+        declarations.append(item)
+    result[0:0] = declarations
     for cls in [r for r in result if r["kind"] == "class"]:
         pages = entity_pages(surface, path, cls["name"])
         if len(pages) > 1:
@@ -91,8 +98,32 @@ def markdown_observations(
         if len(pages) != 1:
             raise Incomplete(f"Missing/ambiguous entity page for {path}:{cls['name']}")
         entity = (wiki / pages[0]["canonical_path"]).read_text(encoding="utf-8")
-        bases = re.search(r"^\*\*Bases:\*\* (.+)$", entity, re.MULTILINE)
-        cls["bases"] = re.findall(r"`([^`]+)`", bases[1]) if bases else []
+        if lang == "typescript":
+            target = False
+            parser = MarkdownIt("commonmark")
+            for token in parser.parse(entity):
+                if token.type == "heading_open" and token.tag != "h1":
+                    break
+                if token.type == "inline":
+                    # Adjacent metadata lines share one Markdown paragraph.
+                    for line in token.content.split("\n"):
+                        if line == "**Target:**":
+                            target = True
+                        elif line.startswith("**Kind:** "):
+                            cls["declaration_kind"] = line[len("**Kind:** "):].strip("`").casefold().replace(" ", "_")
+                        elif line.startswith("**Type parameters:**"):
+                            code = code_values(parser.parseInline(line)[0])
+                            cls["type_params"] = split_balanced(code[0]) if code else []
+                        elif line.startswith("**Bases:**"):
+                            cls["bases"] = code_values(parser.parseInline(line)[0])
+                        elif line.startswith("**Definition truncated:**"):
+                            cls["target_truncated"] = True
+                elif token.type == "fence" and target:
+                    cls["target"] = token.content.removesuffix("\n")
+                    target = False
+        if lang != "typescript":
+            bases = re.search(r"^\*\*Bases:\*\* (.+)$", entity, re.MULTILINE)
+            cls["bases"] = re.findall(r"`([^`]+)`", bases[1]) if bases else []
         for row in named_rows(entity, "Attributes", "Name"):
             item = {
                 "kind": "attribute",
@@ -108,9 +139,17 @@ def markdown_observations(
             result.append(item)
         for row in named_rows(entity, "Methods", "Method"):
             item = {"kind": "method", "name": row["Method"], "owner": cls["name"]}
+            if row.get("Line", "").isdigit():
+                item["line"] = int(row["Line"])
             if row.get("Signature") not in (None, "", "—"):
                 item.update(signature(row["Signature"], lang))
             result.append(item)
+        declarations = []
+        for row in named_rows(entity, "Overloads <!-- llm-wiki-generated:overloads -->", "Method"):
+            item = {"kind": "method", "name": row["Method"], "owner": cls["name"], "line": int(row["Line"])}
+            item.update(signature(row["Signature"], lang))
+            declarations.append(item)
+        result[0:0] = declarations
     return result
 
 
@@ -125,6 +164,12 @@ def compare_markdown(
             continue
         source = dict(source)
         fact = path + ":" + "/".join(map(str, identity))
+        if "line" in observed:
+            findings.append(Finding(
+                fact, "markdown", "pass" if source.get("line") == observed["line"] else "fail",
+                "declaration-coordinate", source.get("line"), observed["line"],
+                module_page(surface, path)["canonical_path"],
+            ))
         findings.extend(
             compare_records(
                 source,

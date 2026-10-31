@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. coerce_positive_int"]
@@ -54,19 +63,19 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| coerce_positive_int | coerce_nonnegative_int | 936 | `coerce_nonnegative_int(value, error=error)` |
-| coerce_nonnegative_int | int | 925 | `int(value)` |
-| coerce_nonnegative_int | isinstance | 928 | `isinstance(value, bool)` |
+| coerce_positive_int | coerce_nonnegative_int | 944 | `coerce_nonnegative_int(value, error=error)` |
+| coerce_nonnegative_int | int | 933 | `int(value)` |
+| coerce_nonnegative_int | isinstance | 936 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `coerce_nonnegative_int` | `isinstance` | 928 |
+| external_call | `coerce_nonnegative_int` | `isinstance` | 936 |
 
 ## Behavior
 

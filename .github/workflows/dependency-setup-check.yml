@@ -1,18 +1,7 @@
 name: Dependency setup comparison
 
 on:
-  pull_request:
-    paths:
-      - .github/workflows/dependency-setup-check.yml
-      - .github/workflows/release-qualification.yml
-      - release/dependency_downloads.py
-      - release/dependency_setup_probe.py
-      - release/*requirements.in
-      - release/*requirements.txt
-      - tests/test_dependency_downloads.py
-      - tests/test_dependency_setup_probe.py
-      - tests/test_dependency_setup_workflow.py
-      - tests/verify_installed_knowledge_schema.py
+  workflow_call:
   workflow_dispatch:
     inputs:
       candidate-sha:
@@ -24,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: dependency-setup-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:

@@ -20,7 +20,7 @@ _Auto-generated from `_ExtractedSyncInventory` in `src/llm_wiki_cli/commands/syn
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

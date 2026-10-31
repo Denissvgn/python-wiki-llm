@@ -192,14 +192,21 @@ def _indeterminate(
     )
 
 
-def _run_git(
-    root: Path,
-    *arguments: str,
-    timeout: float,
-) -> _GitResult:
+def _git_environment(*, preserve_index: bool = False) -> dict[str, str]:
+    """Keep exclude policy and, for staged reads, Git's active index only."""
     environment = dict(os.environ)
     for key in _GIT_REPOSITORY_REDIRECTION_ENV:
+        if key == "GIT_INDEX_FILE" and preserve_index:
+            continue
         environment.pop(key, None)
+    index = environment.get("GIT_INDEX_FILE")
+    if index and not os.path.isabs(index):
+        # Git commands run at the repository root, but the caller's relative
+        # index belongs to its original cwd. Preserve symlink/.. semantics.
+        index = os.path.join(os.getcwd(), index)
+        if not os.path.isabs(index):
+            raise ValueError("active Git index cannot be resolved from this directory")
+        environment["GIT_INDEX_FILE"] = index
     environment.pop("GIT_CONFIG_PARAMETERS", None)
     environment.pop("GIT_CONFIG_COUNT", None)
     for key in tuple(environment):
@@ -208,6 +215,17 @@ def _run_git(
     environment["GIT_OPTIONAL_LOCKS"] = "0"
     environment["GIT_TERMINAL_PROMPT"] = "0"
     environment["LC_ALL"] = "C"
+    environment["GIT_NO_LAZY_FETCH"] = "1"
+    environment["GIT_NO_REPLACE_OBJECTS"] = "1"
+    return environment
+
+
+def _run_git(
+    root: Path,
+    *arguments: str,
+    timeout: float,
+) -> _GitResult:
+    environment = _git_environment()
 
     command = [
         "git",

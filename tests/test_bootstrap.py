@@ -560,6 +560,8 @@ class TestBootstrapCollisions:
         self, tmp_path, monkeypatch, capsys, assert_helper_recovery
     ):
         monkeypatch.chdir(tmp_path)
+        empty_helper_cache = tmp_path / "unprepared-helper-cache"
+        empty_helper_cache.mkdir()
         hls_app = tmp_path / "hls-analysis" / "app"
         hls_src = tmp_path / "hls-analysis" / "src" / "HLSAnalysis"
         hls_app.mkdir(parents=True)
@@ -576,6 +578,7 @@ class TestBootstrapCollisions:
                     wiki_dir="wiki",
                     format="json",
                     source_adapter=True,
+                    helper_cache_dir=str(empty_helper_cache),
                 )
             )
 
@@ -583,7 +586,10 @@ class TestBootstrapCollisions:
         assert exc_info.value.code == 1
         assert captured.out == ""
         assert "Error: haskell extraction failed" in captured.err
-        assert_helper_recovery(captured.err, language="haskell")
+        assert_helper_recovery(
+            captured.err, language="haskell", cache_dir=str(empty_helper_cache)
+        )
+        assert list(empty_helper_cache.iterdir()) == []
         assert "Unsupported sources detected" not in captured.err
         assert list((tmp_path / "wiki" / "modules").glob("*.md")) == []
 
@@ -3435,7 +3441,7 @@ class TestGenerateFlowMd:
             "truncated": False,
         }
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
-        assert "No outbound calls were detected by static analysis." in md
+        assert "No outbound call observations are available in this static trace." in md
         assert "sequenceDiagram" not in md
         assert "manually" not in md.casefold()
         assert "placeholder" not in md.casefold()
@@ -4404,3 +4410,89 @@ class TestBootstrapArchitecturePages:
         assert (tmp_path / "wiki" / "modules" / "a.md").exists()
         assert (tmp_path / "wiki" / "dependencies.md").exists()
         assert (tmp_path / "wiki" / "load-order.md").exists()
+
+
+@pytest.mark.parametrize('literal', [
+    '`first\nsecond`', '`first\r\nsecond`', '`first\tsecond`',
+    '`first\n\x80\x85\x91\x9f`',
+    '`<script>bad()</script>|[x]*_\\\nsecond`',
+])
+def test_multiline_code_cells_preserve_source_text_and_inert_markup(literal):
+    from html.parser import HTMLParser
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _table_inline_code
+
+    class CodeText(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.text, self.tags = [], []
+        def handle_starttag(self, tag, attrs):
+            self.tags.append(tag)
+        def handle_data(self, data):
+            self.text.append(data)
+
+    cell = _table_inline_code(literal)
+    assert '\n' not in cell and '\r' not in cell
+    markdown = '| Value |\n|---|\n| ' + cell + ' |\n'
+    reader = CodeText()
+    html = MarkdownIt('commonmark').enable('table').render(markdown)
+    reader.feed(html)
+    assert literal in ''.join(reader.text)
+    assert '<script>' not in html and '<a ' not in html
+    assert 'pre' in reader.tags and 'code' in reader.tags
+
+
+@pytest.mark.parametrize('value', [' ', '   ', ' \u00a0 ', ' x ', '`x`'])
+def test_inline_code_preserves_space_only_and_padded_values(value):
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _table_inline_code
+    from tests.provider_conformance.markdown import code_values
+    for table in (False, True):
+        token = MarkdownIt('commonmark').parseInline(_table_inline_code(value, table=table))[0]
+        assert code_values(token) == [value]
+
+
+@pytest.mark.parametrize('ending', ['\r', '\r\n', '\n'])
+def test_alias_preview_fence_keeps_its_trailing_line_break(ending):
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md
+    target = '`' + 'x' * (4095 - len(ending)) + ending
+    assert len(target) == 4096
+    page = _generate_entity_md({'name': 'A', 'kind': 'type_alias', 'target': target,
+                               'target_truncated': True, 'target_sha256': 'sha256:' + '0' * 64}, 'types.ts', {})
+    block = next(t for t in MarkdownIt('commonmark').parse(page) if t.type == 'fence')
+    expected = target.replace('\r\n', '\n').replace('\r', '\n')
+    assert block.content.removesuffix('\n') == expected
+
+
+def test_overload_projection_preserves_implementation_identity_and_declared_signatures():
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md, _generate_entity_md
+    from llm_wiki_cli.services.markdown_sections import section_body
+    declaration = {'name': 'read', 'line': 2, 'type_params': ['T'],
+                   'params': [{'name': 'value', 'type': 'T', 'optional': True}, {'name': 'items', 'type': 'T[]', 'rest': True}],
+                   'return_type': 'T'}
+    implementation = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}], 'overloads': [declaration]}
+    module = _generate_module_md('types.ts', {'classes': [], 'functions': [implementation]})
+    entity = _generate_entity_md({'name': 'Client', 'methods': [implementation]}, 'types.ts', {})
+    for text, label in ((module, 'Function'), (entity, 'Method')):
+        assert f'| {label} | Line | Signature | Decorators | Description |' in text
+        assert '| `read` | 3 | `(value: unknown)` |' in text
+        block = section_body(text, 'Overloads <!-- llm-wiki-generated:overloads -->')
+        assert block is not None
+        assert '| `read` | 2 | `<T>(value?: T, ...items: T[]) -> T` |' in block
+        assert 'public call signatures' in text
+    assert implementation['name'] == 'read' and implementation['line'] == 3
+
+
+def test_generic_heritage_keeps_named_relationships_without_interpreting_calls():
+    from llm_wiki_cli.services.relationships import build_entity_page_relationship_summaries
+    inventory = {'types.ts': {'language': 'typescript', 'classes': [
+        {'name': 'Parent', 'bases': []},
+        {'name': 'Contract', 'kind': 'interface', 'bases': []},
+        {'name': 'Child', 'bases': ['Parent<Map<string, number>>', 'Contract<`left|right`>']},
+        {'name': 'Dynamic', 'bases': ['mixin<string>(Parent)']},
+    ], 'functions': []}}
+    rows = {row['name']: row for row in build_entity_page_relationship_summaries(inventory)['classes']}
+    assert {base['name']: base['file'] for base in rows['Child']['bases']} == {'Parent': 'types.ts', 'Contract': 'types.ts'}
+    assert rows['Dynamic']['bases'] == [{'name': 'mixin<string>(Parent)', 'file': None, 'module': None}]
+    assert inventory['types.ts']['classes'][2]['bases'] == ['Parent<Map<string, number>>', 'Contract<`left|right`>']

@@ -1,6 +1,6 @@
 # _NativeEvidenceTransaction
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:939`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:999`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)
@@ -22,7 +22,7 @@ Captured controller state for refresh plus evidence reconciliation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

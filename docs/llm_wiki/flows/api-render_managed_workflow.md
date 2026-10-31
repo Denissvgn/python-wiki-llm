@@ -96,6 +96,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 42; effect analysis evaluated: 23, partial: 3, unavailable: 16. Counts include steps omitted from the displayed trace.
+
+Collector observations for 26 source steps with known totals: observed: 130, emitted: 115, omitted: 15. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `render_managed_workflow` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `normalize_action_ref` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.lower` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_portable_project_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_without_github_expression` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_project_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. render_managed_workflow"]
@@ -166,7 +194,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

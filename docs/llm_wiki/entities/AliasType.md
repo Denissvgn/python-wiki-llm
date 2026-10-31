@@ -18,7 +18,7 @@ The two coordinate namespaces that may retain historical aliases.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -38,6 +38,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 4; effect analysis evaluated: 2, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 123, emitted: 39, omitted: 84. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `classify_section_ownership` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
+| `_coerce_page_kind` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PageKind` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_top_level_policy` | `available` | `partial` | `available` | `104` | `20` | `84` |
+| `title.casefold` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_LOG_DATE_HEADING_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_HTTP_OPERATION_HEADING_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. classify_section_ownership"]
@@ -81,28 +106,28 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_section_ownership | _coerce_page_kind | 432 | `_coerce_page_kind(page_kind)` |
-| _coerce_page_kind | isinstance | 266 | `isinstance(page_kind, PageKind)` |
-| _coerce_page_kind | PageKind | 269 | `PageKind(page_kind)` |
-| _coerce_page_kind | ValueError | 271 | `ValueError(...)` |
-| classify_section_ownership | _top_level_policy | 442 | `_top_level_policy(kind, section.title, occurrence, index_preserved=index_preserved)` |
-| _top_level_policy | title.casefold | 281 | `title.casefold(data not statically known)` |
-| _top_level_policy | _LOG_DATE_HEADING_RE.fullmatch | 286 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
-| _top_level_policy | _HTTP_OPERATION_HEADING_RE.match | 384 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
+| classify_section_ownership | _coerce_page_kind | 435 | `_coerce_page_kind(page_kind)` |
+| _coerce_page_kind | isinstance | 269 | `isinstance(page_kind, PageKind)` |
+| _coerce_page_kind | PageKind | 272 | `PageKind(page_kind)` |
+| _coerce_page_kind | ValueError | 274 | `ValueError(...)` |
+| classify_section_ownership | _top_level_policy | 445 | `_top_level_policy(kind, section.title, occurrence, index_preserved=index_preserved)` |
+| _top_level_policy | title.casefold | 284 | `title.casefold(data not statically known)` |
+| _top_level_policy | _LOG_DATE_HEADING_RE.fullmatch | 289 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
+| _top_level_policy | _HTTP_OPERATION_HEADING_RE.match | 387 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_page_kind` | `isinstance` | 266 |
-| external_call | `_coerce_page_kind` | `ValueError` | 271 |
-| unresolved_call | `_top_level_policy` | `title.casefold` | 281 |
-| unresolved_call | `_top_level_policy` | `_LOG_DATE_HEADING_RE.fullmatch` | 286 |
-| unresolved_call | `_top_level_policy` | `_HTTP_OPERATION_HEADING_RE.match` | 384 |
+| external_call | `_coerce_page_kind` | `isinstance` | 269 |
+| external_call | `_coerce_page_kind` | `ValueError` | 274 |
+| unresolved_call | `_top_level_policy` | `title.casefold` | 284 |
+| unresolved_call | `_top_level_policy` | `_LOG_DATE_HEADING_RE.fullmatch` | 289 |
+| unresolved_call | `_top_level_policy` | `_HTTP_OPERATION_HEADING_RE.match` | 387 |
 
 ## Behavior
 

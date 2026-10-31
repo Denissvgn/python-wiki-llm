@@ -91,6 +91,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 26; effect analysis evaluated: 16, partial: 3, unavailable: 7. Counts include steps omitted from the displayed trace.
+
+Collector observations for 19 source steps with known totals: observed: 101, emitted: 86, omitted: 15. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_known_syntax` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_PATH_SYNTAX.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. require_repository_relative_path"]
@@ -156,7 +184,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

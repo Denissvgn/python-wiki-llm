@@ -77,10 +77,10 @@ sequenceDiagram
     participant p22 as validate_persisted_source_selection_identity
     participant p23 as build_source_snapshot
     participant p24 as windows_current_user_sid
-    participant p25 as source_snapshot_matches_current_files
-    participant p26 as source_selection_identity_from_generation_inputs
-    participant p27 as _validate_capture_options
-    participant p28 as _current_windows_user_sid
+    participant p25 as source_selection_identity_from_generation_inputs
+    participant p26 as _validate_capture_options
+    participant p27 as _current_windows_user_sid
+    participant p28 as _resolve_snapshot_selection
     participant p29 as getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
     participant p30 as Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
     p0->>p1: validate_source_root
@@ -107,17 +107,17 @@ sequenceDiagram
     p2->>p22: validate_persisted_source_selection_identity
     p2->>p23: build_source_snapshot
     p1->>p24: windows_current_user_sid
-    p4->>p25: source_snapshot_matches_current_files
-    p22->>p26: source_selection_identity_from_generation_inputs
-    p23->>p27: _validate_capture_options
-    p24->>p28: _current_windows_user_sid
+    p22->>p25: source_selection_identity_from_generation_inputs
+    p23->>p26: _validate_capture_options
+    p24->>p27: _current_windows_user_sid
+    p21->>p28: _resolve_snapshot_selection
     p0-->>p29: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')
     p5-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 2159 interactions; 2129 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2228 interactions; 2198 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 715 (714 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 739 (738 omitted); unresolved 1 of 739 (738 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +131,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 567 groups; 559 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 579 groups; 571 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,6 +139,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 751; effect analysis evaluated: 517, partial: 31, unavailable: 203. Counts include steps omitted from the displayed trace.
+
+Collector observations for 548 source steps with known totals: observed: 3119, emitted: 3009, omitted: 110. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_source_root` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]
@@ -246,3 +274,10 @@ flowchart LR
 ## Behavior
 
 This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Preflights nonempty changed paths against the persisted configured source
+selection. Provably excluded-only requests return explicit unknown native
+impact without unrelated deep extraction. Snapshot discovery/content capture
+still run; mixed, selected, empty, boundary-changing or unclassifiable scope
+retains the actual full inventory/helper requirements and failures. The legacy
+plain finding envelope remains compatible.

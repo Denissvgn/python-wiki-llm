@@ -1,6 +1,6 @@
 # DocumentationSchemaError
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:239`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:299`
 **Kind:** Class
 **Bases:** `DocumentationRunError`
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)
@@ -15,7 +15,7 @@ Raised when a persisted or returned contract is invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

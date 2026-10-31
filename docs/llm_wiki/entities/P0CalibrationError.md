@@ -15,7 +15,7 @@ Base error raised by the protected calibration lifecycle.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

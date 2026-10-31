@@ -15,7 +15,7 @@ Raised when no supported host-authenticator context is active.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

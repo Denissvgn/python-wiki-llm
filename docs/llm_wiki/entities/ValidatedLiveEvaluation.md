@@ -25,7 +25,7 @@ _Auto-generated from `_ValidatedLiveEvaluation` in `src/llm_wiki_cli/services/kn
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

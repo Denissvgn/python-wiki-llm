@@ -1,6 +1,6 @@
 # KnowledgeReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:291`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:292`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -113,4 +113,4 @@ flowchart LR
 | `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 
-> References: showing 12 of 50 logical references; 38 omitted by the 12-row generated summary limit.
+> References: showing 12 of 51 logical references; 39 omitted by the 12-row generated summary limit.

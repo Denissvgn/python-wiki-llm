@@ -27,6 +27,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_sequence"]
@@ -55,23 +64,23 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_sequence | isinstance | 790 | `isinstance(value, (...))` |
-| require_sequence | isinstance | 791 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance | 792 | `isinstance(value, container_type)` |
-| require_sequence | isinstance | 795 | `isinstance(value, Sequence)` |
+| require_sequence | isinstance | 798 | `isinstance(value, (...))` |
+| require_sequence | isinstance | 799 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance | 800 | `isinstance(value, container_type)` |
+| require_sequence | isinstance | 803 | `isinstance(value, Sequence)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sequence` | `isinstance` | 790 |
-| external_call | `require_sequence` | `isinstance` | 791 |
-| external_call | `require_sequence` | `isinstance` | 792 |
-| external_call | `require_sequence` | `isinstance` | 795 |
+| external_call | `require_sequence` | `isinstance` | 798 |
+| external_call | `require_sequence` | `isinstance` | 799 |
+| external_call | `require_sequence` | `isinstance` | 800 |
+| external_call | `require_sequence` | `isinstance` | 803 |
 
 ## Behavior
 

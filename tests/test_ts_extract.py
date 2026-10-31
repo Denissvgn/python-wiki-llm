@@ -150,6 +150,12 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
     monkeypatch.chdir(tmp_path)
     helper = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper is not None
+    from llm_wiki_cli.services.maintenance_protocol import governance_writer_lock, storage_writer_lock
+
+    # Persistent operational locks are setup state, not canonical prose or
+    # provenance. Capture the refusal baseline after provisioning both locks.
+    with governance_writer_lock(tmp_path / 'wiki'), storage_writer_lock(tmp_path / 'wiki'):
+        pass
     common = ['--src-dir', '.', '--wiki-dir', 'wiki', '--source-selection', '.llm-wiki/source-selection.json',
               '--helper-cache-dir', str(helper.parent), '--jobs', '1', '--no-cache']
     sync = ['sync', *common, '--no-plugins']
@@ -251,7 +257,7 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
 
 
 @skip_no_node
-def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, monkeypatch, capsys):
+def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, tmp_path_factory, monkeypatch, capsys):
     helper_root = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper_root is not None
     _make_ts(tmp_path, "dyn.mjs", "export async function load(name) { return await import(name); }\n")
@@ -280,6 +286,18 @@ def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, m
     basis = manifest.evidence_baselines["modules/dyn.md"].basis
     assert basis is not None
     assert basis.is_known
+    from tests.typescript_import_phases import (
+        check_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission,
+        check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections,
+    )
+
+    for name, check in (
+        ("erased-cycle", check_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission),
+        ("preserved-cycle", check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections),
+    ):
+        fixture = tmp_path_factory.mktemp(name)
+        with monkeypatch.context() as context:
+            check(fixture, context, capsys)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -588,6 +606,11 @@ class TestTypeScriptExtractor:
         assert len(inv) == 1
         data = list(inv.values())[0]
         assert data["functions"][0]["name"] == "greet"
+        for deep in (False, True):
+            for index, line_break in enumerate(("\n", "\r\n", "\r", "\u2028", "\u2029")):
+                fixture = tmp_path / f"coordinates-{deep}-{index}"
+                fixture.mkdir()
+                self._check_compiler_line_coordinates(fixture, line_break, deep)
 
     def test_arrow_function_export(self, tmp_path):
         _make_ts(
@@ -641,6 +664,9 @@ class TestTypeScriptExtractor:
             """
             export type UserId = string;
             export type Handler = (event: Event) => void;
+            export type Mode = "fast" | "safe";
+            export type Shape<T extends string = "ready"> = { value: T; enabled?: boolean };
+            export type Fence = "```";
             """,
         )
         inv = TypeScriptExtractor().extract(str(tmp_path))
@@ -650,6 +676,61 @@ class TestTypeScriptExtractor:
         names = {c["name"] for c in classes}
         assert "UserId" in names
         assert "Handler" in names
+        assert all("target" not in record for record in classes)
+        deep = TypeScriptExtractor().extract(str(tmp_path), deep=True)["aliases.ts"]
+        aliases = {record["name"]: record for record in deep["classes"]}
+        assert aliases["Handler"]["target"] == "(event: Event) => void"
+        assert aliases["Mode"]["target"] == '"fast" | "safe"'
+        assert aliases["Shape"]["target"] == "{ value: T; enabled?: boolean }"
+        assert aliases["Shape"]["type_params"] == ['T extends string = "ready"']
+        from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md
+        page = _generate_entity_md(aliases["Mode"], "aliases.ts", {})
+        assert '```typescript\n"fast" | "safe"\n```' in page
+        assert "Inherits" not in page and "Kind:** Type alias" in page
+        page = _generate_entity_md(aliases["Fence"], "aliases.ts", {})
+        assert '````typescript\n"```"\n````' in page
+        target = '"' + "雪" * 4096 + '"'
+        (tmp_path / "aliases.ts").write_text("export type Bounded = " + target + ";\n")
+        bounded = TypeScriptExtractor().extract(str(tmp_path), deep=True)["aliases.ts"]["classes"][0]
+        assert bounded["target"] == target[:4096] and bounded["target_truncated"] is True
+        assert bounded["target_sha256"] == "sha256:" + hashlib.sha256(target.encode()).hexdigest()
+        assert "Definition truncated" in _generate_entity_md(bounded, "aliases.ts", {})
+        from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+        from tests.provider_conformance.frontends import Frontends
+        from tests.provider_conformance.inventory import compare_inventory
+        from tests.provider_conformance.model import conclude
+        prepared = get_prepared_typescript_root(PROJECT_ROOT)
+        assert prepared is not None
+        frontend = Frontends({'node': shutil.which('node'),
+                              'typescript_module': str(prepared / 'node_modules/ts-morph')}, tmp_path / 'oracle')
+        source = tmp_path / 'aliases.ts'
+        source.write_bytes(('export type Bounded<T extends `first\r\nsecond`> = ' + target + ';\r\n').encode())
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)['aliases.ts']
+        observation = frontend.observe(source)
+        assert conclude(compare_inventory(observation, data, 'typescript', frontend.normalize, path='aliases.ts'))['status'] == 'pass'
+        damaged = deepcopy(data)
+        damaged['classes'][0]['target_sha256'] = 'sha256:' + '0' * 64
+        assert conclude(compare_inventory(observation, damaged, 'typescript', frontend.normalize, path='aliases.ts'))['status'] == 'fail'
+        # The preview boundary falls between CR and LF. Markdown may normalize
+        # the line ending, but must retain the preview's own trailing break.
+        target = '`' + 'x' * 4094 + '\r\ntail`'
+        source.write_bytes(('export type Bounded = ' + target + ';\r\n').encode())
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)['aliases.ts']
+        bounded = data['classes'][0]
+        assert bounded['target'] == target[:4096] and bounded['target'].endswith('\r')
+        from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
+        from tests.provider_conformance.trace import compare_markdown
+        projection = tmp_path / 'projection'
+        (projection / 'modules').mkdir(parents=True)
+        (projection / 'entities').mkdir()
+        (projection / 'modules/aliases.md').write_text(_generate_module_md('aliases.ts', data))
+        (projection / 'entities/Bounded.md').write_text(_generate_entity_md(bounded, 'aliases.ts', {}))
+        surface = {'pages': [
+            {'kind': 'modules', 'source_path': 'aliases.ts', 'canonical_path': 'modules/aliases.md'},
+            {'kind': 'entities', 'source_path': 'aliases.ts', 'canonical_path': 'entities/Bounded.md', 'title': 'Bounded'},
+        ]}
+        findings = compare_markdown(frontend.observe(source), projection, surface, 'aliases.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
 
     def test_tsx_support(self, tmp_path):
         _make_ts(
@@ -780,6 +861,9 @@ class TestTypeScriptExtractor:
         module_names = {imp["module"] for imp in data["imports"]}
         assert "express" in module_names
         assert "path" in module_names
+        from tests.typescript_import_phases import check_import_phase_corpus
+
+        check_import_phase_corpus(tmp_path / "import-phase-controls")
 
     def test_deep_mode_includes_methods(self, tmp_path):
         _make_ts(
@@ -856,6 +940,42 @@ class TestTypeScriptExtractor:
             assert properties[name]["optional"] is True
             assert properties[name]["default"] == ""
 
+    def _check_compiler_line_coordinates(self, tmp_path, line_break, deep):
+        source = tmp_path / "coordinates.ts"
+        source.write_bytes(line_break.join([
+            "// Every separator starts a compiler source line.",
+            "export interface Contract<T> { read(value?: T): T; }",
+            "export class Parent<T> {}",
+            "export class Client<T> extends Parent<T> { constructor(value?: T) { super(); } read(value?: T): T { return value!; } }",
+            "export type Alias = string | number;",
+            "export enum Mode { Ready }",
+            "export function convert<T>(value?: T): T | undefined;",
+            "export function convert(value?: unknown): unknown {",
+            "    return value;",
+            "}",
+            "export const arrow = (value?: number): number => value ?? 0;",
+            "export const count = 1;",
+            "const resource = require('resource');",
+            "export const server = createServer(convert);",
+            "const load = require;",
+        ]).encode("utf-8"))
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=deep)[source.name]
+        classes = {item["name"]: item for item in data["classes"]}
+        assert {name: item["line"] for name, item in classes.items()} == {
+            "Contract": 2, "Parent": 3, "Client": 4, "Alias": 5, "Mode": 6,
+        }
+        functions = {item["name"]: item for item in data["functions"]}
+        assert functions["convert"]["line"] == 8
+        assert functions["convert"]["end_line"] == 10
+        assert functions["arrow"]["line"] == functions["arrow"]["end_line"] == 11
+        assert next(item for item in data["constants"] if item["name"] == "count")["line"] == 12
+        assert next(item for item in data["imports"] if item.get("module") == "resource")["line"] == 13
+        assert next(item for item in data["module_calls"] if item.get("target") == "server")["line"] == 14
+        assert data["import_gaps"] == [{"line": 15, "reason": "indirect-require-unsupported"}]
+        if deep:
+            assert functions["convert"]["overloads"][0]["line"] == 7
+            assert all(item["line"] == 4 for item in classes["Client"]["methods"])
+
     def test_optional_properties_bootstrap_and_incremental_sync(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -874,6 +994,35 @@ class TestTypeScriptExtractor:
                 initialized: number = 0;
                 optional_count?: number;
             }
+            export type Mode = "fast" | "safe";
+            export type Handler = (value: number) => string;
+            export function collect(prefix?: string, ...items: string[]): string { return ""; }
+            export function identity<T extends string = "ready">(value: T): T { return value; }
+            export const arrow = <T,>(first?: T, ...rest: T[]): T[] => rest;
+            export class Client<T> {
+                constructor(timeout?: number, ...labels: string[]) {}
+                run<U extends T>(value?: U, ...items: U[]): void {}
+            }
+            export interface Multiline<T extends `first
+\x85\u2028\u2029second`> {
+                read(value?: `line
+break`): T;
+            }
+            export interface Contract<T> { read(value?: T): T | undefined; }
+            export class Parent<T> {}
+            export class Overloaded<T> extends Parent<T> implements Contract<T> {
+                constructor(value?: T);
+                constructor(...values: T[]);
+                constructor(...values: T[]) { super(); }
+                read<U extends T>(value?: U, ...rest: U[]): U | undefined;
+                read(value?: T, ...rest: T[]): T | undefined;
+                read(value?: T, ...rest: T[]): T | undefined { return value ?? rest[0]; }
+            }
+            export function convert<T>(value?: T, ...rest: T[]): T | undefined;
+            export function convert(value?: number, ...rest: number[]): number | undefined;
+            export function convert(value?: unknown, ...rest: unknown[]): unknown { return value ?? rest[0]; }
+            export function oneLine(value: string): string; export function oneLine(value: number): number; export function oneLine(value: unknown): unknown { return value; }
+            export class Tiny { constructor(value: string); constructor(value: number); constructor(value: unknown) {} }
             """,
         )
         monkeypatch.chdir(tmp_path)
@@ -905,6 +1054,48 @@ class TestTypeScriptExtractor:
         state = (tmp_path / "wiki/entities/EvidenceState.md").read_text(encoding="utf-8")
         assert "| `initialized` | `number` | Yes | `0` |" in state
         assert "| `optional_count` | `number` | No | — |" in state
+        module = (tmp_path / "wiki/modules/types.md").read_text()
+        assert "(prefix?: string, ...items: string[]) -> string" in module
+        assert '<T extends string = "ready">(value: T) -> T' in module
+        assert "<T>(first?: T, ...rest: T[]) -> T[]" in module
+        assert "| [EvidenceSignals](../entities/EvidenceSignals.md) | Interface |" in module
+        assert "**Kind:** Interface" in content and "Inherits" not in content
+        client = (tmp_path / "wiki/entities/Client.md").read_text()
+        assert "**Type parameters:** `T`" in client
+        assert "(timeout?: number, ...labels: string[])" in client
+        assert "<U extends T>(value?: U, ...items: U[]) -> void" in client
+        assert '```typescript\n"fast" | "safe"\n```' in (tmp_path / "wiki/entities/Mode.md").read_text()
+        assert "(value: number) => string" in (tmp_path / "wiki/entities/Handler.md").read_text()
+        overloaded = (tmp_path / 'wiki/entities/Overloaded.md').read_text()
+        assert '**Bases:** `Parent<T>`, `Contract<T>`' in overloaded
+        assert '## Overloads <!-- llm-wiki-generated:overloads -->' in overloaded
+        assert '<U extends T>(value?: U, ...rest: U[]) -> T' not in overloaded
+        assert r'<U extends T>(value?: U, ...rest: U[]) -> U \| undefined' in overloaded
+        assert '(value?: T)' in overloaded and '(...values: T[])' in overloaded
+        assert '## Overloads <!-- llm-wiki-generated:overloads -->' in module
+        assert r'<T>(value?: T, ...rest: T[]) -> T \| undefined' in module
+        from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+        from tests.provider_conformance.frontends import Frontends
+        from tests.provider_conformance.trace import compare_markdown
+        from tests.provider_conformance.model import conclude
+        prepared = get_prepared_typescript_root(PROJECT_ROOT)
+        assert prepared is not None
+        frontend = Frontends({'node': shutil.which('node'),
+                              'typescript_module': str(prepared / 'node_modules/ts-morph')}, tmp_path / 'oracle')
+        surface = json.loads((tmp_path / 'wiki/.llm-wiki-surface.json').read_text())
+        observed = frontend.observe(source)
+        findings = compare_markdown(observed, tmp_path / 'wiki', surface, 'types.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
+        from tests.provider_conformance.inventory import compare_inventory
+        inventory = TypeScriptExtractor().extract(str(tmp_path), deep=True, helper_cache_dir=str(helper_root.parent))['types.ts']
+        assert conclude(compare_inventory(observed, inventory, 'typescript', frontend.normalize, path='types.ts'))['status'] == 'pass'
+        fn = next(f for f in inventory['functions'] if f['name'] == 'convert')
+        assert len(fn['overloads']) == 2 and fn['overloads'][0]['type_params'] == ['T']
+        entity = next(c for c in inventory['classes'] if c['name'] == 'Overloaded')
+        assert entity['bases'] == ['Parent<T>', 'Contract<T>']
+        assert len(next(m for m in entity['methods'] if m['name'] == 'constructor')['overloads']) == 2
+        overloaded_page = tmp_path / 'wiki/entities/Overloaded.md'
+        overloaded_page.write_text(overloaded + '\n\n## Overloads\n\nAUTHORED overload guidance.\n')
         content = content.replace(
             "_Auto-generated from `EvidenceSignals` in `types.ts`._",
             "Human-curated evidence contract.",
@@ -915,7 +1106,7 @@ class TestTypeScriptExtractor:
         page.write_text(content, encoding="utf-8")
         before = SyncManifest.load(tmp_path / "wiki").sources
         source.write_text(
-            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:"),
+            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:").replace('"safe"', '"careful"').replace("prefix?:", "prefix:").replace('convert<T>(value?: T, ...rest: T[])', 'convert<T>(value: T, ...rest: T[])'),
             encoding="utf-8",
         )
         capsys.readouterr()
@@ -930,8 +1121,19 @@ class TestTypeScriptExtractor:
         assert "| `change_me` | `number` | No | — |" in content
         assert "Human-curated evidence contract." in content
         assert "Omission means unavailable." in content
+        assert '"careful"' in (tmp_path / "wiki/entities/Mode.md").read_text()
+        assert "(prefix: string, ...items: string[]) -> string" in (tmp_path / "wiki/modules/types.md").read_text()
+        assert r'<T>(value: T, ...rest: T[]) -> T \| undefined' in (tmp_path / 'wiki/modules/types.md').read_text()
         run("sync")
         assert page.read_text(encoding="utf-8") == content
+        assert 'AUTHORED overload guidance.' in overloaded_page.read_text()
+        source.write_bytes(b'\n\n' + source.read_bytes())
+        run('sync')
+        current_surface = json.loads((tmp_path / 'wiki/.llm-wiki-surface.json').read_text())
+        current = frontend.observe(source)
+        findings = compare_markdown(current, tmp_path / 'wiki', current_surface, 'types.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
+        assert 'AUTHORED overload guidance.' in overloaded_page.read_text()
 
     def test_deep_mode_decorators(self, tmp_path):
         _make_ts(
@@ -978,6 +1180,7 @@ class TestTypeScriptExtractor:
             export interface Repository<T> {
                 findById(id: string): Promise<T>;
                 save(entity: T): Promise<void>;
+                select<U extends T = T>(value?: U, ...rest: U[]): U;
             }
             """,
         )
@@ -987,6 +1190,11 @@ class TestTypeScriptExtractor:
         method_names = {m["name"] for m in cls["methods"]}
         assert "findById" in method_names
         assert "save" in method_names
+        method = next(m for m in cls["methods"] if m["name"] == "select")
+        assert cls["type_params"] == ["T"]
+        assert method["type_params"] == ["U extends T = T"]
+        assert method["params"][0]["optional"] is True
+        assert method["params"][1]["rest"] is True
 
 
 # ===========================================================================

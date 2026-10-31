@@ -32,6 +32,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_bounded_integral_number"]
@@ -66,26 +75,26 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_integral_number | isinstance | 895 | `isinstance(value, bool)` |
-| require_bounded_integral_number | isinstance | 897 | `isinstance(value, int)` |
-| require_bounded_integral_number | isinstance | 899 | `isinstance(value, float)` |
-| require_bounded_integral_number | math.isfinite | 899 | `math.isfinite(value)` |
-| require_bounded_integral_number | value.is_integer | 899 | `value.is_integer(data not statically known)` |
-| require_bounded_integral_number | int | 900 | `int(value)` |
+| require_bounded_integral_number | isinstance | 903 | `isinstance(value, bool)` |
+| require_bounded_integral_number | isinstance | 905 | `isinstance(value, int)` |
+| require_bounded_integral_number | isinstance | 907 | `isinstance(value, float)` |
+| require_bounded_integral_number | math.isfinite | 907 | `math.isfinite(value)` |
+| require_bounded_integral_number | value.is_integer | 907 | `value.is_integer(data not statically known)` |
+| require_bounded_integral_number | int | 908 | `int(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bounded_integral_number` | `isinstance` | 895 |
-| external_call | `require_bounded_integral_number` | `isinstance` | 897 |
-| external_call | `require_bounded_integral_number` | `isinstance` | 899 |
-| external_call | `require_bounded_integral_number` | `math.isfinite` | 899 |
-| unresolved_call | `require_bounded_integral_number` | `value.is_integer` | 899 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 903 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 905 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 907 |
+| external_call | `require_bounded_integral_number` | `math.isfinite` | 907 |
+| unresolved_call | `require_bounded_integral_number` | `value.is_integer` | 907 |
 
 ## Behavior
 

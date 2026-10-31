@@ -773,8 +773,9 @@ class McpWikiService:
             raise McpWikiError("Invalid budgeted context request", code="invalid-request",
                                data={"field": getattr(exc, "field", "request")}) from exc
         if not result.ok:
-            raise McpWikiError("The minimum qualified context cannot fit this budget",
-                               code="cannot-fit", data={"accounting": dict(result.accounting)})
+            raise McpWikiError("Permitted context selections cannot fit the requested complete-output budget",
+                               code="cannot-fit", data={"accounting": dict(result.accounting),
+                                                        "diagnostics": result.diagnostics})
         return result.rendered
 
     @ac.bound_comparison

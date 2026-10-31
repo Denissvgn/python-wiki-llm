@@ -20,6 +20,12 @@ operation-cached capture can be reused. Deliberately classified consumer files
 preserve observation identities; changed shared/extractor inputs invalidate
 their commitments. Final publication guards still own mutable-input checks.
 
+TypeScript and JavaScript runtime commitments include the validated prepared
+dependency-tree scope and fingerprint alongside execution runtime identity. A
+package version label or a legacy preparation receipt cannot establish that
+basis. Inspection remains read-only and cannot prepare helpers or repair
+stored provenance.
+
 ## Imports
 
 | Source | Symbols |

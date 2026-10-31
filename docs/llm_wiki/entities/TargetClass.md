@@ -24,7 +24,7 @@ Classification of a relationship target, separate from resolution.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

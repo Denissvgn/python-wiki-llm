@@ -27,7 +27,7 @@ _Auto-generated from `_InputFile` in `src/llm_wiki_cli/services/documentation_wi
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

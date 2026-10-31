@@ -15,7 +15,7 @@ Maintenance evidence is absent, inconsistent or not bound to this candidate.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

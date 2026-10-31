@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 124; effect analysis evaluated: 77, partial: 3, unavailable: 44. Counts include steps omitted from the displayed trace.
+
+Collector observations for 80 source steps with known totals: observed: 395, emitted: 392, omitted: 3. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `compare_source_plugin_tree_baseline` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `source_plugin_tree_baseline` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `Path (src/llm_wiki_cli/services…urce_plugin_tree_baseline)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.lexists (src/llm_wiki_cli/services…urce_plugin_tree_baseline)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TreeBaseline` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_hash_labeled_hashes` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `hashlib.sha256 (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `file_hashes.items (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `digest.update (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.replace(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. compare_source_plugin_tree_baseline"]

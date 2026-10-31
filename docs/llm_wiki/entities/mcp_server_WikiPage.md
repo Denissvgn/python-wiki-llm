@@ -22,7 +22,7 @@ _Auto-generated from `WikiPage` in `src/llm_wiki_cli/services/mcp_server.py`._
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

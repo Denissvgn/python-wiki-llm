@@ -95,4 +95,4 @@ flowchart LR
 | `inspect_pack` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `_concept_aliases` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 
-> References: showing 12 of 88 logical references; 76 omitted by the 12-row generated summary limit.
+> References: showing 12 of 94 logical references; 82 omitted by the 12-row generated summary limit.

@@ -24,7 +24,7 @@ A bounded lexical discovery response. Ranked results include reasons and corpus 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

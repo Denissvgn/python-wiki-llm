@@ -98,6 +98,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 53; effect analysis evaluated: 25, partial: 0, unavailable: 28. Counts include steps omitted from the displayed trace.
+
+Collector observations for 25 source steps with known totals: observed: 100, emitted: 100, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `alias_key` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_alias_type` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_identity_value` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_alias_type` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `validate_alias_value` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `validate_alias_type` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `AliasType` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `validate_locator` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. alias_key"]
@@ -157,11 +184,11 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | alias_key | _alias_type | 381 | `_alias_type(alias_type, 'alias.type')` |
-| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3301 | `isinstance(value, str)` |
-| _alias_type | GovernanceError | 3302 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
+| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3415 | `isinstance(value, str)` |
+| _alias_type | GovernanceError | 3416 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
 | alias_key | _identity_value | 382 | `_identity_value(value, selected_type, 'alias.value')` |
-| _identity_value | _alias_type | 3310 | `_alias_type(alias_type, ...)` |
-| _identity_value | validate_alias_value | 3312 | `validate_alias_value(..., value)` |
+| _identity_value | _alias_type | 3424 | `_alias_type(alias_type, ...)` |
+| _identity_value | validate_alias_value | 3426 | `validate_alias_value(..., value)` |
 | validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
 | validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
 | validate_alias_type | AliasType | 475 | `AliasType(value)` |
@@ -170,13 +197,13 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_alias_type` | `isinstance` | 3301 |
+| external_call | `_alias_type` | `isinstance` | 3415 |
 | external_call | `validate_alias_type` | `isinstance` | 475 |
 | step_limit | `alias_key` | `first 12 steps` | 0 |
 | truncated_flow | `alias_key` | `depth limit` | 0 |

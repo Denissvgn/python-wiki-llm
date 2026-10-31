@@ -15,7 +15,7 @@ A page cannot be safely assigned to one recorded source entity.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

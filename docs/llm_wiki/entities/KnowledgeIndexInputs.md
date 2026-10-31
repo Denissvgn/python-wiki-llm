@@ -29,7 +29,7 @@ Already evaluated values required to construct one knowledge index.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

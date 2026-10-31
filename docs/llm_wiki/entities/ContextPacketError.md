@@ -15,7 +15,7 @@ Base failure for context-packet construction and consumption.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

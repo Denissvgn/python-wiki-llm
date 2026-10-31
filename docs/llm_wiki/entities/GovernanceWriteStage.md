@@ -19,7 +19,7 @@ Fault-injection points for the durable ledger replacement.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

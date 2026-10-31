@@ -22,7 +22,7 @@ Parsed metadata for a managed schema block without health inference.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

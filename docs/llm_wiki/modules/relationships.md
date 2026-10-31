@@ -22,6 +22,7 @@ Inheritance and module type references use matching captured Python module bindi
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `pathlib` | `PurePosixPath` |
+| `re` | `re` |
 | `typing` | `Iterable`, `Mapping`, `Optional` |
 
 ## Local dependency map

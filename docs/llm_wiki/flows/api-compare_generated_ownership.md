@@ -77,6 +77,15 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 14, emitted: 14, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. compare_generated_ownership"]
@@ -134,38 +143,43 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_generated_ownership | capture_generated_ownership | 44 | `capture_generated_ownership(wiki_root)` |
-| capture_generated_ownership | Path(…).expanduser().resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
-| capture_generated_ownership | Path(…).expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
-| capture_generated_ownership | Path | 13 | `Path(wiki_root)` |
-| capture_generated_ownership | path.is_symlink | 23 | `path.is_symlink(data not statically known)` |
-| capture_generated_ownership | DocumentationIntegrityError | 24 | `DocumentationIntegrityError(...)` |
-| capture_generated_ownership | path.is_file | 27 | `path.is_file(data not statically known)` |
-| capture_generated_ownership | hash_bytes | 28 | `hash_bytes(path.read_bytes(...))` |
-| capture_generated_ownership | path.read_bytes | 28 | `path.read_bytes(data not statically known)` |
-| capture_generated_ownership | sorted (src/llm_wiki_cli/services…apture_generated_ownership) | 29 | `sorted(root.rglob(...))` |
-| capture_generated_ownership | root.rglob | 29 | `root.rglob('*.md')` |
+| compare_generated_ownership | capture_generated_ownership | 49 | `capture_generated_ownership(wiki_root)` |
+| capture_generated_ownership | Path(…).expanduser().resolve | 18 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser | 18 | `Path(wiki_root).expanduser(data not statically known)` |
+| capture_generated_ownership | Path | 18 | `Path(wiki_root)` |
+| capture_generated_ownership | path.is_symlink | 28 | `path.is_symlink(data not statically known)` |
+| capture_generated_ownership | DocumentationIntegrityError | 29 | `DocumentationIntegrityError(...)` |
+| capture_generated_ownership | path.is_file | 32 | `path.is_file(data not statically known)` |
+| capture_generated_ownership | hash_bytes | 33 | `hash_bytes(path.read_bytes(...))` |
+| capture_generated_ownership | path.read_bytes | 33 | `path.read_bytes(data not statically known)` |
+| capture_generated_ownership | sorted (src/llm_wiki_cli/services…apture_generated_ownership) | 34 | `sorted(root.rglob(...))` |
+| capture_generated_ownership | root.rglob | 34 | `root.rglob('*.md')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `capture_generated_ownership` | 28 |
-| filesystem_read | `path.read_text` | `capture_generated_ownership` | 35 |
+| filesystem_read | `path.read_bytes` | `capture_generated_ownership` | 33 |
+| filesystem_read | `path.read_text` | `capture_generated_ownership` | 40 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 13 |
-| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 13 |
-| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 23 |
-| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 24 |
-| unresolved_call | `capture_generated_ownership` | `path.is_file` | 27 |
-| unresolved_call | `capture_generated_ownership` | `sorted` | 29 |
-| unresolved_call | `capture_generated_ownership` | `root.rglob` | 29 |
+| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 18 |
+| unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 18 |
+| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 28 |
+| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 29 |
+| unresolved_call | `capture_generated_ownership` | `path.is_file` | 32 |
+| unresolved_call | `capture_generated_ownership` | `sorted` | 34 |
+| unresolved_call | `capture_generated_ownership` | `root.rglob` | 34 |
 | step_limit | `compare_generated_ownership` | `first 12 steps` | 0 |
 
 ## Behavior
 
 This flow starts at `compare_generated_ownership` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Compares the legacy root-file/generated-section fingerprint map and reports
+exact added, removed and changed keys. Empty differences cover only that
+declared inventory, not complete native custody, storage integrity or ordinary
+review.

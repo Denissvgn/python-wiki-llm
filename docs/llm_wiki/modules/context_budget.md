@@ -70,14 +70,16 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [BudgetedContext](../entities/BudgetedContext.md) | 26 | — | — |
+| [_JointSelection](../entities/JointSelection.md) | 137 | — | Spend one budget across whole native groups and source detail. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `refusal_diagnostics` | `(payload, request, counter, accounting, *, policy)` | — | Describe a rejected candidate without emitting source or native rows. |
 | `validate_request` | `(data: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_accounted_render` | `(render, accounting, counter)` | — | — |
-| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None, source_json_lower_bound = False)` | — | Select whole source entries; keep all enrichment and omission evidence. |
+| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None, source_json_lower_bound = False, broad_refusal_diagnostics = False, joint_native_source = False)` | — | Select whole source entries; keep all enrichment and omission evidence. |
 | `build_budgeted_context` | `(src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, request = None, *, counter: TokenCounter \| None = None, allow_external_src = False, source_selection = None) -> BudgetedContext` | — | — |
 | `request_identity` | `(request: Mapping[str, Any]) -> str` | — | — |
 | `validate_budgeted_context` | `(rendered: str, request: Mapping[str, Any], *, counter: TokenCounter) -> dict[str, Any]` | — | Independently validate the outer v3 binding, packet and emitted count. |

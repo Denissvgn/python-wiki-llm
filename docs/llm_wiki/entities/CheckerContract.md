@@ -1,6 +1,6 @@
 # CheckerContract
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:417`
+**Location:** `src/llm_wiki_cli/services/verification_contracts.py:446`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)

@@ -22,7 +22,7 @@ Disclosure for optional current-first budget ranking.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

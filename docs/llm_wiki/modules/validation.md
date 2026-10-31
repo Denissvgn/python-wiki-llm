@@ -45,9 +45,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (69) |
+| Inbound | `src` (72) |
 
-> All 69 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 72 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -76,6 +76,7 @@ flowchart LR
 | `portable_path_key` | `(value: str) -> str` | — | Return the collision key used by normalizing/case-insensitive filesystems. |
 | `path_is_under` | `(path: str, prefix: str) -> bool` | — | Return whether a slash-delimited path is inside a non-empty prefix. |
 | `path_is_under_scope` | `(path: str, scope_root: str) -> bool` | — | Return whether a native-spelled path is inside an optional scope root. |
+| `nearest_path_scope` | `(path: str, scope_roots: Iterable[str]) -> str \| None` | — | Return the nearest owning scope, accepting both empty-root spellings. |
 | `path_is_within` | `(path: Path, root: Path) -> bool` | — | Return whether *path* is equal to or lexically below *root*. |
 | `paths_overlap` | `(left: Path, right: Path) -> bool` | — | Return whether either lexical path is equal to or below the other. |
 | `resolved_paths_equal` | `(left: str \| Path, right: str \| Path) -> bool` | — | Return whether two path spellings resolve to the same location. |

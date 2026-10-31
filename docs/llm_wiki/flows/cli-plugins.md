@@ -85,9 +85,9 @@ sequenceDiagram
     p7-->>p30: plugin.get('components', [...])
 ```
 
-> Call sequence diagram shows 30 of 374 interactions; 344 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 380 interactions; 350 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 123 (122 omitted); unresolved 1 of 137 (136 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 141 (140 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,6 +109,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 115; effect analysis evaluated: 74, partial: 3, unavailable: 38. Counts include steps omitted from the displayed trace.
+
+Collector observations for 77 source steps with known totals: observed: 359, emitted: 341, omitted: 18. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `partial` | `available` | `31` | `24` | `7` |
+| `getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list_plugins` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `read_lock` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `lock_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `plugin_home` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `Path (src/llm_wiki_cli/services/plugins.py:plugin_home)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.exists (src/llm_wiki_cli/services/plugins.py:read_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_default_lock` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `json.loads (src/llm_wiki_cli/services/plugins.py:read_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PluginError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

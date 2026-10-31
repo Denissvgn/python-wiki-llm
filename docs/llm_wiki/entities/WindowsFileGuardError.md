@@ -15,7 +15,7 @@ Raised when a Windows input file cannot be opened without redirection.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

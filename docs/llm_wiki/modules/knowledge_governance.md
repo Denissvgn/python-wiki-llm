@@ -36,9 +36,10 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 | `.concept_identity` | `AliasType`, `ConceptAllocation`, `ConceptIdentityError`, `derive_concept_uid`, `identity_coordinate_key`, `natural_key_for`, `validate_alias_value`, `validate_bundle_id`, `validate_concept_kind`, `validate_concept_uid`, `validate_locator`, `validate_natural_key` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `GOVERNANCE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.io` | `first_unsafe_path_component` |
+| `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_evidence` | `canonical_json_text`, `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
-| `.knowledge_graph` | `validate_typed_graph`, `DEFAULT_EVIDENCE_LIMIT`, `GRAPH_INPUT_NAMES`, `GraphConcept`, `KnowledgeGraphInputs`, `materialize_typed_graph`, `relationship_edge_key`, `validate_typed_graph` |
+| `.knowledge_graph` | `validate_typed_graph`, `GRAPH_INPUT_NAMES`, `GraphConcept`, `KnowledgeGraphInputs`, `materialize_typed_graph`, `validate_typed_graph`, `DEFAULT_EVIDENCE_LIMIT`, `relationship_edge_key` |
 | `.knowledge_model` | `ConceptKind`, `ConceptRecord`, `EvidenceState`, `KnowledgeIndex`, `Lifecycle` |
 | `.validation` | `require_exact_fields`, `require_list`, `require_mapping`, `require_no_control_characters`, `require_nonnegative_int`, `require_sha256` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
@@ -81,10 +82,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (24) |
-| Outbound | `src` (10) |
+| Inbound | `src` (26) |
+| Outbound | `src` (11) |
 
-> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -133,8 +134,11 @@ flowchart LR
 | `review_scope_hash` | `(knowledge: KnowledgeIndex, section_locator: str) -> str` | — | Return one reviewable semantic section hash or fail explicitly. |
 | `evaluate_review_event` | `(event: ReviewEvent, ledger: GovernanceLedger, knowledge: KnowledgeIndex) -> ReviewValidity` | — | Compute current validity without mutating or trusting stored truth. |
 | `strip_governance_projection` | `(knowledge: KnowledgeIndex) -> KnowledgeIndex` | — | Remove disposable governance fields before rebuilding from authority. |
+| `_governance_concept_summaries` | `(knowledge: KnowledgeIndex, current: GovernanceLedger, limit: int) -> dict[str, dict[str, object]]` | — | Derive authority-owned values without copying or rebuilding the graph. |
+| `_governance_projection_payload` | `(current: GovernanceLedger, concept_summaries: Mapping[str, dict[str, object]], governance_hash: str) -> dict[str, object]` | — | — |
 | `apply_governance_projection` | `(knowledge: KnowledgeIndex, ledger: GovernanceLedger, *, event_limit: int = DEFAULT_EVENT_LIMIT) -> KnowledgeIndex` | — | Build the complete disposable governance projection from the ledger. |
-| `validate_governance_projection` | `(knowledge: KnowledgeIndex, *, ledger: GovernanceLedger \| None = None, event_limit: int \| None = None) -> Mapping[str, object] \| None` | — | Validate projection/core parity and optionally exact ledger parity. |
+| `validate_governance_projection` | `(knowledge: KnowledgeIndex, *, ledger: GovernanceLedger \| None = None, event_limit: int \| None = None, _validated_artifacts: object \| None = None) -> Mapping[str, object] \| None` | — | Validate projection/core parity and optionally exact ledger parity. |
+| `_validate_governance_ledger_parity` | `(knowledge: KnowledgeIndex, projection: Mapping[str, object], ledger: GovernanceLedger, limit: int) -> None` | — | Compare exact ledger-derived values against an already validated graph. |
 | `governance_hash_from_knowledge` | `(knowledge: KnowledgeIndex) -> str \| None` | — | Return the validated governance commitment in a knowledge projection. |
 | `governance_bundle_id_from_knowledge` | `(knowledge: KnowledgeIndex) -> str \| None` | — | Return the validated stable bundle ID from a governance projection. |
 | `_validate_concept_summary` | `(value: object, path: str, *, limit: int \| None) -> dict[str, object]` | — | — |
@@ -142,6 +146,9 @@ flowchart LR
 | `_validate_lifecycle_summary` | `(value: Mapping[str, object], path: str) -> dict[str, object]` | — | — |
 | `_validate_review_summary` | `(value: Mapping[str, object], path: str) -> dict[str, object]` | — | — |
 | `_add_supersession_edges` | `(extensions: dict[str, Any], ledger: GovernanceLedger, concepts: Sequence[ConceptRecord], governance_hash: str, *, inventory_hash: object = None) -> dict[str, Any]` | — | — |
+| `_supersession_records` | `(ledger: GovernanceLedger) -> list[tuple[str, str, LifecycleEvent]]` | — | — |
+| `_supersession_edges` | `(supersessions: Sequence[tuple[str, str, LifecycleEvent]], aggregate_hash: str, governance_hash: str) -> list[dict[str, Any]]` | — | Build only the authority-owned edges for both projection and custody. |
+| `_validate_selected_supersession_edges` | `(edges: Sequence[Mapping[str, Any]], *, states: Mapping[str, tuple[Lifecycle, str \| None, LifecycleEvent \| None]], concept_map_hash: str, governance_hash: str) -> None` | — | Check consumed authority-owned edges without claiming unread graph parity. |
 | `_governance_supersession_edge_payloads` | `(knowledge: KnowledgeIndex) -> tuple[str, ...]` | — | Return exact canonical governance-edge payloads for ledger parity. |
 | `_validate_supersession_projection` | `(knowledge: KnowledgeIndex, expected: set[tuple[str, str]]) -> None` | — | — |
 | `_section_records_by_locator` | `(knowledge: KnowledgeIndex) -> dict[str, Mapping[str, object]]` | — | — |

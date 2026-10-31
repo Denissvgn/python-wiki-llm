@@ -99,4 +99,4 @@ flowchart LR
 | `_run_verify` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
 | `_scope_locator_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
 
-> References: showing 12 of 73 logical references; 61 omitted by the 12-row generated summary limit.
+> References: showing 12 of 75 logical references; 63 omitted by the 12-row generated summary limit.

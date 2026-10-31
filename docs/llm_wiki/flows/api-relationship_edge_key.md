@@ -41,6 +41,32 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 6; effect analysis evaluated: 4, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
+
+Collector observations for 4 source steps with known totals: observed: 9, emitted: 9, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `relationship_edge_key` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `next` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_canonical_json(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_canonical_json` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `canonical_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. relationship_edge_key"]
@@ -95,27 +121,27 @@ flowchart LR
 | relationship_edge_key | next | 304 | `next(..., None)` |
 | relationship_edge_key | KnowledgeGraphError | 306 | `KnowledgeGraphError(..., 'is required for edge identity')` |
 | relationship_edge_key | sha256_bytes | 311 | `sha256_bytes(...)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 221 | `hashlib.sha256(value)` |
 | relationship_edge_key | _canonical_json(…).encode | 311 | `_canonical_json(preimage).encode('utf-8')` |
 | relationship_edge_key | _canonical_json | 311 | `_canonical_json(preimage)` |
-| _canonical_json | canonical_json_text | 2256 | `canonical_json_text(value)` |
-| canonical_json_text | json.dumps | 177 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
-| _canonical_json | KnowledgeGraphError | 2258 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
+| _canonical_json | canonical_json_text | 2276 | `canonical_json_text(value)` |
+| canonical_json_text | json.dumps | 182 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| _canonical_json | KnowledgeGraphError | 2278 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `relationship_edge_key` | `next` | 304 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
 | unresolved_call | `relationship_edge_key` | `_canonical_json(preimage).encode` | 311 |
-| external_call | `canonical_json_text` | `json.dumps` | 177 |
+| external_call | `canonical_json_text` | `json.dumps` | 182 |
 
 ## Behavior
 

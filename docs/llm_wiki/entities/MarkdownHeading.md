@@ -20,7 +20,7 @@ One parsed Markdown heading and its actual local anchor.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

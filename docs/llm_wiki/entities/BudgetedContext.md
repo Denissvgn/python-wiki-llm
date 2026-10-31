@@ -19,10 +19,11 @@ _Auto-generated from `BudgetedContext` in `src/llm_wiki_cli/services/context_bud
 | `rendered` | `str` | *required* | — |
 | `accounting` | `Mapping[str, Any]` | *required* | — |
 | `error` | `str \| None` | `None` | — |
+| `diagnostics` | `Mapping[str, Any] \| None` | `None` | — |
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
@@ -46,7 +47,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_budget](../modules/context_budget.md) | 0 | `accounting`, `error`, `ok`, `rendered` |
+| [context_budget](../modules/context_budget.md) | 0 | `accounting`, `diagnostics`, `error`, `ok`, `rendered` |
 
 ### References
 

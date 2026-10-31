@@ -434,6 +434,7 @@ def _load_once(
         validated.knowledge,
         committed_hash=marker.governance_hash,
         projected_hash=validated.governance_hash,
+        validated_artifacts=validated,
     )
     marker_issues += governance_issues
     if page_issue is not None:
@@ -643,6 +644,7 @@ def _live_governance_issues(
     *,
     committed_hash: str | None,
     projected_hash: str | None,
+    validated_artifacts: ValidatedKnowledgeArtifacts,
 ) -> tuple[tuple[KnowledgeLoadIssue, ...], KnowledgeLoadState | None]:
     """Validate the non-rebuildable live ledger without exposing stale state."""
 
@@ -714,7 +716,9 @@ def _live_governance_issues(
             )
         )
     try:
-        validate_governance_projection(knowledge, ledger=loaded.ledger)
+        validate_governance_projection(
+            knowledge, ledger=loaded.ledger, _validated_artifacts=validated_artifacts,
+        )
     except GovernanceError as exc:
         issues.append(
             KnowledgeLoadIssue(

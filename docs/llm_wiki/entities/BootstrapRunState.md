@@ -1,6 +1,6 @@
 # _BootstrapRunState
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4480`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4718`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -24,10 +24,11 @@ _Auto-generated from `_BootstrapRunState` in `src/llm_wiki_cli/services/bootstra
 | `unsupported_sources` | `dict[str, dict[str, object]]` | `field(default_factory=dict)` | — |
 | `written_structural_page_paths` | `set[str]` | `field(default_factory=set)` | — |
 | `summary` | `dict[str, Any] \| None` | `None` | — |
+| `completion_message` | `str \| None` | `None` | — |
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
@@ -43,9 +44,9 @@ flowchart LR
     n6["_build_bootstrap_dependency_analysis (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n7["_build_bootstrap_relationships (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n8["_emit_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n9["_emit_bootstrap_complete (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n10["_emit_bootstrap_json_summary (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n11["_emit_bootstrap_warnings (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n9["_emit_bootstrap_json_summary (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n10["_emit_bootstrap_warnings (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n11["_execute_bootstrap_options (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n12["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1 --> n0
     n2 --> n0
@@ -78,7 +79,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `created_files`, `options`, `skipped_files`, `source_snapshot`, `summary`, `unsupported_sources`, `updated_files`, `warnings`, `written_structural_page_paths` |
+| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `completion_message`, `created_files`, `options`, `skipped_files`, `source_snapshot`, `summary`, `unsupported_sources`, `updated_files`, `warnings`, `written_structural_page_paths` |
 
 ### References
 
@@ -92,9 +93,9 @@ flowchart LR
 | `_build_bootstrap_dependency_analysis` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_build_bootstrap_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_warnings` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_execute_bootstrap_options_locked` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_execute_bootstrap_options_locked` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 
 > References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

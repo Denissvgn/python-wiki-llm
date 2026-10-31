@@ -32,7 +32,7 @@ does not establish compatible evidence, freshness or a committed repair.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

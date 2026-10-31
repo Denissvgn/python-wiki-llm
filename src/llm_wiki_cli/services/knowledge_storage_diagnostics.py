@@ -34,9 +34,9 @@ from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 def _git(root: Path, arguments: list[str], *, input_bytes: bytes | None = None,
-         maximum: int = 16_777_216) -> tuple[int, bytes]:
+         maximum: int = 16_777_216, environment: dict[str, str] | None = None) -> tuple[int, bytes]:
     """Drain both pipes with hard byte/time bounds; never invoke a shell."""
-    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0",
+    env = {**(os.environ if environment is None else environment), "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0",
            "GIT_NO_LAZY_FETCH": "1", "GIT_PAGER": "cat"}
     command = ["git", "--no-pager", "-c", "core.fsmonitor=false", "-C", str(root), *arguments]
     buffers = [bytearray(), bytearray()]

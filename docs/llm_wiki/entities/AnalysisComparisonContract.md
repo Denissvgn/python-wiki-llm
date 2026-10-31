@@ -19,7 +19,7 @@ _Auto-generated from `AnalysisComparisonContract` in `src/llm_wiki_cli/api_types
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

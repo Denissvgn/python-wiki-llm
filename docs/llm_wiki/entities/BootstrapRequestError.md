@@ -15,7 +15,7 @@ Raised when caller-supplied bootstrap options violate the contract.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

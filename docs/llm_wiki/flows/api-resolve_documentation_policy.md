@@ -106,6 +106,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 118; effect analysis evaluated: 56, partial: 3, unavailable: 59. Counts include steps omitted from the displayed trace.
+
+Collector observations for 59 source steps with known totals: observed: 271, emitted: 255, omitted: 16. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `resolve_documentation_policy` | `available` | `partial` | `available` | `12` | `10` | `2` |
+| `_resolve_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path(…).expanduser().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_resolve_optional_root` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_resolve_existing_directory` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_lstat` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `os.lstat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. resolve_documentation_policy"]
@@ -174,7 +202,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

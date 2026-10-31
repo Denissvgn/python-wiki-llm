@@ -1700,6 +1700,58 @@ def _build_explicit_knowledge_response(
     )
 
 
+def _select_native_context_groups(knowledge, retained_locators, source_priorities):
+    """Project whole captured groups, preserving qualifications and omissions."""
+    from copy import deepcopy
+
+    selected = deepcopy(knowledge)
+    selection = selected["selection"]
+    concepts = [row for row in selection["concepts"] if row["locator"] in retained_locators]
+    if not concepts:
+        raise ValueError("A selected native result must retain a qualified concept")
+    by_locator = {row["locator"]: row for row in concepts}
+    by_path = {row["canonical_path"]: row["locator"] for row in concepts}
+    selection["concepts"] = concepts
+    selection["pages"] = [row for row in selection["pages"] if row["canonical_path"] in by_path]
+    tiers = {"high": 0, "medium": 1, "low": 2}
+
+    def endpoint(value):
+        if isinstance(value, str):
+            return value if value in by_locator else None
+        if isinstance(value, Mapping):
+            locator = value.get("locator")
+            return locator if locator in by_locator else by_path.get(value.get("canonical_path"))
+        return None
+
+    relationships = []
+    for row in selection["relationships"]:
+        source, target = endpoint(row.get("from")), endpoint(row.get("target"))
+        if source is None and target is None:
+            continue
+        row["direction"] = ("both" if source and target else
+                            "outbound" if source and row["graph"] == "knowledge" else
+                            "outgoing" if source else
+                            "inbound" if row["graph"] == "knowledge" else "incoming")
+        relationships.append(row)
+
+    def relationship_rank(row):
+        locators = [endpoint(row.get("from")), endpoint(row.get("target"))]
+        rank = min((tiers[source_priorities[by_locator[locator]["source_path"]]],
+                    by_locator[locator]["source_path"], locator)
+                   for locator in locators if locator is not None)
+        return (*rank, 0 if row["graph"] == "knowledge" else 1,
+                json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+
+    selection["relationships"] = sorted(relationships, key=relationship_rank)
+    for name in ("concepts", "pages", "relationships"):
+        bound = selected["bounds"][name]
+        bound["returned"] = len(selection[name])
+        bound["truncated"] = bound["total"] > bound["returned"]
+    if any(bound["truncated"] for bound in selected["bounds"].values()):
+        selected["reason"] = "knowledge-results-truncated"
+    return selected
+
+
 def _fit_explicit_knowledge_response(
     knowledge: dict[str, Any],
     *,

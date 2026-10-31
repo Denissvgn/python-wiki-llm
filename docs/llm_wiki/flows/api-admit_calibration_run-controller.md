@@ -109,6 +109,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 875; effect analysis evaluated: 539, partial: 18, unavailable: 318. Counts include steps omitted from the displayed trace.
+
+Collector observations for 557 source steps with known totals: observed: 2674, emitted: 2596, omitted: 78. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `admit_calibration_run` | `available` | `partial` | `available` | `20` | `13` | `7` |
+| `_open_store` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `ProtectedArtifactStore` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `P0CalibrationIntegrityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `str (src/llm_wiki_cli/services…controller.py:_open_store)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `store.lock` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_load_run_locked` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_load_emergency_rejection` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_require_exact_fields` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
+
 ```mermaid
 flowchart LR
     s1["1. admit_calibration_run"]
@@ -179,7 +207,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

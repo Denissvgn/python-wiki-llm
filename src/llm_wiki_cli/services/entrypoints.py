@@ -748,10 +748,10 @@ def _label_rank(entry: dict) -> int:
 
 
 def _dedup(entries: list[dict]) -> list[dict]:
-    """Collapse entries sharing ``(category, file, symbol)``, keeping the best label."""
+    """Merge known owners while preserving distinct unbound declarations."""
     chosen: dict[tuple, dict] = {}
     for entry in entries:
-        key = (entry["category"], entry.get("file"), entry["symbol"])
+        key = _entry_key(entry)
         current = chosen.get(key)
         if current is None or _label_rank(entry) > _label_rank(current):
             chosen[key] = entry
@@ -925,6 +925,7 @@ def _entry_key(entry: Mapping) -> tuple:
         entry.get("category"),
         entry.get("file"),
         entry.get("symbol"),
+        entry.get("label") if entry.get("file") is None else None,
     )
 
 
@@ -949,7 +950,7 @@ def _detector_identity(entry: Mapping) -> tuple[str, str, str | None]:
 
 def _finalize_entries(entries: list[dict]) -> list[dict]:
     entries = _dedup(entries)
-    entries.sort(key=lambda e: (e["category"], e.get("file") or "", e["symbol"]))
+    entries.sort(key=lambda e: (e["category"], e.get("file") or "", e["symbol"], e.get("label") or ""))
     return _assign_ids(entries)
 
 
@@ -1143,6 +1144,7 @@ def entry_points_from_detailed_observations(
             entry.get("category") or "",
             entry.get("file") or "",
             entry.get("symbol") or "",
+            entry.get("label") or "",
         ),
     )
 

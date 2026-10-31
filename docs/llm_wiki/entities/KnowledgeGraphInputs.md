@@ -28,7 +28,7 @@ Complete evaluated inputs for one pure graph materialization.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

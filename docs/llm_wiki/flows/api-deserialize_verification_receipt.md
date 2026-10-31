@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 109; effect analysis evaluated: 63, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
+
+Collector observations for 64 source steps with known totals: observed: 242, emitted: 241, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `deserialize_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. deserialize_verification_receipt"]
@@ -152,31 +180,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| deserialize_verification_receipt | isinstance (src/llm_wiki_cli/services…lize_verification_receipt) | 894 | `isinstance(content, bytes)` |
-| deserialize_verification_receipt | TypeError | 895 | `TypeError('content must be bytes')` |
-| deserialize_verification_receipt | len (src/llm_wiki_cli/services…lize_verification_receipt) | 896 | `len(content)` |
-| deserialize_verification_receipt | VerificationReceiptError | 897 | `VerificationReceiptError('receipt', 'exceeds the byte limit')` |
-| deserialize_verification_receipt | content.decode | 899 | `content.decode('utf-8')` |
-| deserialize_verification_receipt | VerificationReceiptError | 901 | `VerificationReceiptError('receipt', 'must be valid UTF-8')` |
-| deserialize_verification_receipt | json.loads | 921 | `json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| deserialize_verification_receipt | VerificationReceiptError | 929 | `VerificationReceiptError('receipt', ...)` |
-| deserialize_verification_receipt | validate_verification_receipt | 933 | `validate_verification_receipt(payload)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 806 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 805 | `_receipt_to_payload(value)` |
+| deserialize_verification_receipt | isinstance (src/llm_wiki_cli/services…lize_verification_receipt) | 923 | `isinstance(content, bytes)` |
+| deserialize_verification_receipt | TypeError | 924 | `TypeError('content must be bytes')` |
+| deserialize_verification_receipt | len (src/llm_wiki_cli/services…lize_verification_receipt) | 925 | `len(content)` |
+| deserialize_verification_receipt | VerificationReceiptError | 926 | `VerificationReceiptError('receipt', 'exceeds the byte limit')` |
+| deserialize_verification_receipt | content.decode | 928 | `content.decode('utf-8')` |
+| deserialize_verification_receipt | VerificationReceiptError | 930 | `VerificationReceiptError('receipt', 'must be valid UTF-8')` |
+| deserialize_verification_receipt | json.loads | 950 | `json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| deserialize_verification_receipt | VerificationReceiptError | 958 | `VerificationReceiptError('receipt', ...)` |
+| deserialize_verification_receipt | validate_verification_receipt | 962 | `validate_verification_receipt(payload)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `deserialize_verification_receipt` | `isinstance` | 894 |
-| external_call | `deserialize_verification_receipt` | `TypeError` | 895 |
-| unresolved_call | `deserialize_verification_receipt` | `content.decode` | 899 |
-| external_call | `deserialize_verification_receipt` | `json.loads` | 921 |
-| external_call | `validate_verification_receipt` | `isinstance` | 806 |
+| external_call | `deserialize_verification_receipt` | `isinstance` | 923 |
+| external_call | `deserialize_verification_receipt` | `TypeError` | 924 |
+| unresolved_call | `deserialize_verification_receipt` | `content.decode` | 928 |
+| external_call | `deserialize_verification_receipt` | `json.loads` | 950 |
+| external_call | `validate_verification_receipt` | `isinstance` | 835 |
 | step_limit | `deserialize_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `deserialize_verification_receipt` | `depth limit` | 0 |
 

@@ -10,7 +10,7 @@ Derives record identities, owners, shared values and lookup aliases independentl
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.knowledge_storage` | `COLLECTIONS`, `KnowledgeStorageError`, `_Encoder`, `_concept_aliases`, `_node_aliases`, `_owner`, `canonical_bytes`, `digest`, `_text`, `_LOOKUP_GROUP_TARGET` |
 | `.storage_sort` | `SortedRuns`, `SortedRuns` |
 | `.storage_spool` | `ByteSpool`, `JsonSpool` |

@@ -3282,3 +3282,534 @@ Build and development tooling use patched Setuptools 84.1.0 while retaining Pyth
 - Pages deprecated: 0
 - Semantic fields preserved: 180
 - Moved entities: none
+
+## 2026-10-27
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:45b01492a924732bc994fda3e671209cc289b854c837a39bec7c022d14a2bed1`
+- Pages created: 1
+- Pages updated: 51
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1571
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+## 2026-10-27: Qualified symbol coverage and native ownership
+
+Source-qualified class queries retain exact file ownership and legacy ambiguity.
+Review preflight exposes excluded and unknown scope before unrelated extraction.
+TypeScript helper identity covers its complete prepared dependency tree, while
+documentation ownership reports distinguish declared roles from byte custody.
+Existing permissions, validation bounds and native authority remain separate.
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:db8ada73817012c9f3a5f09a48fd7af25b05de4604cf7d8baca0b1b3439e7660`
+- Pages created: 5
+- Pages updated: 95
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1529
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 4
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b39754ecdc2c06e36acf32c18623dfe648a34668ae4787b4e3e4d46b8b5418a2`
+- Pages created: 1
+- Pages updated: 30
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1598
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:cf8c47ae3bf6828e81873989c4ebdd03dbdfb617374f14eb9864c46426b9b7c3`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1629
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e7494e5d8d04c173a77e1f5ac6a42d693a2b2313817dae1e47c28d7a01bb8f91`
+- Pages created: 0
+- Pages updated: 427
+- Pages metadata-only: 1
+- Pages skipped (unchanged): 1204
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:8fe8c84b5932a78f7db7ecdcf31f3dddd3195f969a0c4da48397052052718c64`
+- Pages created: 0
+- Pages updated: 34
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1597
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:72562199211211a59595cd81246fc116c2c5930afe5ce7d295eafdd87be78b0c`
+- Pages created: 0
+- Pages updated: 18
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1611
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:64d6c10ae8dac1bcdbf656d7ff573f4d65e1f09ff80407b25b1f75aa6f26ceb2`
+- Pages created: 0
+- Pages updated: 96
+- Pages metadata-only: 1
+- Pages skipped (unchanged): 1537
+- Pages deprecated: 0
+- Semantic fields preserved: 9
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:60ab8a7ca69cdf14e981bee92f62ef7e55982616cda604484a0e507c5a1818c2`
+- Pages created: 0
+- Pages updated: 75
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1559
+- Pages deprecated: 0
+- Semantic fields preserved: 10
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d4199f4b83a90d9ee4109a32d8188dcce3237f4666a4eb399bb125ca3f44d727`
+- Pages created: 0
+- Pages updated: 32
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1598
+- Pages deprecated: 0
+- Semantic fields preserved: 7
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:7dd8bbe693a5d2507662674eec03cd10c1504c03c44d52470ba70ac71031e807`
+- Pages created: 0
+- Pages updated: 15
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1615
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:fb6297379ee380ac355361dacadfd1cee7720281f9761302dbf111f722ea0b9d`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1629
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:5f5119e5e2df9c79b8281fdaa70a20298959ab8735f4ab6996bfa3aacee15496`
+- Pages created: 1
+- Pages updated: 45
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1585
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:55f94fbc97ae253af0d7f9baa5fa6a236c12c453af9d283dfd7318c8b98c2f15`
+- Pages created: 0
+- Pages updated: 7
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1623
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:90e19063c20525ab0f561fabe5792cc673be6e3dde8f6ff6df312b50f1bcd4b5`
+- Pages created: 0
+- Pages updated: 15
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1615
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:9d71e4fec4150e610ff11b06412635dc9b66cbc5ce2a9f62e9a250a8048efa38`
+- Pages created: 0
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1617
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:495dc50965bc3277790aabb938a7bd9b39b9c4f79eee30bea614d27f2d63e3c9`
+- Pages created: 0
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1617
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a47f5da28eb70d6131c850c307a18d62adfa745be6dc5d694b0ccf1dc0e0011d`
+- Pages created: 0
+- Pages updated: 485
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1148
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-29
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b38599722c794469c403ee34b030abbf32f5d207498f4ee2d111534650a6a9b1`
+- Pages created: 0
+- Pages updated: 480
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1151
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:6eeb2a28062495a223f9aea8ac49a562f7d9b7f6cab34509fdb7731a9a8ad5da`
+- Pages created: 0
+- Pages updated: 310
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1320
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:4aeb4c56150de47b04963a7ce285c9c1cc4307d31b9512eca061a5529210aaee`
+- Pages created: 0
+- Pages updated: 14
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1618
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:14386526d33dc37144f4e0ea1402ef0c6ec9579d994e10b618e802e1c49a48c0`
+- Pages created: 0
+- Pages updated: 145
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1488
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:2cbfeb6527ca84d4f5fa918aeb1d6bba1a5aadb5302f87e9d4dfe82e6018b2de`
+- Pages created: 0
+- Pages updated: 6
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1626
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:871900c921b19c9c3cec0d3b6dc3d683637ae05b0d246dc44ca1bdb05df083e8`
+- Pages created: 0
+- Pages updated: 14
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1616
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:cd83032349a72a2886e52f9ff5e2eddea4a286194f140c842091c25a8ef62445`
+- Pages created: 0
+- Pages updated: 32
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1600
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:793c9f7d54c5bf2ffbeb53e70fe0dd073714cc2487178d74dd684af98a4b831b`
+- Pages created: 3
+- Pages updated: 172
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1465
+- Pages deprecated: 0
+- Semantic fields preserved: 15
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 3
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:494a24c4d70f6af54f9e4d3d50917681df8126ed27fcfaba7bd810d8339bad9c`
+- Pages created: 0
+- Pages updated: 34
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1601
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:5ac45fe79b335388b268b333c6dfb73338bcf0958f4097b6fefaf70a0586070f`
+- Pages created: 0
+- Pages updated: 14
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1622
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:4f0073a3edd00347871126add86c358851e46621734a2e67ab8ec66f6faedcb5`
+- Pages created: 0
+- Pages updated: 19
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1621
+- Pages deprecated: 0
+- Semantic fields preserved: 9
+- Moved entities: none
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ed1ef013db97422ed055a841ae742b96347da28e704b0bd1d97b6139c754879c`
+- Pages created: 2
+- Pages updated: 150
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1547
+- Pages deprecated: 0
+- Semantic fields preserved: 188
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-30
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:39794e37b91d3c0fe74a8efac2abf878a8d93b5be8691fe37533ec35eb765d9d`
+- Pages created: 0
+- Pages updated: 15
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1620
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+
+## 2026-10-31
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ca95adb6ec2373351a060f7c94b4f51ea7f6c6182fa441e7a0bdc0918766a2a1`
+- Pages created: 0
+- Pages updated: 12
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1623
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none

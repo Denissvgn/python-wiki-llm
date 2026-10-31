@@ -33,6 +33,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 14, emitted: 14, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_bounded_text"]
@@ -68,24 +77,24 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_text | isinstance | 650 | `isinstance(value, str)` |
-| require_bounded_text | len | 651 | `len(value)` |
-| require_bounded_text | len | 652 | `len(value)` |
-| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
-| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_bounded_text | isinstance | 658 | `isinstance(value, str)` |
+| require_bounded_text | len | 659 | `len(value)` |
+| require_bounded_text | len | 660 | `len(value)` |
+| require_bounded_text | value.strip | 661 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 664 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bounded_text` | `isinstance` | 650 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_bounded_text` | `isinstance` | 658 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 661 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 
 ## Behavior
 

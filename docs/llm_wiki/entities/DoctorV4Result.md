@@ -17,7 +17,7 @@ Compatibility-aware health with versioned captured comparison evidence.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

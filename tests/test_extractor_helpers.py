@@ -263,7 +263,7 @@ def test_helper_cache_root_resolves_git_env_explicit_and_worktree(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / ".git").mkdir()
-    assert resolve_helper_cache_root(repo) == repo / ".git" / HELPER_CACHE_DIRNAME
+    assert resolve_helper_cache_root(repo, env={}) == repo / ".git" / HELPER_CACHE_DIRNAME
 
     env_root = tmp_path / "env"
     assert (
@@ -286,7 +286,7 @@ def test_helper_cache_root_resolves_git_env_explicit_and_worktree(tmp_path):
     gitdir = tmp_path / "actual-git"
     gitdir.mkdir()
     (worktree / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
-    assert resolve_helper_cache_root(worktree) == gitdir / HELPER_CACHE_DIRNAME
+    assert resolve_helper_cache_root(worktree, env={}) == gitdir / HELPER_CACHE_DIRNAME
 
 
 def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):

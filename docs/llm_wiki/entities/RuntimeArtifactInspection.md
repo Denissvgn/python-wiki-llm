@@ -23,7 +23,7 @@ One runtime path classified without following unsafe entries.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

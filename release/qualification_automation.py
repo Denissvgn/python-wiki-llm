@@ -153,6 +153,11 @@ class GitHubClient:
         client.root, client.token = self.root, self.token
         return client.archive(artifact_id)
 
+    def qualified_bundle_archive(self, artifact: dict, run: dict, producer: dict) -> bytes:
+        client = hosted.GitHub.__new__(hosted.GitHub)
+        client.root, client.token = self.root, self.token
+        return client.qualified_bundle_archive(artifact, run, producer)
+
     def get_user(self) -> dict:
         request = urllib.request.Request("https://api.github.com/user", headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {self.token}",
             "X-GitHub-Api-Version": "2026-03-10", "User-Agent": "agent-wiki-release-automation"})
@@ -714,8 +719,6 @@ class Coordinator:
         require(type(run.get("repository", {}).get("id")) is int and type(run.get("head_repository", {}).get("id")) is int
                 and artifact.get("workflow_run", {}).get("repository_id") == run["repository"]["id"]
                 and artifact.get("workflow_run", {}).get("head_repository_id") == run["head_repository"]["id"], "qualified artifact repository IDs differ")
-        raw = self.client.archive(artifact["id"])
-        require(artifact.get("digest") == "sha256:" + hashlib.sha256(raw).hexdigest(), "qualified artifact archive digest differs")
         jobs = self.client.list(f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs", "jobs")
         producers = [x for x in jobs if x.get("name") == "Assemble immutable qualified release"]
         require(len(producers) == 1 and producers[0].get("status") == "completed" and producers[0].get("conclusion") == "success", "qualified bundle producer did not succeed")
@@ -724,7 +727,19 @@ class Coordinator:
                 and producer.get("run_attempt") == run["run_attempt"] and producer.get("head_sha") == run["head_sha"], "qualified bundle job identity differs")
         require(hosted.timestamp(producer.get("started_at")) <= hosted.timestamp(artifact.get("created_at"))
                 <= hosted.timestamp(artifact.get("updated_at")) <= hosted.timestamp(producer.get("completed_at")), "qualified artifact is outside its producer attempt")
-        inventory = hosted.zip_inventory(raw)
+        hosted.qualified_bundle_metadata(self.repository, artifact, run, producer)
+        download = getattr(self.client, "qualified_bundle_archive", None)
+        if download is None:
+            # Keep small legacy read clients usable without silently granting
+            # their generic transport a larger budget.
+            require(artifact["size_in_bytes"] <= hosted.MAX_ARCHIVE,
+                    "large qualified artifacts require the typed bundle reader")
+            raw = self.client.archive(artifact["id"])
+        else:
+            require(callable(download), "qualified bundle reader is unavailable")
+            raw = download(artifact, run, producer)
+        inventory = hosted.qualified_bundle_inventory(raw, repository=self.repository,
+                                                     artifact=artifact, run=run, producer=producer)
         with tempfile.TemporaryDirectory(prefix="qualification-bundle-") as temporary:
             directory = Path(temporary)
             with zipfile.ZipFile(io.BytesIO(raw)) as archive:

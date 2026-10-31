@@ -95,4 +95,4 @@ flowchart LR
 | `_limitation` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_limitations` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 
-> References: showing 12 of 43 logical references; 31 omitted by the 12-row generated summary limit.
+> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.

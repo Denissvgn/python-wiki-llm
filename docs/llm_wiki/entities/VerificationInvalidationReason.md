@@ -22,7 +22,7 @@ Reasons a syntactically valid receipt is not current.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

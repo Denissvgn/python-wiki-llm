@@ -1441,8 +1441,9 @@ class TestSyncInventoryRuntime:
 
         assert exc.value.code == 2
 
-    def test_default_sync_creates_git_cache(self, bootstrapped_project, capsys):
+    def test_default_sync_creates_git_cache(self, bootstrapped_project, capsys, monkeypatch):
         proj, wiki_dir = bootstrapped_project
+        monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
 
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
 
@@ -3290,9 +3291,10 @@ class TestDiffOutput:
     """sync prints a concise per-page summary to stdout."""
 
     def test_sync_reports_missing_haskell_helper_failure(
-        self, bootstrapped_project, capsys, assert_helper_recovery
+        self, bootstrapped_project, capsys, assert_helper_recovery, monkeypatch
     ):
         proj, wiki_dir = bootstrapped_project
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(proj / ".git"))
         hls_app = proj / "hls-analysis" / "app"
         hls_app.mkdir(parents=True)
         (hls_app / "Main.hs").write_text("module Main where\n", encoding="utf-8")

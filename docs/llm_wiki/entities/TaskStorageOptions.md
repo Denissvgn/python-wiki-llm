@@ -18,7 +18,7 @@ Optional selection and proof layout for task request v2.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

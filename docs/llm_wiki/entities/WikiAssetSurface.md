@@ -24,7 +24,7 @@ _Auto-generated from `WikiAssetSurface` in `src/llm_wiki_cli/services/wiki_surfa
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

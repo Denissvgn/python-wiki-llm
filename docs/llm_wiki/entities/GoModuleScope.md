@@ -20,7 +20,7 @@ One ``go.mod`` module declaration scoped to its directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

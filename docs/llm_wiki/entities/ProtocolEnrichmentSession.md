@@ -1,6 +1,6 @@
 # _ProtocolEnrichmentSession
 
-**Location:** `src/llm_wiki_cli/services/context_service.py:1821`
+**Location:** `src/llm_wiki_cli/services/context_service.py:1873`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_service](../modules/context_service.md)
@@ -21,7 +21,7 @@ Operation-scoped query state captured from one knowledge read.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

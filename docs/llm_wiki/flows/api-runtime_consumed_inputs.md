@@ -80,6 +80,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 13; effect analysis evaluated: 5, partial: 0, unavailable: 8. Counts include steps omitted from the displayed trace.
+
+Collector observations for 5 source steps with known totals: observed: 29, emitted: 29, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `runtime_consumed_inputs` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_snapshot.to_consumed_inputs` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_merge_explicit_consumed_input` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `is_valid_sha256` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_SHA256_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. runtime_consumed_inputs"]
@@ -142,12 +169,12 @@ flowchart LR
 | _merge_explicit_consumed_input | KnowledgeGenerationError | 1567 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
 | _merge_explicit_consumed_input | KnowledgeGenerationError | 1574 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
 | _merge_explicit_consumed_input | is_valid_sha256 | 1578 | `is_valid_sha256(content_hash)` |
-| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 171 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 171 | `_SHA256_RE.fullmatch(value)` |
+| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 176 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 176 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -158,8 +185,8 @@ flowchart LR
 | external_call | `runtime_consumed_inputs` | `isinstance` | 1496 |
 | external_call | `runtime_consumed_inputs` | `TypeError` | 1497 |
 | unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1499 |
-| external_call | `is_valid_sha256` | `isinstance` | 171 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 171 |
+| external_call | `is_valid_sha256` | `isinstance` | 176 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 176 |
 | step_limit | `runtime_consumed_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

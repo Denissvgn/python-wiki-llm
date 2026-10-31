@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import os
 import posixpath
 import re
@@ -36,22 +37,34 @@ LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {
 INCLUDE_TEST_LANGUAGES = frozenset({"go"})
 MAX_ONLY_FILES_ARG_CHARS = 60_000
 
-# Import-record ``scope`` values.  An import record without a ``scope`` key
-# executes when the module is imported, which keeps older inventories and
+# Import-record ``scope`` values. Unqualified legacy records keep their
+# possible import-time behavior, which keeps older inventories and
 # extractors that do not classify imports on the historical contract.  The two
 # values below mark imports that never run at import time, so consumers that
 # model load order (cycle detection, topological order) can exclude them while
 # consumers that model coupling (fan-in/fan-out, impact analysis) keep them.
 IMPORT_SCOPE_DEFERRED = "deferred"  # inside a function body; runs only when called
 IMPORT_SCOPE_TYPE_CHECKING = "type_checking"  # under `if TYPE_CHECKING:`; never runs
-NON_IMPORT_TIME_SCOPES = frozenset({IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHECKING})
+_NON_IMPORT_TIME_SCOPE_VALUES = (IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHECKING)
+NON_IMPORT_TIME_SCOPES = frozenset(_NON_IMPORT_TIME_SCOPE_VALUES)
 
 
 def executes_at_import(import_record: object) -> bool:
-    """Return whether an inventory import record runs when its module loads."""
-    if not isinstance(import_record, dict):
+    """Return whether an import can run when its module loads.
+
+    Conditional TypeScript emission stays a possible startup dependency. Only
+    guaranteed erasure, such as declaration-level ``import type``, excludes it.
+    """
+    if not isinstance(import_record, Mapping):
         return True
-    return import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
+    if import_record.get("runtime") == "erased":
+        return False
+    scope = import_record.get("scope")
+    # Direct graph callers may supply unvalidated records. An unknown scope
+    # cannot establish a deferred import or suppress a possible startup edge.
+    # String subclasses accepted by normalization need not be hashable. Match
+    # their text without adding a hashability requirement to the import schema.
+    return not isinstance(scope, str) or scope not in _NON_IMPORT_TIME_SCOPE_VALUES
 
 # These are project-source identities, relative to the owned ``llm_wiki_cli``
 # package root.  Package markers and nested .gitignore files intentionally do

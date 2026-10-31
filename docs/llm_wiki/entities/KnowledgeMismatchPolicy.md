@@ -19,7 +19,7 @@ Caller-selected behavior when a present artifact set is not valid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

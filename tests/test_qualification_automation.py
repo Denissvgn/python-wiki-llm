@@ -513,35 +513,104 @@ def test_normal_artifact_identity_and_archive_digest_are_checked(controller):
     receipt = controller.reconcile({"workflow_run": workflow_run()})
     run = controller.client.runs[receipt["run_id"]]
     controller.client.artifacts = [{"id": 3, "name": "qualified-release", "expired": False, "digest": "sha256:" + "0" * 64,
-                                    "workflow_run": {"id": run["id"], "head_sha": CANDIDATE, "repository_id": 44, "head_repository_id": 44}}]
+                                    "size_in_bytes": len(b"tampered"),
+                                    "workflow_run": {"id": run["id"], "head_sha": CANDIDATE, "repository_id": 44, "head_repository_id": 44},
+                                    "created_at": "2026-01-01T01:10:00Z", "updated_at": "2026-01-01T01:11:00Z"}]
+    controller.client.jobs = [{"id": 78, "run_id": run["id"], "run_attempt": 1, "head_sha": CANDIDATE,
+                               "name": "Assemble immutable qualified release", "status": "completed", "conclusion": "success",
+                               "started_at": "2026-01-01T01:00:00Z", "completed_at": "2026-01-01T01:20:00Z"}]
     controller.client.archives[3] = b"tampered"
     result = controller.reconcile({"workflow_run": run})
     assert result["status"] == "blocked_evidence"
     assert "archive digest" in result["reason"]
 
 
-def test_normal_completion_records_verified_artifact_and_is_terminal(controller, monkeypatch):
+@pytest.mark.parametrize("failed_default_verifier", [False, True])
+def test_normal_completion_records_verified_artifact_and_is_terminal(controller, monkeypatch, failed_default_verifier):
     activate(controller)
     receipt = controller.reconcile({"workflow_run": workflow_run()})
     run = controller.client.runs[receipt["run_id"]]
-    manifest = {"repository": REPOSITORY, "workflow_run_id": run["id"], "source": {"sha": CANDIDATE}, "qualification_context": {"run_attempt": 1}, "version": "9.9.9"}
+    manifest = {"repository": REPOSITORY, "workflow_run_id": run["id"], "source": {"sha": CANDIDATE}, "qualification_context": {"run_attempt": 1}, "version": "9.9.9",
+                "artifacts": [{"kind": "wheel", "sha256": "1" * 64}, {"kind": "sdist", "sha256": "2" * 64}]}
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w") as archive:
         archive.writestr("qualification-manifest.json", qa.canonical(manifest))
     raw = stream.getvalue()
     controller.client.archives[3] = raw
     controller.client.artifacts = [{"id": 3, "name": "qualified-release", "expired": False, "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+                                    "size_in_bytes": len(raw),
                                     "workflow_run": {"id": run["id"], "head_sha": CANDIDATE, "repository_id": 44, "head_repository_id": 44}, "created_at": "2026-01-01T01:10:00Z", "updated_at": "2026-01-01T01:11:00Z"}]
     controller.client.jobs = [{"id": 78, "run_id": run["id"], "run_attempt": 1, "head_sha": CANDIDATE, "name": "Assemble immutable qualified release", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T01:00:00Z", "completed_at": "2026-01-01T01:20:00Z"}]
     monkeypatch.setattr(qa.qualification, "_validate_manifest", lambda x: x)
     calls = []
     controller.bundle_verifier = lambda root, manifest, run: calls.append(run["id"])
+    if failed_default_verifier:
+        controller.bundle_verifier = None
+
+        def refuse(args):
+            assert args.candidate_sha == CANDIDATE and args.workflow_run_id == run["id"]
+            calls.append(run["id"])
+            raise qa.qualification.QualificationError("distribution hash mismatch")
+
+        monkeypatch.setattr(qa.qualification, "verify_bundle", refuse)
     result = controller.reconcile({"workflow_run": run})
+    if failed_default_verifier:
+        assert result["status"] == "blocked_evidence" and "distribution hash mismatch" in result["reason"]
+        assert calls == [run["id"]]
+        return
     assert result["status"] == "qualified" and calls == [run["id"]]
     assert result["artifact_id"] == 3 and result["version"] == "9.9.9"
     again = controller.reconcile({"workflow_run": run})
     assert again["status"] == "qualified" and calls == [run["id"]]
     assert not any("/tags" in x[1] or "publish" in x[1] for x in controller.client.mutations)
+
+
+@pytest.mark.parametrize("typed_reader", [True, False])
+def test_normal_completion_uses_typed_reader_above_generic_archive_budget(controller, monkeypatch, typed_reader):
+    activate(controller)
+    receipt = controller.reconcile({"workflow_run": workflow_run()})
+    run = controller.client.runs[receipt["run_id"]]
+    manifest = {"repository": REPOSITORY, "workflow_run_id": run["id"],
+                "source": {"sha": CANDIDATE}, "qualification_context": {"run_attempt": 1},
+                "version": "9.9.9"}
+    stream = io.BytesIO()
+    with zipfile.ZipFile(stream, "w") as archive:
+        archive.writestr("qualification-manifest.json", qa.canonical(manifest))
+    raw = stream.getvalue()
+    artifact = {"id": 3, "name": "qualified-release", "expired": False,
+                "size_in_bytes": len(raw), "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+                "workflow_run": {"id": run["id"], "head_sha": CANDIDATE,
+                                 "repository_id": 44, "head_repository_id": 44},
+                "created_at": "2026-01-01T01:10:00Z", "updated_at": "2026-01-01T01:11:00Z"}
+    producer = {"id": 78, "run_id": run["id"], "run_attempt": 1,
+                "head_sha": CANDIDATE, "name": "Assemble immutable qualified release",
+                "status": "completed", "conclusion": "success",
+                "started_at": "2026-01-01T01:00:00Z", "completed_at": "2026-01-01T01:20:00Z"}
+    controller.client.artifacts = [artifact]
+    controller.client.jobs = [producer]
+    controller.client.archives[3] = raw
+    typed_calls = []
+
+    def typed(metadata, actual_run, actual_producer):
+        assert metadata == artifact and actual_run == run and actual_producer == producer
+        typed_calls.append(metadata["id"])
+        return raw
+
+    if typed_reader:
+        monkeypatch.setattr(controller.client, "qualified_bundle_archive", typed, raising=False)
+    else:
+        monkeypatch.setattr(controller.client, "archive", lambda *a: pytest.fail("large generic download"))
+    monkeypatch.setattr(qa.hosted, "MAX_ARCHIVE", len(raw) - 1)
+    monkeypatch.setattr(qa.qualification, "_validate_manifest", lambda value: value)
+    verified = []
+    controller.bundle_verifier = lambda root, value, actual: verified.append(actual["id"])
+    result = controller.reconcile({"workflow_run": run})
+    if typed_reader:
+        assert result["status"] == "qualified", result
+        assert typed_calls == [3] and verified == [run["id"]]
+    else:
+        assert result["status"] == "blocked_evidence" and "typed bundle reader" in result["reason"]
+        assert not typed_calls and not verified
 
 
 def test_interrupted_dispatch_recovers_only_one_correlated_run(controller):

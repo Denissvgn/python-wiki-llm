@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 140; effect analysis evaluated: 81, partial: 7, unavailable: 52. Counts include steps omitted from the displayed trace.
+
+Collector observations for 88 source steps with known totals: observed: 467, emitted: 458, omitted: 9. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `source_tree_baseline` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `capture_tree_baseline` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `limits.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_resolve_existing_directory` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_lstat` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. source_tree_baseline"]
@@ -166,7 +194,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

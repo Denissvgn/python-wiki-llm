@@ -16,6 +16,8 @@ from typing import Any
 
 from .inventory_cache import ENV_CACHE_DIR
 from .paths import render_shell_command
+from . import typescript_helper_identity as ts_identity
+from .io import first_unsafe_path_component
 
 ENV_GO_BINARY = "LLM_WIKI_GO"
 ENV_GHC_BINARY = "LLM_WIKI_GHC"
@@ -24,6 +26,7 @@ DEFAULT_EXTRACTOR_TIMEOUT_SECONDS = 120
 HELPER_CACHE_DIRNAME = "llm-wiki-extractors"
 HELPER_MANIFEST = "current.json"
 HELPER_MANIFEST_VERSION = 2
+TYPESCRIPT_HELPER_MANIFEST_VERSION = ts_identity.MANIFEST_VERSION
 SUPPORTED_HELPERS = ("typescript", "go", "rust", "haskell")
 HELPER_TOOLCHAIN_HINTS = {
     "typescript": "Install Node.js with npm, or make node and npm available on PATH",
@@ -314,6 +317,8 @@ def helper_cache_key(
         "source": helper_source_fingerprint(language),
         "toolchain": toolchain_version or "",
     }
+    if language == "typescript":
+        payload["artifact_scope"] = ts_identity.ARTIFACT_SCOPE
     data = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(data).hexdigest()
 
@@ -325,8 +330,9 @@ def _manifest_path(cache_root: Path, language: str) -> Path:
 def _load_manifest(cache_root: Path, language: str) -> dict[str, Any] | None:
     path = _manifest_path(cache_root, language)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        data = (ts_identity.read_receipt(path) if language == "typescript"
+                else json.loads(path.read_text(encoding="utf-8")))
+    except (OSError, ValueError):
         return None
     return data if isinstance(data, dict) else None
 
@@ -341,11 +347,24 @@ def _write_manifest(cache_root: Path, language: str, data: dict[str, Any]) -> No
     tmp_path.replace(path)
 
 
+def _typescript_receipt_root(cache_root: Path, manifest: dict[str, Any]) -> Path | None:
+    root = manifest.get("root")
+    key = manifest.get("key")
+    if (not isinstance(root, str) or "\0" in root
+            or not isinstance(key, str) or re.fullmatch(r"[0-9a-f]{64}", key) is None):
+        return None
+    expected = cache_root / "typescript" / key
+    return expected if (Path(root) == expected
+                        and manifest.get("path") == str(expected / "node_modules/ts-morph")) else None
+
+
 def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
     manifest = _load_manifest(cache_root, language)
     if not manifest:
         return None
-    if manifest.get("version") != HELPER_MANIFEST_VERSION:
+    expected_version = TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else HELPER_MANIFEST_VERSION
+    if (manifest.get("version") != expected_version
+            or language == "typescript" and type(manifest.get("version")) is not int):
         return None
     if manifest.get("language") != language:
         return None
@@ -358,16 +377,23 @@ def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
         if not isinstance(path_value, str) or not Path(path_value).is_file():
             return None
     elif language == "typescript":
-        if not isinstance(path_value, str) or not Path(path_value).is_dir():
+        prepared_root = _typescript_receipt_root(cache_root, manifest)
+        if prepared_root is None or not (prepared_root / "node_modules/ts-morph").is_dir():
             return None
-        root_value = manifest.get("root")
-        if not isinstance(root_value, str) or "\0" in root_value:
+        key = manifest.get("key")
+        toolchain = manifest.get("toolchain")
+        if (manifest.get("artifact_scope") != ts_identity.ARTIFACT_SCOPE
+                or not isinstance(toolchain, str) or not toolchain
+                or key != helper_cache_key("typescript", toolchain_version=toolchain)):
             return None
-        prepared_root = Path(root_value)
-        if Path(path_value) != prepared_root / "node_modules/ts-morph":
+        try:
+            if ts_identity.execution_source_fingerprint(prepared_root, _TS_FILES) != manifest["source_fingerprint"]:
+                return None
+            if manifest.get("artifact_fingerprint") != ts_identity.dependency_fingerprint(prepared_root / "node_modules"):
+                return None
+        except (OSError, ValueError):
             return None
-        if _hash_labeled_files([(name, prepared_root / name) for name in _TS_FILES]) != manifest["source_fingerprint"]:
-            return None
+        return manifest
     else:
         return None
     if manifest.get("artifact_fingerprint") != helper_artifact_fingerprint(
@@ -502,17 +528,27 @@ def helper_identity(
     if receipt is None:
         issues.append("receipt-unavailable")
     else:
-        for key, expected in (("version", HELPER_MANIFEST_VERSION),
+        expected_version = TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else HELPER_MANIFEST_VERSION
+        for key, expected in (("version", expected_version),
                               ("language", language), ("platform", platform_id()),
                               ("source_fingerprint", source)):
             if receipt.get(key) != expected:
                 issues.append(key.replace("_", "-") + "-mismatch")
+        if language == "typescript" and (
+                type(receipt.get("version")) is not int
+                or receipt["version"] != TYPESCRIPT_HELPER_MANIFEST_VERSION
+                or receipt.get("artifact_scope") != ts_identity.ARTIFACT_SCOPE):
+            issues.append("typescript-dependency-identity-unavailable")
         try:
             current = None if root is None else _manifest_current(root, language)
             path = receipt.get("path")
             if current is not None:
                 artifact = current.get("artifact_fingerprint")
-            elif isinstance(path, str) and Path(path).exists():
+            elif language == "typescript" and receipt.get("artifact_scope") == ts_identity.ARTIFACT_SCOPE:
+                prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
+                if prepared_root is not None:
+                    artifact = ts_identity.dependency_fingerprint(prepared_root / "node_modules")
+            elif language != "typescript" and isinstance(path, str) and Path(path).exists():
                 artifact = helper_artifact_fingerprint(Path(path))
             if artifact != receipt.get("artifact_fingerprint") or artifact is None:
                 issues.append("artifact-unavailable-or-mismatch")
@@ -522,13 +558,11 @@ def helper_identity(
             issues.append("invalid-receipt")
         if language == "typescript":
             try:
-                prepared_root = receipt.get("root")
-                if (not isinstance(prepared_root, str)
-                        or Path(str(receipt.get("path"))) != Path(prepared_root) / "node_modules/ts-morph"
-                        or not (Path(prepared_root) / "extract.js").is_file()):
+                prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
+                if prepared_root is None or not (prepared_root / "extract.js").is_file():
                     issues.append("typescript-root-unavailable")
-                if isinstance(prepared_root, str):
-                    execution_source = _hash_labeled_files([(name, Path(prepared_root) / name) for name in _TS_FILES])
+                if prepared_root is not None:
+                    execution_source = ts_identity.execution_source_fingerprint(prepared_root, _TS_FILES)
                     if execution_source != source:
                         issues.append("execution-source-mismatch")
             except (OSError, ValueError):
@@ -569,7 +603,13 @@ def helper_identity(
         "active_runtime": runtime,
         "recovery": recovery,
         "preparation_argv": helper_preparation_argv(language, src_dir, cache_dir),
-        "qualification": "Observed receipt and local bytes; no dependencies installed, no release authenticity established.",
+        "qualification": (
+            "Observed receipt and local bytes; no dependencies installed, no release authenticity established."
+            + (" TypeScript scope: complete prepared node_modules tree."
+               if language == "typescript" and current is not None else
+               " TypeScript dependency-tree identity is unqualified; older artifact-path hashes are not promoted."
+               if language == "typescript" else "")
+        ),
     }
 
 
@@ -599,6 +639,9 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
     key = helper_cache_key("typescript", toolchain_version=toolchain)
     build_root = cache_root / "typescript" / key
     dependency_path = build_root / "node_modules" / "ts-morph"
+    if (first_unsafe_path_component(dependency_path) is not None
+            or any(first_unsafe_path_component(build_root / name) is not None for name in _TS_FILES)):
+        return HelperPrepareResult("typescript", "failed", "TypeScript helper cache traverses an unsafe link")
     current = _manifest_current(cache_root, "typescript")
     if (
         current
@@ -647,12 +690,17 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
             "typescript", "failed", "ts-morph dependency missing after npm ci"
         )
 
+    try:
+        artifact_fingerprint = ts_identity.dependency_fingerprint(build_root / "node_modules")
+    except (OSError, ValueError) as exc:
+        return HelperPrepareResult("typescript", "failed", f"TypeScript dependency identity unavailable: {exc}")
     data = {
-        "version": HELPER_MANIFEST_VERSION,
+        "version": TYPESCRIPT_HELPER_MANIFEST_VERSION,
+        "artifact_scope": ts_identity.ARTIFACT_SCOPE,
         "language": "typescript",
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("typescript"),
-        "artifact_fingerprint": helper_artifact_fingerprint(dependency_path),
+        "artifact_fingerprint": artifact_fingerprint,
         "toolchain": toolchain,
         "node_executable": node_executable,
         "npm_executable": npm_executable,

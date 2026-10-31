@@ -38,6 +38,32 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 0, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 20, emitted: 10, omitted: 10. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `redact_credentials` | `available` | `partial` | `available` | `20` | `10` | `10` |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `match.group` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `apply` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. redact_credentials"]
@@ -101,7 +127,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

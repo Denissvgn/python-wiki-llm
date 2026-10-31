@@ -32,6 +32,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 9, emitted: 9, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_enum_value"]
@@ -64,24 +73,24 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_enum_value | require_string | 1107 | `require_string(value, error=text_error)` |
-| require_string | isinstance | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
-| require_enum_value | enum_type | 1109 | `enum_type(parsed)` |
-| require_enum_value | choice_error | 1111 | `choice_error(data not statically known)` |
+| require_enum_value | require_string | 1115 | `require_string(value, error=text_error)` |
+| require_string | isinstance | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
+| require_enum_value | enum_type | 1117 | `enum_type(parsed)` |
+| require_enum_value | choice_error | 1119 | `choice_error(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
-| unresolved_call | `require_enum_value` | `enum_type` | 1109 |
-| unresolved_call | `require_enum_value` | `choice_error` | 1111 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
+| unresolved_call | `require_enum_value` | `enum_type` | 1117 |
+| unresolved_call | `require_enum_value` | `choice_error` | 1119 |
 
 ## Behavior
 

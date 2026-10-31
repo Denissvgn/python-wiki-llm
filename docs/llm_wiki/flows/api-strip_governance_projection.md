@@ -43,7 +43,7 @@ sequenceDiagram
     participant p20 as _limitation
     participant p21 as _validate_resolution_target
     participant p22 as _normalise_evidence
-    participant p23 as _validate_endpoint_concept_references
+    participant p23 as _validate_edge_concept_references
     participant p24 as relationship_edge_key
     participant p25 as _validate_core_direction
     participant p26 as require_sha256
@@ -73,7 +73,7 @@ sequenceDiagram
     p8->>p20: _limitation
     p10->>p21: _validate_resolution_target
     p10->>p22: _normalise_evidence
-    p10->>p23: _validate_endpoint_concept_references
+    p10->>p23: _validate_edge_concept_references
     p10->>p24: relationship_edge_key
     p10->>p25: _validate_core_direction
     p15->>p26: require_sha256
@@ -99,7 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 28 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 103 groups; 95 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 104 groups; 96 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -107,6 +107,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 213; effect analysis evaluated: 147, partial: 2, unavailable: 64. Counts include steps omitted from the displayed trace.
+
+Collector observations for 149 source steps with known totals: observed: 664, emitted: 659, omitted: 5. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `strip_governance_projection` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `concepts.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. strip_governance_projection"]

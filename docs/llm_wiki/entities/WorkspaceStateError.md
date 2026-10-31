@@ -15,7 +15,7 @@ Raised when workspace state or an operational dependency is unusable.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

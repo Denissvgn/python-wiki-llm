@@ -53,6 +53,7 @@ from .dependencies import (
     build_dependency_observations,
     build_external_dependency_observations,
     package_dependency_graph,
+    startup_cycle_groups,
     top_level_package,
 )
 from .diagrams import (
@@ -116,9 +117,12 @@ from .markdown_sections import (
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     GENERATED_INDEX_INTRO_WITH_GUIDES,
     GENERATED_INDEX_INTRO_WITHOUT_GUIDES,
+    GENERATED_OVERLOADS_HEADING,
+    normalize_markdown,
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from .module_maps import build_module_dependency_maps
+from .dockerfile_parser import DOCKERFILE_STAGES_SCHEMA
 from .paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_page_relationship_summaries
 from .schema import (
@@ -627,11 +631,15 @@ def _format_signature(fn: dict) -> str:
             inserted_keyword_separator = True
 
         part = p["name"]
-        if kind == "var_positional":
+        if p.get("rest"):
+            part = f"...{part}"
+        elif kind == "var_positional":
             part = f"*{part}"
             inserted_keyword_separator = True
         elif kind == "var_keyword":
             part = f"**{part}"
+        if p.get("optional"):
+            part += "?"
         if p.get("type"):
             part += f": {p['type']}"
         if p.get("default") not in (None, ""):
@@ -645,9 +653,33 @@ def _format_signature(fn: dict) -> str:
 
     ret = fn.get("return_type", "")
     sig = f"({', '.join(params)})"
+    if fn.get("type_params"):
+        sig = f"<{', '.join(fn['type_params'])}>{sig}"
     if ret:
         sig += f" -> {ret}"
     return sig
+
+
+def _append_declared_overloads(lines, records, label):
+    """Render public overload declarations without replacing implementation rows."""
+    rows = [(record, overload) for record in records for overload in record.get("overloads", [])]
+    if not rows:
+        return
+    lines.extend([
+        f"For {label.lower()}s listed below, the preceding row describes the implementation. "
+        "The overload declarations define the public call signatures.",
+        "",
+        f"## {GENERATED_OVERLOADS_HEADING}",
+        "",
+        f"| {label} | Line | Signature |",
+        "|--------|------|-----------|",
+    ])
+    for record, overload in rows:
+        lines.append(
+            f"| {_table_inline_code(record['name'])} | {overload['line']} | "
+            f"{_table_inline_code(_format_signature(overload))} |"
+        )
+    lines.append("")
 
 
 def _table_text(value: object) -> str:
@@ -656,10 +688,21 @@ def _table_text(value: object) -> str:
     return str(value).replace("\n", "<br>").replace("|", "\\|")
 
 
-def _table_inline_code(value: object) -> str:
+def _table_inline_code(value: object, *, table: bool = True) -> str:
     if value in (None, ""):
         return "—"
-    text = str(value).replace("\n", " ").replace("|", "\\|")
+    text = str(value)
+    if text.isspace() or any(char in text for char in "\r\n\t"):
+        # A Markdown code span folds line breaks, changing template-literal
+        # types. Keep one physical table line while preserving code whitespace
+        # and making both HTML and Markdown punctuation inert.
+        encoded = "".join(
+            char if char.isalnum() or char == " " or ord(char) >= 128 else f"&#{ord(char)};"
+            for char in text
+        )
+        return f"<pre><code>{encoded}</code></pre>"
+    if table:
+        text = text.replace("|", "\\|")
     runs = [len(match.group(0)) for match in re.finditer(r"`+", text)]
     fence = "`" * (max(runs, default=0) + 1)
     padding = " " if runs or text.startswith(" ") or text.endswith(" ") else ""
@@ -1353,10 +1396,20 @@ def _generate_module_dependency_section(
         lines.extend(["*No internal module dependencies detected.*", ""])
         return lines
 
+    if summary.get("type_dependencies") or summary.get("conditional_cycle"):
+        lines.extend(["This graph shows full source coupling. Type dependencies can be erased; "
+            "compiler-dependent cycle groups are runtime candidates, not confirmed initialization cycles.", ""])
+    if summary.get("preserved_cycles"):
+        lines.extend(["### Preserved startup cycles", ""])
+        for group in summary["preserved_cycles"]:
+            lines.append("- " + " ⇄ ".join(_module_dependency_cell(node, module_page_map) for node in group))
+        lines.append("")
     rendered = _module_dependency_graph(summary, module_page_map, diagram_style)
     if rendered and rendered.diagram:
         if summary.get("cycle_participation") and "==>" in rendered.diagram:
             lines.append(
+                "<!-- Thick arrows mark a compiler-dependent startup cycle candidate. -->"
+                if summary.get("conditional_cycle") else
                 "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
             )
         lines.append(rendered.diagram)
@@ -1524,24 +1577,31 @@ def _append_import_section(
         lines.append("")
         return
 
-    grouped: dict[str, list[str]] = defaultdict(list)
+    qualified = any("runtime" in imp or "type_only" in imp for imp in imports)
+    grouped: dict[tuple[str, str, str], list[str]] = defaultdict(list)
     unresolved: list[dict] = []
     for imp in imports:
         if not imp.get("module") and imp.get("resolution") == "unresolved":
             unresolved.append(imp)
             continue
-        grouped[imp["module"]].append(imp["name"])
+        type_only = ("Declaration" if imp.get("type_only_declaration") else "Specifier") if imp.get("type_only") else "—"
+        runtime = str(imp.get("runtime", "unclassified"))
+        if runtime == "conditional":
+            runtime = "compiler-dependent"
+        grouped[imp["module"], type_only, runtime].append(imp["name"])
 
-    lines.append("| Source | Symbols |")
-    lines.append("|--------|---------|")
-    for module, names in sorted(grouped.items()):
-        symbols = ", ".join(f"`{n}`" for n in names if n) or "—"
-        lines.append(f"| `{module}` | {symbols} |")
+    lines.append("| Source | Symbols | Type-only | Runtime emission |" if qualified else "| Source | Symbols |")
+    lines.append("|--------|---------|-----------|------------------|" if qualified else "|--------|---------|")
+    for (module, type_only, runtime), names in sorted(grouped.items()):
+        symbols = ", ".join(_table_inline_code(n) for n in names if n) or "—"
+        phase = f" {type_only} | {runtime} |" if qualified else ""
+        lines.append(f"| {_table_inline_code(module)} | {symbols} |{phase}")
     for imp in unresolved:
         reason = _md_cell(imp.get("reason"))
         location = f"line {_md_cell(imp.get('line'))}"
         scope = "; deferred" if imp.get("scope") == "deferred" else ""
-        lines.append(f"| Unresolved `{reason}` | — ({location}{scope}) |")
+        phase = " — | unclassified |" if qualified else ""
+        lines.append(f"| Unresolved `{reason}` | — ({location}{scope}) |{phase}")
     lines.append("")
 
 
@@ -1652,6 +1712,7 @@ def _entity_kind_label(class_info: Mapping) -> str:
     return {
         "class": "Class",
         "enum": "Enum",
+        "interface": "Interface",
         "type_alias": "Type alias",
     }.get(str(class_info.get("kind") or "class"), "Class")
 
@@ -1757,7 +1818,8 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
     attributes = list(class_info.get("attributes", []))
     lines.extend(["## Attributes", ""])
     if not attributes:
-        lines.extend(["*No annotated attributes found.*", ""])
+        note = "*See the alias definition for its member types.*" if class_info.get("kind") == "type_alias" else "*No annotated attributes found.*"
+        lines.extend([note, ""])
         return
 
     if class_info.get("kind") == "enum":
@@ -1915,7 +1977,7 @@ def _generate_entity_md(
         mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
     )
 
-    bases_str = ", ".join(f"`{b}`" for b in bases) if bases else "—"
+    bases_str = ", ".join(_table_inline_code(b, table=False) for b in bases) if bases else "—"
 
     lines = [
         f"# {name}",
@@ -1926,7 +1988,18 @@ def _generate_entity_md(
         f"**Module:** [{mod_name}](../modules/{mod_name}.md)",
     ]
     if class_info.get("target"):
-        lines.append(f"**Target:** {_table_inline_code(class_info['target'])}")
+        if class_info.get("kind") == "type_alias" and Path(filepath).suffix.lower() in {".ts", ".tsx", ".mts", ".cts"}:
+            # Normalize before adding the fence separator. A preview ending in
+            # CR must not merge with that separator and lose its own line break.
+            target = normalize_markdown(str(class_info["target"]))
+            fence = "`" * max(3, 1 + max((len(m[0]) for m in re.finditer(r"`+", target)), default=0))
+            lines.extend(["**Target:**", "", f"{fence}typescript", target, fence])
+        else:
+            lines.append(f"**Target:** {_table_inline_code(class_info['target'])}")
+    if class_info.get("target_truncated"):
+        lines.append("**Definition truncated:** first 4,096 characters only; see source for the complete definition.")
+    if class_info.get("type_params"):
+        lines.append(f"**Type parameters:** {_table_inline_code(', '.join(class_info['type_params']), table=False)}")
     lines.append("")
 
     if decorators:
@@ -1949,8 +2022,9 @@ def _generate_entity_md(
     lines.append("## Methods")
     lines.append("")
     if methods:
-        lines.append("| Method | Signature | Decorators | Description |")
-        lines.append("|--------|-----------|------------|-------------|")
+        include_lines = any(method.get("overloads") for method in methods)
+        lines.append("| Method | Line | Signature | Decorators | Description |" if include_lines else "| Method | Signature | Decorators | Description |")
+        lines.append("|--------|------|-----------|------------|-------------|" if include_lines else "|--------|-----------|------------|-------------|")
         for m in methods:
             sig = _format_signature(m)
             decs = (
@@ -1959,13 +2033,15 @@ def _generate_entity_md(
             )
             doc = _source_doc_first_line(m.get("docstring")) or "—"
             async_tag = "*(async)* " if m.get("is_async") else ""
+            source_line = f"{m.get('line', '?')} | " if include_lines else ""
             lines.append(
-                f"| `{_table_text(m['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"| `{_table_text(m['name'])}` | {source_line}{async_tag}{_table_inline_code(sig)} | "
                 f"{decs} | {_table_text(doc)} |"
             )
     else:
-        lines.append("*No public methods. Inherits from base classes.*")
+        lines.append("*See the alias definition for callable and member types.*" if class_info.get("kind") == "type_alias" else "*No declared methods.*")
     lines.append("")
+    _append_declared_overloads(lines, methods, "Method")
 
     # Relationships
     _append_relationships_to_entity(
@@ -2062,6 +2138,8 @@ def _generate_module_md(
             entity_link = f"[{c['name']}](../entities/{page_name}.md)"
             bases = ", ".join(_table_inline_code(base) for base in c.get("bases", []))
             bases = bases or _table_inline_code(c.get("target"))
+            if c.get("target_truncated"):
+                bases += " *(definition truncated; see source)*"
             doc = _source_doc_first_line(c.get("docstring")) or "—"
             if include_kind:
                 lines.append(
@@ -2081,8 +2159,9 @@ def _generate_module_md(
     elif functions:
         lines.append("## Functions")
         lines.append("")
-        lines.append("| Function | Signature | Decorators | Description |")
-        lines.append("|----------|-----------|------------|-------------|")
+        include_lines = any(fn.get("overloads") for fn in functions)
+        lines.append("| Function | Line | Signature | Decorators | Description |" if include_lines else "| Function | Signature | Decorators | Description |")
+        lines.append("|----------|------|-----------|------------|-------------|" if include_lines else "|----------|-----------|------------|-------------|")
         for fn in functions:
             sig = _format_signature(fn)
             decs = (
@@ -2091,12 +2170,15 @@ def _generate_module_md(
             )
             doc = _source_doc_first_line(fn.get("docstring")) or "—"
             async_tag = "*(async)* " if fn.get("is_async") else ""
+            source_line = f"{fn.get('line', '?')} | " if include_lines else ""
             lines.append(
-                f"| `{_table_text(fn['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"| `{_table_text(fn['name'])}` | {source_line}{async_tag}{_table_inline_code(sig)} | "
                 f"{decs} | {_table_text(doc)} |"
             )
         lines.append("")
 
+    if not is_haskell:
+        _append_declared_overloads(lines, functions, "Function")
     return "\n".join(lines)
 
 
@@ -2907,6 +2989,68 @@ def _bounded_data_flow_diagram(
     )
 
 
+def _flow_analysis_limitations(data_flow: Mapping) -> list[str]:
+    analysis = data_flow.get("analysis")
+    limitations = set(analysis.get("limitations", [])) if isinstance(analysis, Mapping) else {
+        "upstream-callable-effect-coverage-unavailable"
+    }
+    for record in (data_flow.get("coverage", {}) or {}).values():
+        if isinstance(record, Mapping):
+            limitations.update(reason for reason in record.get("limitations", [])
+                               if isinstance(reason, str) and reason.startswith("upstream-"))
+    return sorted(limitations)
+
+
+def _append_flow_analysis_coverage(lines: list[str], data_flow: Mapping) -> bool:
+    raw_analysis = data_flow.get("analysis")
+    analysis = raw_analysis if isinstance(raw_analysis, Mapping) else {}
+    state = analysis.get("state")
+    if not isinstance(state, str):
+        state = "unknown"
+    limitations = _flow_analysis_limitations(data_flow)
+    labels = {
+        "evaluated": "Effect analysis evaluated",
+        "partial": "Effect analysis partially available",
+        "unavailable": "Effect analysis unavailable",
+        "not_applicable": "No source-callable effect analysis in this trace",
+    }
+    lines.extend(["", "### Analysis coverage", "",
+        f"**{labels.get(state, 'Analysis coverage metadata unavailable')}.** "
+        "Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.", ""])
+    if isinstance(analysis.get("effects"), Mapping):
+        counts = analysis["effects"]
+        lines.extend([f"Source steps: {analysis.get('source_steps', 0)}; effect analysis evaluated: "
+            f"{counts.get('evaluated', 0)}, partial: {counts.get('partial', 0)}, "
+            f"unavailable: {counts.get('unavailable', 0)}. Counts include steps omitted from the displayed trace.", ""])
+    collector_counts = analysis.get("collector_observations")
+    if isinstance(collector_counts, Mapping):
+        known_steps = (analysis.get("collector_totals", {}) or {}).get("available", 0)
+        lines.extend([f"Collector observations for {known_steps} source steps with known totals: "
+            f"observed: {collector_counts.get('observed', 0)}, emitted: {collector_counts.get('emitted', 0)}, "
+            f"omitted: {collector_counts.get('omitted', 0)}. Unavailable totals are excluded.", ""])
+    messages = {
+        "upstream-callable-record-unavailable": "Callable record unavailable for one or more source steps; those steps have no represented callable body.",
+        "upstream-effect-observations-unavailable": "Effect observations unavailable for one or more represented callables.",
+        "upstream-effect-collector-totals-may-be-unavailable": "Effect collector totals unavailable; observed counts cover captured records only.",
+        "upstream-effect-collector-limit-reached": "Effect collector omitted observations before flow assembly; displayed effects are partial.",
+        "upstream-callable-effect-coverage-unavailable": "Callable/effect coverage metadata unavailable in this legacy projection.",
+        "upstream-flow-depth-limit-reached": "Flow depth limit reached; deeper source observations are unavailable.",
+    }
+    for reason in limitations:
+        lines.append("- " + messages.get(reason, str(_table_inline_code(reason, table=False))))
+    if limitations:
+        lines.extend(["", "| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |", "|---|---|---|---|---:|---:|---:|"])
+        for step in data_flow.get("steps", []):
+            coverage = step.get("analysis", {}) or {}
+            counts = coverage.get("collector_counts", {}) or {}
+            lines.append("| " + " | ".join(_table_inline_code(value) for value in (
+                step.get("symbol"), coverage.get("callable_record", "unknown"),
+                coverage.get("effect_analysis", "unknown"), coverage.get("collector_totals", "unknown"),
+                counts.get("observed"), counts.get("emitted"), counts.get("omitted"))) + " |")
+        lines.append("")
+    return bool(limitations) or state not in {"evaluated", "not_applicable"}
+
+
 def _generate_data_flow_section(
     data_flow: Mapping,
     module_page_map: Mapping[str, str] | None = None,
@@ -2921,6 +3065,7 @@ def _generate_data_flow_section(
         "<!-- Auto-generated static analysis. Treat values and boundaries as "
         "best-effort hints, not runtime proof. -->",
     ]
+    coverage_limited = _append_flow_analysis_coverage(lines, data_flow)
     if rendered.diagram:
         lines.append(rendered.diagram)
         if rendered.omitted_items:
@@ -3004,7 +3149,7 @@ def _generate_data_flow_section(
                 + " |"
             )
     else:
-        lines.append("*No boundary effects detected.*")
+        lines.append("*No boundary-effect observations were captured in this static trace.*")
     lines.extend(["", "### Static analysis gaps", ""])
     gaps = data_flow.get("gaps", [])
     if gaps:
@@ -3023,7 +3168,8 @@ def _generate_data_flow_section(
                 + " |"
             )
     else:
-        lines.append("*No static analysis gaps detected.*")
+        lines.append("*No additional call-resolution gaps were captured; analysis coverage limitations above apply.*"
+                     if coverage_limited else "*No static call-resolution gaps detected in the captured trace.*")
     lines.append("")
     return lines
 
@@ -3088,7 +3234,7 @@ def _generate_flow_md(
         _append_overview_disclosure(lines, overview, page_map)
     else:
         lines.append("*No outbound interactions are available in this bounded static trace.*" if flow.get("truncated")
-                     else "*No outbound calls were detected by static analysis.*")
+                     else "*No outbound call observations are available in this static trace.*")
     if flow.get("truncated"):
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
@@ -3279,7 +3425,8 @@ def _render_dependency_graph_result(
         detail == "auto" and len(nodes) > GENERATED_DIAGRAM_NODE_LIMIT
     )
 
-    cyclic_edges = _cyclic_edges(edges, analysis["cycles"])
+    startup_edges = _normalized_dependency_edges(graph.get("import_time_edges", edges), nodes)
+    cyclic_edges = _cyclic_edges(startup_edges, analysis["cycles"])
     if not use_package:
         links = {
             node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"
@@ -3386,14 +3533,17 @@ def _generate_dependencies_md(
     dependencies** grouped by language, and semantic ``## Notes``.
     Deterministic; degrades cleanly with no cycles or no external deps.
 
-    **Cycles** reports only groups that are cyclic while they load. Groups joined
-    solely by deferred or ``TYPE_CHECKING`` imports follow, called out as the
-    non-problem they are, so a project is not told to fix the lazy boundary it
-    deliberately built.
+    **Cycles** keeps preserved startup cycles visible alongside larger groups
+    that depend on compiler emission. Type and deferred coupling are shown
+    separately from the possible startup projection.
     """
     page_map = module_page_map or {}
-    cycles = analysis["cycles"]
+    cycles = [group for group, _conditional in startup_cycle_groups(analysis)]
     deferred_cycles = analysis.get("deferred_cycles", [])
+    type_groups = {tuple(group) for group in analysis.get("type_cycles", [])}
+    deferred_cycles = [group for group in deferred_cycles if tuple(group) not in type_groups]
+    conditional_cycles = {tuple(group) for group in analysis.get("conditional_cycles", [])}
+    type_edges = analysis.get("graph", {}).get("type_only_edges", [])
     metrics = analysis["metrics"]
 
     lines = [
@@ -3404,6 +3554,9 @@ def _generate_dependencies_md(
         "## Module graph",
         "",
     ]
+    if type_edges or analysis.get("graph", {}).get("conditional_import_time_edges"):
+        lines.extend(["This is the full coupling graph, including type dependencies. "
+            "Runtime startup cycles and explicit type dependencies are distinguished below.", ""])
     rendered = _render_dependency_graph_result(
         analysis, page_map, detail, diagram_style
     )
@@ -3443,27 +3596,41 @@ def _generate_dependencies_md(
     lines.append("")
     if cycles:
         lines.append(
-            "> Import cycles are legal but complicate load order — review the "
-            "modules below."
+            "> Preserved startup cycles and compiler-dependent candidates are listed below. "
+            "A smaller preserved cycle remains even when uncertain imports join more modules."
+            if conditional_cycles else
+            "> Import cycles are legal but complicate load order — review the modules below."
         )
         lines.append("")
         for cycle in cycles:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
-            lines.append(f"- {joined}")
+            qualifier = " *(compiler-dependent TypeScript emission)*" if tuple(cycle) in conditional_cycles else ""
+            lines.append(f"- {joined}{qualifier}")
     else:
-        lines.append("*No import cycles detected.*")
+        lines.append("*No runtime import cycles detected.*" if type_edges else "*No import cycles detected.*")
     if deferred_cycles:
         lines.append("")
         lines.append(
-            "> These groups reach each other only from inside functions or under "
-            "`TYPE_CHECKING`, so nothing is imported while they load and their "
-            "order is well defined. They are listed because they are cyclic on "
-            "paper, not because they need fixing."
+            "> These additional coupling groups include deferred, `TYPE_CHECKING`, or "
+            "erased TypeScript imports. Startup cycles, including any smaller cycles "
+            "within these groups, are listed above."
         )
         lines.append("")
         for cycle in deferred_cycles:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
             lines.append(f"- {joined}")
+    if type_edges:
+        lines.extend(["", "### Explicit type dependencies", "",
+            "Type-only bindings and declaration-file dependencies remain part of the coupling graph. "
+            "Declaration-level `import type` is erased. Specifier-only type imports can retain "
+            "module evaluation depending on compiler settings; see each module's Imports table.", "",
+            "| From | To |", "|------|----|"])
+        for source, target in type_edges:
+            lines.append(f"| {_dependency_module_link(source, page_map)} | {_dependency_module_link(target, page_map)} |")
+        if analysis.get("type_cycles"):
+            lines.extend(["", "#### Type dependency cycles", ""])
+            for group in analysis["type_cycles"]:
+                lines.append("- " + " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group))
     lines.append("")
 
     lines.append("## Fan-in / Fan-out")
@@ -3516,6 +3683,8 @@ def _generate_load_order_md(
     side_effects = analysis["side_effects"]
     order = load_order.get("order", [])
     cycle_groups = load_order.get("cycle_groups", [])
+    if "preserved_cycles" in analysis:
+        cycle_groups = [group for group, _conditional in startup_cycle_groups(analysis)]
 
     lines = [
         "# Load order",
@@ -3527,6 +3696,10 @@ def _generate_load_order_md(
         "<!-- Dependency-first order: each module loads after the internal "
         "modules it imports. -->",
     ]
+    if analysis.get("graph", {}).get("conditional_import_time_edges"):
+        lines.extend(["", "TypeScript binding imports are possible startup constraints: "
+            "their emission depends on compiler settings. Guaranteed-erased type imports "
+            "are excluded. This is a static projection, not an emitted-JavaScript execution trace.", ""])
     if order:
         for index, filepath in enumerate(order, 1):
             lines.append(f"{index}. {_dependency_module_link(filepath, page_map)}")
@@ -3571,14 +3744,18 @@ def _generate_load_order_md(
     if cycle_groups:
         lines.append("## Indeterminate (cyclic) groups")
         lines.append("")
+        conditional_groups = {tuple(group) for group in analysis.get("conditional_cycles", [])}
         lines.append(
-            "> These modules form import cycles, so their relative load order is "
-            "indeterminate."
+            "> Preserved-import cycles stay indeterminate regardless of compiler elision. "
+            "Larger compiler-dependent groups may also form runtime cycles if their imports are emitted."
+            if conditional_groups else
+            "> These modules form import cycles, so their relative load order is indeterminate."
         )
         lines.append("")
         for group in cycle_groups:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group)
-            lines.append(f"- {joined}")
+            qualifier = " *(compiler-dependent TypeScript emission)*" if tuple(group) in conditional_groups else ""
+            lines.append(f"- {joined}{qualifier}")
         lines.append("")
 
     lines.append("## Notes")
@@ -3704,10 +3881,11 @@ def _format_copy_source_links(
     formatted: list[str] = []
     for item in sources:
         page_name = _module_page_for_copy_source(item, docker_filename, module_links)
-        if page_name:
-            formatted.append(f"[`{item}`](../modules/{page_name}.md)")
+        source_code = _table_inline_code(item)
+        if page_name and not any(char in item for char in "\r\n\t"):
+            formatted.append(f"[{source_code}](../modules/{page_name}.md)")
         else:
-            formatted.append(f"`{item}`")
+            formatted.append(source_code)
     return ", ".join(formatted)
 
 
@@ -4168,8 +4346,8 @@ def _dockerfile_header_lines(filename: str, stages: list[dict]) -> list[str]:
     return [
         f"# {filename}",
         "",
-        f"**Path:** `{filename}`",
-        f"**Base Image(s):** {', '.join(f'`{img}`' for img in _dockerfile_base_images(stages))}",
+        f"**Path:** {_table_inline_code(filename, table=False)}",
+        f"**Base Image(s):** {', '.join(_table_inline_code(img, table=False) for img in _dockerfile_base_images(stages))}",
         "",
     ]
 
@@ -4197,7 +4375,7 @@ def _append_dockerfile_list_section(
     lines.append(f"## {title}")
     lines.append("")
     for value in values:
-        lines.append(f"- `{value}`")
+        lines.append(f"- {_table_inline_code(value, table=False)}")
     lines.append("")
 
 
@@ -4215,8 +4393,8 @@ def _append_dockerfile_default_table(
     lines.append(f"| {first_column} | Default |")
     lines.append("|----------|---------|")
     for row in rows:
-        default = f"`{row['default']}`" if row["default"] else "—"
-        lines.append(f"| `{row['name']}` | {default} |")
+        default = _table_inline_code(row["default"]) if row["default"] else "—"
+        lines.append(f"| {_table_inline_code(row['name'])} | {default} |")
     lines.append("")
 
 
@@ -4224,7 +4402,7 @@ def _append_dockerfile_workdir(lines: list[str], workdir: str) -> None:
     if not workdir:
         return
 
-    lines.append(f"**Working Directory:** `{workdir}`")
+    lines.append(f"**Working Directory:** {_table_inline_code(workdir, table=False)}")
     lines.append("")
 
 
@@ -4235,9 +4413,9 @@ def _append_dockerfile_entrypoint(lines: list[str], entrypoint: str, cmd: str) -
     lines.append("## Entry Point")
     lines.append("")
     if entrypoint:
-        lines.append(f"**ENTRYPOINT:** `{entrypoint}`")
+        lines.append(f"**ENTRYPOINT:** {_table_inline_code(entrypoint, table=False)}")
     if cmd:
-        lines.append(f"**CMD:** `{cmd}`")
+        lines.append(f"**CMD:** {_table_inline_code(cmd, table=False)}")
     lines.append("")
 
 
@@ -4255,10 +4433,11 @@ def _append_dockerfile_copies(
     lines.append("| Instruction | Source | Destination | From Stage |")
     lines.append("|-------------|--------|-------------|------------|")
     for copy_info in copies:
-        stage = f"`{copy_info['from_stage']}`" if copy_info.get("from_stage") else "—"
-        src_text = _format_copy_source_links(copy_info["src"], filename, module_links)
+        stage = _table_inline_code(copy_info["from_stage"]) if copy_info.get("from_stage") else "—"
+        src_text = (_table_inline_code(copy_info["src"]) if copy_info.get("from_stage") or copy_info.get("inline")
+                    else _format_copy_source_links(copy_info["src"], filename, module_links))
         lines.append(
-            f"| `{copy_info['instruction']}` | {src_text} | `{copy_info['dest']}` | {stage} |"
+            f"| {_table_inline_code(copy_info['instruction'])} | {src_text} | {_table_inline_code(copy_info['dest'])} | {stage} |"
         )
     lines.append("")
 
@@ -4272,6 +4451,8 @@ def _append_dockerfile_unsupported_copies(
     matches: list[dict[str, str]] = []
     seen: set[tuple[str, str, str]] = set()
     for copy_info in copies:
+        if copy_info.get("from_stage") or copy_info.get("inline"):
+            continue
         for match in _unsupported_copy_source_matches(
             copy_info.get("src", ""), filename, unsupported_sources
         ):
@@ -4293,7 +4474,7 @@ def _append_dockerfile_unsupported_copies(
     lines.append("|-------------|-----------------|----------|")
     for match in matches:
         lines.append(
-            f"| `{match['source']}` | `{match['path']}` | "
+            f"| {_table_inline_code(match['source'])} | {_table_inline_code(match['path'])} | "
             f"{_unsupported_language_label(match['language'])} |"
         )
     lines.append("")
@@ -4308,7 +4489,7 @@ def _append_dockerfile_labels(lines: list[str], labels: dict[str, str]) -> None:
     lines.append("| Key | Value |")
     lines.append("|-----|-------|")
     for key, value in labels.items():
-        lines.append(f"| `{key}` | `{value}` |")
+        lines.append(f"| {_table_inline_code(key)} | {_table_inline_code(value)} |")
     lines.append("")
 
 
@@ -4316,21 +4497,12 @@ def _append_dockerfile_healthcheck(lines: list[str], healthcheck: str) -> None:
     if not healthcheck:
         return
 
-    lines.append(f"**Healthcheck:** `{healthcheck}`")
+    lines.append(f"**Healthcheck:** {_table_inline_code(healthcheck, table=False)}")
     lines.append("")
 
 
-def _generate_dockerfile_md(
-    filename: str,
-    info: dict,
-    module_links: Mapping[str, str] | set[str] | None = None,
-    unsupported_sources: dict[str, dict[str, object]] | None = None,
-) -> str:
-    """Generate markdown for a Dockerfile."""
-    stages = info.get("stages", [])
-    lines = _dockerfile_header_lines(filename, stages)
-
-    _append_dockerfile_build_stages(lines, stages)
+def _append_dockerfile_declarations(lines, filename, info, module_links, unsupported_sources):
+    """Render parsed source fields in the caller's explicitly scoped section."""
     _append_dockerfile_list_section(lines, "Exposed Ports", info.get("ports", []))
     _append_dockerfile_default_table(
         lines, "Build Arguments", "Argument", info.get("build_args", [])
@@ -4349,6 +4521,72 @@ def _generate_dockerfile_md(
     )
     _append_dockerfile_labels(lines, info.get("labels", {}))
     _append_dockerfile_healthcheck(lines, info.get("healthcheck", ""))
+    for key, instruction in (("user", "USER"), ("shell", "SHELL"), ("stop_signal", "STOPSIGNAL")):
+        if info.get(key):
+            lines.extend([f"**Declared {instruction}:** {_table_inline_code(info[key], table=False)}", ""])
+
+
+def _append_dockerfile_scoped_stages(lines, filename, info, module_links, unsupported_sources):
+    lines.extend(["**Configuration view:** source declarations owned by each stage.", "",
+        "Image defaults, variable expansion, and Docker's inheritance/reset rules also affect "
+        "effective configuration. External base-image defaults remain unknown here.", ""])
+    if info.get("global_build_args"):
+        _append_dockerfile_default_table(lines, "Build Arguments", "Global argument (before FROM)", info["global_build_args"])
+    lines.extend(["## Build Stages", ""])
+    stages = info.get("stages", [])
+    if not stages:
+        lines.extend(["*No FROM stage found; stage configuration is unavailable.*", ""])
+    for stage in stages:
+        number = stage["index"] + 1
+        alias = f" {_table_inline_code(stage['alias'], table=False)}" if stage.get("alias") else ""
+        lines.extend([f"### Stage {number}{alias}", "",
+            f"**FROM:** {_table_inline_code(stage['image'], table=False)} (source line {stage['line']})", ""])
+        if stage.get("platform"):
+            lines.extend([f"**Declared platform:** {_table_inline_code(stage['platform'], table=False)}", ""])
+        parent = stage.get("base_stage")
+        if parent is not None:
+            lines.extend([f"**Base relationship:** inherits the image from stage {parent + 1}. "
+                "The fields below show declarations authored in this stage; inherited settings follow Docker's rules.", ""])
+        elif stage.get("base_kind") == "scratch":
+            lines.extend(["**Base relationship:** independent scratch stage, with no inherited image configuration.", ""])
+        else:
+            lines.extend(["**Base relationship:** external or unresolved base; inherited defaults are unknown.", ""])
+        declared: list[str] = []
+        _append_dockerfile_declarations(declared, filename, stage, module_links, unsupported_sources)
+        if not declared:
+            declared = ["*No recognized configuration declarations in this stage.*", ""]
+        for line in declared:
+            if line.startswith("## "):
+                line = "##" + line
+            if line.startswith("**Working Directory:**"):
+                line = line.replace("**Working Directory:**", "**Declared WORKDIR:**", 1)
+            lines.append(line)
+    unscoped = [record for record in info.get("unscoped_instructions", []) if record["instruction"] != "ARG"]
+    if unscoped:
+        lines.extend(["### Unscoped source instructions", "",
+            "These instructions precede a FROM stage; they do not establish a stage configuration.", ""])
+        lines.extend(f"- {_table_inline_code(record['instruction'])} at source line {record['line']}" for record in unscoped)
+        lines.append("")
+
+
+def _generate_dockerfile_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
+) -> str:
+    """Generate a stage-owned source view, retaining safe legacy handling."""
+    stages = info.get("stages", [])
+    lines = _dockerfile_header_lines(filename, stages)
+    if info.get("stage_schema_version") == DOCKERFILE_STAGES_SCHEMA:
+        _append_dockerfile_scoped_stages(lines, filename, info, module_links, unsupported_sources)
+    elif len(stages) > 1:
+        _append_dockerfile_build_stages(lines, stages)
+        lines.extend(["Stage ownership is unavailable in this legacy inventory. "
+            "Refresh extraction to view configuration declarations for each stage.", ""])
+    else:
+        _append_dockerfile_build_stages(lines, stages)
+        _append_dockerfile_declarations(lines, filename, info, module_links, unsupported_sources)
     return "\n".join(lines)
 
 
@@ -4487,6 +4725,7 @@ class _BootstrapRunState:
     unsupported_sources: dict[str, dict[str, object]] = field(default_factory=dict)
     written_structural_page_paths: set[str] = field(default_factory=set)
     summary: dict[str, Any] | None = None
+    completion_message: str | None = None
 
 
 @dataclass(frozen=True)
@@ -4733,11 +4972,12 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         if surface.directory is None:
             continue
         directory = options.wiki_dir / surface.directory
-        directory.mkdir(parents=True, exist_ok=True)
         # Git cannot preserve an empty directory. Match init/upgrade so a
         # freshly checked-out wiki retains every directory required by strict
         # validation even when a surface currently has zero pages.
-        (directory / ".gitkeep").touch()
+        gitkeep = directory / ".gitkeep"
+        if not gitkeep.exists():
+            write_bytes_atomic(gitkeep, b"")
 
 
 def _extract_bootstrap_inventory(state: _BootstrapRunState):
@@ -4824,8 +5064,6 @@ def _finish_if_empty_bootstrap_inventory(
         },
         state.unsupported_sources,
     )
-    if options.json_mode:
-        print(json.dumps(state.summary, indent=2))
     return True
 
 
@@ -5258,10 +5496,9 @@ def _write_bootstrap_flow_pages(
         flows.append(detailed_flow)
         data_flow = None
         if data_flow_enabled:
-            # Keep the historical projection for Markdown rendering. The
-            # detailed observation deliberately represents unknown locations
-            # as ``None`` and must not leak that additive contract into the
-            # byte-compatible legacy page surface.
+            # Keep historical line-zero placeholders in the page projection;
+            # detailed locations use None. Both carry additive source-analysis
+            # qualifications so empty observations cannot conceal unavailable coverage.
             data_flow = analyze_data_flow(
                 inventory, flow, edges, context=data_flow_context
             )
@@ -5686,8 +5923,7 @@ def _source_snapshot_log_lines(
     )
 
 
-def _emit_bootstrap_complete(
-    state: _BootstrapRunState,
+def _bootstrap_complete_message(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
@@ -5696,9 +5932,8 @@ def _emit_bootstrap_complete(
     dependency_result: _DependencyResult,
     api_contract_result: _ApiContractResult,
     cross_reference_count: int,
-) -> None:
-    _emit_bootstrap(
-        state,
+) -> str:
+    return (
         f"\nBootstrap complete: {entity_result.entities_created} entities, "
         f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
         f"{flow_result.created} flows, "
@@ -5706,7 +5941,7 @@ def _emit_bootstrap_complete(
         f"{dependency_result.created} architecture "
         f"and {api_contract_result.created} API contract pages "
         f"created from {len(inventory)} source files "
-        f"({cross_reference_count} cross-references).",
+        f"({cross_reference_count} cross-references)."
     )
 
 
@@ -6299,8 +6534,7 @@ def _finalize_bootstrap(
         state.summary["knowledge_schema_version"] = LOCAL_PACKED_SCHEMA
         if current.get("recovery_dir"):
             _emit_bootstrap(state, f"Native setup recovery: {current['recovery_dir']}")
-    _emit_bootstrap_complete(
-        state,
+    state.completion_message = _bootstrap_complete_message(
         inventory,
         result.entity,
         result.workflow,
@@ -6310,8 +6544,6 @@ def _finalize_bootstrap(
         result.api_contract,
         result.cross_reference_count,
     )
-    if state.options.json_mode:
-        print(json.dumps(state.summary, indent=2))
     return _bootstrap_result(state)
 
 
@@ -6334,6 +6566,14 @@ def _is_pristine_bootstrap_target(wiki_dir: Path) -> bool:
 
 
 def _first_use_guidance(options: _BootstrapRunOptions) -> str:
+    from .bootstrap_recovery import pending_bootstrap
+
+    if pending_bootstrap(options.wiki_dir):
+        return (
+            "An interrupted first-use bootstrap is recorded. Retry the same "
+            "bootstrap command without `overwrite` to recover unchanged output. "
+            "Preserve any user edits if recovery refuses them."
+        )
     state = classify_wiki_lifecycle(options.wiki_dir)
     if state is WikiLifecycleState.MIGRATION_REQUIRED:
         route = migration_guidance(
@@ -6348,6 +6588,24 @@ def _first_use_guidance(options: _BootstrapRunOptions) -> str:
             src_dir=options.src_dir,
             wiki_dir=options.wiki_dir,
         )
+        unavailable_provenance = state is WikiLifecycleState.SYNC_SEEDABLE
+        if state is WikiLifecycleState.MANAGED:
+            try:
+                previous = SyncManifest.load(options.wiki_dir)
+                unavailable_provenance = any(
+                    baseline.unknown_reason == "manifest-state-unavailable"
+                    for baseline in previous.evidence_baselines.values()
+                )
+            except (OSError, ValueError):
+                # Corrupt authority keeps its existing recovery/refusal route.
+                pass
+        if unavailable_provenance:
+            route += (
+                " Seeding preserves unknown provenance; it cannot recover evidence "
+                "from an unjournaled failed bootstrap. If this is only output from "
+                "a failed first setup, preserve the entire incomplete wiki outside "
+                "the configured wiki path, then retry bootstrap."
+            )
     else:
         route = (
             "Run the same bootstrap command without the compatibility "
@@ -6410,35 +6668,52 @@ def _execute_bootstrap_options(
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
     from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+    from .bootstrap_recovery import bootstrap_write_operation, pending_bootstrap
 
-    try:
-        guard_maintenance_owner(options.wiki_dir)
-    except SyncManifestError:
-        # Adopted-owner failures retain their recovery guard. A malformed
-        # legacy manifest still receives the public first-use refusal before
-        # extraction rather than leaking its parser error.
-        if not _workspace_refresh_authorized:
-            _preflight_public_bootstrap(options)
-        raise
-    if not _workspace_refresh_authorized:
+    interrupted = not _workspace_refresh_authorized and pending_bootstrap(options.wiki_dir)
+    if not interrupted:
+        try:
+            guard_maintenance_owner(options.wiki_dir)
+        except SyncManifestError:
+            # Preserve first-use refusal for malformed legacy manifests.
+            if not _workspace_refresh_authorized:
+                _preflight_public_bootstrap(options)
+            raise
+    if not _workspace_refresh_authorized and (not interrupted or options.overwrite):
         _preflight_public_bootstrap(options)
-    _preflight_bootstrap_source_selection(options)
-    with maintenance_write_operation(options.wiki_dir) as basis:
-        result = _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+    operation = (
+        maintenance_write_operation(options.wiki_dir) if _workspace_refresh_authorized
+        else bootstrap_write_operation(options.wiki_dir, preflight=lambda: _preflight_public_bootstrap(options))
+    )
+    state = _BootstrapRunState(options)
+    basis = None
+    try:
+        with operation as basis:
+            _preflight_bootstrap_source_selection(options)
+            result = _execute_bootstrap_options_locked(state, write_basis=basis)
+    except BaseException:
+        if not _workspace_refresh_authorized and basis is not None:
+            print("Bootstrap was interrupted. Retry the same bootstrap command after fixing the cause. "
+                  "Recovery preserves user edits and only restores unchanged journaled output; do not use sync to recover this operation.",
+                  file=options.diagnostic_stream or options.progress_stream)
+        raise
+    if state.completion_message is not None:
+        _emit_bootstrap(state, state.completion_message)
+    if options.json_mode:
+        print(json.dumps(result.summary, indent=2))
     return result
 
 
 def _execute_bootstrap_options_locked(
-    options: _BootstrapRunOptions,
+    state: _BootstrapRunState,
     *,
-    _workspace_refresh_authorized: bool = False,
     write_basis=None,
 ) -> BootstrapResult:
+    options = state.options
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
         raise BootstrapContractError(str(exc)) from exc
-    state = _BootstrapRunState(options)
     _start_bootstrap(state)
 
     inventory_result = _extract_bootstrap_inventory(state)

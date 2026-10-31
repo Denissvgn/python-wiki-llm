@@ -28,6 +28,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 9, emitted: 9, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_no_control_characters"]
@@ -54,20 +63,20 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_no_control_characters | isinstance | 669 | `isinstance(value, str)` |
-| require_no_control_characters | contains_control_character | 669 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_no_control_characters | isinstance | 677 | `isinstance(value, str)` |
+| require_no_control_characters | contains_control_character | 677 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_no_control_characters` | `isinstance` | 669 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_no_control_characters` | `isinstance` | 677 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 
 ## Behavior
 

@@ -15,7 +15,7 @@ Raised when a managed schema path cannot be accessed safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

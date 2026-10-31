@@ -1,6 +1,6 @@
 # KnowledgeReadMode
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:54`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:55`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -19,7 +19,7 @@ Whether a read session evaluates live concept freshness.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

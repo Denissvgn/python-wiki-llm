@@ -15,7 +15,7 @@ Raised when model-routing configuration is unsafe or ambiguous.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

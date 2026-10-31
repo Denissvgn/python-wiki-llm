@@ -82,9 +82,9 @@ sequenceDiagram
     p2-->>p30: root.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 205 interactions; 175 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 211 interactions; 181 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 77 (76 omitted); unresolved 1 of 29 (28 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 79 (78 omitted); unresolved 1 of 33 (32 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,6 +106,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 100; effect analysis evaluated: 55, partial: 1, unavailable: 44. Counts include steps omitted from the displayed trace.
+
+Collector observations for 56 source steps with known totals: observed: 223, emitted: 222, omitted: 1. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verify_and_write_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `verify` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `build_verification_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `all` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. verify_and_write_receipt"]
@@ -160,31 +188,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verify_and_write_receipt | verify | 1026 | `verify(context, checker_ids)` |
-| verify | build_verification_receipt | 770 | `build_verification_receipt(context, run_verification(...))` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 731 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError (src/llm_wiki_cli/services…uild_verification_receipt) | 732 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple (src/llm_wiki_cli/services…uild_verification_receipt) | 733 | `tuple(checks)` |
-| build_verification_receipt | VerificationContractError | 735 | `VerificationContractError('checks must not be empty')` |
-| build_verification_receipt | any | 736 | `any(...)` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 737 | `isinstance(check, VerificationCheckResult)` |
-| build_verification_receipt | VerificationContractError | 740 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
-| build_verification_receipt | all | 745 | `all(...)` |
-| build_verification_receipt | VerificationReceipt | 751 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
+| verify_and_write_receipt | verify | 1055 | `verify(context, checker_ids)` |
+| verify | build_verification_receipt | 799 | `build_verification_receipt(context, run_verification(...))` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 760 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError (src/llm_wiki_cli/services…uild_verification_receipt) | 761 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple (src/llm_wiki_cli/services…uild_verification_receipt) | 762 | `tuple(checks)` |
+| build_verification_receipt | VerificationContractError | 764 | `VerificationContractError('checks must not be empty')` |
+| build_verification_receipt | any | 765 | `any(...)` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 766 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | VerificationContractError | 769 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
+| build_verification_receipt | all | 774 | `all(...)` |
+| build_verification_receipt | VerificationReceipt | 780 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_verification_receipt` | `isinstance` | 731 |
-| external_call | `build_verification_receipt` | `TypeError` | 732 |
-| external_call | `build_verification_receipt` | `any` | 736 |
-| external_call | `build_verification_receipt` | `isinstance` | 737 |
-| external_call | `build_verification_receipt` | `all` | 745 |
+| external_call | `build_verification_receipt` | `isinstance` | 760 |
+| external_call | `build_verification_receipt` | `TypeError` | 761 |
+| external_call | `build_verification_receipt` | `any` | 765 |
+| external_call | `build_verification_receipt` | `isinstance` | 766 |
+| external_call | `build_verification_receipt` | `all` | 774 |
 | step_limit | `verify_and_write_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `verify_and_write_receipt` | `depth limit` | 0 |
 

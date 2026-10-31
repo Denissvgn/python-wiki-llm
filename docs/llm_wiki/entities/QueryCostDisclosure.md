@@ -19,7 +19,7 @@ Deterministic disclosure of work selected for a query.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

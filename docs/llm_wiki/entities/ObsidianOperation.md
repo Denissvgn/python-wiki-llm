@@ -21,7 +21,7 @@ _Auto-generated from `ObsidianOperation` in `src/llm_wiki_cli/services/obsidian.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

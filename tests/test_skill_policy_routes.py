@@ -16,7 +16,7 @@ GENERIC_TOPIC_ROOT = ".llm-wiki/skills/wiki-reference/references"
 DESCRIPTION_WORD_BASELINE = 572
 DESCRIPTION_WORD_RANGE = range(25, 41)
 LONG_REFERENCE_LINE_THRESHOLD = 100
-LONG_REFERENCE_RESOURCE_COUNT = 20
+LONG_REFERENCE_RESOURCE_COUNT = 21
 MARKDOWN = MarkdownIt("commonmark")
 
 EXPECTED_COMMON_ROUTES: dict[str, frozenset[str]] = {
@@ -277,7 +277,9 @@ def test_managed_wiki_mutation_keeps_a_local_fail_closed_kernel(
 ) -> None:
     normalized = " ".join(_manifest(skill_id).split()).lower()
 
-    assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in normalized
+    assert "llm-wiki knowledge git-check --wiki-dir <wiki-dir>" in normalized
+    assert "git-eligible" in normalized
+    assert "--staged" in normalized
     assert "local-only" in normalized
     assert "force-add" in normalized
     assert "ignore/exclude" in normalized

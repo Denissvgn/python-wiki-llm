@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+import hashlib
 
 from .model import Finding, Incomplete, compare_sets, compare_value, identities
 
@@ -23,6 +24,10 @@ def flatten(entry: dict) -> list[dict]:
         )
         for collection, kind in (("attributes", "attribute"), ("methods", "method")):
             for member in cls.get(collection, []):
+                if kind == "method":
+                    records.extend({**overload, "kind": kind, "owner": cls["name"],
+                                    "owner_occurrence": class_occurrences[cls["name"]]}
+                                   for overload in member.get("overloads", []))
                 records.append(
                     {
                         **member,
@@ -32,6 +37,8 @@ def flatten(entry: dict) -> list[dict]:
                     }
                 )
     for function in entry.get("functions", []):
+        records.extend({**overload, "kind": "function", "declaration_kind": "function", "owner": ""}
+                       for overload in function.get("overloads", []))
         records.append(
             {
                 **function,
@@ -48,8 +55,8 @@ def supported_source(observation: dict, lang: str) -> list[dict]:
 
     Receiver parameters are implicit for Python/Rust methods. Rust impls on
     foreign types appear as module functions; their source owner stays recorded.
-    Generic binder lists and alias RHS are not represented by the existing
-    inventory schema. Types *inside* represented signatures remain structural.
+    TypeScript binders, optional/rest markers and alias definitions are exposed;
+    other frontends retain their separately declared representational scope.
     """
     records = deepcopy(observation["declarations"])
     classes = {r["name"] for r in records if r["kind"] == "class"}
@@ -97,6 +104,10 @@ def compare_parameters(
     for expected, observed in zip(source, actual):
         if expected["name"] != observed["name"]:
             return False, "parameter-order-or-name"
+        if lang == "typescript":
+            for key in ("optional", "rest"):
+                if expected.get(key, False) is not observed.get(key, False):
+                    return False, "parameter-" + key
         keys = {"type", "default"}
         if lang == "python":
             keys.add("kind")
@@ -179,7 +190,36 @@ def compare_records(
                 reference,
             )
         )
-    if source.get("type_parameters"):
+    if lang == "typescript":
+        if "type_parameters" in source:
+            expected = source["type_parameters"]
+            observed = actual.get("type_params", [])
+            result.append(Finding(fact, representation,
+                "pass" if expected == observed else "fail",
+                "generic-binder-declarations", expected, observed, reference))
+        if source.get("declaration_kind"):
+            result.append(Finding(fact, representation,
+                "pass" if source["declaration_kind"] == actual.get("declaration_kind") else "fail",
+                "declaration-kind", source["declaration_kind"], actual.get("declaration_kind"), reference))
+        if source.get("declaration_kind") == "type_alias":
+            expected, observed = source["type"], actual.get("target", "")
+            bounded = actual.get("target_truncated") is True
+            if bounded:
+                prefix = expected[:4096]
+                if representation == "markdown":
+                    # Fenced Markdown normalizes physical CR/CRLF, while the
+                    # inventory preview length and digest bind the raw source.
+                    prefix = prefix.replace("\r\n", "\n").replace("\r", "\n")
+                    if isinstance(observed, str):
+                        observed = observed.replace("\r\n", "\n").replace("\r", "\n")
+                okay = len(expected) > 4096 and observed == prefix
+            else:
+                okay = compare_value(expected, observed, field="type", language=lang, normalize=normalize)
+            if bounded and representation != "markdown":
+                okay = okay and actual.get("target_sha256") == "sha256:" + hashlib.sha256(expected.encode("utf-8")).hexdigest()
+            result.append(Finding(fact, representation, "pass" if okay else "fail",
+                "bounded-alias-prefix" if bounded else "alias-definition", expected, observed, reference))
+    elif source.get("type_parameters"):
         result.append(
             Finding(
                 fact,
@@ -190,7 +230,7 @@ def compare_records(
                 reference=reference,
             )
         )
-    if source["kind"] == "class" and source.get("type"):
+    if lang != "typescript" and source["kind"] == "class" and source.get("type"):
         result.append(
             Finding(
                 fact,

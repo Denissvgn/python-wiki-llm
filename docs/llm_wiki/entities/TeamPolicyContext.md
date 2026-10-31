@@ -21,7 +21,7 @@ One command's resolved policy and project-anchored wiki identity.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

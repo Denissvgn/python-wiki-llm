@@ -12,9 +12,10 @@
 2. `verification_contracts.load_verification_receipt`
 3. `knowledge_consumption.MachineVerificationReadView`
 4. `knowledge_consumption.MachineVerificationReadView`
-5. `knowledge_evidence.hash_json`
-6. `verification_contracts.evaluate_verification_receipt`
-7. `knowledge_consumption.MachineVerificationReadView`
+5. `knowledge_consumption._validated_artifacts_for_view`
+6. `knowledge_evidence.hash_json`
+7. `verification_contracts.evaluate_verification_receipt`
+8. `knowledge_consumption.MachineVerificationReadView`
 
 ## Touches
 

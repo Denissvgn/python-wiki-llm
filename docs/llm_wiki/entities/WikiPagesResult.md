@@ -19,7 +19,7 @@ Top-level ``list_wiki_pages`` payload.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

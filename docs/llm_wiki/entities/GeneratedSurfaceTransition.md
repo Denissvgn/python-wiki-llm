@@ -24,7 +24,7 @@ Prior ownership proof and generated pages that cross the live boundary.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

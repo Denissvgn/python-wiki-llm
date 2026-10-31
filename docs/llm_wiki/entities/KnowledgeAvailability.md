@@ -1,6 +1,6 @@
 # KnowledgeAvailability
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:45`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:46`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -20,7 +20,7 @@ Knowledge capability available to every native read consumer.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Base error raised by the library bootstrap boundary.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ A retirement record cannot be reconciled with authoritative ownership.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

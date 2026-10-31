@@ -22,7 +22,7 @@ Canonical owner classes for generated instruction content.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

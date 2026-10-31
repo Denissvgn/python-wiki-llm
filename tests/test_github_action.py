@@ -951,12 +951,13 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
     steps = jobs["repository-fixture"]["steps"]
 
     triggers = workflow[True]
-    assert triggers["push"]["branches"] == ["main"]
-    assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
+    assert set(triggers) == {"workflow_call", "workflow_dispatch"}
+    caller = _yaml(ROOT / ".github/workflows/ci.yml")["jobs"]["action"]
+    assert caller["uses"] == "./.github/workflows/action-selftest.yml"
+    assert caller["if"] == "${{ needs.plan.outputs.action == 'true' }}"
     assert workflow["concurrency"] == {
         "group": (
-            "${{ github.workflow }}-${{ "
-            "github.event.pull_request.number || github.ref }}"
+            "context-health-action-${{ github.event.pull_request.number || github.ref }}"
         ),
         "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
     }
@@ -1037,8 +1038,8 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
         "release/qualification.py",
         "release/toolchain-lock.json",
     ):
-        assert triggers["push"]["paths"].count(dependency) == 1
-        assert triggers["pull_request"]["paths"].count(dependency) == 1
+        policy = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
+        assert any(dependency in rule["paths"] and "hosted-action" in rule["groups"] for rule in policy["rules"])
     assert "knowledge-" + "m1" not in public_workflow.casefold()
     assert "pre-" + "feature-bootstrap" not in public_workflow.casefold()
     assert re.search(r"\b[MP]\d+\b", public_workflow) is None

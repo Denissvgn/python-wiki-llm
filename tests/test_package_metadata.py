@@ -29,7 +29,7 @@ def _pyproject() -> dict:
     return tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
 
-def _ci_test_matrix() -> dict:
+def _ci_test_matrix() -> str:
     ci = yaml.safe_load(
         (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     )
@@ -234,7 +234,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "3.3.0"
+    assert data["project"]["version"] == "3.4.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
@@ -260,31 +260,16 @@ def test_project_requires_python_3_10_or_newer():
     assert data["project"]["requires-python"] == ">=3.10"
 
 
-def test_ci_pairs_selected_python_versions_with_one_os_each():
-    assert _ci_test_matrix() == {
-        "include": [
-            {
-                "lane": "core-ubuntu-3.10",
-                "os": "ubuntu-24.04",
-                "python-version": "3.10",
-                "coverage": True,
-                "package": True,
-            },
-            {
-                "lane": "core-windows-3.13",
-                "os": "windows-2025",
-                "python-version": "3.13",
-                "coverage": False,
-                "package": False,
-            },
-            {
-                "lane": "core-macos-3.14",
-                "os": "macos-15",
-                "python-version": "3.14",
-                "coverage": False,
-                "package": False,
-            },
-        ]
+def test_ci_uses_selected_matrix_with_explicit_platform_contracts():
+    from release.pr_ci import LANES
+
+    assert _ci_test_matrix() == "${{ fromJSON(needs.plan.outputs.matrix) }}"
+    assert {name: (row["os"], row["python"]) for name, row in LANES.items()} == {
+        "ubuntu": ("ubuntu-24.04", "3.13"),
+        "minimum-python": ("ubuntu-24.04", "3.10"),
+        "toolchains": ("ubuntu-24.04", "3.13"),
+        "windows": ("windows-2025", "3.13"),
+        "macos": ("macos-15", "3.14"),
     }
 
 
@@ -398,7 +383,10 @@ def test_readme_documents_fork_first_policy():
     assert "freely fork it" in readme
     assert "CONTRIBUTING.md" not in readme
     assert not (PROJECT_ROOT / "CONTRIBUTING.md").exists()
-    assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
+    assert not any(
+        path.name.casefold() in {"pull_request_template.md", "pull_request_template"}
+        for path in (PROJECT_ROOT / ".github").iterdir()
+    )
 
 
 def test_cli_reference_documents_resource_aware_execution():
@@ -508,12 +496,17 @@ def test_changelog_1_1_0_documents_haskell_release_boundaries():
         assert required in release_text
 
 
-def test_default_ci_does_not_install_or_prepare_ghc():
-    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    ci_lower = ci.lower()
-
-    assert "ghc" not in ci_lower
-    assert "prepare-extractors --language haskell" not in ci_lower
+def test_ci_installs_ghc_only_for_selected_haskell_lanes():
+    ci = yaml.safe_load((PROJECT_ROOT / ".github/workflows/ci.yml").read_text())
+    steps = ci["jobs"]["test"]["steps"]
+    installers = [step for step in steps if "pr-ghc" in step.get("run", "")]
+    assert len(installers) == 1
+    assert installers[0]["if"] == "${{ matrix.haskell }}"
+    assert "toolchains.haskell.artifact" in installers[0]["run"]
+    prepare = next(step for step in steps if "pr_ci.py prepare" in step.get("run", ""))
+    assert prepare["env"]["SELECTED_LANE"] == "${{ matrix.lane }}"
+    assert '--lane "${SELECTED_LANE}"' in prepare["run"]
+    assert all("prepare-extractors --language haskell" not in step.get("run", "") for step in steps)
 
 
 def test_wiki_integrity_uses_the_automatic_locked_helper_plan():

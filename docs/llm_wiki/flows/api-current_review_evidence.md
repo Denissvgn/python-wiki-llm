@@ -94,6 +94,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 30; effect analysis evaluated: 15, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
+
+Collector observations for 15 source steps with known totals: observed: 75, emitted: 75, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `current_review_evidence` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_review_evidence` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. current_review_evidence"]
@@ -156,16 +183,16 @@ flowchart LR
 | current_review_evidence | ReviewEvidence | 1530 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | ReviewEvidence | 1534 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | _review_evidence | 1553 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
-| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 2922 | `isinstance(value, ReviewEvidence)` |
-| _review_evidence | GovernanceError | 2923 | `GovernanceError(path, 'must be ReviewEvidence')` |
-| _review_evidence | GovernanceError | 2925 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
-| _review_evidence | GovernanceError | 2931 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
-| _review_evidence | ReviewEvidence | 2935 | `ReviewEvidence(mode='no-source')` |
-| _review_evidence | GovernanceError | 2937 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
+| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 3036 | `isinstance(value, ReviewEvidence)` |
+| _review_evidence | GovernanceError | 3037 | `GovernanceError(path, 'must be ReviewEvidence')` |
+| _review_evidence | GovernanceError | 3039 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
+| _review_evidence | GovernanceError | 3045 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
+| _review_evidence | ReviewEvidence | 3049 | `ReviewEvidence(mode='no-source')` |
+| _review_evidence | GovernanceError | 3051 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
@@ -173,7 +200,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `current_review_evidence` | `isinstance` | 1525 |
 | external_call | `current_review_evidence` | `TypeError` | 1526 |
-| external_call | `_review_evidence` | `isinstance` | 2922 |
+| external_call | `_review_evidence` | `isinstance` | 3036 |
 | step_limit | `current_review_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -2,12 +2,13 @@
 
 **Entry point:** `bootstrap_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 38 more
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 39 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [api_contracts](../modules/api_contracts.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
 - [common](../modules/common.md)
@@ -63,28 +64,28 @@ sequenceDiagram
     participant p4 as WorkspaceStateError
     participant p5 as _bootstrap_run_options_from_request
     participant p6 as _execute_bootstrap_options
-    participant p7 as guard_maintenance_owner
-    participant p8 as _preflight_public_bootstrap
-    participant p9 as _preflight_bootstrap_source_selection
+    participant p7 as pending_bootstrap
+    participant p8 as guard_maintenance_owner
+    participant p9 as _preflight_public_bootstrap
     participant p10 as maintenance_write_operation
-    participant p11 as _execute_bootstrap_options_locked
-    participant p12 as _absolute_path
-    participant p13 as _preflight_bootstrap_governance
-    participant p14 as _first_use_guidance
-    participant p15 as load_adoption_marker
-    participant p16 as _is_pristine_bootstrap_target
-    participant p17 as resolve_source_selection
-    participant p18 as SyncManifest.load
-    participant p19 as validate_persisted_source_selection_identity
-    participant p20 as _start_bootstrap
+    participant p11 as bootstrap_write_operation
+    participant p12 as _preflight_bootstrap_source_selection
+    participant p13 as _execute_bootstrap_options_locked
+    participant p14 as _load_record
+    participant p15 as _preflight_bootstrap_governance
+    participant p16 as _first_use_guidance
+    participant p17 as guard_incomplete_bootstrap
+    participant p18 as _is_pristine_bootstrap_target
+    participant p19 as resolve_source_selection
+    participant p20 as load_adoption_marker
     participant p21 as governance_writer_lock
-    participant p22 as _extract_bootstrap_inventory
-    participant p23 as storage_writer_lock
-    participant p24 as _finish_if_empty_bootstrap_inventory
-    participant p25 as snapshot_wiki
-    participant p26 as _bootstrap_result
-    participant p27 as _prepare_bootstrap_page_maps
-    participant p28 as _generate_bootstrap_content
+    participant p22 as validate_persisted_source_selection_identity
+    participant p23 as _start_bootstrap
+    participant p24 as SyncManifest.load
+    participant p25 as storage_writer_lock
+    participant p26 as _extract_bootstrap_inventory
+    participant p27 as _recover
+    participant p28 as snapshot_wiki
     participant p29 as str (src/llm_wiki_cli/api.py:bootstrap_wiki)
     participant p30 as Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
     p0->>p1: execute_bootstrap
@@ -93,35 +94,35 @@ sequenceDiagram
     p0->>p4: WorkspaceStateError
     p1->>p5: _bootstrap_run_options_from_request
     p1->>p6: _execute_bootstrap_options
-    p6->>p7: guard_maintenance_owner
-    p6->>p8: _preflight_public_bootstrap
-    p6->>p9: _preflight_bootstrap_source_selection
+    p6->>p7: pending_bootstrap
+    p6->>p8: guard_maintenance_owner
+    p6->>p9: _preflight_public_bootstrap
     p6->>p10: maintenance_write_operation
-    p6->>p11: _execute_bootstrap_options_locked
-    p7->>p12: _absolute_path
-    p11->>p13: _preflight_bootstrap_governance
-    p8->>p14: _first_use_guidance
-    p7->>p15: load_adoption_marker
-    p8->>p16: _is_pristine_bootstrap_target
-    p9->>p17: resolve_source_selection
-    p7->>p18: SyncManifest.load
-    p9->>p19: validate_persisted_source_selection_identity
-    p11->>p20: _start_bootstrap
+    p6->>p11: bootstrap_write_operation
+    p6->>p12: _preflight_bootstrap_source_selection
+    p6->>p13: _execute_bootstrap_options_locked
+    p7->>p14: _load_record
+    p13->>p15: _preflight_bootstrap_governance
+    p9->>p16: _first_use_guidance
+    p8->>p17: guard_incomplete_bootstrap
+    p9->>p18: _is_pristine_bootstrap_target
+    p12->>p19: resolve_source_selection
+    p8->>p20: load_adoption_marker
     p10->>p21: governance_writer_lock
-    p11->>p22: _extract_bootstrap_inventory
-    p10->>p23: storage_writer_lock
-    p11->>p24: _finish_if_empty_bootstrap_inventory
-    p10->>p25: snapshot_wiki
-    p11->>p26: _bootstrap_result
-    p11->>p27: _prepare_bootstrap_page_maps
-    p11->>p28: _generate_bootstrap_content
+    p12->>p22: validate_persisted_source_selection_identity
+    p13->>p23: _start_bootstrap
+    p8->>p24: SyncManifest.load
+    p10->>p25: storage_writer_lock
+    p13->>p26: _extract_bootstrap_inventory
+    p11->>p27: _recover
+    p10->>p28: snapshot_wiki
     p0-->>p29: str (src/llm_wiki_cli/api.py:bootstrap_wiki)(exc)
     p5-->>p30: Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
 ```
 
-> Call sequence diagram shows 30 of 1120 interactions; 1090 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1309 interactions; 1279 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 334 (333 omitted); unresolved 1 of 264 (263 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 408 (407 omitted); unresolved 1 of 290 (289 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,10 +133,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 5 | - | external | 5 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 5 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 5 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 25 | - | external | 20 |
-> Omission summary shows 8 of 300 groups; 292 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 22 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | - | unresolved | 2 |
+> Omission summary shows 8 of 345 groups; 337 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -143,6 +144,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 612; effect analysis evaluated: 458, partial: 34, unavailable: 120. Counts include steps omitted from the displayed trace.
+
+Collector observations for 492 source steps with known totals: observed: 3013, emitted: 2787, omitted: 226. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `bootstrap_wiki` | `available` | `partial` | `available` | `20` | `12` | `8` |
+| `BootstrapRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `execute_bootstrap` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `io.StringIO` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_bootstrap_run_options_from_request` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_root.is_dir (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `BootstrapContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `Path(…).expanduser().resolve (src/llm_wiki_cli/services…n_options_from_request, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).expanduser (src/llm_wiki_cli/services…n_options_from_request, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. bootstrap_wiki"]
@@ -198,30 +227,30 @@ flowchart LR
 |---|---|---:|---|
 | bootstrap_wiki | BootstrapRequest | 1098 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection, knowledge_format=knowledge_format)` |
 | bootstrap_wiki | execute_bootstrap | 1118 | `bootstrap_cmd.execute_bootstrap(request)` |
-| execute_bootstrap | io.StringIO | 6503 | `io.StringIO(data not statically known)` |
-| execute_bootstrap | _bootstrap_run_options_from_request | 6504 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4631 | `Path(request.source_root).expanduser().resolve(data not statically known)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request) | 4631 | `Path(request.source_root).expanduser(data not statically known)` |
-| _bootstrap_run_options_from_request | Path (src/llm_wiki_cli/services…_run_options_from_request) | 4631 | `Path(request.source_root)` |
-| _bootstrap_run_options_from_request | source_root.is_dir (src/llm_wiki_cli/services…_run_options_from_request) | 4632 | `source_root.is_dir(data not statically known)` |
-| _bootstrap_run_options_from_request | BootstrapContractError | 4633 | `BootstrapContractError(...)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…n_options_from_request, 1) | 4636 | `Path(request.wiki_root).expanduser().resolve(data not statically known)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…n_options_from_request, 1) | 4636 | `Path(request.wiki_root).expanduser(data not statically known)` |
+| execute_bootstrap | io.StringIO | 6778 | `io.StringIO(data not statically known)` |
+| execute_bootstrap | _bootstrap_run_options_from_request | 6779 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root).expanduser().resolve(data not statically known)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root).expanduser(data not statically known)` |
+| _bootstrap_run_options_from_request | Path (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root)` |
+| _bootstrap_run_options_from_request | source_root.is_dir (src/llm_wiki_cli/services…_run_options_from_request) | 4871 | `source_root.is_dir(data not statically known)` |
+| _bootstrap_run_options_from_request | BootstrapContractError | 4872 | `BootstrapContractError(...)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…n_options_from_request, 1) | 4875 | `Path(request.wiki_root).expanduser().resolve(data not statically known)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…n_options_from_request, 1) | 4875 | `Path(request.wiki_root).expanduser(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `execute_bootstrap` | `io.StringIO` | 6503 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser().resolve` | 4631 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser` | 4631 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `source_root.is_dir` | 4632 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser().resolve` | 4636 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser` | 4636 |
+| external_call | `execute_bootstrap` | `io.StringIO` | 6778 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser().resolve` | 4870 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser` | 4870 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `source_root.is_dir` | 4871 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser().resolve` | 4875 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser` | 4875 |
 | step_limit | `bootstrap_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `bootstrap_wiki` | `depth limit` | 0 |
 

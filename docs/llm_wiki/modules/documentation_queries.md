@@ -18,16 +18,27 @@ captured source/producer metadata where available, and retains provenance gaps.
 Description and hint use the existing bounded evidence envelope; they never
 repair the snapshot or turn an unknown basis into current evidence.
 
+Symbol coverage resolves class names through an exact source-file/name index
+as well as the existing unqualified index. Source-qualified class and callable
+routes share the portable relative-path contract and retain case-sensitive
+identities. Cross-file names and callable/class collisions remain ambiguous;
+repeated class declarations retain the existing graph file/name identity.
+Related pages stay bound to the selected source. Reusing an already-built
+service adds no query-time I/O or extraction; constructing a live service
+retains its full inventory cost.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
 | `.flow_followup` | `segment` |
+| `.immutable` | `freeze` |
 | `.implementation_evidence` | `compact_implementation_summary` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView` |
+| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts` |
+| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `_validated_artifacts_for_view` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_model` | `knowledge_index_to_payload` |
@@ -68,17 +79,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (14) |
+| Outbound | `src` (16) |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 129 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 349 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 853 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 135 | `ValueError` | Raised when a documentation graph query request is invalid. |
+| [_BoundedResult](../entities/BoundedResult.md) | 355 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 859 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

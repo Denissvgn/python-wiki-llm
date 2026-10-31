@@ -108,6 +108,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 262; effect analysis evaluated: 142, partial: 2, unavailable: 118. Counts include steps omitted from the displayed trace.
+
+Collector observations for 144 source steps with known totals: observed: 649, emitted: 642, omitted: 7. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `parse_governance_ledger` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…dge_governance.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
+| `isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. parse_governance_ledger"]
@@ -164,29 +192,29 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_governance_ledger | _object | 422 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3173 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | GovernanceError | 3175 | `GovernanceError(path, 'must be an object')` |
-| _object | GovernanceError | 3177 | `GovernanceError(path, 'must use string keys')` |
-| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3179 | `dict(selected)` |
+| _object | require_mapping | 3287 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
+| _object | GovernanceError | 3289 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3291 | `GovernanceError(path, 'must use string keys')` |
+| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3293 | `dict(selected)` |
 | parse_governance_ledger | _exact_fields | 423 | `_exact_fields(root, 'governance', {...})` |
-| _exact_fields | require_exact_fields | 3196 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
+| _exact_fields | require_exact_fields | 3310 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
+| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1251 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
-| external_call | `require_exact_fields` | `isinstance` | 1243 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_exact_fields` | `isinstance` | 1251 |
 | step_limit | `parse_governance_ledger` | `first 12 steps` | 0 |
 | truncated_flow | `parse_governance_ledger` | `depth limit` | 0 |
 

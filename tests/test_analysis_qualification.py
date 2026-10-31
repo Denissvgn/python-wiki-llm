@@ -128,3 +128,60 @@ def test_combined_compatibility_evidence_is_required(compatibility_bundle, mutat
     else:
         with pytest.raises(q.QualificationError):
             q._validate_analysis_conformance(root)
+
+
+@pytest.mark.parametrize("mutation", [None, "missing", "scope", "hash", "runtime"])
+def test_dependency_tree_native_records_are_required_and_bound(compatibility_bundle, mutation):
+    root = compatibility_bundle
+    source = root / "evidence/RD-00/source/candidate-source.tar"
+    with tarfile.open(source) as archive:
+        files = {}
+        for member in archive.getmembers():
+            stream = archive.extractfile(member)
+            assert stream is not None
+            files[member.name] = stream.read()
+    registry_path = "src/llm_wiki_cli/services/analysis_contracts.json"
+    registry = json.loads(files[registry_path])
+    owner = "services/typescript_helper_identity.py"
+    registry["providers"]["typescript"].append(owner)
+    files[registry_path] = json.dumps(registry).encode()
+    files["src/llm_wiki_cli/" + owner] = b"# dependency-tree identity contract\n"
+    with tarfile.open(source, "w") as archive:
+        for name, raw in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(raw)
+            archive.addfile(info, io.BytesIO(raw))
+    implementation = ac.digest({name: hashlib.sha256(files["src/llm_wiki_cli/" + name]).hexdigest()
+                                for name in registry["providers"]["typescript"]})
+    paths = [root / "evidence/RD-01/macos/core-macos-3.14-helpers.json",
+             root / "evidence/RD-07/toolchains/analysis-helpers.json"]
+    for number, path in enumerate(paths):
+        record = json.loads(path.read_text())
+        # Observed dependency bytes can differ by native platform. Each must
+        # bind its own trusted producer's complete-tree observation.
+        artifact = {"scope": "typescript-node-modules/v1",
+                    "fingerprint": "sha256:" + str(number + 1) * 64}
+        record["helper_artifact"] = artifact
+        for language in ("typescript", "javascript"):
+            record["components"]["llm-wiki/extractor/" + language] = {
+                "implementation": implementation,
+                "runtime": ac.digest({"python": {"profile": "qualified-python-observations/v1"},
+                    "helper": "node v24.18.0; npm 11.16.0; active-node v24.18.0",
+                    "dependencies": {"helper_artifact": artifact}}),
+            }
+        write(path, record)
+    record = json.loads(paths[0].read_text())
+    if mutation == "missing":
+        record.pop("helper_artifact")
+    elif mutation == "scope":
+        record["helper_artifact"]["scope"] = "ts-morph-subtree"
+    elif mutation == "hash":
+        record["helper_artifact"]["fingerprint"] = "not-a-digest"
+    elif mutation == "runtime":
+        record["helper_artifact"]["fingerprint"] = "sha256:" + "9" * 64
+    write(paths[0], record)
+    if mutation is None:
+        q._validate_analysis_conformance(root)
+    else:
+        with pytest.raises(q.QualificationError):
+            q._validate_analysis_conformance(root)

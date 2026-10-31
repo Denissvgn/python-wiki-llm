@@ -32,6 +32,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 8, emitted: 8, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. migration_guidance"]
@@ -65,15 +74,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| migration_guidance | _render_recovery_command | 311 | `_render_recovery_command([...])` |
+| migration_guidance | _render_recovery_command | 317 | `_render_recovery_command([...])` |
 | _render_recovery_command | _uses_windows_command_line | 148 | `_uses_windows_command_line(data not statically known)` |
 | _render_recovery_command | subprocess.list2cmdline | 149 | `subprocess.list2cmdline(arguments)` |
 | _render_recovery_command | shlex.join | 150 | `shlex.join(arguments)` |
-| migration_guidance | str | 319 | `str(wiki_dir)` |
+| migration_guidance | str | 325 | `str(wiki_dir)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

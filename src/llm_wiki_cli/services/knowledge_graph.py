@@ -535,6 +535,26 @@ def typed_graph_from_knowledge_extensions(
     return validate_typed_graph(value, concept_kinds=concept_kinds)
 
 
+def _validate_typed_graph_concept_bindings(
+    graph: Mapping[str, Any],
+    *,
+    concept_kinds: Mapping[str, str],
+) -> None:
+    """Bind an already normalized graph to its enclosing validated concepts.
+
+    Shape, keys, evidence, coverage and input hashes are checked by the graph
+    parser. Artifact validation additionally checks the enclosing snapshot;
+    it must not normalize and copy the complete graph a second time.
+    """
+    for index, edge in enumerate(graph["edges"]):
+        path = f"typed_graph.edges[{index}]"
+        _validate_edge_concept_references(edge, concept_kinds, path)
+        _validate_core_direction(
+            edge["kind"], edge["from"], edge["target"], edge["origin"],
+            edge["resolution"], edge["evidence"], path, concept_kinds,
+        )
+
+
 def _materialization_state(
     inputs: KnowledgeGraphInputs,
     concepts: tuple[GraphConcept, ...],
@@ -1354,28 +1374,9 @@ def _normalise_edge(
             f"{path}.evidence.omitted",
             "must equal coverage.omitted",
         )
-    _validate_endpoint_concept_references(
-        source,
-        concept_kinds,
-        f"{path}.from",
+    _validate_edge_concept_references(
+        {"from": source, "target": target, "evidence": evidence}, concept_kinds, path,
     )
-    _validate_endpoint_concept_references(
-        target,
-        concept_kinds,
-        f"{path}.target",
-    )
-    for sample_index, sample in enumerate(evidence["samples"]):
-        for endpoint_name in ("source", "target"):
-            endpoint = sample.get(endpoint_name)
-            if endpoint is not None:
-                _validate_endpoint_concept_references(
-                    endpoint,
-                    concept_kinds,
-                    (
-                        f"{path}.evidence.samples[{sample_index}]"
-                        f".{endpoint_name}"
-                    ),
-                )
     identity = {
         "kind": kind,
         "from": source,
@@ -1405,6 +1406,25 @@ def _normalise_edge(
         "evidence": evidence,
         "coverage": coverage,
     }
+
+
+def _validate_edge_concept_references(
+    edge: Mapping[str, Any], concept_kinds: Mapping[str, str] | None, path: str,
+) -> None:
+    if concept_kinds is None:
+        return
+    for endpoint_name in ("from", "target"):
+        _validate_endpoint_concept_references(
+            edge[endpoint_name], concept_kinds, f"{path}.{endpoint_name}",
+        )
+    for sample_index, sample in enumerate(edge["evidence"]["samples"]):
+        for endpoint_name in ("source", "target"):
+            endpoint = sample.get(endpoint_name)
+            if endpoint is not None:
+                _validate_endpoint_concept_references(
+                    endpoint, concept_kinds,
+                    f"{path}.evidence.samples[{sample_index}].{endpoint_name}",
+                )
 
 
 def _normalise_endpoint(value: object, path: str) -> dict[str, Any]:

@@ -11,6 +11,7 @@
 
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const { Project, SyntaxKind } = require("ts-morph");
 
 // ── Argument parsing ──────────────────────────────────────────────────────────
@@ -159,6 +160,12 @@ for (const f of filesToProcess) {
 
 // ── AST extraction helpers ────────────────────────────────────────────────────
 
+function nodeLine(node, position = node.getStart()) {
+  // ts-morph's line helpers count only LF. Use the compiler's line map so CR
+  // and Unicode line separators agree with TypeScript diagnostics and tooling.
+  return node.getSourceFile().compilerNode.getLineAndCharacterOfPosition(position).line + 1;
+}
+
 function getJsDoc(node) {
   try {
     const docs = node.getJsDocs?.() ?? [];
@@ -188,6 +195,8 @@ function typeToStr(typeNode) {
 
 function extractMethodParam(param) {
   const info = { name: param.getName() };
+  if (param.hasQuestionToken?.()) info.optional = true;
+  if (param.isRestParameter?.()) info.rest = true;
   const typeNode = param.getTypeNode();
   info.type = typeToStr(typeNode);
   const initializer = param.getInitializer();
@@ -203,7 +212,7 @@ function extractMethodInfo(method) {
 
   const info = {
     name: method.getName(),
-    line: method.getStartLineNumber(),
+    line: nodeLine(method),
     is_async: isAsync,
   };
 
@@ -211,8 +220,14 @@ function extractMethodInfo(method) {
     info.docstring = getJsDoc(method);
     info.decorators = getDecoratorNames(method);
     info.params = (method.getParameters?.() ?? []).map(extractMethodParam);
+    const typeParams = (method.getTypeParameters?.() ?? []).map(typeToStr);
+    if (typeParams.length) info.type_params = typeParams;
     const returnTypeNode = method.getReturnTypeNode?.();
     info.return_type = typeToStr(returnTypeNode);
+    if (method.isImplementation?.()) {
+      const overloads = method.getOverloads?.() ?? [];
+      if (overloads.length) info.overloads = overloads.map(extractMethodInfo);
+    }
   }
 
   return info;
@@ -220,14 +235,14 @@ function extractMethodInfo(method) {
 
 function nodeEndLine(node) {
   try {
-    return node.getEndLineNumber?.();
+    return nodeLine(node, Math.max(node.getStart(), node.getEnd() - 1));
   } catch {
     return undefined;
   }
 }
 
 function functionBaseInfo(node, name, line = null) {
-  const startLine = line ?? node.getStartLineNumber();
+  const startLine = line ?? nodeLine(node);
   const info = {
     name,
     kind: "function",
@@ -249,11 +264,34 @@ function extractFunctionInfo(fn, name, docNode = null, line = null) {
     info.docstring = getJsDoc(docNode ?? fn);
     info.decorators = getDecoratorNames(fn);
     info.params = (fn.getParameters?.() ?? []).map(extractMethodParam);
+    const typeParams = (fn.getTypeParameters?.() ?? []).map(typeToStr);
+    if (typeParams.length) info.type_params = typeParams;
     info.return_type = typeToStr(fn.getReturnTypeNode?.());
+    if (fn.isImplementation?.()) {
+      const overloads = fn.getOverloads?.() ?? [];
+      if (overloads.length) info.overloads = overloads.map(node => extractFunctionInfo(node, name));
+    }
   } else if (isAsync) {
     info.async = true;
   }
 
+  return info;
+}
+
+function extractConstructorInfo(ctor) {
+  const info = {
+    name: "constructor",
+    line: nodeLine(ctor),
+    is_async: false,
+    docstring: getJsDoc(ctor),
+    decorators: [],
+    params: ctor.getParameters().map(extractMethodParam),
+    return_type: "",
+  };
+  if (ctor.isImplementation()) {
+    const overloads = ctor.getOverloads();
+    if (overloads.length) info.overloads = overloads.map(extractConstructorInfo);
+  }
   return info;
 }
 
@@ -350,7 +388,7 @@ function extractTopLevelConstants(sourceFile) {
         continue;
       constants.push({
         name: decl.getName(),
-        line: decl.getStartLineNumber(),
+        line: nodeLine(decl),
         exported: stmt.isExported?.() ?? false,
       });
     }
@@ -382,7 +420,7 @@ function moduleCallFromExpression(expr, target = null, line = null) {
   const name = expressionCallName(expr);
   if (!name) return null;
 
-  const call = { name, line: line ?? expr.getStartLineNumber() };
+  const call = { name, line: line ?? nodeLine(expr) };
   if (target) call.target = target;
   if (name === "createServer" && typeof expr.getArguments === "function") {
     const firstArg = expr.getArguments()[0];
@@ -401,7 +439,7 @@ function extractModuleCalls(sourceFile) {
         const call = moduleCallFromExpression(
           decl.getInitializer(),
           decl.getName(),
-          decl.getStartLineNumber()
+          nodeLine(decl)
         );
         if (call) calls.push(call);
       }
@@ -414,13 +452,13 @@ function extractModuleCalls(sourceFile) {
       const call = moduleCallFromExpression(
         expr.getRight(),
         expr.getLeft().getText(),
-        expr.getStartLineNumber()
+        nodeLine(expr)
       );
       if (call) calls.push(call);
       continue;
     }
 
-    const call = moduleCallFromExpression(expr, null, expr.getStartLineNumber());
+    const call = moduleCallFromExpression(expr, null, nodeLine(expr));
     if (call) calls.push(call);
   }
   return calls;
@@ -428,39 +466,58 @@ function extractModuleCalls(sourceFile) {
 
 function extractImportRecords(sourceFile) {
   const imports = [];
+  const typescript = ![".js", ".jsx", ".mjs", ".cjs"].includes(path.extname(sourceFile.getFilePath()));
+  const qualification = (typeOnly, hasClause) => typescript ? {
+    ...(typeOnly ? { type_only: true, type_only_declaration: true } : {}),
+    runtime: sourceFile.isDeclarationFile() || typeOnly ? "erased" : hasClause ? "conditional" : "present",
+  } : {};
   for (const imp of sourceFile.getImportDeclarations()) {
     const moduleSpecifier = imp.getModuleSpecifierValue();
     const defaultImport = imp.getDefaultImport();
+    const namedImports = imp.getNamedImports();
+    const ns = imp.getNamespaceImport();
+    const phase = qualification(imp.isTypeOnly(), !!imp.getImportClause());
     if (defaultImport) {
       imports.push({
         module: moduleSpecifier,
         name: defaultImport.getText(),
         alias: null,
         type: "default",
+        ...phase,
       });
     }
 
-    for (const named of imp.getNamedImports()) {
+    for (const named of namedImports) {
       imports.push({
         module: moduleSpecifier,
         name: named.getName(),
         alias: named.getAliasNode()?.getText() ?? null,
         type: "named",
+        ...phase,
+        ...(named.isTypeOnly() ? { type_only: true } : {}),
       });
     }
 
-    const ns = imp.getNamespaceImport();
     if (ns) {
       imports.push({
         module: moduleSpecifier,
         name: ns.getText(),
         alias: null,
         type: "namespace",
+        ...phase,
       });
     }
-    if (!defaultImport && imp.getNamedImports().length === 0 && !ns) {
-      imports.push({ module: moduleSpecifier, name: "", alias: null, type: "side-effect" });
+    if (!defaultImport && namedImports.length === 0 && !ns) {
+      imports.push({ module: moduleSpecifier, name: "", alias: null, type: "side-effect", ...phase });
     }
+  }
+  for (const imp of sourceFile.getStatements().filter(node => node.getKind() === SyntaxKind.ImportEqualsDeclaration)) {
+    const reference = imp.getModuleReference();
+    if (reference.getKind() !== SyntaxKind.ExternalModuleReference) continue;
+    const expression = reference.getExpression();
+    if (expression?.getKind() !== SyntaxKind.StringLiteral) continue;
+    imports.push({ module: expression.getLiteralValue(), name: imp.getName(), alias: null,
+      type: "namespace", ...qualification(imp.isTypeOnly(), true) });
   }
   const gaps = [];
   for (const call of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
@@ -468,7 +525,7 @@ function extractImportRecords(sourceFile) {
     const isDynamicImport = expression.getKind() === SyntaxKind.ImportKeyword;
     const isRequire = expression.getKind() === SyntaxKind.Identifier && expression.getText() === "require";
     if (!isRequire && !isDynamicImport) continue;
-    const line = call.getStartLineNumber();
+    const line = nodeLine(call);
     if (isRequire && requireIsShadowed(call)) {
       gaps.push({ line, reason: "shadowed-call-not-module-import" });
       continue;
@@ -490,7 +547,7 @@ function extractImportRecords(sourceFile) {
   }
   for (const declaration of sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration)) {
     if (declaration.getInitializer()?.getText() === "require") {
-      gaps.push({ line: declaration.getStartLineNumber(), reason: "indirect-require-unsupported" });
+      gaps.push({ line: nodeLine(declaration), reason: "indirect-require-unsupported" });
     }
   }
   return { imports, gaps };
@@ -584,10 +641,10 @@ function extractFile(sourceFile) {
   // ── Classes ────────────────────────────────────────────────────────────────
   for (const cls of sourceFile.getClasses()) {
     const baseExpr = cls.getExtends();
-    const bases = baseExpr ? [baseExpr.getExpression().getText()] : [];
-    const implementsExprs = cls.getImplements().map((i) => i.getExpression().getText());
+    const bases = baseExpr ? [baseExpr.getText()] : [];
+    const implementsExprs = cls.getImplements().map((i) => i.getText());
 
-    const clsLine = cls.getStartLineNumber();
+    const clsLine = nodeLine(cls);
     const clsName = cls.getName() ?? `<anonymous_L${clsLine}>`;
     if (deep) {
       fileEntry.classes.push({
@@ -597,18 +654,11 @@ function extractFile(sourceFile) {
         line: clsLine,
         docstring: getJsDoc(cls),
         decorators: getDecoratorNames(cls),
+        type_params: cls.getTypeParameters().map(typeToStr),
         attributes: cls.getProperties().map(extractProperty),
         methods: [
           ...cls.getMethods().map(extractMethodInfo),
-          ...cls.getConstructors().map((c) => ({
-            name: "constructor",
-            line: c.getStartLineNumber(),
-            is_async: false,
-            docstring: getJsDoc(c),
-            decorators: [],
-            params: c.getParameters().map(extractMethodParam),
-            return_type: "",
-          })),
+          ...cls.getConstructors().map(extractConstructorInfo),
         ],
       });
     } else {
@@ -625,33 +675,26 @@ function extractFile(sourceFile) {
   for (const iface of sourceFile.getInterfaces()) {
     // Use getExtends() instead of getBaseDeclarations() — the latter returns []
     // for unresolved external types (e.g. interfaces extending EventEmitter).
-    const bases = iface.getExtends().map((n) => n.getExpression().getText());
+    const bases = iface.getExtends().map((n) => n.getText());
 
     if (deep) {
       fileEntry.classes.push({
         name: iface.getName(),
         kind: "interface",
         bases,
-        line: iface.getStartLineNumber(),
+        line: nodeLine(iface),
         docstring: getJsDoc(iface),
         decorators: [],
+        type_params: iface.getTypeParameters().map(typeToStr),
         attributes: iface.getProperties().map(extractProperty),
-        methods: iface.getMethods().map((m) => ({
-          name: m.getName(),
-          line: m.getStartLineNumber(),
-          is_async: false,
-          docstring: getJsDoc(m),
-          decorators: [],
-          params: m.getParameters().map(extractMethodParam),
-          return_type: typeToStr(m.getReturnTypeNode()),
-        })),
+        methods: iface.getMethods().map(extractMethodInfo),
       });
     } else {
       fileEntry.classes.push({
         name: iface.getName(),
         kind: "interface",
         bases,
-        line: iface.getStartLineNumber(),
+        line: nodeLine(iface),
       });
     }
   }
@@ -663,7 +706,7 @@ function extractFile(sourceFile) {
         name: en.getName(),
         kind: "enum",
         bases: [],
-        line: en.getStartLineNumber(),
+        line: nodeLine(en),
         docstring: getJsDoc(en),
         decorators: getDecoratorNames(en),
         attributes: en.getMembers().map((m) => ({
@@ -678,19 +721,29 @@ function extractFile(sourceFile) {
         name: en.getName(),
         kind: "enum",
         bases: [],
-        line: en.getStartLineNumber(),
+        line: nodeLine(en),
       });
     }
   }
 
   // ── Type aliases ───────────────────────────────────────────────────────────
   for (const ta of sourceFile.getTypeAliases()) {
+    const target = deep ? typeToStr(ta.getTypeNode()) : "";
+    const definition = Array.from(target);
     fileEntry.classes.push({
       name: ta.getName(),
       kind: "type_alias",
       bases: [],
-      line: ta.getStartLineNumber(),
-      ...(deep ? { docstring: getJsDoc(ta), decorators: [], attributes: [], methods: [] } : {}),
+      line: nodeLine(ta),
+      ...(deep ? {
+        docstring: getJsDoc(ta), decorators: [], attributes: [], methods: [],
+        type_params: ta.getTypeParameters().map(typeToStr),
+        target: definition.slice(0, 4096).join(""),
+        ...(definition.length > 4096 ? {
+          target_truncated: true,
+          target_sha256: "sha256:" + crypto.createHash("sha256").update(target, "utf8").digest("hex"),
+        } : {}),
+      } : {}),
     });
   }
 
@@ -702,7 +755,7 @@ function extractFile(sourceFile) {
     fileEntry.functions.push(
       extractFunctionInfo(
         fn,
-        fnName || `<anonymous_L${fn.getStartLineNumber()}>`
+        fnName || `<anonymous_L${nodeLine(fn)}>`
       )
     );
   }
@@ -726,7 +779,7 @@ function extractFile(sourceFile) {
       arrowFn,
       varDecl.getName(),
       stmt,
-      varDecl.getStartLineNumber()
+      nodeLine(varDecl)
     );
     if (deep) info.decorators = [];
     fileEntry.functions.push(info);

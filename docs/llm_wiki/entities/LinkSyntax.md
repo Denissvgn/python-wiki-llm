@@ -19,7 +19,7 @@ Source syntax that produced one Markdown-owned observation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 46 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 47 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_native](../modules/documentation_native.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -127,9 +128,9 @@ sequenceDiagram
     p0-->>p30: (…).lstat
 ```
 
-> Call sequence diagram shows 30 of 3543 interactions; 3513 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3615 interactions; 3585 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 989 (988 omitted); unresolved 1 of 895 (894 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 999 (998 omitted); unresolved 1 of 894 (893 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -143,7 +144,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
-> Omission summary shows 8 of 924 groups; 916 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 940 groups; 932 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -151,6 +152,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1723; effect analysis evaluated: 1194, partial: 42, unavailable: 487. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1236 source steps with known totals: observed: 6314, emitted: 6058, omitted: 256. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `evaluate_documentation_native_freshness` | `available` | `evaluated` | `available` | `18` | `18` | `0` |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_native_source_snapshot_preflight` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_validated_directory` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…e.py:_validated_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…e.py:_validated_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `candidate.lstat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationNativeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. evaluate_documentation_native_freshness"]
@@ -160,7 +189,7 @@ flowchart LR
     s5["5. TypeError (src/llm_wiki_cli/services…entation_native_freshness)"]
     s6["6. _native_source_snapshot_preflight"]
     s7["7. _validated_directory"]
-    s8["8. Path(…).expanduser"]
+    s8["8. Path(…).expanduser (src/llm_wiki_cli/services…e.py:_validated_directory)"]
     s9["9. Path (src/llm_wiki_cli/services…e.py:_validated_directory)"]
     s10["10. candidate.lstat"]
     s11["11. DocumentationNativeError"]
@@ -171,7 +200,7 @@ flowchart LR
     s1 -. "TypeError (src/llm_wiki_cli/services…entation_native_freshness)('manifest must be a SyncManifest')" .-> s5
     s1 -->|"_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')"| s6
     s6 -->|"_validated_directory(source_root, 'source_root')"| s7
-    s7 -. "Path(…).expanduser(data not statically known)" .-> s8
+    s7 -. "Path(…).expanduser (src/llm_wiki_cli/services…e.py:_validated_directory)(data not statically known)" .-> s8
     s7 -. "Path (src/llm_wiki_cli/services…e.py:_validated_directory)(value)" .-> s9
     s7 -. "candidate.lstat(data not statically known)" .-> s10
     s7 -->|"DocumentationNativeError(...)"| s11
@@ -206,7 +235,7 @@ flowchart LR
 | `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | - | - | - | - |
 | `_native_source_snapshot_preflight` | `source_root: str \| Path`, `manifest: SyncManifest`, `source_selection: str \| Path \| None`, `operation: str`, `allow_same_path_identity_update: bool` | `SourceSelectionError`, `SourceSnapshotError` | - | `(...)` |
 | `_validated_directory` | `value: str \| Path`, `field_name: str` | - | - | `candidate.resolve(...)` |
-| `Path(…).expanduser` | - | - | - | - |
+| `Path(…).expanduser (src/llm_wiki_cli/services…e.py:_validated_directory)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…e.py:_validated_directory)` | - | - | - | - |
 | `candidate.lstat` | - | - | - | - |
 | `DocumentationNativeError` | - | - | - | - |
@@ -222,7 +251,7 @@ flowchart LR
 | evaluate_documentation_native_freshness | TypeError (src/llm_wiki_cli/services…entation_native_freshness) | 206 | `TypeError('manifest must be a SyncManifest')` |
 | evaluate_documentation_native_freshness | _native_source_snapshot_preflight | 207 | `_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')` |
 | _native_source_snapshot_preflight | _validated_directory | 156 | `_validated_directory(source_root, 'source_root')` |
-| _validated_directory | Path(…).expanduser | 1123 | `Path(value).expanduser(data not statically known)` |
+| _validated_directory | Path(…).expanduser (src/llm_wiki_cli/services…e.py:_validated_directory) | 1123 | `Path(value).expanduser(data not statically known)` |
 | _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1123 | `Path(value)` |
 | _validated_directory | candidate.lstat | 1125 | `candidate.lstat(data not statically known)` |
 | _validated_directory | DocumentationNativeError | 1127 | `DocumentationNativeError(...)` |

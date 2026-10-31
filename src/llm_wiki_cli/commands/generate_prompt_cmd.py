@@ -222,9 +222,7 @@ def _diff_recipe(
     allow_external_src: bool = False,
 ) -> str:
     git_prefix = (
-        f"git -C {shell_quote(src_dir)} diff"
-        if allow_external_src
-        else "git diff"
+        f"git -C {shell_quote(src_dir)} diff" if allow_external_src else "git diff"
     )
     if source_selection is None:
         return f"""# Diff size and paths; use targeted diffs for only the affected files
@@ -507,7 +505,7 @@ def _render_repository_handoff(policy: WikiGitPolicy, wiki_dir: str) -> str:
     reason = policy.reason
     shared = (
         f"{heading}\n\n"
-        f"Wiki Git disposition: **{disposition}** (`{reason}`). "
+        f"Wiki Git disposition: **{disposition}** (`{reason}`; initial root/index probe). "
         "Applicable user instructions and repository-local rules remain "
         "authoritative. Never force-add the wiki or change ignore/exclude rules "
         "to bypass this disposition."
@@ -521,12 +519,20 @@ def _render_repository_handoff(policy: WikiGitPolicy, wiki_dir: str) -> str:
             f"git check-ignore --no-index -- {quoted_wiki_dir_slash} "
             f"{shell_quote(f'{wiki_dir}/index.md')}\n"
             "```\n\nExit status 1 means neither probe is ignored and establishes "
-            "eligibility, not authorization. Exit status 0 or any other outcome "
-            "requires a local-only handoff. Only if that recheck is eligible and "
+            "only initial path eligibility, not descendant completeness or "
+            "authorization. Exit status 0 or any other outcome requires a "
+            "local-only handoff. After sync and validation, inspect every "
+            "required native artifact:\n\n```bash\n"
+            f"llm-wiki knowledge git-check --wiki-dir {shell_quote(wiki_dir)}\n"
+            "```\n\nRequire `delivery_state: git-eligible`; mixed, local-only "
+            "or indeterminate means a local-only handoff. Diagnostic exit 0 "
+            "alone is not eligibility. Only if that full check is eligible and "
             "the current repository rules and user instructions explicitly "
             "authorize a separate wiki commit, run:\n\n"
             "```bash\n"
             f"git add -- {quoted_wiki_dir_slash}\n"
+            f"llm-wiki knowledge git-check --wiki-dir {shell_quote(wiki_dir)} "
+            "--staged || exit 1\n"
             'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"\n'
             "```\n\nOtherwise, finish with a local handoff that lists changed "
             "wiki paths and validation results. Handle any changelog change only "

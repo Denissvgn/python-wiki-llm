@@ -38,6 +38,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 20, emitted: 20, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_mapping_tuple"]
@@ -86,32 +95,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_mapping_tuple | require_sequence | 1034 | `require_sequence(value, error=error, container_type=container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 790 | `isinstance(value, (...))` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 791 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 792 | `isinstance(value, container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 795 | `isinstance(value, Sequence)` |
-| require_mapping_tuple | tuple | 1039 | `tuple(...)` |
-| require_mapping_tuple | require_mapping | 1040 | `require_mapping(item, error=...)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| require_mapping_tuple | require_sequence | 1042 | `require_sequence(value, error=error, container_type=container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 798 | `isinstance(value, (...))` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 799 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 800 | `isinstance(value, container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 803 | `isinstance(value, Sequence)` |
+| require_mapping_tuple | tuple | 1047 | `tuple(...)` |
+| require_mapping_tuple | require_mapping | 1048 | `require_mapping(item, error=...)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sequence` | `isinstance` | 790 |
-| external_call | `require_sequence` | `isinstance` | 791 |
-| external_call | `require_sequence` | `isinstance` | 792 |
-| external_call | `require_sequence` | `isinstance` | 795 |
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
+| external_call | `require_sequence` | `isinstance` | 798 |
+| external_call | `require_sequence` | `isinstance` | 799 |
+| external_call | `require_sequence` | `isinstance` | 800 |
+| external_call | `require_sequence` | `isinstance` | 803 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
 
 ## Behavior
 

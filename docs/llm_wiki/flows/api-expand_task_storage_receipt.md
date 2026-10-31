@@ -101,6 +101,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 49; effect analysis evaluated: 38, partial: 2, unavailable: 9. Counts include steps omitted from the displayed trace.
+
+Collector observations for 40 source steps with known totals: observed: 154, emitted: 143, omitted: 11. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `expand_task_storage_receipt` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `expand_storage_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `required.update` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. expand_task_storage_receipt"]

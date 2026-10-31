@@ -26,6 +26,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. machine_verification_summary"]
@@ -48,19 +57,19 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| machine_verification_summary | diagnostic.to_payload | 252 | `diagnostic.to_payload(data not statically known)` |
-| machine_verification_summary | check.diagnostic_coverage.to_payload | 254 | `check.diagnostic_coverage.to_payload(data not statically known)` |
+| machine_verification_summary | diagnostic.to_payload | 259 | `diagnostic.to_payload(data not statically known)` |
+| machine_verification_summary | check.diagnostic_coverage.to_payload | 261 | `check.diagnostic_coverage.to_payload(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `machine_verification_summary` | `diagnostic.to_payload` | 252 |
-| unresolved_call | `machine_verification_summary` | `check.diagnostic_coverage.to_payload` | 254 |
+| unresolved_call | `machine_verification_summary` | `diagnostic.to_payload` | 259 |
+| unresolved_call | `machine_verification_summary` | `check.diagnostic_coverage.to_payload` | 261 |
 
 ## Behavior
 

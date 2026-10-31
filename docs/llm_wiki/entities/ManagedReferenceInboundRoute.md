@@ -25,7 +25,7 @@ One active source route into a managed reference topic.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

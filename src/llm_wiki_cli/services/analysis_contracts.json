@@ -82,6 +82,7 @@
     "services/analysis_targets.py",
     "services/api_contracts.py",
     "services/api_diff.py",
+    "services/bootstrap_recovery.py",
     "services/bootstrap_runtime.py",
     "services/bootstrap_service.py",
     "services/calibration/__init__.py",
@@ -108,6 +109,7 @@
     "services/dependencies.py",
     "services/dependency_versions.py",
     "services/diagrams.py",
+    "services/dockerfile_parser.py",
     "services/doctor_service.py",
     "services/documentation_calibration.py",
     "services/documentation_calibration_broker.py",
@@ -263,9 +265,11 @@
     "services/task_implementation.py",
     "services/team.py",
     "services/token_counting.py",
+    "services/typescript_helper_identity.py",
     "services/validation.py",
     "services/verification_contracts.py",
     "services/versioning.py",
+    "services/wiki_git_delivery.py",
     "services/wiki_git_policy.py",
     "services/wiki_lifecycle.py",
     "services/wiki_media.py",
@@ -342,6 +346,7 @@
       "services/extractor_helpers.py"
     ],
     "infrastructure": [
+      "services/dockerfile_parser.py",
       "services/infrastructure_inventory.py",
       "services/infrastructure_sync.py",
       "services/yaml_formats.py",
@@ -376,7 +381,8 @@
       "extractors/ts_scripts/package-lock.json",
       "extractors/ts_scripts/package.json",
       "services/extractor_helpers.py",
-      "services/imports.py"
+      "services/imports.py",
+      "services/typescript_helper_identity.py"
     ]
   },
   "schema_version": "llm-wiki-analysis-registry/v1",
@@ -384,6 +390,7 @@
     "config.py",
     "schemas/llm-wiki-knowledge-v1.schema.json",
     "services/analysis_capture.py",
+    "services/bootstrap_recovery.py",
     "services/contracts.py",
     "services/extraction_service.py",
     "services/implementation_evidence.py",

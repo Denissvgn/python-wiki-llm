@@ -19,7 +19,7 @@ Exact size disclosure for one bounded result collection.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

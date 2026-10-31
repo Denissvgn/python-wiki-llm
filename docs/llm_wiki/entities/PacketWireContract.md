@@ -28,7 +28,7 @@ One immutable schema/protocol/policy binding for canonical packets.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

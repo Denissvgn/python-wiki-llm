@@ -21,7 +21,7 @@ Retains exact file content, file identity and ancestor identities for an authori
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

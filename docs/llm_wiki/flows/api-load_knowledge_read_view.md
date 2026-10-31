@@ -2,12 +2,12 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 32 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [immutable](../modules/immutable.md), and 32 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [filesystem_guard](../modules/filesystem_guard.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -70,14 +70,14 @@ sequenceDiagram
     participant p18 as evaluate_knowledge_freshness
     participant p19 as marker_from_validated_state
     participant p20 as compare_knowledge_implementation
-    participant p21 as load_adoption_marker
+    participant p21 as guard_incomplete_bootstrap
     participant p22 as validate_surface_index_bytes
-    participant p23 as SyncManifest.load
+    participant p23 as load_adoption_marker
     participant p24 as _issue_from_artifact_error
     participant p25 as load_verification_receipt
-    participant p26 as _current_markdown
-    participant p27 as _load_manifest
-    participant p28 as evaluate_verification_receipt
+    participant p26 as SyncManifest.load
+    participant p27 as _current_markdown
+    participant p28 as _validated_artifacts_for_view
     participant p29 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
     participant p30 as _UNSUPPORTED_REASON_BY_ISSUE.get
     p0->>p1: load_knowledge_state
@@ -100,21 +100,21 @@ sequenceDiagram
     p9->>p18: evaluate_knowledge_freshness
     p12->>p19: marker_from_validated_state
     p13->>p20: compare_knowledge_implementation
-    p11->>p21: load_adoption_marker
+    p11->>p21: guard_incomplete_bootstrap
     p14->>p22: validate_surface_index_bytes
-    p11->>p23: SyncManifest.load
+    p11->>p23: load_adoption_marker
     p14->>p24: _issue_from_artifact_error
     p8->>p25: load_verification_receipt
-    p14->>p26: _current_markdown
-    p14->>p27: _load_manifest
-    p8->>p28: evaluate_verification_receipt
+    p11->>p26: SyncManifest.load
+    p14->>p27: _current_markdown
+    p8->>p28: _validated_artifacts_for_view
     p0-->>p29: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1811 interactions; 1781 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1751 interactions; 1721 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 591 (590 omitted); unresolved 1 of 341 (340 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 328 (327 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 396 groups; 388 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 388 groups; 380 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -136,6 +136,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 883; effect analysis evaluated: 478, partial: 38, unavailable: 367. Counts include steps omitted from the displayed trace.
+
+Collector observations for 516 source steps with known totals: observed: 3310, emitted: 2972, omitted: 338. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_knowledge_read_view` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `load_knowledge_state` | `available` | `partial` | `available` | `18` | `17` | `1` |
+| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeMismatchPolicy` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. load_knowledge_read_view"]
@@ -188,9 +216,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 692 | `isinstance(include_machine_verification, bool)` |
-| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 693 | `TypeError('include_machine_verification must be a boolean')` |
-| load_knowledge_read_view | load_knowledge_state | 695 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
+| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 726 | `isinstance(include_machine_verification, bool)` |
+| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 727 | `TypeError('include_machine_verification must be a boolean')` |
+| load_knowledge_read_view | load_knowledge_state | 729 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
 | load_knowledge_state | isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
 | load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
 | load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
@@ -202,14 +230,14 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_read_view` | `isinstance` | 692 |
-| external_call | `load_knowledge_read_view` | `TypeError` | 693 |
+| external_call | `load_knowledge_read_view` | `isinstance` | 726 |
+| external_call | `load_knowledge_read_view` | `TypeError` | 727 |
 | external_call | `load_knowledge_state` | `isinstance` | 112 |
 | external_call | `load_knowledge_state` | `ValueError` | 116 |
 | external_call | `load_knowledge_state` | `ValueError` | 118 |

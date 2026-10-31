@@ -1,6 +1,6 @@
 # VerificationReceipt
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:453`
+**Location:** `src/llm_wiki_cli/services/verification_contracts.py:482`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)

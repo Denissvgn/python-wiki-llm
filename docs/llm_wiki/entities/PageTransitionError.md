@@ -15,7 +15,7 @@ The intended page writes cannot preserve verified ownership.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

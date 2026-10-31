@@ -24,7 +24,7 @@ _Auto-generated from `_ContextKnowledgeRequired` in `src/llm_wiki_cli/api_types.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

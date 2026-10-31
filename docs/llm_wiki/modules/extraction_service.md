@@ -50,13 +50,14 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
 | `.dependencies` | `analyze_dependencies` |
+| `.dockerfile_parser` | `parse_dockerfile` |
 | `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry` |
 | `.io` | `write_text_output` |
-| `.packages` | `discover_packages`, `stamp_inventory_packages` |
+| `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
@@ -68,6 +69,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
 | `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Mapping` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field` |
@@ -101,23 +103,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (23) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 141 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 149 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 180 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 221 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 241 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 266 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 279 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 292 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 314 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 142 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 150 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 181 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 222 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 242 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 267 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 280 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 293 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 315 | — | — |
 
 ## Functions
 
@@ -183,6 +185,8 @@ flowchart LR
 | `_git_metadata_path` | `(value: str, *, prefixed: bool) -> str \| None \| object` | — | — |
 | `_git_diff_path` | `(value: str) -> str \| None` | — | — |
 | `_build_extract_source_snapshot` | `(src_root: Path, *, only_files: Iterable[str] \| None, include_tests: Iterable[str], selection_policy: SourceSelectionPolicy \| None) -> SourceSnapshot` | — | — |
+| `_canonical_extract_paths` | `(root: Path, paths: Iterable[str]) -> list[str]` | — | Normalize accepted path spellings without admitting paths outside root. |
+| `_extract_output_paths` | `(snapshot: SourceSnapshot, only_files: list[str] \| None, package_filter: str \| None) -> frozenset[str] \| None` | — | Select emitted records independently of broader snapshot context. |
 | `_compact_summary_names` | `(items: Iterable, key: str \| None = None) -> list[str]` | — | — |
 | `_summarize_inventory` | `(inventory: dict) -> dict` | — | Produce a compact one-line-per-symbol summary from a shallow inventory. |
 | `_dependency_extract_block` | `(analysis: dict) -> dict` | — | Project dependency analysis into the public ``extract --deep`` shape. |
@@ -215,9 +219,9 @@ flowchart LR
 | `_call_observations_for_file` | `(filepath: str, data: dict, symbol_to_files: dict[str, set[str]], module_resolver) -> list[dict]` | — | — |
 | `resolve_call_observations` | `(inventory: dict) -> dict` | — | Return deterministic, versioned call observations with honest ambiguity. |
 | `resolve_call_edges` | `(inventory: dict) -> list[dict]` | — | Resolve captured ``calls`` records into caller→callee edges. |
-| `_parse_dockerfile` | `(text: str) -> dict` | — | Parse a Dockerfile into a structured dict (line-based, no external deps). |
+| `_parse_dockerfile` | `(text: str) -> dict` | — | Parse Dockerfile source declarations with their owning build stage. |
 | `_parse_inline_yaml_list` | `(value: str) -> list[str] \| None` | — | Parse an inline YAML list like ``["CMD", "curl", "-f", "http://..."]``. |
 | `_parse_compose` | `(text: str) -> dict` | — | Parse one Compose document while preserving nested YAML structures. |
 | `_valid_compose_document` | `(document: object) -> bool` | — | — |
 | `_looks_like_compose` | `(text: str) -> bool` | — | Return True if the file content appears to be a docker-compose file. |
-| `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |
+| `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None, only_files: Iterable[str] \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |

@@ -25,7 +25,7 @@ Safe root-level evidence for an optional wiki-tree removal.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

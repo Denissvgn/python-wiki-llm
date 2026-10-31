@@ -126,9 +126,9 @@ sequenceDiagram
     p0-->>p30: result.to_payload
 ```
 
-> Call sequence diagram shows 30 of 1445 interactions; 1415 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1454 interactions; 1424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 602 (601 omitted); unresolved 1 of 352 (351 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 604 (603 omitted); unresolved 1 of 355 (354 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -150,6 +150,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 496; effect analysis evaluated: 295, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
+
+Collector observations for 336 source steps with known totals: observed: 2367, emitted: 2215, omitted: 152. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `getattr (src/llm_wiki_cli/commands/task_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_compact_outputs` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_safe_absolute` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

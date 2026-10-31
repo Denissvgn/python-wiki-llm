@@ -32,14 +32,12 @@ sequenceDiagram
     participant p18 as path.is_symlink
     participant p19 as path.relative_to(…).as_posix
     participant p20 as path.relative_to
-    participant p21 as set
-    participant p22 as paths_by_relative.items
-    participant p23 as path.is_dir
-    participant p24 as path.is_file
-    participant p25 as path.stat
+    participant p21 as path.is_file
+    participant p22 as path.stat
+    participant p23 as set
+    participant p24 as paths_by_relative.items
+    participant p25 as path.is_dir
     participant p26 as path.read_text
-    participant p27 as json.loads
-    participant p28 as isinstance
     p0->>p1: is_pristine_wiki_target
     p1->>p2: formatted_json_bytes
     p1->>p3: iter_page_kinds
@@ -60,29 +58,29 @@ sequenceDiagram
     p1-->>p18: path.is_symlink
     p1-->>p19: path.relative_to(…).as_posix
     p1-->>p20: path.relative_to(root)
-    p1-->>p21: set(paths_by_relative)
-    p1-->>p22: paths_by_relative.items
-    p1-->>p23: path.is_dir
-    p1-->>p24: path.is_file
-    p1-->>p25: path.stat
+    p1-->>p21: path.is_file
+    p1-->>p22: path.stat
+    p1-->>p23: set(paths_by_relative)
+    p1-->>p24: paths_by_relative.items
+    p1-->>p25: path.is_dir
+    p1-->>p21: path.is_file
+    p1-->>p22: path.stat
     p1-->>p26: path.read_text(encoding='utf-8')
     p1-->>p26: path.read_text(encoding='utf-8')
     p1-->>p26: path.read_text(encoding='utf-8')
-    p1-->>p27: json.loads(raw_config)
-    p1-->>p28: isinstance(config, dict)
 ```
 
-> Call sequence diagram shows 30 of 44 interactions; 14 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 46 interactions; 16 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 16 (10 omitted); unresolved 19 of 22 (3 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 16 (12 omitted); unresolved 21 of 24 (3 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 9 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 35 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 37 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 11 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 37 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 39 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -90,6 +88,32 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 7; effect analysis evaluated: 6, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 7 source steps with known totals: observed: 54, emitted: 40, omitted: 14. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `classify_wiki_lifecycle` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `is_pristine_wiki_target` | `available` | `partial` | `available` | `33` | `19` | `14` |
+| `Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `iter_page_kinds` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sorted` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.rglob` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. classify_wiki_lifecycle"]
@@ -151,10 +175,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 287 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | manifest.exists | 289 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | manifest.is_symlink | 289 | `manifest.is_symlink(data not statically known)` |
-| classify_wiki_lifecycle | is_pristine_wiki_target | 291 | `is_pristine_wiki_target(root)` |
+| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 293 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | manifest.exists | 295 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | manifest.is_symlink | 295 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | is_pristine_wiki_target | 297 | `is_pristine_wiki_target(root)` |
 | is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 156 | `Path(wiki_dir)` |
 | is_pristine_wiki_target | root.is_symlink | 157 | `root.is_symlink(data not statically known)` |
 | is_pristine_wiki_target | root.exists | 159 | `root.exists(data not statically known)` |
@@ -167,16 +191,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 212 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 215 |
 | filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 218 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 221 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 224 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 289 |
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 289 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 295 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 295 |
 | unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
 | unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
 | unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |

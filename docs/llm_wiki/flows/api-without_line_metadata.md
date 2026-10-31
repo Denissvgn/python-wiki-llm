@@ -31,6 +31,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 12, emitted: 12, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. without_line_metadata"]
@@ -67,25 +76,25 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| without_line_metadata | isinstance | 872 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 874 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 875 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 875 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 878 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 879 | `without_line_metadata(item)` |
+| without_line_metadata | isinstance | 917 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 919 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 920 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 920 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 923 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 872 |
-| external_call | `without_line_metadata` | `sorted` | 875 |
-| unresolved_call | `without_line_metadata` | `value.items` | 875 |
-| external_call | `without_line_metadata` | `isinstance` | 878 |
+| external_call | `without_line_metadata` | `isinstance` | 917 |
+| external_call | `without_line_metadata` | `sorted` | 920 |
+| unresolved_call | `without_line_metadata` | `value.items` | 920 |
+| external_call | `without_line_metadata` | `isinstance` | 923 |
 
 ## Behavior
 

@@ -24,7 +24,7 @@ Versioned aggregate diagnostics without identities or raw evidence.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

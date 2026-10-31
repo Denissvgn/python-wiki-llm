@@ -12,139 +12,153 @@
 ```mermaid
 sequenceDiagram
     participant p0 as mixed_table_projection
-    participant p1 as description_table_cells
-    participant p2 as hash_json
-    participant p3 as normalize_markdown
-    participant p4 as format_table_row
-    participant p5 as is_placeholder_description
-    participant p6 as MixedTableProjection
-    participant p7 as canonical_json_bytes
-    participant p8 as sha256_bytes
-    participant p9 as split_table_row
-    participant p10 as is_table_separator
-    participant p11 as semantic_table_key
-    participant p12 as TableDescriptionCell
-    participant p13 as canonical_json_text
-    participant p14 as list
-    participant p15 as normalized.splitlines
-    participant p16 as normalized.endswith
-    participant p17 as semantic_by_key.items
-    participant p18 as semantic_cells.sort
-    participant p19 as str(…).casefold
-    participant p20 as str
-    participant p21 as text.replace(…).replace
-    participant p22 as normalize_markdown(…).splitlines
-    participant p23 as ' | '.join
-    participant p24 as value.strip
-    participant p25 as text.replace
-    participant p26 as _AUTO_GENERATED_RE.match
+    participant p1 as _markdown_lines
+    participant p2 as description_table_cells
+    participant p3 as hash_json
+    participant p4 as normalize_markdown
+    participant p5 as format_table_row
+    participant p6 as is_placeholder_description
+    participant p7 as MixedTableProjection
+    participant p8 as canonical_json_bytes
+    participant p9 as sha256_bytes
+    participant p10 as _line_content
+    participant p11 as split_table_row
+    participant p12 as is_table_separator
+    participant p13 as semantic_table_key
+    participant p14 as TableDescriptionCell
+    participant p15 as canonical_json_text
+    participant p16 as list
+    participant p17 as normalized.endswith
+    participant p18 as semantic_by_key.items
+    participant p19 as semantic_cells.sort
+    participant p20 as str(…).casefold
+    participant p21 as str
+    participant p22 as text.replace(…).replace
+    participant p23 as re.findall
+    participant p24 as ' | '.join
+    participant p25 as value.strip
+    participant p26 as text.replace
     participant p27 as enumerate
-    p0->>p1: description_table_cells
-    p0->>p2: hash_json
-    p0->>p3: normalize_markdown
-    p0->>p4: format_table_row
-    p0->>p5: is_placeholder_description
-    p0->>p6: MixedTableProjection
-    p2->>p7: canonical_json_bytes
-    p2->>p8: sha256_bytes
-    p1->>p9: split_table_row
-    p1->>p10: is_table_separator
-    p1->>p11: semantic_table_key
-    p1->>p12: TableDescriptionCell
-    p7->>p13: canonical_json_text
-    p0-->>p14: list(lines)
-    p0-->>p15: normalized.splitlines
-    p0-->>p16: normalized.endswith('\n')
-    p0-->>p14: list(cell.cells)
-    p0-->>p17: semantic_by_key.items
-    p0-->>p18: semantic_cells.sort(key=...)
-    p0-->>p19: str(…).casefold
-    p0-->>p20: str(item[...])
-    p0-->>p20: str(item[...])
-    p0-->>p20: str(item[...])
-    p3-->>p21: text.replace(…).replace('\r', '\n')
-    p1-->>p22: normalize_markdown(…).splitlines
-    p4-->>p23: ' | '.join(cells)
-    p5-->>p24: value.strip
-    p3-->>p25: text.replace('\r\n', '\n')
-    p5-->>p26: _AUTO_GENERATED_RE.match(stripped)
-    p1-->>p27: enumerate(lines)
+    p0->>p1: _markdown_lines
+    p0->>p2: description_table_cells
+    p0->>p3: hash_json
+    p0->>p4: normalize_markdown
+    p0->>p5: format_table_row
+    p0->>p6: is_placeholder_description
+    p0->>p7: MixedTableProjection
+    p3->>p8: canonical_json_bytes
+    p3->>p9: sha256_bytes
+    p1->>p10: _line_content
+    p2->>p11: split_table_row
+    p2->>p12: is_table_separator
+    p2->>p13: semantic_table_key
+    p2->>p14: TableDescriptionCell
+    p8->>p15: canonical_json_text
+    p0-->>p16: list(lines)
+    p0-->>p17: normalized.endswith('\n')
+    p0-->>p16: list(cell.cells)
+    p0-->>p18: semantic_by_key.items
+    p0-->>p19: semantic_cells.sort(key=...)
+    p0-->>p20: str(…).casefold
+    p0-->>p21: str(item[...])
+    p0-->>p21: str(item[...])
+    p0-->>p21: str(item[...])
+    p4-->>p22: text.replace(…).replace('\r', '\n')
+    p1-->>p23: re.findall('[^\\n]*\\n|[^\\n]+$', normalize_markdown(...))
+    p5-->>p24: ' | '.join(cells)
+    p6-->>p25: value.strip
+    p4-->>p26: text.replace('\r\n', '\n')
+    p2-->>p27: enumerate(lines)
 ```
 
-> Call sequence diagram shows 30 of 71 interactions; 41 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 74 interactions; 44 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 21 (15 omitted); unresolved 11 of 33 (22 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 22 (15 omitted); unresolved 8 of 32 (24 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 7 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 11 | - | unresolved | 12 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 11 | - | external | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/markdown_sections.py:is_table_separator` | 29 | - | external | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:is_table_separator` | 29 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:semantic_table_key` | 39 | - | external | 1 |
-> Omission summary shows 8 of 14 groups; 6 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 5 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | unresolved | 12 |
+| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | external | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | external | 7 |
+| `src/llm_wiki_cli/services/markdown_sections.py:is_table_separator` | 32 | - | external | 2 |
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 21; effect analysis evaluated: 19, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
+
+Collector observations for 19 source steps with known totals: observed: 70, emitted: 70, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `mixed_table_projection` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_markdown_lines` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_line_content` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `line.endswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalized.endswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `description_table_cells` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_markdown_lines` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. mixed_table_projection"]
     s2["2. normalize_markdown"]
     s3["3. text.replace(…).replace"]
     s4["4. text.replace"]
-    s5["5. normalized.splitlines"]
-    s6["6. normalized.endswith"]
-    s7["7. description_table_cells"]
-    s8["8. normalize_markdown(…).splitlines"]
-    s9["9. normalize_markdown"]
-    s10["10. enumerate"]
-    s11["11. split_table_row"]
-    s12["12. line.strip"]
+    s5["5. _markdown_lines"]
+    s6["6. re.findall"]
+    s7["7. normalize_markdown"]
+    s8["8. _line_content"]
+    s9["9. line.endswith"]
+    s10["10. normalized.endswith"]
+    s11["11. description_table_cells"]
+    s12["12. _markdown_lines"]
     s1 -->|"normalize_markdown(section_markdown)"| s2
     s2 -. "text.replace(…).replace('\r', '\n')" .-> s3
     s2 -. "text.replace('\r\n', '\n')" .-> s4
-    s1 -. "normalized.splitlines(data not statically known)" .-> s5
-    s1 -. "normalized.endswith('\n')" .-> s6
-    s1 -->|"description_table_cells(normalized)"| s7
-    s7 -. "normalize_markdown(…).splitlines(data not statically known)" .-> s8
-    s7 -->|"normalize_markdown(markdown)"| s9
-    s7 -. "enumerate(lines)" .-> s10
-    s7 -->|"split_table_row(line)"| s11
-    s11 -. "line.strip(data not statically known)" .-> s12
+    s1 -->|"_markdown_lines(normalized)"| s5
+    s5 -. "re.findall('[^\\n]*\\n|[^\\n]+$', normalize_markdown(...))" .-> s6
+    s5 -->|"normalize_markdown(markdown)"| s7
+    s5 -->|"_line_content(line)"| s8
+    s8 -. "line.endswith('\n')" .-> s9
+    s1 -. "normalized.endswith('\n')" .-> s10
+    s1 -->|"description_table_cells(normalized)"| s11
+    s11 -->|"_markdown_lines(markdown)"| s12
     b0["mutation semantic_cells.sort"]
     s1 -. "mutation semantic_cells.sort" .-> b0
     b1["mutation cells.append"]
-    s7 -. "mutation cells.append" .-> b1
-    b2["mutation current.extend"]
-    s11 -. "mutation current.extend" .-> b2
-    b3["mutation current.append"]
-    s11 -. "mutation current.append" .-> b3
-    b4["mutation cells.append"]
-    s11 -. "mutation cells.append" .-> b4
-    b5["mutation current.append"]
-    s11 -. "mutation current.append" .-> b5
-    b6["mutation cells.append"]
-    s11 -. "mutation cells.append" .-> b6
+    s11 -. "mutation cells.append" .-> b1
     click s1 "../modules/markdown_sections.md"
     click s2 "../modules/markdown_sections.md"
+    click s5 "../modules/markdown_sections.md"
     click s7 "../modules/markdown_sections.md"
-    click s9 "../modules/markdown_sections.md"
+    click s8 "../modules/markdown_sections.md"
     click s11 "../modules/markdown_sections.md"
+    click s12 "../modules/markdown_sections.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
-    class b2 boundary
-    class b3 boundary
-    class b4 boundary
-    class b5 boundary
-    class b6 boundary
 ```
 
 ### Step data
@@ -155,54 +169,47 @@ flowchart LR
 | `normalize_markdown` | `text: str` | - | - | `...` |
 | `text.replace(…).replace` | - | - | - | - |
 | `text.replace` | - | - | - | - |
-| `normalized.splitlines` | - | - | - | - |
+| `_markdown_lines` | `markdown: str`, `keepends: bool` | - | - | `...` |
+| `re.findall` | - | - | - | - |
+| `normalize_markdown` | `text: str` | - | - | `...` |
+| `_line_content` | `line: str` | - | - | `...` |
+| `line.endswith` | - | - | - | - |
 | `normalized.endswith` | - | - | - | - |
 | `description_table_cells` | `markdown: str` | - | `occurrences[...]` | `tuple(...)`, `(...)` |
-| `normalize_markdown(…).splitlines` | - | - | - | - |
-| `normalize_markdown` | `text: str` | - | - | `...` |
-| `enumerate` | - | - | - | - |
-| `split_table_row` | `line: str` | - | - | `[...]`, `cells` |
-| `line.strip` | - | - | - | - |
+| `_markdown_lines` | `markdown: str`, `keepends: bool` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| mixed_table_projection | normalize_markdown | 605 | `normalize_markdown(section_markdown)` |
-| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| normalize_markdown | text.replace | 81 | `text.replace('\r\n', '\n')` |
-| mixed_table_projection | normalized.splitlines | 606 | `normalized.splitlines(data not statically known)` |
-| mixed_table_projection | normalized.endswith | 607 | `normalized.endswith('\n')` |
-| mixed_table_projection | description_table_cells | 608 | `description_table_cells(normalized)` |
-| description_table_cells | normalize_markdown(…).splitlines | 558 | `normalize_markdown(markdown).splitlines(data not statically known)` |
-| description_table_cells | normalize_markdown | 558 | `normalize_markdown(markdown)` |
-| description_table_cells | enumerate | 559 | `enumerate(lines)` |
-| description_table_cells | split_table_row | 560 | `split_table_row(line)` |
-| split_table_row | line.strip | 467 | `line.strip(data not statically known)` |
+| mixed_table_projection | normalize_markdown | 613 | `normalize_markdown(section_markdown)` |
+| normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |
+| mixed_table_projection | _markdown_lines | 614 | `_markdown_lines(normalized)` |
+| _markdown_lines | re.findall | 218 | `re.findall('[^\\n]*\\n\|[^\\n]+$', normalize_markdown(...))` |
+| _markdown_lines | normalize_markdown | 218 | `normalize_markdown(markdown)` |
+| _markdown_lines | _line_content | 219 | `_line_content(line)` |
+| _line_content | line.endswith | 212 | `line.endswith('\n')` |
+| mixed_table_projection | normalized.endswith | 615 | `normalized.endswith('\n')` |
+| mixed_table_projection | description_table_cells | 616 | `description_table_cells(normalized)` |
+| description_table_cells | _markdown_lines | 566 | `_markdown_lines(markdown)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `semantic_cells.sort` | `mixed_table_projection` | 629 |
-| mutation | `cells.append` | `description_table_cells` | 581 |
-| mutation | `current.extend` | `split_table_row` | 478 |
-| mutation | `current.append` | `split_table_row` | 486 |
-| mutation | `cells.append` | `split_table_row` | 494 |
-| mutation | `current.append` | `split_table_row` | 497 |
-| mutation | `cells.append` | `split_table_row` | 499 |
+| mutation | `semantic_cells.sort` | `mixed_table_projection` | 637 |
+| mutation | `cells.append` | `description_table_cells` | 589 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
-| unresolved_call | `normalize_markdown` | `text.replace` | 81 |
-| unresolved_call | `mixed_table_projection` | `normalized.splitlines` | 606 |
-| unresolved_call | `mixed_table_projection` | `normalized.endswith` | 607 |
-| unresolved_call | `description_table_cells` | `normalize_markdown(markdown).splitlines` | 558 |
-| external_call | `description_table_cells` | `enumerate` | 559 |
-| unresolved_call | `split_table_row` | `line.strip` | 467 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 82 |
+| unresolved_call | `normalize_markdown` | `text.replace` | 82 |
+| external_call | `_markdown_lines` | `re.findall` | 218 |
+| unresolved_call | `_line_content` | `line.endswith` | 212 |
+| unresolved_call | `mixed_table_projection` | `normalized.endswith` | 615 |
 | step_limit | `mixed_table_projection` | `first 12 steps` | 0 |
 
 ## Behavior

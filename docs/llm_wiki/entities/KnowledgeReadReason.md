@@ -1,6 +1,6 @@
 # KnowledgeReadReason
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:62`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:63`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -24,7 +24,7 @@ Stable cross-consumer reasons for knowledge availability.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

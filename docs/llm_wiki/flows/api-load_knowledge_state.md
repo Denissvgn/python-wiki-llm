@@ -2,11 +2,12 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 30 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -56,26 +57,26 @@ sequenceDiagram
     participant p6 as KnowledgeStateLoadError
     participant p7 as _absolute_path
     participant p8 as _read_artifact
-    participant p9 as load_adoption_marker
+    participant p9 as guard_incomplete_bootstrap
     participant p10 as validate_surface_index_bytes
-    participant p11 as SyncManifest.load
+    participant p11 as load_adoption_marker
     participant p12 as _issue_from_artifact_error
-    participant p13 as _current_markdown
-    participant p14 as _load_manifest
-    participant p15 as validate_knowledge_artifacts
-    participant p16 as _marker_issues
-    participant p17 as _live_governance_issues
-    participant p18 as _decode_json_object
-    participant p19 as _validate_surface_payload
-    participant p20 as _surface_page_index
-    participant p21 as hash_markdown_snapshot
-    participant p22 as load_governance
-    participant p23 as read_guarded
-    participant p24 as read_md
-    participant p25 as _require_validation_receipt
-    participant p26 as collect_wiki_pages
-    participant p27 as validate_maintenance_adoption
-    participant p28 as canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p13 as SyncManifest.load
+    participant p14 as _current_markdown
+    participant p15 as _load_manifest
+    participant p16 as validate_knowledge_artifacts
+    participant p17 as _marker_issues
+    participant p18 as _live_governance_issues
+    participant p19 as _decode_json_object
+    participant p20 as pending_bootstrap
+    participant p21 as _validate_surface_payload
+    participant p22 as _surface_page_index
+    participant p23 as hash_markdown_snapshot
+    participant p24 as load_governance
+    participant p25 as read_md
+    participant p26 as _require_validation_receipt
+    participant p27 as collect_wiki_pages
+    participant p28 as validate_maintenance_adoption
     participant p29 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
     participant p30 as issue.field.split
     p0->>p1: guard_maintenance_owner
@@ -86,33 +87,33 @@ sequenceDiagram
     p0->>p6: KnowledgeStateLoadError
     p1->>p7: _absolute_path
     p2->>p8: _read_artifact
-    p1->>p9: load_adoption_marker
+    p1->>p9: guard_incomplete_bootstrap
     p2->>p10: validate_surface_index_bytes
-    p1->>p11: SyncManifest.load
+    p1->>p11: load_adoption_marker
     p2->>p12: _issue_from_artifact_error
-    p2->>p13: _current_markdown
-    p2->>p14: _load_manifest
-    p2->>p15: validate_knowledge_artifacts
-    p2->>p16: _marker_issues
-    p2->>p17: _live_governance_issues
-    p10->>p18: _decode_json_object
-    p10->>p19: _validate_surface_payload
-    p10->>p20: _surface_page_index
-    p13->>p21: hash_markdown_snapshot
-    p17->>p22: load_governance
-    p9->>p23: read_guarded
-    p13->>p24: read_md
-    p15->>p25: _require_validation_receipt
-    p13->>p26: collect_wiki_pages
-    p9->>p27: validate_maintenance_adoption
-    p9->>p28: canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
+    p1->>p13: SyncManifest.load
+    p2->>p14: _current_markdown
+    p2->>p15: _load_manifest
+    p2->>p16: validate_knowledge_artifacts
+    p2->>p17: _marker_issues
+    p2->>p18: _live_governance_issues
+    p10->>p19: _decode_json_object
+    p9->>p20: pending_bootstrap
+    p10->>p21: _validate_surface_payload
+    p10->>p22: _surface_page_index
+    p14->>p23: hash_markdown_snapshot
+    p18->>p24: load_governance
+    p14->>p25: read_md
+    p16->>p26: _require_validation_receipt
+    p14->>p27: collect_wiki_pages
+    p11->>p28: validate_maintenance_adoption
     p0-->>p29: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)
     p0-->>p30: issue.field.split('.')
 ```
 
-> Call sequence diagram shows 30 of 1955 interactions; 1925 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1876 interactions; 1846 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 648 (647 omitted); unresolved 1 of 330 (329 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 590 (589 omitted); unresolved 1 of 322 (321 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +127,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 9 | - | external | 2 |
-> Omission summary shows 8 of 464 groups; 456 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 465 groups; 457 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,6 +135,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 965; effect analysis evaluated: 511, partial: 31, unavailable: 423. Counts include steps omitted from the displayed trace.
+
+Collector observations for 542 source steps with known totals: observed: 3065, emitted: 2805, omitted: 260. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_knowledge_state` | `available` | `partial` | `available` | `18` | `17` | `1` |
+| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeMismatchPolicy` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. load_knowledge_state"]
@@ -200,7 +229,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

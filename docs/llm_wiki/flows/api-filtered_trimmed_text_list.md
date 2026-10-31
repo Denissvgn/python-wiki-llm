@@ -31,6 +31,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. filtered_trimmed_text_list"]
@@ -65,25 +74,25 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| filtered_trimmed_text_list | isinstance | 974 | `isinstance(value, Sequence)` |
-| filtered_trimmed_text_list | isinstance | 974 | `isinstance(value, (...))` |
-| filtered_trimmed_text_list | sorted | 976 | `sorted(...)` |
-| filtered_trimmed_text_list | item.strip | 977 | `item.strip(data not statically known)` |
-| filtered_trimmed_text_list | isinstance | 977 | `isinstance(item, str)` |
-| filtered_trimmed_text_list | item.strip | 977 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | isinstance | 982 | `isinstance(value, Sequence)` |
+| filtered_trimmed_text_list | isinstance | 982 | `isinstance(value, (...))` |
+| filtered_trimmed_text_list | sorted | 984 | `sorted(...)` |
+| filtered_trimmed_text_list | item.strip | 985 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | isinstance | 985 | `isinstance(item, str)` |
+| filtered_trimmed_text_list | item.strip | 985 | `item.strip(data not statically known)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `filtered_trimmed_text_list` | `isinstance` | 974 |
-| external_call | `filtered_trimmed_text_list` | `sorted` | 976 |
-| unresolved_call | `filtered_trimmed_text_list` | `item.strip` | 977 |
-| external_call | `filtered_trimmed_text_list` | `isinstance` | 977 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 982 |
+| external_call | `filtered_trimmed_text_list` | `sorted` | 984 |
+| unresolved_call | `filtered_trimmed_text_list` | `item.strip` | 985 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 985 |
 
 ## Behavior
 

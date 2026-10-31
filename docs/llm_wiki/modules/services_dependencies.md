@@ -44,7 +44,7 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `.python_imports` | `is_python_source` |
 | `.python_stdlib` | `python_stdlib_module_names` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
-| `.validation` | `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
+| `.validation` | `nearest_path_scope`, `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `dataclasses` | `dataclass` |
@@ -91,9 +91,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ManifestScope](../entities/ManifestScope.md) | 771 | — | A scoped dependency manifest rooted at a project-relative directory. |
-| [_Manifest](../entities/Manifest.md) | 785 | — | A language's declared dependencies, parsed from its manifest. |
-| [_LanguagePlugin](../entities/LanguagePlugin.md) | 807 | — | A manifest parser + import classifier for one language family. |
+| [_ManifestScope](../entities/ManifestScope.md) | 793 | — | A scoped dependency manifest rooted at a project-relative directory. |
+| [_Manifest](../entities/Manifest.md) | 807 | — | A language's declared dependencies, parsed from its manifest. |
+| [_LanguagePlugin](../entities/LanguagePlugin.md) | 829 | — | A manifest parser + import classifier for one language family. |
 
 ## Functions
 
@@ -177,10 +177,10 @@ flowchart LR
 | `_path_under_scope` | `(filepath: str, scope_root: str) -> bool` | — | — |
 | `_nearest_manifest_scope` | `(manifest: Optional[_Manifest], filepath: str) -> Optional[_ManifestScope]` | — | — |
 | `_scope_label` | `(scope: Optional[_ManifestScope]) -> str \| None` | — | — |
-| `_scope_was_scanned` | `(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool` | — | Whether any extracted source file for this language sits under *scope*. |
 | `_scope_manifest_paths` | `(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]` | — | — |
 | `_owned_scope_sources` | `(root: Path, manifest: Path, language: str) -> list[Path]` | — | — |
 | `_explicit_missing_scope_source` | `(root: Path, manifests: list[Path], language: str, snapshot: SourceSnapshot) -> list[str]` | — | — |
+| `_source_scope_owners` | `(paths: tuple[str, ...], scope_roots: set[str]) -> dict[str, str \| None]` | — | — |
 | `describe_unscanned_scopes` | `(project_root: str \| Path, language: str, scopes: list[str], source_snapshot: SourceSnapshot \| None = None) -> list[dict[str, Any]]` | — | Explain existing skip records without changing reconciliation or discovery. |
 | `_reconcile_scoped_language` | `(used_packages: dict[str, list[str]], manifest: Optional[_Manifest], scanned_files: frozenset[str] = frozenset()) -> dict` | — | — |
 | `_python_internal_distribution_uses` | `(inventory: dict, _graph: dict, manifest: Optional[_Manifest]) -> dict[str, list[str]]` | — | — |
@@ -205,5 +205,6 @@ flowchart LR
 | `_scanned_files_by_language_key` | `(inventory: dict) -> dict[str, frozenset[str]]` | — | Group extracted file paths by the reconciler's canonical language key. |
 | `reconcile_dependencies` | `(inventory: dict, project_root: str = '.', *, graph: Optional[dict] = None, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Reconcile used external imports against declared dependencies per language. |
 | `analyze_dependencies` | `(inventory: dict, project_root: str = '.', *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Run the full dependency analysis once, sharing the internal graph. |
+| `startup_cycle_groups` | `(analysis: Mapping) -> list[tuple[list[str], bool]]` | — | Retain preserved subcycles alongside larger compiler-dependent groups. |
 | `top_level_package` | `(filepath: str) -> str` | — | Return the top-level package of *filepath* (its first path component). |
 | `package_dependency_graph` | `(graph: dict) -> dict` | — | Collapse a module graph to a top-level-package graph. |

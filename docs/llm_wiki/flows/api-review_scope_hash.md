@@ -107,6 +107,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 48; effect analysis evaluated: 28, partial: 0, unavailable: 20. Counts include steps omitted from the displayed trace.
+
+Collector observations for 28 source steps with known totals: observed: 115, emitted: 115, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `review_scope_hash` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_section_locator` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_cli/services…nance.py:_section_locator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.partition` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `validate_locator` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. review_scope_hash"]
@@ -163,29 +190,29 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | review_scope_hash | _section_locator | 1569 | `_section_locator(section_locator, 'section_locator')` |
-| _section_locator | isinstance (src/llm_wiki_cli/services…nance.py:_section_locator) | 3338 | `isinstance(value, str)` |
-| _section_locator | value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator) | 3339 | `value.startswith('llm-wiki://')` |
-| _section_locator | value.strip (src/llm_wiki_cli/services…nance.py:_section_locator) | 3342 | `value.strip(data not statically known)` |
-| _section_locator | GovernanceError | 3344 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
-| _section_locator | value.partition | 3348 | `value.partition('#section/')` |
-| _section_locator | GovernanceError | 3350 | `GovernanceError(path, 'must contain a section coordinate')` |
-| _section_locator | validate_locator | 3352 | `validate_locator(page_locator)` |
+| _section_locator | isinstance (src/llm_wiki_cli/services…nance.py:_section_locator) | 3452 | `isinstance(value, str)` |
+| _section_locator | value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator) | 3453 | `value.startswith('llm-wiki://')` |
+| _section_locator | value.strip (src/llm_wiki_cli/services…nance.py:_section_locator) | 3456 | `value.strip(data not statically known)` |
+| _section_locator | GovernanceError | 3458 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
+| _section_locator | value.partition | 3462 | `value.partition('#section/')` |
+| _section_locator | GovernanceError | 3464 | `GovernanceError(path, 'must contain a section coordinate')` |
+| _section_locator | validate_locator | 3466 | `validate_locator(page_locator)` |
 | validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_section_locator` | `isinstance` | 3338 |
-| unresolved_call | `_section_locator` | `value.startswith` | 3339 |
-| unresolved_call | `_section_locator` | `value.strip` | 3342 |
-| unresolved_call | `_section_locator` | `value.partition` | 3348 |
+| external_call | `_section_locator` | `isinstance` | 3452 |
+| unresolved_call | `_section_locator` | `value.startswith` | 3453 |
+| unresolved_call | `_section_locator` | `value.strip` | 3456 |
+| unresolved_call | `_section_locator` | `value.partition` | 3462 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `review_scope_hash` | `first 12 steps` | 0 |
 | truncated_flow | `review_scope_hash` | `depth limit` | 0 |

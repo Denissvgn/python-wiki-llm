@@ -24,7 +24,7 @@ _Auto-generated from `_KnowledgeLintState` in `src/llm_wiki_cli/services/lint_se
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

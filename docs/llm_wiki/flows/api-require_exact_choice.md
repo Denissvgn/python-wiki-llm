@@ -30,6 +30,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 8, emitted: 8, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. require_exact_choice"]
@@ -59,22 +68,22 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_exact_choice | require_string | 1092 | `require_string(value, error=error)` |
-| require_string | isinstance | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
-| require_exact_choice | frozenset | 1093 | `frozenset(choices)` |
+| require_exact_choice | require_string | 1100 | `require_string(value, error=error)` |
+| require_string | isinstance | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
+| require_exact_choice | frozenset | 1101 | `frozenset(choices)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
-| external_call | `require_exact_choice` | `frozenset` | 1093 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
+| external_call | `require_exact_choice` | `frozenset` | 1101 |
 
 ## Behavior
 

@@ -235,6 +235,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         try:
             implementation = implementation_hash(root, rules["providers"][owner])
             helper = ""
+            dependencies = {}
             portable_helper = False
             if owner not in {"python", "infrastructure"}:
                 helper_root = extractor_helpers.resolve_helper_cache_root(source_root, helper_cache_dir)
@@ -243,6 +244,15 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                     continue
                 helper = prepared["toolchain"]
                 if owner == "typescript":
+                    artifact = prepared.get("artifact_fingerprint")
+                    if (prepared.get("artifact_scope") != extractor_helpers.ts_identity.ARTIFACT_SCOPE
+                            or not isinstance(artifact, str)
+                            or re.fullmatch(r"sha256:[0-9a-f]{64}", artifact) is None):
+                        continue
+                    dependencies["helper_artifact"] = {
+                        "scope": prepared["artifact_scope"],
+                        "fingerprint": artifact,
+                    }
                     active_node = extractor_helpers.command_output(["node", "--version"])
                     if not active_node or re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+].+)?", active_node) is None:
                         continue
@@ -252,7 +262,6 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                         and sys.platform in rules.get("portable_helper_platforms", {}).get(owner, [])
                     )
                     helper += "; active-node " + active_node
-            dependencies = {}
             if owner == "infrastructure":
                 from importlib.metadata import version
                 dependencies["PyYAML"] = version("PyYAML")

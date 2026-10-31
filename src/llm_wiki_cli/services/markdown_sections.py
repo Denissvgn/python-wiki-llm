@@ -46,6 +46,7 @@ GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING = (
 GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING = (
     "HTTP API contracts <!-- llm-wiki-generated:index:http-api-contracts -->"
 )
+GENERATED_OVERLOADS_HEADING = "Overloads <!-- llm-wiki-generated:overloads -->"
 
 _ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$")
 _FENCE_OPEN_RE = re.compile(r"^ {0,3}((?:`{3,})|(?:~{3,}))(.*)$")
@@ -211,6 +212,13 @@ def _line_content(line: str) -> str:
     return line[:-1] if line.endswith("\n") else line
 
 
+def _markdown_lines(markdown: str, *, keepends: bool = False) -> list[str]:
+    """Split CommonMark lines without treating Unicode content as line breaks."""
+
+    lines = re.findall(r"[^\n]*\n|[^\n]+$", normalize_markdown(markdown))
+    return lines if keepends else [_line_content(line) for line in lines]
+
+
 def _frontmatter_extent(lines: list[str]) -> int:
     """Return the number of leading frontmatter lines to mask.
 
@@ -248,7 +256,7 @@ def _atx_heading(line: str) -> tuple[int, str] | None:
 def _iter_structural_headings(markdown: str) -> Iterable[tuple[int, str, int, int]]:
     """Yield ``(level, title, start, body_start)`` outside masked constructs."""
 
-    lines = markdown.splitlines(keepends=True)
+    lines = _markdown_lines(markdown, keepends=True)
     frontmatter_lines = _frontmatter_extent(lines)
     offset = 0
     fence_character: str | None = None
@@ -555,7 +563,7 @@ def should_preserve_semantic_value(
 def description_table_cells(markdown: str) -> tuple[TableDescriptionCell, ...]:
     """Return first-table Description cells with duplicate occurrences intact."""
 
-    lines = normalize_markdown(markdown).splitlines()
+    lines = _markdown_lines(markdown)
     for index, line in enumerate(lines):
         headers = split_table_row(line)
         if not headers or "Description" not in headers:
@@ -603,7 +611,7 @@ def mixed_table_projection(section_markdown: str) -> MixedTableProjection:
     """
 
     normalized = normalize_markdown(section_markdown)
-    lines = normalized.splitlines()
+    lines = _markdown_lines(normalized)
     trailing_newline = normalized.endswith("\n")
     cells = description_table_cells(normalized)
     structural_lines = list(lines)
@@ -692,7 +700,7 @@ def trim_blank_lines(lines: list[str]) -> list[str]:
 def section_body(markdown: str, heading: str) -> str | None:
     """Return the trimmed body of the first historical level-two section."""
 
-    lines = normalize_markdown(markdown).splitlines()
+    lines = _markdown_lines(markdown)
     bounds = section_bounds(lines, heading)
     if bounds is None:
         return None
@@ -703,12 +711,12 @@ def section_body(markdown: str, heading: str) -> str | None:
 def replace_section_body(markdown: str, heading: str, body: str) -> str:
     """Replace the first historical level-two body byte-compatibly."""
 
-    lines = normalize_markdown(markdown).splitlines()
+    lines = _markdown_lines(markdown)
     bounds = section_bounds(lines, heading)
     if bounds is None:
         return markdown
     heading_index, _, end = bounds
-    replacement = [""] + body.splitlines() + [""]
+    replacement = [""] + _markdown_lines(body) + [""]
     return "\n".join(lines[: heading_index + 1] + replacement + lines[end:])
 
 
@@ -800,7 +808,7 @@ def preserve_index_custom_sections(old_markdown: str, new_markdown: str) -> str:
     deliberately permissive legacy parsing keeps existing output bytes stable.
     """
 
-    old_lines = normalize_markdown(old_markdown).splitlines()
+    old_lines = _markdown_lines(old_markdown)
     custom_sections = [
         (heading, body)
         for heading, body in _legacy_level_two_sections(old_lines)
@@ -814,7 +822,7 @@ def preserve_index_custom_sections(old_markdown: str, new_markdown: str) -> str:
     if not preserved:
         return new_markdown
 
-    lines = normalize_markdown(new_markdown).splitlines()
+    lines = _markdown_lines(new_markdown)
     while lines and lines[-1].strip() == "":
         lines.pop()
     lines.append("")
@@ -829,7 +837,7 @@ def preserve_index_custom_sections(old_markdown: str, new_markdown: str) -> str:
 def table_description_cells(markdown: str, heading: str) -> dict[str, str]:
     """Return the historical duplicate-collapsing Description mapping."""
 
-    lines = normalize_markdown(markdown).splitlines()
+    lines = _markdown_lines(markdown)
     bounds = section_bounds(lines, heading)
     if bounds is None:
         return {}
@@ -874,7 +882,7 @@ def preserve_table_description_cells(
     if not descriptions:
         return markdown, 0
     predicate = should_preserve or should_preserve_semantic_value
-    lines = normalize_markdown(markdown).splitlines()
+    lines = _markdown_lines(markdown)
     bounds = section_bounds(lines, heading)
     if bounds is None:
         return markdown, 0

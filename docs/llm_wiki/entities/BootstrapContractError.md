@@ -15,7 +15,7 @@ Raised when bootstrap input or generated contracts are invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

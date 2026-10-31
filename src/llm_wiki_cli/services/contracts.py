@@ -7,6 +7,25 @@ versioned ``data_flow_details`` sibling because older payloads and non-Python
 extractors may not emit them. A schema version bump is reserved for
 incompatible shape changes to existing fields.
 
+Static flow results may add ``analysis`` (``llm-wiki-callable-effect-coverage/v1``)
+and per-step qualifications for callable records, source effect observations,
+and collector totals. Flow assembly can be evaluated while effect analysis is
+partial or unavailable. Observation counts describe captured static evidence;
+unavailable collectors cannot establish that a handler body has no effects.
+Known collector omissions qualify effect coverage as partial. Additive
+``collector_counts`` and ``collector_observations`` retain observed, emitted,
+and omitted counts for source steps with available totals; unknown counts
+remain null and are excluded from the known subtotal.
+
+Dockerfile records may add ``stage_schema_version`` (``llm-wiki-dockerfile-stages/v1``).
+Each stage owns its source declarations and ordered ``instructions`` with source
+lines. ``base_stage`` links an earlier named FROM stage; COPY --from does not
+imply configuration inheritance. ``configuration_scope`` qualifies flat
+configuration fields as final-stage declarations, rather than effective image
+defaults. Aggregate COPY/ARG records retain their stage index (or null for
+global ARG) and line, while ``global_build_args`` exposes pre-FROM declarations.
+No external base-image inspection or build-argument evaluation is performed.
+
 Dependency/load-order architecture decisions also stay additive under the
 current extract contract: deep Python inventory may include ``data_effects`` on
 function entries, including bounded ``boundary_effects`` for filesystem,
@@ -16,6 +35,18 @@ Python ``if __name__ == "__main__"`` guard; and ``extract --deep`` may include
 a top-level ``data_flows`` list plus a top-level ``dependencies`` block.
 The dependency block may contain versioned ``version_details`` records; its
 legacy per-language ``versions`` map remains unchanged.
+TypeScript imports may add ``type_only`` and ``type_only_declaration`` booleans
+and ``runtime`` (``erased``, ``conditional``, or ``present``). A type-only
+specifier erases its binding, but its statement can retain module evaluation.
+Only guaranteed-erased declarations are excluded from startup constraints;
+ordinary binding imports remain conditional on compiler emission. Dependency
+projections may add possible startup ``import_time_edges``, ``type_only_edges``, ``conditional_import_time_edges``,
+``type_cycles``, ``preserved_cycles``, and ``conditional_cycles`` without changing
+coupling ``edges`` or the possible startup SCCs in ``cycles``. Preserved cycles
+remain explicit even when compiler-dependent edges enlarge their components.
+An optional import ``scope`` is a string. Malformed scope metadata cannot
+establish known structural evidence; an unclassified scope does not prove that
+an import is deferred or erased.
 Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in
 dependency analysis, and uses the curated import-to-distribution aliases there
@@ -284,5 +315,13 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].methods[].source_file",
     "main_block_calls",
     "params[].kind",
+    "params[].optional",
+    "params[].rest",
+    "functions[].type_params",
+    "functions[].overloads",
+    "classes[].methods[].type_params",
+    "classes[].methods[].overloads",
+    "classes[].target_truncated",
+    "classes[].target_sha256",
     "api_contracts",
 }

@@ -23,7 +23,7 @@ _Auto-generated from `MaintenanceAcknowledgmentResult` in `src/llm_wiki_cli/api_
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

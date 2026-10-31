@@ -84,6 +84,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 16; effect analysis evaluated: 5, partial: 0, unavailable: 11. Counts include steps omitted from the displayed trace.
+
+Collector observations for 5 source steps with known totals: observed: 25, emitted: 25, omitted: 0. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verify` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `build_verification_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `all` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `run_verification` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+
 ```mermaid
 flowchart LR
     s1["1. verify"]
@@ -138,31 +165,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verify | build_verification_receipt | 770 | `build_verification_receipt(context, run_verification(...))` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 731 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError (src/llm_wiki_cli/services…build_verification_receipt) | 732 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple (src/llm_wiki_cli/services…build_verification_receipt) | 733 | `tuple(checks)` |
-| build_verification_receipt | VerificationContractError | 735 | `VerificationContractError('checks must not be empty')` |
-| build_verification_receipt | any | 736 | `any(...)` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 737 | `isinstance(check, VerificationCheckResult)` |
-| build_verification_receipt | VerificationContractError | 740 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
-| build_verification_receipt | all | 745 | `all(...)` |
-| build_verification_receipt | VerificationReceipt | 751 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
-| verify | run_verification | 772 | `run_verification(context, checker_ids)` |
+| verify | build_verification_receipt | 799 | `build_verification_receipt(context, run_verification(...))` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 760 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError (src/llm_wiki_cli/services…build_verification_receipt) | 761 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple (src/llm_wiki_cli/services…build_verification_receipt) | 762 | `tuple(checks)` |
+| build_verification_receipt | VerificationContractError | 764 | `VerificationContractError('checks must not be empty')` |
+| build_verification_receipt | any | 765 | `any(...)` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 766 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | VerificationContractError | 769 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
+| build_verification_receipt | all | 774 | `all(...)` |
+| build_verification_receipt | VerificationReceipt | 780 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
+| verify | run_verification | 801 | `run_verification(context, checker_ids)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_verification_receipt` | `isinstance` | 731 |
-| external_call | `build_verification_receipt` | `TypeError` | 732 |
-| external_call | `build_verification_receipt` | `any` | 736 |
-| external_call | `build_verification_receipt` | `isinstance` | 737 |
-| external_call | `build_verification_receipt` | `all` | 745 |
+| external_call | `build_verification_receipt` | `isinstance` | 760 |
+| external_call | `build_verification_receipt` | `TypeError` | 761 |
+| external_call | `build_verification_receipt` | `any` | 765 |
+| external_call | `build_verification_receipt` | `isinstance` | 766 |
+| external_call | `build_verification_receipt` | `all` | 774 |
 | step_limit | `verify` | `first 12 steps` | 0 |
 
 ## Behavior

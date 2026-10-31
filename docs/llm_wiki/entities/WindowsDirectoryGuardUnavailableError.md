@@ -15,7 +15,7 @@ Raised when Windows denies access required to pin a directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

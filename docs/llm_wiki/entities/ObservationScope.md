@@ -21,7 +21,7 @@ _Auto-generated from `ObservationScope` in `src/llm_wiki_cli/services/knowledge_
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

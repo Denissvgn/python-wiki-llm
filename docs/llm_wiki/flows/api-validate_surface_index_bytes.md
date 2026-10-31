@@ -98,6 +98,34 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 174; effect analysis evaluated: 76, partial: 4, unavailable: 94. Counts include steps omitted from the displayed trace.
+
+Collector observations for 80 source steps with known totals: observed: 321, emitted: 308, omitted: 13. Unavailable totals are excluded.
+
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `validate_surface_index_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_decode_json_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_unique_json_object` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_reject_json_constant` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+
 ```mermaid
 flowchart LR
     s1["1. validate_surface_index_bytes"]
@@ -154,30 +182,30 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_surface_index_bytes | _decode_json_object | 263 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 930 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 931 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 933 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 935 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads | 937 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 939 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 958 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 940 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 964 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 943 | `isinstance(exc, KnowledgeArtifactError)` |
+| validate_surface_index_bytes | _decode_json_object | 271 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 942 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 943 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 945 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 947 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads | 949 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 951 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 970 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 952 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 976 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 955 | `isinstance(exc, KnowledgeArtifactError)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 930 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 933 |
-| external_call | `_decode_json_object` | `json.loads` | 937 |
-| external_call | `_decode_json_object` | `isinstance` | 943 |
+| external_call | `_decode_json_object` | `isinstance` | 942 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 945 |
+| external_call | `_decode_json_object` | `json.loads` | 949 |
+| external_call | `_decode_json_object` | `isinstance` | 955 |
 | step_limit | `validate_surface_index_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `validate_surface_index_bytes` | `depth limit` | 0 |
 

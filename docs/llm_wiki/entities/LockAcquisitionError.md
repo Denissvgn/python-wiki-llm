@@ -15,7 +15,7 @@ Raised when the wiki lock cannot be acquired (another sync is running).
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

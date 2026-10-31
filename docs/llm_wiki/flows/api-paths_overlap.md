@@ -27,6 +27,15 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 11, emitted: 11, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. paths_overlap"]
@@ -54,19 +63,19 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| paths_overlap | path_is_within | 490 | `path_is_within(left, right)` |
-| path_is_within | path.relative_to | 481 | `path.relative_to(root)` |
-| paths_overlap | path_is_within | 490 | `path_is_within(right, left)` |
+| paths_overlap | path_is_within | 498 | `path_is_within(left, right)` |
+| path_is_within | path.relative_to | 489 | `path.relative_to(root)` |
+| paths_overlap | path_is_within | 498 | `path_is_within(right, left)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_within` | `path.relative_to` | 481 |
+| unresolved_call | `path_is_within` | `path.relative_to` | 489 |
 
 ## Behavior
 

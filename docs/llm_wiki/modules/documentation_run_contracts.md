@@ -6,6 +6,12 @@
 
 Persisted contracts for documentation runs.
 
+Ownership coverage is a fixed declaration of the existing root-file and
+generated-section inventory. It names ordinary authority markers and immutable
+storage omitted from byte fingerprints and root rollback, without probing
+their presence or declaring them valid. Role disclosure does not expand worker
+permissions, the five rollback roots or the four refresh-mutable roots.
+
 ## Imports
 
 | Source | Symbols |
@@ -126,26 +132,27 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationRunError](../entities/DocumentationRunError.md) | 235 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
-| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 239 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
-| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 243 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
-| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 247 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
-| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 251 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
-| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 259 | — | — |
-| [DocumentationRun](../entities/DocumentationRun.md) | 565 | — | — |
-| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 714 | — | — |
-| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 741 | — | — |
-| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 763 | — | — |
-| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 892 | — | — |
-| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 914 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
-| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 925 | — | Tracks an archived run until its replacement is safely committed. |
-| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 939 | — | Captured controller state for refresh plus evidence reconciliation. |
-| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 949 | — | Tracks a pristine workspace root until initial preparation commits. |
+| [DocumentationRunError](../entities/DocumentationRunError.md) | 295 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
+| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 299 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
+| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 303 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
+| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 307 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
+| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 311 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
+| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 319 | — | — |
+| [DocumentationRun](../entities/DocumentationRun.md) | 625 | — | — |
+| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 774 | — | — |
+| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 801 | — | — |
+| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 823 | — | — |
+| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 952 | — | — |
+| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 974 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
+| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 985 | — | Tracks an archived run until its replacement is safely committed. |
+| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 999 | — | Captured controller state for refresh plus evidence reconciliation. |
+| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 1009 | — | Tracks a pristine workspace root until initial preparation commits. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_native_ownership_coverage` | `() -> dict[str, Any]` | — | Describe the fixed inventory scope without inspecting or granting custody. |
 | `workspace_paths` | `() -> dict[str, str]` | — | — |
 | `_optional_text` | `(value: Any) -> str \| None` | — | — |
 | `_next_actions` | `(run: DocumentationRun) -> tuple[str, ...]` | — | — |

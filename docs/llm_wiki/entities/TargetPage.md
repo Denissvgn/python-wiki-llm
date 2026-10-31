@@ -25,7 +25,7 @@ A canonical page generated from the current source inventory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
