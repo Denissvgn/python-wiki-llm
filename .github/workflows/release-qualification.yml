@@ -719,6 +719,8 @@ jobs:
     needs: freeze
     runs-on: windows-2025
     timeout-minutes: 360
+    outputs:
+      python-version: ${{ steps.python.outputs.python-version }}
     defaults:
       run:
         shell: bash
@@ -738,6 +740,7 @@ jobs:
           path: incoming/tools
 
       - name: Set up Python 3.13
+        id: python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
@@ -819,10 +822,10 @@ jobs:
           name: qualification-harnesses
           path: incoming/tools
 
-      - name: Set up Python 3.13
+      - name: Set up the collected Windows Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: "3.13"
+          python-version: ${{ needs.core-windows-plan.outputs.python-version }}
 
       - name: Verify and extract qualification harnesses
         env:
@@ -923,10 +926,10 @@ jobs:
           name: qualification-harnesses
           path: incoming/tools
 
-      - name: Set up Python 3.13
+      - name: Set up Windows Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: "3.13"
+          python-version: ${{ needs.core-windows-plan.outputs.python-version || '3.13' }}
 
       - name: Verify and extract qualification harnesses
         env:

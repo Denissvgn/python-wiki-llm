@@ -193,6 +193,20 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
     )
     assert jobs["core"]["needs"] == "freeze"
     assert jobs["core-windows-plan"]["needs"] == "freeze"
+    assert jobs["core-windows-plan"]["outputs"]["python-version"] == (
+        "${{ steps.python.outputs.python-version }}"
+    )
+    planner_python = next(
+        step
+        for step in jobs["core-windows-plan"]["steps"]
+        if step.get("uses", "").startswith("actions/setup-python@")
+    )
+    assert planner_python["id"] == "python"
+    python_versions = {
+        "core-windows-plan": "3.13",
+        "core-windows-shards": "${{ needs.core-windows-plan.outputs.python-version }}",
+        "core-windows": "${{ needs.core-windows-plan.outputs.python-version || '3.13' }}",
+    }
     assert jobs["core-windows-shards"]["strategy"] == {
         "fail-fast": False,
         "max-parallel": 2,
@@ -217,7 +231,8 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
         assert job["defaults"]["run"]["shell"] == "bash"
         steps = job["steps"]
         assert any(
-            step.get("with", {}).get("python-version") == "3.13" for step in steps
+            step.get("with", {}).get("python-version") == python_versions[name]
+            for step in steps
         )
         assert any("create-venv" in step.get("run", "") for step in steps)
         assert not any(step.get("continue-on-error", False) for step in steps)
