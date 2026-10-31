@@ -62,5 +62,5 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `classify_wiki_git_policy` | `(wiki_dir: str \| Path, *, cwd: Path \| None = None, timeout: float = _DEFAULT_TIMEOUT_SECONDS) -> WikiGitPolicy` | — | Classify the configured wiki path using the effective Git ignore rules. |
 | `_indeterminate` | `(reason: str, *, repository_root: Path \| None = None, wiki_path: str \| None = None) -> WikiGitPolicy` | — | — |
-| `_git_environment` | `() -> dict[str, str]` | — | Keep effective exclude configuration without repository/index redirection. |
+| `_git_environment` | `(*, preserve_index: bool = False) -> dict[str, str]` | — | Keep exclude policy and, for staged reads, Git's active index only. |
 | `_run_git` | `(root: Path, *arguments: str, timeout: float) -> _GitResult` | — | — |

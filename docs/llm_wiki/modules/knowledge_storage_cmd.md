@@ -58,6 +58,7 @@ flowchart LR
     n7 --> n5
     n8 --> n3
     n8 --> n4
+    n8 --> n5
     n8 --> n6
     click n0 "../modules/knowledge_cmd.md"
     click n1 "../modules/knowledge_storage_cmd.md"

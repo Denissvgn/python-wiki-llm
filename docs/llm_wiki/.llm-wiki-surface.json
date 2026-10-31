@@ -25109,7 +25109,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4600,
+          "step_count": 4616,
           "truncated": true
         }
       },
@@ -33023,7 +33023,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/secure_file.py"
           ],
-          "step_count": 1380,
+          "step_count": 1386,
           "truncated": true
         }
       },
@@ -33675,7 +33675,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4600,
+          "step_count": 4616,
           "truncated": true
         }
       },
@@ -53650,10 +53650,13 @@
       "mcp_uri": "llm-wiki://modules/wiki_git_delivery",
       "outgoing_internal_links": [
         "modules/io.md",
+        "modules/knowledge_governance.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_cmd.md",
         "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md",
+        "modules/maintenance_protocol.md",
         "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md"
       ],
@@ -55583,6 +55586,7 @@
       "mcp_uri": "llm-wiki://workflows/inspect_wiki_git_delivery",
       "outgoing_internal_links": [
         "modules/knowledge_storage.md",
+        "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md",
         "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md"
@@ -68339,5 +68343,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:98df2cac166087c6817e89dd21113c9caaa2701b5299b960b45a33b5ef4aa96e"
+  "source_hash": "sha256:bbc1285eaa51b4239c64351da3d814acddae4cc58e5d9296b8af01022d8353a3"
 }
