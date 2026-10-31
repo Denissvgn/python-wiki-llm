@@ -16,6 +16,30 @@ def workflow(name):
     return yaml.safe_load((ROOT / ".github/workflows" / name).read_text())
 
 
+def test_single_native_artifact_is_downloaded_into_its_named_lane_directory():
+    steps = workflow("ci.yml")["jobs"]["complete"]["steps"]
+    downloads = [
+        step for step in steps
+        if "actions/download-artifact@" in step.get("uses", "")
+        and step["with"]["path"].startswith("incoming/tests")
+    ]
+    # The action flattens one match even with merge-multiple=false. The gate
+    # needs the lane directory for replay of the bound result, collection/XML.
+    assert len(downloads) == 2
+    single = next(step for step in downloads if "name" in step["with"])
+    multiple = next(step for step in downloads if "pattern" in step["with"])
+    assert "include[1] == null" in single["if"]
+    assert "include[1] != null" in multiple["if"]
+    assert "needs.plan.outputs.has-tests == 'true'" in single["if"]
+    assert "needs.plan.outputs.has-tests == 'true'" in multiple["if"]
+    assert single["with"]["path"] == "incoming/tests/" + single["with"]["name"]
+    assert "include[0].lane" in single["with"]["name"]
+    assert "github.run_attempt" in single["with"]["name"]
+    assert multiple["with"]["path"] == "incoming/tests"
+    assert multiple["with"]["pattern"] == "pr-ci-tests-*-${{ github.run_attempt }}"
+    assert all(step["with"]["digest-mismatch"] == "error" for step in downloads)
+
+
 def test_selected_native_diagnostics_have_an_explicit_language_scope():
     env = workflow("ci.yml")["jobs"]["test"]["env"]
     assert env["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "${{ (matrix.lane == 'toolchains' || matrix.typescript) && '1' || '' }}"
