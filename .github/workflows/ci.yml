@@ -671,8 +671,16 @@ jobs:
         name: pr-ci-plan-${{ github.run_attempt }}
         path: incoming/pr-ci
         digest-mismatch: error
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      if: ${{ needs.plan.outputs.has-tests == 'true' }}
+    - name: Download the single selected native lane
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      if: ${{ needs.plan.outputs.has-tests == 'true' && fromJSON(needs.plan.outputs.matrix).include[1] == null }}
+      with:
+        name: pr-ci-tests-${{ fromJSON(needs.plan.outputs.matrix).include[0].lane }}-${{ github.run_attempt }}
+        path: incoming/tests/pr-ci-tests-${{ fromJSON(needs.plan.outputs.matrix).include[0].lane }}-${{ github.run_attempt }}
+        digest-mismatch: error
+    - name: Download multiple selected native lanes
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      if: ${{ needs.plan.outputs.has-tests == 'true' && fromJSON(needs.plan.outputs.matrix).include[1] != null }}
       with:
         pattern: pr-ci-tests-*-${{ github.run_attempt }}
         path: incoming/tests
