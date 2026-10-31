@@ -12,6 +12,9 @@ from .io import decode_markdown_bytes
 from .knowledge_storage import KnowledgeStorageError
 from .knowledge_storage_diagnostics import _git
 from .knowledge_storage_lifecycle import _committed_inputs
+from .knowledge_storage_io import _absolute_path
+from .knowledge_governance import GOVERNANCE_FILENAME
+from .maintenance_protocol import ADOPTION_FILENAME
 from .wiki_git_policy import _git_environment, classify_wiki_git_policy
 
 MAX_DELIVERY_FILES = 20_000
@@ -33,7 +36,7 @@ def _command(
         arguments,
         input_bytes=data,
         maximum=maximum,
-        environment=_git_environment(),
+        environment=_git_environment(preserve_index=True),
     )
 
 
@@ -138,7 +141,22 @@ def _blobs(root: Path, identities: set[bytes]) -> dict[bytes, bytes]:
     return result
 
 
-def _staged(root: Path, expected: Mapping[str, bytes], markdown: set[str]):
+def _require_absent_authority(root: Path, paths: set[str]) -> None:
+    for path in paths:
+        try:
+            (root / path).lstat()
+        except FileNotFoundError:
+            continue
+        raise KnowledgeStorageError(
+            "authority",
+            "native authority appeared during inspection",
+            code="git-delivery-mutation",
+        )
+
+
+def _staged(
+    root: Path, expected: Mapping[str, bytes], markdown: set[str], absent: set[str]
+):
     code, partial = _command(
         root,
         [
@@ -156,6 +174,7 @@ def _staged(root: Path, expected: Mapping[str, bytes], markdown: set[str]):
             code="git-delivery-indeterminate",
         )
     before, entries = _index(root)
+    unexpected = sorted(path for path in absent if path.encode("utf-8") in entries)
     selected = {}
     missing, mismatched = [], []
     for path in expected:
@@ -183,11 +202,13 @@ def _staged(root: Path, expected: Mapping[str, bytes], markdown: set[str]):
         if not same:
             mismatched.append(path)
     return before, {
-        "status": "incomplete" if missing or mismatched else "complete",
+        "status": "incomplete" if missing or mismatched or unexpected else "complete",
         "missing": len(missing),
         "mismatched": len(mismatched),
         "missing_samples": sorted(missing)[:SAMPLE_LIMIT],
         "mismatched_samples": sorted(mismatched)[:SAMPLE_LIMIT],
+        "unexpected": len(unexpected),
+        "unexpected_samples": unexpected[:SAMPLE_LIMIT],
     }
 
 
@@ -218,14 +239,14 @@ def inspect_wiki_git_delivery(
         "ok": False,
     }
     try:
-        policy = classify_wiki_git_policy(wiki_dir)
+        root = _absolute_path(Path(wiki_dir))
+        policy = classify_wiki_git_policy(root)
         if policy.repository_root is None or policy.wiki_path is None:
             result["reason"] = policy.reason
             if staged:
                 result["staged"] = {"status": "indeterminate"}
             return result
         repository = policy.repository_root
-        root = repository / policy.wiki_path
         state, session, _ = _committed_inputs(root)
         assert state.knowledge is not None and state.surface is not None
         markdown = {
@@ -248,6 +269,12 @@ def inspect_wiki_git_delivery(
             (prefix / relative).as_posix(): row.content
             for relative, row in session.observations.items()
         }
+        absent = {
+            (prefix / name).as_posix()
+            for name in (ADOPTION_FILENAME, GOVERNANCE_FILENAME)
+            if name not in session.observations
+        }
+        _require_absent_authority(repository, absent)
         markdown = {(prefix / relative).as_posix() for relative in markdown}
         paths = sorted(expected)
         ignored = _ignored(repository, paths)
@@ -269,11 +296,12 @@ def inspect_wiki_git_delivery(
         )
         index_before = None
         if staged:
-            index_before, result["staged"] = _staged(repository, expected, markdown)
+            index_before, result["staged"] = _staged(
+                repository, expected, markdown, absent
+            )
             result["ok"] = (
                 delivery == "git-eligible" and result["staged"]["status"] == "complete"
             )
-        session.recheck()
         if ignored != _ignored(repository, paths) or (
             staged and index_before != _index(repository)[0]
         ):
@@ -282,6 +310,8 @@ def inspect_wiki_git_delivery(
                 "Git policy or index changed during inspection",
                 code="git-delivery-mutation",
             )
+        session.recheck()
+        _require_absent_authority(repository, absent)
         return result
     except (OSError, ValueError, UnicodeError, RuntimeError) as exc:
         result.update(

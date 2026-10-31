@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native wiki Git-delivery checks follow temporary staging indexes and preserve
+  authority absence, path safety and request-time mutation checks.
+
 - TypeScript reference pages preserve optional/rest parameters, generics, alias
   expressions and interface identity.
 - Explicit type-only TypeScript imports remain type dependencies and no longer

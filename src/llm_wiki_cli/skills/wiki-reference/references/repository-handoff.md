@@ -59,6 +59,9 @@ route. The check neither changes ignore policy nor chooses another storage forma
 
 Repeat immediately before handoff. After separately authorized staging, use
 `--staged` to require every required file in the index with current content.
+The active Git index is checked, including temporary indexes for partial
+commits. Staged authority files must match the validated snapshot's presence
+or absence of governance and maintenance adoption.
 Native commitments and binary objects must match exactly; Markdown line-ending
 normalization is accepted. Missing, unmerged, filtered or mismatched staged
 content fails the gate; unavailable object databases are indeterminate.

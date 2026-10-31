@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 
@@ -12,12 +13,24 @@ import pytest
 from llm_wiki_cli.cli import main
 from llm_wiki_cli.services import wiki_git_delivery as delivery
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_cli.services.knowledge_loader import (
+    KnowledgeStateLoadError,
+    load_knowledge_state,
+)
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
+from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_cli.services.paths import shell_quote
 from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.wiki_git_policy import (
     classify_wiki_git_policy,
     WikiGitDisposition,
 )
-from tests.test_snapshot_query_validation import STORAGE_FORMATS, _history_snapshot
+from tests.test_snapshot_query_validation import (
+    STORAGE_FORMATS,
+    _committed_snapshot,
+    _history_snapshot,
+)
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 
 
@@ -312,3 +325,196 @@ def test_linked_worktree_with_spaces_delivers_its_own_index(tmp_path, monkeypatc
     git(root, "worktree", "add", "--detach", str(linked), "HEAD")
     monkeypatch.chdir(linked)
     assert delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)["ok"]
+
+
+def test_staged_gate_checks_the_active_alternate_index(tmp_path, monkeypatch):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    alternate = tmp_path / "commit-index"
+    subprocess.run(
+        ["git", "-C", str(root), "read-tree", "--empty"],
+        env={**os.environ, "GIT_INDEX_FILE": str(alternate)},
+        check=True,
+    )
+    monkeypatch.setenv("GIT_INDEX_FILE", str(alternate))
+    before = hashes(root), alternate.read_bytes()
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["staged"]["status"] == "incomplete"
+    assert result["staged"]["missing"] == result["required_files"]
+    assert (hashes(root), alternate.read_bytes()) == before
+    # The inverse must also work: Git's active index is complete while the
+    # repository's ordinary index is empty.
+    git(root, "add", "--", "wiki")
+    canonical = root / ".git" / "index"
+    canonical.unlink()
+    assert delivery.inspect_wiki_git_delivery(wiki, staged=True)["ok"]
+    assert not canonical.exists()
+
+
+def test_relative_active_index_is_resolved_from_the_callers_directory(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    nested = root / "nested"
+    nested.mkdir()
+    alternate = nested / "commit-index"
+    subprocess.run(
+        ["git", "-C", str(root), "read-tree", "--empty"],
+        env={**os.environ, "GIT_INDEX_FILE": str(alternate)},
+        check=True,
+    )
+    monkeypatch.chdir(nested)
+    monkeypatch.setenv("GIT_INDEX_FILE", "commit-index")
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["staged"]["missing"] == result["required_files"]
+
+
+def test_partial_commit_hook_snapshot_cannot_borrow_the_normal_index(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    hooks = tmp_path / "hooks"
+    hooks.mkdir()
+    captured = tmp_path / "prospective-index"
+    hook = hooks / "pre-commit"
+    hook.write_text(
+        '#!/bin/sh\ncp -- "$GIT_INDEX_FILE" '
+        + shell_quote(str(captured))
+        + "\nexit 1\n"
+    )
+    hook.chmod(0o755)
+    git(root, "config", "core.hooksPath", str(hooks))
+    commit = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "commit",
+            "--only",
+            "-qm",
+            "Partial",
+            "--",
+            "wiki/index.md",
+        ],
+        capture_output=True,
+    )
+    assert commit.returncode != 0 and captured.is_file()
+    # The ordinary index contains a full valid snapshot. Git's prospective
+    # partial commit contains only index.md, and must fail the same gate.
+    assert delivery.inspect_wiki_git_delivery(wiki, staged=True)["ok"]
+    monkeypatch.setenv("GIT_INDEX_FILE", str(captured))
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["staged"]["missing"] > 0
+
+
+@pytest.mark.parametrize("authority", (ADOPTION_FILENAME, GOVERNANCE_FILENAME))
+def test_staged_only_authority_cannot_invalidate_a_complete_export(
+    tmp_path, monkeypatch, authority
+):
+    root, _ = project(tmp_path, monkeypatch)
+    wiki = root / "ungoverned"
+    _committed_snapshot(wiki, "packed-v4-deflate")
+    for relative, content in one_module_two_entities_fixture().assets.items():
+        target = wiki / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+    assert load_knowledge_state(wiki).status is KnowledgeLoadState.VALID
+    assert not (wiki / authority).exists()
+    git(root, "add", "--", "ungoverned")
+    identity = git(root, "hash-object", "-w", "--stdin", data=b"{}\n").decode().strip()
+    relative = "ungoverned/" + authority
+    git(root, "update-index", "--add", "--cacheinfo", "100644", identity, relative)
+    export = tmp_path / "export"
+    export.mkdir()
+    git(root, "checkout-index", "--all", "--prefix=" + str(export) + "/")
+    if authority == GOVERNANCE_FILENAME:
+        with pytest.raises(KnowledgeStateLoadError) as caught:
+            load_knowledge_state(export / "ungoverned")
+        assert caught.value.status is KnowledgeLoadState.INVALID
+    else:
+        assert (
+            load_knowledge_state(export / "ungoverned").status
+            is KnowledgeLoadState.INVALID
+        )
+    before = hashes(root)
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["staged"]["status"] == "incomplete"
+    assert result["staged"]["unexpected"] == 1
+    assert result["staged"]["unexpected_samples"] == [relative]
+    assert hashes(root) == before
+
+
+def test_authority_appearing_during_the_staged_check_is_indeterminate(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    original = delivery._command
+
+    def changed(repo, args, **kwargs):
+        result = original(repo, args, **kwargs)
+        if args == ["cat-file", "--batch"]:
+            (wiki / ADOPTION_FILENAME).write_text("{}\n")
+        return result
+
+    monkeypatch.setattr(delivery, "_command", changed)
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["delivery_state"] == "indeterminate"
+    assert result["reason"] == "git-delivery-mutation"
+
+
+def test_unreferenced_staged_cache_is_outside_the_native_snapshot(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    (wiki / "unused.cache").write_bytes(b"not native authority")
+    git(root, "add", "--", "wiki")
+    assert delivery.inspect_wiki_git_delivery(wiki, staged=True)["ok"]
+
+
+def test_native_mutation_during_the_final_index_read_is_indeterminate(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    original = delivery._command
+    reads = 0
+
+    def changed(repo, args, **kwargs):
+        nonlocal reads
+        result = original(repo, args, **kwargs)
+        if args == ["ls-files", "--stage", "-z"]:
+            reads += 1
+            if reads == 2:
+                (wiki / ".llm-wiki-knowledge.json").write_text("{}\n")
+        return result
+
+    monkeypatch.setattr(delivery, "_command", changed)
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert not result["ok"] and result["delivery_state"] == "indeterminate"
+
+
+@pytest.mark.parametrize("ancestor", (False, True), ids=("wiki-root", "ancestor"))
+def test_git_path_resolution_cannot_bypass_native_root_guards(
+    tmp_path, monkeypatch, ancestor
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    alias = root / "alias"
+    target = root if ancestor else wiki
+    if os.name == "nt":
+        subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(alias), str(target)],
+            check=True,
+            capture_output=True,
+        )
+    else:
+        alias.symlink_to(target, target_is_directory=True)
+    unsafe = alias / "wiki" if ancestor else alias
+    with pytest.raises(KnowledgeStorageError):
+        load_knowledge_state(unsafe)
+    result = delivery.inspect_wiki_git_delivery(unsafe, staged=True)
+    assert not result["ok"] and result["delivery_state"] == "indeterminate"
+    assert result["staged"]["status"] == "indeterminate"

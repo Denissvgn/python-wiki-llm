@@ -2726,7 +2726,10 @@ Without `--staged`, a known local-only or mixed state is advisory and exits 0;
 inspect `delivery_state` before separately authorized staging. Intentionally
 local-only wikis can still pass local integrity checks. With `--staged`, success
 requires Git eligibility and every required file in the index with current
-content. Native and binary bytes must match exactly; Markdown newline
+content. The active Git index is checked, including a temporary index used for
+a partial commit. Unexpected staged governance or maintenance-adoption files
+also fail when the validated snapshot requires their absence.
+Native and binary bytes must match exactly; Markdown newline
 normalization is accepted. Missing, unmerged or mismatched files fail, and an
 unavailable or changing snapshot/index is indeterminate. Unreferenced caches
 and orphan objects are outside this snapshot check.
