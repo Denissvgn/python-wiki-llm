@@ -28,7 +28,9 @@ def capture(fixture_path: Path, output: Path, helper_cache_dir: str) -> dict:
                                       helper_cache_dir=helper_cache_dir)
     observations = {name: normalize_module_observation(value) for name, value in result.inventory.items()}
     if observations != fixture["observations"]:
-        raise ValueError("installed native observations differ from the frozen fixture")
+        raise ValueError(
+            f"installed native observations differ from frozen fixture {fixture_path.name!r}"
+        )
     components = result.analysis_components
     languages = set()
     for row in observations.values():
