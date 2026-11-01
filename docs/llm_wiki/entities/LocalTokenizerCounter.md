@@ -1,6 +1,6 @@
 # LocalTokenizerCounter
 
-**Location:** `src/llm_wiki_cli/services/token_counting.py:25`
+**Location:** `src/llm_wiki_cli/services/token_counting.py:26`
 **Kind:** Class
 **Bases:** —
 **Module:** [token_counting](../modules/token_counting.md)

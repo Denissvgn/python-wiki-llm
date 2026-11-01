@@ -1,6 +1,6 @@
 # EstimatedCounter
 
-**Location:** `src/llm_wiki_cli/services/token_counting.py:17`
+**Location:** `src/llm_wiki_cli/services/token_counting.py:18`
 **Kind:** Class
 **Bases:** —
 **Module:** [token_counting](../modules/token_counting.md)
