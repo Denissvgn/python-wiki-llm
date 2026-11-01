@@ -2870,6 +2870,12 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_bootstrap_recovery.py::test_actual_readonly_storage_lock_is_retryable",
+      "reason": "requires non-root POSIX permissions",
+      "owner_lane": "core-ubuntu-3.10"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
