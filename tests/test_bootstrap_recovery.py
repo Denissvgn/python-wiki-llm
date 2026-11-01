@@ -54,7 +54,7 @@ def test_foreign_root_alias_keeps_recovery_outside_wiki(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("knowledge_format", ["v1", None], ids=["legacy", "current"])
-@pytest.mark.parametrize("writer", ["api", "cli"])
+@pytest.mark.parametrize("writer", ["api", "cli", "subprocess"])
 def test_foreign_bootstrap_tracks_all_published_files(tmp_path, monkeypatch, knowledge_format, writer):
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "state-consumer/template/src"
@@ -85,6 +85,31 @@ def test_foreign_bootstrap_tracks_all_published_files(tmp_path, monkeypatch, kno
     monkeypatch.setattr(WikiWriteBasis, "assert_current", verify_publication)
     if writer == "api":
         api.bootstrap_wiki(str(source), str(wiki), knowledge_format=knowledge_format)
+    elif writer == "subprocess":
+        cwd = source.parent
+        if os.name == "nt":
+            import ctypes
+            from ctypes import wintypes
+
+            short_path = ctypes.WinDLL("kernel32", use_last_error=True).GetShortPathNameW
+            short_path.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+            short_path.restype = wintypes.DWORD
+            required = short_path(str(cwd), None, 0)
+            assert required, ctypes.get_last_error()
+            buffer = ctypes.create_unicode_buffer(required)
+            written = short_path(str(cwd), buffer, required)
+            assert 0 < written < required, ctypes.get_last_error()
+            cwd = Path(buffer.value)
+            assert cwd.samefile(source.parent)
+        arguments = [sys.executable, "-X", "utf8", "-I", "-m", "llm_wiki_cli.cli",
+                     "bootstrap", "--src-dir", "src", "--wiki-dir", "wiki"]
+        if knowledge_format is not None:
+            arguments += ["--knowledge-format", knowledge_format]
+        result = subprocess.run(arguments, cwd=cwd, capture_output=True, text=True,
+                                encoding="utf-8", timeout=180, check=False,
+                                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1",
+                                     "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"})
+        assert result.returncode == 0, (result.stdout, result.stderr)
     else:
         arguments = ["bootstrap", "--src-dir", str(source), "--wiki-dir", str(wiki)]
         if knowledge_format is not None:
