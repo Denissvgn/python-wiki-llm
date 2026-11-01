@@ -181,6 +181,8 @@
     },
     "ci-policy": {
       "tests": [
+        "tests/test_action_runtimes.py",
+        "tests/test_pytest_portability.py",
         "tests/test_pr_ci.py",
         "tests/test_pr_ci_bootstrap.py",
         "tests/test_pr_ci_impact.py",

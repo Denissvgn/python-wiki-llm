@@ -71,6 +71,12 @@
       "generated_actions": {
         "./.github/.tmp/.generated-actions/run-pypi-publish-in-docker-container": "docker"
       }
+    },
+    "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38": {
+      "using": "node24",
+      "manifest_sha256": "ad45f1922115116fb4706651d0a9262332bc4e4f11eb2021e09789dd1af18085",
+      "dependencies": [],
+      "generated_actions": {}
     }
   }
 }

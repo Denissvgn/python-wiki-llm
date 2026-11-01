@@ -42,20 +42,21 @@ def test_collection_error_is_bounded_and_does_not_dump_large_payloads():
 
 
 @pytest.mark.parametrize(
-    "explicit_id", [False, True], ids=["auto-id-rejected", "explicit-id-full-payload"]
+    "short_id", [False, True], ids=["oversized-id-rejected", "explicit-id-full-payload"]
 )
 def test_real_pytest_collection_enforces_portability_before_setup(
-    tmp_path, explicit_id
+    tmp_path, short_id
 ):
     # Load the repository's actual hook in an isolated tiny suite. All hosts
     # reproduce the native Windows limit without needing Windows emulation.
+    # Force the oversized label: pytest 9.2 shortens automatic long-string IDs.
     (tmp_path / "conftest.py").write_text(
         "from tests.conftest import pytest_collection_modifyitems\n", encoding="utf-8"
     )
     value = (
         "pytest.param(b' ' * 65537, id='oversized-policy')"
-        if explicit_id
-        else "b' ' * 65537"
+        if short_id
+        else "pytest.param(b' ' * 65537, id=' ' * 65537)"
     )
     (tmp_path / "test_policy.py").write_text(
         "from pathlib import Path\nimport pytest\n"
@@ -80,7 +81,7 @@ def test_real_pytest_collection_enforces_portability_before_setup(
         timeout=30,
         check=False,
     )
-    if explicit_id:
+    if short_id:
         assert result.returncode == 0, (result.stdout, result.stderr)
         assert (tmp_path / "executed").read_text() == "65537"
     else:
