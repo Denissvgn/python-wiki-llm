@@ -11,7 +11,7 @@ import sys
 
 import pytest
 
-from llm_wiki_cli import cli
+from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import bootstrap_recovery as recovery
 from llm_wiki_cli.services import bootstrap_runtime as runtime
 from llm_wiki_cli.services import knowledge_governance as governance
@@ -21,6 +21,7 @@ from llm_wiki_cli.services.maintenance_protocol import (
     MaintenanceProtocolError,
     guard_maintenance_owner,
     snapshot_wiki,
+    WikiWriteBasis,
 )
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 
@@ -32,6 +33,47 @@ def run_cli(monkeypatch, *arguments):
     except SystemExit as exc:
         return exc.code
     return 0
+
+
+@pytest.mark.parametrize("knowledge_format", ["v1", None], ids=["legacy", "current"])
+@pytest.mark.parametrize("writer", ["api", "cli"])
+def test_foreign_bootstrap_tracks_all_published_files(tmp_path, monkeypatch, knowledge_format, writer):
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "state-consumer/template/src"
+    source.mkdir(parents=True)
+    (source / "item.py").write_text(
+        "raise RuntimeError('target application must never execute')\n\n"
+        "class Item:\n    value: int\n    label: str\n\n"
+        "    def render(self, prefix: str = '') -> str:\n        return prefix + self.label\n",
+        encoding="utf-8",
+    )
+    wiki = source.parent / "wiki"
+    assert governance._governance_lock_root(wiki) == wiki
+    original = WikiWriteBasis.assert_current
+
+    def verify_publication(self):
+        try:
+            original(self)
+        except MaintenanceProtocolError as error:
+            actual = snapshot_wiki(self.root, include_transient=self.include_transient)
+            differences = {
+                "added": sorted(actual.keys() - self.expected.keys()),
+                "removed": sorted(self.expected.keys() - actual.keys()),
+                "changed": sorted(name for name in actual.keys() & self.expected.keys()
+                                  if actual[name] != self.expected[name]),
+            }
+            raise AssertionError(differences) from error
+
+    monkeypatch.setattr(WikiWriteBasis, "assert_current", verify_publication)
+    if writer == "api":
+        api.bootstrap_wiki(str(source), str(wiki), knowledge_format=knowledge_format)
+    else:
+        arguments = ["bootstrap", "--src-dir", str(source), "--wiki-dir", str(wiki)]
+        if knowledge_format is not None:
+            arguments += ["--knowledge-format", knowledge_format]
+        assert run_cli(monkeypatch, *arguments) == 0
+    assert SyncManifest.load(wiki).artifact_hashes is not None
+    assert not recovery.pending_bootstrap(wiki)
 
 
 @pytest.fixture
