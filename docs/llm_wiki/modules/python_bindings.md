@@ -53,10 +53,10 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [_ClassNamespaceEffects](../entities/ClassNamespaceEffects.md) | 224 | `ast.NodeVisitor` | Collect executed namespace effects, retaining explicit scope boundaries. |
-| [_ScopeNames](../entities/ScopeNames.md) | 1125 | `ast.NodeVisitor` | — |
-| [PythonBindings](../entities/PythonBindings.md) | 1268 | — | — |
-| [_BindingState](../entities/BindingState.md) | 1275 | — | Private related graph; one deepcopy preserves receiver/mutator aliases. |
-| [_BindingAnalyzer](../entities/BindingAnalyzer.md) | 1292 | — | — |
+| [_ScopeNames](../entities/ScopeNames.md) | 1126 | `ast.NodeVisitor` | — |
+| [PythonBindings](../entities/PythonBindings.md) | 1269 | — | — |
+| [_BindingState](../entities/BindingState.md) | 1276 | — | Private related graph; one deepcopy preserves receiver/mutator aliases. |
+| [_BindingAnalyzer](../entities/BindingAnalyzer.md) | 1293 | — | — |
 
 ## Functions
 
