@@ -281,7 +281,7 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
         r.s.plan(NODES, context(), 2), [directory], package.parents[1], output
     )
     assert report["percent"] == 100
-    xml = ET.parse(output / "coverage-core-ubuntu-3.10.xml").getroot()
+    xml = ET.parse(output / "coverage-core-ubuntu-3.11.xml").getroot()
     assert xml.get("lines-valid") == "2" and xml.get("lines-covered") == "2"
     empty = next(
         row
@@ -408,7 +408,7 @@ def test_downloaded_plan_and_pins_are_bound_before_package_install(tmp_path, mut
         harness_sha256=current["harness_sha256"],
         run_id=current["run_id"],
         run_attempt=current["run_attempt"],
-        lane="core-ubuntu-3.10",
+        lane="core-ubuntu-3.11",
     )
     if mutation == "attempt":
         args.run_attempt += 1
@@ -488,7 +488,7 @@ def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
         archive=output / "candidate-source.tar",
         harness=output / "qualification-harnesses.tar",
         harness_sha256=r.q.sha256_file(output / "qualification-harnesses.tar"),
-        lane="core-ubuntu-3.10",
+        lane="core-ubuntu-3.11",
         run_id=123,
         run_attempt=1,
     )
@@ -520,7 +520,7 @@ def test_executor_rejects_wrong_installation_before_running_tests(
     )
     if mutation in {"base-python", "platform"}:
         with pytest.raises(r.q.QualificationError):
-            r.environment(tmp_path, "core-ubuntu-3.10")
+            r.environment(tmp_path, "core-ubuntu-3.11")
         return
 
     class Distribution:
@@ -544,7 +544,7 @@ def test_executor_rejects_wrong_installation_before_running_tests(
         r.importlib.metadata, "distribution", lambda name: Distribution()
     )
     with pytest.raises(r.q.QualificationError, match="source differs or is editable"):
-        r.environment(tmp_path, "core-ubuntu-3.10")
+        r.environment(tmp_path, "core-ubuntu-3.11")
 
 
 @pytest.mark.parametrize("failing", [False, True])

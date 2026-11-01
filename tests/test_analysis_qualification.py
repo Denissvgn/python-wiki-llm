@@ -26,7 +26,7 @@ def compatibility_bundle(tmp_path):
     fixture_bytes = json.dumps({"observations": {"model.py": {"classes": []}}}).encode()
     registry = {
         "shared": ["core.py"], "providers": {"python": ["core.py"], "typescript": ["core.py"]},
-        "portable_python_profiles": [["linux", 3, 10, "x86_64"], ["linux", 3, 13, "x86_64"],
+        "portable_python_profiles": [["linux", 3, 11, "x86_64"], ["linux", 3, 13, "x86_64"],
                                      ["darwin", 3, 14, "arm64"], ["win32", 3, 13, "amd64"]],
         "portable_helper_toolchains": {"typescript": "node v24.18.0; npm 11.16.0"},
     }
@@ -52,7 +52,7 @@ def compatibility_bundle(tmp_path):
         components["llm-wiki/extractor/" + language] = {"implementation": implementation,
             "runtime": ac.digest({"python": portable, "helper": helper, "dependencies": {}})}
     for path, platform, version, machine in (
-        ("RD-01/ubuntu/core-ubuntu-3.10-analysis.json", "linux", [3, 10], "x86_64"),
+        ("RD-01/ubuntu/core-ubuntu-3.11-analysis.json", "linux", [3, 11], "x86_64"),
         ("RD-01/macos/core-macos-3.14-analysis.json", "darwin", [3, 14], "arm64"),
         ("RD-01/windows/core-windows-3.13-analysis.json", "win32", [3, 13], "AMD64"),
         ("RD-07/toolchains/analysis-python.json", "linux", [3, 13], "x86_64"),
@@ -94,7 +94,7 @@ def compatibility_bundle(tmp_path):
 @pytest.mark.parametrize("mutation", ["none", "missing-native", "wrong-observations", "wrong-runtime", "wrong-machine", "copied-runtime", "missing-helper", "missing-linux313", "missing-pairs", "wrong-wheel", "copied-result", "missing-mcp"])
 def test_combined_compatibility_evidence_is_required(compatibility_bundle, mutation):
     root = compatibility_bundle
-    native = root / "evidence/RD-01/ubuntu/core-ubuntu-3.10-analysis.json"
+    native = root / "evidence/RD-01/ubuntu/core-ubuntu-3.11-analysis.json"
     pairs = root / "evidence/RD-10/analysis"
     if mutation == "missing-native":
         native.unlink()

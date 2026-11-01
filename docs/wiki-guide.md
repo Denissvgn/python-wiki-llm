@@ -167,7 +167,7 @@ features use external tools when they are available on `PATH`.
 
 | Area | Implementation | Runtime requirement |
 |---|---|---|
-| Python | stdlib `ast` | Python 3.10+ |
+| Python | stdlib `ast` | Python 3.11+ |
 | TypeScript / JavaScript / TSX / JSX | bundled Node script using `ts-morph` | prepared Node.js dependencies |
 | Go | bundled Go extractor using `go/ast` | prepared helper binary |
 | Rust | bundled Rust extractor using `syn` | prepared helper binary |
@@ -175,7 +175,7 @@ features use external tools when they are available on `PATH`.
 | Docker / Compose | Dockerfile parser / bounded YAML parser | included with the package |
 | Infrastructure / runtime YAML | structured format summaries | included with the package |
 | OpenAPI 3.0/3.1 JSON / YAML | stdlib `json` / PyYAML safe loader | `PyYAML>=6` (installed with the package) |
-| MCP server | official Python MCP SDK | `agent-wiki-cli[mcp]`, Python 3.10+ |
+| MCP server | official Python MCP SDK | `agent-wiki-cli[mcp]`, Python 3.11+ |
 
 ### YAML inputs
 

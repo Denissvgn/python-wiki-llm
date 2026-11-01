@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.4.0] - 2026-10-30
+## [4.0.0] - 2026-11-01
+
+### Changed
+
+- Python 3.11 or later is required for the core CLI, MCP, and optional backends.
+  Python 3.10 is no longer supported.
 
 ### Added
 
@@ -17,8 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Optional local tokenizer counting uses secure dependencies on Python 3.11+;
-  Python 3.10 retains estimated counting, core CLI, and MCP support.
+- Optional local tokenizer counting uses the patched Filelock dependency line.
 
 - Native wiki Git-delivery checks follow temporary staging indexes and preserve
   authority absence, path safety and request-time mutation checks.
@@ -1620,8 +1624,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.4.0...HEAD
-[3.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v3.4.0
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0

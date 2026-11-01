@@ -484,9 +484,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - lane: core-ubuntu-3.10
+          - lane: core-ubuntu-3.11
             os: ubuntu-24.04
-            python: "3.10"
+            python: "3.11"
             coverage: true
           - lane: core-macos-3.14
             os: macos-15
@@ -552,7 +552,7 @@ jobs:
 
       - name: Verify scoped evidence repair on native Windows and Linux
         id: scoped-evidence
-        if: ${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}
+        if: ${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}
         shell: bash
         env:
           LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
@@ -589,7 +589,7 @@ jobs:
           retention-days: 14
       - name: Check recursion coverage boundaries before the full Linux suite
         id: coverage-boundary
-        if: ${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}
+        if: ${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}
         env:
           COVERAGE_FILE: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion/coverage.data
           COVERAGE_BOUNDARY_OUTPUT: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion
@@ -1305,7 +1305,7 @@ jobs:
         run: |
           mkdir -p incoming/evidence
           results=()
-          for lane in core-ubuntu-3.10 core-windows-3.13 core-macos-3.14; do
+          for lane in core-ubuntu-3.11 core-windows-3.13 core-macos-3.14; do
             junit="$(find incoming/evidence -name "${lane}.xml" -print -quit)"
             if [[ -n "${junit}" ]]; then
               results+=(--result "${lane}=${junit}")
@@ -1314,7 +1314,7 @@ jobs:
           python -I incoming/tools/release/qualification.py discover-allowlist \
             "${results[@]}" \
             --baseline candidate/release/skip-allowlist.json \
-            --expected-lane core-ubuntu-3.10 \
+            --expected-lane core-ubuntu-3.11 \
             --expected-lane core-windows-3.13 \
             --expected-lane core-macos-3.14 \
             --output discovered-skip-allowlist.json \
@@ -1612,7 +1612,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.13"]
+        python: ["3.11", "3.13"]
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -3067,8 +3067,8 @@ jobs:
             --ubuntu-purpose qualification \
             --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
             --allowlist candidate/release/skip-allowlist.json \
-            --owner-result "core-ubuntu-3.10=${{ needs.core.result }}" \
-            --owner-junit "core-ubuntu-3.10=incoming/owner-evidence/evidence-core-ubuntu-3.10/core-ubuntu-3.10.xml" \
+            --owner-result "core-ubuntu-3.11=${{ needs.core.result }}" \
+            --owner-junit "core-ubuntu-3.11=incoming/owner-evidence/evidence-core-ubuntu-3.11/core-ubuntu-3.11.xml" \
             --owner-result "core-windows-3.13=${{ needs.core-windows.result }}" \
             --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
             --owner-result "core-macos-3.14=${{ needs.core.result }}" \
@@ -3087,8 +3087,8 @@ jobs:
             --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-suites/product-ubuntu-24.04.xml" \
             --owner-result "product-windows-2025=${{ needs.core-windows.result }}" \
             --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
-            --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
-            --owner-junit "mcp-3.10=incoming/owner-evidence/evidence-rd-06-3.10/mcp-3.10.xml" \
+            --owner-result "mcp-3.11=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.11=incoming/owner-evidence/evidence-rd-06-3.11/mcp-3.11.xml" \
             --owner-result "mcp-3.13=${{ needs.mcp.result }}" \
             --owner-junit "mcp-3.13=incoming/owner-evidence/evidence-rd-06-3.13/mcp-3.13.xml" \
             --owner-result "toolchains=${{ needs.toolchains.result }}" \
@@ -3113,8 +3113,8 @@ jobs:
             --ubuntu-union-result "${{ needs.ubuntu-shadow.result }}" \
             --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
             --allowlist candidate/release/skip-allowlist.json \
-            --owner-result "core-ubuntu-3.10=${{ needs.core.result }}" \
-            --owner-junit "core-ubuntu-3.10=incoming/owner-evidence/evidence-core-ubuntu-3.10/core-ubuntu-3.10.xml" \
+            --owner-result "core-ubuntu-3.11=${{ needs.core.result }}" \
+            --owner-junit "core-ubuntu-3.11=incoming/owner-evidence/evidence-core-ubuntu-3.11/core-ubuntu-3.11.xml" \
             --owner-result "core-windows-3.13=${{ needs.core-windows.result }}" \
             --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
             --owner-result "core-macos-3.14=${{ needs.core.result }}" \
@@ -3133,8 +3133,8 @@ jobs:
             --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-union/product-ubuntu-24.04.xml" \
             --owner-result "product-windows-2025=${{ needs.core-windows.result }}" \
             --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
-            --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
-            --owner-junit "mcp-3.10=incoming/owner-evidence/evidence-rd-06-3.10/mcp-3.10.xml" \
+            --owner-result "mcp-3.11=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.11=incoming/owner-evidence/evidence-rd-06-3.11/mcp-3.11.xml" \
             --owner-result "mcp-3.13=${{ needs.mcp.result }}" \
             --owner-junit "mcp-3.13=incoming/owner-evidence/evidence-rd-06-3.13/mcp-3.13.xml" \
             --owner-result "toolchains=${{ needs.toolchains.result }}" \
@@ -3359,7 +3359,7 @@ jobs:
           --evidence "RD-10:analysis=incoming/analysis" \
           --evidence "RD-00:source=incoming/source" \
           --evidence "RD-00:harness=incoming/tools/qualification-harnesses.tar" \
-          --evidence "RD-01:ubuntu=incoming/gates/evidence-core-ubuntu-3.10" \
+          --evidence "RD-01:ubuntu=incoming/gates/evidence-core-ubuntu-3.11" \
           --evidence "RD-01:windows=incoming/gates/evidence-core-windows-3.13" \
           --evidence "RD-01:macos=incoming/gates/evidence-core-macos-3.14" \
           --evidence "RD-02:owners=incoming/gates/evidence-owner-lanes" \
@@ -3370,7 +3370,7 @@ jobs:
           --evidence "RD-04:macos=incoming/gates/evidence-rd-04-macos-15" \
           --evidence "RD-05:ubuntu=incoming/gates/evidence-rd-05-ubuntu-24.04" \
           --evidence "RD-05:windows=incoming/gates/evidence-rd-05-windows-2025" \
-          --evidence "RD-06:python310=incoming/gates/evidence-rd-06-3.10" \
+          --evidence "RD-06:python311=incoming/gates/evidence-rd-06-3.11" \
           --evidence "RD-06:python313=incoming/gates/evidence-rd-06-3.13" \
           --evidence "RD-07:toolchains=incoming/gates/evidence-rd-07" \
           --evidence "RD-08:oci=incoming/gates/evidence-rd-08" \

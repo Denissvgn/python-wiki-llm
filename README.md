@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Denissvgn/python-wiki-llm/actions/workflows/ci.yml/badge.svg)](https://github.com/Denissvgn/python-wiki-llm/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 Build and maintain an architectural wiki for your codebase. LLM Wiki scans
 source into Markdown pages, keeps generated structure in sync, and supplies
@@ -17,11 +17,11 @@ import package is `llm_wiki_cli`.
 
 ## Installation
 
-Requires Python 3.10 or later.
+Requires Python 3.11 or later.
 
-The optional `agent-wiki-cli[tokens]` backend for exact counting with a local
-tokenizer requires Python 3.11 or later. Estimated counting, the core CLI, and
-MCP support remain available on Python 3.10.
+The optional `agent-wiki-cli[tokens]` backend counts tokens exactly with a
+caller-supplied local tokenizer JSON. The core CLI, MCP, and optional backends
+all use the Python 3.11+ package baseline.
 
 ```bash
 pip install agent-wiki-cli
@@ -95,7 +95,7 @@ for [Obsidian](docs/cli-reference.md#obsidian) or a
 
 | Area | Implementation | Runtime requirement |
 |---|---|---|
-| Python | stdlib `ast` | Python 3.10+ |
+| Python | stdlib `ast` | Python 3.11+ |
 | TypeScript / JavaScript / TSX / JSX | `ts-morph` | prepared Node.js dependencies |
 | Go | `go/ast` | prepared helper binary |
 | Rust | `syn` | prepared helper binary |

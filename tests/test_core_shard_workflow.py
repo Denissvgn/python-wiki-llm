@@ -114,7 +114,7 @@ def test_shadow_never_qualifies_and_ubuntu_macos_keep_the_full_core_contract():
     )
     core = qualification["jobs"]["core"]
     assert {row["lane"] for row in core["strategy"]["matrix"]["include"]} == {
-        "core-ubuntu-3.10",
+        "core-ubuntu-3.11",
         "core-macos-3.14",
     }
     assert core["needs"] == "freeze"

@@ -78,9 +78,9 @@ def artifact_contract(
             ("qualification-harnesses.tar",),
         ),
         "RD-01:ubuntu": (
-            "evidence-core-ubuntu-3.10",
-            core("core-ubuntu-3.10"),
-            ("core-ubuntu-3.10.xml", "coverage-core-ubuntu-3.10.xml"),
+            "evidence-core-ubuntu-3.11",
+            core("core-ubuntu-3.11"),
+            ("core-ubuntu-3.11.xml", "coverage-core-ubuntu-3.11.xml"),
         ),
         "RD-01:windows": (
             "evidence-core-windows-3.13",
@@ -112,10 +112,10 @@ def artifact_contract(
             core("core-windows-3.13"),
             ("product-windows-2025.xml", "product-windows-2025-projection.json"),
         ),
-        "RD-06:python310": (
-            "evidence-rd-06-3.10",
-            "RD-06 MCP SDK (Python 3.10)",
-            ("mcp-3.10.xml",),
+        "RD-06:python311": (
+            "evidence-rd-06-3.11",
+            "RD-06 MCP SDK (Python 3.11)",
+            ("mcp-3.11.xml",),
         ),
         "RD-06:python313": (
             "evidence-rd-06-3.13",

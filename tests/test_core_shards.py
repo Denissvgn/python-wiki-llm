@@ -12,7 +12,7 @@ import pytest
 from release import core_shards as s
 
 
-def context(lane="core-ubuntu-3.10"):
+def context(lane="core-ubuntu-3.11"):
     return {
         "identity": {
             "schema_version": s.q.IDENTITY_SCHEMA,
@@ -62,8 +62,8 @@ def history():
         "run_id": 99,
         "run_attempt": 1,
         "lanes": {
-            "core-ubuntu-3.10": {
-                "profile": s.profile("core-ubuntu-3.10"),
+            "core-ubuntu-3.11": {
+                "profile": s.profile("core-ubuntu-3.11"),
                 "files_ms": {
                     "tests/test_one.py": 12000,
                     "tests/test_two.py": 6000,
@@ -107,9 +107,9 @@ def test_missing_or_stale_history_never_drops_current_nodes(kind):
     elif kind == "missing-lane":
         previous["lanes"] = {}
     elif kind == "stale-profile":
-        previous["lanes"]["core-ubuntu-3.10"]["profile"]["python"] = "3.9"
+        previous["lanes"]["core-ubuntu-3.11"]["profile"]["python"] = "3.9"
     else:
-        previous["lanes"]["core-ubuntu-3.10"]["files_ms"] = {"tests/test_gone.py": 99}
+        previous["lanes"]["core-ubuntu-3.11"]["files_ms"] = {"tests/test_gone.py": 99}
     value = s.plan(NODES, context(), 2, previous)
     assert value["inventory"] == sorted(NODES)
     assert value["history_files_used"] == []
@@ -125,7 +125,7 @@ def test_invalid_shard_count_fails(count):
 @pytest.mark.parametrize("weight", [True, 0, -1, float("nan"), float("inf"), 1.5, "12"])
 def test_invalid_timing_data_fails(weight):
     previous = history()
-    previous["lanes"]["core-ubuntu-3.10"]["files_ms"]["tests/test_one.py"] = weight
+    previous["lanes"]["core-ubuntu-3.11"]["files_ms"]["tests/test_one.py"] = weight
     with pytest.raises(s.q.QualificationError):
         s.plan(NODES, context(), 2, previous)
 
@@ -179,16 +179,21 @@ def test_invalid_or_stale_plans_fail_even_when_reserialized(mutation):
         s.validate_plan(value, expected)
 
 
-def test_committed_timing_history_has_explicit_qualified_origin_and_all_profiles():
+def test_committed_timing_history_keeps_its_measured_profiles_and_qualified_origin():
     value = s.read(Path(__file__).parents[1] / "release/core-shard-timings.json")
     assert value["source_sha"] == "4e0ccb95464cea205bab0258ce0fa8598c7c0dbf"
     assert value["run_id"] == 35923626375 and value["run_attempt"] == 1
-    assert set(value["lanes"]) == set(s.PROFILES)
+    assert set(value["lanes"]) == {
+        "core-ubuntu-3.10", "core-macos-3.14", "core-windows-3.13",
+    }
+    assert value["lanes"]["core-ubuntu-3.10"]["profile"]["python"] == "3.10"
     for lane in s.PROFILES:
         current = context(lane)
         snapshot = deepcopy(value)
         result = s.plan(NODES, current, 2, value)
         assert result["inventory"] == sorted(NODES)
+        if lane == "core-ubuntu-3.11":
+            assert result["history_files_used"] == []
         assert value == snapshot
 
 
@@ -552,7 +557,7 @@ def test_new_image_policy_keeps_shadow_evidence_ineligible_for_qualification(sch
 @pytest.mark.parametrize(
     "lane,count",
     [
-        ("core-ubuntu-3.10", 2),
+        ("core-ubuntu-3.11", 2),
         ("core-macos-3.14", 2),
         ("core-windows-3.13", 3),
         ("core-windows-3.13", True),

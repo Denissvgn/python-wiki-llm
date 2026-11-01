@@ -50,13 +50,13 @@ LANES = {
         "os": "ubuntu-24.04",
         "python": "3.13",
         "platform": "linux",
-        "baseline": "core-ubuntu-3.10",
+        "baseline": "core-ubuntu-3.11",
     },
     "minimum-python": {
         "os": "ubuntu-24.04",
-        "python": "3.10",
+        "python": "3.11",
         "platform": "linux",
-        "baseline": "core-ubuntu-3.10",
+        "baseline": "core-ubuntu-3.11",
     },
     "windows": {
         "os": "windows-2025",
@@ -78,7 +78,7 @@ LANES = {
     },
 }
 OWNER_LANES = {
-    "core-ubuntu-3.10": "ubuntu",
+    "core-ubuntu-3.11": "ubuntu",
     "core-windows-3.13": "windows",
     "core-macos-3.14": "macos",
     "security-windows-2025": "windows",
@@ -87,7 +87,7 @@ OWNER_LANES = {
     "security-ubuntu-24.04": "ubuntu",
     "product-ubuntu-24.04": "ubuntu",
     "toolchains": "toolchains",
-    "mcp-3.10": "mcp-sdk",
+    "mcp-3.11": "mcp-sdk",
     "mcp-3.13": "mcp-sdk",
     "oci": "p0-oci-integration",
 }

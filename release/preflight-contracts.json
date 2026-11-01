@@ -400,7 +400,7 @@
       ],
       "condition": "${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "b50ed729c476d40c6a95b3ee15a5ee75649761359434fdb0b0ec69f13506a4f6",
+      "declaration_sha256": "cb231ef982cf921e7266d240f9b3c15157245ddf0a44687135d7d82ec0c10ad6",
       "environments": [
         "ubuntu-24.04",
         "macos-15"
@@ -417,9 +417,9 @@
         "include": [
           {
             "coverage": true,
-            "lane": "core-ubuntu-3.10",
+            "lane": "core-ubuntu-3.11",
             "os": "ubuntu-24.04",
-            "python": "3.10"
+            "python": "3.11"
           },
           {
             "coverage": false,
@@ -543,7 +543,7 @@
       ],
       "condition": "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&\n    (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "0f5c014a330e4baa122dae3c9e975a4ad79b4169be92147e13ef49f5e904152d",
+      "declaration_sha256": "38c68b7736ead1b1a88317606d61cbcf5cfc4edf035da5ebffc4861e79c03650",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -665,7 +665,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "bc0781107a6d9a8710246c95ebe12344804d94acacde0946e4456b3897d35010",
+      "declaration_sha256": "d7572e095ea02ebdf41e7b5131ca95ec323c8e7a97b92e99533860f3e37cba5e",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -678,7 +678,7 @@
       "id": "mcp",
       "matrix": {
         "python": [
-          "3.10",
+          "3.11",
           "3.13"
         ]
       },
@@ -976,7 +976,7 @@
       ],
       "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "90c5151114817c224042376ffcf3dafe4b4dd0c7a7c0c0f7146f98dc51bc96f2",
+      "declaration_sha256": "b8a3ebdf70f21ac009c4e52b7fd6081148d6578a9b6789acb60bbd529514bc83",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1044,7 +1044,7 @@
       ],
       "condition": "${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow\n    && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-windows.result == 'success'\n    && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'\n    && needs.mcp.result == 'success' && needs.toolchains.result == 'success'\n    && needs.oci.result == 'success' && needs.static.result == 'success'\n    && needs.action.result == 'success' && needs.reproducible.result == 'success'\n    && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'\n    && needs.analysis-compatibility.result == 'success'\n    && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')\n    && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "ee0383d389b144b65af5ab80e99b8580ae397a36d87f61d0ab3416950eb1afbf",
+      "declaration_sha256": "f67e13a7914825222ff33e477c1012ec03ac852935d6b945cbeb4a19fad479e2",
       "environments": [
         "ubuntu-24.04"
       ],

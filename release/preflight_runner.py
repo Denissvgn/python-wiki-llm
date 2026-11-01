@@ -238,7 +238,7 @@ def verify_host_junit(
 
     if any(type(value) is not int or value <= 0 for value in (minimum_collected, minimum_passed)):
         raise RunnerError("host core minimums must be positive integers")
-    if lane not in {"core-macos-3.14", "core-windows-3.13", "core-ubuntu-3.10"}:
+    if lane not in {"core-macos-3.14", "core-windows-3.13", "core-ubuntu-3.11"}:
         raise RunnerError("host core has no maintained baseline lane")
     repo, inventory_path, started_path, junit_path, allowlist_path = (
         Path(os.path.abspath(path)) for path in (repo, inventory_path, started_path, junit_path, allowlist_path)
@@ -609,7 +609,7 @@ def stage_commands(
         lane = {
             "Darwin": "core-macos-3.14",
             "Windows": "core-windows-3.13",
-            "Linux": "core-ubuntu-3.10",
+            "Linux": "core-ubuntu-3.11",
         }.get(platform.system())
         if lane is None or not lane.endswith(
             f"{sys.version_info.major}.{sys.version_info.minor}"

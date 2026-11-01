@@ -2911,10 +2911,11 @@ class TestMcpCli:
         assert exc.value.code == 1
         assert "pip install 'agent-wiki-cli[mcp]'" in capsys.readouterr().err
 
-    def test_python_version_guard(self, monkeypatch):
-        monkeypatch.setattr(mcp_server.sys, "version_info", (3, 9, 0))
+    @pytest.mark.parametrize("version", [(3, 9, 0), (3, 10, 0)])
+    def test_python_version_guard(self, monkeypatch, version):
+        monkeypatch.setattr(mcp_server.sys, "version_info", version)
 
-        with pytest.raises(mcp_server.MCPDependencyError, match="Python 3.10") as exc:
+        with pytest.raises(mcp_server.MCPDependencyError, match="Python 3.11") as exc:
             mcp_server.ensure_mcp_runtime()
 
         assert "pip install 'agent-wiki-cli[mcp]'" in str(exc.value)

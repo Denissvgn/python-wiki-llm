@@ -35,7 +35,7 @@ def test_combined_optional_sdk_skips_require_each_exact_sdk_owner_case():
     assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
             for entry in owned} == {
         (lane, f"{family}[{variant}]", "mcp-3.13", "Optional MCP SDK is not installed")
-        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.11", "core-windows-3.13")
         for variant in ("source-only", "sharded", "packed")
     }
 
@@ -51,7 +51,7 @@ def test_owned_packet_optional_sdk_skip_has_exact_capable_owner():
     assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
             for entry in owned} == {
         (lane, node, "mcp-3.13", "Optional MCP SDK is not installed")
-        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.11", "core-windows-3.13")
     }
 
 
@@ -66,19 +66,19 @@ def test_newer_parser_control_skips_require_supported_parser_owner_cases():
         "tests/test_python_constructor_bindings.py::"
         "test_review_type_alias_capability_validation_keeps_cold_warm_parity[type Alias = int]"
     )
-    cases = {"ADD-021": "3.12", "CLS-007": "3.11", "CLS-016": "3.12"}
+    cases = {"ADD-021": "3.12", "CLS-016": "3.12"}
     expected = {
-        ("core-ubuntu-3.10", f"{family}[{case}{suffix}]", "core-macos-3.14",
+        ("core-ubuntu-3.11", f"{family}[{case}{suffix}]", "core-macos-3.14",
          f"Owned syntax requires Python {version}")
         for family in families for case, version in cases.items() for suffix in ("", "-M")
     }
-    expected.add(("core-ubuntu-3.10", alias, "core-macos-3.14", "Parser lacks type alias statements"))
+    expected.add(("core-ubuntu-3.11", alias, "core-macos-3.14", "Parser lacks type alias statements"))
     entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
     owned = [entry for entry in entries if entry["node_id"] == alias or any(
         entry["node_id"].startswith(f"{family}[{case}{suffix}]")
         for family in families for case in cases for suffix in ("", "-M")
     )]
-    assert len(owned) == 13
+    assert len(owned) == 9
     assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
             for entry in owned} == expected
 
@@ -349,7 +349,7 @@ def test_release_retains_native_windows_correction_evidence():
 def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
     job = _yaml("release-qualification.yml")["jobs"]["core"]
     probe = _named_step(job, "Verify scoped evidence repair on native Windows and Linux")
-    assert probe["if"] == "${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}"
+    assert probe["if"] == "${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}"
     windows = _named_step(_yaml("release-qualification.yml")["jobs"]["core-windows"], "Verify scoped evidence repair on native Windows and Linux")
     assert windows["if"] == "${{ !inputs.discovery-mode }}"
     assert windows["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
@@ -370,7 +370,7 @@ def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
     owned = [item for item in entries if item["node_id"].startswith(family + "[")]
     assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"]) for item in owned} == {
         (lane, f"{family}[{fixture}]", "toolchains", "Prepared typescript helper required; owned by toolchains")
-        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.11", "core-windows-3.13")
         for fixture in ("sync_guard_2_5_0.json", "scoped_repair_2_5_0_mixed.json")
     }
     owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
@@ -385,7 +385,7 @@ def test_recursion_coverage_probe_preserves_the_full_linux_gate():
     steps = _yaml("release-qualification.yml")["jobs"]["core"]["steps"]
     early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")
     full = _named_step({"steps": steps}, "Run strict core suite with canonical coverage")
-    assert early["if"] == "${{ matrix.lane == 'core-ubuntu-3.10' && !inputs.discovery-mode }}"
+    assert early["if"] == "${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}"
     assert "tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap" in early["run"]
     assert "runner.coverage_rows" in early["run"]
     assert "runner.source_manifest(package)" in early["run"]
@@ -412,7 +412,7 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
     assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"])
             for item in owned} == {
         (lane, case, "toolchains", "Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped")
-        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.11", "core-windows-3.13")
         for case in cases
     }
     owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
@@ -1479,9 +1479,9 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     core = qualification["jobs"]["core"]
     assert core["strategy"]["matrix"]["include"] == [
         {
-            "lane": "core-ubuntu-3.10",
+            "lane": "core-ubuntu-3.11",
             "os": "ubuntu-24.04",
-            "python": "3.10",
+            "python": "3.11",
             "coverage": True,
         },
         {
@@ -1586,7 +1586,7 @@ def test_routine_ci_runs_only_validated_selected_contracts() -> None:
 
     mcp = workflow["jobs"]["mcp-sdk"]
     assert mcp["strategy"]["matrix"]["include"] == [
-        {"lane": "mcp-3.10", "python-version": "3.10"},
+        {"lane": "mcp-3.11", "python-version": "3.11"},
         {"lane": "mcp-3.13", "python-version": "3.13"},
     ]
     mcp_command = _named_step(
@@ -1886,14 +1886,14 @@ def test_packed_range_link_skips_match_their_parameterized_contract() -> None:
         {
             "lane": "core-windows-3.13",
             "node_id": f"{selector}[{link}]",
-            "owner_lane": "core-ubuntu-3.10",
+            "owner_lane": "core-ubuntu-3.11",
             "reason": marks["skipif"].kwargs["reason"],
         }
         for link in sorted(parameters.args[1])
     ]
     for workflow, job in (("release-qualification.yml", "core"),):
         lanes = _yaml(workflow)["jobs"][job]["strategy"]["matrix"]["include"]
-        assert any(lane["lane"] == "core-ubuntu-3.10" for lane in lanes)
+        assert any(lane["lane"] == "core-ubuntu-3.11" for lane in lanes)
 
 
 def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:
@@ -1920,7 +1920,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
     ]
     assert len(windows_native) == 22
     assert {entry["lane"] for entry in windows_native} == {
-        "core-ubuntu-3.10",
+        "core-ubuntu-3.11",
         "core-macos-3.14",
     }
     assert {entry["owner_lane"] for entry in windows_native} == {
@@ -1938,7 +1938,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
     assert len(posix) == 8
     assert {entry["lane"] for entry in posix} == {"core-windows-3.13"}
     assert {entry["owner_lane"] for entry in posix} == {
-        "core-ubuntu-3.10"
+        "core-ubuntu-3.11"
     }
     assert any("[absent]" in entry["node_id"] for entry in posix)
     assert any("[present]" in entry["node_id"] for entry in posix)
@@ -1969,7 +1969,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
     assert len(haskell) == 21
     assert {entry["lane"] for entry in haskell} == {
         "core-macos-3.14",
-        "core-ubuntu-3.10",
+        "core-ubuntu-3.11",
         "core-windows-3.13",
     }
     assert {entry["owner_lane"] for entry in haskell} == {"toolchains"}
@@ -2002,7 +2002,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         for entry in case_aliases
     } == {
         (
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "tests/test_uninstall.py::TestUninstallRemovesHooks::"
             "test_remove_wiki_rejects_case_aliases_of_protected_roots["
             ".claude/skills-.CLAUDE/SKILLS]",
@@ -2010,14 +2010,14 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "filesystem is case-sensitive; no case alias exists",
         ),
         (
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "tests/test_uninstall.py::TestUninstallRemovesHooks::"
             "test_remove_wiki_rejects_case_aliases_of_protected_roots[.git-.GIT]",
             "core-windows-3.13",
             "filesystem is case-sensitive; no case alias exists",
         ),
         (
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "tests/test_uninstall.py::TestUninstallRemovesHooks::"
             "test_remove_wiki_rejects_case_aliases_of_protected_roots["
             ".llm-wiki/skills-.LLM-WIKI/SKILLS]",
@@ -2040,7 +2040,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         for entry in platform_alias
     } == {
         (
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "core-macos-3.14",
             "root-owned /var alias contract is macOS-only",
         ),
@@ -2072,21 +2072,21 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "core-windows-3.13",
             "tests/test_provisioning_failures.py::"
             "test_fifo_schema_is_rejected_by_stat_without_opening",
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "FIFOs are unavailable on this platform",
         ),
         (
             "core-windows-3.13",
             "tests/test_provisioning_failures.py::"
             "test_init_revalidates_schema_after_reference_provision[fifo]",
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "FIFOs are unavailable on this platform",
         ),
         (
             "core-windows-3.13",
             "tests/test_status.py::TestStatusHooks::"
             "test_exact_managed_hook_without_execute_bit_still_needs_cleanup",
-            "core-ubuntu-3.10",
+            "core-ubuntu-3.11",
             "Windows does not expose a POSIX hook execute-bit contract",
         ),
     }
