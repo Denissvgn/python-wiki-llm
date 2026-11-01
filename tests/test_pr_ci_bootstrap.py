@@ -72,6 +72,26 @@ def test_git_delivery_contract_selects_each_native_platform():
         assert path in result["lanes"][lane]["selectors"]
 
 
+@pytest.mark.parametrize("path,consumer", [
+    ("release/hosted_evidence.py", "tests/test_qualified_bundle_reader.py"),
+    ("tests/test_qualified_bundle_reader.py", "tests/test_qualified_bundle_reader.py"),
+    ("src/llm_wiki_cli/services/sync_transitions.py", "tests/test_sync_page_transitions.py"),
+    ("src/llm_wiki_cli/services/sync_transition_execution.py", "tests/test_sync_page_transitions.py"),
+    ("tests/test_sync_page_transitions.py", "tests/test_sync_page_transitions.py"),
+])
+def test_archive_and_page_transition_contracts_select_native_platforms(path, consumer):
+    policy = ci.policy_load(ROOT / "release")
+    sources = registry_sources(policy)
+    sources[consumer] = b"def test_contract(): pass\n"
+    sources[path] = b"def contract(): pass\n"
+    result = ci.select(
+        policy, sources, sources,
+        [{"status": "M", "old": path, "path": path}], None, {"entries": []},
+    )
+    for lane in ("ubuntu", "windows", "macos"):
+        assert consumer in result["lanes"][lane]["selectors"]
+
+
 @pytest.mark.parametrize(
     "path",
     [
