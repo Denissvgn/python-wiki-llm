@@ -174,6 +174,15 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
         '|', 'tee', 'pyright.log',
     ]
     assert not check.get("continue-on-error")
+    provider = next(step for step in job["steps"] if step.get("name") == "Check installed provider typing")
+    assert not provider.get("continue-on-error")
+    assert '"${{ steps.python.outputs.python-path }}" -I tests/verify_installed_provider.py' in provider["run"]
+    assert '--python "${{ steps.python.outputs.python-path }}"' in provider["run"]
+    assert "--output installed-provider-typing.json" in provider["run"]
+    diagnostics = next(step for step in job["steps"] if step.get("name") == "Upload typing diagnostics")
+    assert diagnostics["if"] == "always()"
+    assert "installed-provider-typing.json" in diagnostics["with"]["path"]
+    assert "${{ runner.temp }}/installed-provider-typing/" in diagnostics["with"]["path"]
     lint = next(step for step in job["steps"] if step.get("name") == "Check the release lint scope")
     assert lint["shell"] == "bash" and not lint.get("continue-on-error")
     assert lint["run"].split("-m ruff check", 1)[1].split("|", 1)[0].split() == [
