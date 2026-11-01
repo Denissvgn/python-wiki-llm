@@ -167,6 +167,18 @@
       ],
       "helpers": []
     },
+    "action-runtimes": {
+      "tests": [
+        "tests/test_action_runtimes.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
     "ci-policy": {
       "tests": [
         "tests/test_pr_ci.py",
@@ -426,6 +438,14 @@
   "rules": [
     {
       "paths": [
+        "release/action-runtimes.json"
+      ],
+      "groups": [
+        "action-runtimes"
+      ]
+    },
+    {
+      "paths": [
         "README.md",
         "CHANGELOG.md",
         "LICENSE",
@@ -568,6 +588,7 @@
         "release/hosted_evidence.py",
         "release/knowledge_maintenance.py",
         "release/knowledge-maintenance.json",
+        "release/action-runtimes.json",
         "release/*policy*.json",
         "release/preflight*.py",
         "release/preflight-contracts.json",

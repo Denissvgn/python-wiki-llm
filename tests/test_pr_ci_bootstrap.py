@@ -37,6 +37,24 @@ def test_analysis_capture_selects_qualification_contracts():
     assert "typecheck" in result["jobs"]
 
 
+def test_action_runtime_policy_selects_release_contracts():
+    policy = ci.policy_load(ROOT / "release")
+    sources = registry_sources(policy)
+    path = "release/action-runtimes.json"
+    sources[path] = b'{"actions": {}}\n'
+    result = ci.select(
+        policy,
+        sources,
+        sources,
+        [{"status": "M", "old": path, "path": path}],
+        None,
+        {"entries": []},
+    )
+    assert "tests/test_release_workflows.py" in result["lanes"]["ubuntu"]["selectors"]
+    assert "tests/test_action_runtimes.py" in result["lanes"]["ubuntu"]["selectors"]
+    assert "typecheck" in result["jobs"]
+
+
 @pytest.mark.parametrize(
     "path",
     [
