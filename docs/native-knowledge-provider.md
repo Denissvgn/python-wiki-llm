@@ -185,8 +185,9 @@ actionable failure instead of an empty successful inventory.
 The base library requires Python 3.10+ and its declared parsing dependencies.
 It does not require an agent configuration, MCP, tokenizers, model-provider
 SDKs, or the provider repository's own wiki. Install `[mcp]` for the advertised
-stdio or local HTTP server, and `[tokens]` only for exact token counting with a
-caller-supplied local tokenizer. External language helpers require their
+stdio or local HTTP server, and `[tokens]` on Python 3.11+ for exact token
+counting with a caller-supplied local tokenizer. Estimated counting remains
+available on Python 3.10. External language helpers require their
 documented runtimes and explicit preparation.
 
 The [downstream tutorial](../examples/native-knowledge/README.md) demonstrates

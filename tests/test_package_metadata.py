@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 
 import yaml
+from packaging.requirements import Requirement
+from packaging.specifiers import SpecifierSet
 
 from tests import release_artifact_smoke
 
@@ -99,6 +101,21 @@ def test_mcp_extra_stays_on_compatible_dependency_lines():
         for dependency in data["project"]["dependencies"]
     }
     assert base_names.isdisjoint({"mcp", "pydantic", "pydantic-settings", "uvicorn"})
+
+
+def test_exact_tokenizer_extra_keeps_python310_core_and_uses_secure_supported_dependencies():
+    project = _pyproject()["project"]
+    assert "3.10" in SpecifierSet(project["requires-python"])
+    requirements = [Requirement(value) for value in project["optional-dependencies"]["tokens"]]
+    for python in ("3.10", "3.11", "3.14"):
+        active = {r.name: r for r in requirements if r.marker is None or r.marker.evaluate({"python_version": python})}
+        if python == "3.10":
+            assert not active
+        else:
+            assert set(active) == {"tokenizers", "filelock"}
+            assert "0.22.2" in active["tokenizers"].specifier
+            assert "4.1.0" not in active["filelock"].specifier
+            assert "4.2.1" in active["filelock"].specifier
 
 
 def test_build_backend_requirement_is_a_dev_only_dependency():

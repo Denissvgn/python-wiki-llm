@@ -1424,6 +1424,24 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_context_budget.py::test_local_tokenizer_independent_recount[json]",
+      "reason": "Optional local tokenizer backend requires Python 3.11+; owned by core-macos-3.14",
+      "owner_lane": "core-macos-3.14"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_context_budget.py::test_local_tokenizer_independent_recount[markdown]",
+      "reason": "Optional local tokenizer backend requires Python 3.11+; owned by core-macos-3.14",
+      "owner_lane": "core-macos-3.14"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_context_budget.py::test_local_tokenizer_independent_recount[packet]",
+      "reason": "Optional local tokenizer backend requires Python 3.11+; owned by core-macos-3.14",
+      "owner_lane": "core-macos-3.14"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
       "owner_lane": "mcp-3.13",
       "reason": "Optional MCP SDK is not installed"

@@ -19,6 +19,10 @@ import package is `llm_wiki_cli`.
 
 Requires Python 3.10 or later.
 
+The optional `agent-wiki-cli[tokens]` backend for exact counting with a local
+tokenizer requires Python 3.11 or later. Estimated counting, the core CLI, and
+MCP support remain available on Python 3.10.
+
 ```bash
 pip install agent-wiki-cli
 ```

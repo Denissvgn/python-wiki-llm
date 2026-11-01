@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Optional local tokenizer counting uses secure dependencies on Python 3.11+;
+  Python 3.10 retains estimated counting, core CLI, and MCP support.
+
 - Native wiki Git-delivery checks follow temporary staging indexes and preserve
   authority absence, path safety and request-time mutation checks.
 

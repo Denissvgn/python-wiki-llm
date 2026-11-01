@@ -28,8 +28,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Exact counting uses an explicitly supplied local tokenizer.json; no downloads.
-tokens = ["tokenizers>=0.22,<0.23"]
+# Exact counting uses local tokenizer JSON. Its secure dependency line requires 3.11+.
+tokens = [
+    "tokenizers>=0.22,<0.23; python_version >= '3.11'",
+    "filelock>=4.2.1; python_version >= '3.11'",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",

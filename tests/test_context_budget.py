@@ -3,11 +3,13 @@
 import io
 import json
 import sys
+from types import SimpleNamespace
 
 import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_budget
+from llm_wiki_cli.services import token_counting
 from llm_wiki_cli.services.context_budget import build_budgeted_context
 from llm_wiki_cli.services.context_packet import (
     validate_context_packet,
@@ -127,6 +129,23 @@ def test_optional_tokenizer_absence_keeps_estimates_and_actionable_exact_error(t
         LocalTokenizerCounter(tmp_path / "unused.json")
 
 
+def test_unsupported_local_tokenizer_runtime_refuses_before_import_or_file_read(tmp_path, monkeypatch):
+    import builtins
+
+    monkeypatch.setattr(token_counting, "sys", SimpleNamespace(version_info=(3, 10, 22)), raising=False)
+    original = builtins.__import__
+
+    def guarded_import(name, *args, **kwargs):
+        assert name != "tokenizers", "Unsupported backend was imported"
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    with pytest.raises(ValueError, match=r"Python 3\.11\+"):
+        token_counting.LocalTokenizerCounter(tmp_path / "must-not-be-read.json")
+    assert token_counting.EstimatedCounter().count("hello") == 2
+    assert not token_counting.EstimatedCounter.exact
+
+
 @pytest.mark.parametrize("fmt", ["json", "markdown", "packet"])
 @pytest.mark.parametrize("mode", ["off", "auto", "required"])
 def test_complete_render_and_minimum_envelope(tmp_path, monkeypatch, fmt, mode):
@@ -171,6 +190,10 @@ def test_complete_render_and_minimum_envelope(tmp_path, monkeypatch, fmt, mode):
 
 
 @pytest.mark.parametrize("fmt", ["json", "markdown", "packet"])
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Optional local tokenizer backend requires Python 3.11+; owned by core-macos-3.14",
+)
 def test_local_tokenizer_independent_recount(tmp_path, monkeypatch, fmt):
     tokenizers = pytest.importorskip("tokenizers")
     tokenizer = tokenizers.Tokenizer(tokenizers.models.BPE(unk_token="[UNK]"))

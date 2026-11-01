@@ -292,7 +292,7 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--src-dir", default=".")
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
     parser.add_argument("--profile", help="Explicit workflow profile JSON")
-    parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON")
+    parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON (Python 3.11+ and [tokens])")
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
     parser.add_argument("--output", help="Write the selected context view to this file")
@@ -1590,7 +1590,7 @@ def _add_mcp_command(subparsers):
         help="Additional HTTP Origin allowed to call the local MCP endpoint",
     )
     _add_source_selection_argument(mcp_parser)
-    mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting")
+    mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting (Python 3.11+ and [tokens])")
     sessions = mcp_parser.add_mutually_exclusive_group()
     sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
     sessions.add_argument("--disable-sessions", dest="enable_sessions", action="store_false", help="Disable bounded in-memory task sessions")
@@ -2192,12 +2192,12 @@ def _add_context_command(subparsers):
         "--budget-mode", choices=["exact", "estimated"],
         help=(
             "Opt into v3 accounting of the complete rendered output; exact mode "
-            "requires --tokenizer FILE and the optional agent-wiki-cli[tokens] dependency"
+            "requires Python 3.11+, --tokenizer FILE and the optional agent-wiki-cli[tokens] dependency"
         ),
     )
     context_parser.add_argument(
         "--tokenizer", metavar="FILE",
-        help="Local tokenizer.json for exact v3 counting; never downloaded automatically",
+        help="Local tokenizer.json for exact v3 counting (Python 3.11+); never downloaded automatically",
     )
     context_parser.add_argument("--base", help="Base Git revision (opts into v3 output)")
     context_parser.add_argument("--head", help="Head Git revision; requires --base")
