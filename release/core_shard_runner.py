@@ -391,6 +391,11 @@ def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> di
         name = path.relative_to(matches[0]).as_posix()
         s.require(name in sources, "coverage source is not in the frozen provider")
         lines = sorted(data.lines(filename) or [])
+        # CPython 3.11 records virtual module entry at line 0 for an empty file.
+        # It is not a source statement. Keep the raw data unchanged and omit
+        # only this exact event from the verified statement-line projection.
+        if sources[name]["line_count"] == 0 and lines == [0]:
+            lines = []
         # The native Python 3.10 tracer can record module entry at line 1 for
         # an empty file. Preserve that raw event: coverage's source analysis
         # still counts zero statements, and all other line bounds stay strict.
