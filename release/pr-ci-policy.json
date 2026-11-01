@@ -167,6 +167,18 @@
       ],
       "helpers": []
     },
+    "action-runtimes": {
+      "tests": [
+        "tests/test_action_runtimes.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
     "ci-policy": {
       "tests": [
         "tests/test_pr_ci.py",
@@ -424,6 +436,14 @@
     }
   },
   "rules": [
+    {
+      "paths": [
+        "release/action-runtimes.json"
+      ],
+      "groups": [
+        "action-runtimes"
+      ]
+    },
     {
       "paths": [
         "README.md",

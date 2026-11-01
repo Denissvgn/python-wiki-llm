@@ -51,6 +51,7 @@ def test_action_runtime_policy_selects_release_contracts():
         {"entries": []},
     )
     assert "tests/test_release_workflows.py" in result["lanes"]["ubuntu"]["selectors"]
+    assert "tests/test_action_runtimes.py" in result["lanes"]["ubuntu"]["selectors"]
     assert "typecheck" in result["jobs"]
 
 
