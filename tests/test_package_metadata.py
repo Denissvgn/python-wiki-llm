@@ -266,7 +266,7 @@ def test_ci_uses_selected_matrix_with_explicit_platform_contracts():
     assert _ci_test_matrix() == "${{ fromJSON(needs.plan.outputs.matrix) }}"
     assert {name: (row["os"], row["python"]) for name, row in LANES.items()} == {
         "ubuntu": ("ubuntu-24.04", "3.13"),
-        "minimum-python": ("ubuntu-24.04", "3.10"),
+        "minimum-python": ("ubuntu-24.04", "3.11"),
         "toolchains": ("ubuntu-24.04", "3.13"),
         "windows": ("windows-2025", "3.13"),
         "macos": ("macos-15", "3.14"),
