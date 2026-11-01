@@ -43,12 +43,15 @@ def test_adoption_rejects_a_different_root_even_with_aliases(wrong_root):
 
 
 @pytest.mark.parametrize("directory", ["wiki", "wiki/recovery", "", "src", "src/recovery"])
-def test_recovery_rejects_aliased_wiki_source_and_ancestor_paths(monkeypatch, directory):
+@pytest.mark.parametrize("alias_location", ["directory", "roots"])
+def test_recovery_rejects_aliased_wiki_source_and_ancestor_paths(monkeypatch, directory, alias_location):
     monkeypatch.setattr(service, "_absolute_path", lambda path: path)
+    directory_user = "RUNNER~1" if alias_location == "directory" else "runneradmin"
+    root_user = "RUNNER~1" if alias_location == "roots" else "runneradmin"
     with pytest.raises(MaintenanceProtocolError) as error:
-        service._outside_recovery(AliasedRoot("C:/Users/RUNNER~1") / directory,
-                                  AliasedRoot("C:/Users/runneradmin/wiki"),
-                                  AliasedRoot("C:/Users/runneradmin/src"))
+        service._outside_recovery(AliasedRoot(f"C:/Users/{directory_user}") / directory,
+                                  AliasedRoot(f"C:/Users/{root_user}/wiki"),
+                                  AliasedRoot(f"C:/Users/{root_user}/src"))
     assert error.value.reason == "recovery-path"
 
 

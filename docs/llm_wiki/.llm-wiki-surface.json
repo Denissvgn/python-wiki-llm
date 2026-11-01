@@ -164,7 +164,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 2912,
+          "step_count": 2915,
           "truncated": true
         }
       },
@@ -516,7 +516,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 113,
+              "line": 120,
               "step": "adopt_maintenance_authority",
               "step_index": 5,
               "target": "generation_inputs.pop"
@@ -524,7 +524,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 116,
+              "line": 123,
               "step": "adopt_maintenance_authority",
               "step_index": 5,
               "target": "extensions.pop"
@@ -654,7 +654,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3191,
+          "step_count": 3197,
           "truncated": true
         }
       },
@@ -11898,7 +11898,7 @@
             },
             {
               "kind": "external_call",
-              "line": 331,
+              "line": 338,
               "step": "_validate_status_request",
               "target": "type"
             },
@@ -31820,7 +31820,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py"
           ],
-          "step_count": 3532,
+          "step_count": 3529,
           "truncated": true
         }
       },
@@ -33238,7 +33238,7 @@
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 4098,
+          "step_count": 4104,
           "truncated": true
         }
       },
@@ -33896,7 +33896,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 113,
+              "line": 120,
               "step": "adopt_maintenance_authority",
               "step_index": 6,
               "target": "generation_inputs.pop"
@@ -33904,7 +33904,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 116,
+              "line": 123,
               "step": "adopt_maintenance_authority",
               "step_index": 6,
               "target": "extensions.pop"
@@ -34031,7 +34031,7 @@
             "src/llm_wiki_cli/services/request_json.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 2583,
+          "step_count": 2589,
           "truncated": true
         }
       },
@@ -37151,7 +37151,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py"
           ],
-          "step_count": 3972,
+          "step_count": 3978,
           "truncated": true
         }
       },
@@ -68343,5 +68343,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c3922b5424cf7f77e3d343ba544ef605f035ca25552da4683c46f7b7d28fead0"
+  "source_hash": "sha256:4103f9159f366fc254dfe9cae9553455b47e57d076fcb8aeab4977233afbba5c"
 }

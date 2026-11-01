@@ -74,6 +74,7 @@ flowchart LR
 | `capture_maintenance_observations` | `(captured, state = None, *, raw_pages = None, knowledge = None, manifest = None)` | — | — |
 | `_capture_basis` | `(root, files)` | `@contextmanager` | — |
 | `_outside_recovery` | `(directory, root, source)` | — | — |
+| `_validate_capture_roots` | `(captured, source, root)` | — | Compare guarded roots in the same canonical path namespace. |
 | `adopt_maintenance_authority` | `(src_dir, wiki_dir, *, recovery_dir, manifest_format = None, fault_injector = None, _captured = None, **capture_options)` | — | Explicitly adopt durable unreviewed authority without editing Markdown. |
 | `load_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | — |
 | `_validated_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | Retain validator-proven storage ownership without changing the public tuple. |
