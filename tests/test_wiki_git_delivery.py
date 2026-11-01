@@ -35,15 +35,23 @@ from tests.knowledge_fixtures import one_module_two_entities_fixture
 
 
 def git(root, *args, data=None):
-    return subprocess.run(
-        ["git", "-C", str(root), *args], input=data, capture_output=True, check=True
-    ).stdout
+    result = subprocess.run(
+        ["git", "-C", str(root), *args], input=data, capture_output=True
+    )
+    assert result.returncode == 0, (
+        args, result.returncode, result.stdout[-2048:], result.stderr[-2048:]
+    )
+    return result.stdout
 
 
 def project(tmp_path, monkeypatch, storage_format="packed-v4-deflate"):
     root = tmp_path / "repo"
     root.mkdir()
-    git(root, "init", "-q")
+    git(root, "-c", "core.longpaths=true", "init", "-q")
+    # Packed native object names can exceed Windows Git limits under CI temp roots.
+    # This is an isolated fixture prerequisite, not a global or product policy change.
+    git(root, "config", "core.longpaths", "true")
+    git(root, "config", "core.autocrlf", "false")
     git(root, "config", "user.email", "delivery@example.invalid")
     git(root, "config", "user.name", "Git Delivery")
     wiki = root / "wiki"
@@ -70,6 +78,8 @@ def test_every_native_format_is_git_eligible_and_stages_completely(
     tmp_path, monkeypatch, storage_format
 ):
     root, wiki = project(tmp_path, monkeypatch, storage_format)
+    assert git(root, "config", "--bool", "core.longpaths").strip() == b"true"
+    assert git(root, "config", "--bool", "core.autocrlf").strip() == b"false"
     before = hashes(root)
     result = delivery.inspect_wiki_git_delivery(wiki)
     assert result["ok"] and result["delivery_state"] == "git-eligible"
@@ -325,6 +335,29 @@ def test_linked_worktree_with_spaces_delivers_its_own_index(tmp_path, monkeypatc
     git(root, "worktree", "add", "--detach", str(linked), "HEAD")
     monkeypatch.chdir(linked)
     assert delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)["ok"]
+
+
+def test_deep_native_paths_stage_and_checkout_without_global_git_changes(tmp_path, monkeypatch):
+    global_config = tmp_path / "global.gitconfig"
+    global_config.write_text("[core]\n    autocrlf = true\n", encoding="utf-8")
+    global_before = global_config.read_bytes()
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(global_config))
+    parent = tmp_path / ("native-delivery-context-" * 4)
+    parent.mkdir()
+    root, wiki = project(parent, monkeypatch)
+    assert max(len(str(path)) + 1 for path in wiki.rglob("*") if path.is_file()) > 260
+    native_before = hashes(wiki)
+    git(root, "add", "--", "wiki")
+    git(root, "commit", "-qm", "Deep native snapshot")
+    linked = parent / "linked worktree"
+    git(root, "worktree", "add", "--detach", str(linked), "HEAD")
+    monkeypatch.chdir(linked)
+    assert git(linked, "config", "--bool", "core.longpaths").strip() == b"true"
+    assert git(linked, "config", "--bool", "core.autocrlf").strip() == b"false"
+    assert hashes(linked / "wiki") == native_before
+    result = delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)
+    assert result["ok"], result
+    assert global_config.read_bytes() == global_before
 
 
 def test_staged_gate_checks_the_active_alternate_index(tmp_path, monkeypatch):
