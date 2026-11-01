@@ -47,7 +47,7 @@ def git(root, *args, data=None):
 def project(tmp_path, monkeypatch, storage_format="packed-v4-deflate"):
     root = tmp_path / "repo"
     root.mkdir()
-    git(root, "init", "-q")
+    git(root, "-c", "core.longpaths=true", "init", "-q")
     # Packed native object names can exceed Windows Git limits under CI temp roots.
     # This is an isolated fixture prerequisite, not a global or product policy change.
     git(root, "config", "core.longpaths", "true")
@@ -333,6 +333,21 @@ def test_linked_worktree_with_spaces_delivers_its_own_index(tmp_path, monkeypatc
     git(root, "worktree", "add", "--detach", str(linked), "HEAD")
     monkeypatch.chdir(linked)
     assert delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)["ok"]
+
+
+def test_deep_native_paths_stage_and_checkout_without_global_git_changes(tmp_path, monkeypatch):
+    parent = tmp_path / ("native-delivery-context-" * 4)
+    parent.mkdir()
+    root, wiki = project(parent, monkeypatch)
+    assert max(len(str(path)) + 1 for path in wiki.rglob("*") if path.is_file()) > 260
+    git(root, "add", "--", "wiki")
+    git(root, "commit", "-qm", "Deep native snapshot")
+    linked = parent / "linked worktree"
+    git(root, "worktree", "add", "--detach", str(linked), "HEAD")
+    monkeypatch.chdir(linked)
+    assert git(linked, "config", "--bool", "core.longpaths").strip() == b"true"
+    result = delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)
+    assert result["ok"], result
 
 
 def test_staged_gate_checks_the_active_alternate_index(tmp_path, monkeypatch):
