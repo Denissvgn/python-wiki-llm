@@ -449,6 +449,34 @@
       "helpers": [
         "haskell"
       ]
+    },
+    "bundle-reader-native": {
+      "tests": [
+        "tests/test_qualified_bundle_reader.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "page-transitions-native": {
+      "tests": [
+        "tests/test_sync_page_transitions.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -710,6 +738,25 @@
       ],
       "groups": [
         "hosted-action"
+      ]
+    },
+    {
+      "paths": [
+        "release/hosted_evidence.py",
+        "tests/test_qualified_bundle_reader.py"
+      ],
+      "groups": [
+        "bundle-reader-native"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/sync_transitions.py",
+        "src/llm_wiki_cli/services/sync_transition_execution.py",
+        "tests/test_sync_page_transitions.py"
+      ],
+      "groups": [
+        "page-transitions-native"
       ]
     }
   ],
