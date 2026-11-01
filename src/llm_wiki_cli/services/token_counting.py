@@ -5,7 +5,10 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 import sys
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from tokenizers import Tokenizer
 
 
 class TokenCounter(Protocol):
@@ -27,6 +30,8 @@ class LocalTokenizerCounter:
     """Count raw text using immutable local tokenizer JSON, without framing."""
 
     exact = True
+    identity: str
+    _tokenizer: Tokenizer
 
     def __init__(self, path: str | Path):
         if sys.version_info < (3, 11):
