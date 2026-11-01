@@ -9,6 +9,7 @@ import pytest
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
 from llm_wiki_cli.services.io import read_md
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_LOCK_FILENAME
+from llm_wiki_cli.services.maintenance_protocol import STORAGE_LOCK_FILENAME
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.test_sync import _make_bootstrap_args, _make_sync_args
 
@@ -408,12 +409,14 @@ def test_transition_preflight_rechecks_occupied_targets_at_application(tmp_path,
     )
     real_apply = sync_cmd._apply_prepared_sync
     snapshots = []
-    lock = wiki_dir / GOVERNANCE_LOCK_FILENAME
-    lock_before = (lock.read_bytes(), lock.stat().st_mtime_ns)
+    locks_before = {
+        wiki_dir / name: ((wiki_dir / name).read_bytes(), (wiki_dir / name).stat().st_mtime_ns)
+        for name in (GOVERNANCE_LOCK_FILENAME, STORAGE_LOCK_FILENAME)
+    }
     original_read = Path.read_bytes
 
     def locked_read(path):
-        if path == lock:
+        if path in locks_before:
             raise PermissionError("held Windows lock cannot be read")
         return original_read(path)
 
@@ -422,13 +425,14 @@ def test_transition_preflight_rechecks_occupied_targets_at_application(tmp_path,
         (wiki_dir / "entities/model_Draft.md").write_text("Late authored destination.", encoding="utf-8")
         with monkeypatch.context() as held_lock:
             held_lock.setattr(Path, "read_bytes", locked_read)
-            with pytest.raises(PermissionError, match="held Windows lock"):
-                lock.read_bytes()
-            assert lock.stat().st_mtime_ns == lock_before[1]
+            for lock, before in locks_before.items():
+                with pytest.raises(PermissionError, match="held Windows lock"):
+                    lock.read_bytes()
+                assert lock.stat().st_mtime_ns == before[1]
             snapshots.append({
                 # Windows prevents reads of the locked byte. Compare that file
                 # against its pre-lock bytes again after the lock is released.
-                path.relative_to(wiki_dir): lock_before[0] if path == lock else path.read_bytes()
+                path.relative_to(wiki_dir): locks_before[path][0] if path in locks_before else path.read_bytes()
                 for path in wiki_dir.rglob("*") if path.is_file()
             })
             return real_apply(options, prepared)
@@ -444,4 +448,6 @@ def test_transition_preflight_rechecks_occupied_targets_at_application(tmp_path,
         path.relative_to(wiki_dir): path.read_bytes()
         for path in wiki_dir.rglob("*") if path.is_file()
     } == snapshots[0]
-    assert (lock.read_bytes(), lock.stat().st_mtime_ns) == lock_before
+    assert {
+        lock: (lock.read_bytes(), lock.stat().st_mtime_ns) for lock in locks_before
+    } == locks_before
