@@ -217,6 +217,8 @@ def _verify_install(
     )
     environment = os.environ.copy()
     environment["PYTHONNOUSERSITE"] = "1"
+    environment["PYTHONUTF8"] = "1"
+    environment["PYTHONIOENCODING"] = "utf-8"
     environment["PYTHONPATH"] = str(target)
     subprocess.run(
         [sys.executable, "-c", _PROBE, str(target)],
