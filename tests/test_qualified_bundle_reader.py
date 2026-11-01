@@ -14,8 +14,30 @@ def zipped(files, compression=zipfile.ZIP_STORED):
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w", compression=compression) as archive:
         for name, raw in files.items():
-            archive.writestr(name, raw)
+            entry = zipfile.ZipInfo(name)
+            # Preserve deliberately malformed headers even on Windows, where
+            # construction rewrites separators and truncates embedded NULs.
+            entry.filename = name
+            archive.writestr(entry, raw, compress_type=compression)
     return stream.getvalue()
+
+
+@pytest.mark.parametrize("name", ["a\\b", "a\0b"])
+def test_zip_fixture_preserves_raw_names_before_inventory(monkeypatch, name):
+    original = zipfile.ZipInfo.__init__
+
+    def windows_name(info, filename="NoName", date_time=(1980, 1, 1, 0, 0, 0)):
+        original(info, filename, date_time)
+        info.filename = info.filename.replace("\\", "/")
+
+    # Exercise Windows constructor normalization on every test host.
+    monkeypatch.setattr(zipfile.ZipInfo, "__init__", windows_name)
+    raw = zipped({name: b"owned"})
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        member, = archive.infolist()
+        assert member.orig_filename == name
+    with pytest.raises(h.EvidenceError, match="artifact member"):
+        inventory(raw)
 
 
 def binding(raw):
@@ -198,7 +220,7 @@ def test_typed_redirect_count_is_unchanged(monkeypatch):
     assert calls == ["fixture-secret", None, None, None, None]
 
 
-@pytest.mark.parametrize("name", ["../escape", "/absolute", "C:/drive", "a\\b", "a//b", "."])
+@pytest.mark.parametrize("name", ["../escape", "/absolute", "C:/drive", "a\\b", "a\0b", "a//b", "."])
 def test_typed_inventory_keeps_canonical_path_guards(name):
     with pytest.raises(h.EvidenceError, match="artifact member"):
         inventory(zipped({name: b"owned"}))
