@@ -102,9 +102,9 @@ sequenceDiagram
     p0-->>p30: _query_service(…).related_concepts(query, direction=selected_direction, kinds=selected_kinds)
 ```
 
-> Call sequence diagram shows 30 of 990 interactions; 960 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 992 interactions; 962 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 402 (401 omitted); unresolved 1 of 213 (212 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 404 (403 omitted); unresolved 1 of 213 (212 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

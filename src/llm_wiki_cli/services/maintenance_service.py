@@ -65,11 +65,21 @@ def _capture_basis(root, files):
 
 def _outside_recovery(directory, root, source):
     path = _absolute_path(directory)
-    if path == root or path.is_relative_to(root) or root.is_relative_to(path):
+    resolved_path, resolved_root, resolved_source = path.resolve(), root.resolve(), source.resolve()
+    if (resolved_path == resolved_root or resolved_path.is_relative_to(resolved_root)
+            or resolved_root.is_relative_to(resolved_path)):
         raise MaintenanceProtocolError("recovery-path", "Recovery directory must be outside the wiki and its ancestors")
-    if path == source or path.is_relative_to(source):
+    if resolved_path == resolved_source or resolved_path.is_relative_to(resolved_source):
         raise MaintenanceProtocolError("recovery-path", "Recovery directory must not become a source input")
     return path
+
+
+def _validate_capture_roots(captured, source, root):
+    """Compare guarded roots in the same canonical path namespace."""
+    if captured.source_snapshot.root.resolve() != source.resolve():
+        raise MaintenanceProtocolError("source-mismatch", "Adoption capture belongs to another source root")
+    if captured.wiki_root.resolve() != root.resolve():
+        raise MaintenanceProtocolError("wiki-mismatch", "Adoption capture belongs to another wiki root")
 
 
 def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_format=None,
@@ -92,10 +102,7 @@ def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_for
         files = snapshot_wiki(root)
         with _capture_basis(root, files) as basis:
             captured = _capture(str(source), root, **capture_options) if _captured is None else _captured
-            if captured.source_snapshot.root.resolve() != source:
-                raise MaintenanceProtocolError("source-mismatch", "Adoption capture belongs to another source root")
-            if captured.wiki_root.resolve() != root:
-                raise MaintenanceProtocolError("wiki-mismatch", "Adoption capture belongs to another wiki root")
+            _validate_capture_roots(captured, source, root)
             if not source_snapshot_matches_current_files(captured.source_snapshot):
                 raise MaintenanceProtocolError("source-changed", "Source changed before adoption capture")
             basis.source_snapshot = captured.source_snapshot

@@ -92,4 +92,4 @@ flowchart LR
 | `load_adoption_marker` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 | `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 
-> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.
+> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.

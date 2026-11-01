@@ -138,9 +138,9 @@ sequenceDiagram
     p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2580 interactions; 2550 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2588 interactions; 2558 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 856 (855 omitted); unresolved 1 of 549 (548 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 858 (857 omitted); unresolved 1 of 554 (553 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 6 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 606 groups; 598 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 608 groups; 600 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -167,9 +167,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1176; effect analysis evaluated: 758, partial: 53, unavailable: 365. Counts include steps omitted from the displayed trace.
+Source steps: 1177; effect analysis evaluated: 759, partial: 53, unavailable: 365. Counts include steps omitted from the displayed trace.
 
-Collector observations for 811 source steps with known totals: observed: 5056, emitted: 4796, omitted: 260. Unavailable totals are excluded.
+Collector observations for 812 source steps with known totals: observed: 5059, emitted: 4799, omitted: 260. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -270,7 +270,7 @@ flowchart LR
 | adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1596 | `ValueError('Unsupported maintenance adoption options')` |
 | adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1597 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
 | adopt_maintenance | adopt_maintenance_authority | 1597 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| adopt_maintenance_authority | _absolute_path | 83 | `_absolute_path(wiki_dir)` |
+| adopt_maintenance_authority | _absolute_path | 93 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -285,8 +285,8 @@ flowchart LR
 | output | `print` | `run` | 122 |
 | output | `print` | `run` | 134 |
 | output | `print` | `run` | 136 |
-| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 113 |
-| mutation | `extensions.pop` | `adopt_maintenance_authority` | 116 |
+| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 120 |
+| mutation | `extensions.pop` | `adopt_maintenance_authority` | 123 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

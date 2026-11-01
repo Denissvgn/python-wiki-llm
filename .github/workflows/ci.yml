@@ -496,13 +496,20 @@ jobs:
       contents: read
     uses: ./.github/workflows/dependency-setup-check.yml
   package:
-    name: Selected package build and schema
+    name: Selected package build and schema (${{ matrix.os }})
     needs: plan
     if: ${{ needs.plan.outputs.package == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    defaults:
+      run:
+        shell: bash
     steps:
     - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
     - name: Set up package Python 3.13
@@ -513,6 +520,24 @@ jobs:
         cache-dependency-path: pyproject.toml
     - name: Install dependencies
       run: python -m pip install -e ".[dev,tokens]"
+    - name: Verify foreign bootstrap publication
+      id: foreign-bootstrap
+      env:
+        PYTHONUTF8: '1'
+        PYTHONIOENCODING: utf-8
+      run: >-
+        python -m pytest tests/test_bootstrap_recovery.py::test_foreign_bootstrap_tracks_all_published_files
+        -q -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true
+        --junitxml=foreign-bootstrap.xml
+    - name: Retain foreign bootstrap evidence
+      if: ${{ always() && (steps.foreign-bootstrap.outcome == 'success' || steps.foreign-bootstrap.outcome == 'failure') }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: foreign-bootstrap-${{ matrix.os }}-${{ github.run_attempt }}
+        path: foreign-bootstrap.xml
+        if-no-files-found: error
+        retention-days: 14
     - name: Check package builds
       run: |
         python -m pip install "build==1.5.0"

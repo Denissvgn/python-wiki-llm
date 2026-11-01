@@ -139,9 +139,9 @@ sequenceDiagram
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2508 interactions; 2478 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2510 interactions; 2480 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 825 (824 omitted); unresolved 1 of 581 (580 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 827 (826 omitted); unresolved 1 of 581 (580 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -252,8 +252,8 @@ flowchart LR
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1617 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
 | get_maintenance_status | get_maintenance_status_authority | 1617 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| get_maintenance_status_authority | _validate_status_request | 404 | `_validate_status_request(live, record_id, limit)` |
-| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 331 | `type(live)` |
+| get_maintenance_status_authority | _validate_status_request | 411 | `_validate_status_request(live, record_id, limit)` |
+| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 338 | `type(live)` |
 
 ### Boundary effects
 
@@ -269,7 +269,7 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
 | external_call | `get_maintenance_status` | `cast` | 1617 |
-| external_call | `_validate_status_request` | `type` | 331 |
+| external_call | `_validate_status_request` | `type` | 338 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |
 

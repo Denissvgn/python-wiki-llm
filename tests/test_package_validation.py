@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import subprocess
 import tarfile
 import zipfile
 from pathlib import Path
@@ -157,3 +158,27 @@ def test_default_artifact_validation_keeps_build_isolation_for_existing_callers(
     )
     package_check._verify_install(tmp_path / "candidate.tar.gz", tmp_path)
     assert "--no-build-isolation" not in commands[0] and "--no-cache-dir" in commands[0]
+
+
+def test_installed_probe_and_cli_child_use_utf8_under_a_legacy_parent(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONUTF8", "0")
+    monkeypatch.setenv("PYTHONIOENCODING", "cp1252")
+    monkeypatch.setattr(package_check, "_PROBE", (
+        "import subprocess, sys\n"
+        "result = subprocess.run([sys.executable, '-c', 'print(chr(0x2705))'], "
+        "capture_output=True, encoding='utf-8', check=True)\n"
+        "sys.stdout.write(result.stdout)\n"
+    ))
+    original = subprocess.run
+    outputs = []
+
+    def run(command, **kwargs):
+        if command[1:3] == ["-m", "pip"]:
+            return subprocess.CompletedProcess(command, 0)
+        result = original(command, capture_output=True, encoding="utf-8", **kwargs)
+        outputs.append(result.stdout)
+        return result
+
+    monkeypatch.setattr(package_check.subprocess, "run", run)
+    package_check._verify_install(tmp_path / "candidate.whl", tmp_path)
+    assert outputs == ["\u2705\n"]
