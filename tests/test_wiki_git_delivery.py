@@ -35,15 +35,22 @@ from tests.knowledge_fixtures import one_module_two_entities_fixture
 
 
 def git(root, *args, data=None):
-    return subprocess.run(
-        ["git", "-C", str(root), *args], input=data, capture_output=True, check=True
-    ).stdout
+    result = subprocess.run(
+        ["git", "-C", str(root), *args], input=data, capture_output=True
+    )
+    assert result.returncode == 0, (
+        args, result.returncode, result.stdout[-2048:], result.stderr[-2048:]
+    )
+    return result.stdout
 
 
 def project(tmp_path, monkeypatch, storage_format="packed-v4-deflate"):
     root = tmp_path / "repo"
     root.mkdir()
     git(root, "init", "-q")
+    # Packed native object names can exceed Windows Git limits under CI temp roots.
+    # This is an isolated fixture prerequisite, not a global or product policy change.
+    git(root, "config", "core.longpaths", "true")
     git(root, "config", "user.email", "delivery@example.invalid")
     git(root, "config", "user.name", "Git Delivery")
     wiki = root / "wiki"
@@ -70,6 +77,7 @@ def test_every_native_format_is_git_eligible_and_stages_completely(
     tmp_path, monkeypatch, storage_format
 ):
     root, wiki = project(tmp_path, monkeypatch, storage_format)
+    assert git(root, "config", "--bool", "core.longpaths").strip() == b"true"
     before = hashes(root)
     result = delivery.inspect_wiki_git_delivery(wiki)
     assert result["ok"] and result["delivery_state"] == "git-eligible"
