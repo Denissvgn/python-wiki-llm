@@ -1,6 +1,6 @@
 # TokenCounter
 
-**Location:** `src/llm_wiki_cli/services/token_counting.py:11`
+**Location:** `src/llm_wiki_cli/services/token_counting.py:14`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [token_counting](../modules/token_counting.md)

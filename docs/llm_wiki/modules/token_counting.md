@@ -18,8 +18,8 @@ repository-provided counter code.
 | `hashlib` | `hashlib` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
-| `tokenizers` | `tokenizers` |
-| `typing` | `Protocol` |
+| `tokenizers` | `Tokenizer`, `tokenizers` |
+| `typing` | `TYPE_CHECKING`, `Protocol` |
 
 ## Local dependency map
 
@@ -72,6 +72,6 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TokenCounter](../entities/TokenCounter.md) | 11 | `Protocol` | — |
-| [EstimatedCounter](../entities/EstimatedCounter.md) | 18 | — | — |
-| [LocalTokenizerCounter](../entities/LocalTokenizerCounter.md) | 26 | — | Count raw text using immutable local tokenizer JSON, without framing. |
+| [TokenCounter](../entities/TokenCounter.md) | 14 | `Protocol` | — |
+| [EstimatedCounter](../entities/EstimatedCounter.md) | 21 | — | — |
+| [LocalTokenizerCounter](../entities/LocalTokenizerCounter.md) | 29 | — | Count raw text using immutable local tokenizer JSON, without framing. |
