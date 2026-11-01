@@ -5,12 +5,12 @@ backend-path = ["."]
 
 [project]
 name = "agent-wiki-cli"
-version = "3.4.0"
+version = "4.0.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     {name = "Denis Sivagin", email = "denissvgn@gmail.com"}
 ]
@@ -24,19 +24,22 @@ classifiers = [
 ]
 dependencies = [
     "PyYAML>=6",
-    "tomli>=2; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
-# Exact counting uses an explicitly supplied local tokenizer.json; no downloads.
-tokens = ["tokenizers>=0.22,<0.23"]
+# Exact counting uses local tokenizer JSON. Its secure dependency line requires 3.11+.
+tokens = [
+    "tokenizers>=0.22,<0.23; python_version >= '3.11'",
+    "filelock>=4.2.1; python_version >= '3.11'",
+]
 dev = [
+    "pip==26.2.2",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
     "setuptools==84.1.0",
-    # Analyze Python 3.10 fallback imports from newer development interpreters.
+    # Keep legacy fallback-import probes analyzable on supported interpreters.
     "tomli>=2",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
@@ -46,13 +49,13 @@ typescript = []
 go = []
 # Rust extraction requires the Rust toolchain (cargo) at runtime (no Python deps).
 rust = []
-# MCP server support uses the official Python MCP SDK, which requires Python 3.10+.
+# MCP server support uses the official Python MCP SDK on the Python 3.11+ package baseline.
 mcp = [
-    "mcp>=1.27,<2; python_version >= '3.10'",
+    "mcp>=1.27,<2; python_version >= '3.11'",
     # Directly used strict types and HTTP server; align with the supported SDK.
-    "pydantic>=2.11,<3; python_version >= '3.10'",
-    "pydantic-settings>=2.5.2,<2.15; python_version >= '3.10'",
-    "uvicorn>=0.31.1,<1; python_version >= '3.10' and sys_platform != 'emscripten'",
+    "pydantic>=2.11,<3; python_version >= '3.11'",
+    "pydantic-settings>=2.5.2,<2.15; python_version >= '3.11'",
+    "uvicorn>=0.31.1,<1; python_version >= '3.11' and sys_platform != 'emscripten'",
 ]
 
 [project.urls]

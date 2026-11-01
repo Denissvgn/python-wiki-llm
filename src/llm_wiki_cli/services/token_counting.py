@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-from typing import Protocol
+import sys
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from tokenizers import Tokenizer
 
 
 class TokenCounter(Protocol):
@@ -26,12 +30,21 @@ class LocalTokenizerCounter:
     """Count raw text using immutable local tokenizer JSON, without framing."""
 
     exact = True
+    identity: str
+    _tokenizer: Tokenizer
 
     def __init__(self, path: str | Path):
+        if sys.version_info < (3, 11):
+            raise ValueError(
+                "Local tokenizer counting requires Python 3.11+ and "
+                "agent-wiki-cli[tokens]. Estimated counting remains available."
+            )
         try:
             import tokenizers
         except ImportError as exc:
-            raise ValueError("Exact counting needs agent-wiki-cli[tokens] installed.") from exc
+            raise ValueError(
+                "Exact counting needs agent-wiki-cli[tokens] installed (Python 3.11+)."
+            ) from exc
         raw = Path(path).read_bytes()
         self._tokenizer = tokenizers.Tokenizer.from_str(raw.decode("utf-8"))
         # Saved truncation must never hide overflow; padding is not raw text.

@@ -1792,7 +1792,7 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
     for language in ("typescript", "javascript"):
         runtimes["llm-wiki/extractor/" + language] = digest({"python": portable_python, "helper": helper, "dependencies": {}})
     paths = [
-        (root / "evidence/RD-01/ubuntu/core-ubuntu-3.10-analysis.json", "linux", [3, 10]),
+        (root / "evidence/RD-01/ubuntu/core-ubuntu-3.11-analysis.json", "linux", [3, 11]),
         (root / "evidence/RD-01/macos/core-macos-3.14-analysis.json", "darwin", [3, 14]),
         (root / "evidence/RD-07/toolchains/analysis-python.json", "linux", [3, 13]),
     ]
@@ -1929,13 +1929,13 @@ def _validate_qualifying_union_bundle(
                     )
             paths[lane] = union / f"{lane}.xml"
         for lane, directory in {
-            "core-ubuntu-3.10": "RD-01/ubuntu",
+            "core-ubuntu-3.11": "RD-01/ubuntu",
             "core-windows-3.13": "RD-01/windows",
             "core-macos-3.14": "RD-01/macos",
             "security-windows-2025": "RD-04/windows",
             "security-macos-15": "RD-04/macos",
             "product-windows-2025": "RD-05/windows",
-            "mcp-3.10": "RD-06/python310",
+            "mcp-3.11": "RD-06/python311",
             "mcp-3.13": "RD-06/python313",
             "toolchains": "RD-07/toolchains",
             "oci": "RD-08/oci",

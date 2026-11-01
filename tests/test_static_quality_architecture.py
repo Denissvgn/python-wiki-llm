@@ -6,7 +6,7 @@ from pathlib import Path
 
 if sys.version_info >= (3, 11):
     import tomllib
-else:  # pragma: no cover - exercised by the Python 3.10 qualification lane
+else:  # pragma: no cover - legacy fallback for runtimes older than Python 3.11
     import tomli as tomllib
 
 

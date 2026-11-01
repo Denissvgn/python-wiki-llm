@@ -252,19 +252,22 @@ def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
         r.combine_coverage(value, [first], package.parents[1], partial)
 
 
+@pytest.mark.parametrize("entry,expected", [(0, []), (1, [1])])
 def test_empty_module_entry_event_preserves_coverage_without_counting_a_statement(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, entry, expected
 ):
     package, directory = coverage_fixture(tmp_path, [1, 2])
     (package / "__init__.py").write_bytes(b"")
     data = CoverageData(basename=str(directory / "coverage.data"))
     data.read()
-    # Native Python 3.10 reported this exact event for services/__init__.py.
-    data.add_lines({"/owned/package/__init__.py": {1}})
+    # Native Python 3.10 reports line 1; Python 3.11 reports virtual line 0.
+    data.add_lines({"/owned/package/__init__.py": {entry}})
     data.write()
+    raw_digest = r.q.sha256_file(directory / "coverage.data")
     sources = r.source_manifest(package)
     rows = r.coverage_rows(directory / "coverage.data", ["/owned/package"], sources)
-    assert rows["__init__.py"] == [1] and sources["__init__.py"]["line_count"] == 0
+    assert rows["__init__.py"] == expected and sources["__init__.py"]["line_count"] == 0
+    assert r.q.sha256_file(directory / "coverage.data") == raw_digest
     r.q.write_json(
         directory / "coverage.json",
         {
@@ -281,7 +284,7 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
         r.s.plan(NODES, context(), 2), [directory], package.parents[1], output
     )
     assert report["percent"] == 100
-    xml = ET.parse(output / "coverage-core-ubuntu-3.10.xml").getroot()
+    xml = ET.parse(output / "coverage-core-ubuntu-3.11.xml").getroot()
     assert xml.get("lines-valid") == "2" and xml.get("lines-covered") == "2"
     empty = next(
         row
@@ -291,16 +294,19 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
     assert empty.find("lines") is not None and len(list(empty.iter("line"))) == 0
 
 
-@pytest.mark.parametrize("empty,line", [(True, 0), (True, 2), (False, 3)])
+@pytest.mark.parametrize("empty,lines", [
+    (False, [0]), (True, [2]), (False, [3]), (False, [0, 1]),
+    (True, [0, 1]), (True, [0, 2]),
+])
 def test_empty_module_compatibility_does_not_accept_invalid_coverage_lines(
-    tmp_path, empty, line
+    tmp_path, empty, lines
 ):
     package, directory = coverage_fixture(tmp_path, [1])
     if empty:
         (package / "owned.py").write_bytes(b"")
     data = CoverageData(basename=str(directory / "coverage.data"))
     data.erase()
-    data.add_lines({"/owned/package/owned.py": {line}})
+    data.add_lines({"/owned/package/owned.py": set(lines)})
     data.write()
     with pytest.raises(
         r.q.QualificationError, match="invalid executed coverage line in owned.py"
@@ -408,7 +414,7 @@ def test_downloaded_plan_and_pins_are_bound_before_package_install(tmp_path, mut
         harness_sha256=current["harness_sha256"],
         run_id=current["run_id"],
         run_attempt=current["run_attempt"],
-        lane="core-ubuntu-3.10",
+        lane="core-ubuntu-3.11",
     )
     if mutation == "attempt":
         args.run_attempt += 1
@@ -488,7 +494,7 @@ def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
         archive=output / "candidate-source.tar",
         harness=output / "qualification-harnesses.tar",
         harness_sha256=r.q.sha256_file(output / "qualification-harnesses.tar"),
-        lane="core-ubuntu-3.10",
+        lane="core-ubuntu-3.11",
         run_id=123,
         run_attempt=1,
     )
@@ -520,7 +526,7 @@ def test_executor_rejects_wrong_installation_before_running_tests(
     )
     if mutation in {"base-python", "platform"}:
         with pytest.raises(r.q.QualificationError):
-            r.environment(tmp_path, "core-ubuntu-3.10")
+            r.environment(tmp_path, "core-ubuntu-3.11")
         return
 
     class Distribution:
@@ -544,7 +550,7 @@ def test_executor_rejects_wrong_installation_before_running_tests(
         r.importlib.metadata, "distribution", lambda name: Distribution()
     )
     with pytest.raises(r.q.QualificationError, match="source differs or is editable"):
-        r.environment(tmp_path, "core-ubuntu-3.10")
+        r.environment(tmp_path, "core-ubuntu-3.11")
 
 
 @pytest.mark.parametrize("failing", [False, True])

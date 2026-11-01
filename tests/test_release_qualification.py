@@ -108,7 +108,7 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="uns
     if layout == "union":
         entries.append(
             {
-                "lane": "core-ubuntu-3.10",
+                "lane": "core-ubuntu-3.11",
                 "owner_lane": "slow",
                 "node_id": "tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget",
                 "reason": "owned slow-lane obligation",
@@ -1593,7 +1593,7 @@ def test_discovery_preserves_out_of_scope_baseline_lanes(tmp_path: Path) -> None
         "owner_lane": "core-windows",
     }
     optional_entry = {
-        "lane": "mcp-3.10",
+        "lane": "mcp-3.11",
         "node_id": "tests/test_optional.py::test_registration",
         "reason": "optional SDK not installed",
         "owner_lane": "mcp-3.13",

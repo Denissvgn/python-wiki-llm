@@ -64,7 +64,7 @@ print(json.dumps({'module': str(root / 'api.py'), 'prefix': sys.prefix}))
                 {
                     "include": [client.name],
                     "typeCheckingMode": "strict",
-                    "pythonVersion": "3.10",
+                    "pythonVersion": "3.11",
                     "useLibraryCodeForTypes": False,
                     "reportMissingTypeStubs": "error",
                 }

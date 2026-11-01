@@ -1,6 +1,6 @@
 # _BindingState
 
-**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:1275`
+**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:1276`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_bindings](../modules/python_bindings.md)

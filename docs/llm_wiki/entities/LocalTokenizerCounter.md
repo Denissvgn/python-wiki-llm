@@ -1,6 +1,6 @@
 # LocalTokenizerCounter
 
-**Location:** `src/llm_wiki_cli/services/token_counting.py:25`
+**Location:** `src/llm_wiki_cli/services/token_counting.py:29`
 **Kind:** Class
 **Bases:** —
 **Module:** [token_counting](../modules/token_counting.md)
@@ -11,7 +11,10 @@ Count raw text using immutable local tokenizer JSON, without framing.
 
 ## Attributes
 
-*No annotated attributes found.*
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `identity` | `str` | *required* | — |
+| `_tokenizer` | `Tokenizer` | *required* | — |
 
 ## Methods
 
@@ -42,7 +45,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [token_counting](../modules/token_counting.md) | 2 | — |
+| [token_counting](../modules/token_counting.md) | 2 | `_tokenizer`, `identity` |
 
 ### References
 

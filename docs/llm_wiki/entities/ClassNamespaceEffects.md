@@ -47,8 +47,9 @@ Collect executed namespace effects, retaining explicit scope boundaries.
 | `_join_binding` | `(values)` | `@staticmethod` | — |
 | `visit_If` | `(node: ast.If \| ast.While)` | — | — |
 | `visit_While` | `(node)` | — | — |
-| `visit_Try` | `(node)` | — | — |
+| `visit_Try` | `(node: ast.Try \| ast.TryStar) -> None` | — | — |
 | `_retain_prefix_bindings` | `(base, start)` | — | — |
+| `visit_TryStar` | `(node: ast.TryStar) -> None` | — | — |
 | `visit_Match` | `(node)` | — | — |
 | `visit_TypeAlias` | `(node)` | — | — |
 | `_comprehension` | `(node)` | — | — |
@@ -80,7 +81,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [python_bindings](../modules/python_bindings.md) | 38 | — |
+| [python_bindings](../modules/python_bindings.md) | 39 | — |
 
 ### Structure
 

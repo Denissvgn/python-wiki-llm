@@ -287,10 +287,10 @@ class WikiPage:
 
 def ensure_mcp_runtime() -> None:
     """Validate that the optional MCP SDK can be imported on this runtime."""
-    if sys.version_info < (3, 10):
+    if sys.version_info < (3, 11):
         raise MCPDependencyError(
-            "llm-wiki MCP support requires Python 3.10 or newer because the "
-            "official MCP Python SDK does not support Python 3.9. " + MCP_PACKAGE_HINT
+            "agent-wiki-cli requires Python 3.11 or newer, including its MCP support. "
+            + MCP_PACKAGE_HINT
         )
     try:
         import mcp  # type: ignore[reportMissingImports]  # noqa: F401

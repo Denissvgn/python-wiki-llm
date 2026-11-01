@@ -50,7 +50,7 @@ FLAGS = [
     "xfail_strict=true",
 ]
 PROFILES = {
-    "core-ubuntu-3.10": {"os": "ubuntu-24.04", "python": "3.10", "coverage": True},
+    "core-ubuntu-3.11": {"os": "ubuntu-24.04", "python": "3.11", "coverage": True},
     "core-windows-3.13": {"os": "windows-2025", "python": "3.13", "coverage": False},
     "core-macos-3.14": {"os": "macos-15", "python": "3.14", "coverage": False},
 }

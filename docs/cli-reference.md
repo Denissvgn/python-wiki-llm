@@ -1440,8 +1440,10 @@ llm-wiki context --budget 8000 --staged
 llm-wiki context --budget 8000 --changed-path src/app.py --changed-path src/models.py
 ```
 
-Exact mode requires the optional `agent-wiki-cli[tokens]` dependency and an
-explicit local tokenizer JSON file. The counter identity binds its bytes and
+The local tokenizer backend requires Python 3.11+, the optional
+`agent-wiki-cli[tokens]` dependency, and an explicit local tokenizer JSON file.
+All CLI, MCP, and counting modes require Python 3.11 or newer.
+The counter identity binds its bytes and
 backend version. Counting disables saved truncation, padding, and special-token
 insertion; it covers the output text, including knowledge, metadata, accounting,
 the packet envelope when selected, and its final newline. Host chat framing is

@@ -356,7 +356,7 @@ def test_comparison_runs_before_merge_only_for_affected_checks():
         (p["os"], p["python"], p["coverage"])
         for p in job["strategy"]["matrix"]["include"]
     ] == [
-        ("ubuntu-24.04", "3.10", True),
+        ("ubuntu-24.04", "3.11", True),
         ("windows-2025", "3.13", False),
         ("macos-15", "3.14", False),
     ]

@@ -29,7 +29,7 @@ publish.
 ## Install the workflow in another project
 
 Run the following commands from the target project's root, using its own
-Python 3.10+ virtual environment at `.venv/`. Package installation supplies the
+Python 3.11+ virtual environment at `.venv/`. Package installation supplies the
 CLI and bundled workflow; initialization writes the project-specific agent
 instructions and wiki scaffold.
 

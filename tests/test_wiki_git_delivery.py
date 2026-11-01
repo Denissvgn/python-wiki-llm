@@ -337,12 +337,19 @@ def test_linked_worktree_with_spaces_delivers_its_own_index(tmp_path, monkeypatc
     assert delivery.inspect_wiki_git_delivery(linked / "wiki", staged=True)["ok"]
 
 
-def test_deep_native_paths_stage_and_checkout_without_global_git_changes(tmp_path, monkeypatch):
+@pytest.mark.parametrize("temporary_prefix", ["", "core-shard-context"])
+def test_deep_native_paths_stage_and_checkout_without_global_git_changes(tmp_path, monkeypatch, temporary_prefix):
+    if temporary_prefix:
+        tmp_path = tmp_path / temporary_prefix
+        tmp_path.mkdir()
     global_config = tmp_path / "global.gitconfig"
     global_config.write_text("[core]\n    autocrlf = true\n", encoding="utf-8")
     global_before = global_config.read_bytes()
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(global_config))
-    parent = tmp_path / ("native-delivery-context-" * 4)
+    # Exercise long native artifact names while leaving Git's administration
+    # directory below its separate Windows worktree limit, even in core shards.
+    padding = max(1, 145 - len(str(tmp_path)) - len("/native-"))
+    parent = tmp_path / ("native-" + "d" * padding)
     parent.mkdir()
     root, wiki = project(parent, monkeypatch)
     assert max(len(str(path)) + 1 for path in wiki.rglob("*") if path.is_file()) > 260
@@ -350,6 +357,7 @@ def test_deep_native_paths_stage_and_checkout_without_global_git_changes(tmp_pat
     git(root, "add", "--", "wiki")
     git(root, "commit", "-qm", "Deep native snapshot")
     linked = parent / "linked worktree"
+    assert len(str(root / ".git/worktrees/linked worktree/commondir")) + 1 < 260
     git(root, "worktree", "add", "--detach", str(linked), "HEAD")
     monkeypatch.chdir(linked)
     assert git(linked, "config", "--bool", "core.longpaths").strip() == b"true"

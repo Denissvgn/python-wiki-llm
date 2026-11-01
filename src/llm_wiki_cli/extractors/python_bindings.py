@@ -744,7 +744,7 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
     def visit_While(self, node):
         self.visit_If(node)
 
-    def visit_Try(self, node):
+    def visit_Try(self, node: ast.Try | ast.TryStar) -> None:
         base = dict(self.env)
         start = {name: len(values) for name, values in self.binding_history.items()}
         self._branches([node.body, node.orelse, node.finalbody])
@@ -768,7 +768,8 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
                     [_lookup(base, name), _lookup(self.env, name), *changed]
                 )
 
-    visit_TryStar = visit_Try
+    def visit_TryStar(self, node: ast.TryStar) -> None:
+        self.visit_Try(node)
 
     def visit_Match(self, node):
         self.visit(node.subject)

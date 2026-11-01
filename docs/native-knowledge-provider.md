@@ -182,11 +182,11 @@ actionable failure instead of an empty successful inventory.
 
 ## Dependencies and optional adoption
 
-The base library requires Python 3.10+ and its declared parsing dependencies.
+The base library requires Python 3.11+ and its declared parsing dependencies.
 It does not require an agent configuration, MCP, tokenizers, model-provider
 SDKs, or the provider repository's own wiki. Install `[mcp]` for the advertised
-stdio or local HTTP server, and `[tokens]` only for exact token counting with a
-caller-supplied local tokenizer. External language helpers require their
+stdio or local HTTP server, and `[tokens]` for exact token
+counting with a caller-supplied local tokenizer. Estimated counting is available without the optional tokenizer backend. External language helpers require their
 documented runtimes and explicit preparation.
 
 The [downstream tutorial](../examples/native-knowledge/README.md) demonstrates

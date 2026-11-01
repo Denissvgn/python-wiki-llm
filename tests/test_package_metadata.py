@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 
 import yaml
+from packaging.requirements import Requirement
+from packaging.specifiers import SpecifierSet
 
 from tests import release_artifact_smoke
 
@@ -89,16 +91,30 @@ def test_mcp_extra_stays_on_compatible_dependency_lines():
     data = _pyproject()
 
     assert data["project"]["optional-dependencies"]["mcp"] == [
-        "mcp>=1.27,<2; python_version >= '3.10'",
-        "pydantic>=2.11,<3; python_version >= '3.10'",
-        "pydantic-settings>=2.5.2,<2.15; python_version >= '3.10'",
-        "uvicorn>=0.31.1,<1; python_version >= '3.10' and sys_platform != 'emscripten'",
+        "mcp>=1.27,<2; python_version >= '3.11'",
+        "pydantic>=2.11,<3; python_version >= '3.11'",
+        "pydantic-settings>=2.5.2,<2.15; python_version >= '3.11'",
+        "uvicorn>=0.31.1,<1; python_version >= '3.11' and sys_platform != 'emscripten'",
     ]
     base_names = {
         re.split(r"[<>=!~;\[]", dependency, maxsplit=1)[0]
         for dependency in data["project"]["dependencies"]
     }
     assert base_names.isdisjoint({"mcp", "pydantic", "pydantic-settings", "uvicorn"})
+
+
+def test_exact_tokenizer_extra_uses_secure_dependencies_on_every_supported_runtime():
+    project = _pyproject()["project"]
+    supported = SpecifierSet(project["requires-python"])
+    assert "3.10" not in supported
+    requirements = [Requirement(value) for value in project["optional-dependencies"]["tokens"]]
+    for python in ("3.11", "3.13", "3.14"):
+        assert python in supported
+        active = {r.name: r for r in requirements if r.marker is None or r.marker.evaluate({"python_version": python})}
+        assert set(active) == {"tokenizers", "filelock"}
+        assert "0.22.2" in active["tokenizers"].specifier
+        assert "4.1.0" not in active["filelock"].specifier
+        assert "4.2.1" in active["filelock"].specifier
 
 
 def test_build_backend_requirement_is_a_dev_only_dependency():
@@ -111,6 +127,12 @@ def test_build_backend_requirement_is_a_dev_only_dependency():
         dependency.lower().startswith("setuptools")
         for dependency in data["project"]["dependencies"]
     )
+    installer = next(
+        Requirement(value) for value in data["project"]["optional-dependencies"]["dev"]
+        if Requirement(value).name == "pip"
+    )
+    assert "26.2.2" in installer.specifier and "23.0.1" not in installer.specifier
+    assert not any(Requirement(value).name == "pip" for value in data["project"]["dependencies"])
 
 
 def test_sdist_manifest_includes_knowledge_schema():
@@ -234,7 +256,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "3.4.0"
+    assert data["project"]["version"] == "4.0.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
@@ -255,9 +277,9 @@ def test_release_metadata_uses_current_license_fields_and_pinned_backend():
     }
 
 
-def test_project_requires_python_3_10_or_newer():
+def test_project_requires_python_3_11_or_newer():
     data = _pyproject()
-    assert data["project"]["requires-python"] == ">=3.10"
+    assert data["project"]["requires-python"] == ">=3.11"
 
 
 def test_ci_uses_selected_matrix_with_explicit_platform_contracts():
@@ -273,9 +295,9 @@ def test_ci_uses_selected_matrix_with_explicit_platform_contracts():
     }
 
 
-def test_readme_current_support_table_mentions_python_3_10_plus():
+def test_readme_current_support_table_mentions_python_3_11_plus():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "| Python | stdlib `ast` | Python 3.10+ |" in readme
+    assert "| Python | stdlib `ast` | Python 3.11+ |" in readme
     assert "| Python | stdlib `ast` | Python 3.9+ |" not in readme
 
 
