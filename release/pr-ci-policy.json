@@ -167,6 +167,20 @@
       ],
       "helpers": []
     },
+    "wiki-git-native": {
+      "tests": [
+        "tests/test_wiki_git_delivery.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
     "action-runtimes": {
       "tests": [
         "tests/test_action_runtimes.py"
@@ -438,6 +452,15 @@
     }
   },
   "rules": [
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/wiki_git_delivery.py",
+        "tests/test_wiki_git_delivery.py"
+      ],
+      "groups": [
+        "wiki-git-native"
+      ]
+    },
     {
       "paths": [
         "release/action-runtimes.json"

@@ -56,6 +56,22 @@ def test_action_runtime_policy_selects_release_contracts():
     assert "typecheck" in result["jobs"]
 
 
+def test_git_delivery_contract_selects_each_native_platform():
+    policy = ci.policy_load(ROOT / "release")
+    sources = registry_sources(policy)
+    path = "tests/test_wiki_git_delivery.py"
+    result = ci.select(
+        policy,
+        sources,
+        sources,
+        [{"status": "M", "old": path, "path": path}],
+        None,
+        {"entries": []},
+    )
+    for lane in ("ubuntu", "windows", "macos"):
+        assert path in result["lanes"][lane]["selectors"]
+
+
 @pytest.mark.parametrize(
     "path",
     [
