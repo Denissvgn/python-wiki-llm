@@ -54,7 +54,7 @@ LANES = {
     },
     "minimum-python": {
         "os": "ubuntu-24.04",
-        "python": "3.10",
+        "python": "3.11",
         "platform": "linux",
         "baseline": "core-ubuntu-3.10",
     },
