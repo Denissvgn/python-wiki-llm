@@ -143,9 +143,9 @@ sequenceDiagram
     p0-->>p30: stored.get('source_selection')
 ```
 
-> Call sequence diagram shows 30 of 3969 interactions; 3939 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3971 interactions; 3941 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1411 (1410 omitted); unresolved 1 of 863 (862 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1413 (1412 omitted); unresolved 1 of 863 (862 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

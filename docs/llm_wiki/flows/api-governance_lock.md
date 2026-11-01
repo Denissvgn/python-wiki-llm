@@ -69,9 +69,9 @@ sequenceDiagram
     p3-->>p25: git.lstat
 ```
 
-> Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 70 interactions; 40 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 17 of 45 (28 omitted); unresolved 8 of 13 (5 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 47 (30 omitted); unresolved 8 of 13 (5 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -80,9 +80,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 18 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 31 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 31 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_lock_open_diagnostic` | 46 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_lock_open_diagnostic` | 48 | - | external | 5 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -109,7 +109,7 @@ Collector observations for 5 source steps with known totals: observed: 45, emitt
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path.cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -124,7 +124,7 @@ flowchart LR
     s5["5. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
     s6["6. os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
     s7["7. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s8["8. os.path.abspath"]
+    s8["8. os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
     s9["9. lexical.is_absolute"]
     s10["10. Path.cwd"]
     s11["11. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
@@ -135,7 +135,7 @@ flowchart LR
     s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s5
     s4 -. "os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(path)" .-> s6
     s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))" .-> s7
-    s4 -. "os.path.abspath(lexical)" .-> s8
+    s4 -. "os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(lexical)" .-> s8
     s4 -. "lexical.is_absolute(data not statically known)" .-> s9
     s4 -. "Path.cwd(data not statically known)" .-> s10
     s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(absolute.anchor)" .-> s11
@@ -160,7 +160,7 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
-| `os.path.abspath` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
 | `Path.cwd` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
@@ -176,7 +176,7 @@ flowchart LR
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath | 59 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `os.path.abspath(lexical)` |
 | first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
 | first_unsafe_path_component | Path.cwd | 66 | `Path.cwd(data not statically known)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |

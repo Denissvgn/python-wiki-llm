@@ -145,9 +145,9 @@ sequenceDiagram
     p1-->>p30: counts
 ```
 
-> Call sequence diagram shows 30 of 4259 interactions; 4229 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4261 interactions; 4231 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1355 (1354 omitted); unresolved 1 of 1365 (1364 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1357 (1356 omitted); unresolved 1 of 1365 (1364 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

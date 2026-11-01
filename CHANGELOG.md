@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a request while retaining integrity, custody and compatibility checks.
 - Bootstrap recovery handles interrupted ownership setup without replacing
   existing wiki history.
+  Recovery journals stay outside non-Git wikis reached through Windows
+  short-path aliases.
 - Combined native and source context respects one shared response budget.
 
 - Symbol page lookup accepts source-qualified class names while retaining
