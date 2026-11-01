@@ -121,3 +121,31 @@ def test_policy_approval_inputs_select_their_consumers(path):
         "tests/test_preflight_targets.py",
     } <= set(result["lanes"]["ubuntu"]["selectors"])
     assert {"activation-proof", "wiki-integrity", "typecheck"} <= set(result["jobs"])
+
+
+@pytest.mark.parametrize("path", [
+    "pyrightconfig.json", "ruff.toml", "tests/verify_installed_provider.py",
+])
+def test_runtime_validation_inputs_select_typed_release_contracts(path):
+    policy = ci.policy_load(ROOT / "release")
+    sources = registry_sources(policy)
+    sources[path] = b"# Runtime validation input.\n"
+    result = ci.select(
+        policy, sources, sources,
+        [{"status": "M", "old": path, "path": path}], None, {"entries": []},
+    )
+    assert "typecheck" in result["jobs"]
+    selected = result["lanes"]["ubuntu"]["selectors"]
+    assert "tests/test_static_quality_architecture.py" in selected
+    assert "tests/test_preflight_runner.py" in selected
+
+
+def test_runtime_validation_ownership_remains_bounded_to_declared_inputs():
+    policy = ci.policy_load(ROOT / "release")
+    sources = registry_sources(policy)
+    path = "unreviewed-validation-config.toml"
+    with pytest.raises(ci.SelectionError, match="no trusted contract/test ownership"):
+        ci.select(
+            policy, sources, sources,
+            [{"status": "M", "old": path, "path": path}], None, {"entries": []},
+        )
