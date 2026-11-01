@@ -35,6 +35,24 @@ def run_cli(monkeypatch, *arguments):
     return 0
 
 
+def test_foreign_root_alias_keeps_recovery_outside_wiki(tmp_path, monkeypatch):
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    canonical_alias = tmp_path / "canonical-spelling/wiki"
+    resolve = Path.resolve
+
+    def resolve_alias(path, *args, **kwargs):
+        # Windows short names can resolve to another spelling of the same
+        # directory without traversing a symbolic link or reparse point.
+        return canonical_alias if path == wiki else resolve(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", resolve_alias)
+    assert governance._governance_lock_root(wiki) == wiki
+    record = recovery._record_path(wiki)
+    assert not record.is_relative_to(wiki)
+    assert not record.is_relative_to(canonical_alias)
+
+
 @pytest.mark.parametrize("knowledge_format", ["v1", None], ids=["legacy", "current"])
 @pytest.mark.parametrize("writer", ["api", "cli"])
 def test_foreign_bootstrap_tracks_all_published_files(tmp_path, monkeypatch, knowledge_format, writer):

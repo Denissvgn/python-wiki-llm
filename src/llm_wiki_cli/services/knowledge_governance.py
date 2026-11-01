@@ -3226,7 +3226,10 @@ def _governance_lock_root(wiki_dir: Path) -> Path:
             bool(reparse_flag) and bool(attributes & reparse_flag)
         ):
             return git
-    return resolved
+    # A non-Git wiki is itself the lock root. Preserve its absolute spelling:
+    # resolving a Windows short name can otherwise make recovery mistake the
+    # same directory for an external Git root and publish journals into it.
+    return Path(os.path.abspath(wiki_dir))
 
 
 def _decode_unique_json(content: bytes) -> object:

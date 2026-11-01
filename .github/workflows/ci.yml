@@ -520,12 +520,8 @@ jobs:
         cache-dependency-path: pyproject.toml
     - name: Install dependencies
       run: python -m pip install -e ".[dev,tokens]"
-    - name: Check package builds
-      run: |
-        python -m pip install "build==1.5.0"
-        python -m build
-        python tests/verify_installed_knowledge_schema.py dist
     - name: Verify foreign bootstrap publication
+      id: foreign-bootstrap
       env:
         PYTHONUTF8: '1'
         PYTHONIOENCODING: utf-8
@@ -534,7 +530,7 @@ jobs:
         -q -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true
         --junitxml=foreign-bootstrap.xml
     - name: Retain foreign bootstrap evidence
-      if: always()
+      if: ${{ always() && (steps.foreign-bootstrap.outcome == 'success' || steps.foreign-bootstrap.outcome == 'failure') }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         archive: true
@@ -542,6 +538,11 @@ jobs:
         path: foreign-bootstrap.xml
         if-no-files-found: error
         retention-days: 14
+    - name: Check package builds
+      run: |
+        python -m pip install "build==1.5.0"
+        python -m build
+        python tests/verify_installed_knowledge_schema.py dist
   core-check-inputs:
     name: Freeze core-check comparison inputs
     if: ${{ needs.plan.outputs.core-check-inputs == 'true' }}
