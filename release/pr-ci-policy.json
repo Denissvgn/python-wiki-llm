@@ -568,6 +568,7 @@
         "release/hosted_evidence.py",
         "release/knowledge_maintenance.py",
         "release/knowledge-maintenance.json",
+        "release/action-runtimes.json",
         "release/*policy*.json",
         "release/preflight*.py",
         "release/preflight-contracts.json",
