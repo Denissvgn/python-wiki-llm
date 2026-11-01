@@ -128,6 +128,12 @@ def test_build_backend_requirement_is_a_dev_only_dependency():
         dependency.lower().startswith("setuptools")
         for dependency in data["project"]["dependencies"]
     )
+    installer = next(
+        Requirement(value) for value in data["project"]["optional-dependencies"]["dev"]
+        if Requirement(value).name == "pip"
+    )
+    assert "26.2.2" in installer.specifier and "23.0.1" not in installer.specifier
+    assert not any(Requirement(value).name == "pip" for value in data["project"]["dependencies"])
 
 
 def test_sdist_manifest_includes_knowledge_schema():

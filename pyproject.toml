@@ -34,6 +34,7 @@ tokens = [
     "filelock>=4.2.1; python_version >= '3.11'",
 ]
 dev = [
+    "pip==26.2.2",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "jsonschema>=4.18",
