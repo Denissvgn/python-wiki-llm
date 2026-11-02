@@ -166,6 +166,13 @@ agent's own permissions. Review generated prompts before sharing sensitive
 source. See the [security model](docs/security-model.md) and
 [vulnerability reporting policy](SECURITY.md).
 
+## Support
+
+If LLM Wiki helps you maintain your codebase, consider
+[sponsoring its development](https://github.com/sponsors/Denissvgn).
+Your support helps maintain language extractors, improve agent workflows,
+and keep the documentation useful.
+
 ## Contribution Policy
 
 This project does not maintain a formal contribution process. You are welcome to
