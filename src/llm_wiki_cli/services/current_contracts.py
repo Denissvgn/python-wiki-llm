@@ -76,11 +76,13 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
             _seed_legacy(src_dir, wiki, helper_cache_dir=helper_cache_dir, source_selection=source_selection)
 
         _committed_inputs(wiki)
-        # Adoption publishes a new knowledge commit in the active layout. Pack
-        # valid legacy data first so it never writes an oversized flat intermediate;
-        # the storage recovery retains the exact original preimage.
+        # Pack knowledge and index its manifest together: either legacy root may
+        # exceed the publication limit. The pre-adoption catalog remains v6;
+        # only explicit adoption can publish the maintenance-owned v8 authority.
         if current_knowledge_format(wiki) != CURRENT_KNOWLEDGE_FORMAT:
-            migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT, recovery_dir=recovery / "knowledge")
+            migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT,
+                manifest_format=CURRENT_MANIFEST_FORMAT if adopted else "indexed-v6",
+                recovery_dir=recovery / "knowledge")
         # Ownership adoption captures source/helper bases before publishing. It
         # creates pending ordinary maintenance, never synthetic human approval.
         if not adopted:

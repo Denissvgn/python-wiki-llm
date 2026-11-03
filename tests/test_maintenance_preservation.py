@@ -14,7 +14,7 @@ from llm_wiki_cli.services.documentation_native import (
     refresh_documentation_native_projection,
     DocumentationNativeError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import CommitStage
+from llm_wiki_cli.services.knowledge_artifacts import CommitStage, current_knowledge_format
 from llm_wiki_cli.services.documentation_wiki_input import (
     adopt_documentation_wiki_snapshot,
     DocumentationWikiInputError,
@@ -38,7 +38,7 @@ from llm_wiki_cli.services.maintenance_protocol import (
     guard_maintenance_owner,
 )
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
-from llm_wiki_cli.services.manifest_storage import object_path
+from llm_wiki_cli.services.manifest_storage import current_manifest_format, object_path
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 
@@ -163,7 +163,26 @@ def test_indexed_manifest_cli_requires_explicit_maintenance_adoption(
     assert not Path("storage-recovery").exists()
 
 
-@pytest.mark.parametrize("operation", ["export", "downgrade"])
+@pytest.mark.parametrize("manifest_format", ["v7", "indexed-v8"])
+def test_paired_storage_upgrade_preserves_adopted_authority_and_recovery(
+    tmp_path, monkeypatch, capsys, manifest_format
+):
+    wiki = _project(tmp_path, monkeypatch, capsys, manifest_format=manifest_format)
+    before = _bytes(wiki)
+    state = SyncManifest.load(wiki).maintenance_state
+    marker = (wiki / ADOPTION_FILENAME).read_bytes()
+    migrate_knowledge_storage(wiki, to="packed-v4-deflate", manifest_format="indexed-v8",
+                              recovery_dir="paired-recovery")
+    assert current_knowledge_format(wiki) == "packed-v4-deflate"
+    assert current_manifest_format(wiki) == "indexed-v8"
+    assert SyncManifest.load(wiki).maintenance_state == state
+    assert (wiki / ADOPTION_FILENAME).read_bytes() == marker
+    guard_maintenance_owner(wiki)
+    recover_knowledge_storage(wiki, "paired-recovery")
+    assert all((wiki / name).read_bytes() == content for name, content in before.items())
+
+
+@pytest.mark.parametrize("operation", ["export", "downgrade", "paired-downgrade"])
 def test_lossy_operations_refuse_without_changing_authority(
     tmp_path, monkeypatch, capsys, operation
 ):
@@ -172,6 +191,9 @@ def test_lossy_operations_refuse_without_changing_authority(
     with pytest.raises(KnowledgeStorageError):
         if operation == "export":
             export_knowledge_v1(wiki, "export.json")
+        elif operation == "paired-downgrade":
+            migrate_knowledge_storage(wiki, to="packed-v4-deflate", manifest_format="indexed-v6",
+                                      recovery_dir="downgrade-recovery")
         else:
             migrate_knowledge_storage(
                 wiki, to="indexed-v6", recovery_dir="downgrade-recovery"

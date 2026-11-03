@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+from dataclasses import replace
 
 import pytest
 
@@ -11,6 +12,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, knowledge_cmd, sync_cmd, upgrade_cmd
 from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan,
+    commit_knowledge_artifacts,
     current_knowledge_format,
 )
 from llm_wiki_cli.services.knowledge_governance import load_governance
@@ -80,6 +82,21 @@ def _legacy_project(tmp_path, monkeypatch):
     ]))
     assert load_governance("wiki").ledger.review_events
     assert not Path("wiki", ADOPTION_FILENAME).exists()
+    # Legacy producers predate reuse commitments. Remove both sides through
+    # the owning writer before constructing a pre-policy legacy snapshot.
+    from llm_wiki_cli.services.knowledge_reuse import REUSE_INPUT_KEY, REUSE_EXTENSION_KEY
+
+    state, _, previous = _committed_inputs("wiki")
+    assert state.knowledge is not None and state.manifest_basis is not None
+    generation = dict(state.manifest_basis.generation_inputs)
+    generation.pop(REUSE_INPUT_KEY, None)
+    extensions = dict(state.knowledge.extensions)
+    extensions.pop(REUSE_EXTENSION_KEY, None)
+    commit_knowledge_artifacts(build_knowledge_commit_plan("wiki",
+        surface_index_bytes=previous[".llm-wiki-surface.json"],
+        knowledge_index=replace(state.knowledge, extensions=extensions),
+        manifest=state.manifest_basis.with_generation_state(
+            surfaces=state.manifest_basis.surfaces, generation_inputs=generation)))
     return project
 
 
@@ -104,10 +121,14 @@ def test_cli_upgrade_packs_a_real_oversized_legacy_root_before_adoption(tmp_path
         surface_index_hash=marker.surface_index_hash, knowledge_index_hash=digest(legacy),
         evaluated_envelope_hash=marker.evaluated_envelope_hash, governance_hash=marker.governance_hash,
     )
+    policy_key = "consumer/legacy-storage-policy"
+    manifest.generation_inputs[policy_key] = "x" * GIT_FAILURE_BYTES
+    policy_hash = hashlib.sha256(str(manifest.generation_inputs[policy_key]).encode()).hexdigest()
     root.write_bytes(legacy)
-    (wiki / ".llm-wiki-manifest.json").write_text(
-        json.dumps(manifest.to_payload(), sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    del legacy, payload
+    legacy_manifest = (json.dumps(manifest.to_payload(), sort_keys=True, indent=2) + "\n").encode()
+    assert len(legacy_manifest) > GIT_FAILURE_BYTES
+    (wiki / ".llm-wiki-manifest.json").write_bytes(legacy_manifest)
+    del legacy, legacy_manifest, payload, manifest
     state, _, _ = _committed_inputs(wiki)
     assert state.knowledge is not None and state.manifest_basis is not None
     with pytest.raises(ValueError, match="95 MiB"):
@@ -144,6 +165,7 @@ def test_cli_upgrade_packs_a_real_oversized_legacy_root_before_adoption(tmp_path
     state, _, _ = _committed_inputs(wiki)
     assert state.knowledge is not None and state.manifest_basis is not None
     assert state.manifest_basis.maintenance_state is not None
+    assert hashlib.sha256(str(state.manifest_basis.generation_inputs[policy_key]).encode()).hexdigest() == policy_hash
     assert guard_maintenance_owner(wiki) is not None
     assert {
         name: hashlib.sha256(value.encode()).hexdigest()
