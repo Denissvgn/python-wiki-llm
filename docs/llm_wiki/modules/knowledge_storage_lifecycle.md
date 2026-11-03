@@ -71,8 +71,8 @@ flowchart LR
 | `_default_recovery_directory` | `(root: Path, root_hash: str) -> Path \| None` | — | — |
 | `_outside_tree` | `(directory: Path, root: Path) -> Path` | — | — |
 | `_backup` | `(directory: Path, files: dict[str, bytes], target_hash: str, target_manifest_hash: str) -> None` | — | — |
-| `migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = False, recovery_dir: str \| Path \| None = None, to: str = 'sharded-v2') -> dict[str, Any]` | — | — |
-| `_migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool, recovery_dir: str \| Path \| None, to: str) -> dict[str, Any]` | — | Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki. |
+| `migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = False, recovery_dir: str \| Path \| None = None, to: str = 'sharded-v2', manifest_format: str \| None = None) -> dict[str, Any]` | — | Migrate storage, optionally indexing its manifest in the same commit. |
+| `_migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool, recovery_dir: str \| Path \| None, to: str, manifest_format: str \| None = None) -> dict[str, Any]` | — | Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki. |
 | `_read_recovery` | `(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]` | — | — |
 | `recover_knowledge_storage` | `(wiki_dir: str \| Path, recovery_dir: str \| Path, *, dry_run: bool = False) -> dict[str, Any]` | — | — |
 | `_recover_knowledge_storage` | `(wiki_dir: str \| Path, recovery_dir: str \| Path, *, dry_run: bool) -> dict[str, Any]` | — | Restore an exact interrupted migration; refuse unrelated newer roots. |
