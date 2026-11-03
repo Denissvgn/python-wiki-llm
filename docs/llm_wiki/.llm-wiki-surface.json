@@ -36151,25 +36151,9 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5387,
+              "line": 5396,
               "step": "run",
               "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2454,
-              "step": "_sync_run_options_from_args",
-              "step_index": 2,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2457,
-              "step": "_sync_run_options_from_args",
-              "step_index": 2,
               "target": "print"
             },
             {
@@ -36183,7 +36167,23 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2469,
+              "line": 2466,
+              "step": "_sync_run_options_from_args",
+              "step_index": 2,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2472,
+              "step": "_sync_run_options_from_args",
+              "step_index": 2,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2478,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -36192,25 +36192,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2425,
+              "line": 2434,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2426,
+              "line": 2435,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2427,
+              "line": 2436,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2428,
+              "line": 2437,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -36309,7 +36309,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6191,
+          "step_count": 6216,
           "truncated": true
         }
       },
@@ -68294,5 +68294,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:90ab20e775b0a999e59a3f27a4958bdbbae31d4e4443e0470a59daa30f45835f"
+  "source_hash": "sha256:78ab8945851d26c29a45f631fe8e6607a5108e95c1548b47979bcec4a0476484"
 }

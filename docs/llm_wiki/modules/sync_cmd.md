@@ -200,9 +200,9 @@ flowchart LR
 | [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1754 | — | — |
 | [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1760 | — | — |
 | [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1776 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1819 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1852 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1858 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1820 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1853 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1859 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -306,7 +306,7 @@ flowchart LR
 | `_exit_if_large_unforced_diff` | `(options: _SyncRunOptions, diff: 'SyncDiff', manifest: 'SyncManifest', inventory_result: InventoryResult, infrastructure_plan: InfrastructureSyncPlan, *, include_infrastructure: bool = True, source_diff: SyncDiff \| None = None, generator_refresh_required: bool = False, prior_generator_version: str \| None = None, evidence_refresh_sources: tuple[str, ...] = (), source_selection_prune: SourceSelectionPruneResult \| None = None) -> None` | — | — |
 | `_apply_sync_changes` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, diff: 'SyncDiff', page_maps: _SyncPageMaps, surface_plan: _SurfaceInitializationPlan, graph_observations: _RuntimeGraphObservations, infrastructure_plan: InfrastructureSyncPlan, source_snapshot: SourceSnapshot, inventory_result: InventoryResult, source_selection_prune: SourceSelectionPruneResult, *, log_diff: SyncDiff \| None = None, apply_infrastructure: bool = True, transition_execution: PageTransitionExecution \| None = None, refresh_unchanged_sections: bool = True) -> 'SyncResult'` | `@observed_phase('page_application')` | — |
 | `_apply_source_selection_prune` | `(wiki_dir: Path, prune: SourceSelectionPruneResult, page_maps: _SyncPageMaps, result: SyncResult) -> None` | — | — |
-| `_planned_generated_surface_prune` | `(wiki_dir: Path, source_snapshot: SourceSnapshot, inventory: Mapping[str, Mapping], graph_observations: _RuntimeGraphObservations, *, force: bool = False, defer_detector_retirement: bool = False) -> _GeneratedSurfaceTransition` | — | Prove managed live workflows and generated pages absent from the live set. |
+| `_planned_generated_surface_prune` | `(wiki_dir: Path, source_snapshot: SourceSnapshot, inventory: Mapping[str, Mapping], graph_observations: _RuntimeGraphObservations, *, defer_detector_retirement: bool = False) -> _GeneratedSurfaceTransition` | — | Prove managed live workflows and generated pages absent from the live set. |
 | `_generated_surface_pages_without_index` | `(wiki_dir: Path) -> tuple[str, ...]` | — | Return recognizable generated flow/workflow pages lacking ownership state. |
 | `_has_generated_surface_shape` | `(kind: PageKind, markdown: str) -> bool` | — | — |
 | `_has_neutral_generated_behavior` | `(kind: PageKind, markdown: str) -> bool` | — | — |
@@ -342,7 +342,7 @@ flowchart LR
 | `_print_sync_artifact_actions` | `(result: KnowledgeCommitResult) -> None` | — | — |
 | `_run_sync_dry_run` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
 | `_unsafe_dry_run_symlink` | `(wiki_dir: Path) -> str \| None` | — | Return the first symlink that would escape an isolated preview tree. |
-| `_enforce_sync_write_safety` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | Apply broad-change guards before a prepared sync can mutate the wiki. |
+| `_enforce_sync_write_safety` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | Require write authorization before a prepared sync can mutate the wiki. |
 | `_execute_prepared_sync` | `(options, prepared, *, target_wiki_dir = None, dry_run = False) -> None` | — | — |
 | `_run_prepared_sync` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
 | `run` | `(args) -> None` | — | — |

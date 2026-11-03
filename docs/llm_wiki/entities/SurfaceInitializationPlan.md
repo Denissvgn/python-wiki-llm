@@ -37,6 +37,7 @@ _Auto-generated from `_SurfaceInitializationPlan` in `src/llm_wiki_cli/commands/
 | `managed_surface_index` | `bool` | `False` | — |
 | `prior_surface_source_overrides` | `tuple[tuple[str, str], ...]` | `()` | — |
 | `prior_flow_entries` | `tuple[dict, ...]` | `()` | — |
+| `protected_retirement_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 
