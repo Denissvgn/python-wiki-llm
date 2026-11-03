@@ -3,14 +3,16 @@
 import hashlib
 import json
 from pathlib import Path
+import sys
 import tempfile
 from dataclasses import replace
 
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import bootstrap_cmd, knowledge_cmd, sync_cmd, upgrade_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, knowledge_cmd, sync_cmd
 from llm_wiki_cli.services.knowledge_artifacts import (
+    CommitStage,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
     current_knowledge_format,
@@ -18,6 +20,7 @@ from llm_wiki_cli.services.knowledge_artifacts import (
 from llm_wiki_cli.services.knowledge_governance import load_governance
 from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
 from llm_wiki_cli.services.knowledge_storage import GIT_FAILURE_BYTES, digest
+from llm_wiki_cli.services import knowledge_storage_lifecycle
 from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs
 from llm_wiki_cli.services.maintenance_protocol import (
     ADOPTION_FILENAME,
@@ -146,7 +149,48 @@ def test_cli_upgrade_packs_a_real_oversized_legacy_root_before_adoption(tmp_path
         "upgrade", "--src-dir", ".", "--wiki-dir", "wiki", "--agent", "generic", "--no-skills",
         "--source-selection", "selection.json", "--helper-cache-dir", ".git",
     ]
-    upgrade_cmd.run(cli._build_parser().parse_args(arguments))
+    monkeypatch.setattr(sys, "argv", ["llm-wiki", *arguments])
+    for interrupted_stage in (CommitStage.KNOWLEDGE_INDEX_WRITTEN, CommitStage.MANIFEST_WRITTEN):
+        def interrupt(stage):
+            if stage is interrupted_stage:
+                raise OSError("interrupted oversized legacy migration")
+
+        def publish(plan):
+            return commit_knowledge_artifacts(plan, fault_injector=interrupt)
+
+        with monkeypatch.context() as fault:
+            fault.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", publish)
+            with pytest.raises(SystemExit) as stopped:
+                cli.main()
+        assert stopped.value.code == 2
+        stderr = capsys.readouterr().err
+        assert "interrupted oversized legacy migration" in stderr
+        interrupted_recovery = Path(next(line.removeprefix("Native upgrade recovery: ")
+                                        for line in stderr.splitlines()
+                                        if line.startswith("Native upgrade recovery: ")))
+        assert current_knowledge_format(wiki) == "packed-v4-deflate"
+        assert not (wiki / ADOPTION_FILENAME).exists()
+        if interrupted_stage is CommitStage.KNOWLEDGE_INDEX_WRITTEN:
+            with pytest.raises(ValueError):
+                _committed_inputs(wiki)
+        else:
+            _committed_inputs(wiki)
+        recovery_arguments = ["llm-wiki", "knowledge", "recover-storage", "--wiki-dir", "wiki",
+                              "--recovery-dir", str(interrupted_recovery / "knowledge")]
+        packed = _hashes(wiki)
+        with monkeypatch.context() as invocation:
+            invocation.setattr(sys, "argv", [*recovery_arguments, "--dry-run"])
+            cli.main()
+            assert _hashes(wiki) == packed
+            invocation.setattr(sys, "argv", recovery_arguments)
+            cli.main()
+        restored = _hashes(wiki)
+        assert all(restored[name] == content_hash for name, content_hash in before.items())
+        assert root.stat().st_size > GIT_FAILURE_BYTES
+        assert (wiki / ".llm-wiki-manifest.json").stat().st_size > GIT_FAILURE_BYTES
+        _committed_inputs(wiki)
+        capsys.readouterr()
+    cli.main()
     output = capsys.readouterr().out
     recovery = Path(next(line.removeprefix("Native upgrade recovery: ")
                          for line in output.splitlines() if line.startswith("Native upgrade recovery: ")))
@@ -174,6 +218,6 @@ def test_cli_upgrade_packs_a_real_oversized_legacy_root_before_adoption(tmp_path
     records = state.manifest_basis.maintenance_state["records"]
     assert records and all(row["status"] == "pending" for row in records.values())
     del state
-    upgrade_cmd.run(cli._build_parser().parse_args(arguments))
+    cli.main()
     assert _hashes(wiki) == after
     assert "Native upgrade recovery:" not in capsys.readouterr().out
