@@ -1168,7 +1168,7 @@ def test_namespace_repair_owners_change_real_analysis_and_inventory_fingerprints
 ):
     from llm_wiki_cli.services import analysis_capture, inventory_cache
 
-    package_root = Path(python_extractor.__file__).parent.parent
+    package_root = Path(python_extractor.__file__).resolve().parent.parent
     rules = analysis_capture.registry()
     inputs = rules["providers"]["python"]
     reference = analysis_capture.implementation_hash(package_root, inputs)
