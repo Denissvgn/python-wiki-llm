@@ -108,6 +108,57 @@ def test_upgrade_retains_complete_recovery_and_prose_and_is_idempotent(project):
     assert files(project / "wiki") == after
 
 
+def test_failed_storage_publication_does_not_adopt_legacy_authority(project, monkeypatch):
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+
+    def fail_publication(plan):
+        raise RuntimeError("storage publication failed")
+
+    monkeypatch.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", fail_publication)
+    with pytest.raises(RuntimeError, match="storage publication failed"):
+        upgrade_current_knowledge("src", "wiki")
+
+    assert files(project / "wiki") == before
+    assert not (project / "wiki/.llm-wiki-maintenance-adoption.json").exists()
+
+
+def test_failed_adoption_keeps_packed_authority_and_legacy_recovery_for_retry(project, monkeypatch):
+    from llm_wiki_cli.services import maintenance_service
+    from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs, recover_knowledge_storage
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+    recovery = None
+
+    def fail_adoption(*args, recovery_dir, **kwargs):
+        nonlocal recovery
+        recovery = recovery_dir.parent
+        raise RuntimeError("adoption capture failed")
+
+    with monkeypatch.context() as fault:
+        fault.setattr(maintenance_service, "adopt_maintenance_authority", fail_adoption)
+        with pytest.raises(RuntimeError, match="adoption capture failed"):
+            upgrade_current_knowledge("src", "wiki")
+
+    assert recovery is not None
+    assert current_knowledge_format("wiki") == "packed-v4-deflate"
+    assert not (project / "wiki/.llm-wiki-maintenance-adoption.json").exists()
+    _committed_inputs("wiki")
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(recovery / "knowledge")[name] == before[name]
+    assert recover_knowledge_storage("wiki", recovery / "knowledge", dry_run=True)["changed"]
+
+    assert upgrade_current_knowledge("src", "wiki")["state"] == "current"
+    assert current_manifest_format("wiki") == "indexed-v8"
+    _committed_inputs("wiki")
+    for name, digest in before.items():
+        if name.endswith(".md"):
+            assert files(project / "wiki")[name] == digest
+
+
 @pytest.mark.parametrize("agent", AGENT_CHOICES)
 @pytest.mark.parametrize("no_skills", [False, True])
 def test_all_agents_init_and_upgrade_install_current_defaults(project, agent, no_skills):

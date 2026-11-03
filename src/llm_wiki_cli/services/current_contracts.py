@@ -75,14 +75,17 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
         _seed_legacy(src_dir, wiki, helper_cache_dir=helper_cache_dir, source_selection=source_selection)
 
     _committed_inputs(wiki)
+    # Adoption publishes a new knowledge commit in the active layout. Pack
+    # valid legacy data first so it never writes an oversized flat intermediate;
+    # the storage recovery retains the exact original preimage.
+    if current_knowledge_format(wiki) != CURRENT_KNOWLEDGE_FORMAT:
+        migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT, recovery_dir=recovery / "knowledge")
     # Ownership adoption captures source/helper bases before publishing. It
     # creates pending ordinary maintenance, never synthetic human approval.
     if not adopted:
         adopt_maintenance_authority(src_dir, wiki, recovery_dir=recovery / "adoption",
             manifest_format=CURRENT_MANIFEST_FORMAT, helper_cache_dir=helper_cache_dir,
             source_selection=source_selection, allow_external_src=allow_external_src, _captured=_captured)
-    if current_knowledge_format(wiki) != CURRENT_KNOWLEDGE_FORMAT:
-        migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT, recovery_dir=recovery / "knowledge")
     if current_manifest_format(wiki) != CURRENT_MANIFEST_FORMAT:
         migrate_knowledge_storage(wiki, to=CURRENT_MANIFEST_FORMAT, recovery_dir=recovery / "manifest")
     _committed_inputs(wiki)
