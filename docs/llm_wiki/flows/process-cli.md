@@ -31,67 +31,67 @@ sequenceDiagram
     participant p2 as comparison_scope
     participant p3 as _dispatch_command
     participant p4 as resource_failure_hint
-    participant p5 as _register_commands
-    participant p6 as _add_init_command
-    participant p7 as _add_extract_command
-    participant p8 as _add_lint_command
-    participant p9 as _add_prepare_extractors_command
-    participant p10 as _add_ci_check_command
-    participant p11 as _add_knowledge_command
-    participant p12 as _add_team_command
-    participant p13 as _add_trigger_agent_command
-    participant p14 as _add_bootstrap_command
-    participant p15 as _add_generate_prompt_command
-    participant p16 as _add_metrics_command
-    participant p17 as _add_review_command
-    participant p18 as _add_search_command
-    participant p19 as _add_status_command
-    participant p20 as _add_queue_command
-    participant p21 as _add_maintenance_command
-    participant p22 as _add_query_command
-    participant p23 as _add_task_context_command
-    participant p24 as _add_mcp_command
-    participant p25 as _add_obsidian_command
-    participant p26 as _add_site_command
-    participant p27 as _add_skills_command
-    participant p28 as _add_upgrade_command
-    participant p29 as getattr
+    participant p5 as _print_exception_notes
+    participant p6 as _register_commands
+    participant p7 as _add_init_command
+    participant p8 as _add_extract_command
+    participant p9 as _add_lint_command
+    participant p10 as _add_prepare_extractors_command
+    participant p11 as _add_ci_check_command
+    participant p12 as _add_knowledge_command
+    participant p13 as _add_team_command
+    participant p14 as _add_trigger_agent_command
+    participant p15 as _add_bootstrap_command
+    participant p16 as _add_generate_prompt_command
+    participant p17 as _add_metrics_command
+    participant p18 as _add_review_command
+    participant p19 as _add_search_command
+    participant p20 as _add_status_command
+    participant p21 as _add_queue_command
+    participant p22 as _add_maintenance_command
+    participant p23 as _add_query_command
+    participant p24 as _add_task_context_command
+    participant p25 as _add_mcp_command
+    participant p26 as _add_obsidian_command
+    participant p27 as _add_site_command
+    participant p28 as _add_skills_command
+    participant p29 as getattr (src/llm_wiki_cli/cli.py:main)
     participant p30 as parser.parse_args
     p0->>p1: _build_parser
     p0->>p2: comparison_scope
     p0->>p3: _dispatch_command
     p0->>p4: resource_failure_hint
-    p1->>p5: _register_commands
-    p5->>p6: _add_init_command
-    p5->>p7: _add_extract_command
-    p5->>p8: _add_lint_command
-    p5->>p9: _add_prepare_extractors_command
-    p5->>p10: _add_ci_check_command
-    p5->>p11: _add_knowledge_command
-    p5->>p12: _add_team_command
-    p5->>p13: _add_trigger_agent_command
-    p5->>p14: _add_bootstrap_command
-    p5->>p15: _add_generate_prompt_command
-    p5->>p16: _add_metrics_command
-    p5->>p17: _add_review_command
-    p5->>p18: _add_search_command
-    p5->>p19: _add_status_command
-    p5->>p20: _add_queue_command
-    p5->>p21: _add_maintenance_command
-    p5->>p22: _add_query_command
-    p5->>p23: _add_task_context_command
-    p5->>p24: _add_mcp_command
-    p5->>p25: _add_obsidian_command
-    p5->>p26: _add_site_command
-    p5->>p27: _add_skills_command
-    p5->>p28: _add_upgrade_command
-    p0-->>p29: getattr(args, 'comparison_policy', 'auto')
+    p0->>p5: _print_exception_notes
+    p1->>p6: _register_commands
+    p6->>p7: _add_init_command
+    p6->>p8: _add_extract_command
+    p6->>p9: _add_lint_command
+    p6->>p10: _add_prepare_extractors_command
+    p6->>p11: _add_ci_check_command
+    p6->>p12: _add_knowledge_command
+    p6->>p13: _add_team_command
+    p6->>p14: _add_trigger_agent_command
+    p6->>p15: _add_bootstrap_command
+    p6->>p16: _add_generate_prompt_command
+    p6->>p17: _add_metrics_command
+    p6->>p18: _add_review_command
+    p6->>p19: _add_search_command
+    p6->>p20: _add_status_command
+    p6->>p21: _add_queue_command
+    p6->>p22: _add_maintenance_command
+    p6->>p23: _add_query_command
+    p6->>p24: _add_task_context_command
+    p6->>p25: _add_mcp_command
+    p6->>p26: _add_obsidian_command
+    p6->>p27: _add_site_command
+    p6->>p28: _add_skills_command
+    p0-->>p29: getattr (src/llm_wiki_cli/cli.py:main)(args, 'comparison_policy', 'auto')
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 727 interactions; 697 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 734 interactions; 704 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 567 (566 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 26 (25 omitted); unresolved 1 of 567 (566 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/cli.py:_add_source_selection_argument` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | - | unresolved | 12 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 3 |
-> Omission summary shows 8 of 91 groups; 83 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 93 groups; 85 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -116,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 137; effect analysis evaluated: 135, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 142; effect analysis evaluated: 140, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 136 source steps with known totals: observed: 315, emitted: 311, omitted: 4. Unavailable totals are excluded.
+Collector observations for 141 source steps with known totals: observed: 330, emitted: 326, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -210,7 +210,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2667 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2672 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 266 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 267 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 270 | `parser.add_subparsers(dest='command', required=True)` |
@@ -226,12 +226,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2675 |
-| output | `print` | `main` | 2678 |
-| output | `print` | `main` | 2681 |
-| environment_read | `os.environ.get` | `main` | 2684 |
-| output | `print` | `main` | 2686 |
-| output | `print` | `main` | 2689 |
+| output | `print` | `main` | 2680 |
+| output | `print` | `main` | 2687 |
+| output | `print` | `main` | 2691 |
+| environment_read | `os.environ.get` | `main` | 2695 |
+| output | `print` | `main` | 2697 |
+| output | `print` | `main` | 2701 |
 
 ### Static analysis gaps
 

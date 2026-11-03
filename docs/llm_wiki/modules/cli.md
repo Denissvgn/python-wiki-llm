@@ -130,4 +130,5 @@ flowchart LR
 | `_add_context_command` | `(subparsers)` | — | — |
 | `_add_docs_command` | `(subparsers)` | — | — |
 | `_dispatch_command` | `(args)` | — | — |
+| `_print_exception_notes` | `(exc: BaseException) -> None` | — | — |
 | `main` | `()` | — | — |

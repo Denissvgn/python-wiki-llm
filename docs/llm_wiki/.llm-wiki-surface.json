@@ -38326,7 +38326,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2675,
+              "line": 2680,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38334,7 +38334,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2678,
+              "line": 2687,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38342,7 +38342,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2681,
+              "line": 2691,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38350,7 +38350,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2684,
+              "line": 2695,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -38358,7 +38358,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2686,
+              "line": 2697,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38366,7 +38366,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2689,
+              "line": 2701,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38440,7 +38440,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 728,
+          "step_count": 735,
           "truncated": false
         }
       },
@@ -68343,5 +68343,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:2d87681af7116e55683428254e12fe3ed08b8c3edcb956047ef1d9ddf87a6759"
+  "source_hash": "sha256:08029366a1a4808cb6f6bce83bef7d2a227d1fa4cd3079151003fd8dfb1d3cef"
 }
