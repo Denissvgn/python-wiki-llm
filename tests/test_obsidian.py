@@ -1895,6 +1895,13 @@ class TestObsidianCli:
 
     def test_cli_install_plugin(self, tmp_project, monkeypatch):
         vault = tmp_project / "vault"
+        plugin_relative = "integrations/obsidian/llm-wiki"
+        shutil.copytree(
+            Path(__file__).resolve().parents[1] / plugin_relative,
+            tmp_project / plugin_relative,
+            ignore=shutil.ignore_patterns("node_modules", ".git", "__pycache__"),
+        )
+        monkeypatch.chdir(tmp_project)
         safe_join = obsidian._safe_join
         relative_paths: list[str | Path] = []
 
@@ -1908,7 +1915,7 @@ class TestObsidianCli:
             _ns(
                 obsidian_action="install-plugin",
                 vault_dir=str(vault),
-                plugin_dir="integrations/obsidian/llm-wiki",
+                plugin_dir=plugin_relative,
                 format="text",
             )
         )
