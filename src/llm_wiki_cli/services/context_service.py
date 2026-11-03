@@ -33,7 +33,11 @@ from ..config import (
     validate_source_root,
 )
 from . import wiki_surface
-from .contracts import CONTEXT_KNOWLEDGE_PROTOCOL_VERSION, CONTEXT_PROTOCOL_VERSION
+from .contracts import (
+    CONTEXT_BUDGET_PROTOCOL_VERSION,
+    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+    CONTEXT_PROTOCOL_VERSION,
+)
 from .context_knowledge_contract import KNOWLEDGE_MODE_VALUES
 from .dependencies import analyze_dependencies
 from .documentation_queries import (
@@ -127,6 +131,13 @@ _V1_REQUEST_KEYS = {
     "prefer_fresh",
 }
 _V2_REQUEST_KEYS = {*_V1_REQUEST_KEYS, "knowledge_mode"}
+# The budgeted protocol owns its validator; legacy versions share field rules.
+# This registry also owns supported-version diagnostics and error identities.
+_PROTOCOL_REQUEST_KEYS = {
+    PROTOCOL_VERSION: _V1_REQUEST_KEYS,
+    KNOWLEDGE_PROTOCOL_VERSION: _V2_REQUEST_KEYS,
+    CONTEXT_BUDGET_PROTOCOL_VERSION: None,
+}
 _FILTER_KEYS = {
     "language",
     "module",
@@ -1115,11 +1126,7 @@ def _validate_protocol_request(data: object) -> dict:
     try:
         return _validate_protocol_request_impl(data)
     except ProtocolRequestError as exc:
-        if isinstance(protocol, str) and protocol in {
-            PROTOCOL_VERSION,
-            KNOWLEDGE_PROTOCOL_VERSION,
-            "llm-wiki-context/v3",
-        }:
+        if isinstance(protocol, str) and protocol in _PROTOCOL_REQUEST_KEYS:
             exc.protocol = protocol
         raise
 
@@ -1134,20 +1141,18 @@ def _validate_protocol_request_impl(data: object) -> dict:
         )
 
     protocol = data.get("protocol")
-    if protocol == "llm-wiki-context/v3":
+    if not isinstance(protocol, str) or protocol not in _PROTOCOL_REQUEST_KEYS:
+        choices = ", ".join(repr(version) for version in _PROTOCOL_REQUEST_KEYS)
+        raise ProtocolRequestError(
+            f"Unsupported protocol: {protocol!r}. Expected one of {choices}.",
+            "protocol",
+        )
+    if protocol == CONTEXT_BUDGET_PROTOCOL_VERSION:
         from .context_budget import validate_request
 
         return validate_request(data)
-    if protocol == PROTOCOL_VERSION:
-        request_keys = _V1_REQUEST_KEYS
-    elif protocol == KNOWLEDGE_PROTOCOL_VERSION:
-        request_keys = _V2_REQUEST_KEYS
-    else:
-        raise ProtocolRequestError(
-            f"Unsupported protocol: {protocol!r}. Expected {PROTOCOL_VERSION!r} "
-            f"or {KNOWLEDGE_PROTOCOL_VERSION!r}.",
-            "protocol",
-        )
+    request_keys = _PROTOCOL_REQUEST_KEYS[protocol]
+    assert request_keys is not None
 
     unknown = sorted(set(data) - request_keys)
     if unknown:
@@ -3478,7 +3483,7 @@ def _validate_request_cli_options(args, request: Mapping[str, Any]) -> None:
     if "format" not in supplied and getattr(args, "format", None) != "packet":
         return
     delivery = getattr(args, "format", None)
-    if delivery == "packet" and request["protocol"] != "llm-wiki-context/v3":
+    if delivery == "packet" and request["protocol"] != CONTEXT_BUDGET_PROTOCOL_VERSION:
         return
     if delivery != request["format"]:
         raise ProtocolRequestError(
@@ -3502,7 +3507,7 @@ def _run_protocol(args) -> None:
                 "knowledge_mode",
                 protocol=request["protocol"],
             )
-        if request["protocol"] == "llm-wiki-context/v3":
+        if request["protocol"] == CONTEXT_BUDGET_PROTOCOL_VERSION:
             from .context_budget import run as run_budgeted
 
             run_budgeted(args, request)
@@ -3512,7 +3517,7 @@ def _run_protocol(args) -> None:
         if (getattr(args, "tokenizer", None) or getattr(args, "budget_mode", None)
                 or changes_from_args(args) is not None):
             raise ProtocolRequestError(
-                "Complete-output counting and explicit changes require llm-wiki-context/v3.", "protocol"
+                f"Complete-output counting and explicit changes require {CONTEXT_BUDGET_PROTOCOL_VERSION}.", "protocol"
             )
         if getattr(args, "format", None) == "packet":
             _run_packet_output(
