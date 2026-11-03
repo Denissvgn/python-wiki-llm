@@ -19,14 +19,14 @@ def _run(monkeypatch, *arguments):
 def _snapshot(root):
     locks = {"llm-wiki-governance.lock", "llm-wiki-storage.lock"}
     return {p.relative_to(root).as_posix(): (p.read_bytes(), p.stat().st_mtime_ns)
-            for p in root.rglob("*") if p.is_file() and p.name not in locks}
+            for p in root.rglob("*") if p.is_file() and p.relative_to(root).as_posix() not in locks}
 
 
 def _project_state(root):
     return {name: _snapshot(root / name) for name in ("src", "wiki")}
 
 
-def _project(tmp_path, monkeypatch, *, adopted):
+def _project(tmp_path, monkeypatch, *, adopted, authored=True, retire=True):
     monkeypatch.chdir(tmp_path)
     src = tmp_path / "src"
     src.mkdir()
@@ -44,13 +44,15 @@ def _project(tmp_path, monkeypatch, *, adopted):
          *([] if adopted else ["--knowledge-format", "v1"]))
     page = tmp_path / "wiki/workflows/pipeline.md"
     assert "## Behavior" in page.read_text(encoding="utf-8")
-    page.write_text(page.read_text(encoding="utf-8").rstrip()
-                    + "\n\nPreserve this authored explanation of the workflow.\n", encoding="utf-8")
+    if authored:
+        page.write_text(page.read_text(encoding="utf-8").rstrip()
+                        + "\n\nPreserve this authored explanation of the workflow.\n", encoding="utf-8")
     common = ["--src-dir", "src", "--wiki-dir", "wiki", "--jobs", "1", "--no-cache", "--no-plugins"]
     _run(monkeypatch, "sync", *common)
     _committed_inputs("wiki")
     assert (tmp_path / "wiki" / ADOPTION_FILENAME).exists() is adopted
-    entry.write_text('"""The pipeline entry point was intentionally removed."""\n', encoding="utf-8")
+    if retire:
+        entry.write_text('"""The pipeline entry point was intentionally removed."""\n', encoding="utf-8")
     return page, common
 
 
@@ -90,6 +92,77 @@ def test_cli_protected_workflow_preview_is_complete_and_never_authorizes_apply(
     _run(monkeypatch, "sync", *common)
     assert "Wiki is up to date." in capsys.readouterr().out
     assert _project_state(tmp_path) == after
+
+
+@pytest.mark.parametrize("adopted", [False, True])
+def test_source_selection_retirement_preview_preserves_the_original_bindings(
+    tmp_path, monkeypatch, capsys, adopted
+):
+    page, common = _project(tmp_path, monkeypatch, adopted=adopted, retire=False)
+    profile = tmp_path / "src/selection.json"
+    profile.write_text(json.dumps({"schema_version": "llm-wiki-source-selection/v1",
+                                   "include": ["first.py", "second.py", "third.py"], "exclude": []}),
+                       encoding="utf-8")
+    arguments = [*common, "--source-selection", profile.name]
+    before = _project_state(tmp_path)
+    original_profile = profile.read_bytes(), profile.stat().st_mtime_ns
+    capsys.readouterr()
+    with pytest.raises(SystemExit) as stopped:
+        _run(monkeypatch, "sync", *arguments)
+    assert stopped.value.code == 2
+    error = capsys.readouterr().err
+    assert "--source-selection" in error and profile.name in error
+
+    _run(monkeypatch, "sync", *arguments, "--dry-run")
+    output = capsys.readouterr().out
+    assert "workflows/pipeline.md" in output
+    assert "protected generated surface retirement: 1" in output
+    assert "requires --force: yes" in output and "Preview completed." in output
+    assert _project_state(tmp_path) == before
+    assert (profile.read_bytes(), profile.stat().st_mtime_ns) == original_profile
+
+    _run(monkeypatch, "sync", *arguments, "--force")
+    assert not page.exists()
+    assert _snapshot(tmp_path / "src") == before["src"]
+    assert (profile.read_bytes(), profile.stat().st_mtime_ns) == original_profile
+    state, _, _ = _committed_inputs("wiki")
+    assert state.manifest_basis is not None and "entry.py" not in state.manifest_basis.sources
+
+
+@pytest.mark.parametrize("adopted", [False, True])
+def test_authored_content_added_after_preview_requires_a_new_protected_plan(
+    tmp_path, monkeypatch, capsys, adopted
+):
+    page, common = _project(tmp_path, monkeypatch, adopted=adopted, authored=False)
+    cache = tmp_path / "inventory-cache"
+    common = [argument for argument in common if argument != "--no-cache"]
+    common.extend(["--cache-dir", str(cache)])
+    before = _project_state(tmp_path)
+    capsys.readouterr()
+    _run(monkeypatch, "sync", *common, "--dry-run")
+    assert "requires --force: no" in capsys.readouterr().out
+    assert _project_state(tmp_path) == before
+    assert not cache.exists()
+
+    page.write_text(page.read_text(encoding="utf-8").rstrip()
+                    + "\n\nAuthored after the first preview: preserve this explanation.\n", encoding="utf-8")
+    revised = _project_state(tmp_path)
+    with pytest.raises(SystemExit) as stopped:
+        _run(monkeypatch, "sync", *common)
+    assert stopped.value.code == 2
+    assert "human-authored Behavior" in capsys.readouterr().err
+    assert _project_state(tmp_path) == revised
+
+    cached = _snapshot(cache)
+    _run(monkeypatch, "sync", *common, "--dry-run")
+    output = capsys.readouterr().out
+    assert "protected generated surface retirement: 1" in output
+    assert "requires --force: yes" in output and "Preview completed." in output
+    assert _project_state(tmp_path) == revised
+    assert _snapshot(cache) == cached
+    _run(monkeypatch, "sync", *common, "--force")
+    assert not page.exists()
+    _committed_inputs("wiki")
 
 
 @pytest.mark.parametrize("damage", ["symlink", "missing-owner", "corrupt-knowledge", "unproved-surface"])
