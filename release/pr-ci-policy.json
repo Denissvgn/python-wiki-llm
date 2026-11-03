@@ -502,6 +502,7 @@
       "paths": [
         "README.md",
         "CHANGELOG.md",
+        "SECURITY.md",
         "LICENSE",
         "docs/**"
       ],

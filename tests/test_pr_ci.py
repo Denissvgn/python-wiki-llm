@@ -517,6 +517,30 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
     assert "tests/test_pr_ci_workflow.py" not in policy["groups"]["ci-policy"]["tests"]
 
 
+def test_security_document_selects_public_documentation_checks():
+    policy = ci.policy_load(ROOT / "release")
+    before = {
+        "SECURITY.md": b"# Security\nReport vulnerabilities privately.\n",
+        "UNOWNED.md": b"Unowned root document.\n",
+        "tests/test_public_docs_vocabulary.py": b"def test_public_docs(): pass\n",
+    }
+    after = {**before, "SECURITY.md": b"# Security\nSupported releases are beta.\n"}
+    result = ci.select(
+        policy, before, after, [changed("SECURITY.md")], None, {"entries": []}
+    )
+    assert result["groups"] == ["docs"]
+    assert set(result["lanes"]) == {"ubuntu"}
+    assert result["lanes"]["ubuntu"]["selectors"] == [
+        "tests/test_public_docs_vocabulary.py"
+    ]
+    assert set(result["jobs"]) == {"activation-proof", "wiki-integrity"}
+    unowned_after = {**before, "UNOWNED.md": b"Changed unowned root document.\n"}
+    with pytest.raises(ci.SelectionError, match="no trusted contract/test ownership"):
+        ci.select(
+            policy, before, unowned_after, [changed("UNOWNED.md")], None, {"entries": []}
+        )
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):
