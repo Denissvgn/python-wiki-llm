@@ -145,9 +145,9 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 4103 interactions; 4073 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4057 interactions; 4027 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1426 (1425 omitted); unresolved 1 of 957 (956 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1398 (1397 omitted); unresolved 1 of 950 (949 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,12 +156,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/commands/init_cmd.py:run` | 1 | - | external | 103 |
+| `src/llm_wiki_cli/commands/init_cmd.py:run` | 1 | - | external | 105 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 19 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 995 groups; 987 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 978 groups; 970 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +174,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1721; effect analysis evaluated: 1090, partial: 90, unavailable: 541. Counts include steps omitted from the displayed trace.
+Source steps: 1710; effect analysis evaluated: 1083, partial: 90, unavailable: 537. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1180 source steps with known totals: observed: 7934, emitted: 7312, omitted: 622. Unavailable totals are excluded.
+Collector observations for 1173 source steps with known totals: observed: 7890, emitted: 7266, omitted: 624. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -184,7 +184,7 @@ Collector observations for 1180 source steps with known totals: observed: 7934, 
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `partial` | `available` | `116` | `18` | `98` |
+| `run` | `available` | `partial` | `available` | `118` | `18` | `100` |
 | `getattr (src/llm_wiki_cli/commands/init_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |

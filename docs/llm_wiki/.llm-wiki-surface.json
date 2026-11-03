@@ -1881,7 +1881,7 @@
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/maintenance_service.py"
           ],
-          "step_count": 1310,
+          "step_count": 1311,
           "truncated": true
         }
       },
@@ -31820,7 +31820,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py"
           ],
-          "step_count": 3529,
+          "step_count": 3530,
           "truncated": true
         }
       },
@@ -33215,6 +33215,8 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_cli/services/storage_spool.py",
+            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
@@ -33232,13 +33234,11 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/python_implementation.py",
-            "src/llm_wiki_cli/services/storage_spool.py",
-            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/skills.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 4104,
+          "step_count": 4058,
           "truncated": true
         }
       },
@@ -37128,6 +37128,8 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
+            "src/llm_wiki_cli/services/storage_spool.py",
+            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
@@ -37147,11 +37149,9 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/python_implementation.py",
-            "src/llm_wiki_cli/services/storage_spool.py",
-            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py"
           ],
-          "step_count": 3978,
+          "step_count": 3932,
           "truncated": true
         }
       },
@@ -68343,5 +68343,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:4103f9159f366fc254dfe9cae9553455b47e57d076fcb8aeab4977233afbba5c"
+  "source_hash": "sha256:2d87681af7116e55683428254e12fe3ed08b8c3edcb956047ef1d9ddf87a6759"
 }

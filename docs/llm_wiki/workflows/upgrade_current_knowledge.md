@@ -21,9 +21,9 @@
 11. `maintenance_protocol.save_recovery_snapshot`
 12. `maintenance_protocol.snapshot_wiki`
 13. `knowledge_storage_lifecycle._committed_inputs`
-14. `maintenance_service.adopt_maintenance_authority`
-15. `knowledge_artifacts.current_knowledge_format`
-16. `knowledge_storage_lifecycle.migrate_knowledge_storage`
+14. `knowledge_artifacts.current_knowledge_format`
+15. `knowledge_storage_lifecycle.migrate_knowledge_storage`
+16. `maintenance_service.adopt_maintenance_authority`
 17. `manifest_storage.current_manifest_format`
 18. `knowledge_storage_lifecycle.migrate_knowledge_storage`
 19. `knowledge_storage_lifecycle._committed_inputs`
