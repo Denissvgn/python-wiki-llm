@@ -1,6 +1,6 @@
 # ProtocolRequestError
 
-**Location:** `src/llm_wiki_cli/services/context_service.py:176`
+**Location:** `src/llm_wiki_cli/services/context_service.py:187`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_service](../modules/context_service.md)

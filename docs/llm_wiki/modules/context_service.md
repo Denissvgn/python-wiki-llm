@@ -41,7 +41,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.context_budget` | `validate_request`, `run`, `run` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
 | `.context_packet` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
-| `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
+| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -106,9 +106,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
-| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1873 | — | Operation-scoped query state captured from one knowledge read. |
+| [ProtocolRequestError](../entities/ProtocolRequestError.md) | 187 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
+| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 202 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1878 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 

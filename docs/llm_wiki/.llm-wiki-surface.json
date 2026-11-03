@@ -2233,7 +2233,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3621,
+          "step_count": 3624,
           "truncated": true
         }
       },
@@ -2433,7 +2433,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1114,
+              "line": 1125,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
@@ -2506,7 +2506,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/maintenance_status.py"
           ],
-          "step_count": 2217,
+          "step_count": 2220,
           "truncated": true
         }
       },
@@ -2563,7 +2563,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1114,
+              "line": 1125,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
@@ -2598,7 +2598,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/maintenance_status.py"
           ],
-          "step_count": 673,
+          "step_count": 676,
           "truncated": true
         }
       },
@@ -4637,7 +4637,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3774,
+          "step_count": 3777,
           "truncated": true
         }
       },
@@ -4682,13 +4682,13 @@
             },
             {
               "kind": "external_call",
-              "line": 1114,
+              "line": 1125,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1114,
+              "line": 1125,
               "step": "_validate_protocol_request",
               "target": "data.get"
             },
@@ -4783,7 +4783,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5581,
+          "step_count": 5584,
           "truncated": true
         }
       },
@@ -7064,7 +7064,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 581,
+          "step_count": 584,
           "truncated": true
         }
       },
@@ -20746,7 +20746,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4027,
+          "step_count": 4030,
           "truncated": true
         }
       },
@@ -28993,7 +28993,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 615,
+          "step_count": 618,
           "truncated": true
         }
       },
@@ -29079,7 +29079,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 755,
+          "step_count": 758,
           "truncated": true
         }
       },
@@ -32198,7 +32198,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3667,
+              "line": 3672,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32206,7 +32206,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3670,
+              "line": 3675,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32214,7 +32214,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3714,
+              "line": 3719,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32222,7 +32222,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3717,
+              "line": 3722,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32230,7 +32230,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3724,
+              "line": 3729,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32238,7 +32238,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3726,
+              "line": 3731,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32246,7 +32246,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3735,
+              "line": 3740,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32254,7 +32254,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3737,
+              "line": 3742,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32263,37 +32263,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3650,
+              "line": 3655,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3491,
+              "line": 3496,
               "step": "_run_protocol",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1092,
+              "line": 1103,
               "step": "_read_protocol_request",
               "target": "sys.stdin.read"
             },
             {
               "kind": "unresolved_call",
-              "line": 1094,
+              "line": 1105,
               "step": "_read_protocol_request",
               "target": "Path(source).read_text"
             },
             {
               "kind": "external_call",
-              "line": 1100,
+              "line": 1111,
               "step": "_read_protocol_request",
               "target": "json.loads"
             },
             {
               "kind": "external_call",
-              "line": 1104,
+              "line": 1115,
               "step": "_read_protocol_request",
               "target": "isinstance"
             },
@@ -32358,7 +32358,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1506,
+          "step_count": 1509,
           "truncated": true
         }
       },
@@ -68294,5 +68294,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:78ab8945851d26c29a45f631fe8e6607a5108e95c1548b47979bcec4a0476484"
+  "source_hash": "sha256:63f66cb6cc782d81b83e3a67da2cfad86c8f6b3878cf11ff7c8eae04113f1034"
 }
