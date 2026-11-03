@@ -1,5 +1,6 @@
 """Unsupported context requests advertise every accepted protocol version."""
 
+import io
 import json
 import re
 import sys
@@ -50,20 +51,73 @@ def test_supported_protocols_keep_validation_and_error_identity(protocol):
     assert stopped.value.protocol == protocol
 
 
-def test_cli_unsupported_protocol_returns_complete_guidance_without_a_project(
-    tmp_path, monkeypatch, capsys
+@pytest.mark.parametrize("protocol", SUPPORTED)
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("budget_mode", "estimated"),
+        ("counter_id", "counter/v1"),
+        ("changes", {"mode": "paths", "paths": []}),
+        ("format", "packet"),
+    ],
+)
+def test_budgeted_fields_keep_their_protocol_boundaries(protocol, field, value):
+    request = _request(protocol, **{field: value})
+    if protocol == CONTEXT_BUDGET_PROTOCOL_VERSION:
+        normalized = context._validate_protocol_request(request)
+        assert normalized["protocol"] == protocol
+        assert normalized[field] == value
+    else:
+        with pytest.raises(context.ProtocolRequestError) as stopped:
+            context._validate_protocol_request(request)
+        assert stopped.value.field == field
+        assert stopped.value.protocol == protocol
+
+
+@pytest.mark.parametrize("source", ["file", "stdin"])
+@pytest.mark.parametrize("packet", [False, True])
+@pytest.mark.parametrize("existing_output", [False, True])
+def test_cli_unsupported_protocol_preserves_transport_and_output_without_a_project(
+    tmp_path, monkeypatch, capsys, source, packet, existing_output
 ):
     monkeypatch.chdir(tmp_path)
-    request = tmp_path / "request.json"
-    request.write_text(json.dumps(_request("llm-wiki-context/v999")), encoding="utf-8")
-    monkeypatch.setattr(sys, "argv", ["llm-wiki", "context", "--request", str(request)])
+    encoded = json.dumps(_request("llm-wiki-context/v999"))
+    expected_files = []
+    if source == "file":
+        request = tmp_path / "request.json"
+        request.write_text(encoded, encoding="utf-8")
+        request_arg = str(request)
+        expected_files.append(request.name)
+    else:
+        monkeypatch.setattr(sys, "stdin", io.StringIO(encoded))
+        request_arg = "-"
+    output = tmp_path / "context.out"
+    if existing_output:
+        output.write_bytes(b"Existing output must survive rejection.\n")
+        expected_files.append(output.name)
+    before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.iterdir()}
+    argv = ["llm-wiki", "context", "--request", request_arg, "--output", str(output)]
+    if packet:
+        argv.extend(["--format", "packet"])
+    monkeypatch.setattr(sys, "argv", argv)
     with pytest.raises(SystemExit) as stopped:
         cli.main()
     assert stopped.value.code == 1
-    payload = json.loads(capsys.readouterr().out)
+    captured = capsys.readouterr()
+    payload = json.loads(captured.err if packet else captured.out)
     assert payload["protocol"] == CONTEXT_PROTOCOL_VERSION
     assert payload["ok"] is False
-    assert payload["error"]["code"] == "invalid_request"
     assert payload["error"]["field"] == "protocol"
-    assert _advertised(payload["error"]["message"]) == list(SUPPORTED)
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["request.json"]
+    if packet:
+        assert captured.out == ""
+        assert payload["error"]["code"] == "invalid-request"
+        # Packet diagnostics intentionally sanitize raw request values/messages.
+        assert payload["error"]["message"] == (
+            "protocol: Context request is invalid. Check the indicated field."
+        )
+    else:
+        assert captured.err == ""
+        assert payload["error"]["code"] == "invalid_request"
+        assert _advertised(payload["error"]["message"]) == list(SUPPORTED)
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted(expected_files)
+    assert {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.iterdir()} == before
