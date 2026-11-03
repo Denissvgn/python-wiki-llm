@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-03
+
+### Changed
+
+- PyPI metadata identifies the project as beta.
+
+### Fixed
+
+- Large legacy wikis upgrade to packed knowledge and indexed manifests before
+  maintenance adoption, preserving recovery preimages and authored content.
+- Failed or interrupted project initialization and upgrades report retained
+  native upgrade recovery locations.
+- Dry-run sync previews show protected workflow retirements and the explicit
+  authorization required to apply them, while ordinary sync preserves authored
+  Behavior sections.
+- Unsupported context-protocol errors list every supported version, including
+  `llm-wiki-context/v3`.
+
 ## [4.0.0] - 2026-11-01
 
 ### Changed
