@@ -2663,6 +2663,11 @@ def _dispatch_command(args):
         _COMMAND_MODULES[args.command].run(args)
 
 
+def _print_exception_notes(exc: BaseException) -> None:
+    for note in getattr(exc, "__notes__", ()):
+        print(note, file=sys.stderr)
+
+
 def main():
     parser = _build_parser()
     args = parser.parse_args()
@@ -2671,19 +2676,26 @@ def main():
         from .services.analysis_compatibility import comparison_scope
         with comparison_scope(getattr(args, "comparison_policy", "auto")):
             _dispatch_command(args)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as exc:
         print("\nAborted.")
+        _print_exception_notes(exc)
         sys.exit(130)
+    except SystemExit as exc:
+        _print_exception_notes(exc)
+        raise
     except PathValidationError as exc:
         print(str(exc), file=sys.stderr)
+        _print_exception_notes(exc)
         sys.exit(1)
     except RuntimeOutputError as exc:
         print(f"Error: {exc}", file=sys.stderr)
+        _print_exception_notes(exc)
         sys.exit(2)
     except Exception as exc:
         if os.environ.get("LLM_WIKI_DEBUG"):
             raise
         print(f"Error: {exc}", file=sys.stderr)
+        _print_exception_notes(exc)
         hint = resource_failure_hint(exc)
         if hint is not None:
             print(f"Resource guidance: {hint}", file=sys.stderr)

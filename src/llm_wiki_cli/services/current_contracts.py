@@ -90,9 +90,10 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
         if current_manifest_format(wiki) != CURRENT_MANIFEST_FORMAT:
             migrate_knowledge_storage(wiki, to=CURRENT_MANIFEST_FORMAT, recovery_dir=recovery / "manifest")
         _committed_inputs(wiki)
-    except Exception as exc:
+    except BaseException as exc:
         # Preserve the original failure type and ownership diagnostics while
-        # exposing retained preimages even when a later publication is interrupted.
+        # exposing retained preimages on failure or cancellation. Process-control
+        # exceptions are annotated and immediately re-raised, never swallowed.
         exc.add_note(f"Native upgrade recovery: {recovery}")
         raise
     return {"changed": True, "state": "current", "recovery_dir": str(recovery)}

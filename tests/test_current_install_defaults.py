@@ -244,6 +244,48 @@ def test_native_setup_failure_prints_the_retained_storage_recovery(project, monk
         assert files(project / "wiki")[name] == before[name]
 
 
+@pytest.mark.parametrize("command", ["init", "upgrade"])
+@pytest.mark.parametrize("failure_kind,exit_code", [("interrupt", 130), ("unexpected", 1), ("exit", 7)])
+def test_cli_abort_keeps_recovery_diagnostics_and_exit_status(
+    project, monkeypatch, capsys, command, failure_kind, exit_code
+):
+    import sys
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+    failure = {"interrupt": KeyboardInterrupt(), "unexpected": RuntimeError("publication stopped"),
+               "exit": SystemExit(7)}[failure_kind]
+
+    def interrupt(stage):
+        if stage == CommitStage.KNOWLEDGE_INDEX_WRITTEN:
+            raise failure
+
+    def publish(plan):
+        return commit_knowledge_artifacts(plan, fault_injector=interrupt)
+
+    arguments = ["llm-wiki", command, "--wiki-dir", "wiki", "--agent", "generic", "--no-skills"]
+    if command == "upgrade":
+        arguments.extend(["--src-dir", "src"])
+    monkeypatch.setattr(sys, "argv", arguments)
+    monkeypatch.delenv("LLM_WIKI_DEBUG", raising=False)
+    capsys.readouterr()
+    with monkeypatch.context() as fault:
+        fault.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", publish)
+        with pytest.raises(SystemExit) as stopped:
+            cli.main()
+
+    assert stopped.value.code == exit_code
+    stderr = capsys.readouterr().err
+    recovery = Path(next(line.removeprefix("Native upgrade recovery: ")
+                         for line in stderr.splitlines() if line.startswith("Native upgrade recovery: ")))
+    assert (recovery / "knowledge/recovery.json").is_file()
+    knowledge_storage_lifecycle.recover_knowledge_storage("wiki", recovery / "knowledge")
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(project / "wiki")[name] == before[name]
+
+
 @pytest.mark.parametrize("agent", AGENT_CHOICES)
 @pytest.mark.parametrize("no_skills", [False, True])
 def test_all_agents_init_and_upgrade_install_current_defaults(project, agent, no_skills):
