@@ -39,6 +39,7 @@ and strict validation; help text grants no extra write or setup authority.
 | `.services.resource_diagnostics` | `resource_failure_hint` |
 | `.services.runtime_output` | `RuntimeOutputError` |
 | `argparse` | `argparse` |
+| `contextlib` | `contextmanager` |
 | `os` | `os` |
 | `sys` | `sys` |
 
@@ -69,7 +70,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 60 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
+| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 61 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
 
 ## Functions
 
@@ -131,4 +132,5 @@ flowchart LR
 | `_add_docs_command` | `(subparsers)` | — | — |
 | `_dispatch_command` | `(args)` | — | — |
 | `_print_exception_notes` | `(exc: BaseException) -> None` | — | — |
+| `_report_cli_errors` | `()` | `@contextmanager` | — |
 | `main` | `()` | — | — |

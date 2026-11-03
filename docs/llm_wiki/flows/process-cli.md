@@ -28,11 +28,11 @@
 sequenceDiagram
     participant p0 as main
     participant p1 as _build_parser
-    participant p2 as comparison_scope
-    participant p3 as _dispatch_command
-    participant p4 as resource_failure_hint
-    participant p5 as _print_exception_notes
-    participant p6 as _register_commands
+    participant p2 as _report_cli_errors
+    participant p3 as comparison_scope
+    participant p4 as _dispatch_command
+    participant p5 as _register_commands
+    participant p6 as resource_failure_hint
     participant p7 as _add_init_command
     participant p8 as _add_extract_command
     participant p9 as _add_lint_command
@@ -58,38 +58,38 @@ sequenceDiagram
     participant p29 as getattr (src/llm_wiki_cli/cli.py:main)
     participant p30 as parser.parse_args
     p0->>p1: _build_parser
-    p0->>p2: comparison_scope
-    p0->>p3: _dispatch_command
-    p0->>p4: resource_failure_hint
-    p0->>p5: _print_exception_notes
-    p1->>p6: _register_commands
-    p6->>p7: _add_init_command
-    p6->>p8: _add_extract_command
-    p6->>p9: _add_lint_command
-    p6->>p10: _add_prepare_extractors_command
-    p6->>p11: _add_ci_check_command
-    p6->>p12: _add_knowledge_command
-    p6->>p13: _add_team_command
-    p6->>p14: _add_trigger_agent_command
-    p6->>p15: _add_bootstrap_command
-    p6->>p16: _add_generate_prompt_command
-    p6->>p17: _add_metrics_command
-    p6->>p18: _add_review_command
-    p6->>p19: _add_search_command
-    p6->>p20: _add_status_command
-    p6->>p21: _add_queue_command
-    p6->>p22: _add_maintenance_command
-    p6->>p23: _add_query_command
-    p6->>p24: _add_task_context_command
-    p6->>p25: _add_mcp_command
-    p6->>p26: _add_obsidian_command
-    p6->>p27: _add_site_command
-    p6->>p28: _add_skills_command
+    p0->>p2: _report_cli_errors
+    p0->>p3: comparison_scope
+    p0->>p4: _dispatch_command
+    p1->>p5: _register_commands
+    p2->>p6: resource_failure_hint
+    p5->>p7: _add_init_command
+    p5->>p8: _add_extract_command
+    p5->>p9: _add_lint_command
+    p5->>p10: _add_prepare_extractors_command
+    p5->>p11: _add_ci_check_command
+    p5->>p12: _add_knowledge_command
+    p5->>p13: _add_team_command
+    p5->>p14: _add_trigger_agent_command
+    p5->>p15: _add_bootstrap_command
+    p5->>p16: _add_generate_prompt_command
+    p5->>p17: _add_metrics_command
+    p5->>p18: _add_review_command
+    p5->>p19: _add_search_command
+    p5->>p20: _add_status_command
+    p5->>p21: _add_queue_command
+    p5->>p22: _add_maintenance_command
+    p5->>p23: _add_query_command
+    p5->>p24: _add_task_context_command
+    p5->>p25: _add_mcp_command
+    p5->>p26: _add_obsidian_command
+    p5->>p27: _add_site_command
+    p5->>p28: _add_skills_command
     p0-->>p29: getattr (src/llm_wiki_cli/cli.py:main)(args, 'comparison_policy', 'auto')
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 734 interactions; 704 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 735 interactions; 705 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 26 (25 omitted); unresolved 1 of 567 (566 omitted). These counts cover the captured static trace.
 
@@ -116,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 142; effect analysis evaluated: 140, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 143; effect analysis evaluated: 141, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 141 source steps with known totals: observed: 330, emitted: 326, omitted: 4. Unavailable totals are excluded.
+Collector observations for 142 source steps with known totals: observed: 330, emitted: 326, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -126,7 +126,7 @@ Collector observations for 141 source steps with known totals: observed: 330, em
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `main` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `main` | `available` | `evaluated` | `available` | `0` | `0` | `0` |
 | `_build_parser` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `argparse.ArgumentParser` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -164,36 +164,17 @@ flowchart LR
     s7 -. "init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')" .-> s10
     s7 -. "init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')" .-> s11
     s7 -. "init_parser.add_argument(…)" .-> s12
-    b0["output print"]
-    s1 -. "output print" .-> b0
-    b1["output print"]
-    s1 -. "output print" .-> b1
-    b2["output print"]
-    s1 -. "output print" .-> b2
-    b3["environment_read os.environ.get"]
-    s1 -. "environment_read os.environ.get" .-> b3
-    b4["output print"]
-    s1 -. "output print" .-> b4
-    b5["output print"]
-    s1 -. "output print" .-> b5
     click s1 "../modules/cli.md"
     click s2 "../modules/cli.md"
     click s6 "../modules/cli.md"
     click s7 "../modules/cli.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
-    class b1 boundary
-    class b2 boundary
-    class b3 boundary
-    class b4 boundary
-    class b5 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `main` | - | `PathValidationError`, `sys`, `RuntimeOutputError`, `sys`, `sys`, `sys` | - | - |
+| `main` | - | - | - | - |
 | `_build_parser` | - | `__version__` | - | `parser` |
 | `argparse.ArgumentParser` | - | - | - | - |
 | `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | - | - | - | - |
@@ -210,41 +191,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2672 | `_build_parser(data not statically known)` |
-| _build_parser | argparse.ArgumentParser | 266 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
-| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 267 | `parser.add_argument('--version', action='version', version=...)` |
-| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 270 | `parser.add_subparsers(dest='command', required=True)` |
-| _build_parser | _register_commands | 271 | `_register_commands(subparsers)` |
-| _register_commands | _add_init_command | 310 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 391 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 394 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 400 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 405 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 411 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| main | _build_parser | 2703 | `_build_parser(data not statically known)` |
+| _build_parser | argparse.ArgumentParser | 267 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
+| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 268 | `parser.add_argument('--version', action='version', version=...)` |
+| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 271 | `parser.add_subparsers(dest='command', required=True)` |
+| _build_parser | _register_commands | 272 | `_register_commands(subparsers)` |
+| _register_commands | _add_init_command | 311 | `_add_init_command(subparsers)` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 392 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 395 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 401 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 406 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 412 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| output | `print` | `main` | 2680 |
-| output | `print` | `main` | 2687 |
-| output | `print` | `main` | 2691 |
-| environment_read | `os.environ.get` | `main` | 2695 |
-| output | `print` | `main` | 2697 |
-| output | `print` | `main` | 2701 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_parser` | `argparse.ArgumentParser` | 266 |
-| unresolved_call | `_build_parser` | `parser.add_argument` | 267 |
-| unresolved_call | `_build_parser` | `parser.add_subparsers` | 270 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 391 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 394 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 400 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 405 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 411 |
+| external_call | `_build_parser` | `argparse.ArgumentParser` | 267 |
+| unresolved_call | `_build_parser` | `parser.add_argument` | 268 |
+| unresolved_call | `_build_parser` | `parser.add_subparsers` | 271 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 392 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 395 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 401 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 406 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 412 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

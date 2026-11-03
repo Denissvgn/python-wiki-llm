@@ -38322,102 +38322,53 @@
       },
       "evidence": {
         "data_flow": {
-          "boundary_effects": [
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2680,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2687,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2691,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "environment_read",
-              "line": 2695,
-              "step": "main",
-              "step_index": 1,
-              "target": "os.environ.get"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2697,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2701,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            }
-          ],
+          "boundary_effects": [],
           "gaps": [
             {
               "kind": "external_call",
-              "line": 266,
+              "line": 267,
               "step": "_build_parser",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 267,
+              "line": 268,
               "step": "_build_parser",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 270,
+              "line": 271,
               "step": "_build_parser",
               "target": "parser.add_subparsers"
             },
             {
               "kind": "unresolved_call",
-              "line": 391,
+              "line": 392,
               "step": "_add_init_command",
               "target": "subparsers.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 394,
+              "line": 395,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 400,
+              "line": 401,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 405,
+              "line": 406,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 411,
+              "line": 412,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
@@ -38436,11 +38387,11 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/cli.py",
+            "src/llm_wiki_cli/services/resource_diagnostics.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
-            "src/llm_wiki_cli/services/progress.py",
-            "src/llm_wiki_cli/services/resource_diagnostics.py"
+            "src/llm_wiki_cli/services/progress.py"
           ],
-          "step_count": 735,
+          "step_count": 736,
           "truncated": false
         }
       },
@@ -68343,5 +68294,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:08029366a1a4808cb6f6bce83bef7d2a227d1fa4cd3079151003fd8dfb1d3cef"
+  "source_hash": "sha256:c8175940815c2e0b0b4a6475637cd3bc6052bfb87edaf678d3e6fda1aeb09b43"
 }
