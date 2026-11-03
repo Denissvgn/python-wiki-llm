@@ -1,4 +1,5 @@
 import argparse
+from contextlib import contextmanager
 import os
 import sys
 
@@ -2668,14 +2669,10 @@ def _print_exception_notes(exc: BaseException) -> None:
         print(note, file=sys.stderr)
 
 
-def main():
-    parser = _build_parser()
-    args = parser.parse_args()
-
+@contextmanager
+def _report_cli_errors():
     try:
-        from .services.analysis_compatibility import comparison_scope
-        with comparison_scope(getattr(args, "comparison_policy", "auto")):
-            _dispatch_command(args)
+        yield
     except KeyboardInterrupt as exc:
         print("\nAborted.")
         _print_exception_notes(exc)
@@ -2700,6 +2697,16 @@ def main():
         if hint is not None:
             print(f"Resource guidance: {hint}", file=sys.stderr)
         sys.exit(1)
+
+
+def main():
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    with _report_cli_errors():
+        from .services.analysis_compatibility import comparison_scope
+        with comparison_scope(getattr(args, "comparison_policy", "auto")):
+            _dispatch_command(args)
 
 
 if __name__ == "__main__":
