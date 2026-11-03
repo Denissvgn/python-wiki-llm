@@ -3870,6 +3870,18 @@ class TestSyncFlowRegeneration:
         assert "Archive or remove" in error
         assert "--force" in error
 
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki), dry_run=True))
+        preview = capsys.readouterr().out
+        assert "protected generated surface retirement: 1" in preview
+        assert "flows/api-run.md" in preview
+        assert "requires --force: yes" in preview
+        assert "Preview completed." in preview
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == before
+
         sync_cmd.run(
             _make_sync_args(
                 src_dir=str(proj),

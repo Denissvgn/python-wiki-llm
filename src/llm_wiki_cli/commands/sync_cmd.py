@@ -1796,6 +1796,7 @@ class _SurfaceInitializationPlan:
     managed_surface_index: bool = False
     prior_surface_source_overrides: tuple[tuple[str, str], ...] = ()
     prior_flow_entries: tuple[dict, ...] = ()
+    protected_retirement_paths: tuple[str, ...] = ()
 
     @property
     def created_pages(self) -> int:
@@ -1859,6 +1860,7 @@ class _GeneratedSurfaceTransition:
     """Prior ownership proof and generated pages that cross the live boundary."""
 
     retired_page_paths: tuple[str, ...] = ()
+    protected_retirement_paths: tuple[str, ...] = ()
     managed_flow_page_paths: frozenset[str] = frozenset()
     managed_workflow_page_paths: frozenset[str] = frozenset()
     managed_surface_index: bool = False
@@ -2221,6 +2223,13 @@ def _print_dry_run_plan(
         f"{len(source_selection_prune.deselected_surface_page_paths)} "
         "generated surface page(s)"
     )
+    if plan.protected_retirement_paths:
+        print(
+            "  protected generated surface retirement: "
+            f"{len(plan.protected_retirement_paths)} page(s) with human-authored Behavior"
+        )
+        for path in plan.protected_retirement_paths:
+            print(f"    PROTECTED {json.dumps(path)} (applying requires --force)")
     infrastructure_label = (
         "deferred infrastructure sources"
         if options.initialize_surfaces
@@ -2331,7 +2340,7 @@ def _print_dry_run_plan(
         )
         is not None
     )
-    requires_force = source_requires_force or surface_requires_force
+    requires_force = source_requires_force or surface_requires_force or bool(plan.protected_retirement_paths)
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
     print("DRY-RUN: no files modified.")
     return requires_force
@@ -3142,7 +3151,6 @@ def _planned_generated_surface_prune(
     inventory: Mapping[str, Mapping],
     graph_observations: _RuntimeGraphObservations,
     *,
-    force: bool = False,
     defer_detector_retirement: bool = False,
 ) -> _GeneratedSurfaceTransition:
     """Prove managed live workflows and generated pages absent from the live set."""
@@ -3275,20 +3283,10 @@ def _planned_generated_surface_prune(
             continue
         if not _has_neutral_generated_behavior(page_kind, markdown):
             authored_behavior.append(canonical)
-            if not force:
-                continue
         deselected.add(canonical)
-    if authored_behavior and not force:
-        displayed = ", ".join(authored_behavior[:5])
-        if len(authored_behavior) > 5:
-            displayed += f", and {len(authored_behavior) - 5} more"
-        raise GeneratedSurfacePruneError(
-            "refusing to remove stale generated page(s) with human-authored "
-            f"Behavior: {displayed}. Archive or remove the pages explicitly, "
-            "or re-run with `llm-wiki sync --force` to authorize removal."
-        )
     return _GeneratedSurfaceTransition(
         retired_page_paths=tuple(sorted(deselected)),
+        protected_retirement_paths=tuple(sorted(authored_behavior)),
         managed_flow_page_paths=frozenset(managed_flows),
         managed_workflow_page_paths=frozenset(managed_workflows),
         managed_surface_index=True,
@@ -4352,7 +4350,6 @@ def _prepare_sync_run(
             source_snapshot,
             inventory,
             graph_observations,
-            force=options.force,
             defer_detector_retirement=bool(
                 options.initialize_surfaces and not runtime_basis_refresh
             ),
@@ -4393,6 +4390,7 @@ def _prepare_sync_run(
             generated_surface_transition.prior_source_overrides
         ),
         prior_flow_entries=generated_surface_transition.prior_flow_entries,
+        protected_retirement_paths=generated_surface_transition.protected_retirement_paths,
     )
     source_selection_prune = replace(
         source_selection_prune,
@@ -5244,7 +5242,7 @@ def _run_sync_dry_run(
     if requires_force:
         print(
             "\nPreview completed. After reviewing the page and artifact actions, "
-            "explicitly authorize a broad update by repeating the same invocation "
+            "explicitly authorize the update by repeating the same invocation "
             "with --force instead of --dry-run."
         )
         print(
@@ -5292,8 +5290,19 @@ def _enforce_sync_write_safety(
     options: _SyncRunOptions,
     prepared: _PreparedSyncRun,
 ) -> None:
-    """Apply broad-change guards before a prepared sync can mutate the wiki."""
+    """Require write authorization before a prepared sync can mutate the wiki."""
 
+    protected = prepared.surface_plan.protected_retirement_paths
+    if protected and not options.force:
+        displayed = ", ".join(protected[:5])
+        if len(protected) > 5:
+            displayed += f", and {len(protected) - 5} more"
+        raise GeneratedSurfacePruneError(
+            "refusing to remove stale generated page(s) with human-authored "
+            f"Behavior: {displayed}. Archive or remove the pages explicitly, "
+            "or re-run with `llm-wiki sync --force` to authorize removal.\n"
+            + _sync_preview_hint(options)
+        )
     if (
         (
             not options.initialize_surfaces
@@ -5371,7 +5380,7 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             prepared.repair_boundary.assert_current()
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
+    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
