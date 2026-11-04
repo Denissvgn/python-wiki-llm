@@ -49,6 +49,7 @@ from .knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
+    _assemble_knowledge_index,
     _knowledge_validation_operation,
 )
 from .knowledge_graph import (
@@ -70,7 +71,7 @@ from .infrastructure_sync import (
     InfrastructureSyncError,
     infrastructure_evidence_by_page,
 )
-from .knowledge_model import ProducerRecord, concept_kind_for_page_kind
+from .knowledge_model import KnowledgeModelError, ProducerRecord, concept_kind_for_page_kind
 from .contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
@@ -178,6 +179,7 @@ class KnowledgeGenerationInputs:
     maintenance_raw_content_by_page: Mapping[str, bytes] | None = None
 
 
+@observed_phase("knowledge_plan")
 def build_knowledge_generation_plan(
     inputs: KnowledgeGenerationInputs,
 ) -> KnowledgeCommitPlan:
@@ -196,6 +198,8 @@ def build_knowledge_generation_plan(
             return _build_knowledge_generation_plan(inputs)
     except KnowledgeGenerationError:
         raise
+    except KnowledgeModelError as exc:
+        raise KnowledgeGenerationError(exc.field, exc.reason) from exc
     except (
         KnowledgeArtifactError,
         KnowledgeEnvelopeError,
@@ -446,7 +450,15 @@ def _build_knowledge_generation_plan(
             "entity_name": owner.entity_name,
             "occurrence": owner.occurrence,
         }
-    knowledge = build_knowledge_index(
+    # Governance/maintenance replace the assembled model. Validate their exact
+    # final result at the commit boundary instead of parsing an intermediate
+    # model that cannot supply the final validation receipt.
+    index_builder = (
+        _assemble_knowledge_index
+        if inputs.governance is not None or manifest.maintenance_state is not None
+        else build_knowledge_index
+    )
+    knowledge = index_builder(
         KnowledgeIndexInputs(
             envelope=envelope,
             pages=inputs.pages,

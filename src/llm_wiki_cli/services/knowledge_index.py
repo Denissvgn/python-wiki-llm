@@ -216,8 +216,8 @@ class _InvalidSurfaceJson(ValueError):
     pass
 
 
-def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
-    """Build one deterministic v1 knowledge index without performing I/O."""
+def _assemble_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
+    """Join checked generation inputs; the final projected model still needs validation."""
 
     context = _validate_and_join_inputs(inputs)
     concepts = tuple(_concept_for_page(joined, inputs.concept_extensions_by_page.get(joined.page.relative_path, {})) for joined in context.joined_pages)
@@ -238,6 +238,13 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
         extensions=inputs.extensions,
     )
     record_counts(concepts=len(concepts), relationships=len(relationships))
+    return model
+
+
+def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
+    """Build one deterministic, fully validated v1 index without performing I/O."""
+
+    model = _assemble_knowledge_index(inputs)
     try:
         identity = _validator_identity()
         validated = validate_knowledge_index(model)
