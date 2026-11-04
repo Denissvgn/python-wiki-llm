@@ -58,6 +58,7 @@ def test_same_store_does_not_materialize_again_but_public_validation_does(stored
     stored, calls = count_materializations(stored, monkeypatch)
     _, state, original = stored
     assert state.manifest_basis is not None and state.validated_artifacts is not None
+    prior = state.validated_artifacts
     plan = build(stored)
     assert not calls
     assert not plan.changed
@@ -66,7 +67,7 @@ def test_same_store_does_not_materialize_again_but_public_validation_does(stored
         surface_index_bytes=plan.surface_index.content,
         knowledge_index_bytes=plan.knowledge_index.content,
         manifest=state.manifest_basis,
-        object_reader=lambda path, maximum: state.validated_artifacts.storage_objects[path],
+        object_reader=lambda path, maximum: prior.storage_objects[path],
     )
     assert len(calls) == 1
 

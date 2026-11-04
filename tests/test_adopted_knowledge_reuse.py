@@ -205,6 +205,9 @@ def test_raw_markdown_inspection_budget_falls_back_to_guarded_generation(legacy,
         def __init__(self, root):
             super().__init__(root, max_bytes=budget)
 
+        def read(self, relative, maximum):
+            pytest.fail("oversized reuse capture must decline before retaining provisional page reads")
+
     def bounded_check(*args, **kwargs):
         # Scope the lower budget to the advisory shortcut, keeping the normal
         # artifact readers under their independent existing resource contracts.
@@ -217,6 +220,108 @@ def test_raw_markdown_inspection_budget_falls_back_to_guarded_generation(legacy,
         _sync()
     assert build.call_count >= 1
     assert snapshot_wiki("wiki") == before
+
+
+@pytest.mark.parametrize("growth", [1, "exhaust-capture"])
+def test_page_growth_after_budget_preflight_cannot_be_treated_as_a_cache_miss(legacy, monkeypatch, growth):
+    from llm_wiki_cli.services import knowledge_storage_io
+    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+
+    _sync(rebuild_knowledge=True)
+    total = sum(page.path.stat().st_size for page in collect_wiki_pages("wiki"))
+    original_check = knowledge_reuse.maintenance_reuse_check
+    original_session = knowledge_storage_io.StorageReadSession
+    changed = []
+
+    class GrowingReadSession(original_session):
+        def __init__(self, root):
+            super().__init__(root, max_bytes=2 * total)
+
+        def read(self, relative, maximum):
+            if not changed:
+                page = self.root / relative
+                extra = 2 * total if growth == "exhaust-capture" else growth
+                page.write_bytes(page.read_bytes() + b" " * extra)
+                changed.append(relative)
+            return super().read(relative, maximum)
+
+    def growing_check(*args, **kwargs):
+        with patch.object(knowledge_storage_io, "StorageReadSession", GrowingReadSession):
+            return original_check(*args, **kwargs)
+
+    monkeypatch.setattr(knowledge_reuse, "maintenance_reuse_check", growing_check)
+    _trap_builders(monkeypatch, extraction=False)
+    with pytest.raises(knowledge_storage_io.KnowledgeStorageError) as rejected:
+        _sync(dry_run=True)
+    assert rejected.value.code == "storage-budget-exhausted"
+    assert changed
+
+
+def test_page_removed_before_budget_preflight_is_rejected(legacy, monkeypatch):
+    from llm_wiki_cli.services import knowledge_storage_io, wiki_surface
+
+    _sync(rebuild_knowledge=True)
+    original_check = knowledge_reuse.maintenance_reuse_check
+    original_collect = wiki_surface.collect_wiki_pages
+    removed = []
+
+    def remove_after_collection(root):
+        pages = original_collect(root)
+        pages[0].path.unlink()
+        removed.append(pages[0].relative_path)
+        return pages
+
+    def changed_check(*args, **kwargs):
+        with patch.object(wiki_surface, "collect_wiki_pages", remove_after_collection):
+            return original_check(*args, **kwargs)
+
+    monkeypatch.setattr(knowledge_reuse, "maintenance_reuse_check", changed_check)
+    _trap_builders(monkeypatch, extraction=False)
+    with pytest.raises(knowledge_storage_io.KnowledgeStorageError) as rejected:
+        _sync(dry_run=True)
+    assert rejected.value.code == "storage-mutation"
+    assert removed
+
+
+def test_late_budget_exhaustion_does_not_hide_an_evicted_page_mutation(legacy, monkeypatch):
+    from llm_wiki_cli.services import knowledge_storage_io
+    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+
+    notes = Path("wiki/guides")
+    notes.mkdir(exist_ok=True)
+    for index in range(150):
+        (notes / f"note-{index:03}.md").write_text(f"# Note {index}\n")
+    _sync(rebuild_knowledge=True)
+    pages = collect_wiki_pages("wiki")
+    total = sum(page.path.stat().st_size for page in pages)
+    original_check = knowledge_reuse.maintenance_reuse_check
+    original_session = knowledge_storage_io.StorageReadSession
+    changed = []
+
+    class MutatingReadSession(original_session):
+        def __init__(self, root):
+            super().__init__(root, max_bytes=2 * total)
+
+        def read(self, relative, maximum):
+            if relative == pages[-1].relative_path:
+                first = self.root / pages[0].relative_path
+                assert self._phase is not None and first not in self._phase.files
+                first.write_bytes(first.read_bytes().replace(b"\n", b"\r"))
+                last = self.root / relative
+                last.write_bytes(last.read_bytes() + b" " * (2 * total))
+                changed.append(True)
+            return super().read(relative, maximum)
+
+    def mutating_check(*args, **kwargs):
+        with patch.object(knowledge_storage_io, "StorageReadSession", MutatingReadSession):
+            return original_check(*args, **kwargs)
+
+    monkeypatch.setattr(knowledge_reuse, "maintenance_reuse_check", mutating_check)
+    _trap_builders(monkeypatch, extraction=False)
+    with pytest.raises(knowledge_storage_io.KnowledgeStorageError) as rejected:
+        _sync(dry_run=True)
+    assert rejected.value.code == "storage-budget-exhausted"
+    assert changed
 
 
 @pytest.mark.parametrize("mutate", [False, True])

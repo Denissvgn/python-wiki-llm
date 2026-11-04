@@ -296,18 +296,22 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     root = Path(wiki_dir)
     reader = StorageReadSession(root)
     pages = collect_wiki_pages(root)
+    # Decline oversized captures before retaining provisional file observations.
+    # A failed phase cannot recheck evicted handles, so later exhaustion must
+    # fail closed rather than discard possible concurrent mutations as a miss.
     try:
-        with reader.phase():
-            raw = {page.relative_path: reader.read(page.relative_path, MAX_EXPANDED_BYTES) for page in pages}
-    except KnowledgeStorageError as exc:
-        if exc.code == "storage-budget-exhausted":
-            return None
-        raise
+        captured_size = sum(page.path.stat().st_size for page in pages)
+    except OSError as exc:
+        raise KnowledgeStorageError("read", "wiki page changed before reuse inspection", code="storage-mutation") from exc
+    if 2 * captured_size > reader.maximum:
+        return None
+    with reader.phase():
+        raw = {page.relative_path: reader.read(page.relative_path, MAX_EXPANDED_BYTES) for page in pages}
     # The final raw-byte recheck is charged to the same bounded session. Reserve
     # its exact work before accepting this advisory shortcut; larger wikis still
     # use the ordinary guarded planner without relaxing the inspection budget.
     if reader.recheck_work()["bytes"] > reader.maximum - reader.bytes_read:
-        return None
+        raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
     content = {name: decode_markdown_bytes(value) for name, value in raw.items()}
     prior_paths = {row["coordinate"]["source_path"] for row in owner["observations"].values()}
     missing = confirmed_missing_source_paths(source_snapshot, prior_paths)
@@ -399,9 +403,10 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
             )
         )
     from .knowledge_packs import PACKED_SCHEMAS, packed_format
+    from .knowledge_storage import STORE_SCHEMA
     import json
     storage_root = json.loads(writes[1].content)
-    storage_format = "sharded-v2" if state.artifacts.storage_objects else "v1"
+    storage_format = "sharded-v2" if storage_root.get("schema_version") == STORE_SCHEMA else "v1"
     if storage_root.get("schema_version") in PACKED_SCHEMAS:
         storage_format = packed_format(storage_root)
     return KnowledgeCommitResult(

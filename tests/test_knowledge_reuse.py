@@ -45,6 +45,32 @@ def artifact_bytes(wiki="wiki"):
     return {name: (Path(wiki) / name).read_bytes() for name in ARTIFACTS}
 
 
+@pytest.mark.parametrize("knowledge_format", ["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"])
+@pytest.mark.parametrize("manifest_format", ["v7", "indexed-v8"])
+def test_unchanged_result_reports_knowledge_format_independently_of_manifest_objects(
+    tmp_path, monkeypatch, knowledge_format, manifest_format,
+):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+
+    monkeypatch.chdir(tmp_path)
+    Path("src").mkdir()
+    Path("src/app.py").write_text("def run():\n    return 1\n")
+    api.bootstrap_wiki("src", "wiki", knowledge_format=knowledge_format)
+    api.adopt_maintenance("src", "wiki", recovery_dir="recovery", manifest_format=manifest_format)
+    manifest = SyncManifest.load(Path("wiki"))
+    state = knowledge_orchestration.capture_committed_knowledge(Path("wiki"), manifest)
+    before = snapshot_wiki("wiki")
+
+    result = knowledge_reuse.unchanged_commit_result(state, manifest)
+
+    assert result.storage_format == knowledge_format
+    assert not result.changed
+    assert state.artifacts is not None
+    assert {row.relative_path: row.content for row in result.storage_objects} == state.artifacts.storage_objects
+    assert snapshot_wiki("wiki") == before
+
+
 @pytest.fixture(params=("cli", "api"))
 def synced(tmp_path, monkeypatch, capsys, request):
     monkeypatch.chdir(tmp_path)
