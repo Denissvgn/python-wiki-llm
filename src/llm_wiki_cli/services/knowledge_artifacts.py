@@ -153,7 +153,9 @@ class _ArtifactValidation:
         artifacts: ValidatedKnowledgeArtifacts,
         surface_bytes: bytes,
         knowledge_bytes: bytes,
+        validator_identity=None,
     ):
+        self.validator_identity = validator_identity
         self.knowledge = artifacts.knowledge
         self.knowledge_payload = artifacts.knowledge_payload
         self.surface = artifacts.surface_payload
@@ -305,6 +307,8 @@ def validate_knowledge_artifacts(
 ) -> ValidatedKnowledgeArtifacts:
     """Validate canonical projections, cross-artifact parity, and manifest basis."""
 
+    from .knowledge_index import _validator_identity
+    validator_identity = _validator_identity()
     surface_payload = validate_surface_index_bytes(surface_index_bytes)
 
     receipt_model = None
@@ -431,6 +435,7 @@ def validate_knowledge_artifacts(
         surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes,
         manifest=manifest, validation_receipt=_validation_receipt,
         storage_validation_receipt=_storage_validation_receipt, receipt_wiki_root=_receipt_wiki_root,
+        validator_identity=validator_identity,
     )
 
 
@@ -438,10 +443,12 @@ def validate_knowledge_artifacts(
 def _validate_artifact_parity(
     *, surface_payload, knowledge, canonical_payload, storage_objects, storage_statistics,
     surface_index_bytes, knowledge_index_bytes, manifest, validation_receipt=None,
-    storage_validation_receipt=None, receipt_wiki_root=None, recheck=None,
+    storage_validation_receipt=None, receipt_wiki_root=None, recheck=None, validator_identity=None,
 ) -> ValidatedKnowledgeArtifacts:
     """Check the new cross-artifact state after its logical model is validated."""
 
+    from .knowledge_index import _validator_identity
+    validator_identity = _validator_identity() if validator_identity is None else validator_identity
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
         raise KnowledgeArtifactError(
@@ -532,6 +539,8 @@ def _validate_artifact_parity(
         _require_validation_receipt(storage_validation_receipt, receipt_wiki_root, storage_validation_receipt.content)
     if recheck is not None:
         recheck()
+    if validator_identity != _validator_identity():
+        raise KnowledgeArtifactError("knowledge_index", "knowledge validators changed during artifact validation")
     validated = ValidatedKnowledgeArtifacts(
         surface_payload=freeze(surface_payload),
         knowledge=knowledge,
@@ -548,7 +557,7 @@ def _validate_artifact_parity(
     object.__setattr__(
         validated,
         "_validation",
-        _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes),
+        _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes, validator_identity),
     )
     return validated
 
@@ -561,6 +570,10 @@ def _reuse_same_store_candidate(
     if prior is None or prepared_store is None or knowledge is None:
         return None
     prior = require_validated_artifacts(prior)
+    from .knowledge_index import _validator_identity
+    validator_identity = _validator_identity()
+    if prior._validation is None or prior._validation.validator_identity != validator_identity:
+        return None
     _, prior_root = validated_artifact_bytes(prior)
     if knowledge_index_bytes != prior_root:
         return None
@@ -585,7 +598,7 @@ def _reuse_same_store_candidate(
 
     def recheck():
         require_validated_artifacts(prior)
-        if not unchanged():
+        if validator_identity != _validator_identity() or not unchanged():
             raise KnowledgeArtifactError("knowledge_index_bytes.objects",
                                          "candidate changed during validated storage reuse", code="storage-mutation")
 
@@ -599,6 +612,7 @@ def _reuse_same_store_candidate(
         knowledge_index_bytes=knowledge_index_bytes, manifest=manifest,
         storage_validation_receipt=storage_validation_receipt,
         receipt_wiki_root=receipt_wiki_root, recheck=recheck,
+        validator_identity=validator_identity,
     )
 
 

@@ -67,6 +67,17 @@ def test_changed_root_keeps_full_validation_and_matches_independent_builder(stor
         w.relative_path: w.content for w in independent.storage_objects}
 
 
+def test_same_store_prior_cannot_skip_changed_validator(stored, monkeypatch):
+    from llm_wiki_cli.services import knowledge_index
+    from llm_wiki_cli.services.knowledge_model import KnowledgeModelError
+
+    def refuse(*args, **kwargs):
+        raise KnowledgeModelError("knowledge", "changed validator refuses this model")
+    monkeypatch.setattr(knowledge_index, "parse_knowledge_index", refuse)
+    with pytest.raises(artifacts.KnowledgeArtifactError, match="changed validator"):
+        build(stored)
+
+
 @pytest.mark.parametrize("change", ["root", "object"])
 def test_corrupt_prepared_bytes_cannot_inherit_prior_validation(stored, monkeypatch, change):
     real = artifacts.build_storage
@@ -138,13 +149,15 @@ def test_same_store_proof_uses_exact_json_identity_not_python_equality(stored, m
     initial = replace(state.knowledge, extensions={**state.knowledge.extensions, "example/exact": before})
     artifacts.commit_knowledge_artifacts(build(stored, knowledge_index=initial))
     state = load_knowledge_state(root)
-    changed = replace(state.knowledge, extensions={**state.knowledge.extensions, "example/exact": after})
-    _, prior_root = artifacts.validated_artifact_bytes(state.validated_artifacts)
+    model, prior = state.knowledge, state.validated_artifacts
+    assert model is not None and prior is not None
+    changed = replace(model, extensions={**model.extensions, "example/exact": after})
+    _, prior_root = artifacts.validated_artifact_bytes(prior)
     real = artifacts.build_storage
     def wrong_root(*args, **kwargs):
         plan = real(*args, **kwargs)
         return replace(plan, root_bytes=prior_root, objects={path: raw for path, raw in
-                       state.validated_artifacts.storage_objects.items() if path.startswith(".llm-wiki-knowledge/")})
+                       prior.storage_objects.items() if path.startswith(".llm-wiki-knowledge/")})
     monkeypatch.setattr(artifacts, "build_storage", wrong_root)
     with knowledge_index._knowledge_validation_operation(root):
         with pytest.raises(artifacts.KnowledgeArtifactError, match="storage differs from its validated logical model"):
