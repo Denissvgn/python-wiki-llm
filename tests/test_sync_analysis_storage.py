@@ -49,6 +49,133 @@ def test_small_and_legacy_capture_remains_the_same_single_file(tmp_path):
     assert storage.load(path, root_limit=8192, total_limit=100_000) == value
 
 
+def test_more_than_catalog_limit_rows_are_grouped_in_bounded_array_and_object_chunks(tmp_path):
+    count = storage.MAX_NODES + 1
+    rows = [{"from": {"file": f"module_{i % 100}.py", "symbol": f"run_{i}"},
+             "to": {"file": "target.py", "symbol": "send"}, "kind": "internal",
+             "line": i + 1, "args": ["value", "options"]} for i in range(count)]
+    value = {"edges": rows, "by_id": {f"edge_{i:06d}": row for i, row in enumerate(rows)}}
+    path = tmp_path / "capture.json"
+    # A small root budget exercises sharding without a >64MiB unit fixture.
+    # The production 4MiB shard and 100k descriptor limits remain unchanged.
+    storage.save(path, value, root_limit=8192, total_limit=1024 * 1024 * 1024)
+    catalog = json.loads(path.read_bytes())
+    assert catalog["schema_version"] == storage.SCHEMA
+    objects = list(storage._objects(path).iterdir())
+    assert 1 < len(objects) < 32
+    assert all(obj.stat().st_size <= storage.MAX_SHARD_BYTES for obj in objects)
+    assert len(storage._root_shards(path.read_bytes())) == len(objects)
+    assert not storage._pending(path).exists()
+    assert storage.load(path, root_limit=8192, total_limit=1024 * 1024 * 1024) == value
+
+
+def test_large_nested_containers_keep_their_array_item_and_object_entry_boundaries(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    value = {"arrays": [[{"value": i, "text": "x" * 1000} for i in range(10)],
+                         {"nested": ["x" * 1000 for _ in range(10)]}],
+             "objects": {"large": {f"key_{i}": "x" * 1000 for i in range(10)}, "small": [1, 2, 3]}}
+    path = tmp_path / "capture.json"
+    storage.save(path, value, root_limit=8192, total_limit=100_000)
+    assert storage.load(path, root_limit=8192, total_limit=100_000) == value
+
+
+def _manual_parts(path, kind, parts, logical, *, schema=None):
+    directory = storage._objects(path)
+    directory.mkdir()
+    references = []
+    for part in parts:
+        raw = part if isinstance(part, bytes) else canonical_json_bytes(part) + b"\n"
+        digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+        (directory / (digest[7:] + ".json")).write_bytes(raw)
+        references.append({"kind": "value", "hash": digest, "bytes": len(raw)})
+    tree = {"kind": kind, "items": references} if kind != "value" else references[0]
+    catalog = {"schema_version": schema or storage.SCHEMA,
+               "payload_hash": hash_json(logical), "payload_bytes": len(canonical_json_bytes(logical)) + 1,
+               "tree": tree}
+    path.write_bytes(canonical_json_bytes(catalog) + b"\n")
+    return references
+
+
+@pytest.mark.parametrize("kind,parts,logical,match", [
+    ("array-parts", [{"wrong": "object"}], [], "array part"),
+    ("object-parts", [["wrong array"]], {}, "object part"),
+    ("object-parts", [{"duplicate": 1}, {"duplicate": 1}], {"duplicate": 1}, "duplicate"),
+    ("object-parts", [b'{"duplicate":1,"duplicate":1}\n'], {"duplicate": 1}, "duplicate"),
+])
+def test_parts_reject_wrong_decoded_types_and_duplicate_keys(tmp_path, kind, parts, logical, match):
+    path = tmp_path / "capture.json"
+    _manual_parts(path, kind, parts, logical)
+    with pytest.raises(ValueError, match=match):
+        storage.load(path, root_limit=8192, total_limit=100_000)
+
+
+def test_legacy_catalog_remains_readable_and_its_old_shards_are_cleaned_after_publication(tmp_path):
+    path = tmp_path / "capture.json"
+    logical = {"legacy": "captured value"}
+    references = _manual_parts(path, "value", [logical], logical, schema=storage.LEGACY_SCHEMA)
+    old = storage._objects(path) / (references[0]["hash"][7:] + ".json")
+    assert storage.load(path, root_limit=8192, total_limit=100_000) == logical
+    assert storage._root_shards(path.read_bytes()) == {references[0]["hash"]}
+    storage.save(path, {"next": "small"}, root_limit=8192, total_limit=100_000)
+    assert not old.exists()
+    assert storage.load(path, root_limit=8192, total_limit=100_000) == {"next": "small"}
+
+
+def test_legacy_catalog_cannot_claim_new_parts_contract(tmp_path):
+    path = tmp_path / "capture.json"
+    _manual_parts(path, "array-parts", [[1, 2, 3]], [1, 2, 3], schema=storage.LEGACY_SCHEMA)
+    with pytest.raises(ValueError):
+        storage.load(path, root_limit=8192, total_limit=100_000)
+    with pytest.raises(ValueError):
+        storage._root_shards(path.read_bytes())
+
+
+def test_parts_aggregate_budget_is_checked_before_opening_any_shard(tmp_path, monkeypatch):
+    path = tmp_path / "capture.json"
+    references = _manual_parts(path, "array-parts", [[1]], [1])
+    catalog = json.loads(path.read_bytes())
+    catalog["tree"]["items"] = references * 4
+    path.write_bytes(canonical_json_bytes(catalog) + b"\n")
+    read = storage.read_guarded
+    def only_catalog(target, maximum):
+        assert target == path, "aggregate descriptor limits precede every shard read"
+        return read(target, maximum)
+    monkeypatch.setattr(storage, "read_guarded", only_catalog)
+    with pytest.raises(ValueError, match="aggregate"):
+        storage.load(path, root_limit=8192, total_limit=10)
+
+
+def test_grouped_object_bytes_are_deterministic_across_mapping_insertion_order(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    value = {f"key_{i:03d}": {"text": "é" * 400, "index": i} for i in range(30)}
+    left, right = tmp_path / "left.json", tmp_path / "right.json"
+    storage.save(left, value, root_limit=8192, total_limit=100_000)
+    storage.save(right, dict(reversed(list(value.items()))), root_limit=8192, total_limit=100_000)
+    assert left.read_bytes() == right.read_bytes()
+    assert {obj.name for obj in storage._objects(left).iterdir()} == {
+        obj.name for obj in storage._objects(right).iterdir()}
+
+
+@pytest.mark.parametrize("field,value", [("schema_version", {}), ("kind", {})])
+def test_unhashable_catalog_discriminators_are_safe_unknown_metadata(tmp_path, field, value):
+    path = tmp_path / "capture.json"
+    _manual_parts(path, "array-parts", [[1, 2, 3]], [1, 2, 3])
+    catalog = json.loads(path.read_bytes())
+    if field == "schema_version":
+        catalog[field] = value
+    else:
+        catalog["tree"][field] = value
+    path.write_bytes(canonical_json_bytes(catalog) + b"\n")
+    with pytest.raises(ValueError):
+        storage._root_shards(path.read_bytes())
+    assert storage._previous_shards(path, 8192) == set()
+    if field == "kind":
+        with pytest.raises(ValueError):
+            storage.load(path, root_limit=8192, total_limit=100_000)
+    else:
+        assert storage.load(path, root_limit=8192, total_limit=100_000) == catalog
+
+
 def test_successful_replacement_removes_only_prior_unreferenced_shards(tmp_path, monkeypatch):
     monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
     path = tmp_path / "capture.json"

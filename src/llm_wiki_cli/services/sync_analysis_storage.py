@@ -16,7 +16,9 @@ from .filesystem_guard import (
 from .io import first_unsafe_path_component, write_bytes_atomic
 from .knowledge_storage_io import read_guarded
 
-SCHEMA = "llm-wiki-sync-analysis-storage/v1"
+SCHEMA = "llm-wiki-sync-analysis-storage/v2"
+LEGACY_SCHEMA = "llm-wiki-sync-analysis-storage/v1"
+_CATALOG_SCHEMAS = frozenset({SCHEMA, LEGACY_SCHEMA})
 MAX_SHARD_BYTES = 4 * 1024 * 1024
 MAX_NODES = 100_000
 MAX_DEPTH = 32
@@ -24,6 +26,29 @@ _HASH = re.compile(r"sha256:[0-9a-f]{64}\Z")
 _ATTEMPT_SCHEMA = "llm-wiki-sync-analysis-attempt/v1"
 _ATTEMPT_OWNER = "owner.json"
 _LOCK_FILENAME = "llm-wiki-sync-analysis.lock"
+
+
+def _decode_json(raw):
+    def unique(pairs):
+        value = {}
+        for key, child in pairs:
+            if key in value:
+                raise ValueError("duplicate sync analysis JSON key")
+            value[key] = child
+        return value
+    return json.loads(raw, object_pairs_hook=unique)
+
+
+def _container_children(node, *, parts):
+    kind = node.get("kind")
+    allowed = {"object", "array", "object-parts", "array-parts"} if parts else {"object", "array"}
+    if not isinstance(kind, str) or kind not in allowed:
+        raise ValueError("invalid sync analysis reference kind")
+    items = node.get("items")
+    expected = dict if kind == "object" else list
+    if set(node) != {"kind", "items"} or not isinstance(items, expected):
+        raise ValueError("invalid sync analysis reference container")
+    return items.values() if isinstance(items, dict) else items
 
 
 def measure(payload, maximum):
@@ -69,12 +94,13 @@ def _current_root(path, maximum):
 def _root_shards(raw):
     if raw is None:
         return set()
-    value = json.loads(raw)
+    value = _decode_json(raw)
     if isinstance(value, dict) and value.get("schema_version") in (None, "llm-wiki-sync-analysis/v2"):
         return set()
     if (not isinstance(value, dict)
             or set(value) != {"schema_version", "payload_hash", "payload_bytes", "tree"}
-            or value["schema_version"] != SCHEMA
+            or not isinstance(value["schema_version"], str)
+            or value["schema_version"] not in _CATALOG_SCHEMAS
             or not isinstance(value["payload_hash"], str) or not _HASH.fullmatch(value["payload_hash"])
             or type(value["payload_bytes"]) is not int or value["payload_bytes"] < 1):
         raise ValueError("unknown sync analysis catalog prevents attempt cleanup")
@@ -93,14 +119,9 @@ def _root_shards(raw):
                     or type(node["bytes"]) is not int or not 1 <= node["bytes"] <= MAX_SHARD_BYTES):
                 raise ValueError("invalid sync analysis reference")
             references.add(logical_hash)
-        elif node.get("kind") in {"object", "array"}:
-            items = node.get("items")
-            expected = dict if node["kind"] == "object" else list
-            if set(node) != {"kind", "items"} or not isinstance(items, expected):
-                raise ValueError("invalid sync analysis reference container")
-            pending.extend((child, depth + 1) for child in (items.values() if isinstance(items, dict) else items))
         else:
-            raise ValueError("invalid sync analysis reference kind")
+            children = _container_children(node, parts=value["schema_version"] == SCHEMA)
+            pending.extend((child, depth + 1) for child in children)
     return references
 
 
@@ -201,30 +222,7 @@ def _previous_shards(path, root_limit):
     if not _objects(path).exists():
         return set()
     try:
-        value = json.loads(read_guarded(path, root_limit).content)
-        if not isinstance(value, dict) or value.get("schema_version") != SCHEMA:
-            return set()
-        pending = [value["tree"]]
-        result = set()
-        count = 0
-        while pending:
-            node = pending.pop()
-            count += 1
-            if count > MAX_NODES or not isinstance(node, dict):
-                return set()
-            if node.get("kind") == "value":
-                digest = node.get("hash")
-                if not isinstance(digest, str) or not _HASH.fullmatch(digest):
-                    return set()
-                result.add(digest)
-            elif node.get("kind") in {"object", "array"}:
-                items = node.get("items")
-                if not isinstance(items, (dict, list)):
-                    return set()
-                pending.extend(items.values() if isinstance(items, dict) else items)
-            else:
-                return set()
-        return result
+        return _root_shards(read_guarded(path, root_limit).content)
     except (OSError, ValueError, KeyError, RecursionError):
         return set()
 
@@ -306,33 +304,81 @@ def _save_locked(path: Path, payload, *, root_limit: int, total_limit: int, writ
     shard_bytes = 0
     references = set()
 
-    def partition(value, depth=0):
-        nonlocal nodes, shard_bytes
+    def count_node(depth):
+        nonlocal nodes
         nodes += 1
         if nodes > MAX_NODES or depth > MAX_DEPTH:
             raise ValueError("sync analysis catalog exceeds its structural limits")
+
+    def publish(raw):
+        nonlocal shard_bytes
+        shard_bytes += len(raw)
+        if shard_bytes > total_limit:
+            raise ValueError("sync analysis shards exceed the aggregate byte limit")
+        digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+        references.add(digest)
+        target = directory / (digest[7:] + ".json")
+        if first_unsafe_path_component(target) is not None:
+            raise OSError("redirected sync analysis shard")
+        existing = read_guarded(target, MAX_SHARD_BYTES).content if target.exists() or target.is_symlink() else None
+        if existing is not None and existing != raw:
+            raise ValueError("existing sync analysis shard differs from its hash")
+        if existing is None:
+            _record_pending(path, owned, digest, len(raw))
+            atomic_write_guarded_bytes(target, raw, expected_existing=None)
+        return {"kind": "value", "hash": digest, "bytes": len(raw)}
+
+    def grouped(value, depth):
+        is_object = isinstance(value, dict)
+        parts, batch = [], []
+        batch_size = 3  # Opening delimiter, closing delimiter, and LF.
+
+        def flush():
+            nonlocal batch, batch_size
+            if not batch:
+                return
+            count_node(depth + 1)
+            opening, closing = (b"{", b"}\n") if is_object else (b"[", b"]\n")
+            parts.append(publish(opening + b",".join(batch) + closing))
+            batch, batch_size = [], 3
+
+        source = sorted(value.items()) if is_object else enumerate(value)
+        for key, child in source:
+            prefix = b""
+            if is_object:
+                encoded_key = _small_bytes(key, MAX_SHARD_BYTES)
+                if encoded_key is None:
+                    raise ValueError("one sync analysis object key exceeds the shard byte limit")
+                prefix = encoded_key[:-1] + b":"
+            # Child encoding includes LF; containers replace it with their own.
+            remaining = MAX_SHARD_BYTES - 2 - len(prefix)
+            raw = _small_bytes(child, max(0, remaining))
+            if raw is None:
+                flush()
+                count_node(depth + 1)
+                nested = partition(child, depth + 2)
+                # Each part must itself decode as the outer container, so a
+                # large nested array/object remains exactly one array item or
+                # one object entry instead of being flattened into its parent.
+                parts.append({"kind": "object", "items": {key: nested}} if is_object
+                             else {"kind": "array", "items": [nested]})
+                continue
+            encoded = prefix + raw[:-1]
+            needed = len(encoded) + bool(batch)
+            if batch_size + needed > MAX_SHARD_BYTES:
+                flush()
+            batch.append(encoded)
+            batch_size += len(encoded) + (len(batch) > 1)
+        flush()
+        return {"kind": "object-parts" if is_object else "array-parts", "items": parts}
+
+    def partition(value, depth=0):
+        count_node(depth)
         raw = _small_bytes(value, MAX_SHARD_BYTES)
         if raw is not None:
-            shard_bytes += len(raw)
-            if shard_bytes > total_limit:
-                raise ValueError("sync analysis shards exceed the aggregate byte limit")
-            digest = "sha256:" + hashlib.sha256(raw).hexdigest()
-            references.add(digest)
-            target = directory / (digest[7:] + ".json")
-            if first_unsafe_path_component(target) is not None:
-                raise OSError("redirected sync analysis shard")
-            existing = read_guarded(target, MAX_SHARD_BYTES).content if target.exists() or target.is_symlink() else None
-            if existing is not None and existing != raw:
-                raise ValueError("existing sync analysis shard differs from its hash")
-            if existing is None:
-                _record_pending(path, owned, digest, len(raw))
-                atomic_write_guarded_bytes(target, raw, expected_existing=None)
-            return {"kind": "value", "hash": digest, "bytes": len(raw)}
-        if isinstance(value, dict):
-            return {"kind": "object", "items": {key: partition(child, depth + 1)
-                                                   for key, child in sorted(value.items())}}
-        if isinstance(value, (list, tuple)):
-            return {"kind": "array", "items": [partition(child, depth + 1) for child in value]}
+            return publish(raw)
+        if isinstance(value, (dict, list, tuple)):
+            return grouped(value, depth)
         raise ValueError("one sync analysis scalar exceeds the shard byte limit")
 
     catalog = {"schema_version": SCHEMA, "payload_hash": logical_hash,
@@ -348,8 +394,9 @@ def _save_locked(path: Path, payload, *, root_limit: int, total_limit: int, writ
 
 def load(path: Path, *, root_limit: int, total_limit: int) -> Any:
     """Read legacy captures or verify every bounded subtree before reuse."""
-    value = json.loads(read_guarded(path, root_limit).content)
-    if not isinstance(value, dict) or value.get("schema_version") != SCHEMA:
+    value = _decode_json(read_guarded(path, root_limit).content)
+    if (not isinstance(value, dict) or not isinstance(value.get("schema_version"), str)
+            or value["schema_version"] not in _CATALOG_SCHEMAS):
         return value
     if (set(value) != {"schema_version", "payload_hash", "payload_bytes", "tree"}
             or not isinstance(value["payload_hash"], str) or not _HASH.fullmatch(value["payload_hash"])
@@ -373,15 +420,9 @@ def load(path: Path, *, root_limit: int, total_limit: int) -> Any:
             advertised += node["bytes"]
             if advertised > total_limit:
                 raise ValueError("sync analysis shards exceed the aggregate byte limit")
-        elif kind in {"object", "array"}:
-            items = node.get("items")
-            expected = dict if kind == "object" else list
-            if set(node) != {"kind", "items"} or not isinstance(items, expected):
-                raise ValueError("invalid sync analysis catalog container")
-            for child in items.values() if isinstance(items, dict) else items:
-                validate(child, depth + 1)
         else:
-            raise ValueError("invalid sync analysis catalog node")
+            for child in _container_children(node, parts=value["schema_version"] == SCHEMA):
+                validate(child, depth + 1)
 
     # Enforce all advertised limits before opening the first shard.
     validate(value["tree"])
@@ -392,10 +433,28 @@ def load(path: Path, *, root_limit: int, total_limit: int) -> Any:
             raw = read_guarded(directory / (node["hash"][7:] + ".json"), node["bytes"]).content
             if len(raw) != node["bytes"] or "sha256:" + hashlib.sha256(raw).hexdigest() != node["hash"]:
                 raise ValueError("sync analysis shard commitment differs")
-            return json.loads(raw)
+            return _decode_json(raw)
         items = node["items"]
         if node["kind"] == "object":
             return {key: materialize(child) for key, child in items.items()}
+        if node["kind"] == "array-parts":
+            result = []
+            for child in items:
+                part = materialize(child)
+                if not isinstance(part, list):
+                    raise ValueError("sync analysis array part must contain an array")
+                result.extend(part)
+            return result
+        if node["kind"] == "object-parts":
+            result = {}
+            for child in items:
+                part = materialize(child)
+                if not isinstance(part, dict):
+                    raise ValueError("sync analysis object part must contain an object")
+                if result.keys() & part.keys():
+                    raise ValueError("duplicate sync analysis object-part key")
+                result.update(part)
+            return result
         return [materialize(child) for child in items]
 
     payload = materialize(value["tree"])
