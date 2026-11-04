@@ -250,7 +250,14 @@ def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
     from tests.test_knowledge_health_refresh import _version
 
     monkeypatch.chdir(tmp_path)
-    (tmp_path / ".git").write_text("gitdir: absent\n", encoding="utf-8")
+    # Keep revision evidence unknown while giving native recovery a real,
+    # separately located Git metadata directory.
+    git_metadata = tmp_path / "git-metadata"
+    subprocess.run(
+        ["git", "init", "--quiet", "--separate-git-dir", str(git_metadata), str(tmp_path)],
+        check=True, capture_output=True, text=True,
+    )
+    assert (tmp_path / ".git").is_file() and git_metadata.is_dir()
     source = tmp_path / "source"
     source.mkdir()
     (source / "model.py").write_text("class User:\n    name: str\n", encoding="utf-8")
@@ -269,6 +276,7 @@ def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
         cli.main()
     knowledge = load_knowledge_state("wiki").knowledge
     assert knowledge is not None
+    assert knowledge.bundle.repository.evaluated_revision == "unknown"
     assert analysis_compatibility.has_contract(knowledge.bundle.producer) is not legacy
     install_ci_workflow(
         action_ref=ACTION_REF, src_dir="source", wiki_dir="wiki", project_root=tmp_path
@@ -308,6 +316,29 @@ def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
         )
         assert changed["status"] == "unhealthy"
         assert "producer-tool-version-changed" in changed["drift"]["reasons"]
+
+
+def test_sync_rejects_dangling_git_metadata_without_modifying_wiki(tmp_path, monkeypatch, capsys):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "source"
+    source.mkdir()
+    source_bytes = b"class User:\n    name: str\n"
+    (source / "model.py").write_bytes(source_bytes)
+    api.bootstrap_wiki("source", "wiki", skip_workflows=True, skip_flows=True, skip_dependencies=True)
+    before = snapshot_wiki("wiki")
+    (tmp_path / ".git").write_text("gitdir: absent\n", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", [
+        "llm-wiki", "sync", "--src-dir", "source", "--wiki-dir", "wiki", "--no-cache", "--no-plugins",
+    ])
+    with pytest.raises(SystemExit) as stopped:
+        cli.main()
+    assert stopped.value.code == 2
+    assert "Recovery Git directory is unavailable" in capsys.readouterr().err
+    assert snapshot_wiki("wiki") == before
+    assert (source / "model.py").read_bytes() == source_bytes
 
 
 def test_modified_managed_workflow_requires_force_and_dry_run_is_read_only(
