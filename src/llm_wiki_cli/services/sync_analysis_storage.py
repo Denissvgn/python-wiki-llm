@@ -87,6 +87,13 @@ def _pending(path):
     return path.with_name(path.name + ".pending")
 
 
+def _pending_owner_bytes(path):
+    raw = _small_bytes({"schema_version": _ATTEMPT_SCHEMA, "cache_name": path.name}, 8192)
+    if raw is None:
+        raise ValueError("sync analysis attempt owner exceeds its byte limit")
+    return raw
+
+
 def _current_root(path, maximum):
     return read_guarded(path, maximum).content if path.exists() or path.is_symlink() else None
 
@@ -134,9 +141,7 @@ def _pending_records(path):
     entries = sorted(directory.iterdir())
     if len(entries) > MAX_NODES + 1:
         raise ValueError("sync analysis attempt journal exceeds its entry limit")
-    expected = _small_bytes({"schema_version": _ATTEMPT_SCHEMA, "cache_name": path.name}, 8192)
-    if expected is None:
-        raise ValueError("sync analysis attempt owner exceeds its byte limit")
+    expected = _pending_owner_bytes(path)
     if read_guarded(directory / _ATTEMPT_OWNER, 8192).content != expected:
         raise ValueError("unrecognized sync analysis attempt owner")
     records = {}
@@ -169,9 +174,7 @@ def _prepare_pending(path):
                 raise ValueError("sync analysis attempt journal changed")
             return records
     ensure_guarded_directory(directory, mode=0o700)
-    raw = _small_bytes({"schema_version": _ATTEMPT_SCHEMA, "cache_name": path.name}, 8192)
-    if raw is None:
-        raise ValueError("sync analysis attempt owner exceeds its byte limit")
+    raw = _pending_owner_bytes(path)
     atomic_write_guarded_bytes(directory / _ATTEMPT_OWNER, raw, expected_existing=None)
     return {}
 
@@ -190,6 +193,7 @@ def _record_pending(path, records, logical_hash, size):
 
 
 def _recover_pending(path, root_limit):
+    expected_owner = _pending_owner_bytes(path)
     records = _pending_records(path)
     if records is None:
         return
@@ -211,8 +215,8 @@ def _recover_pending(path, root_limit):
     if any(entry.name != _ATTEMPT_OWNER for entry in directory.iterdir()):
         return
     owner = directory / _ATTEMPT_OWNER
-    raw = read_guarded(owner, 8192).content
-    unlink_guarded_bytes(owner, expected=raw)
+    # Preserve owner replacements made after the initial journal validation.
+    unlink_guarded_bytes(owner, expected=expected_owner)
     if not any(directory.iterdir()):
         identity = fresh_no_follow_stat(directory)
         remove_guarded_tree(directory, expected_identity=(identity.st_dev, identity.st_ino), expected_manifest=())

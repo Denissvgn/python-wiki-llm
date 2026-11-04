@@ -386,6 +386,28 @@ def test_failed_attempt_delete_cas_preserves_replacements_and_primary_failure(tm
     assert storage._pending(path).exists()
 
 
+def test_attempt_cleanup_preserves_owner_replaced_after_initial_validation(tmp_path, monkeypatch):
+    path = tmp_path / "capture.json"
+    _leave_interrupted_attempt(path, monkeypatch)
+    pending = storage._pending(path)
+    owner = pending / storage._ATTEMPT_OWNER
+    replacement = b"concurrently replaced owner"
+    unlink = storage.unlink_guarded_bytes
+    replaced = []
+
+    def replace_owner_after_descriptor(target, *, expected):
+        unlink(target, expected=expected)
+        if target.parent == pending and target != owner and not replaced:
+            owner.write_bytes(replacement)
+            replaced.append(True)
+
+    monkeypatch.setattr(storage, "unlink_guarded_bytes", replace_owner_after_descriptor)
+    with pytest.raises(OSError, match="changed after preflight"):
+        storage._recover_pending(path, 8192)
+    assert replaced
+    assert owner.read_bytes() == replacement
+
+
 @pytest.mark.parametrize("damage", ["unknown-entry", "unknown-owner", "symlink", "invalid-root"])
 def test_unknown_attempt_state_never_authorizes_cleanup(tmp_path, monkeypatch, damage):
     path = tmp_path / "capture.json"
