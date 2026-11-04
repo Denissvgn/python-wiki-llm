@@ -3935,9 +3935,10 @@ def _try_sync_knowledge_reuse(
         maintenance_recheck()
     committed_state.assert_current()
     from ..services.wiki_write_basis import ACTIVE_WRITE_BASIS
+    from ..services.knowledge_storage_io import _absolute_path
 
     write_basis = ACTIVE_WRITE_BASIS.get()
-    if write_basis is not None and write_basis.root == Path(options.wiki_dir).resolve():
+    if write_basis is not None and write_basis.root == _absolute_path(options.wiki_dir):
         write_basis.source_snapshot = source_snapshot
     record_counts(written_artifacts=0)
     return _ReusedSync(
