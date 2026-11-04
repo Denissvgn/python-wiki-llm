@@ -146,3 +146,135 @@ def test_failed_catalog_publication_preserves_previous_capture(tmp_path, monkeyp
     with pytest.raises(OSError):
         storage.save(path, payload(), root_limit=8192, total_limit=100_000, writer=interrupted)
     assert storage.load(path, root_limit=8192, total_limit=100_000) == prior
+    assert list((tmp_path / "capture.json.objects").iterdir()) == []
+    assert not storage._pending(path).exists()
+
+
+def test_late_partition_failure_removes_only_new_owned_shards(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    path = tmp_path / "capture.json"
+    value = payload()
+    value["z_oversized_scalar"] = "x" * 2048
+    with pytest.raises(ValueError, match="scalar exceeds"):
+        storage.save(path, value, root_limit=8192, total_limit=100_000)
+    assert not path.exists()
+    assert list(storage._objects(path).iterdir()) == []
+    assert not storage._pending(path).exists()
+
+
+def _leave_interrupted_attempt(path, monkeypatch):
+    """Model process death after shards but before the normal failure handler."""
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+
+    def interrupted(target, raw):
+        raise OSError("process stopped before catalog publication")
+
+    with pytest.raises(OSError):
+        storage._save_locked(path, payload(), root_limit=8192, total_limit=100_000, writer=interrupted)
+    return set(storage._objects(path).iterdir())
+
+
+def test_retry_recovers_journaled_shards_left_by_process_interruption(tmp_path, monkeypatch):
+    path = tmp_path / "capture.json"
+    abandoned = _leave_interrupted_attempt(path, monkeypatch)
+    assert abandoned and storage._pending(path).exists()
+    storage.save(path, {"next": "small successful capture"}, root_limit=8192, total_limit=100_000)
+    assert not any(obj.exists() for obj in abandoned)
+    assert not storage._pending(path).exists()
+
+
+def test_postpublication_failure_does_not_collect_current_catalog_references(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    path = tmp_path / "capture.json"
+    write = storage.write_bytes_atomic
+
+    def interrupted(target, raw):
+        write(target, raw)
+        raise OSError("process stopped after catalog publication")
+
+    with pytest.raises(OSError, match="after catalog"):
+        storage.save(path, payload(), root_limit=8192, total_limit=100_000, writer=interrupted)
+    assert storage.load(path, root_limit=8192, total_limit=100_000) == payload()
+    assert not storage._pending(path).exists()
+
+
+def test_interruption_after_root_replacement_retains_superseded_ownership_for_retry(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    path = tmp_path / "capture.json"
+    storage.save(path, payload(), root_limit=8192, total_limit=100_000)
+    superseded = set(storage._objects(path).iterdir())
+    write = storage.write_bytes_atomic
+
+    def interrupted(target, raw):
+        write(target, raw)
+        raise OSError("process stopped before superseded cleanup")
+
+    with pytest.raises(OSError):
+        storage._save_locked(path, {"next": "published"}, root_limit=8192,
+                             total_limit=100_000, writer=interrupted)
+    assert superseded and all(obj.exists() for obj in superseded)
+    storage.save(path, {"next": "published"}, root_limit=8192, total_limit=100_000)
+    assert not any(obj.exists() for obj in superseded)
+    assert not storage._pending(path).exists()
+
+
+def test_shared_writer_lock_excludes_another_cache_publication(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.knowledge_governance import GovernanceConflictError
+
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    path = tmp_path / "capture.json"
+    write = storage.write_bytes_atomic
+    probes = []
+
+    def publish(target, raw):
+        with pytest.raises(GovernanceConflictError):
+            storage.save(tmp_path / "another.json", {"other": "writer"}, root_limit=8192, total_limit=100_000)
+        probes.append(True)
+        write(target, raw)
+
+    storage.save(path, payload(), root_limit=8192, total_limit=100_000, writer=publish)
+    assert probes
+    assert storage.load(path, root_limit=8192, total_limit=100_000) == payload()
+
+
+def test_failed_attempt_delete_cas_preserves_replacements_and_primary_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
+    path = tmp_path / "capture.json"
+    unlink = storage.unlink_guarded_bytes
+    replaced = []
+
+    def replace(target, *, expected):
+        if target.parent == storage._objects(path):
+            target.write_bytes(b"external replacement")
+            replaced.append(target)
+        unlink(target, expected=expected)
+
+    def interrupted(target, raw):
+        raise OSError("primary catalog failure")
+
+    monkeypatch.setattr(storage, "unlink_guarded_bytes", replace)
+    with pytest.raises(OSError, match="primary catalog failure"):
+        storage.save(path, payload(), root_limit=8192, total_limit=100_000, writer=interrupted)
+    assert replaced and all(obj.read_bytes() == b"external replacement" for obj in replaced)
+    assert storage._pending(path).exists()
+
+
+@pytest.mark.parametrize("damage", ["unknown-entry", "unknown-owner", "symlink", "invalid-root"])
+def test_unknown_attempt_state_never_authorizes_cleanup(tmp_path, monkeypatch, damage):
+    path = tmp_path / "capture.json"
+    abandoned = _leave_interrupted_attempt(path, monkeypatch)
+    pending = storage._pending(path)
+    if damage == "unknown-entry":
+        (pending / "foreign").write_bytes(b"preserve unknown data")
+    elif damage == "unknown-owner":
+        (pending / storage._ATTEMPT_OWNER).write_bytes(b"unknown owner")
+    elif damage == "symlink":
+        descriptor = next(entry for entry in pending.iterdir() if entry.name != storage._ATTEMPT_OWNER)
+        outside = tmp_path / "outside"
+        descriptor.rename(outside)
+        descriptor.symlink_to(outside)
+    else:
+        path.write_bytes(b'{"schema_version":"unknown-future-catalog"}\n')
+    with pytest.raises((OSError, ValueError)):
+        storage._recover_pending(path, 8192)
+    assert all(obj.exists() for obj in abandoned)

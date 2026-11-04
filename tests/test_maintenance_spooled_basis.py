@@ -68,6 +68,16 @@ def test_noop_uses_spooled_basis_and_never_persists_recovery(tmp_path, monkeypat
         assert not basis.changed and not basis.recovery_started
 
 
+def test_cache_writer_lock_is_transient_inside_adopted_wiki(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.knowledge_governance import governance_lock
+    wiki = _adopted(tmp_path, monkeypatch)
+    cache = wiki / "cache"
+    cache.mkdir()
+    with protocol.maintenance_write_operation(wiki):
+        with governance_lock(cache, _lock_filename="llm-wiki-sync-analysis.lock"):
+            assert (cache / "llm-wiki-sync-analysis.lock").is_file()
+
+
 def test_first_mutation_saves_complete_preimage_before_replacement(tmp_path, monkeypatch):
     wiki = _adopted(tmp_path, monkeypatch)
     page = next(wiki.rglob("*.md"))

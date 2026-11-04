@@ -145,7 +145,7 @@ def _wiki_files(wiki_dir: str | Path, *, include_transient=False):
         return
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
-        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"}:
+        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"} or path.name == "llm-wiki-sync-analysis.lock":
             continue
         if not include_transient and relative.startswith((".llm-wiki-locks/", ".llm-wiki-page-moves-")):
             continue
