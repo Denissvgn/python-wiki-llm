@@ -22,6 +22,7 @@ import math
 import re
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import partial
 from importlib import resources
 from types import MappingProxyType
 from typing import AbstractSet, Any, Mapping, Optional, Type, TypeVar, Union
@@ -88,6 +89,30 @@ class KnowledgeModelError(ValueError):
         self.reason = message
         self.code = code
         super().__init__(f"{field}: {message}")
+
+
+# One reusable factory per diagnostic, rather than per validated scalar.
+_OBJECT_ERROR = partial(KnowledgeModelError, message="must be an object")
+_OBJECT_KEYS_ERROR = partial(KnowledgeModelError, message="object keys must be strings")
+_UTF8_ERROR = partial(
+    KnowledgeModelError,
+    message="must contain only Unicode scalar values encodable as UTF-8",
+)
+_ARRAY_ERROR = partial(KnowledgeModelError, message="must be an array")
+_STRING_ERROR = partial(KnowledgeModelError, message="must be a string")
+_NONEMPTY_ERROR = partial(
+    KnowledgeModelError,
+    message="must be a non-empty string without surrounding/control whitespace",
+)
+_NONNEGATIVE_ERROR = partial(KnowledgeModelError, message="must be a non-negative integer")
+_LOCATION_BOUNDS_ERROR = partial(
+    KnowledgeModelError, message=f"must be between 0 and {_MAX_LOCATION_OFFSET}"
+)
+_POSITIVE_ERROR = partial(KnowledgeModelError, message="must be a positive integer")
+_HASH_ERROR = partial(
+    KnowledgeModelError,
+    message="must be 'sha256:' followed by 64 lowercase hexadecimal digits",
+)
 
 
 class ConceptKind(str, Enum):
@@ -1694,16 +1719,12 @@ def _object(value: object, path: str) -> dict[str, Any]:
     return dict(
         require_mapping(
             value,
-            error=KnowledgeModelError(path, "must be an object"),
+            error=_OBJECT_ERROR,
+            error_context=path,
             require_string_keys=True,
-            key_error=KnowledgeModelError(
-                path, "object keys must be strings"
-            ),
+            key_error=_OBJECT_KEYS_ERROR,
             require_utf8_keys=True,
-            utf8_key_error=KnowledgeModelError(
-                path,
-                "must contain only Unicode scalar values encodable as UTF-8",
-            ),
+            utf8_key_error=_UTF8_ERROR,
         )
     )
 
@@ -1711,18 +1732,17 @@ def _object(value: object, path: str) -> dict[str, Any]:
 def _array(value: object, path: str) -> list[Any]:
     return require_list(
         value,
-        error=KnowledgeModelError(path, "must be an array"),
+        error=_ARRAY_ERROR,
+        error_context=path,
     )
 
 
 def _string(value: object, path: str) -> str:
     return require_string(
         value,
-        error=KnowledgeModelError(path, "must be a string"),
-        utf8_error=KnowledgeModelError(
-            path,
-            "must contain only Unicode scalar values encodable as UTF-8",
-        ),
+        error=_STRING_ERROR,
+        utf8_error=_UTF8_ERROR,
+        error_context=path,
     )
 
 
@@ -1730,10 +1750,8 @@ def _nonempty_string(value: object, path: str) -> str:
     text = _string(value, path)
     return require_nonempty_text(
         text,
-        error=KnowledgeModelError(
-            path,
-            "must be a non-empty string without surrounding/control whitespace",
-        ),
+        error=_NONEMPTY_ERROR,
+        error_context=path,
         require_trimmed=True,
     )
 
@@ -1741,31 +1759,23 @@ def _nonempty_string(value: object, path: str) -> str:
 def _nonnegative_integer(value: object, path: str) -> int:
     return require_bounded_integral_number(
         value,
-        invalid_error=KnowledgeModelError(
-            path, "must be a non-negative integer"
-        ),
+        invalid_error=_NONNEGATIVE_ERROR,
+        error_context=path,
         minimum=0,
         maximum=_MAX_LOCATION_OFFSET,
-        bounds_error=KnowledgeModelError(
-            path,
-            f"must be between 0 and {_MAX_LOCATION_OFFSET}",
-        ),
+        bounds_error=_LOCATION_BOUNDS_ERROR,
     )
 
 
 def _positive_integer(value: object, path: str) -> int:
     return require_bounded_integral_number(
         value,
-        invalid_error=KnowledgeModelError(
-            path, "must be a non-negative integer"
-        ),
+        invalid_error=_NONNEGATIVE_ERROR,
+        error_context=path,
         minimum=0,
         maximum=_MAX_LOCATION_OFFSET,
-        bounds_error=KnowledgeModelError(
-            path,
-            f"must be between 0 and {_MAX_LOCATION_OFFSET}",
-        ),
-        zero_error=KnowledgeModelError(path, "must be a positive integer"),
+        bounds_error=_LOCATION_BOUNDS_ERROR,
+        zero_error=_POSITIVE_ERROR,
     )
 
 
@@ -1779,10 +1789,8 @@ def _hash(value: object, path: str) -> str:
     text = _string(value, path)
     return require_sha256(
         text,
-        digest_error=KnowledgeModelError(
-            path,
-            "must be 'sha256:' followed by 64 lowercase hexadecimal digits",
-        ),
+        digest_error=_HASH_ERROR,
+        error_context=path,
     )
 
 

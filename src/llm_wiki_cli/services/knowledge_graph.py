@@ -21,6 +21,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Any, cast
 from urllib.parse import urlsplit
 
@@ -115,6 +116,18 @@ class KnowledgeGraphError(ValueError):
         self.field = field
         self.message = message
         super().__init__(f"{field}: {message}")
+
+
+_OBJECT_ERROR = partial(KnowledgeGraphError, message="must be an object")
+_OBJECT_KEYS_ERROR = partial(KnowledgeGraphError, message="object keys must be strings")
+_ARRAY_ERROR = partial(KnowledgeGraphError, message="must be an array")
+_NAME_ERROR = partial(
+    KnowledgeGraphError,
+    message="must be a non-empty normalized string without control characters",
+)
+_HASH_ERROR = partial(KnowledgeGraphError, message="must be a sha256: digest")
+_NONNEGATIVE_ERROR = partial(KnowledgeGraphError, message="must be a non-negative integer")
+_POSITIVE_ERROR = partial(KnowledgeGraphError, message="must be a positive integer")
 
 
 @dataclass(frozen=True)
@@ -2328,9 +2341,10 @@ def _json_value(
 def _object(value: object, path: str) -> dict[str, Any]:
     selected = require_mapping(
         value,
-        error=KnowledgeGraphError(path, "must be an object"),
+        error=_OBJECT_ERROR,
+        error_context=path,
         require_string_keys=True,
-        key_error=KnowledgeGraphError(path, "object keys must be strings"),
+        key_error=_OBJECT_KEYS_ERROR,
     )
     return dict(selected)
 
@@ -2338,7 +2352,8 @@ def _object(value: object, path: str) -> dict[str, Any]:
 def _array(value: object, path: str) -> list[Any]:
     return require_list(
         value,
-        error=KnowledgeGraphError(path, "must be an array"),
+        error=_ARRAY_ERROR,
+        error_context=path,
     )
 
 
@@ -2353,7 +2368,8 @@ def _only_fields(
         value,
         allowed=allowed,
         required=required,
-        mapping_error=KnowledgeGraphError(path, "must be an object"),
+        mapping_error=_OBJECT_ERROR,
+        error_context=path,
         missing_error=lambda fields: KnowledgeGraphError(
             f"{path}.{fields[0]}", "is required"
         ),
@@ -2365,15 +2381,18 @@ def _only_fields(
 
 
 def _enum(value: object, values: Sequence[str], path: str) -> str:
-    error = KnowledgeGraphError(
-        path,
-        f"must be one of {', '.join(repr(item) for item in values)}",
-    )
+    # A member must also satisfy require_choice's non-empty, trimmed policy.
+    if isinstance(value, str) and value and value == value.strip() and value in values:
+        return value
     return require_choice(
         value,
         values,
-        text_error=error,
-        choice_error=lambda _allowed: error,
+        text_error=KnowledgeGraphError(
+            path, f"must be one of {', '.join(repr(item) for item in values)}"
+        ),
+        choice_error=lambda _allowed: KnowledgeGraphError(
+            path, f"must be one of {', '.join(repr(item) for item in values)}"
+        ),
         reject_control_characters=False,
     )
 
@@ -2398,10 +2417,8 @@ def _open_name(value: object, path: str) -> str:
 def _name(value: object, path: str) -> str:
     return require_nonempty_text(
         value,
-        error=KnowledgeGraphError(
-            path,
-            "must be a non-empty normalized string without control characters",
-        ),
+        error=_NAME_ERROR,
+        error_context=path,
         require_trimmed=True,
         reject_delete_character=True,
     )
@@ -2451,7 +2468,8 @@ def _external_uri(value: object, path: str) -> str:
 def _hash(value: object, path: str) -> str:
     return require_sha256(
         value,
-        digest_error=KnowledgeGraphError(path, "must be a sha256: digest"),
+        digest_error=_HASH_ERROR,
+        error_context=path,
     )
 
 
@@ -2465,13 +2483,18 @@ def _limitation(value: object, path: str) -> str:
 def _nonnegative_int(value: object, path: str) -> int:
     return require_nonnegative_int(
         value,
-        error=KnowledgeGraphError(path, "must be a non-negative integer"),
+        error=_NONNEGATIVE_ERROR,
+        error_context=path,
     )
 
 
 def _positive_int(value: object, path: str) -> int:
-    error = KnowledgeGraphError(path, "must be a positive integer")
-    return require_positive_int(value, invalid_error=error, zero_error=error)
+    return require_positive_int(
+        value,
+        invalid_error=_POSITIVE_ERROR,
+        zero_error=_POSITIVE_ERROR,
+        error_context=path,
+    )
 
 
 __all__ = [
