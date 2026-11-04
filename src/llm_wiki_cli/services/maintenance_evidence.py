@@ -412,7 +412,9 @@ def captured_observations_from_knowledge(
                 page_semantics is not None and not target_exists
             )
             target_presence = (
-                "deleted" if confirmed_target_missing else old["target_presence"]
+                "present" if target_exists
+                else "deleted" if confirmed_target_missing
+                else old["target_presence"]
             )
             prose = (
                 page_semantics[old["target"]["section_locator"]]["prose_hash"]

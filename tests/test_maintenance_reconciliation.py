@@ -153,6 +153,36 @@ def test_initial_targets_are_real_semantic_sections_and_never_human_review(proje
     assert observed.issues == ()
 
 
+def test_restored_prose_reanchors_deleted_target_without_current_source_owner(project):
+    """Retained prose can return while the original source remains unselected."""
+    from llm_wiki_cli.services.maintenance_projection import validate_maintenance_prose
+
+    guard, initial = adopted(project)
+    missing = capture(project, previous=initial, markdown="# Batch\n")
+    deleted = reconcile_pending_maintenance(initial, guard, missing)
+    assert all(row["target_presence"] == "deleted" for row in deleted["observations"].values())
+    knowledge, _mappings = project
+    restored_capture = capture((knowledge, {}), previous=deleted, selected=False)
+    restored = reconcile_pending_maintenance(deleted, guard, restored_capture)
+    assert set(restored["records"]) == set(deleted["records"])
+    assert all(row["target_presence"] == "present" for row in restored["observations"].values())
+    assert all(row["status"] == "pending" for row in restored["records"].values())
+    validate_maintenance_prose(restored, knowledge, {"entities/Batch.md": MARKDOWN.encode()})
+    with pytest.raises(MaintenanceError, match="deleted semantic target"):
+        validate_maintenance_prose(deleted, knowledge, {"entities/Batch.md": MARKDOWN.encode()})
+
+
+def test_uncaptured_prose_does_not_resurrect_deleted_target(project):
+    guard, initial = adopted(project)
+    deleted = reconcile_pending_maintenance(initial, guard, capture(project, previous=initial, markdown="# Batch\n"))
+    knowledge, _ = project
+    absent_capture = captured_observations_from_knowledge(
+        knowledge, content_by_page={}, page_source_mappings={}, previous_state=deleted,
+    )
+    unchanged = reconcile_pending_maintenance(deleted, guard, absent_capture)
+    assert all(row["target_presence"] == "deleted" for row in unchanged["observations"].values())
+
+
 def test_sync_restart_replay_preserves_identity_history_and_generation(project):
     guard, state = adopted(project)
     state = acknowledged(state)
