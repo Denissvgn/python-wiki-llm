@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Repeated syncs can reuse authenticated extraction and graph observations and
+  avoid rebuilding unchanged knowledge artifacts.
+- Maintenance recovery shares unchanged files and safely expires eligible older
+  snapshots while preserving failed operations and explicit recovery pins.
 - Large legacy wikis upgrade to packed knowledge and indexed manifests before
   maintenance adoption, preserving recovery preimages and authored content.
 - Failed or interrupted project initialization and upgrades report retained
