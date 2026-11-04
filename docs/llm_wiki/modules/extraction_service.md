@@ -122,7 +122,7 @@ flowchart LR
 | [_ExtractionPlan](../entities/ExtractionPlan.md) | 271 | — | — |
 | [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 284 | — | — |
 | [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 297 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 322 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 323 | — | — |
 
 ## Functions
 

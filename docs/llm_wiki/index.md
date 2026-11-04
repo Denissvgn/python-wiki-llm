@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 677 | [Open section](#entities) |
 | Modules | 259 | [Open section](#modules) |
-| Workflows | 246 | [Open section](#workflows) |
+| Workflows | 245 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -1046,7 +1046,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [commit_sharded](workflows/commit_sharded.md) - entry: `knowledge_artifacts._commit_sharded`
 - [committed_artifact_snapshot](workflows/committed_artifact_snapshot.md) - entry: `knowledge_cmd._committed_artifact_snapshot`
 - [committed_inputs](workflows/committed_inputs.md) - entry: `knowledge_storage_lifecycle._committed_inputs`
-- [completed_inventory_result](workflows/completed_inventory_result.md) - entry: `extraction_service._completed_inventory_result`
 - [context_budget_flow](workflows/context_budget_flow.md) - entry: `context_budget.run`
 - [context_service_flow](workflows/context_service_flow.md) - entry: `context_service.run`
 - [current_coverage](workflows/current_coverage.md) - entry: `metrics.current_coverage`

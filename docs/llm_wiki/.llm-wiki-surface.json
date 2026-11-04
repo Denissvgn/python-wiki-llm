@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 259,
-      "workflows": 246
+      "workflows": 245
     },
     "dependency_architecture": 2,
-    "total": 1665
+    "total": 1664
   },
   "dependency_pages": {
     "count": 2,
@@ -2889,7 +2889,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3430,
+          "step_count": 3429,
           "truncated": true
         }
       },
@@ -10560,14 +10560,13 @@
             "src/llm_wiki_cli/services/python_observations.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
-            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py"
           ],
-          "step_count": 3243,
+          "step_count": 3241,
           "truncated": true
         }
       },
@@ -21476,7 +21475,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4799,
+          "step_count": 4798,
           "truncated": true
         }
       },
@@ -32551,7 +32550,7 @@
             "src/llm_wiki_cli/services/health_summary.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4600,
+          "step_count": 4599,
           "truncated": true
         }
       },
@@ -33056,7 +33055,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2571,
+              "line": 2578,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33064,7 +33063,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2575,
+              "line": 2582,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33072,7 +33071,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2577,
+              "line": 2584,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33080,23 +33079,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2579,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2605,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2607,
+              "line": 2586,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33112,55 +33095,29 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2616,
+              "line": 2614,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2619,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2623,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2555,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2556,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2557,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2558,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2559,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2560,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2561,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2562,
@@ -33182,6 +33139,48 @@
             {
               "kind": "external_call",
               "line": 2565,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2566,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2567,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2568,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2569,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2570,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2571,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2572,
               "step": "run",
               "target": "getattr"
             },
@@ -33228,7 +33227,6 @@
             "src/llm_wiki_cli/services/python_observations.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
-            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/entrypoints.py",
@@ -33236,7 +33234,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3319,
+          "step_count": 3317,
           "truncated": true
         }
       },
@@ -34220,7 +34218,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3538,
+          "step_count": 3537,
           "truncated": true
         }
       },
@@ -34622,7 +34620,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/lint_service.py"
           ],
-          "step_count": 1062,
+          "step_count": 1061,
           "truncated": true
         }
       },
@@ -34818,7 +34816,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4135,
+          "step_count": 4133,
           "truncated": true
         }
       },
@@ -34982,7 +34980,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3198,
+          "step_count": 3197,
           "truncated": true
         }
       },
@@ -35889,7 +35887,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 2249,
+          "step_count": 2248,
           "truncated": true
         }
       },
@@ -37025,7 +37023,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2528,
+          "step_count": 2526,
           "truncated": true
         }
       },
@@ -40571,7 +40569,6 @@
         "workflows/commit_sharded.md",
         "workflows/committed_artifact_snapshot.md",
         "workflows/committed_inputs.md",
-        "workflows/completed_inventory_result.md",
         "workflows/context_budget_flow.md",
         "workflows/context_service_flow.md",
         "workflows/ContextSession___init__.md",
@@ -55439,21 +55436,6 @@
       "title": "committed_inputs"
     },
     {
-      "canonical_path": "workflows/completed_inventory_result.md",
-      "id": "completed_inventory_result",
-      "kind": "workflows",
-      "mcp_uri": "llm-wiki://workflows/completed_inventory_result",
-      "outgoing_internal_links": [
-        "modules/analysis_capture.md",
-        "modules/extraction_service.md",
-        "modules/inventory_cache.md",
-        "modules/progress.md"
-      ],
-      "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/extraction_service.py",
-      "title": "completed_inventory_result"
-    },
-    {
       "canonical_path": "workflows/context_budget_flow.md",
       "id": "context_budget_flow",
       "kind": "workflows",
@@ -61376,7 +61358,6 @@
         "modules/inventory_cache.md",
         "modules/io.md",
         "modules/knowledge_artifacts.md",
-        "modules/knowledge_evidence.md",
         "modules/packages.md",
         "modules/paths.md",
         "modules/plugins.md",
@@ -66641,7 +66622,6 @@
         "modules/inventory_cache.md",
         "modules/io.md",
         "modules/knowledge_artifacts.md",
-        "modules/knowledge_evidence.md",
         "modules/packages.md",
         "modules/paths.md",
         "modules/plugins.md",
@@ -68935,5 +68915,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:5a8918b643fb2f6e02daf4c6637b3657a15e9c1a4976e067dd276be6da96295f"
+  "source_hash": "sha256:b766f33a1eb779eeb0798b37855e02710823866de3638fb49b348f9742a1184c"
 }

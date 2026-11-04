@@ -36,6 +36,7 @@ _Auto-generated from `_InventoryBuildContext` in `src/llm_wiki_cli/services/extr
 | `python_implementations` | `dict[str, dict]` | `field(default_factory=dict)` | — |
 | `implementation_cache_hashes` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `extraction_cache_hashes` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
+| `raw_bundle_hashes` | `dict[str, str]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
