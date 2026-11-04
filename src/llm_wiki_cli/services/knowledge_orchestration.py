@@ -460,7 +460,7 @@ def build_runtime_knowledge_plan(
     from .wiki_write_basis import ACTIVE_WRITE_BASIS
 
     operation_basis = ACTIVE_WRITE_BASIS.get()
-    raw_content = dict(operation_basis.expected) if operation_basis is not None else None
+    raw_content = operation_basis.expected if operation_basis is not None else None
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(

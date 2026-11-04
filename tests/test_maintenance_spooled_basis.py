@@ -1,0 +1,82 @@
+"""Bounded exact preimages retain complete recovery and concurrent-edit guards."""
+
+from pathlib import Path
+
+import pytest
+
+from llm_wiki_cli.services import maintenance_protocol as protocol
+from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes
+from llm_wiki_cli.services.storage_spool import ByteSpool
+
+
+def test_spool_fork_retains_original_bytes_and_owner_lifetime():
+    with ByteSpool() as original:
+        original["page"] = b"before"
+        updated = original.fork()
+        updated["page"] = b"after"
+        assert original["page"] == b"before" and updated["page"] == b"after"
+        updated.close()
+        assert original["page"] == b"before"
+
+
+def _adopted(tmp_path, monkeypatch):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
+
+    monkeypatch.chdir(tmp_path)
+    Path("src").mkdir()
+    Path("src/app.py").write_text("def run():\n    return 1\n")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="packed-v4-deflate")
+    adopt_maintenance_authority("src", "wiki", recovery_dir="adoption")
+    return tmp_path / "wiki"
+
+
+def test_noop_uses_spooled_basis_and_never_persists_recovery(tmp_path, monkeypatch):
+    wiki = _adopted(tmp_path, monkeypatch)
+    def unexpected(*args, **kwargs):
+        pytest.fail("no-op must not materialize or persist a complete byte tree")
+    monkeypatch.setattr(protocol, "snapshot_wiki", unexpected)
+    monkeypatch.setattr(protocol, "save_recovery_snapshot", unexpected)
+    with protocol.maintenance_write_operation(wiki) as basis:
+        assert basis is not None and isinstance(basis.expected, ByteSpool)
+        assert not basis.recovery_started
+        page = next(wiki.rglob("*.md"))
+        raw = page.read_bytes()
+        atomic_write_guarded_bytes(page, raw, expected_existing=raw)
+        assert not basis.changed and not basis.recovery_started
+
+
+def test_first_mutation_saves_complete_preimage_before_replacement(tmp_path, monkeypatch):
+    wiki = _adopted(tmp_path, monkeypatch)
+    page = next(wiki.rglob("*.md"))
+    raw = page.read_bytes()
+    original = protocol.save_recovery_snapshot
+    observed = []
+    def capture(directory, files, **kwargs):
+        if kwargs.get("kind") == "captured-preimage":
+            assert page.read_bytes() == raw
+            assert files[page.relative_to(wiki).as_posix()] == raw
+            assert ".llm-wiki-manifest.json" in files
+            observed.append(directory)
+        return original(directory, files, **kwargs)
+    monkeypatch.setattr(protocol, "save_recovery_snapshot", capture)
+    with protocol.maintenance_write_operation(wiki) as basis:
+        atomic_write_guarded_bytes(page, raw + b"\n", expected_existing=raw)
+        assert basis is not None and basis.changed and basis.recovery_started
+        assert basis.preimages[page.relative_to(wiki).as_posix()] == raw
+    assert len(observed) == 1
+
+
+@pytest.mark.parametrize("change", ["same-size", "addition", "deletion"])
+def test_streaming_verification_detects_external_namespace_changes(tmp_path, monkeypatch, change):
+    wiki = _adopted(tmp_path, monkeypatch)
+    page = next(wiki.rglob("*.md"))
+    with pytest.raises(protocol.MaintenanceProtocolError, match="outside"):
+        with protocol.maintenance_write_operation(wiki):
+            if change == "addition":
+                (wiki / "unexpected.txt").write_bytes(b"external")
+            elif change == "deletion":
+                page.unlink()
+            else:
+                raw = page.read_bytes()
+                page.write_bytes(bytes([raw[0] ^ 1]) + raw[1:])

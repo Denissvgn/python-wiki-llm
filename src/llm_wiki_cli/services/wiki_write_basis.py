@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Protocol, TYPE_CHECKING
 
@@ -12,8 +13,8 @@ if TYPE_CHECKING:
 
 class WriteBasis(Protocol):
     root: Path
-    preimages: dict[str, bytes]
-    expected: dict[str, bytes]
+    preimages: Mapping[str, bytes]
+    expected: MutableMapping[str, bytes]
     source_snapshot: SourceSnapshot | None
     def assert_current(self) -> None: ...
     def before_write(self, path: Path, content: bytes | None) -> None: ...

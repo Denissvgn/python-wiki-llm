@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
@@ -20,6 +20,8 @@ from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_byt
 from .io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest, MAX_EXPANDED_BYTES
 from .knowledge_storage_io import read_guarded, _absolute_path
+from .progress import observed_phase
+from .storage_spool import ByteSpool
 
 ADOPTION_FILENAME = ".llm-wiki-maintenance-adoption.json"
 STORAGE_LOCK_FILENAME = "llm-wiki-storage.lock"
@@ -137,11 +139,10 @@ def guard_maintenance_owner(wiki_dir: str | Path, manifest=None):
     return marker
 
 
-def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> dict[str, bytes]:
+def _wiki_files(wiki_dir: str | Path, *, include_transient=False):
     root = _absolute_path(Path(wiki_dir))
     if not root.exists():
-        return {}
-    result = {}
+        return
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
         if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"}:
@@ -152,23 +153,37 @@ def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> d
             raise MaintenanceProtocolError("unsafe-wiki", "Maintenance preimage cannot follow symbolic links")
         if path.is_dir():
             continue
-        raw = read_guarded(path, MAX_EXPANDED_BYTES).content
-        result[relative] = raw
-    return result
+        yield path, relative
+
+
+def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> dict[str, bytes]:
+    return {relative: read_guarded(path, MAX_EXPANDED_BYTES).content
+            for path, relative in _wiki_files(wiki_dir, include_transient=include_transient)}
+
+
+@observed_phase("maintenance_snapshot")
+def _capture_spooled_wiki(root: Path, spool: ByteSpool) -> None:
+    for path, relative in _wiki_files(root):
+        if len(spool) >= 100_000:
+            raise MaintenanceProtocolError("wiki-limit", "Maintenance recovery file limit exceeded")
+        spool[relative] = read_guarded(path, MAX_EXPANDED_BYTES).content
 
 
 @dataclass
 class WikiWriteBasis:
     root: Path
-    expected: dict[str, bytes]
+    expected: MutableMapping[str, bytes]
     source_snapshot: SourceSnapshot | None = None
     recovery_directory: Path | None = None
     eligible_images: dict[str, list[str | None]] | None = None
     include_transient: bool = False
-    preimages: dict[str, bytes] = field(init=False)
+    recovery_marker: dict | None = None
+    recovery_started: bool = True
+    changed: bool = False
+    preimages: Mapping[str, bytes] = field(init=False)
 
     def __post_init__(self):
-        self.preimages = dict(self.expected)
+        self.preimages = self.expected.fork() if isinstance(self.expected, ByteSpool) else dict(self.expected)
 
     def _relative(self, path: Path) -> str | None:
         absolute = _absolute_path(path)
@@ -191,7 +206,13 @@ class WikiWriteBasis:
             current = None
         if current != previous:
             raise MaintenanceProtocolError("wiki-changed", f"Captured wiki input changed before publication: {relative}")
+        if current == content:
+            return
         if self.recovery_directory is not None:
+            if not self.recovery_started:
+                save_recovery_snapshot(self.recovery_directory, self.preimages,
+                                       marker=self.recovery_marker, kind="captured-preimage")
+                self.recovery_started = True
             if self.eligible_images is None:
                 self.eligible_images = {name: [digest(raw)] for name, raw in self.expected.items()}
             images = self.eligible_images.setdefault(relative, [None])
@@ -212,6 +233,8 @@ class WikiWriteBasis:
         relative = self._relative(path)
         if relative is None:
             return
+        if self.expected.get(relative) != content:
+            self.changed = True
         if content is None:
             self.expected.pop(relative, None)
             return
@@ -221,9 +244,15 @@ class WikiWriteBasis:
             raise MaintenanceProtocolError("wiki-changed", "Published wiki bytes changed during the operation")
         self.expected[relative] = content
 
+    @observed_phase("maintenance_verification")
     def assert_current(self) -> None:
         self.assert_source_current()
-        if snapshot_wiki(self.root, include_transient=self.include_transient) != self.expected:
+        seen = set()
+        for path, relative in _wiki_files(self.root, include_transient=self.include_transient):
+            seen.add(relative)
+            if relative not in self.expected or read_guarded(path, MAX_EXPANDED_BYTES).content != self.expected[relative]:
+                raise MaintenanceProtocolError("wiki-changed", "Wiki changed outside its captured publication operation")
+        if seen != set(self.expected):
             raise MaintenanceProtocolError("wiki-changed", "Wiki changed outside its captured publication operation")
 
     def assert_source_current(self) -> None:
@@ -234,12 +263,17 @@ class WikiWriteBasis:
                 raise MaintenanceProtocolError("source-changed", "Source changed after maintenance capture")
 
 
-def save_recovery_snapshot(directory: Path, files: dict[str, bytes], *, marker: dict | None, kind="committed"):
+@observed_phase("maintenance_recovery")
+def save_recovery_snapshot(directory: Path, files: Mapping[str, bytes], *, marker: dict | None, kind="committed"):
     root = _absolute_path(directory)
     ensure_guarded_directory(root, mode=0o700)
     metadata = {"schema_version": "llm-wiki-maintenance-recovery/v1", "marker": marker, "kind": kind,
-                "files": {name: {"hash": digest(raw), "bytes": len(raw)} for name, raw in sorted(files.items())}}
-    for name, raw in {**files, "maintenance-recovery.json": canonical_bytes(metadata)}.items():
+                "files": {name: {"hash": digest(raw), "bytes": len(raw)}
+                          for name in sorted(files) for raw in (files[name],)}}
+    def entries():
+        yield from files.items()
+        yield "maintenance-recovery.json", canonical_bytes(metadata)
+    for name, raw in entries():
         path = root / name
         ensure_guarded_directory(path.parent, mode=0o700)
         prior = read_guarded(path, MAX_EXPANDED_BYTES).content if path.exists() or path.is_symlink() else None
@@ -250,12 +284,12 @@ def save_recovery_snapshot(directory: Path, files: dict[str, bytes], *, marker: 
     return metadata
 
 
-def _recovery_directory(root: Path, files: dict[str, bytes]) -> Path:
+def _recovery_directory(root: Path, files: Mapping[str, bytes]) -> Path:
     from .knowledge_governance import _governance_lock_root
 
     lock_root = _governance_lock_root(root)
     parent = lock_root if lock_root != root else root.parent / ".llm-wiki-maintenance-recovery"
-    key = digest(canonical_bytes({name: digest(raw) for name, raw in sorted(files.items())}))[7:]
+    key = digest(canonical_bytes({name: digest(files[name]) for name in sorted(files)}))[7:]
     return parent / "maintenance-preimages" / key
 
 
@@ -274,21 +308,23 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
         if marker is None:
             yield None
             return
-        files = snapshot_wiki(root)
-        directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files)
-        if directory == root or directory.is_relative_to(root):
-            raise MaintenanceProtocolError("recovery-path", "Recovery preimages must be outside the managed wiki")
-        save_recovery_snapshot(directory, files, marker=marker, kind="captured-preimage")
-        basis = WikiWriteBasis(root, dict(files), recovery_directory=directory)
-        token = ACTIVE_WRITE_BASIS.set(basis)
-        try:
-            yield basis
-            basis.assert_current()
-            committed = snapshot_wiki(root)
-            committed_directory = _recovery_directory(root, committed) / "committed"
-            save_recovery_snapshot(committed_directory, committed, marker=marker)
-        finally:
-            ACTIVE_WRITE_BASIS.reset(token)
+        with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
+                       max_entry_bytes=MAX_EXPANDED_BYTES) as files:
+            _capture_spooled_wiki(root, files)
+            directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files)
+            if directory == root or directory.is_relative_to(root):
+                raise MaintenanceProtocolError("recovery-path", "Recovery preimages must be outside the managed wiki")
+            basis = WikiWriteBasis(root, files.fork(), recovery_directory=directory,
+                                   recovery_marker=marker, recovery_started=False)
+            token = ACTIVE_WRITE_BASIS.set(basis)
+            try:
+                yield basis
+                basis.assert_current()
+                if basis.changed:
+                    committed_directory = _recovery_directory(root, basis.expected) / "committed"
+                    save_recovery_snapshot(committed_directory, basis.expected, marker=marker)
+            finally:
+                ACTIVE_WRITE_BASIS.reset(token)
 
 
 def unlink_maintenance_page(path: Path) -> None:

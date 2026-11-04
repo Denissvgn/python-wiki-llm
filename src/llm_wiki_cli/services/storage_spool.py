@@ -15,20 +15,25 @@ from collections import OrderedDict
 import tempfile
 from typing import Any
 
-from .knowledge_storage import MAX_OBJECT_BYTES, KnowledgeStorageError
+from .knowledge_storage import MAX_OBJECT_BYTES, MAX_EXPANDED_BYTES, KnowledgeStorageError
 
 
 class ByteSpool(MutableMapping[str, bytes]):
     """One private file, bounded index and byte quota, with synchronous backpressure."""
 
-    def __init__(self, *, max_bytes: int = 2_147_483_648, max_index_bytes: int = 16_777_216):
+    def __init__(self, *, max_bytes: int = 2_147_483_648, max_index_bytes: int = 16_777_216,
+                 max_entry_bytes: int = MAX_OBJECT_BYTES):
         if type(max_bytes) is not int or not 0 < max_bytes <= 8_589_934_592:
             raise ValueError("invalid spool byte limit")
         if type(max_index_bytes) is not int or not 0 < max_index_bytes <= 67_108_864:
             raise ValueError("invalid spool index limit")
+        if type(max_entry_bytes) is not int or not 0 < max_entry_bytes <= MAX_EXPANDED_BYTES:
+            raise ValueError("invalid spool entry limit")
         self._file = tempfile.TemporaryFile(prefix="llm-wiki-spool-")
+        self._owns_file = True
         self._index: dict[str, tuple[int, int, bytes]] = {}
         self.maximum, self.index_maximum = max_bytes, max_index_bytes
+        self.entry_maximum = max_entry_bytes
         self.bytes_written = self.index_bytes = 0
 
     def __getitem__(self, key: str) -> bytes:
@@ -42,8 +47,8 @@ class ByteSpool(MutableMapping[str, bytes]):
     def __setitem__(self, key: str, value: bytes) -> None:
         if not isinstance(key, str) or not isinstance(value, bytes):
             raise TypeError("spool entries require string keys and bytes")
-        if len(value) > MAX_OBJECT_BYTES:
-            raise KnowledgeStorageError("spool", "entry exceeds 8 MiB", code="storage-limit")
+        if len(value) > self.entry_maximum:
+            raise KnowledgeStorageError("spool", "entry exceeds spill limit", code="storage-limit")
         extra = 0 if key in self._index else len(key.encode("utf-8")) + 128
         if self.bytes_written + len(value) > self.maximum or self.index_bytes + extra > self.index_maximum:
             raise KnowledgeStorageError("spool", "private spill quota exhausted", code="storage-limit")
@@ -67,8 +72,21 @@ class ByteSpool(MutableMapping[str, bytes]):
         return key in self._index
 
     def close(self) -> None:
-        self._file.close()
+        if self._owns_file:
+            self._file.close()
         self._index.clear()
+
+    def fork(self) -> ByteSpool:
+        """Retain an independent index while the original owner keeps bytes alive.
+
+        Only one fork may append. All forks must be consumed before the owner
+        closes; byte buffers are shared, never copied into resident dictionaries.
+        """
+        result = object.__new__(ByteSpool)
+        result.__dict__.update(self.__dict__)
+        result._index = dict(self._index)
+        result._owns_file = False
+        return result
 
     def __enter__(self):
         return self
