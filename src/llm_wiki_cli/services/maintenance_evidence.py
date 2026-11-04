@@ -625,6 +625,14 @@ def _reconcile_existing_maintenance(
         owner_key(o["coordinate"], o["target"]): record_id
         for record_id, o in current["observations"].items()
     }
+    deleted_implementations, divergent_deleted_coordinates = {}, set()
+    for historical in current["observations"].values():
+        if historical["presence"] != "deleted":
+            continue
+        coordinate = canonical_hash(historical["coordinate"])
+        previous = deleted_implementations.setdefault(coordinate, historical["implementation"])
+        if previous != historical["implementation"]:
+            divergent_deleted_coordinates.add(coordinate)
     for key in sorted(incoming):
         observed = incoming[key]
         record_id = existing.get(key)
@@ -641,6 +649,19 @@ def _reconcile_existing_maintenance(
                 existing[key] = record_id
             continue
         old = current["observations"][record_id]
+        if (old["presence"] == "deleted" and observed["presence"] == "present"
+                and observed["coordinate"] == old["coordinate"] and observed["target"] == old["target"]
+                and observed["target_presence"] == "present" and observed["basis"]["prose_hash"] is not None
+                and canonical_hash(old["coordinate"]) not in divergent_deleted_coordinates):
+            # Physical prose can be retained or restored without reviving the
+            # deleted source identity. Keep its unavailable execution/history;
+            # only an explicit transfer may resolve ownership again.
+            # Strict deletion synchronizes source peers, so divergent historical
+            # producers keep their original conservative unresolved behavior.
+            observed = core.observation(
+                old["implementation"], observed["basis"]["prose_hash"],
+                presence="deleted", target=old["target"], target_presence="present",
+            )
         if observed == old:
             continue
         if observed["presence"] == "deleted":
