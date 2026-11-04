@@ -28,6 +28,16 @@ _HASH_FIELDS = frozenset(
         "observation_inputs_hash",
     }
 )
+_STABLE_IMPLEMENTATION_GAPS = frozenset(
+    {
+        "observation-limit",
+        "object-limit",
+        "unsupported-syntax",
+        "unsupported-producer",
+        "unsupported-language",
+        "ambiguous-owner",
+    }
+)
 
 
 def _file_hash(path: Path) -> str:
@@ -314,10 +324,16 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
         }
 
     for issue in capture.issues:
+        if issue.get("reason") in _STABLE_IMPLEMENTATION_GAPS:
+            # Exact source/page/analysis commitments may preserve a known gap;
+            # they never make its implementation evidence available. The full
+            # reconciliation below must still preserve every owner byte without
+            # registering an identity, including untracked unsupported scopes.
+            continue
         # Retired/deselected owners may deliberately retain unavailable history.
         # Such an issue cannot authorize any selected source, and every affected
         # recorded observation must already equal this exact current capture.
-        if issue.get("reason") not in {"source-not-captured", "current-owner-not-qualified", "unsupported-producer", "ambiguous-owner"}:
+        if issue.get("reason") not in {"source-not-captured", "current-owner-not-qualified"}:
             return None
         recorded = [row for record_id, row in owner["observations"].items()
                     if (issue.get("record_id") is None or issue["record_id"] == record_id)
