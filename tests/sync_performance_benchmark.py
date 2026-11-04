@@ -94,6 +94,7 @@ def main(argv=None):
     parser.add_argument("--allow-writes", action="store_true", required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--rebuild-knowledge", action="store_true")
     args = parser.parse_args(argv)
     root = args.checkout.resolve()
     if not (root / ".sync-performance-disposable").is_file():
@@ -120,6 +121,9 @@ def main(argv=None):
         command.append("--dry-run")
     if args.force:
         command.append("--force")
+    if args.rebuild_knowledge:
+        command.append("--rebuild-knowledge")
+    previous_argv = sys.argv
     sys.argv = command
     started, cpu = time.perf_counter(), time.process_time()
     error = None
@@ -132,11 +136,13 @@ def main(argv=None):
         error = f"{type(exc).__name__}: {exc}"
     finally:
         wall, used_cpu = time.perf_counter() - started, time.process_time() - cpu
+        sys.argv = previous_argv
         for module, name, original in reversed(replacements):
             setattr(module, name, original)
     result = {
         "schema": "llm-wiki-sync-performance/v1", "ok": error is None, "error": error,
-        "command": command, "provider": str(package), "provider_tree": tree_summary(package, exclude_bytecode=True),
+        "command": command, "tool_version": llm_wiki_cli.__version__, "provider": str(package),
+        "provider_tree": tree_summary(package, exclude_bytecode=True),
         "python": sys.version, "platform": platform.platform(), "machine": platform.machine(),
         "conditions": "fresh process; warm/uncontrolled OS cache; operation wrappers, no profiler",
         "wall_seconds": wall, "cpu_seconds": used_cpu,
