@@ -7,6 +7,7 @@ import pytest
 from llm_wiki_cli.services import maintenance_protocol as protocol
 from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes
 from llm_wiki_cli.services.storage_spool import ByteSpool
+from llm_wiki_cli.services.wiki_write_basis import ACTIVE_WRITE_BASIS
 
 
 def test_spool_fork_retains_original_bytes_and_owner_lifetime():
@@ -27,6 +28,39 @@ def test_spool_forks_share_the_physical_byte_quota():
         fork["second"] = b"5678"
         with pytest.raises(KnowledgeStorageError, match="quota"):
             original["third"] = b"9"
+
+
+def test_identical_writes_do_not_consume_more_spool_quota(tmp_path):
+    page = tmp_path / "page.md"
+    page.write_bytes(b"same")
+    with ByteSpool(max_bytes=4) as original:
+        original["page.md"] = b"same"
+        basis = protocol.WikiWriteBasis(tmp_path, original.fork())
+        token = ACTIVE_WRITE_BASIS.set(basis)
+        try:
+            for _ in range(3):
+                atomic_write_guarded_bytes(page, b"same", expected_existing=b"same")
+            basis.assert_current()
+            assert not basis.changed
+            assert basis.expected["page.md"] == basis.preimages["page.md"] == b"same"
+            assert isinstance(basis.expected, ByteSpool)
+            assert basis.expected.bytes_written == original.bytes_written == 4
+        finally:
+            ACTIVE_WRITE_BASIS.reset(token)
+
+
+def test_identical_after_write_still_verifies_persisted_bytes(tmp_path):
+    page = tmp_path / "page.md"
+    page.write_bytes(b"same")
+    with ByteSpool(max_bytes=4) as original:
+        original["page.md"] = b"same"
+        basis = protocol.WikiWriteBasis(tmp_path, original.fork())
+        basis.before_write(page, b"same")
+        page.write_bytes(b"away")
+        with pytest.raises(protocol.MaintenanceProtocolError, match="Published wiki bytes changed"):
+            basis.after_write(page, b"same")
+        assert basis.expected["page.md"] == b"same"
+        assert not basis.changed
 
 
 def test_recovery_parent_resolves_linked_worktree_common_directory(tmp_path):

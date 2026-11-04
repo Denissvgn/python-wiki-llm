@@ -310,16 +310,18 @@ class WikiWriteBasis:
         relative = self._relative(path)
         if relative is None:
             return
-        if self.expected.get(relative) != content:
+        previous = self.expected.get(relative)
+        if previous != content:
             self.changed = True
         if content is None:
             self.expected.pop(relative, None)
             return
-        if relative == ADOPTION_FILENAME and relative in self.expected and self.expected[relative] != content:
+        if relative == ADOPTION_FILENAME and previous is not None and previous != content:
             raise MaintenanceProtocolError("adoption-immutable", "Maintenance adoption marker cannot be replaced")
         if read_guarded(_absolute_path(path), max(1, len(content))).content != content:
             raise MaintenanceProtocolError("wiki-changed", "Published wiki bytes changed during the operation")
-        self.expected[relative] = content
+        if previous != content:
+            self.expected[relative] = content
 
     @observed_phase("maintenance_verification")
     def assert_current(self) -> None:
