@@ -11,6 +11,8 @@ import pytest
 
 from llm_wiki_cli.services import contracts, knowledge_artifacts as artifacts
 from llm_wiki_cli.services import knowledge_index as index, knowledge_model as model
+from llm_wiki_cli.services import implementation_evidence, knowledge_graph, validation
+from llm_wiki_cli.services import python_implementation
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
 from llm_wiki_cli.services.sync_manifest import SyncManifest
@@ -149,7 +151,11 @@ def test_receipt_rejects_changed_canonical_bytes(tmp_path, alter):
 
 
 @pytest.mark.parametrize('owner,field', [(index, 'parse_knowledge_index'), (model, 'parse_knowledge_index'),
-    (index, 'validate_knowledge_index'), (index, '_validate_builder_model'), (index, '_serialize_payload')])
+    (index, 'validate_knowledge_index'), (index, '_validate_builder_model'), (index, '_serialize_payload'),
+    (model, '_parse_concept'), (model, '_parse_extensions'),
+    (knowledge_graph, 'validate_typed_graph'),
+    (implementation_evidence, 'validate_concept_implementation'),
+    (validation, 'require_repository_relative_path')])
 def test_receipt_rejects_changed_validator_identity(tmp_path, monkeypatch, owner, field):
     plan, knowledge = _case(tmp_path)
     with index._knowledge_validation_operation(tmp_path):
@@ -157,6 +163,48 @@ def test_receipt_rejects_changed_validator_identity(tmp_path, monkeypatch, owner
         original = getattr(owner, field)
         monkeypatch.setattr(owner, field, lambda *a, **k: original(*a, **k))
         with pytest.raises(TypeError, match='validators'):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_snapshots_mutable_reserved_extension_policy(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setitem(knowledge_graph._CORE_KIND_ANALYZERS, "calls", "dependencies")
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_rejects_nested_parser_code_change_on_same_function(tmp_path):
+    plan, knowledge = _case(tmp_path)
+    function = model._parse_concept
+    original = function.__code__
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        try:
+            function.__code__ = (lambda value, path: None).__code__
+            with pytest.raises(TypeError, match="validators"):
+                _consume(plan, receipt, tmp_path)
+        finally:
+            function.__code__ = original
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+
+
+def test_receipt_rejects_changed_relationship_semantic_property(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setattr(model.RelationshipTarget, "endpoint_kind", property(lambda self: "none"))
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_rejects_changed_implementation_schema_limits(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setattr(python_implementation, "MAX_OBJECT_BYTES", 1)
+        with pytest.raises(TypeError, match="validators"):
             _consume(plan, receipt, tmp_path)
 
 

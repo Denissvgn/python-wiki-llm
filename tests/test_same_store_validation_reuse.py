@@ -78,6 +78,19 @@ def test_same_store_prior_cannot_skip_changed_validator(stored, monkeypatch):
         build(stored)
 
 
+@pytest.mark.parametrize("helper", ["_parse_concept", "_parse_extensions"])
+def test_same_store_prior_cannot_skip_changed_semantic_helper(stored, monkeypatch, helper):
+    from llm_wiki_cli.services import knowledge_model
+
+    def refuse(*args, **kwargs):
+        raise knowledge_model.KnowledgeModelError("knowledge", "new nested semantic policy")
+
+    monkeypatch.setattr(knowledge_model, helper, refuse)
+    for prior in (stored[1].validated_artifacts, None):
+        with pytest.raises(artifacts.KnowledgeArtifactError, match="new nested semantic policy"):
+            build(stored, prior=prior)
+
+
 @pytest.mark.parametrize("change", ["root", "object"])
 def test_corrupt_prepared_bytes_cannot_inherit_prior_validation(stored, monkeypatch, change):
     real = artifacts.build_storage
