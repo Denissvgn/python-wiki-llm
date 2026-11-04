@@ -425,6 +425,23 @@ def validate_knowledge_artifacts(
         )
     del knowledge_payload, expected_knowledge_bytes
 
+    return _validate_artifact_parity(
+        surface_payload=surface_payload, knowledge=knowledge, canonical_payload=canonical_payload,
+        storage_objects=storage_objects, storage_statistics=storage_statistics,
+        surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes,
+        manifest=manifest, validation_receipt=_validation_receipt,
+        storage_validation_receipt=_storage_validation_receipt, receipt_wiki_root=_receipt_wiki_root,
+    )
+
+
+@observed_phase("knowledge_validation")
+def _validate_artifact_parity(
+    *, surface_payload, knowledge, canonical_payload, storage_objects, storage_statistics,
+    surface_index_bytes, knowledge_index_bytes, manifest, validation_receipt=None,
+    storage_validation_receipt=None, receipt_wiki_root=None, recheck=None,
+) -> ValidatedKnowledgeArtifacts:
+    """Check the new cross-artifact state after its logical model is validated."""
+
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
         raise KnowledgeArtifactError(
@@ -504,15 +521,17 @@ def validate_knowledge_artifacts(
     from .knowledge_governance import governance_hash_from_knowledge
 
     governance_hash = governance_hash_from_knowledge(knowledge)
-    if _validation_receipt is not None:
+    if validation_receipt is not None:
         from .knowledge_index import _require_validation_receipt
-        assert _receipt_wiki_root is not None
-        _require_validation_receipt(_validation_receipt, _receipt_wiki_root, knowledge_index_bytes)
-    if _storage_validation_receipt is not None:
+        assert receipt_wiki_root is not None
+        _require_validation_receipt(validation_receipt, receipt_wiki_root, knowledge_index_bytes)
+    if storage_validation_receipt is not None:
         from .knowledge_index import _require_validation_receipt, _ValidatedIndexReceipt
-        assert _receipt_wiki_root is not None
-        assert isinstance(_storage_validation_receipt, _ValidatedIndexReceipt)
-        _require_validation_receipt(_storage_validation_receipt, _receipt_wiki_root, _storage_validation_receipt.content)
+        assert receipt_wiki_root is not None
+        assert isinstance(storage_validation_receipt, _ValidatedIndexReceipt)
+        _require_validation_receipt(storage_validation_receipt, receipt_wiki_root, storage_validation_receipt.content)
+    if recheck is not None:
+        recheck()
     validated = ValidatedKnowledgeArtifacts(
         surface_payload=freeze(surface_payload),
         knowledge=knowledge,
@@ -532,6 +551,55 @@ def validate_knowledge_artifacts(
         _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes),
     )
     return validated
+
+
+def _reuse_same_store_candidate(
+    *, prior, prepared_store, knowledge, surface_index_bytes, knowledge_index_bytes,
+    manifest, storage_validation_receipt, receipt_wiki_root,
+) -> ValidatedKnowledgeArtifacts | None:
+    """Reuse one captured store only inside its planner, after exact comparisons."""
+    if prior is None or prepared_store is None or knowledge is None:
+        return None
+    prior = require_validated_artifacts(prior)
+    _, prior_root = validated_artifact_bytes(prior)
+    if knowledge_index_bytes != prior_root:
+        return None
+    root_payload = _decode_json_object(prior_root, "knowledge_index_bytes")
+    if root_payload.get("schema_version") not in (STORE_SCHEMA, *PACKED_SCHEMAS):
+        return None
+    logical_root = root_payload.get("store", root_payload)
+    logical_hash = logical_root["logical_hash"]
+    expected_objects = {path: raw for path, raw in prior.storage_objects.items()
+                        if path.startswith(".llm-wiki-knowledge/")}
+
+    def unchanged():
+        return (prepared_store.root_bytes == prior_root
+                and set(prepared_store.objects) == set(expected_objects)
+                and all(prepared_store.objects[path] == raw for path, raw in expected_objects.items())
+                and logical_digest(_model_to_payload(knowledge)) == logical_hash
+                and (knowledge is prior.knowledge or logical_digest(_model_to_payload(prior.knowledge)) == logical_hash)
+                and logical_digest(prior.knowledge_payload) == logical_hash)
+
+    if not unchanged():
+        return None
+
+    def recheck():
+        require_validated_artifacts(prior)
+        if not unchanged():
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects",
+                                         "candidate changed during validated storage reuse", code="storage-mutation")
+
+    # New surface/manifest/governance/maintenance parity always runs. Live disk
+    # bytes still pass through every normal planned-write and commit CAS below.
+    return _validate_artifact_parity(
+        surface_payload=validate_surface_index_bytes(surface_index_bytes),
+        knowledge=prior.knowledge, canonical_payload=prior.knowledge_payload,
+        storage_objects=freeze({**manifest.storage_objects, **expected_objects}),
+        storage_statistics=prior.storage_statistics, surface_index_bytes=surface_index_bytes,
+        knowledge_index_bytes=knowledge_index_bytes, manifest=manifest,
+        storage_validation_receipt=storage_validation_receipt,
+        receipt_wiki_root=receipt_wiki_root, recheck=recheck,
+    )
 
 
 def build_knowledge_commit_plan(
@@ -625,15 +693,22 @@ def build_knowledge_commit_plan(
             else:
                 _, knowledge_index_bytes = _validated_index_serialization(knowledge_index)
     assert knowledge_index_bytes is not None
-    validated = validate_knowledge_artifacts(
-        surface_index_bytes=surface_index_bytes,
-        knowledge_index_bytes=knowledge_index_bytes,
-        manifest=manifest,
-        object_reader=(None if prepared_store is None else lambda path, _: prepared_store.objects[path]),
-        _validation_receipt=validation_receipt,
-        _receipt_wiki_root=receipt_root if validation_receipt is not None or storage_validation_receipt is not None else None,
-        _storage_validation_receipt=storage_validation_receipt,
+    validated = _reuse_same_store_candidate(
+        prior=prior, prepared_store=prepared_store, knowledge=knowledge_index,
+        surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes,
+        manifest=manifest, storage_validation_receipt=storage_validation_receipt,
+        receipt_wiki_root=receipt_root if storage_validation_receipt is not None else None,
     )
+    if validated is None:
+        validated = validate_knowledge_artifacts(
+            surface_index_bytes=surface_index_bytes,
+            knowledge_index_bytes=knowledge_index_bytes,
+            manifest=manifest,
+            object_reader=(None if prepared_store is None else lambda path, _: prepared_store.objects[path]),
+            _validation_receipt=validation_receipt,
+            _receipt_wiki_root=receipt_root if validation_receipt is not None or storage_validation_receipt is not None else None,
+            _storage_validation_receipt=storage_validation_receipt,
+        )
     objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
     knowledge_hash = validated.knowledge_index_hash
     if knowledge_format != "v1":
