@@ -3934,6 +3934,11 @@ def _try_sync_knowledge_reuse(
     if maintenance_recheck is not None:
         maintenance_recheck()
     committed_state.assert_current()
+    from ..services.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    write_basis = ACTIVE_WRITE_BASIS.get()
+    if write_basis is not None and write_basis.root == Path(options.wiki_dir).resolve():
+        write_basis.source_snapshot = source_snapshot
     record_counts(written_artifacts=0)
     return _ReusedSync(
         knowledge_reuse.unchanged_commit_result(

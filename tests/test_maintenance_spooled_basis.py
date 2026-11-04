@@ -78,6 +78,37 @@ def test_cache_writer_lock_is_transient_inside_adopted_wiki(tmp_path, monkeypatc
             assert (cache / "llm-wiki-sync-analysis.lock").is_file()
 
 
+def test_identical_page_bytes_skip_source_rescan_but_changed_write_and_final_check_do_not(tmp_path, monkeypatch):
+    wiki = _adopted(tmp_path, monkeypatch)
+    page = next(wiki.rglob("*.md"))
+    raw = page.read_bytes()
+    with protocol.maintenance_write_operation(wiki) as basis:
+        assert basis is not None
+        calls = []
+        monkeypatch.setattr(basis, "assert_source_current", lambda: calls.append(True))
+        basis.before_write(page, raw)
+        assert calls == []
+        basis.before_write(page, raw + b"\n")
+        assert len(calls) == 1
+        basis.assert_current()
+        assert len(calls) == 2
+        basis.before_write(wiki / ".llm-wiki-manifest.json", (wiki / ".llm-wiki-manifest.json").read_bytes())
+        assert len(calls) == 3
+
+
+def test_source_change_during_identical_write_is_rejected_at_final_verification(tmp_path, monkeypatch):
+    wiki = _adopted(tmp_path, monkeypatch)
+    from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+    page = next(wiki.rglob("*.md"))
+    raw = page.read_bytes()
+    with pytest.raises(protocol.MaintenanceProtocolError, match="Source changed"):
+        with protocol.maintenance_write_operation(wiki) as basis:
+            assert basis is not None
+            basis.source_snapshot = build_source_snapshot("src")
+            Path("src/app.py").write_text("def run():\n    return 2\n")
+            basis.before_write(page, raw)
+
+
 def test_first_mutation_saves_complete_preimage_before_replacement(tmp_path, monkeypatch):
     wiki = _adopted(tmp_path, monkeypatch)
     page = next(wiki.rglob("*.md"))

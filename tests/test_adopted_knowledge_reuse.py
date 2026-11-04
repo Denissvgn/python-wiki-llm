@@ -169,3 +169,21 @@ def test_unchanged_retired_owner_in_selected_module_does_not_disable_reuse(legac
     _trap_builders(monkeypatch, extraction=False)
     _sync()
     assert snapshot_wiki("wiki") == before
+
+
+def test_source_mutation_after_fast_result_is_rejected_by_outer_final_verification(legacy, monkeypatch, capsys):
+    _sync(rebuild_knowledge=True)
+    before = snapshot_wiki("wiki")
+    original = knowledge_reuse.unchanged_commit_result
+    def change_after_result(*args, **kwargs):
+        result = original(*args, **kwargs)
+        source = Path("src/policy.py")
+        source.write_text(source.read_text() + "\n# concurrent source edit\n")
+        return result
+    _trap_builders(monkeypatch)
+    monkeypatch.setattr(knowledge_reuse, "unchanged_commit_result", change_after_result)
+    with pytest.raises(SystemExit) as error:
+        _sync()
+    assert error.value.code == 2
+    assert "Source changed" in capsys.readouterr().err
+    assert snapshot_wiki("wiki") == before

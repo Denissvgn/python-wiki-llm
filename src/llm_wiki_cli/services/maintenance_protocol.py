@@ -195,8 +195,6 @@ class WikiWriteBasis:
             return
         if relative == ".llm-wiki-manifest.json":
             self.assert_current()
-        else:
-            self.assert_source_current()
         previous = self.expected.get(relative)
         if relative == ADOPTION_FILENAME and previous is not None and previous != content:
             raise MaintenanceProtocolError("adoption-immutable", "Maintenance adoption marker cannot be replaced or removed")
@@ -208,6 +206,8 @@ class WikiWriteBasis:
             raise MaintenanceProtocolError("wiki-changed", f"Captured wiki input changed before publication: {relative}")
         if current == content:
             return
+        if relative != ".llm-wiki-manifest.json":
+            self.assert_source_current()
         if self.recovery_directory is not None:
             if not self.recovery_started:
                 save_recovery_snapshot(self.recovery_directory, self.preimages,
