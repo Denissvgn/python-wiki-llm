@@ -72,7 +72,9 @@ def committed_capture(root, result, *, bundles=True):
                                      knowledge_index=knowledge, manifest=state.manifest_basis,
                                      prior=state.validated_artifacts)
     commit_knowledge_artifacts(plan)
-    return load_knowledge_state(root).validated_artifacts
+    validated = load_knowledge_state(root).validated_artifacts
+    assert validated is not None
+    return validated
 
 
 def test_implementation_cache_requires_authenticated_capture_then_elides_parse(source_case):
@@ -85,6 +87,7 @@ def test_implementation_cache_requires_authenticated_capture_then_elides_parse(s
     parsed.clear()
     before = (cache / CACHE_FILENAME).stat().st_mtime_ns
     warm = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert warm.cache_stats is not None
     assert parsed == []
     assert semantic_payload(warm) == semantic_payload(first)
     assert warm.cache_stats.hits == 2
@@ -113,6 +116,7 @@ def test_implementation_cache_invalidates_only_affected_file(source_case, change
         path.write_text(json.dumps(content))
     parsed.clear()
     incremental = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert incremental.cache_stats is not None
     assert parsed == ["a.py"]
     assert incremental.cache_stats.hits == 1
     assert semantic_payload(incremental) == semantic_payload(extract(src, cache, implementations=True, enabled=False))
@@ -144,6 +148,7 @@ def test_committed_capture_authenticates_entire_raw_extraction_bundle(source_cas
     path.write_text(json.dumps(content))
     parsed.clear()
     actual = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert actual.cache_stats is not None
     assert parsed == ["a.py"]
     assert actual.cache_stats.hits == 1
     assert semantic_payload(actual) == semantic_payload(extract(src, cache, implementations=True, enabled=False))
@@ -155,6 +160,7 @@ def test_legacy_implementation_only_commitment_cannot_authorize_bundle(source_ca
     artifacts = committed_capture(src.parent / "authority", first, bundles=False)
     parsed.clear()
     actual = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert actual.cache_stats is not None
     assert sorted(parsed) == ["a.py", "b.py"]
     assert actual.cache_stats.hits == 0
 
