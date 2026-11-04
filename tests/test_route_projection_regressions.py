@@ -8,11 +8,13 @@ import pytest
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services import api_contracts as contract_service
+from llm_wiki_cli.services import knowledge_reuse
 from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
 from llm_wiki_cli.services.knowledge_artifacts import (
     KnowledgeArtifactError,
     _validate_surface_flow_routes,
 )
+from tests.test_verified_bug_migrations import _semantic_artifacts
 
 
 def _source(dynamic):
@@ -42,8 +44,8 @@ def test_dynamic_routes_publish_and_converge(
     tmp_path, monkeypatch, api_contracts, initial_dynamic
 ):
     monkeypatch.chdir(tmp_path)
-    # This fixture checks route projection convergence without optional cache
-    # metadata, whose removal on --no-cache has a separate custody contract.
+    # Keep persisted extraction-cache metadata out of the route projection
+    # contract; its removal on --no-cache has separate custody coverage.
     monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     source = tmp_path / "src"
     source.mkdir()
@@ -70,6 +72,13 @@ def test_dynamic_routes_publish_and_converge(
                 src_dir="src", wiki_dir=str(wiki), force=True, rebuild_knowledge=True
             )
         )
+    # Explicit first priming may add an operational hint. Prove it leaves every
+    # semantic/review fact and Markdown byte intact before freezing the baseline.
+    semantic_before, _ = _semantic_artifacts()
+    sync_cmd.run(SimpleNamespace(src_dir="src", wiki_dir=str(wiki), rebuild_knowledge=True))
+    semantic_after, hints = _semantic_artifacts()
+    assert semantic_after == semantic_before
+    assert set(hints) == {knowledge_reuse.REUSE_EXTENSION_KEY}
     assert load_knowledge_state(wiki).knowledge is not None
     surface = json.loads((wiki / ".llm-wiki-surface.json").read_text())
     flow = next(item for item in surface["flows"] if item["id"] == "http-items")
