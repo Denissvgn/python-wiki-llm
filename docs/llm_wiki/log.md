@@ -4010,3 +4010,19 @@ Existing permissions, validation bounds and native authority remain separate.
 - Dependency pages initialized: 0
 - Surface policy updated: no
 - Generated surface pages retired: 1
+
+## 2026-11-04
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.0.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:90c4bdc92f6238ebc925568ff1954252bd1b06e746acedd156c7a07bdc26b52c`
+- Pages created: 0
+- Pages updated: 5
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1647
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none

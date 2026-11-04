@@ -185,7 +185,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 2258; effect analysis evaluated: 1612, partial: 102, unavailable: 544. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1714 source steps with known totals: observed: 10468, emitted: 9952, omitted: 516. Unavailable totals are excluded.
+Collector observations for 1714 source steps with known totals: observed: 10472, emitted: 9956, omitted: 516. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -274,7 +274,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5420 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5424 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2435 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2436 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2436 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -290,7 +290,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5427 |
+| output | `print` | `run` | 5431 |
 | output | `print` | `_sync_run_options_from_args` | 2464 |
 | output | `print` | `_sync_run_options_from_args` | 2467 |
 | output | `print` | `_sync_run_options_from_args` | 2473 |
