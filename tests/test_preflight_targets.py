@@ -62,7 +62,8 @@ def test_own_repository_proof_owner_includes_composite_runtime():
     rows, inputs = adapter.declarations(ROOT, lambda name: (ROOT / name).read_bytes())
     assert len(rows) == 1
     assert "#action/step-" in rows[0]["owner"] and rows[0]["platform"] == "linux"
-    assert rows[0]["python"] == "3.13"
+    assert rows[0]["python"] == "3.13.18"
+    assert rows[0]["machine"] is None
     assert "integrations/wiki-integrity/action.yml" in inputs
 
 
