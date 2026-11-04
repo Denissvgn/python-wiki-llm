@@ -469,7 +469,7 @@ def test_current_team_resolution_never_decodes_native_packs(project, monkeypatch
 @pytest.mark.parametrize("coverage", ["full", "inventory"])
 def test_current_static_cache_reuses_observations_but_reconciles_prose(project, monkeypatch, coverage):
     from llm_wiki_cli.commands import sync_cmd
-    from llm_wiki_cli.services import sync_analysis_cache
+    from llm_wiki_cli.services import sync_analysis_cache, sync_analysis_storage
     from llm_wiki_cli.services.sync_manifest import SyncManifest
     api.bootstrap_wiki("src", "wiki")
     page = Path("wiki/modules/app.md")
@@ -477,14 +477,19 @@ def test_current_static_cache_reuses_observations_but_reconciles_prose(project, 
     command = ["sync", "--src-dir", "src", "--wiki-dir", "wiki", "--cache-dir", "cache", "--no-plugins"]
     sync_cmd.run(cli._build_parser().parse_args(command))
     cache = Path("cache") / sync_analysis_cache.FILENAME
-    initial = cache.read_bytes()
-    payload = json.loads(initial)
+    def cached_payload():
+        return sync_analysis_storage.load(cache, root_limit=sync_analysis_cache.MAX_BYTES,
+                                          total_limit=sync_analysis_cache.MAX_CAPTURE_BYTES)
+
+    payload = cached_payload()
     assert payload["input_key"]["ordinary_owner"] == json.loads(Path("wiki/.llm-wiki-maintenance-adoption.json").read_bytes())["adoption_id"]
     if coverage == "inventory":
-        monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", len(initial) - 1)
+        initial_size = sync_analysis_cache.payload_size(payload)
+        assert initial_size is not None
+        monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", initial_size - 1)
         page.write_text(page.read_text().replace("First authored purpose.", "Prime bounded inventory."))
         sync_cmd.run(cli._build_parser().parse_args(command))
-        assert json.loads(cache.read_bytes())["coverage"] == "inventory"
+        assert cached_payload()["coverage"] == "inventory"
     status = api.get_maintenance_status("src", "wiki")
     record = next(row for row in status["records"] if row["expected_basis"] is not None
                   and row["expected_basis"]["target"]["canonical_path"] == "modules/app.md")
