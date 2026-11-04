@@ -195,6 +195,7 @@
     "services/maintenance_projection.py",
     "services/maintenance_protocol.py",
     "services/maintenance_queue.py",
+    "services/maintenance_recovery.py",
     "services/maintenance_service.py",
     "services/maintenance_shapes.py",
     "services/maintenance_state.py",

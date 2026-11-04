@@ -211,7 +211,8 @@ class WikiWriteBasis:
         if self.recovery_directory is not None:
             if not self.recovery_started:
                 save_recovery_snapshot(self.recovery_directory, self.preimages,
-                                       marker=self.recovery_marker, kind="captured-preimage")
+                                       marker=self.recovery_marker, kind="captured-preimage",
+                                       owner_root=self.root)
                 self.recovery_started = True
             if self.eligible_images is None:
                 self.eligible_images = {name: [digest(raw)] for name, raw in self.expected.items()}
@@ -264,7 +265,11 @@ class WikiWriteBasis:
 
 
 @observed_phase("maintenance_recovery")
-def save_recovery_snapshot(directory: Path, files: Mapping[str, bytes], *, marker: dict | None, kind="committed"):
+def save_recovery_snapshot(directory: Path, files: Mapping[str, bytes], *, marker: dict | None,
+                           kind="committed", owner_root: Path | None = None):
+    if owner_root is not None:
+        from .maintenance_recovery import save_recovery_catalog
+        return save_recovery_catalog(directory, files, marker=marker, kind=kind, owner_root=owner_root)
     root = _absolute_path(directory)
     ensure_guarded_directory(root, mode=0o700)
     metadata = {"schema_version": "llm-wiki-maintenance-recovery/v1", "marker": marker, "kind": kind,
@@ -284,12 +289,39 @@ def save_recovery_snapshot(directory: Path, files: Mapping[str, bytes], *, marke
     return metadata
 
 
-def _recovery_directory(root: Path, files: Mapping[str, bytes]) -> Path:
-    from .knowledge_governance import _governance_lock_root
+def _recovery_parent(root: Path) -> Path:
+    """Resolve regular Git metadata and linked-worktree common dirs guardedly."""
+    for ancestor in (root, *root.parents):
+        git = ancestor / ".git"
+        if not git.exists() and not git.is_symlink():
+            continue
+        if first_unsafe_path_component(git) is not None:
+            raise MaintenanceProtocolError("recovery-path", "Recovery Git metadata cannot follow symbolic links")
+        if git.is_dir():
+            return _absolute_path(git)
+        raw = read_guarded(git, 8192).content.decode("utf-8").strip()
+        if not raw.startswith("gitdir: ") or "\n" in raw or "\r" in raw:
+            raise MaintenanceProtocolError("recovery-path", "Invalid linked-worktree Git metadata")
+        metadata = _absolute_path(ancestor / raw[len("gitdir: "):])
+        common_file = metadata / "commondir"
+        if common_file.exists() or common_file.is_symlink():
+            location = read_guarded(common_file, 8192).content.decode("utf-8").strip()
+            if not location or "\n" in location or "\r" in location:
+                raise MaintenanceProtocolError("recovery-path", "Invalid linked-worktree common directory")
+            metadata = _absolute_path(metadata / location)
+        if not metadata.is_dir():
+            raise MaintenanceProtocolError("recovery-path", "Recovery Git directory is unavailable")
+        return metadata
+    return root.parent / ".llm-wiki-maintenance-recovery"
 
-    lock_root = _governance_lock_root(root)
-    parent = lock_root if lock_root != root else root.parent / ".llm-wiki-maintenance-recovery"
-    key = digest(canonical_bytes({name: digest(files[name]) for name in sorted(files)}))[7:]
+
+def _recovery_directory(root: Path, files: Mapping[str, bytes], marker=None) -> Path:
+    from .maintenance_recovery import recovery_catalog_key
+
+    parent = _recovery_parent(root)
+    marker = marker if marker is not None else load_adoption_marker(root)
+    hashes = files.content_hashes() if isinstance(files, ByteSpool) else {name: digest(files[name]) for name in sorted(files)}
+    key = recovery_catalog_key(root, marker, hashes)
     return parent / "maintenance-preimages" / key
 
 
@@ -311,7 +343,7 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
         with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
                        max_entry_bytes=MAX_EXPANDED_BYTES) as files:
             _capture_spooled_wiki(root, files)
-            directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files)
+            directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files, marker)
             if directory == root or directory.is_relative_to(root):
                 raise MaintenanceProtocolError("recovery-path", "Recovery preimages must be outside the managed wiki")
             basis = WikiWriteBasis(root, files.fork(), recovery_directory=directory,
@@ -321,8 +353,13 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
                 yield basis
                 basis.assert_current()
                 if basis.changed:
-                    committed_directory = _recovery_directory(root, basis.expected) / "committed"
-                    save_recovery_snapshot(committed_directory, basis.expected, marker=marker)
+                    from .maintenance_recovery import mark_recovery_complete, retain_recovery_catalogs
+
+                    committed_directory = _recovery_directory(root, basis.expected, marker) / "committed"
+                    save_recovery_snapshot(committed_directory, basis.expected, marker=marker, owner_root=root)
+                    mark_recovery_complete(directory, committed_directory)
+                    retain_recovery_catalogs(committed_directory.parent.parent, owner_root=root,
+                                             marker=marker, newest_committed=committed_directory)
             finally:
                 ACTIVE_WRITE_BASIS.reset(token)
 

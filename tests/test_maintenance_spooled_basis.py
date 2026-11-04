@@ -19,6 +19,28 @@ def test_spool_fork_retains_original_bytes_and_owner_lifetime():
         assert original["page"] == b"before"
 
 
+def test_spool_forks_share_the_physical_byte_quota():
+    from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
+    with ByteSpool(max_bytes=8) as original:
+        original["first"] = b"1234"
+        fork = original.fork()
+        fork["second"] = b"5678"
+        with pytest.raises(KnowledgeStorageError, match="quota"):
+            original["third"] = b"9"
+
+
+def test_recovery_parent_resolves_linked_worktree_common_directory(tmp_path):
+    common = tmp_path / "main" / ".git"
+    metadata = common / "worktrees" / "linked"
+    metadata.mkdir(parents=True)
+    linked = tmp_path / "linked"
+    wiki = linked / "docs" / "wiki"
+    wiki.mkdir(parents=True)
+    (linked / ".git").write_text(f"gitdir: {metadata}\n")
+    (metadata / "commondir").write_text("../..\n")
+    assert protocol._recovery_parent(wiki) == common
+
+
 def _adopted(tmp_path, monkeypatch):
     from llm_wiki_cli import api
     from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority

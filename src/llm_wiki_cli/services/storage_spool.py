@@ -50,12 +50,12 @@ class ByteSpool(MutableMapping[str, bytes]):
         if len(value) > self.entry_maximum:
             raise KnowledgeStorageError("spool", "entry exceeds spill limit", code="storage-limit")
         extra = 0 if key in self._index else len(key.encode("utf-8")) + 128
-        if self.bytes_written + len(value) > self.maximum or self.index_bytes + extra > self.index_maximum:
-            raise KnowledgeStorageError("spool", "private spill quota exhausted", code="storage-limit")
         offset = self._file.seek(0, 2)
+        if offset + len(value) > self.maximum or self.index_bytes + extra > self.index_maximum:
+            raise KnowledgeStorageError("spool", "private spill quota exhausted", code="storage-limit")
         self._file.write(value)
         self._index[key] = offset, len(value), hashlib.sha256(value).digest()
-        self.bytes_written += len(value)
+        self.bytes_written = offset + len(value)
         self.index_bytes += extra
 
     def __delitem__(self, key: str) -> None:
@@ -87,6 +87,10 @@ class ByteSpool(MutableMapping[str, bytes]):
         result._index = dict(self._index)
         result._owns_file = False
         return result
+
+    def content_hashes(self) -> dict[str, str]:
+        """Return commitments captured while writing; reads still verify bytes."""
+        return {key: "sha256:" + value[2].hex() for key, value in self._index.items()}
 
     def __enter__(self):
         return self
