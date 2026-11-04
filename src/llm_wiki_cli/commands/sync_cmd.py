@@ -3846,8 +3846,6 @@ def _try_sync_knowledge_reuse(
     committed_state: CommittedKnowledgeState,
     observation_inputs_hash: str | None = None,
 ) -> _ReusedSync | None:
-    if manifest.maintenance_state is not None:
-        return None  # Reconcile durable review before any source-baseline reuse.
     artifacts = committed_state.artifacts
     if artifacts is None:
         return None
@@ -3879,6 +3877,13 @@ def _try_sync_knowledge_reuse(
         or knowledge_reuse.bind_reuse_commitment(basis, manifest) != commitment
     ):
         return None
+    maintenance_recheck = None
+    if manifest.maintenance_state is not None:
+        maintenance_recheck = knowledge_reuse.maintenance_reuse_check(
+            options.wiki_dir, manifest, artifacts.knowledge, inventory_result, source_snapshot,
+        )
+        if maintenance_recheck is None:
+            return None
     # Recheck additions, exact source bytes, explicit OpenAPI, and live wiki input
     # before returning without any builder/serialization/artifact write.
     if not source_snapshot_matches_current_files(source_snapshot):
@@ -3926,6 +3931,8 @@ def _try_sync_knowledge_reuse(
         raise SyncRuntimeRefreshError(
             "implementation changed while checking knowledge reuse"
         )
+    if maintenance_recheck is not None:
+        maintenance_recheck()
     committed_state.assert_current()
     record_counts(written_artifacts=0)
     return _ReusedSync(
@@ -4989,7 +4996,9 @@ def _finalize_prepared_sync(
     )
     analysis_payload = sync_analysis_cache.build_payload(options, prepared, surface)
     prior = prepared.committed_state.artifacts if prepared.committed_state is not None else None
+    maintenance_migration = bool(options.rebuild_knowledge and prepared.manifest.maintenance_state is not None)
     if (prior is not None and sync_analysis_cache.EXTENSION not in prior.knowledge.extensions
+            and not maintenance_migration
             and reuse_basis is not None
             and reuse_basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
             and reuse_basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash):
@@ -5015,6 +5024,7 @@ def _finalize_prepared_sync(
             previous_manifest=prepared.manifest,
             committed_state=prepared.committed_state,
             reuse_input_basis=reuse_basis,
+            allow_maintenance_reuse_migration=maintenance_migration,
             sync_analysis_commitment=sync_analysis_cache.commitment(analysis_payload),
             reuse_typed_graph=prepared.analysis_reused and not options.rebuild_knowledge,
             next_manifest=next_manifest,
@@ -5071,6 +5081,9 @@ def _finalize_prepared_sync(
         dry_run=dry_run,
     )
     _print_sync_artifact_actions(artifact_result)
+    if maintenance_migration:
+        enabled = knowledge_reuse.REUSE_INPUT_KEY in artifact_result.committed_manifest.generation_inputs
+        print("Maintenance reuse migration: " + ("prepared" if dry_run and enabled else "completed" if enabled else "skipped (inputs not qualified)"))
     if dry_run:
         if analysis_payload is not None:
             sync_analysis_cache.report_capture(options, "skipped", "dry-run")

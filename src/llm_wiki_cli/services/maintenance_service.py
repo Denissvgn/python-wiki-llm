@@ -509,6 +509,9 @@ def acknowledge_maintenance_authority(src_dir, wiki_dir, *, record_id, expected_
         marker = guard_maintenance_owner(root, manifest)
         next_manifest = manifest.with_maintenance_state(updated)
         knowledge = project_maintenance_knowledge(view.knowledge, updated, marker)
+        from .knowledge_reuse import rebind_maintenance_reuse
+
+        knowledge, next_manifest = rebind_maintenance_reuse(knowledge, next_manifest)
         surface, _ = validated_artifact_bytes(view.validated_artifacts)
         plan = build_knowledge_commit_plan(root, surface_index_bytes=surface,
             knowledge_index=knowledge, manifest=next_manifest, prior=view.validated_artifacts,

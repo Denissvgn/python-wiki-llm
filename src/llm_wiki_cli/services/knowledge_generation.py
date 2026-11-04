@@ -15,7 +15,7 @@ from .progress import observed_phase, record_counts
 import json
 from collections.abc import Mapping, Sequence
 from collections.abc import Set as AbstractSet
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
@@ -167,6 +167,7 @@ class KnowledgeGenerationInputs:
     graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
     governance: GovernanceLedger | None = None
     reuse_input_basis: Mapping[str, object] | None = None
+    allow_maintenance_reuse_migration: bool = False
     knowledge_format: str | None = None
     maintenance_page_transitions: PageTransitionPlan | None = None
     maintenance_previous_raw_content_by_page: Mapping[str, bytes] | None = None
@@ -510,6 +511,26 @@ def _build_knowledge_generation_plan(
             confirmed_transfers=transfers.confirmed, ambiguous_transfers=transfers.ambiguous)
         manifest = manifest.with_maintenance_state(state)
         knowledge = project_maintenance_knowledge(knowledge, state, inputs.maintenance_adoption)
+        prior = inputs.prior_artifacts
+        basis = inputs.reuse_input_basis
+        legacy_unchanged = (
+            prior is not None and REUSE_EXTENSION_KEY not in prior.knowledge.extensions
+            and basis is not None
+            and basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
+            and basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash
+        )
+        if (basis is not None and not inputs.force_unknown_evidence
+                and (not legacy_unchanged or inputs.allow_maintenance_reuse_migration)
+                and all(baseline.is_known for baseline in manifest.evidence_baselines.values())
+                and all(tombstone.last_valid_basis is not None for tombstone in manifest.tombstones.values())):
+            # The lifecycle commitment must bind the reconciled durable owner,
+            # including current review history, rather than its pre-run state.
+            commitment = bind_reuse_commitment(basis, manifest)
+            generation_inputs = {**manifest.generation_inputs, REUSE_INPUT_KEY: commitment}
+            manifest = manifest.with_generation_state(
+                surfaces=manifest.surfaces, generation_inputs=generation_inputs,
+            )
+            knowledge = replace(knowledge, extensions={**knowledge.extensions, REUSE_EXTENSION_KEY: commitment})
     return build_knowledge_commit_plan(
         inputs.wiki_dir,
         prior=inputs.prior_artifacts,

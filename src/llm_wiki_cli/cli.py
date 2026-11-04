@@ -2027,7 +2027,7 @@ def _add_sync_command(subparsers):
     sync_parser.add_argument(
         "--rebuild-knowledge",
         action="store_true",
-        help="Force the full knowledge builder independently of inventory caching",
+        help="Force the full knowledge builder independently of inventory caching; initialize reuse for an adopted wiki",
     )
     sync_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
