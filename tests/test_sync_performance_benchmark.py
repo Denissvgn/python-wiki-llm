@@ -27,6 +27,23 @@ def test_tree_summary_streams_exact_names_and_bytes(tmp_path):
         benchmark.tree_summary(tmp_path)
 
 
+def test_tree_hash_does_not_confuse_file_bytes_with_namespace_boundaries(tmp_path):
+    first, second = tmp_path / "first", tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    # Both layouts previously encoded as b"a\x001b\x00qc\x00r", with
+    # two files and five content bytes, despite different names and contents.
+    (first / "a").write_bytes(b"1b\x00q")
+    (first / "c").write_bytes(b"r")
+    (second / "a").write_bytes(b"1")
+    (second / "b").write_bytes(b"qc\x00r")
+    a, b = benchmark.tree_summary(first), benchmark.tree_summary(second)
+    assert a["files"] == b["files"] == 2
+    assert a["bytes"] == b["bytes"] == 5
+    assert a["hash_encoding"] == b["hash_encoding"] == "path-size-content-sha256/v1"
+    assert a["sha256"] != b["sha256"]
+
+
 def test_adopted_noop_measurement_records_real_work(tmp_path, monkeypatch):
     from llm_wiki_cli import api
     import llm_wiki_cli

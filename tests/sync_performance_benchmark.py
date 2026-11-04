@@ -37,13 +37,21 @@ def tree_summary(root: Path, *, exclude_bytecode=False) -> dict:
             if not path.is_file():
                 continue
             name = path.relative_to(root).as_posix()
-            checksum.update(name.encode() + b"\0")
+            encoded_name = name.encode("utf-8")
+            file_hash = hashlib.sha256()
+            size = 0
             with path.open("rb") as stream:
                 while chunk := stream.read(1024 * 1024):
-                    checksum.update(chunk)
-                    total += len(chunk)
+                    file_hash.update(chunk)
+                    size += len(chunk)
+            checksum.update(len(encoded_name).to_bytes(8, "big"))
+            checksum.update(encoded_name)
+            checksum.update(size.to_bytes(8, "big"))
+            checksum.update(file_hash.digest())
+            total += size
             count += 1
-    return {"files": count, "bytes": total, "sha256": checksum.hexdigest()}
+    return {"files": count, "bytes": total, "sha256": checksum.hexdigest(),
+            "hash_encoding": "path-size-content-sha256/v1"}
 
 
 def instrument() -> tuple[Counter, list]:
