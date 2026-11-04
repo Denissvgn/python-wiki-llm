@@ -481,3 +481,11 @@ def make_cache_entry(
         "hash": file_hash,
         "inventory": inventory_entry,
     }
+
+
+def extraction_bundle_hash(entry: dict) -> str:
+    """Commit every raw analysis value reused together, excluding file metadata."""
+    from .knowledge_evidence import hash_json
+    return hash_json({key: entry.get(key) for key in (
+        "language", "hash", "inventory", "python_observations", "python_implementation",
+    )})

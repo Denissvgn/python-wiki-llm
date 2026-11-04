@@ -238,6 +238,7 @@ def build_payload(options, prepared, surface):
         "schema_version": SCHEMA, "coverage": "full", "input_key": key, "inventory": prepared.inventory,
         "statuses": {k: asdict(v) for k, v in result.statuses.items()},
         "implementation_observations": result.implementation_observations,
+        "extraction_cache_hashes": getattr(result, "extraction_cache_hashes", {}),
         "path_outcomes": getattr(result, "path_outcomes", {}),
         "data_effect_observations": result.data_effect_observations,
         "import_observations": result.import_observations,
@@ -274,6 +275,7 @@ def commitment(payload):
     return {"schema_version": SCHEMA, "coverage": payload["coverage"],
             "input_hash": hash_json(payload["input_key"]),
             "payload_hash": _payload_hash(payload), "graph_concepts_hash": payload["graph_concepts_hash"],
+            "extraction_files": dict(payload.get("extraction_cache_hashes", {})),
             "implementation_files": {path: hash_json(row) for path, row in
                                      (payload.get("implementation_observations") or {}).get("files", {}).items()}} if payload is not None else None
 
@@ -344,6 +346,7 @@ def inventory_result(payload, snapshot, options):
         extractor_registry=dict(EXTRACTOR_REGISTRY), source_snapshot=snapshot,
         analysis_components=analysis,
         implementation_observations=payload["implementation_observations"],
+        extraction_cache_hashes=dict(payload.get("extraction_cache_hashes", {})),
         path_outcomes=dict(payload["path_outcomes"]) if isinstance(payload.get("path_outcomes"), Mapping) else {},
         data_effect_observations=payload["data_effect_observations"],
         import_observations=payload["import_observations"],

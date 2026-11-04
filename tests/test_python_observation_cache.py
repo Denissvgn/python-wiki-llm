@@ -53,7 +53,7 @@ def semantic_payload(result):
     return result.inventory, result.data_effect_observations, result.import_observations, result.implementation_observations
 
 
-def committed_capture(root, result):
+def committed_capture(root, result, *, bundles=True):
     from dataclasses import replace
     from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
     from llm_wiki_cli.services.knowledge_evidence import hash_json
@@ -63,9 +63,11 @@ def committed_capture(root, result):
     _, original, _ = _committed_state(root)
     state = load_knowledge_state(root)
     assert state.knowledge is not None and state.manifest_basis is not None
-    knowledge = replace(state.knowledge, extensions={**state.knowledge.extensions, EXTENSION: {
-        "schema_version": SCHEMA, "implementation_files": {
-            path: hash_json(row) for path, row in result.implementation_observations["files"].items()}}})
+    commitment = {"schema_version": SCHEMA, "implementation_files": {
+        path: hash_json(row) for path, row in result.implementation_observations["files"].items()}}
+    if bundles:
+        commitment["extraction_files"] = result.extraction_cache_hashes
+    knowledge = replace(state.knowledge, extensions={**state.knowledge.extensions, EXTENSION: commitment})
     plan = build_knowledge_commit_plan(root, surface_index_bytes=original.surface_index.content,
                                      knowledge_index=knowledge, manifest=state.manifest_basis,
                                      prior=state.validated_artifacts)
@@ -123,6 +125,38 @@ def test_replaced_artifacts_cannot_authorize_cached_implementation(source_case):
     artifacts = committed_capture(src.parent / "authority", first)
     with pytest.raises(TypeError, match="not issued by the validator"):
         extract(src, cache, implementations=True, artifacts=replace(artifacts))
+
+
+@pytest.mark.parametrize("field", ["inventory", "imports", "effects"])
+def test_committed_capture_authenticates_entire_raw_extraction_bundle(source_case, field):
+    src, cache, parsed = source_case
+    first = extract(src, cache, implementations=True)
+    artifacts = committed_capture(src.parent / "authority", first)
+    path = cache / CACHE_FILENAME
+    content = json.loads(path.read_text())
+    entry = content["files"]["a.py"]
+    if field == "inventory":
+        entry["inventory"]["functions"][0]["docstring"] = "Invented from writable cache"
+    elif field == "imports":
+        entry["python_observations"]["imports"]["observations"][0]["line"] += 10
+    else:
+        entry["python_observations"]["data_effects"]["callables"][0]["line"] += 10
+    path.write_text(json.dumps(content))
+    parsed.clear()
+    actual = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert parsed == ["a.py"]
+    assert actual.cache_stats.hits == 1
+    assert semantic_payload(actual) == semantic_payload(extract(src, cache, implementations=True, enabled=False))
+
+
+def test_legacy_implementation_only_commitment_cannot_authorize_bundle(source_case):
+    src, cache, parsed = source_case
+    first = extract(src, cache, implementations=True)
+    artifacts = committed_capture(src.parent / "authority", first, bundles=False)
+    parsed.clear()
+    actual = extract(src, cache, implementations=True, artifacts=artifacts)
+    assert sorted(parsed) == ["a.py", "b.py"]
+    assert actual.cache_stats.hits == 0
 
 
 def test_warm_sidecars_elide_python_and_keep_exact_observations(source_case):

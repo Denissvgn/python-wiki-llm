@@ -81,6 +81,7 @@ from .inventory_cache import (
     build_inventory_cache_key,
     is_valid_cache_entry,
     make_cache_entry,
+    extraction_bundle_hash,
 )
 from .io import write_text_output
 from .packages import discover_packages, package_for_path, stamp_inventory_packages
@@ -204,6 +205,7 @@ class InventoryResult:
     )
     implementation_observations: dict | None = field(default=None, repr=False, compare=False)
     path_outcomes: dict = field(default_factory=dict)
+    extraction_cache_hashes: dict[str, str] = field(default_factory=dict, repr=False, compare=False)
 
     @property
     def analysis_input_status(self):
@@ -313,6 +315,7 @@ class _InventoryBuildContext:
     implementation_analysis_hash: str | None = None
     python_implementations: dict[str, dict] = field(default_factory=dict)
     implementation_cache_hashes: Mapping[str, str] = field(default_factory=dict)
+    extraction_cache_hashes: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -587,6 +590,8 @@ def _completed_inventory_result(
         ),
         source_snapshot=evaluated_source_snapshot,
         implementation_observations=implementation_observations,
+        extraction_cache_hashes={path: extraction_bundle_hash(entry)
+                                 for path, entry in context.updated_cache_files.items()},
         path_outcomes=_inventory_path_outcomes(context, inventory, outcomes_by_language),
         **_python_extraction_sidecars(context, outcomes_by_language),
     )
@@ -851,6 +856,7 @@ def _prepare_inventory_build_context(
         if registry.get("python") == EXTRACTOR_REGISTRY["python"]:
             implementation_analysis_hash = analysis_identity(captured_analysis)
     implementation_cache_hashes = {}
+    extraction_cache_hashes = {}
     if request.implementation_cache_artifacts is not None:
         from .knowledge_artifacts import require_validated_artifacts
         artifacts = require_validated_artifacts(request.implementation_cache_artifacts)
@@ -859,6 +865,9 @@ def _prepare_inventory_build_context(
             hashes = commitment.get("implementation_files")
             if isinstance(hashes, Mapping):
                 implementation_cache_hashes = hashes
+            bundles = commitment.get("extraction_files")
+            if isinstance(bundles, Mapping):
+                extraction_cache_hashes = bundles
     return _InventoryBuildContext(
         request=request,
         source_snapshot=source_snapshot,
@@ -878,6 +887,7 @@ def _prepare_inventory_build_context(
         captured_analysis=captured_analysis,
         implementation_analysis_hash=implementation_analysis_hash,
         implementation_cache_hashes=implementation_cache_hashes,
+        extraction_cache_hashes=extraction_cache_hashes,
     )
 
 
@@ -1180,11 +1190,13 @@ def _valid_cached_implementation(context, path, entry, source_hash):
     from .knowledge_evidence import hash_json
     row = entry.get("python_implementation")
     committed_hash = context.implementation_cache_hashes.get(path)
-    if not isinstance(row, dict) or not isinstance(committed_hash, str):
+    bundle_hash = context.extraction_cache_hashes.get(path)
+    if not isinstance(row, dict) or not isinstance(committed_hash, str) or not isinstance(bundle_hash, str):
         return False
     expected_producer = producer(context.implementation_analysis_hash)
     try:
-        if (hash_json(row) != committed_hash or row["source_hash"] != source_hash
+        if (extraction_bundle_hash(entry) != bundle_hash
+                or hash_json(row) != committed_hash or row["source_hash"] != source_hash
                 or row["producer"] != expected_producer):
             return False
         from .implementation_evidence import _row
