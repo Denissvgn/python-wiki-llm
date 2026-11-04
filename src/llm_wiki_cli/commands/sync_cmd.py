@@ -5488,6 +5488,7 @@ def _run_sync_options(options, write_basis=None) -> None:
     if write_basis is not None:
         write_basis.source_snapshot = prepared.inventory_result.source_snapshot
         write_basis.assert_current()
+        write_basis.bind_committed_state(prepared.committed_state)
     _run_prepared_sync(options, prepared)
 
 

@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
+    from .knowledge_orchestration import CommittedKnowledgeState
 
 from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes
 from .io import first_unsafe_path_component
@@ -27,6 +28,10 @@ ADOPTION_FILENAME = ".llm-wiki-maintenance-adoption.json"
 STORAGE_LOCK_FILENAME = "llm-wiki-storage.lock"
 _OWNED_STORAGE: ContextVar[tuple | None] = ContextVar("llm_wiki_storage_owner", default=None)
 _OWNED_GOVERNANCE: ContextVar[tuple | None] = ContextVar("llm_wiki_governance_owner", default=None)
+_STORAGE_STAGING_ISSUER = object()
+_PUBLICATION_ROOTS = (
+    ".llm-wiki-surface.json", ".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ADOPTION_FILENAME,
+)
 
 
 class MaintenanceProtocolError(ValueError):
@@ -169,6 +174,28 @@ def _capture_spooled_wiki(root: Path, spool: ByteSpool) -> None:
         spool[relative] = read_guarded(path, MAX_EXPANDED_BYTES).content
 
 
+@dataclass(frozen=True)
+class _StorageStagingAuthority:
+    basis: object
+    state: CommittedKnowledgeState
+    source_snapshot: SourceSnapshot
+    _issued: object | None = field(default=None, init=False, repr=False)
+    _active: bool = field(default=True, init=False, repr=False)
+
+
+def _hash_addressed_storage(relative: str, content: bytes) -> bool:
+    from .knowledge_storage import object_path
+    from .manifest_storage import object_path as manifest_object_path
+    from .knowledge_packs import PACK_NAME, index_path, index_page_path
+
+    commitment = digest(content)
+    if relative in {object_path(commitment), manifest_object_path(commitment),
+                    index_path(commitment), index_page_path(commitment)}:
+        return True
+    packed = PACK_NAME.fullmatch(relative)
+    return packed is not None and packed.group(2) == commitment[7:]
+
+
 @dataclass
 class WikiWriteBasis:
     root: Path
@@ -181,6 +208,7 @@ class WikiWriteBasis:
     recovery_started: bool = True
     changed: bool = False
     preimages: Mapping[str, bytes] = field(init=False)
+    _storage_staging: _StorageStagingAuthority | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
         self.preimages = self.expected.fork() if isinstance(self.expected, ByteSpool) else dict(self.expected)
@@ -188,6 +216,50 @@ class WikiWriteBasis:
     def _relative(self, path: Path) -> str | None:
         absolute = _absolute_path(path)
         return absolute.relative_to(self.root).as_posix() if absolute.is_relative_to(self.root) else None
+
+    def bind_committed_state(self, state: CommittedKnowledgeState) -> None:
+        """Bind one owning sync's validated prior closure, never a caller skip flag."""
+        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+        from .knowledge_orchestration import CommittedKnowledgeState
+
+        if (ACTIVE_WRITE_BASIS.get() is not self or self.changed
+                or self.source_snapshot is None or self.recovery_marker is None):
+            raise MaintenanceProtocolError("staging-owner", "Storage staging requires its unchanged active adopted writer")
+        if not isinstance(state, CommittedKnowledgeState):
+            raise TypeError("storage staging requires an issued committed knowledge state")
+        state.require_for(self.root)
+        if state.artifacts is None:
+            raise TypeError("storage staging requires a complete validated committed closure")
+        for name in _PUBLICATION_ROOTS:
+            captured = state.captured_bytes.get(name)
+            if captured is None or self.preimages.get(name) != captured or self.expected.get(name) != captured:
+                raise MaintenanceProtocolError("staging-owner", "Committed roots differ from the adopted writer's exact preimage")
+        self._close_storage_staging()
+        authority = _StorageStagingAuthority(self, state, self.source_snapshot)
+        object.__setattr__(authority, "_issued", _STORAGE_STAGING_ISSUER)
+        self._storage_staging = authority
+
+    def _close_storage_staging(self) -> None:
+        if self._storage_staging is not None:
+            object.__setattr__(self._storage_staging, "_active", False)
+        self._storage_staging = None
+
+    def _is_unreferenced_storage_staging(self, relative, content, previous, current) -> bool:
+        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+
+        authority = self._storage_staging
+        if (not isinstance(authority, _StorageStagingAuthority) or not authority._active
+                or authority._issued is not _STORAGE_STAGING_ISSUER or authority.basis is not self
+                or ACTIVE_WRITE_BASIS.get() is not self or self.source_snapshot is not authority.source_snapshot
+                or content is None or previous is not None or current is not None or relative in self.preimages):
+            return False
+        authority.state.require_for(self.root)
+        artifacts = authority.state.artifacts
+        if artifacts is None or relative in artifacts.storage_objects:
+            return False
+        if any(self.expected.get(name) != authority.state.captured_bytes.get(name) for name in _PUBLICATION_ROOTS):
+            return False
+        return _hash_addressed_storage(relative, content)
 
     def before_write(self, path: Path, content: bytes | None) -> None:
         relative = self._relative(path)
@@ -206,8 +278,12 @@ class WikiWriteBasis:
             raise MaintenanceProtocolError("wiki-changed", f"Captured wiki input changed before publication: {relative}")
         if current == content:
             return
+        staging = self._is_unreferenced_storage_staging(relative, content, previous, current)
+        if relative in _PUBLICATION_ROOTS:
+            self._close_storage_staging()
         if relative != ".llm-wiki-manifest.json":
-            self.assert_source_current()
+            if not staging:
+                self.assert_source_current()
         if self.recovery_directory is not None:
             if not self.recovery_started:
                 save_recovery_snapshot(self.recovery_directory, self.preimages,
@@ -361,6 +437,7 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
                     retain_recovery_catalogs(committed_directory.parent.parent, owner_root=root,
                                              marker=marker, newest_committed=committed_directory)
             finally:
+                basis._close_storage_staging()
                 ACTIVE_WRITE_BASIS.reset(token)
 
 
