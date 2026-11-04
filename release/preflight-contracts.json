@@ -789,7 +789,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}",
       "cost": "hosted",
-      "declaration_sha256": "25147336e9689b4143a501e18a4ba6b90983bb8599e91cfc4a34625c9a8016fb",
+      "declaration_sha256": "30b6e9f9c2f397e341718e243a3bb8f7cfbef9d7291f89037b9a61711a8245d6",
       "environments": [
         "ubuntu-24.04"
       ],

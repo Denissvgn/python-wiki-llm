@@ -149,7 +149,7 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
     action = _action()
     setup_python = _named_step(action, "Set up Python 3.13")
     assert setup_python["id"] == "setup-python"
-    assert setup_python["with"] == {"python-version": "3.13"}
+    assert setup_python["with"] == {"python-version": "3.13.18"}
 
     install = _named_step(action, "Install the action package")["run"]
     assert shlex.split(install) == [

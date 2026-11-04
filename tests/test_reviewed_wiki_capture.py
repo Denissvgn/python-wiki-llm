@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path, PurePosixPath
+import re
 import shlex
 import subprocess
 import tarfile
@@ -81,6 +82,31 @@ def test_different_reviewed_hash_keeps_full_preview_and_never_writes(case):
     assert not driver.status(case[0])
     assert (case[1] / "preview.stdout").read_bytes() == PLAN
     assert not (case[1] / "convergence-result.json").exists()
+
+
+def test_patch_changed_between_valid_preview_and_apply_never_invokes_writer(case):
+    root, preview_evidence, sha, observed, calls, _ = case
+    observed["python"] = "3.13.17 (fixture build)"
+    first = invoke(case)
+    assert first["status"] == "previewed"
+    first_record = json.loads((preview_evidence / "preview.json").read_text())
+    approved = first["preview_sha256"]
+    assert approved == driver.digest(driver.canonical(first_record["context"]) + b"\n" + PLAN)
+
+    observed["python"] = "3.13.18 (fixture build)"
+    apply_evidence = preview_evidence.parent / "apply-evidence"
+    with pytest.raises(ValueError, match="differs; no writer"):
+        driver.capture(root, apply_evidence, operation="apply", candidate=sha,
+                       approved=approved, run_id=124, attempt=1)
+
+    second_record = json.loads((apply_evidence / "preview.json").read_text())
+    assert {key for key in observed if observed[key] != first_record["context"][key]} == {"python"}
+    assert (preview_evidence / "preview.stdout").read_bytes() == (apply_evidence / "preview.stdout").read_bytes() == PLAN
+    assert second_record["approved_preview_sha256"] == approved
+    assert second_record["preview_sha256"] != approved
+    assert calls == [True, True]
+    assert not driver.status(root)
+    assert {path.name for path in apply_evidence.iterdir()} == {"preview.json", "preview.stdout", "preview.stderr"}
 
 
 @pytest.mark.parametrize("field", ["python", "helper", "source_sha"])
@@ -220,6 +246,28 @@ def test_new_workflow_is_manual_pinned_read_only_and_preview_by_default():
         "worktree-status-after.txt", "wiki-diff.patch", "wiki-review-snapshot.tar",
         "wiki-review-snapshot.json",
     }
+
+
+def test_capture_and_knowledge_proof_share_exact_native_python_and_doctor_path():
+    capture_workflow = yaml.safe_load((ROOT / ".github/workflows/reviewed-wiki-capture.yml").read_text())
+    integrity = yaml.safe_load((ROOT / "integrations/wiki-integrity/action.yml").read_text())
+    release = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())
+    job = release["jobs"]["action"]
+    groups = (capture_workflow["jobs"]["capture"]["steps"], integrity["runs"]["steps"], job["steps"])
+    setups = []
+    for steps in groups:
+        matches = [step for step in steps if str(step.get("uses", "")).startswith("actions/setup-python@")]
+        assert len(matches) == 1
+        setups.extend(matches)
+    versions = {step["with"]["python-version"] for step in setups}
+    assert len(versions) == 1 and re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", next(iter(versions)))
+    assert versions == {"3.13.18"}
+    assert all("architecture" not in step["with"] for step in setups)
+    assert setups[-1]["id"] == "maintenance-python"
+    doctor = next(step for step in job["steps"] if step.get("name") == "Compare standalone strict doctor during shadow qualification")
+    assert shlex.split(doctor["run"])[:5] == ["${{ steps.maintenance-python.outputs.python-path }}", "-I", "-m", "llm_wiki_cli.cli", "doctor"]
+    assert doctor["if"] == "${{ always() && needs.freeze.outputs.knowledge-mode == 'shadow' }}"
+    assert doctor["continue-on-error"] is True
 
 
 @pytest.mark.parametrize("event,ref,repository", [
