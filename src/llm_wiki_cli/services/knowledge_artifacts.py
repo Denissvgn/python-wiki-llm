@@ -154,8 +154,10 @@ class _ArtifactValidation:
         surface_bytes: bytes,
         knowledge_bytes: bytes,
         validator_identity=None,
+        storage_validator_identity=None,
     ):
         self.validator_identity = validator_identity
+        self.storage_validator_identity = storage_validator_identity
         self.knowledge = artifacts.knowledge
         self.knowledge_payload = artifacts.knowledge_payload
         self.surface = artifacts.surface_payload
@@ -309,6 +311,7 @@ def validate_knowledge_artifacts(
 
     from .knowledge_index import _validator_identity
     validator_identity = _validator_identity()
+    storage_validator_identity = _storage_validator_identity()
     surface_payload = validate_surface_index_bytes(surface_index_bytes)
 
     receipt_model = None
@@ -436,6 +439,7 @@ def validate_knowledge_artifacts(
         manifest=manifest, validation_receipt=_validation_receipt,
         storage_validation_receipt=_storage_validation_receipt, receipt_wiki_root=_receipt_wiki_root,
         validator_identity=validator_identity,
+        storage_validator_identity=storage_validator_identity,
     )
 
 
@@ -444,11 +448,14 @@ def _validate_artifact_parity(
     *, surface_payload, knowledge, canonical_payload, storage_objects, storage_statistics,
     surface_index_bytes, knowledge_index_bytes, manifest, validation_receipt=None,
     storage_validation_receipt=None, receipt_wiki_root=None, recheck=None, validator_identity=None,
+    storage_validator_identity=None,
 ) -> ValidatedKnowledgeArtifacts:
     """Check the new cross-artifact state after its logical model is validated."""
 
     from .knowledge_index import _validator_identity
     validator_identity = _validator_identity() if validator_identity is None else validator_identity
+    storage_validator_identity = (_storage_validator_identity() if storage_validator_identity is None
+                                  else storage_validator_identity)
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
         raise KnowledgeArtifactError(
@@ -541,6 +548,8 @@ def _validate_artifact_parity(
         recheck()
     if validator_identity != _validator_identity():
         raise KnowledgeArtifactError("knowledge_index", "knowledge validators changed during artifact validation")
+    if storage_validator_identity != _storage_validator_identity():
+        raise KnowledgeArtifactError("knowledge_index_bytes.objects", "storage validators changed during artifact validation")
     validated = ValidatedKnowledgeArtifacts(
         surface_payload=freeze(surface_payload),
         knowledge=knowledge,
@@ -557,9 +566,30 @@ def _validate_artifact_parity(
     object.__setattr__(
         validated,
         "_validation",
-        _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes, validator_identity),
+        _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes, validator_identity,
+                            storage_validator_identity),
     )
     return validated
+
+
+def _storage_validator_identity() -> tuple:
+    """Bind captured physical validation to its decoders, routes, and policy."""
+    from . import canonical_json, knowledge_audit, knowledge_packs, knowledge_storage
+    from .knowledge_index import _validation_callable_identity, _validation_module_identity, _validation_policy_value
+
+    return (
+        tuple(_validation_module_identity(module) for module in (
+            canonical_json, knowledge_audit, knowledge_packs, knowledge_storage,
+        )),
+        # Pin the actual aliases called by the full artifact path as well as
+        # their defining modules. Current surface/parity callbacks still run.
+        tuple(_validation_callable_identity(function) for function in (
+            open_knowledge_store, physical_objects, validate_knowledge_index,
+            _validated_index_data, _is_future_schema_version,
+        )),
+        _validation_policy_value((KNOWLEDGE_SCHEMA_VERSION, _KNOWLEDGE_SCHEMA_VERSION_RE,
+                                  STORE_SCHEMA, PACKED_SCHEMAS, MAX_EXPANDED_BYTES)),
+    )
 
 
 def _reuse_same_store_candidate(
@@ -572,7 +602,9 @@ def _reuse_same_store_candidate(
     prior = require_validated_artifacts(prior)
     from .knowledge_index import _validator_identity
     validator_identity = _validator_identity()
-    if prior._validation is None or prior._validation.validator_identity != validator_identity:
+    storage_validator_identity = _storage_validator_identity()
+    if (prior._validation is None or prior._validation.validator_identity != validator_identity
+            or prior._validation.storage_validator_identity != storage_validator_identity):
         return None
     _, prior_root = validated_artifact_bytes(prior)
     if knowledge_index_bytes != prior_root:
@@ -598,7 +630,8 @@ def _reuse_same_store_candidate(
 
     def recheck():
         require_validated_artifacts(prior)
-        if validator_identity != _validator_identity() or not unchanged():
+        if (validator_identity != _validator_identity()
+                or storage_validator_identity != _storage_validator_identity() or not unchanged()):
             raise KnowledgeArtifactError("knowledge_index_bytes.objects",
                                          "candidate changed during validated storage reuse", code="storage-mutation")
 
@@ -613,6 +646,7 @@ def _reuse_same_store_candidate(
         storage_validation_receipt=storage_validation_receipt,
         receipt_wiki_root=receipt_wiki_root, recheck=recheck,
         validator_identity=validator_identity,
+        storage_validator_identity=storage_validator_identity,
     )
 
 

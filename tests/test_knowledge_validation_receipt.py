@@ -4,6 +4,7 @@ from copy import deepcopy
 from collections.abc import MutableMapping
 from typing import cast
 from dataclasses import replace
+from functools import partial
 import json
 from typing import Any
 
@@ -171,6 +172,60 @@ def test_receipt_snapshots_mutable_reserved_extension_policy(tmp_path, monkeypat
     with index._knowledge_validation_operation(tmp_path):
         receipt = index._validated_index_receipt(knowledge, tmp_path)
         monkeypatch.setitem(knowledge_graph._CORE_KIND_ANALYZERS, "calls", "dependencies")
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_cannot_skip_changed_local_semantic_helper(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+
+        def refuse(*args, **kwargs):
+            raise model.KnowledgeModelError("structure", "changed local semantic helper")
+
+        monkeypatch.setattr(index, "_require_structure_state", refuse)
+        with pytest.raises(model.KnowledgeModelError, match="changed local semantic helper"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_snapshots_mutable_local_semantic_policy(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setitem(index._STRUCTURAL_SCOPE_BY_PAGE_KIND, index.PageKind.MODULES,
+                            model.ObservationScope.ENTITY)
+        with pytest.raises(model.KnowledgeModelError, match="scope"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+@pytest.mark.parametrize("cycle", ["default", "kwdefault", "partial", "wrapped"])
+def test_receipt_supports_cyclic_callable_metadata_and_tracks_its_policy(tmp_path, monkeypatch, cycle):
+    plan, knowledge = _case(tmp_path)
+    original = model._parse_concept
+
+    def forwarding(value, path, policy=None, *, metadata=None):
+        return original(value, path)
+
+    policy = {"validator": forwarding, "revision": [1]}
+    if cycle == "default":
+        forwarding.__defaults__ = (policy,)
+    elif cycle == "partial":
+        forwarding.__kwdefaults__ = {"metadata": partial(forwarding, metadata=policy)}
+    else:
+        forwarding.__kwdefaults__ = {"metadata": policy}
+        if cycle == "wrapped":
+            forwarding.__wrapped__ = forwarding
+    monkeypatch.setattr(model, "_parse_concept", forwarding)
+    assert index.validate_knowledge_index(knowledge) == knowledge
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+        policy["revision"].append(2)
         with pytest.raises(TypeError, match="validators"):
             _consume(plan, receipt, tmp_path)
 

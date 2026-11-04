@@ -367,7 +367,7 @@ def _validator_identity() -> tuple:
     from . import (
         analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
         knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
-        knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
+        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
         maintenance_state, markdown_sections, python_implementation,
         section_ownership, source_retirement, validation,
         wiki_media, wiki_surface,
@@ -379,20 +379,14 @@ def _validator_identity() -> tuple:
     modules = (
         analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
         knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
-        knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
+        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
         maintenance_state, markdown_sections, python_implementation,
         section_ownership, source_retirement, validation,
         wiki_media, wiki_surface,
     )
-    local_functions = (
-        parse_knowledge_index, validate_knowledge_index, _validate_builder_model,
-        _validated_index_serialization, _validated_index_data, _serialize_payload,
-        _model_to_payload, _knowledge_index_to_payload_unchecked,
-    )
     core = maintenance_state.maintenance_core()
     return (
         KNOWLEDGE_SCHEMA_VERSION,
-        tuple(_validation_callable_identity(function) for function in local_functions),
         tuple(_validation_module_identity(module) for module in modules),
         tuple((name, _validation_callable_identity(getattr(core, name)))
               for name, value in sorted(type(core).__dict__.items()) if inspect.isfunction(value)),
@@ -400,14 +394,17 @@ def _validator_identity() -> tuple:
     )
 
 
-def _validation_callable_identity(function):
+def _validation_callable_identity(function, active=frozenset()):
     function = getattr(function, "__func__", function)
+    if id(function) in active:
+        return type(function), id(function)
+    active = active | {id(function)}
     wrapped = getattr(function, "__wrapped__", None)
     return (
         function, getattr(function, "__code__", None),
-        _validation_policy_value(getattr(function, "__defaults__", None)),
-        _validation_policy_value(getattr(function, "__kwdefaults__", None)),
-        _validation_callable_identity(wrapped) if wrapped is not None else None,
+        _validation_policy_value(getattr(function, "__defaults__", None), active),
+        _validation_policy_value(getattr(function, "__kwdefaults__", None), active),
+        _validation_callable_identity(wrapped, active) if wrapped is not None else None,
     )
 
 
@@ -415,6 +412,8 @@ def _validation_policy_value(value, active=frozenset()):
     """Retain immutable policy snapshots without borrowing mutable definitions."""
     if type(value) in {str, int, float, bool, bytes, type(None)}:
         return type(value), value
+    if inspect.isfunction(value):
+        return _validation_callable_identity(value, active)
     if id(value) in active:
         return type(value), id(value)
     active = active | {id(value)}
@@ -423,11 +422,9 @@ def _validation_policy_value(value, active=frozenset()):
     if isinstance(value, re.Pattern):
         return type(value), value.pattern, value.flags
     if isinstance(value, partial):
-        return (type(value), _validation_callable_identity(value.func),
+        return (type(value), _validation_callable_identity(value.func, active),
                 _validation_policy_value(value.args, active),
                 _validation_policy_value(value.keywords, active))
-    if inspect.isfunction(value):
-        return _validation_callable_identity(value)
     if isinstance(value, Mapping):
         return type(value), tuple(sorted(
             ((_validation_policy_value(k, active), _validation_policy_value(v, active))

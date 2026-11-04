@@ -36,22 +36,39 @@ def build(stored, **kwargs):
     return artifacts.build_knowledge_commit_plan(root, **args)
 
 
+def count_materializations(stored, monkeypatch):
+    # Instrument before validation issues its proof: changing a decoder later
+    # must expire that proof, even when the change only counts calls.
+    calls = []
+    real = KnowledgeStoreReader.materialize
+
+    def counted(*args, **kwargs):
+        calls.append(1)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(KnowledgeStoreReader, "materialize", counted)
+    root, _, original = stored
+    state = load_knowledge_state(root)
+    assert calls
+    calls.clear()
+    return (root, state, original), calls
+
+
 def test_same_store_does_not_materialize_again_but_public_validation_does(stored, monkeypatch):
+    stored, calls = count_materializations(stored, monkeypatch)
     _, state, original = stored
-    with monkeypatch.context() as guard:
-        guard.setattr(KnowledgeStoreReader, "materialize", lambda *a, **k: pytest.fail("same captured store inflated again"))
-        plan = build(stored)
+    assert state.manifest_basis is not None and state.validated_artifacts is not None
+    plan = build(stored)
+    assert not calls
     assert not plan.changed
     assert plan.knowledge_index.content == original.knowledge_index.content
-    cls = PackedKnowledgeStoreReader if plan.storage_format.startswith("packed") else KnowledgeStoreReader
-    with patch.object(cls, "materialize", autospec=True, side_effect=cls.materialize) as materialize:
-        artifacts.validate_knowledge_artifacts(
-            surface_index_bytes=plan.surface_index.content,
-            knowledge_index_bytes=plan.knowledge_index.content,
-            manifest=state.manifest_basis,
-            object_reader=lambda path, maximum: state.validated_artifacts.storage_objects[path],
-        )
-    assert materialize.call_count == 1
+    artifacts.validate_knowledge_artifacts(
+        surface_index_bytes=plan.surface_index.content,
+        knowledge_index_bytes=plan.knowledge_index.content,
+        manifest=state.manifest_basis,
+        object_reader=lambda path, maximum: state.validated_artifacts.storage_objects[path],
+    )
+    assert len(calls) == 1
 
 
 def test_changed_root_keeps_full_validation_and_matches_independent_builder(stored):
@@ -78,6 +95,29 @@ def test_same_store_prior_cannot_skip_changed_validator(stored, monkeypatch):
         build(stored)
 
 
+@pytest.mark.parametrize("policy", ["decoder", "route_audit", "object_limit", "open_alias", "objects_alias"])
+def test_same_store_prior_cannot_skip_changed_storage_policy(stored, monkeypatch, policy):
+    from llm_wiki_cli.services import knowledge_packs, knowledge_storage
+
+    def refuse(*args, **kwargs):
+        raise knowledge_storage.KnowledgeStorageError("objects", "new physical storage policy")
+
+    if policy == "decoder":
+        if stored[2].storage_format == "sharded-v2":
+            monkeypatch.setattr(knowledge_storage, "decode_bytes", refuse)
+        else:
+            monkeypatch.setattr(knowledge_packs, "decode_member", refuse)
+    elif policy == "route_audit":
+        monkeypatch.setattr(KnowledgeStoreReader, "_audit_lookup", refuse)
+    elif policy in {"open_alias", "objects_alias"}:
+        monkeypatch.setattr(artifacts, "open_knowledge_store" if policy == "open_alias" else "physical_objects", refuse)
+    else:
+        monkeypatch.setattr(knowledge_storage, "MAX_READ_OBJECTS", 1)
+    for prior in (stored[1].validated_artifacts, None):
+        with pytest.raises(artifacts.KnowledgeArtifactError, match="physical storage policy|max_objects"):
+            build(stored, prior=prior)
+
+
 @pytest.mark.parametrize("helper", ["_parse_concept", "_parse_extensions"])
 def test_same_store_prior_cannot_skip_changed_semantic_helper(stored, monkeypatch, helper):
     from llm_wiki_cli.services import knowledge_model
@@ -89,6 +129,47 @@ def test_same_store_prior_cannot_skip_changed_semantic_helper(stored, monkeypatc
     for prior in (stored[1].validated_artifacts, None):
         with pytest.raises(artifacts.KnowledgeArtifactError, match="new nested semantic policy"):
             build(stored, prior=prior)
+
+
+def test_same_store_prior_cannot_skip_changed_local_semantic_helper(stored, monkeypatch):
+    from llm_wiki_cli.services import knowledge_index, knowledge_model
+
+    def refuse(*args, **kwargs):
+        raise knowledge_model.KnowledgeModelError("structure", "changed local semantic helper")
+
+    monkeypatch.setattr(knowledge_index, "_require_structure_state", refuse)
+    for prior in (stored[1].validated_artifacts, None):
+        with pytest.raises(artifacts.KnowledgeArtifactError, match="changed local semantic helper"):
+            build(stored, prior=prior)
+
+
+def test_same_store_prior_cannot_skip_changed_local_semantic_policy(stored, monkeypatch):
+    from llm_wiki_cli.services import knowledge_index, knowledge_model
+
+    monkeypatch.setitem(knowledge_index._STRUCTURAL_SCOPE_BY_PAGE_KIND,
+                        knowledge_index.PageKind.MODULES, knowledge_model.ObservationScope.ENTITY)
+    for prior in (stored[1].validated_artifacts, None):
+        with pytest.raises(artifacts.KnowledgeArtifactError, match="scope"):
+            build(stored, prior=prior)
+
+
+def test_same_store_reuse_supports_cyclic_callable_defaults(stored, monkeypatch):
+    from llm_wiki_cli.services import knowledge_model
+
+    original = knowledge_model._parse_concept
+
+    def forwarding(value, path, *, policy=None):
+        return original(value, path)
+
+    forwarding.__kwdefaults__ = {"policy": {"validator": forwarding}}
+    monkeypatch.setattr(knowledge_model, "_parse_concept", forwarding)
+    root, _, original_plan = stored
+    state = load_knowledge_state(root)
+    refreshed = root, state, original_plan
+    independent = build(refreshed, prior=None)
+    reused = build(refreshed)
+    assert reused.knowledge_index.content == independent.knowledge_index.content
+    assert not reused.changed
 
 
 @pytest.mark.parametrize("change", ["root", "object"])
@@ -114,8 +195,9 @@ def test_replaced_prior_has_no_authority(stored):
 
 @pytest.mark.parametrize("change", ["surface", "manifest"])
 def test_same_store_still_checks_new_surface_and_manifest_parity(stored, monkeypatch, change):
+    stored, calls = count_materializations(stored, monkeypatch)
     _, state, _ = stored
-    monkeypatch.setattr(KnowledgeStoreReader, "materialize", lambda *a, **k: pytest.fail("parity should retain exact-store reuse"))
+    assert state.manifest_basis is not None and state.validated_artifacts is not None
     if change == "surface":
         surface = dict(state.validated_artifacts.surface_payload)
         surface["pages"] = [dict(row) for row in surface["pages"]]
@@ -127,6 +209,7 @@ def test_same_store_still_checks_new_surface_and_manifest_parity(stored, monkeyp
         args = {"manifest": manifest}
     with pytest.raises(artifacts.KnowledgeArtifactError):
         build(stored, **args)
+    assert not calls
 
 
 def test_same_store_rechecks_prepared_objects_after_parity_callbacks(stored, monkeypatch):
@@ -142,6 +225,20 @@ def test_same_store_rechecks_prepared_objects_after_parity_callbacks(stored, mon
         objects = prepared[0].objects
         objects[next(iter(objects))] += b"changed during validation"
     monkeypatch.setattr(artifacts, "build_storage", retain)
+    monkeypatch.setattr(artifacts, "_validate_surface_knowledge_parity", mutate)
+    with pytest.raises(artifacts.KnowledgeArtifactError, match="changed during validated storage reuse"):
+        build(stored)
+
+
+def test_same_store_rechecks_storage_policy_after_parity_callbacks(stored, monkeypatch):
+    from llm_wiki_cli.services import knowledge_packs
+
+    real = artifacts._validate_surface_knowledge_parity
+
+    def mutate(*args):
+        real(*args)
+        monkeypatch.setattr(knowledge_packs, "MAX_PACK_MEMBERS", 0)
+
     monkeypatch.setattr(artifacts, "_validate_surface_knowledge_parity", mutate)
     with pytest.raises(artifacts.KnowledgeArtifactError, match="changed during validated storage reuse"):
         build(stored)
