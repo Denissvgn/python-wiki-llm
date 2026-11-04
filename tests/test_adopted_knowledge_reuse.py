@@ -187,3 +187,75 @@ def test_source_mutation_after_fast_result_is_rejected_by_outer_final_verificati
     assert error.value.code == 2
     assert "Source changed" in capsys.readouterr().err
     assert snapshot_wiki("wiki") == before
+
+
+@pytest.mark.parametrize("budget_phase", ["capture", "recheck"])
+def test_raw_markdown_inspection_budget_falls_back_to_guarded_generation(legacy, monkeypatch, budget_phase):
+    from llm_wiki_cli.services import knowledge_storage_io
+    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+
+    _sync(rebuild_knowledge=True)
+    before = snapshot_wiki("wiki")
+    total = sum(page.path.stat().st_size for page in collect_wiki_pages("wiki"))
+    budget = total - 1 if budget_phase == "capture" else total + 1
+    original_check = knowledge_reuse.maintenance_reuse_check
+    original_session = knowledge_storage_io.StorageReadSession
+
+    class BoundedReadSession(original_session):
+        def __init__(self, root):
+            super().__init__(root, max_bytes=budget)
+
+    def bounded_check(*args, **kwargs):
+        # Scope the lower budget to the advisory shortcut, keeping the normal
+        # artifact readers under their independent existing resource contracts.
+        with patch.object(knowledge_storage_io, "StorageReadSession", BoundedReadSession):
+            return original_check(*args, **kwargs)
+
+    monkeypatch.setattr(knowledge_reuse, "maintenance_reuse_check", bounded_check)
+    with patch.object(knowledge_orchestration, "build_knowledge_generation_plan",
+                      wraps=knowledge_orchestration.build_knowledge_generation_plan) as build:
+        _sync()
+    assert build.call_count >= 1
+    assert snapshot_wiki("wiki") == before
+
+
+@pytest.mark.parametrize("mutate", [False, True])
+def test_reserved_raw_markdown_recheck_has_exact_budget_and_rejects_mutation(legacy, monkeypatch, mutate):
+    from llm_wiki_cli.services import knowledge_storage_io
+    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+
+    _sync(rebuild_knowledge=True)
+    before = snapshot_wiki("wiki")
+    total = sum(page.path.stat().st_size for page in collect_wiki_pages("wiki"))
+    original_check = knowledge_reuse.maintenance_reuse_check
+    original_session = knowledge_storage_io.StorageReadSession
+
+    class BoundedReadSession(original_session):
+        def __init__(self, root):
+            super().__init__(root, max_bytes=2 * total)
+
+    def bounded_check(*args, **kwargs):
+        with patch.object(knowledge_storage_io, "StorageReadSession", BoundedReadSession):
+            return original_check(*args, **kwargs)
+
+    original_matches = sync_cmd.source_snapshot_matches_current_files
+
+    def mutate_after_capture(snapshot):
+        result = original_matches(snapshot)
+        page = Path("wiki/modules/policy.md")
+        raw = page.read_bytes()
+        # CR and LF have identical normalized text and byte lengths, so the
+        # exact guarded recheck must detect this independently of wiki hashes.
+        page.write_bytes(raw.replace(b"\n", b"\r"))
+        return result
+
+    monkeypatch.setattr(knowledge_reuse, "maintenance_reuse_check", bounded_check)
+    _trap_builders(monkeypatch)
+    if mutate:
+        monkeypatch.setattr(sync_cmd, "source_snapshot_matches_current_files", mutate_after_capture)
+        with pytest.raises(knowledge_storage_io.KnowledgeStorageError) as rejected:
+            _sync()
+        assert rejected.value.code == "storage-mutation"
+    else:
+        _sync()
+        assert snapshot_wiki("wiki") == before

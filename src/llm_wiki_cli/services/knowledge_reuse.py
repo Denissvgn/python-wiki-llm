@@ -269,7 +269,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     It never allocates an identity, changes review history or publishes evidence.
     """
     from .io import decode_markdown_bytes
-    from .knowledge_storage import MAX_EXPANDED_BYTES
+    from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
     from .knowledge_storage_io import StorageReadSession
     from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
     from .maintenance_protocol import guard_maintenance_owner
@@ -296,8 +296,18 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     root = Path(wiki_dir)
     reader = StorageReadSession(root)
     pages = collect_wiki_pages(root)
-    with reader.phase():
-        raw = {page.relative_path: reader.read(page.relative_path, MAX_EXPANDED_BYTES) for page in pages}
+    try:
+        with reader.phase():
+            raw = {page.relative_path: reader.read(page.relative_path, MAX_EXPANDED_BYTES) for page in pages}
+    except KnowledgeStorageError as exc:
+        if exc.code == "storage-budget-exhausted":
+            return None
+        raise
+    # The final raw-byte recheck is charged to the same bounded session. Reserve
+    # its exact work before accepting this advisory shortcut; larger wikis still
+    # use the ordinary guarded planner without relaxing the inspection budget.
+    if reader.recheck_work()["bytes"] > reader.maximum - reader.bytes_read:
+        return None
     content = {name: decode_markdown_bytes(value) for name, value in raw.items()}
     prior_paths = {row["coordinate"]["source_path"] for row in owner["observations"].values()}
     missing = confirmed_missing_source_paths(source_snapshot, prior_paths)
