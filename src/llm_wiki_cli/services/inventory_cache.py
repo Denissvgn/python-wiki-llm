@@ -176,6 +176,7 @@ def _implementation_fingerprint() -> str:
         "services/python_stdlib.py",
         "services/packages.py",
         "services/python_observations.py",
+        "services/python_implementation.py",
         "services/extraction_service.py",
         "services/dockerfile_parser.py",
         "extractors/haskell_scripts/Inventory.hs",

@@ -2561,6 +2561,7 @@ def _extract_current_inventory(
     options: _SyncRunOptions,
     *,
     source_snapshot: SourceSnapshot | None = None,
+    implementation_cache_artifacts=None,
 ) -> _ExtractedSyncInventory:
     print("Extracting current source inventory...")
     source_snapshot = source_snapshot or build_source_snapshot(
@@ -2582,6 +2583,7 @@ def _extract_current_inventory(
         capture_data_effect_observations=True,
         capture_import_observations=True,
         capture_implementation_observations=True,
+        implementation_cache_artifacts=implementation_cache_artifacts,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
@@ -4062,7 +4064,10 @@ def _prepare_sync_run(
     extracted = (
         _ExtractedSyncInventory(
             sync_analysis_cache.inventory_result(cached_analysis, source_snapshot, options), source_snapshot,
-        ) if cached_analysis is not None else _extract_current_inventory(options, source_snapshot=source_snapshot)
+        ) if cached_analysis is not None else _extract_current_inventory(
+            options, source_snapshot=source_snapshot,
+            implementation_cache_artifacts=committed_state.artifacts,
+        )
     )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot

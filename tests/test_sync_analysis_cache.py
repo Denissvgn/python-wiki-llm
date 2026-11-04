@@ -48,7 +48,7 @@ def primed(tmp_path, monkeypatch, request):
     assert Path("cache", sync_analysis_cache.FILENAME).exists()
     if coverage == "inventory":
         data = Path("cache", sync_analysis_cache.FILENAME).read_bytes()
-        monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", len(data) - 1)
+        monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", len(data) - 1)
         edit(text="Prime qualified partial reuse.")
         sync()
         assert json.loads(Path("cache", sync_analysis_cache.FILENAME).read_bytes())["coverage"] == "inventory"
@@ -85,6 +85,57 @@ def test_cached_reanchor_matches_independent_full_builder(primed):
     assert {p.relative_to("wiki"): p.read_bytes() for p in Path("wiki").rglob("*.md")} == {
         p.relative_to("oracle"): p.read_bytes() for p in Path("oracle").rglob("*.md")
     }
+
+
+def test_sharded_capture_reuses_the_same_committed_payload(primed, monkeypatch, capsys):
+    from llm_wiki_cli.services import sync_analysis_storage
+    monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", 1024)
+    edit(text="Publish a bounded sharded capture.")
+    sync()
+    catalog = json.loads(Path("cache", sync_analysis_cache.FILENAME).read_bytes())
+    assert catalog["schema_version"] == sync_analysis_storage.SCHEMA
+    state = load_knowledge_state("wiki")
+    assert state.knowledge is not None
+    assert catalog["payload_hash"] == state.knowledge.extensions[sync_analysis_cache.EXTENSION]["payload_hash"]
+    edit(text="Reuse sharded captures after another prose edit.")
+    monkeypatch.setattr(sync_cmd, "_extract_current_inventory", lambda *a, **kw: pytest.fail("sharded capture extracted again"))
+    sync()
+    assert "reuse: hit" in capsys.readouterr().out
+    assert build_report("wiki", "src", strict=True).passed
+
+
+@pytest.mark.parametrize("primed", [("packed-v4-deflate", "full")], indirect=True)
+def test_corrupt_shard_falls_back_without_losing_prose(primed, monkeypatch):
+    monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", 1024)
+    edit(text="Publish capture before corruption.")
+    sync()
+    shard = next(Path("cache", sync_analysis_cache.FILENAME + ".objects").iterdir())
+    shard.write_bytes(b"{}\n")
+    edit(text="Preserve this prose during fallback.")
+    with patch.object(sync_cmd, "_extract_current_inventory", wraps=sync_cmd._extract_current_inventory) as extract:
+        sync()
+    assert extract.call_count == 1
+    assert "Preserve this prose during fallback." in Path("wiki/modules/app.md").read_text()
+    assert build_report("wiki", "src", strict=True).passed
+
+
+@pytest.mark.parametrize("primed", [("packed-v4-deflate", "full")], indirect=True)
+def test_source_edit_reuses_other_files_authenticated_implementation(primed, monkeypatch):
+    from llm_wiki_cli.extractors import python_extractor
+    Path("src/other.py").write_text("def other():\n    return 1\n")
+    sync()
+    parsed = []
+    original = python_extractor.ast.parse
+    source = Path("src").resolve()
+    def observe(content, filename="<unknown>", *args, **kwargs):
+        if Path(filename).parent == source:
+            parsed.append(Path(filename).name)
+        return original(content, filename, *args, **kwargs)
+    monkeypatch.setattr(python_extractor.ast, "parse", observe)
+    Path("src/app.py").write_text(Path("src/app.py").read_text().replace("value + 1", "value + 2"))
+    sync()
+    assert parsed == ["app.py"]
+    assert build_report("wiki", "src", strict=True).passed
 
 
 @pytest.mark.parametrize("change", ["source", "addition", "deletion", "selection", "implementation", "schema", "analyzer", "plugin", "rebuild", "no-cache"])
@@ -253,7 +304,7 @@ def test_strict_readers_still_reject_actual_source_drift(primed):
 def test_oversized_capture_still_completes_required_writes(primed, monkeypatch, capsys):
     edit(text="Oversized cache must not prevent the owning commit.")
     marker = Path("wiki/.llm-wiki-manifest.json").read_bytes()
-    monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", 128)
+    monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", 128)
     sync()
     assert "skipped (payload-over-budget)" in capsys.readouterr().out
     assert Path("wiki/.llm-wiki-manifest.json").read_bytes() != marker

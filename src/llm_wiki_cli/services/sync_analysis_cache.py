@@ -10,16 +10,19 @@ from ..config import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
 from .io import first_unsafe_path_component, write_bytes_atomic
-from .knowledge_evidence import canonical_json_bytes, hash_json
+from .knowledge_evidence import hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
 from .knowledge_storage_io import read_guarded
 from .progress import observed_phase, record_counts
 from .runtime_output import warn
+from . import sync_analysis_storage
 
 SCHEMA = "llm-wiki-sync-analysis/v2"
 EXTENSION = "llm-wiki/sync-analysis-v2"
 FILENAME = "llm-wiki-sync-analysis.json"
 MAX_BYTES = 64 * 1024 * 1024
+MAX_CAPTURE_BYTES = 1024 * 1024 * 1024
+MAX_PAGE_BYTES = 64 * 1024 * 1024
 
 
 class SyncAnalysisMutationError(ValueError):
@@ -132,22 +135,22 @@ def report_capture(options, status, reason, *, payload_bytes=None, over_budget=F
     destination = cache_destination(options, capture=True)[1]
     size = "unavailable" if payload_bytes is None else str(payload_bytes)
     if over_budget:
-        size = f">{MAX_BYTES}"
+        size = f">{MAX_CAPTURE_BYTES}"
     print(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
-          f"payload_bytes={size}; limit_bytes={MAX_BYTES}", flush=True)
+          f"payload_bytes={size}; limit_bytes={MAX_CAPTURE_BYTES}", flush=True)
 
 
 def payload_size(payload):
     """Count the exact writer encoding up to the budget, without retaining it."""
-    encoder = json.JSONEncoder(ensure_ascii=False, separators=(",", ":"), sort_keys=True, allow_nan=False)
-    size = 1  # The writer's trailing newline.
-    for chunk in encoder.iterencode(payload):
-        if len(chunk) > MAX_BYTES - size:
-            return None
-        size += len(chunk.encode("utf-8"))
-        if size > MAX_BYTES:
-            return None
-    return size
+    measured = sync_analysis_storage.measure(payload, MAX_CAPTURE_BYTES)
+    return measured[0] if measured is not None else None
+
+
+def _payload_hash(payload):
+    measured = sync_analysis_storage.measure(payload, MAX_CAPTURE_BYTES)
+    if measured is None:
+        raise ValueError("sync analysis exceeds its aggregate byte limit")
+    return measured[1]
 
 
 @observed_phase("sync_analysis_reuse")
@@ -170,14 +173,15 @@ def load(options, snapshot, manifest, generation_inputs, state):
             reason = "inputs-changed"
         else:
             try:
-                candidate = json.loads(read_guarded(path, MAX_BYTES).content)
+                candidate = sync_analysis_storage.load(path, root_limit=MAX_BYTES,
+                                                       total_limit=MAX_CAPTURE_BYTES)
                 if (not isinstance(candidate, dict) or candidate.get("schema_version") != SCHEMA
                         or candidate.get("coverage") not in {"full", "inventory"}
                         or candidate.get("coverage") != commitment.get("coverage")
                         or not {"data_effect_observations", "import_observations"} <= candidate.keys()
                         or (candidate.get("coverage") == "full") != isinstance(candidate.get("graph_observations"), dict)
                         or candidate.get("input_key") != key
-                        or hash_json(candidate) != commitment.get("payload_hash")):
+                        or _payload_hash(candidate) != commitment.get("payload_hash")):
                     reason = "cache-content-mismatch"
                 else:
                     from .knowledge_envelope import hash_inventory, INVENTORY_HASH_EXTENSION
@@ -269,7 +273,9 @@ def build_payload(options, prepared, surface):
 def commitment(payload):
     return {"schema_version": SCHEMA, "coverage": payload["coverage"],
             "input_hash": hash_json(payload["input_key"]),
-            "payload_hash": hash_json(payload), "graph_concepts_hash": payload["graph_concepts_hash"]} if payload is not None else None
+            "payload_hash": _payload_hash(payload), "graph_concepts_hash": payload["graph_concepts_hash"],
+            "implementation_files": {path: hash_json(row) for path, row in
+                                     (payload.get("implementation_observations") or {}).get("files", {}).items()}} if payload is not None else None
 
 
 def generated_sections_match(root, artifacts):
@@ -281,7 +287,7 @@ def generated_sections_match(root, artifacts):
         path = root / concept.document.canonical_path
         from .knowledge_storage import KnowledgeStorageError
         try:
-            content = read_guarded(path, MAX_BYTES).content.decode("utf-8")
+            content = read_guarded(path, MAX_PAGE_BYTES).content.decode("utf-8")
         except (OSError, ValueError) as exc:
             if isinstance(exc, KnowledgeStorageError) and exc.code == "storage-mutation":
                 raise SyncAnalysisMutationError("wiki changed during analysis reuse") from exc
@@ -315,11 +321,12 @@ def save(options, payload):
     try:
         if first_unsafe_path_component(path) is not None:
             raise OSError("redirected analysis cache destination")
-        content = canonical_json_bytes(payload) + b"\n"
-        if len(content) > MAX_BYTES:
+        size = payload_size(payload)
+        if size is None:
             report_capture(options, "skipped", "payload-over-budget", over_budget=True)
             return
-        write_bytes_atomic(path, content)
+        sync_analysis_storage.save(path, payload, root_limit=MAX_BYTES,
+                                   total_limit=MAX_CAPTURE_BYTES, writer=write_bytes_atomic)
         report_capture(options, "saved", "committed-payload")
     except (OSError, ValueError) as exc:
         report_capture(options, "skipped", "cache-write-failed")
