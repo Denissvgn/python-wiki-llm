@@ -9,6 +9,7 @@ the shared writer lock around capture and manifest-last publication.
 from __future__ import annotations
 
 from collections.abc import Callable
+from contextvars import ContextVar
 from copy import deepcopy
 import re
 from typing import Any
@@ -530,6 +531,19 @@ class MaintenanceCore:
     ) -> dict[str, Any]:
         """Pure maintenance transition. The caller supplies independently captured current basis."""
         self.validate_state(state)
+        generation = state["generation"]
+        result = self._transition_owned(deepcopy(state), event, current_basis)
+        if result["generation"] != generation:
+            self.validate_state(result)
+        return result
+
+    def _transition_owned(
+        self,
+        state: dict[str, Any],
+        event: dict[str, Any],
+        current_basis: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Apply checked event semantics to a private already validated owner."""
         self.validate_schema("maintenance-event-v1", event)
         self.validate_schema("maintenance-basis-v1", current_basis)
         record_id, kind = (event["record_id"], event["kind"])
@@ -581,11 +595,10 @@ class MaintenanceCore:
                 },
                 {record_id: incoming},
             )["records"][record_id]
-            result = deepcopy(state)
+            result = state
             result["records"][record_id] = created
             result["observations"][record_id] = deepcopy(incoming)
             result["generation"] += 1
-            self.validate_state(result)
             return result
         require(
             record_id in state["records"], "owner-missing", "event has no durable owner"
@@ -621,7 +634,7 @@ class MaintenanceCore:
                 and record["current_acknowledgment_id"]
                 == acknowledgment["acknowledgment_id"]
             ):
-                return deepcopy(state)
+                return state
         require(
             event["expected_state_hash"] == canonical_hash(state),
             "state-changed",
@@ -633,8 +646,8 @@ class MaintenanceCore:
                 "basis-changed",
                 "sync cannot invent a current basis",
             )
-            return deepcopy(state)
-        result = deepcopy(state)
+            return state
+        result = state
         target = result["records"][record_id]
         if kind == "acknowledge":
             if not any(
@@ -675,7 +688,7 @@ class MaintenanceCore:
                     "ordinary observation cannot resolve a missing owner",
                 )
                 if incoming == current:
-                    return deepcopy(state)
+                    return state
                 require(
                     incoming["target_presence"] != "deleted"
                     or current["target_presence"] == "deleted",
@@ -930,7 +943,6 @@ class MaintenanceCore:
                     )
                     result["observations"][peer_id] = updated
         result["generation"] += 1
-        self.validate_state(result)
         return result
 
 
@@ -971,6 +983,181 @@ def validate_maintenance_adoption(value: object) -> dict[str, Any]:
     result = _detached(value)
     maintenance_core().validate_schema("maintenance-adoption-v1", result)
     return result
+
+
+_RECONCILIATION_OWNER: ContextVar[object | None] = ContextVar(
+    "maintenance_reconciliation_owner", default=None,
+)
+
+
+def _callable_identity(value):
+    function = getattr(value, "__func__", value)
+    return function, getattr(function, "__code__", None)
+
+
+def _reconciliation_validator_identity(core, operation):
+    from . import implementation_evidence, maintenance_shapes, python_implementation
+    methods = tuple((name, _callable_identity(getattr(core, name)))
+                    for name, value in sorted(MaintenanceCore.__dict__.items()) if callable(value))
+    functions = tuple(
+        (module.__name__, name, _callable_identity(value))
+        for module in (implementation_evidence, maintenance_shapes, python_implementation)
+        for name, value in sorted(vars(module).items())
+        if getattr(value, "__module__", None) == module.__name__ and hasattr(value, "__code__")
+    )
+    operation_methods = tuple((name, _callable_identity(getattr(operation, name)))
+                              for name, value in sorted(_MaintenanceReconciliation.__dict__.items()) if callable(value))
+    return (
+        core, methods, operation_methods, _callable_identity(core.evidence_validator), functions,
+        (implementation_evidence.SCOPES, implementation_evidence.UNAVAILABLE_REASONS,
+         python_implementation.SCHEMA, python_implementation.EVIDENCE_SCHEMA,
+         python_implementation.ALGORITHM, python_implementation.MAX_OBSERVATIONS,
+         python_implementation.MAX_OBJECT_BYTES, canonical_bytes(python_implementation.CONFIGURATION),
+         implementation_evidence._HASH.pattern, implementation_evidence._HASH.flags,
+         python_implementation._HASH.pattern, python_implementation._HASH.flags),
+        tuple((name, _callable_identity(value)) for name, value in sorted(VALIDATORS.items())),
+        tuple((key, type(value), value) for key, value in sorted(LIMITS.items())),
+        tuple((key, tuple(sorted(value))) for key, value in sorted(EVENT_FIELDS.items())),
+        tuple(_callable_identity(value) for value in (
+            _identity, _portable, _finite, canonical_hash, canonical_bytes, digest,
+            require, require_repository_relative_path, deepcopy, _detached,
+            _maintenance_reconciliation, _has_reconciliation_owner,
+        )),
+    )
+
+
+class _MaintenanceReconciliation:
+    """One detached reconciliation; only membership-preserving observes are local."""
+
+    def __init__(self, previous_state, core):
+        from .implementation_evidence import validate_implementation_evidence
+        require(type(core) is MaintenanceCore and core.evidence_validator is validate_implementation_evidence,
+                "validator-changed", "bulk reconciliation requires the installed implementation validator")
+        self._core = core
+        self._identity = _reconciliation_validator_identity(core, self)
+        self._state = _detached(previous_state)
+        self._core.validate_state(self._state)
+        require(self._identity == _reconciliation_validator_identity(core, self),
+                "validator-changed", "maintenance validators changed during input validation")
+        self._active = True
+        self._entered = False
+        self._token = None
+        self._refresh_groups()
+        self._state_hash = canonical_hash(self._state)
+
+    def _refresh_groups(self):
+        self._groups = {}
+        for record_id, observed in self._state["observations"].items():
+            self._groups.setdefault(canonical_hash(observed["coordinate"]), set()).add(record_id)
+        self._pending = sum(record["status"] == "pending" for record in self._state["records"].values())
+
+    def __enter__(self):
+        require(self._active and not self._entered, "reconciliation-expired", "reconciliation cannot be reused")
+        require(_RECONCILIATION_OWNER.get() is None, "reconciliation-owner", "nested reconciliation cannot replace its owner")
+        self._entered = True
+        self._token = _RECONCILIATION_OWNER.set(self)
+        try:
+            self._check()
+        except BaseException:
+            self._expire()
+            _RECONCILIATION_OWNER.reset(self._token)
+            self._token = None
+            raise
+        return self
+
+    def __exit__(self, *args):
+        self._expire()
+        if self._token is not None:
+            _RECONCILIATION_OWNER.reset(self._token)
+            self._token = None
+
+    def _expire(self):
+        self._active = False
+        self._state = {}
+        self._groups = {}
+        self._state_hash = None
+
+    def _check(self):
+        require(self._active and self._entered and _RECONCILIATION_OWNER.get() is self,
+                "reconciliation-expired", "reconciliation requires its active invocation owner")
+        require(self._identity == _reconciliation_validator_identity(self._core, self),
+                "validator-changed", "maintenance validators changed during reconciliation")
+
+    def _event_owned(self, state, record_id, kind, **fields):
+        try:
+            self._check()
+            require(state is self._state, "reconciliation-owner", "event belongs to another private owner")
+            return {"schema_version": "llm-wiki-maintenance-event/v1", "record_id": record_id,
+                    "kind": kind, "expected_state_hash": self._state_hash, **fields}
+        except BaseException:
+            self._expire()
+            raise
+
+    def apply(self, event, current_basis) -> None:
+        try:
+            self._check()
+            # Detach caller-owned values only after refusing arbitrary objects.
+            self._core.validate_schema("maintenance-event-v1", event)
+            self._core.validate_schema("maintenance-basis-v1", current_basis)
+            event, current_basis = deepcopy((event, current_basis))
+            if event["kind"] != "observe":
+                self._state = self._core.transition(self._state, event, current_basis)
+                self._refresh_groups()
+                self._state_hash = canonical_hash(self._state)
+            else:
+                record_id = event["record_id"]
+                observed = self._state["observations"].get(record_id)
+                group = self._groups.get(canonical_hash(observed["coordinate"]), set()) if observed is not None else set()
+                before = sum(self._state["records"][key]["status"] == "pending" for key in group)
+                self._state = self._core._transition_owned(self._state, event, current_basis)
+                subset = {**self._state,
+                          "records": {key: self._state["records"][key] for key in group},
+                          "observations": {key: self._state["observations"][key] for key in group}}
+                self._core.validate_schema("maintenance-state-v1", subset)
+                encoded = canonical_bytes(self._state)
+                require(len(encoded) <= LIMITS["state_bytes"],
+                        "state-limit", "canonical maintenance state exceeds 64 MiB")
+                self._pending += sum(self._state["records"][key]["status"] == "pending" for key in group) - before
+                require(self._pending <= LIMITS["pending_records"], "record-limit", "pending record limit exceeded")
+                # Observe cannot change coordinates, targets, presence or owner
+                # membership. Validate every same-coordinate peer, including
+                # deleted/ambiguous observations, before accepting another event.
+                self._core.validate_state(subset)
+                self._state_hash = digest(encoded)
+            self._check()
+        except BaseException:
+            self._expire()
+            raise
+
+    def _apply_owned(self, state, event, current_basis):
+        try:
+            require(state is self._state, "reconciliation-owner", "event belongs to another private owner")
+        except BaseException:
+            self._expire()
+            raise
+        self.apply(event, current_basis)
+        return self._state
+
+    def finish(self) -> dict[str, Any]:
+        try:
+            self._check()
+            self._core.validate_state(self._state)
+            self._check()
+            result = self._state
+            self._expire()
+            return result
+        except BaseException:
+            self._expire()
+            raise
+
+
+def _maintenance_reconciliation(previous_state, core=None):
+    """Private invocation owner; no caller can waive public transition validation."""
+    return _MaintenanceReconciliation(previous_state, maintenance_core() if core is None else core)
+
+
+def _has_reconciliation_owner() -> bool:
+    return _RECONCILIATION_OWNER.get() is not None
 
 
 def maintenance_state_hash(value: object) -> str:

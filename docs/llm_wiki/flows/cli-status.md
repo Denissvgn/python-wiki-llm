@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), and 37 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), and 33 more
 
 **Complete modules touched:**
 
@@ -17,15 +17,12 @@
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [legacy_hooks](../modules/legacy_hooks.md)
@@ -35,7 +32,6 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [paths](../modules/paths.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
-- [section_ownership](../modules/section_ownership.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
 - [source_selection](../modules/source_selection.md)
@@ -118,9 +114,9 @@ sequenceDiagram
     p0-->>p30: wiki_path.exists
 ```
 
-> Call sequence diagram shows 30 of 2097 interactions; 2067 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2069 interactions; 2039 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 716 (715 omitted); unresolved 1 of 527 (526 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 710 (709 omitted); unresolved 1 of 521 (520 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -134,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 15 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 533 groups; 525 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 527 groups; 519 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -147,9 +143,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 855; effect analysis evaluated: 516, partial: 41, unavailable: 298. Counts include steps omitted from the displayed trace.
+Source steps: 839; effect analysis evaluated: 507, partial: 42, unavailable: 290. Counts include steps omitted from the displayed trace.
 
-Collector observations for 557 source steps with known totals: observed: 3768, emitted: 3396, omitted: 372. Unavailable totals are excluded.
+Collector observations for 549 source steps with known totals: observed: 3718, emitted: 3359, omitted: 359. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

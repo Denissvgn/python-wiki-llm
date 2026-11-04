@@ -1,6 +1,6 @@
 # _InventoryBuildContext
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:293`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:297`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -33,6 +33,10 @@ _Auto-generated from `_InventoryBuildContext` in `src/llm_wiki_cli/services/extr
 | `python_sidecars` | `dict[str, dict]` | `field(default_factory=dict)` | — |
 | `captured_analysis` | `dict \| None` | `None` | — |
 | `implementation_analysis_hash` | `str \| None` | `None` | — |
+| `python_implementations` | `dict[str, dict]` | `field(default_factory=dict)` | — |
+| `implementation_cache_hashes` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
+| `extraction_cache_hashes` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
+| `raw_bundle_hashes` | `dict[str, str]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -87,7 +91,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 0 | `cache`, `cache_files`, `cache_key`, `captured_analysis`, `implementation_analysis_hash`, `parallel_jobs`, `parallel_safe_plugin_entry_points`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `plugin_root`, `python_sidecars` |
+| [extraction_service](../modules/extraction_service.md) | 0 | `cache`, `cache_files`, `cache_key`, `captured_analysis`, `extraction_cache_hashes`, `implementation_analysis_hash`, `implementation_cache_hashes`, `parallel_jobs`, `parallel_safe_plugin_entry_points`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
 
 ### References
 

@@ -1,6 +1,6 @@
 # _GeneratedSurfaceTransition
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1858`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1860`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -16,6 +16,7 @@ Prior ownership proof and generated pages that cross the live boundary.
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `retired_page_paths` | `tuple[str, ...]` | `()` | — |
+| `protected_retirement_paths` | `tuple[str, ...]` | `()` | — |
 | `managed_flow_page_paths` | `frozenset[str]` | `frozenset()` | — |
 | `managed_workflow_page_paths` | `frozenset[str]` | `frozenset()` | — |
 | `managed_surface_index` | `bool` | `False` | — |
@@ -45,7 +46,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `managed_flow_page_paths`, `managed_surface_index`, `managed_workflow_page_paths`, `prior_flow_entries`, `prior_source_overrides`, `retired_page_paths` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `managed_flow_page_paths`, `managed_surface_index`, `managed_workflow_page_paths`, `prior_flow_entries`, `prior_source_overrides`, `protected_retirement_paths`, `retired_page_paths` |
 
 ### References
 

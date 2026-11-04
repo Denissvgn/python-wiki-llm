@@ -2,7 +2,7 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 25 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 24 more
 
 **Complete modules touched:**
 
@@ -29,7 +29,6 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -106,9 +105,9 @@ sequenceDiagram
     p0-->>p30: governance_by_locator.items
 ```
 
-> Call sequence diagram shows 30 of 2168 interactions; 2138 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2125 interactions; 2095 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 603 (602 omitted); unresolved 1 of 394 (393 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 591 (590 omitted); unresolved 1 of 377 (376 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -122,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
-> Omission summary shows 8 of 494 groups; 486 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 478 groups; 470 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -135,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1172; effect analysis evaluated: 804, partial: 28, unavailable: 340. Counts include steps omitted from the displayed trace.
+Source steps: 1158; effect analysis evaluated: 817, partial: 35, unavailable: 306. Counts include steps omitted from the displayed trace.
 
-Collector observations for 832 source steps with known totals: observed: 4217, emitted: 4080, omitted: 137. Unavailable totals are excluded.
+Collector observations for 852 source steps with known totals: observed: 4418, emitted: 4272, omitted: 146. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

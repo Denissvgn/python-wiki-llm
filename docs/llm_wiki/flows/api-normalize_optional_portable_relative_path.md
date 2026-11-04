@@ -174,17 +174,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_optional_portable_relative_path | isinstance (src/llm_wiki_cli/services…nal_portable_relative_path) | 431 | `isinstance(value, str)` |
-| normalize_optional_portable_relative_path | value.strip | 431 | `value.strip(data not statically known)` |
-| normalize_optional_portable_relative_path | value.strip().replace | 433 | `value.strip().replace('\\', '/')` |
-| normalize_optional_portable_relative_path | value.strip | 433 | `value.strip(data not statically known)` |
-| normalize_optional_portable_relative_path | normalized.startswith | 434 | `normalized.startswith('./')` |
-| normalize_optional_portable_relative_path | require_portable_relative_path | 437 | `require_portable_relative_path(normalized)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 216 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath | 218 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 219 | `isinstance(raw, str)` |
+| normalize_optional_portable_relative_path | isinstance (src/llm_wiki_cli/services…nal_portable_relative_path) | 436 | `isinstance(value, str)` |
+| normalize_optional_portable_relative_path | value.strip | 436 | `value.strip(data not statically known)` |
+| normalize_optional_portable_relative_path | value.strip().replace | 438 | `value.strip().replace('\\', '/')` |
+| normalize_optional_portable_relative_path | value.strip | 438 | `value.strip(data not statically known)` |
+| normalize_optional_portable_relative_path | normalized.startswith | 439 | `normalized.startswith('./')` |
+| normalize_optional_portable_relative_path | require_portable_relative_path | 442 | `require_portable_relative_path(normalized)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath | 223 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 224 | `isinstance(raw, str)` |
 
 ### Boundary effects
 
@@ -194,14 +194,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_optional_portable_relative_path` | `isinstance` | 431 |
-| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip` | 431 |
-| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip().replace` | 433 |
-| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip` | 433 |
-| unresolved_call | `normalize_optional_portable_relative_path` | `normalized.startswith` | 434 |
-| external_call | `require_portable_relative_path` | `isinstance` | 216 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
-| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `normalize_optional_portable_relative_path` | `isinstance` | 436 |
+| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip` | 436 |
+| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip().replace` | 438 |
+| unresolved_call | `normalize_optional_portable_relative_path` | `value.strip` | 438 |
+| unresolved_call | `normalize_optional_portable_relative_path` | `normalized.startswith` | 439 |
+| external_call | `require_portable_relative_path` | `isinstance` | 221 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 223 |
+| external_call | `require_portable_relative_path` | `isinstance` | 224 |
 | step_limit | `normalize_optional_portable_relative_path` | `first 12 steps` | 0 |
 
 ## Behavior

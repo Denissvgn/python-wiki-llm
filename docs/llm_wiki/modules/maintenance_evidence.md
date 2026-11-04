@@ -16,7 +16,7 @@ capture; omitted declarations and unselected inputs cannot prove deletion.
 | `.immutable` | `freeze` |
 | `.implementation_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `validate_concept_implementation`, `validate_implementation_evidence` |
 | `.knowledge_storage` | `digest` |
-| `.maintenance_state` | `MaintenanceError`, `canonical_hash`, `maintenance_core`, `new_identity`, `validate_maintenance_adoption`, `validate_maintenance_state` |
+| `.maintenance_state` | `MaintenanceError`, `canonical_hash`, `maintenance_core`, `new_identity`, `validate_maintenance_adoption`, `validate_maintenance_state`, `_maintenance_reconciliation`, `_has_reconciliation_owner` |
 | `.markdown_sections` | `parse_markdown_document` |
 | `.python_implementation` | `comparison_id` |
 | `.section_ownership` | `SectionOwnership`, `observe_page_sections` |
@@ -46,17 +46,18 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
+| Inbound | `src` (5) |
 | Outbound | `src` (8) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 99 | — | — |
-| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 648 | — | — |
+| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 101 | — | — |
+| [_StrictMaintenanceReconciliation](../entities/StrictMaintenanceReconciliation.md) | 548 | — | — |
+| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 709 | — | — |
 
 ## Functions
 
@@ -70,4 +71,5 @@ flowchart LR
 | `captured_observations_from_knowledge` | `(knowledge, *, content_by_page, page_source_mappings, captures = None, source_content_hashes = None, captured_paths = None, missing_source_paths = (), analysis_compatibility_hash = None, section_ownership = None, previous_state = None, known_absent_pages = (), raw_content_by_page = None) -> MaintenanceCapture` | — | Join actual current captures; unavailable old owners retain honest gaps. |
 | `_event` | `(state, record_id, kind, **fields)` | — | — |
 | `reconcile_pending_maintenance` | `(previous_state, marker, capture: MaintenanceCapture, *, confirmed_transfers = (), ambiguous_transfers = (), allocate_id: Callable[[], str] = new_identity) -> dict` | — | Preserve history, apply explicit transfer proofs, and reopen captured work. |
+| `_reconcile_existing_maintenance` | `(operation, guard, capture, confirmed_transfers, ambiguous_transfers, allocate_id)` | — | — |
 | `maintenance_transfers_from_page_plan` | `(previous_state, capture: MaintenanceCapture, page_plan, *, previous_raw_content_by_page) -> MaintenanceTransfers` | — | Use verified page owners and captured semantic sections, never names/hashes. |

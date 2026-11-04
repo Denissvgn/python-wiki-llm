@@ -2,7 +2,7 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 60 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 61 more
 
 **Complete modules touched:**
 
@@ -46,6 +46,7 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -92,21 +93,21 @@ sequenceDiagram
     participant p11 as owner_key
     participant p12 as reconcile_pending_maintenance
     participant p13 as project_maintenance_knowledge
-    participant p14 as validated_artifact_bytes
-    participant p15 as build_knowledge_commit_plan
-    participant p16 as commit_knowledge_artifacts
-    participant p17 as capture_context_read
-    participant p18 as canonical_hash
-    participant p19 as guard_maintenance_owner
-    participant p20 as current_manifest_format
-    participant p21 as governance_writer_lock
-    participant p22 as storage_writer_lock
-    participant p23 as snapshot_wiki
-    participant p24 as _recovery_directory
-    participant p25 as _commit_sharded
-    participant p26 as _commit_flat
-    participant p27 as save_recovery_snapshot
-    participant p28 as _planned_write
+    participant p14 as rebind_maintenance_reuse
+    participant p15 as validated_artifact_bytes
+    participant p16 as build_knowledge_commit_plan
+    participant p17 as commit_knowledge_artifacts
+    participant p18 as capture_context_read
+    participant p19 as canonical_hash
+    participant p20 as validate_reuse_commitment
+    participant p21 as guard_maintenance_owner
+    participant p22 as current_manifest_format
+    participant p23 as governance_writer_lock
+    participant p24 as bind_reuse_commitment
+    participant p25 as storage_writer_lock
+    participant p26 as _capture_spooled_wiki
+    participant p27 as _recovery_directory
+    participant p28 as _commit_sharded
     participant p29 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     participant p30 as core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     p0->>p1: _detached
@@ -122,28 +123,28 @@ sequenceDiagram
     p3->>p11: owner_key
     p3->>p12: reconcile_pending_maintenance
     p3->>p13: project_maintenance_knowledge
-    p3->>p14: validated_artifact_bytes
-    p3->>p15: build_knowledge_commit_plan
-    p3->>p16: commit_knowledge_artifacts
-    p10->>p17: capture_context_read
-    p11->>p18: canonical_hash
-    p9->>p19: guard_maintenance_owner
-    p15->>p20: current_manifest_format
-    p9->>p21: governance_writer_lock
-    p9->>p22: storage_writer_lock
-    p9->>p23: snapshot_wiki
-    p9->>p24: _recovery_directory
-    p16->>p25: _commit_sharded
-    p16->>p26: _commit_flat
-    p9->>p27: save_recovery_snapshot
-    p15->>p28: _planned_write
+    p3->>p14: rebind_maintenance_reuse
+    p3->>p15: validated_artifact_bytes
+    p3->>p16: build_knowledge_commit_plan
+    p3->>p17: commit_knowledge_artifacts
+    p10->>p18: capture_context_read
+    p11->>p19: canonical_hash
+    p14->>p20: validate_reuse_commitment
+    p9->>p21: guard_maintenance_owner
+    p16->>p22: current_manifest_format
+    p9->>p23: governance_writer_lock
+    p14->>p24: bind_reuse_commitment
+    p9->>p25: storage_writer_lock
+    p9->>p26: _capture_spooled_wiki
+    p9->>p27: _recovery_directory
+    p17->>p28: _commit_sharded
     p0-->>p29: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 2914 interactions; 2884 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3027 interactions; 2997 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 964 (963 omitted); unresolved 1 of 700 (699 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1023 (1022 omitted); unresolved 1 of 749 (748 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 684 groups; 676 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 728 groups; 720 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -170,9 +171,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1251; effect analysis evaluated: 834, partial: 50, unavailable: 367. Counts include steps omitted from the displayed trace.
+Source steps: 1256; effect analysis evaluated: 870, partial: 56, unavailable: 330. Counts include steps omitted from the displayed trace.
 
-Collector observations for 884 source steps with known totals: observed: 5428, emitted: 5106, omitted: 322. Unavailable totals are excluded.
+Collector observations for 926 source steps with known totals: observed: 5596, emitted: 5350, omitted: 246. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -251,14 +252,14 @@ flowchart LR
 | acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1636 | `type(allow_external_src)` |
 | acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1637 | `ValueError('allow_external_src must be a boolean')` |
 | acknowledge_maintenance | _detached | 1638 | `_detached(expected_basis)` |
-| _detached | deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached) | 952 | `deepcopy(value)` |
-| _detached | MaintenanceError | 954 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
-| _detached | require | 957 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
+| _detached | deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached) | 964 | `deepcopy(value)` |
+| _detached | MaintenanceError | 966 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
+| _detached | require | 969 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
-| _detached | type (src/llm_wiki_cli/services…enance_state.py:_detached) | 958 | `type(result)` |
-| _detached | isinstance (src/llm_wiki_cli/services…enance_state.py:_detached) | 960 | `isinstance(result, dict)` |
+| _detached | type (src/llm_wiki_cli/services…enance_state.py:_detached) | 970 | `type(result)` |
+| _detached | isinstance (src/llm_wiki_cli/services…enance_state.py:_detached) | 972 | `isinstance(result, dict)` |
 | acknowledge_maintenance | maintenance_core | 1639 | `maintenance_core(data not statically known)` |
-| maintenance_core | MaintenanceCore | 946 | `MaintenanceCore(validate_implementation_evidence)` |
+| maintenance_core | MaintenanceCore | 958 | `MaintenanceCore(validate_implementation_evidence)` |
 
 ### Boundary effects
 
@@ -270,9 +271,9 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `acknowledge_maintenance` | `type` | 1636 |
 | external_call | `acknowledge_maintenance` | `ValueError` | 1637 |
-| external_call | `_detached` | `deepcopy` | 952 |
-| external_call | `_detached` | `type` | 958 |
-| external_call | `_detached` | `isinstance` | 960 |
+| external_call | `_detached` | `deepcopy` | 964 |
+| external_call | `_detached` | `type` | 970 |
+| external_call | `_detached` | `isinstance` | 972 |
 | step_limit | `acknowledge_maintenance` | `first 12 steps` | 0 |
 | truncated_flow | `acknowledge_maintenance` | `depth limit` | 0 |
 

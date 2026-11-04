@@ -84,9 +84,9 @@ sequenceDiagram
     p0-->>p30: store.lock
 ```
 
-> Call sequence diagram shows 30 of 1562 interactions; 1532 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1568 interactions; 1538 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 370 (369 omitted); unresolved 1 of 537 (536 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 371 (370 omitted); unresolved 1 of 538 (537 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 5 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
-> Omission summary shows 8 of 233 groups; 225 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 237 groups; 229 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 656; effect analysis evaluated: 387, partial: 14, unavailable: 255. Counts include steps omitted from the displayed trace.
+Source steps: 660; effect analysis evaluated: 391, partial: 14, unavailable: 255. Counts include steps omitted from the displayed trace.
 
-Collector observations for 401 source steps with known totals: observed: 1756, emitted: 1708, omitted: 48. Unavailable totals are excluded.
+Collector observations for 405 source steps with known totals: observed: 1770, emitted: 1721, omitted: 49. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -134,7 +134,7 @@ Collector observations for 401 source steps with known totals: observed: 1756, e
 | `_load_emergency_rejection` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_require_exact_fields` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
+| `require_exact_fields` | `available` | `partial` | `available` | `11` | `9` | `2` |
 
 ```mermaid
 flowchart LR
@@ -205,7 +205,7 @@ flowchart LR
 | `_load_emergency_rejection` | `store: ProtectedArtifactStore` | `P0_CALIBRATION_EMERGENCY_REJECTION_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE` | - | `run` |
 | `store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)` | - | - | - | - |
 | `_require_exact_fields` | `payload: Mapping[str, Any]`, `fields: set[str]`, `label: str` | - | - | `require_shared_exact_fields(...)` |
-| `require_exact_fields` | `value: object`, `allowed: Iterable[str]`, `required: Iterable[str]`, `mapping_error: Exception`, `missing_error: _ErrorFactory`, `unknown_error: _ErrorFactory`, `invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None`, `stringify_keys: bool` | `Mapping` | - | - |
+| `require_exact_fields` | `value: object`, `allowed: Iterable[str]`, `required: Iterable[str]`, `mapping_error: _ValidationError`, `error_context: str`, `missing_error: _ErrorFactory`, `unknown_error: _ErrorFactory`, `invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None` | `Mapping` | - | - |
 
 ### Call data
 

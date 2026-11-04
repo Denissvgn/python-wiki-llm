@@ -41,6 +41,7 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
+| `functools` | `partial` |
 | `importlib` | `resources` |
 | `json` | `json` |
 | `math` | `math` |
@@ -76,41 +77,41 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeModelError](../entities/KnowledgeModelError.md) | Class | 77 | `ValueError` | Raised when a knowledge payload violates the v1 contract. |
-| [ConceptKind](../entities/ConceptKind.md) | Enum | 93 | `str`, `Enum` | Versioned domain taxonomy independent of the current page layout. |
-| [Origin](../entities/Origin.md) | Enum | 115 | `str`, `Enum` | — |
-| [EvidenceState](../entities/EvidenceState.md) | Enum | 125 | `str`, `Enum` | — |
-| [Resolution](../entities/Resolution.md) | Enum | 133 | `str`, `Enum` | — |
-| [TargetClass](../entities/TargetClass.md) | Enum | 140 | `str`, `Enum` | Classification of a relationship target, separate from resolution. |
-| [Verification](../entities/Verification.md) | Enum | 153 | `str`, `Enum` | — |
-| [Lifecycle](../entities/Lifecycle.md) | Enum | 162 | `str`, `Enum` | — |
-| [ComputedFreshness](../entities/ComputedFreshness.md) | Enum | 170 | `str`, `Enum` | Live comparison outcomes; never serialized in the knowledge index. |
-| [KnowledgeLoadState](../entities/KnowledgeLoadState.md) | Enum | 181 | `str`, `Enum` | Validated artifact-load outcomes; never persisted in the knowledge index. |
-| [KnowledgeProjectionProfile](../entities/KnowledgeProjectionProfile.md) | Enum | 191 | `str`, `Enum` | Out-of-band projection policies; never selected by artifact metadata. |
-| [ActorKind](../entities/ActorKind.md) | Enum | 198 | `str`, `Enum` | — |
-| [WorkingTreeState](../entities/WorkingTreeState.md) | Enum | 206 | `str`, `Enum` | — |
-| [RepositoryIdentitySource](../entities/RepositoryIdentitySource.md) | Enum | 212 | `str`, `Enum` | How a repository identity was selected by an application-owned writer. |
-| [ObservationScope](../entities/ObservationScope.md) | Enum | 220 | `str`, `Enum` | — |
-| [RelationshipKind](../entities/RelationshipKind.md) | Enum | 228 | `str`, `Enum` | — |
-| [ConceptKindValue](../entities/ConceptKindValue.md) | Type alias | 233 | `Union[ConceptKind, str]` | — |
-| [RelationshipKindValue](../entities/RelationshipKindValue.md) | Type alias | 234 | `Union[RelationshipKind, str]` | — |
-| [Actor](../entities/Actor.md) | Class | 259 | — | — |
-| [RepositoryRecord](../entities/RepositoryRecord.md) | Class | 275 | — | — |
-| [SnapshotRecord](../entities/SnapshotRecord.md) | Class | 293 | — | — |
-| [ProducerComponent](../entities/ProducerComponent.md) | Class | 302 | — | — |
-| [ProducerRecord](../entities/ProducerRecord.md) | Class | 311 | — | — |
-| [BundleRecord](../entities/BundleRecord.md) | Class | 319 | — | — |
-| [DocumentRecord](../entities/DocumentRecord.md) | Class | 327 | — | — |
-| [EvidenceBasis](../entities/EvidenceBasis.md) | Class | 336 | — | — |
-| [StructuralFacet](../entities/StructuralFacet.md) | Class | 347 | — | — |
-| [SemanticFacet](../entities/SemanticFacet.md) | Class | 355 | — | — |
-| [ConceptFacets](../entities/ConceptFacets.md) | Class | 364 | — | — |
-| [ConceptRecord](../entities/ConceptRecord.md) | Class | 371 | — | — |
-| [RelationshipLocation](../entities/RelationshipLocation.md) | Class | 382 | — | Half-open character offsets for a relationship observation. |
-| [RelationshipTarget](../entities/RelationshipTarget.md) | Class | 391 | — | — |
-| [RelationshipEvidence](../entities/RelationshipEvidence.md) | Class | 429 | — | — |
-| [RelationshipRecord](../entities/RelationshipRecord.md) | Class | 439 | — | — |
-| [KnowledgeIndex](../entities/KnowledgeIndex.md) | Class | 450 | — | — |
+| [KnowledgeModelError](../entities/KnowledgeModelError.md) | Class | 78 | `ValueError` | Raised when a knowledge payload violates the v1 contract. |
+| [ConceptKind](../entities/ConceptKind.md) | Enum | 118 | `str`, `Enum` | Versioned domain taxonomy independent of the current page layout. |
+| [Origin](../entities/Origin.md) | Enum | 140 | `str`, `Enum` | — |
+| [EvidenceState](../entities/EvidenceState.md) | Enum | 150 | `str`, `Enum` | — |
+| [Resolution](../entities/Resolution.md) | Enum | 158 | `str`, `Enum` | — |
+| [TargetClass](../entities/TargetClass.md) | Enum | 165 | `str`, `Enum` | Classification of a relationship target, separate from resolution. |
+| [Verification](../entities/Verification.md) | Enum | 178 | `str`, `Enum` | — |
+| [Lifecycle](../entities/Lifecycle.md) | Enum | 187 | `str`, `Enum` | — |
+| [ComputedFreshness](../entities/ComputedFreshness.md) | Enum | 195 | `str`, `Enum` | Live comparison outcomes; never serialized in the knowledge index. |
+| [KnowledgeLoadState](../entities/KnowledgeLoadState.md) | Enum | 206 | `str`, `Enum` | Validated artifact-load outcomes; never persisted in the knowledge index. |
+| [KnowledgeProjectionProfile](../entities/KnowledgeProjectionProfile.md) | Enum | 216 | `str`, `Enum` | Out-of-band projection policies; never selected by artifact metadata. |
+| [ActorKind](../entities/ActorKind.md) | Enum | 223 | `str`, `Enum` | — |
+| [WorkingTreeState](../entities/WorkingTreeState.md) | Enum | 231 | `str`, `Enum` | — |
+| [RepositoryIdentitySource](../entities/RepositoryIdentitySource.md) | Enum | 237 | `str`, `Enum` | How a repository identity was selected by an application-owned writer. |
+| [ObservationScope](../entities/ObservationScope.md) | Enum | 245 | `str`, `Enum` | — |
+| [RelationshipKind](../entities/RelationshipKind.md) | Enum | 253 | `str`, `Enum` | — |
+| [ConceptKindValue](../entities/ConceptKindValue.md) | Type alias | 258 | `Union[ConceptKind, str]` | — |
+| [RelationshipKindValue](../entities/RelationshipKindValue.md) | Type alias | 259 | `Union[RelationshipKind, str]` | — |
+| [Actor](../entities/Actor.md) | Class | 284 | — | — |
+| [RepositoryRecord](../entities/RepositoryRecord.md) | Class | 300 | — | — |
+| [SnapshotRecord](../entities/SnapshotRecord.md) | Class | 318 | — | — |
+| [ProducerComponent](../entities/ProducerComponent.md) | Class | 327 | — | — |
+| [ProducerRecord](../entities/ProducerRecord.md) | Class | 336 | — | — |
+| [BundleRecord](../entities/BundleRecord.md) | Class | 344 | — | — |
+| [DocumentRecord](../entities/DocumentRecord.md) | Class | 352 | — | — |
+| [EvidenceBasis](../entities/EvidenceBasis.md) | Class | 361 | — | — |
+| [StructuralFacet](../entities/StructuralFacet.md) | Class | 372 | — | — |
+| [SemanticFacet](../entities/SemanticFacet.md) | Class | 380 | — | — |
+| [ConceptFacets](../entities/ConceptFacets.md) | Class | 389 | — | — |
+| [ConceptRecord](../entities/ConceptRecord.md) | Class | 396 | — | — |
+| [RelationshipLocation](../entities/RelationshipLocation.md) | Class | 407 | — | Half-open character offsets for a relationship observation. |
+| [RelationshipTarget](../entities/RelationshipTarget.md) | Class | 416 | — | — |
+| [RelationshipEvidence](../entities/RelationshipEvidence.md) | Class | 454 | — | — |
+| [RelationshipRecord](../entities/RelationshipRecord.md) | Class | 464 | — | — |
+| [KnowledgeIndex](../entities/KnowledgeIndex.md) | Class | 475 | — | — |
 
 ## Functions
 

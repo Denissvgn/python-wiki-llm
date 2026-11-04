@@ -36,7 +36,6 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
@@ -45,6 +44,7 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -143,9 +143,9 @@ sequenceDiagram
     p0-->>p30: stored.get('source_selection')
 ```
 
-> Call sequence diagram shows 30 of 3977 interactions; 3947 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4035 interactions; 4005 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1413 (1412 omitted); unresolved 1 of 868 (867 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1373 (1372 omitted); unresolved 1 of 905 (904 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 17 | - | external | 20 |
-> Omission summary shows 8 of 974 groups; 966 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1021 groups; 1013 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -172,9 +172,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1697; effect analysis evaluated: 1096, partial: 86, unavailable: 515. Counts include steps omitted from the displayed trace.
+Source steps: 1758; effect analysis evaluated: 1164, partial: 88, unavailable: 506. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1182 source steps with known totals: observed: 7777, emitted: 7171, omitted: 606. Unavailable totals are excluded.
+Collector observations for 1252 source steps with known totals: observed: 8104, emitted: 7511, omitted: 593. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -182,7 +182,7 @@ Collector observations for 1182 source steps with known totals: observed: 7777, 
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `partial` | `available` | `118` | `20` | `98` |
+| `run` | `available` | `partial` | `available` | `120` | `20` | `100` |
 | `getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |

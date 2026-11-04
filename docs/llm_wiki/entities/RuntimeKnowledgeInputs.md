@@ -61,6 +61,7 @@ callbacks cannot acknowledge review or replace recovery authority.
 | `governance_moves` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
+| `allow_maintenance_reuse_migration` | `bool` | `False` | — |
 | `sync_analysis_commitment` | `Mapping[str, object] \| None` | `None` | — |
 | `_plan_check` | `Callable[[KnowledgeCommitPlan], None] \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `_publication_check` | `Callable[[], None] \| None` | `field(default=None, repr=False, compare=False)` | — |
@@ -114,7 +115,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `_plan_check`, `_publication_check`, `analysis_components`, `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows` |
+| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `_plan_check`, `_publication_check`, `allow_maintenance_reuse_migration`, `analysis_components`, `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry` |
 
 ### References
 

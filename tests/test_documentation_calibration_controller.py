@@ -717,7 +717,7 @@ def test_packet_output_rejects_every_frozen_or_linked_root(tmp_path: Path):
         root / "packet.json",
         tmp_path / "source" / "packet.json",
         tmp_path / "control-a" / "packet.json",
-        Path(__file__).resolve().parent / "packet.json",
+        Path(controller_module.__file__).resolve().parent / "packet.json",
     ):
         with pytest.raises(P0CalibrationIntegrityError, match="must remain outside"):
             validate_p0_calibration_packet_output(root, forbidden)

@@ -21,12 +21,13 @@
 11. `entrypoints.read_console_scripts`
 12. `entrypoints.detect_entry_points`
 13. `api_contracts.attach_routes_to_entry_points`
-14. `data_flow.build_data_flow_context`
-15. `data_flow.analyze_data_flow_detailed`
-16. `entrypoints.build_flow_detailed`
-17. `data_flow.analyze_data_flow`
-18. `entrypoints.build_flow`
-19. `services_dependencies.analyze_dependencies`
+14. `entrypoints.build_flow_context`
+15. `data_flow.build_data_flow_context`
+16. `data_flow.analyze_data_flow_detailed`
+17. `entrypoints.build_flow_detailed`
+18. `data_flow.analyze_data_flow`
+19. `entrypoints.build_flow`
+20. `services_dependencies.analyze_dependencies`
 
 ## Touches
 

@@ -12,6 +12,7 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 |--------|---------|
 | `.knowledge_artifacts` | `require_validated_artifacts`, `validated_artifact_bytes` |
 | `.knowledge_storage` | `COLLECTIONS`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_READ_OBJECTS`, `MAX_ROOT_BYTES`, `OBJECT_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStorePlan`, `KnowledgeStoreReader`, `build_knowledge_store`, `canonical_bytes`, `decode_bytes`, `digest`, `parse_store_root`, `_fields`, `_hash`, `_integer` |
+| `.progress` | `observed_phase` |
 | `.storage_spool` | `ByteSpool` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -44,16 +45,16 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (12) |
-| Outbound | `src` (3) |
+| Inbound | `src` (13) |
+| Outbound | `src` (4) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 568 | `KnowledgeStoreReader` | — |
+| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 570 | `KnowledgeStoreReader` | — |
 
 ## Functions
 
@@ -72,7 +73,7 @@ flowchart LR
 | `packed_format` | `(root: Mapping[str, Any]) -> str` | — | Return the explicitly adopted physical format of a validated packed root. |
 | `_zip_bytes` | `(members: Mapping[str, bytes], compression: str) -> tuple[bytes, dict[str, list[Any]]]` | — | — |
 | `_zip_reusing` | `(members: Mapping[str, bytes], compression: str, reusable: Mapping[str, tuple[bytes, int]]) -> tuple[bytes, dict[str, list[Any]]]` | — | Write the pinned ZIP profile, copying verified compressed payloads verbatim. |
-| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored', prior = None, objects = None, profile: str = 'standard') -> KnowledgeStorePlan` | — | — |
+| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored', prior = None, objects = None, profile: str = 'standard') -> KnowledgeStorePlan` | `@observed_phase('packed_store')` | — |
 | `_pack_logical` | `(logical, compression, prior, objects, profile = 'standard')` | — | — |
 | `_paged_indexes` | `(members, packs, files)` | — | Pack locator pages bottom-up, so every extent has an acyclic commitment. |
 | `_coordinates` | `(value: Any) -> tuple[str, list[Any]]` | — | — |

@@ -44,53 +44,59 @@ flowchart LR
     n1["src/llm_wiki_cli/services/concept_identity.py"]
     n2["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n3["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n7["src/llm_wiki_cli/services/mcp_server.py"]
-    n8["src/llm_wiki_cli/services/search_discovery.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
-    n10["src/llm_wiki_cli/services/wiki_surface.py"]
+    n4["src/llm_wiki_cli/services/knowledge_index.py"]
+    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n6["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n7["src/llm_wiki_cli/services/knowledge_storage_access.py"]
+    n8["src/llm_wiki_cli/services/mcp_server.py"]
+    n9["src/llm_wiki_cli/services/search_discovery.py"]
+    n10["src/llm_wiki_cli/services/validation.py"]
+    n11["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n1
     n0 --> n3
-    n0 --> n5
-    n0 --> n9
+    n0 --> n6
     n0 --> n10
-    n1 --> n9
+    n0 --> n11
     n1 --> n10
+    n1 --> n11
     n2 --> n1
-    n2 --> n9
     n2 --> n10
+    n2 --> n11
     n3 --> n1
-    n3 --> n9
+    n3 --> n10
     n4 --> n1
     n4 --> n3
-    n4 --> n9
     n4 --> n10
+    n4 --> n11
     n5 --> n1
+    n5 --> n3
+    n5 --> n10
+    n5 --> n11
     n6 --> n1
-    n6 --> n3
-    n6 --> n5
     n7 --> n1
-    n7 --> n2
-    n7 --> n8
-    n7 --> n9
-    n7 --> n10
+    n7 --> n3
+    n7 --> n6
     n8 --> n1
+    n8 --> n2
     n8 --> n9
     n8 --> n10
-    n10 --> n9
+    n8 --> n11
+    n9 --> n1
+    n9 --> n10
+    n9 --> n11
+    n11 --> n10
     click n0 "../modules/migrate_cmd.md"
     click n1 "../modules/concept_identity.md"
     click n2 "../modules/documentation_query_builder.md"
     click n3 "../modules/knowledge_governance.md"
-    click n4 "../modules/knowledge_projection.md"
-    click n5 "../modules/knowledge_storage.md"
-    click n6 "../modules/knowledge_storage_access.md"
-    click n7 "../modules/mcp_server.md"
-    click n8 "../modules/search_discovery.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/wiki_surface.md"
+    click n4 "../modules/knowledge_index.md"
+    click n5 "../modules/knowledge_projection.md"
+    click n6 "../modules/knowledge_storage.md"
+    click n7 "../modules/knowledge_storage_access.md"
+    click n8 "../modules/mcp_server.md"
+    click n9 "../modules/search_discovery.md"
+    click n10 "../modules/validation.md"
+    click n11 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -100,6 +106,7 @@ flowchart LR
 | Inbound | [migrate_cmd](../modules/migrate_cmd.md) |
 | Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
 | Inbound | [knowledge_governance](../modules/knowledge_governance.md) |
+| Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [knowledge_projection](../modules/knowledge_projection.md) |
 | Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Inbound | [knowledge_storage_access](../modules/knowledge_storage_access.md) |

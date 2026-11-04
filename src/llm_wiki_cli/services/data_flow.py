@@ -170,6 +170,7 @@ class DataFlowAnalysisContext:
     data_effect_coverage: dict[tuple[str, str], dict[str, dict]] | None = field(
         default=None
     )
+    detailed_incoming_edges: dict[tuple, tuple[dict, ...]] | None = None
 
 
 def build_data_flow_context(
@@ -177,12 +178,17 @@ def build_data_flow_context(
     edges: list[dict],
     *,
     data_effect_observations: Mapping | None = None,
+    include_detailed: bool = False,
 ) -> DataFlowAnalysisContext:
     """Build reusable indexes for analyzing one or more user flows."""
     return DataFlowAnalysisContext(
         callable_index=_callable_index(inventory),
         incoming_edges=_incoming_edge_queues(edges),
         data_effect_coverage=_data_effect_coverage_index(data_effect_observations),
+        detailed_incoming_edges=(
+            _incoming_edge_queues(sorted(edges, key=_edge_sort_key))
+            if include_detailed else None
+        ),
     )
 
 
@@ -514,10 +520,16 @@ def _detailed_context(
         if context is not None
         else None
     )
+    incoming = (
+        context.detailed_incoming_edges
+        if context is not None and context.detailed_incoming_edges is not None
+        else _incoming_edge_queues(sorted(edges, key=_edge_sort_key))
+    )
     return DataFlowAnalysisContext(
         callable_index=callable_index,
-        incoming_edges=_incoming_edge_queues(sorted(edges, key=_edge_sort_key)),
+        incoming_edges=incoming,
         data_effect_coverage=effect_coverage,
+        detailed_incoming_edges=incoming,
     )
 
 

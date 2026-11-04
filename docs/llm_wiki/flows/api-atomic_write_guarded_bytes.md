@@ -183,10 +183,10 @@ flowchart LR
 | atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
 | atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
 | atomic_write_guarded_bytes | before_wiki_write | 1624 | `before_wiki_write(target, data)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 33 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 35 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 35 | `Path(path)` |
-| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 38 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 38 | `Path(path)` |
+| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 39 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -201,9 +201,9 @@ flowchart LR
 | external_call | `atomic_write_guarded_bytes` | `OSError` | 1619 |
 | external_call | `atomic_write_guarded_bytes` | `isinstance` | 1620 |
 | external_call | `atomic_write_guarded_bytes` | `TypeError` | 1621 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 33 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 35 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 36 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 36 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 38 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 39 |
 | step_limit | `atomic_write_guarded_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_guarded_bytes` | `depth limit` | 0 |
 

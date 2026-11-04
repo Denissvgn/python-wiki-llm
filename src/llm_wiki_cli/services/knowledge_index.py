@@ -13,8 +13,12 @@ from .progress import observed_phase, record_counts
 from .immutable import freeze
 
 import json
+import dataclasses
+import inspect
 import posixpath
 import re
+from enum import Enum
+from functools import partial
 from collections.abc import Mapping, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -216,8 +220,8 @@ class _InvalidSurfaceJson(ValueError):
     pass
 
 
-def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
-    """Build one deterministic v1 knowledge index without performing I/O."""
+def _assemble_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
+    """Join checked generation inputs; the final projected model still needs validation."""
 
     context = _validate_and_join_inputs(inputs)
     concepts = tuple(_concept_for_page(joined, inputs.concept_extensions_by_page.get(joined.page.relative_path, {})) for joined in context.joined_pages)
@@ -238,6 +242,13 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
         extensions=inputs.extensions,
     )
     record_counts(concepts=len(concepts), relationships=len(relationships))
+    return model
+
+
+def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
+    """Build one deterministic, fully validated v1 index without performing I/O."""
+
+    model = _assemble_knowledge_index(inputs)
     try:
         identity = _validator_identity()
         validated = validate_knowledge_index(model)
@@ -353,14 +364,109 @@ def _has_validation_operation(wiki_root: Path) -> bool:
 
 
 def _validator_identity() -> tuple:
-    from . import contracts, knowledge_model
+    from . import (
+        analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
+        knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
+        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
+        maintenance_state, markdown_sections, python_implementation,
+        section_ownership, source_retirement, validation,
+        wiki_media, wiki_surface,
+    )
 
-    functions = (parse_knowledge_index, knowledge_model.parse_knowledge_index,
-                 validate_knowledge_index, _validate_builder_model, _validated_index_serialization, _validated_index_data, _serialize_payload,
-                 _model_to_payload, _knowledge_index_to_payload_unchecked)
-    return (KNOWLEDGE_SCHEMA_VERSION, contracts.KNOWLEDGE_SCHEMA_VERSION,
-            knowledge_model.KNOWLEDGE_SCHEMA_VERSION,
-            tuple((function, getattr(function, "__code__", None)) for function in functions))
+    # Parsers dispatch through module globals and reserved-extension validators.
+    # A stamp of only their entry points misses changed lower-level acceptance
+    # rules. Snapshot policy values, not successful-validation/runtime caches.
+    modules = (
+        analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
+        knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
+        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
+        maintenance_state, markdown_sections, python_implementation,
+        section_ownership, source_retirement, validation,
+        wiki_media, wiki_surface,
+    )
+    core = maintenance_state.maintenance_core()
+    return (
+        KNOWLEDGE_SCHEMA_VERSION,
+        tuple(_validation_module_identity(module) for module in modules),
+        tuple((name, _validation_callable_identity(getattr(core, name)))
+              for name, value in sorted(type(core).__dict__.items()) if inspect.isfunction(value)),
+        _validation_callable_identity(core.evidence_validator),
+    )
+
+
+def _validation_callable_identity(function, active=frozenset()):
+    function = getattr(function, "__func__", function)
+    if id(function) in active:
+        return type(function), id(function)
+    active = active | {id(function)}
+    wrapped = getattr(function, "__wrapped__", None)
+    if isinstance(function, partial):
+        return (
+            function, _validation_callable_identity(function.func, active),
+            _validation_policy_value(function.args, active),
+            _validation_policy_value(function.keywords, active),
+            _validation_callable_identity(wrapped, active) if wrapped is not None else None,
+        )
+    return (
+        function, getattr(function, "__code__", None),
+        _validation_policy_value(getattr(function, "__defaults__", None), active),
+        _validation_policy_value(getattr(function, "__kwdefaults__", None), active),
+        _validation_callable_identity(wrapped, active) if wrapped is not None else None,
+    )
+
+
+def _validation_policy_value(value, active=frozenset()):
+    """Retain immutable policy snapshots without borrowing mutable definitions."""
+    if type(value) in {str, int, float, bool, bytes, type(None)}:
+        return type(value), value
+    if inspect.isfunction(value) or isinstance(value, partial):
+        return _validation_callable_identity(value, active)
+    if id(value) in active:
+        return type(value), id(value)
+    active = active | {id(value)}
+    if isinstance(value, Enum):
+        return type(value), value.name, _validation_policy_value(value.value, active)
+    if isinstance(value, re.Pattern):
+        return type(value), value.pattern, value.flags
+    if isinstance(value, Mapping):
+        return type(value), tuple(sorted(
+            ((_validation_policy_value(k, active), _validation_policy_value(v, active))
+             for k, v in value.items()), key=repr,
+        ))
+    if isinstance(value, (list, tuple, set, frozenset)):
+        values = tuple(_validation_policy_value(item, active) for item in value)
+        return type(value), tuple(sorted(values, key=repr)) if isinstance(value, (set, frozenset)) else values
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        return type(value), tuple((item.name, _validation_policy_value(getattr(value, item.name), active))
+                                  for item in dataclasses.fields(value))
+    return type(value), id(value)
+
+
+def _validation_module_identity(module):
+    runtime_state = {"_PATH_SYNTAX", "_PATH_SYNTAX_LOCK", "_CORE"}
+    functions, classes, policy = [], [], []
+    for name, value in sorted(vars(module).items()):
+        if (inspect.isfunction(value) or isinstance(value, partial)
+                or (callable(value) and hasattr(value, "__wrapped__"))):
+            functions.append((name, _validation_callable_identity(value)))
+        elif inspect.isclass(value) and value.__module__ == module.__name__:
+            methods = []
+            for key, method in sorted(vars(value).items()):
+                if isinstance(method, (classmethod, staticmethod)):
+                    method = method.__func__
+                if (inspect.isfunction(method) or isinstance(method, partial)
+                        or (callable(method) and hasattr(method, "__wrapped__"))):
+                    methods.append((key, _validation_callable_identity(method)))
+                elif isinstance(method, property):
+                    methods.append((key, tuple(_validation_callable_identity(accessor)
+                                               for accessor in (method.fget, method.fset, method.fdel))))
+            if issubclass(value, Enum):
+                methods.append(("enum_members", tuple((key, _validation_policy_value(member))
+                                                       for key, member in value.__members__.items())))
+            classes.append((name, value, tuple(methods)))
+        if name.isupper() and name not in runtime_state:
+            policy.append((name, _validation_policy_value(value)))
+    return module.__name__, tuple(functions), tuple(classes), tuple(policy)
 
 
 _INDEX_RECEIPT_ISSUER = object()

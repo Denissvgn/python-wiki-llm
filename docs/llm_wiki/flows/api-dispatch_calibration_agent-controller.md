@@ -85,9 +85,9 @@ sequenceDiagram
     p0-->>p30: store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
 ```
 
-> Call sequence diagram shows 30 of 2372 interactions; 2342 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2385 interactions; 2355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 600 (599 omitted); unresolved 1 of 735 (734 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 601 (600 omitted); unresolved 1 of 736 (735 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -96,12 +96,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | - | unresolved | 1 |
-> Omission summary shows 8 of 399 groups; 391 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 13 | - | unresolved | 1 |
+> Omission summary shows 8 of 404 groups; 396 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1038; effect analysis evaluated: 624, partial: 24, unavailable: 390. Counts include steps omitted from the displayed trace.
+Source steps: 1049; effect analysis evaluated: 635, partial: 24, unavailable: 390. Counts include steps omitted from the displayed trace.
 
-Collector observations for 648 source steps with known totals: observed: 3049, emitted: 2951, omitted: 98. Unavailable totals are excluded.
+Collector observations for 659 source steps with known totals: observed: 3094, emitted: 2994, omitted: 100. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -127,15 +127,15 @@ Collector observations for 648 source steps with known totals: observed: 3049, e
 | `dispatch_calibration_agent` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `_require_choice` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `require_choice` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `choice_error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
@@ -145,30 +145,31 @@ flowchart LR
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
     s6["6. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
-    s7["7. value.strip"]
-    s8["8. contains_control_character"]
-    s9["9. pattern.search"]
-    s10["10. frozenset (src/llm_wiki_cli/services…idation.py:require_choice)"]
-    s11["11. choice_error"]
-    s12["12. P0CalibrationSchemaError"]
+    s7["7. _validation_error"]
+    s8["8. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s9["9. error"]
+    s10["10. value.strip"]
+    s11["11. _validation_error"]
+    s12["12. _validation_error"]
     s1 -->|"_require_choice(role, CALIBRATION_ROLES, 'dispatch role')"| s2
     s2 -->|"require_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
-    s4 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
+    s4 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
     s5 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s6
-    s5 -. "value.strip(data not statically known)" .-> s7
-    s5 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s8
-    s8 -. "pattern.search(value)" .-> s9
-    s3 -. "frozenset (src/llm_wiki_cli/services…idation.py:require_choice)(choices)" .-> s10
-    s3 -. "choice_error(allowed)" .-> s11
-    s2 -->|"P0CalibrationSchemaError(...)"| s12
+    s5 -->|"_validation_error(error, error_context)"| s7
+    s7 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s8
+    s7 -. "error(context)" .-> s9
+    s5 -. "value.strip(data not statically known)" .-> s10
+    s5 -->|"_validation_error(error, error_context)"| s11
+    s5 -->|"_validation_error(..., error_context)"| s12
     click s1 "../modules/controller.md"
     click s2 "../modules/controller.md"
     click s3 "../modules/validation.md"
     click s4 "../modules/validation.md"
     click s5 "../modules/validation.md"
-    click s8 "../modules/validation.md"
-    click s12 "../modules/controller.md"
+    click s7 "../modules/validation.md"
+    click s11 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -178,15 +179,15 @@ flowchart LR
 | `dispatch_calibration_agent` | `root: str \| Path`, `role: str` | `CALIBRATION_ROLES`, `timezone`, `CALIBRATION_TERMINAL_STATES` | `active[...]`, `roles[...]` | `receipt`, `receipt` |
 | `_require_choice` | `value: Any`, `choices: Iterable[str]`, `label: str` | - | - | `require_shared_choice(...)` |
 | `require_choice` | `value: object`, `choices: Iterable[str]`, `text_error: Exception`, `choice_error: Callable[[frozenset[str]], Exception]`, `reject_control_characters: bool` | - | - | `parsed` |
-| `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
-| `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
+| `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
+| `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
-| `pattern.search` | - | - | - | - |
-| `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | - | - | - | - |
-| `choice_error` | - | - | - | - |
-| `P0CalibrationSchemaError` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
@@ -194,15 +195,15 @@ flowchart LR
 |---|---|---:|---|
 | dispatch_calibration_agent | _require_choice | 2427 | `_require_choice(role, CALIBRATION_ROLES, 'dispatch role')` |
 | _require_choice | require_choice | 6741 | `require_shared_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)` |
-| require_choice | require_trimmed_text | 1081 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
-| require_choice | frozenset (src/llm_wiki_cli/services…idation.py:require_choice) | 1086 | `frozenset(choices)` |
-| require_choice | choice_error | 1088 | `choice_error(allowed)` |
-| _require_choice | P0CalibrationSchemaError | 6744 | `P0CalibrationSchemaError(...)` |
+| require_choice | require_trimmed_text | 1093 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
+| require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |
+| require_nonempty_text | _validation_error | 644 | `_validation_error(..., error_context)` |
 
 ### Boundary effects
 
@@ -212,11 +213,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 631 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
-| external_call | `require_choice` | `frozenset` | 1086 |
-| unresolved_call | `require_choice` | `choice_error` | 1088 |
+| external_call | `require_nonempty_text` | `isinstance` | 637 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 639 |
 | step_limit | `dispatch_calibration_agent` | `first 12 steps` | 0 |
 | truncated_flow | `dispatch_calibration_agent` | `depth limit` | 0 |
 

@@ -23,6 +23,7 @@ from .knowledge_storage import (
     KnowledgeStoreReader, build_knowledge_store, canonical_bytes, decode_bytes, digest,
     parse_store_root, _fields, _hash, _integer,
 )
+from .progress import observed_phase
 
 PACKED_SCHEMA = "llm-wiki-knowledge/v3"
 LOCAL_PACKED_SCHEMA = "llm-wiki-knowledge/v4"
@@ -192,6 +193,7 @@ def _zip_reusing(members: Mapping[str, bytes], compression: str,
     return output.getvalue(), coordinates
 
 
+@observed_phase("packed_store")
 def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored", prior=None, objects=None,
                        profile: str = "standard") -> KnowledgeStorePlan:
     if not isinstance(compression, str) or compression not in {"stored", "deflate"}:

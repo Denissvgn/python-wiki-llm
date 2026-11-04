@@ -32,23 +32,23 @@ sequenceDiagram
     participant p9 as _locator
     participant p10 as _normalise_edge
     participant p11 as _validate_graph_bindings
-    participant p12 as require_nonempty_text
-    participant p13 as validate_exact_page_coordinate
-    participant p14 as _nonnegative_int
-    participant p15 as _hash
-    participant p16 as _relationship_kind
-    participant p17 as _normalise_endpoint
-    participant p18 as _aggregate_input_hash
-    participant p19 as _positive_int
-    participant p20 as _limitation
-    participant p21 as _validate_resolution_target
-    participant p22 as _normalise_evidence
-    participant p23 as _validate_edge_concept_references
-    participant p24 as relationship_edge_key
-    participant p25 as _validate_core_direction
-    participant p26 as require_sha256
-    participant p27 as require_nonnegative_int
-    participant p28 as _open_name
+    participant p12 as require_mapping
+    participant p13 as require_exact_fields
+    participant p14 as require_list
+    participant p15 as require_nonempty_text
+    participant p16 as validate_exact_page_coordinate
+    participant p17 as _nonnegative_int
+    participant p18 as _hash
+    participant p19 as _relationship_kind
+    participant p20 as _normalise_endpoint
+    participant p21 as _aggregate_input_hash
+    participant p22 as _positive_int
+    participant p23 as _limitation
+    participant p24 as _validate_resolution_target
+    participant p25 as _normalise_evidence
+    participant p26 as _validate_edge_concept_references
+    participant p27 as relationship_edge_key
+    participant p28 as _validate_core_direction
     participant p29 as isinstance (src/llm_wiki_cli/services…rip_governance_projection)
     participant p30 as extensions.pop
     p0->>p1: validate_typed_graph
@@ -62,30 +62,30 @@ sequenceDiagram
     p2->>p9: _locator
     p2->>p10: _normalise_edge
     p2->>p11: _validate_graph_bindings
-    p7->>p12: require_nonempty_text
-    p9->>p13: validate_exact_page_coordinate
-    p8->>p14: _nonnegative_int
-    p5->>p15: _hash
-    p10->>p16: _relationship_kind
-    p10->>p17: _normalise_endpoint
-    p5->>p18: _aggregate_input_hash
-    p8->>p19: _positive_int
-    p8->>p20: _limitation
-    p10->>p21: _validate_resolution_target
-    p10->>p22: _normalise_evidence
-    p10->>p23: _validate_edge_concept_references
-    p10->>p24: relationship_edge_key
-    p10->>p25: _validate_core_direction
-    p15->>p26: require_sha256
-    p14->>p27: require_nonnegative_int
-    p16->>p28: _open_name
+    p3->>p12: require_mapping
+    p4->>p13: require_exact_fields
+    p6->>p14: require_list
+    p7->>p15: require_nonempty_text
+    p9->>p16: validate_exact_page_coordinate
+    p8->>p17: _nonnegative_int
+    p5->>p18: _hash
+    p10->>p19: _relationship_kind
+    p10->>p20: _normalise_endpoint
+    p5->>p21: _aggregate_input_hash
+    p8->>p22: _positive_int
+    p8->>p23: _limitation
+    p10->>p24: _validate_resolution_target
+    p10->>p25: _normalise_evidence
+    p10->>p26: _validate_edge_concept_references
+    p10->>p27: relationship_edge_key
+    p10->>p28: _validate_core_direction
     p0-->>p29: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(knowledge, KnowledgeIndex)
     p0-->>p30: extensions.pop(GOVERNANCE_EXTENSION_KEY, None)
 ```
 
-> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 369 interactions; 339 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 87 (86 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 90 (89 omitted); unresolved 1 of 61 (60 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -93,13 +93,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | external | 14 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 28 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 104 groups; 96 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -112,9 +112,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 213; effect analysis evaluated: 147, partial: 2, unavailable: 64. Counts include steps omitted from the displayed trace.
+Source steps: 219; effect analysis evaluated: 160, partial: 2, unavailable: 57. Counts include steps omitted from the displayed trace.
 
-Collector observations for 149 source steps with known totals: observed: 664, emitted: 659, omitted: 5. Unavailable totals are excluded.
+Collector observations for 162 source steps with known totals: observed: 776, emitted: 770, omitted: 6. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

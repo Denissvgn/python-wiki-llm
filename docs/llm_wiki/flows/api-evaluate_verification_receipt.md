@@ -22,24 +22,24 @@ sequenceDiagram
     participant p8 as _receipt_anchor_mapping
     participant p9 as hash_json
     participant p10 as _parse_check
-    participant p11 as _sha256
-    participant p12 as _checker_id
-    participant p13 as _normalized_anchor_mapping
-    participant p14 as canonical_json_bytes
-    participant p15 as _checker_version
-    participant p16 as _array
-    participant p17 as _parse_diagnostic
-    participant p18 as _parse_coverage
-    participant p19 as require_sha256
-    participant p20 as _nonnegative_int
-    participant p21 as require_nonnegative_int
-    participant p22 as require_trimmed_text
-    participant p23 as _receipt_to_payload
-    participant p24 as VerificationReceiptError
-    participant p25 as VerificationResult
-    participant p26 as VerificationReceipt
-    participant p27 as require_mapping
-    participant p28 as require_string
+    participant p11 as require_mapping
+    participant p12 as require_string
+    participant p13 as _sha256
+    participant p14 as _checker_id
+    participant p15 as require_exact_fields
+    participant p16 as _normalized_anchor_mapping
+    participant p17 as canonical_json_bytes
+    participant p18 as _checker_version
+    participant p19 as _array
+    participant p20 as _parse_diagnostic
+    participant p21 as _parse_coverage
+    participant p22 as require_sha256
+    participant p23 as require_list
+    participant p24 as _nonnegative_int
+    participant p25 as require_nonnegative_int
+    participant p26 as require_trimmed_text
+    participant p27 as _receipt_to_payload
+    participant p28 as VerificationReceiptError
     participant p29 as isinstance (src/llm_wiki_cli/services…uate_verification_receipt)
     participant p30 as add
     p0->>p1: validate_verification_receipt
@@ -52,31 +52,31 @@ sequenceDiagram
     p1->>p8: _receipt_anchor_mapping
     p1->>p9: hash_json
     p1->>p10: _parse_check
-    p6->>p11: _sha256
-    p10->>p12: _checker_id
-    p8->>p13: _normalized_anchor_mapping
-    p9->>p14: canonical_json_bytes
-    p10->>p15: _checker_version
-    p10->>p16: _array
-    p10->>p17: _parse_diagnostic
-    p10->>p18: _parse_coverage
-    p11->>p19: require_sha256
-    p18->>p20: _nonnegative_int
-    p20->>p21: require_nonnegative_int
-    p19->>p22: require_trimmed_text
-    p1->>p23: _receipt_to_payload
-    p1->>p24: VerificationReceiptError
-    p1->>p25: VerificationResult
-    p1->>p26: VerificationReceipt
-    p3->>p27: require_mapping
-    p5->>p28: require_string
+    p3->>p11: require_mapping
+    p5->>p12: require_string
+    p6->>p13: _sha256
+    p10->>p14: _checker_id
+    p4->>p15: require_exact_fields
+    p8->>p16: _normalized_anchor_mapping
+    p9->>p17: canonical_json_bytes
+    p10->>p18: _checker_version
+    p10->>p19: _array
+    p10->>p20: _parse_diagnostic
+    p10->>p21: _parse_coverage
+    p13->>p22: require_sha256
+    p19->>p23: require_list
+    p21->>p24: _nonnegative_int
+    p24->>p25: require_nonnegative_int
+    p22->>p26: require_trimmed_text
+    p1->>p27: _receipt_to_payload
+    p1->>p28: VerificationReceiptError
     p0-->>p29: isinstance (src/llm_wiki_cli/services…uate_verification_receipt)(context, VerificationContext)
     p0-->>p30: add(VerificationInvalidationReason.KNOWLEDGE_CHANGED)
 ```
 
-> Call sequence diagram shows 30 of 178 interactions; 148 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 190 interactions; 160 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 55 (54 omitted); unresolved 1 of 25 (24 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 26 (25 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -86,11 +86,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 4 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 11 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 8 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 56 groups; 48 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 99; effect analysis evaluated: 57, partial: 1, unavailable: 41. Counts include steps omitted from the displayed trace.
+Source steps: 109; effect analysis evaluated: 67, partial: 1, unavailable: 41. Counts include steps omitted from the displayed trace.
 
-Collector observations for 58 source steps with known totals: observed: 230, emitted: 229, omitted: 1. Unavailable totals are excluded.
+Collector observations for 68 source steps with known totals: observed: 269, emitted: 267, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -121,10 +121,10 @@ Collector observations for 58 source steps with known totals: observed: 230, emi
 | `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -138,8 +138,8 @@ flowchart LR
     s8["8. _object"]
     s9["9. require_mapping"]
     s10["10. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s11["11. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s12["12. key.encode"]
+    s11["11. _validation_error"]
+    s12["12. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
     s1 -->|"validate_verification_receipt(receipt)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)" .-> s3
     s2 -->|"_receipt_to_payload(value)"| s4
@@ -149,13 +149,14 @@ flowchart LR
     s2 -->|"_object(payload, 'receipt')"| s8
     s8 -->|"require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))"| s9
     s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s10
-    s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s11
-    s9 -. "key.encode('utf-8')" .-> s12
+    s9 -->|"_validation_error(error, error_context)"| s11
+    s11 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s12
     click s1 "../modules/verification_contracts.md"
     click s2 "../modules/verification_contracts.md"
     click s4 "../modules/verification_contracts.md"
     click s8 "../modules/verification_contracts.md"
     click s9 "../modules/validation.md"
+    click s11 "../modules/validation.md"
 ```
 
 ### Step data
@@ -170,10 +171,10 @@ flowchart LR
 | `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | - | - | - | - |
 | `check.to_payload` | - | - | - | - |
 | `_object` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
+| `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `key.encode` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
 
 ### Call data
 
@@ -187,9 +188,9 @@ flowchart LR
 | _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 | validate_verification_receipt | _object | 838 | `_object(payload, 'receipt')` |
 | _object | require_mapping | 1470 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
-| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 
 ### Boundary effects
 
@@ -201,9 +202,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_verification_receipt` | `isinstance` | 835 |
 | unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1136 |
-| external_call | `require_mapping` | `isinstance` | 773 |
-| external_call | `require_mapping` | `isinstance` | 777 |
-| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_mapping` | `isinstance` | 783 |
+| external_call | `_validation_error` | `isinstance` | 95 |
 | step_limit | `evaluate_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_verification_receipt` | `depth limit` | 0 |
 

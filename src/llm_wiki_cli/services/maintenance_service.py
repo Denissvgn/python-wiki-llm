@@ -180,14 +180,17 @@ def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
     root = _absolute_path(directory)
     raw = read_guarded(root / "maintenance-recovery.json", 8_388_608).content
     metadata = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
-    if not isinstance(metadata, dict) or set(metadata) != {"schema_version", "marker", "files", "kind"} or metadata["schema_version"] != "llm-wiki-maintenance-recovery/v1" or metadata["kind"] not in {"committed", "captured-preimage", "prepared-adoption"}:
+    from .maintenance_recovery import CATALOG_SCHEMA, load_recovery_catalog
+
+    catalog = isinstance(metadata, dict) and metadata.get("schema_version") == CATALOG_SCHEMA
+    if not catalog and (not isinstance(metadata, dict) or set(metadata) != {"schema_version", "marker", "files", "kind"} or metadata["schema_version"] != "llm-wiki-maintenance-recovery/v1" or metadata["kind"] not in {"committed", "captured-preimage", "prepared-adoption"}):
         raise MaintenanceProtocolError("recovery-invalid", "Unsupported complete maintenance recovery snapshot")
     if metadata["kind"] == "captured-preimage" and not allow_captured_preimage:
         raise MaintenanceProtocolError("recovery-intent", "Captured input preimages require explicit restoration and subsequent sync")
     if not isinstance(metadata["files"], dict) or len(metadata["files"]) > 100_000:
         raise MaintenanceProtocolError("recovery-invalid", "Invalid recovery file inventory")
-    files = {}
-    for name, info in metadata["files"].items():
+    files = load_recovery_catalog(root, metadata) if catalog else {}
+    for name, info in (() if catalog else metadata["files"].items()):
         if not is_portable_relative_path(name) or not isinstance(info, dict) or set(info) != {"hash", "bytes"} or type(info["bytes"]) is not int or not 0 <= info["bytes"] <= MAX_EXPANDED_BYTES:
             raise MaintenanceProtocolError("recovery-invalid", "Invalid recovery file manifest")
         content = read_guarded(root / name, max(1, info["bytes"])).content
@@ -506,6 +509,9 @@ def acknowledge_maintenance_authority(src_dir, wiki_dir, *, record_id, expected_
         marker = guard_maintenance_owner(root, manifest)
         next_manifest = manifest.with_maintenance_state(updated)
         knowledge = project_maintenance_knowledge(view.knowledge, updated, marker)
+        from .knowledge_reuse import rebind_maintenance_reuse
+
+        knowledge, next_manifest = rebind_maintenance_reuse(knowledge, next_manifest)
         surface, _ = validated_artifact_bytes(view.validated_artifacts)
         plan = build_knowledge_commit_plan(root, surface_index_bytes=surface,
             knowledge_index=knowledge, manifest=next_manifest, prior=view.validated_artifacts,

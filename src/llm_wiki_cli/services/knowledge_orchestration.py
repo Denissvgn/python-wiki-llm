@@ -180,6 +180,7 @@ class RuntimeKnowledgeInputs:
         default=None, repr=False, compare=False
     )
     reuse_input_basis: Mapping[str, object] | None = None
+    allow_maintenance_reuse_migration: bool = False
     sync_analysis_commitment: Mapping[str, object] | None = None
     _plan_check: Callable[[KnowledgeCommitPlan], None] | None = field(default=None, repr=False, compare=False)
     _publication_check: Callable[[], None] | None = field(default=None, repr=False, compare=False)
@@ -460,7 +461,7 @@ def build_runtime_knowledge_plan(
     from .wiki_write_basis import ACTIVE_WRITE_BASIS
 
     operation_basis = ACTIVE_WRITE_BASIS.get()
-    raw_content = dict(operation_basis.expected) if operation_basis is not None else None
+    raw_content = operation_basis.expected if operation_basis is not None else None
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(
@@ -520,6 +521,7 @@ def build_runtime_knowledge_plan(
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
+            allow_maintenance_reuse_migration=inputs.allow_maintenance_reuse_migration,
             knowledge_extensions=({SYNC_ANALYSIS_EXTENSION: inputs.sync_analysis_commitment}
                                   if inputs.sync_analysis_commitment is not None else {}),
             reuse_typed_graph=inputs.reuse_typed_graph,

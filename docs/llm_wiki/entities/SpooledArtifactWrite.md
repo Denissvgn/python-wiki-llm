@@ -1,6 +1,6 @@
 # SpooledArtifactWrite
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:81`
+**Location:** `src/llm_wiki_cli/services/storage_spool.py:103`
 **Kind:** Class
 **Bases:** —
 **Module:** [storage_spool](../modules/storage_spool.md)

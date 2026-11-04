@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-03
+
+### Changed
+
+- PyPI metadata identifies the project as beta.
+
+### Fixed
+
+- Repeated syncs can reuse authenticated extraction and graph observations and
+  avoid rebuilding unchanged knowledge artifacts.
+- Maintenance recovery shares unchanged files and safely expires eligible older
+  snapshots while preserving failed operations and explicit recovery pins.
+- Large legacy wikis upgrade to packed knowledge and indexed manifests before
+  maintenance adoption, preserving recovery preimages and authored content.
+- Failed or interrupted project initialization and upgrades report retained
+  native upgrade recovery locations.
+- Dry-run sync previews show protected workflow retirements and the explicit
+  authorization required to apply them, while ordinary sync preserves authored
+  Behavior sections.
+- Unsupported context-protocol errors list every supported version, including
+  `llm-wiki-context/v3`.
+
 ## [4.0.0] - 2026-11-01
 
 ### Changed
@@ -1626,7 +1648,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...HEAD
+[4.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...v3.2.0

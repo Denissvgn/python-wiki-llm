@@ -1,6 +1,6 @@
 # DocumentRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:327`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:352`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

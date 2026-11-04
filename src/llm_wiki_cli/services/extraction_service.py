@@ -58,6 +58,7 @@ from .entrypoints import (
     DEFAULT_FLOW_DEPTH,
     build_flow,
     build_flow_detailed,
+    build_flow_context,
     detect_entry_points,
     read_console_scripts,
 )
@@ -80,6 +81,7 @@ from .inventory_cache import (
     build_inventory_cache_key,
     is_valid_cache_entry,
     make_cache_entry,
+    extraction_bundle_hash,
 )
 from .io import write_text_output
 from .packages import discover_packages, package_for_path, stamp_inventory_packages
@@ -167,6 +169,7 @@ class InventoryRequest:
     capture_implementation_observations: bool = False
     capture_path_outcomes: bool = False
     retain_empty_paths: tuple[str, ...] = ()
+    implementation_cache_artifacts: object | None = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "retain_empty_paths", tuple(self.retain_empty_paths))
@@ -202,6 +205,7 @@ class InventoryResult:
     )
     implementation_observations: dict | None = field(default=None, repr=False, compare=False)
     path_outcomes: dict = field(default_factory=dict)
+    extraction_cache_hashes: dict[str, str] = field(default_factory=dict, repr=False, compare=False)
 
     @property
     def analysis_input_status(self):
@@ -309,6 +313,10 @@ class _InventoryBuildContext:
     python_sidecars: dict[str, dict] = field(default_factory=dict)
     captured_analysis: dict | None = None
     implementation_analysis_hash: str | None = None
+    python_implementations: dict[str, dict] = field(default_factory=dict)
+    implementation_cache_hashes: Mapping[str, str] = field(default_factory=dict)
+    extraction_cache_hashes: Mapping[str, str] = field(default_factory=dict)
+    raw_bundle_hashes: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -432,6 +440,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "capture_implementation_observations",
     "capture_path_outcomes",
     "retain_empty_paths",
+    "implementation_cache_artifacts",
 )
 
 
@@ -582,6 +591,7 @@ def _completed_inventory_result(
         ),
         source_snapshot=evaluated_source_snapshot,
         implementation_observations=implementation_observations,
+        extraction_cache_hashes=dict(context.raw_bundle_hashes),
         path_outcomes=_inventory_path_outcomes(context, inventory, outcomes_by_language),
         **_python_extraction_sidecars(context, outcomes_by_language),
     )
@@ -619,7 +629,9 @@ def _implementation_observations(context: _InventoryBuildContext, outcomes: dict
     captured = outcome.implementation_observations if outcome is not None and builtin else None
     if captured is not None and (not isinstance(captured, dict) or captured.get("schema_version") != SCHEMA):
         raise ValueError("implementation sidecar schema is not owned by the captured extractor")
-    files = deepcopy(captured.get("files", {})) if isinstance(captured, dict) else {}
+    files = deepcopy(context.python_implementations)
+    if isinstance(captured, dict):
+        files.update(deepcopy(captured.get("files", {})))
     expected_producer = producer(context.implementation_analysis_hash)
     if set(files) - set(context.source_snapshot.language_paths("python")):
         raise ValueError("implementation sidecar contains unselected source paths")
@@ -843,6 +855,19 @@ def _prepare_inventory_build_context(
             languages={language for language, files in source_snapshot.files_by_language.items() if files})
         if registry.get("python") == EXTRACTOR_REGISTRY["python"]:
             implementation_analysis_hash = analysis_identity(captured_analysis)
+    implementation_cache_hashes = {}
+    extraction_cache_hashes = {}
+    if request.implementation_cache_artifacts is not None:
+        from .knowledge_artifacts import require_validated_artifacts
+        artifacts = require_validated_artifacts(request.implementation_cache_artifacts)
+        commitment = artifacts.knowledge.extensions.get("llm-wiki/sync-analysis-v2")
+        if isinstance(commitment, Mapping) and commitment.get("schema_version") == "llm-wiki-sync-analysis/v2":
+            hashes = commitment.get("implementation_files")
+            if isinstance(hashes, Mapping):
+                implementation_cache_hashes = hashes
+            bundles = commitment.get("extraction_files")
+            if isinstance(bundles, Mapping):
+                extraction_cache_hashes = bundles
     return _InventoryBuildContext(
         request=request,
         source_snapshot=source_snapshot,
@@ -861,6 +886,8 @@ def _prepare_inventory_build_context(
         plugin_root=plugin_root,
         captured_analysis=captured_analysis,
         implementation_analysis_hash=implementation_analysis_hash,
+        implementation_cache_hashes=implementation_cache_hashes,
+        extraction_cache_hashes=extraction_cache_hashes,
     )
 
 
@@ -1063,12 +1090,11 @@ def _plan_language_extraction(
         language
     )
     cached_by_language.setdefault(language, {})
-    capture_fresh_python = language == "python" and context.request.capture_implementation_observations
     fresh_source_files = (
         _fresh_inventory_source_files(
             context, language, source_files, cached_by_language
         )
-        if _can_use_inventory_cache(context, is_builtin) and not capture_fresh_python
+        if _can_use_inventory_cache(context, is_builtin)
         else list(source_files or [])
     )
     if _can_use_inventory_cache(context, is_builtin) and not fresh_source_files:
@@ -1144,7 +1170,7 @@ def _fresh_inventory_source_files(
                 cached_entry["inventory"],
                 effects=context.request.capture_data_effect_observations,
                 imports=context.request.capture_import_observations,
-            ))
+            ) and _valid_cached_implementation(context, rel_path, cached_entry, file_hash))
         ):
             cache.stats.hits += 1
             _record_cached_inventory_entry(
@@ -1155,6 +1181,34 @@ def _fresh_inventory_source_files(
         fresh_source_files.append(rel_path)
 
     return fresh_source_files
+
+
+def _valid_cached_implementation(context, path, entry, source_hash):
+    if not context.request.capture_implementation_observations:
+        return True
+    from .python_implementation import producer, comparison_id
+    from .knowledge_evidence import hash_json
+    row = entry.get("python_implementation")
+    committed_hash = context.implementation_cache_hashes.get(path)
+    bundle_hash = context.extraction_cache_hashes.get(path)
+    if not isinstance(row, dict) or not isinstance(committed_hash, str) or not isinstance(bundle_hash, str):
+        return False
+    expected_producer = producer(context.implementation_analysis_hash)
+    try:
+        if (extraction_bundle_hash(entry) != bundle_hash
+                or hash_json(row) != committed_hash or row["source_hash"] != source_hash
+                or row["producer"] != expected_producer):
+            return False
+        from .implementation_evidence import _row
+        for observation in row["observations"]:
+            evidence = _row(observation)["evidence"]
+            if (evidence["source_hash"] != source_hash or evidence["coordinate"]["source_path"] != path
+                    or evidence["producer"] != expected_producer or expected_producer is None
+                    or evidence["comparison_id"] != comparison_id(expected_producer)):
+                return False
+    except (KeyError, TypeError, ValueError, RecursionError):
+        return False
+    return True
 
 
 def _record_cached_inventory_entry(
@@ -1168,7 +1222,11 @@ def _record_cached_inventory_entry(
     if raw_inventory:
         cached_by_language[language][rel_path] = deepcopy(raw_inventory)
     context.updated_cache_files[rel_path] = cached_entry
+    context.raw_bundle_hashes[rel_path] = extraction_bundle_hash(cached_entry)
     if language == "python":
+        implementation = cached_entry.get("python_implementation")
+        if context.request.capture_implementation_observations and isinstance(implementation, dict):
+            context.python_implementations[rel_path] = deepcopy(implementation)
         sidecars = cached_entry.get("python_observations")
         context.python_sidecars[rel_path] = (
             deepcopy(sidecars) if isinstance(sidecars, dict) else {}
@@ -1360,6 +1418,8 @@ def _collect_inventory_outcomes(
                     plan.fresh_source_files,
                 )
             )
+            if isinstance(outcome.implementation_observations, dict):
+                context.python_implementations.update(deepcopy(outcome.implementation_observations.get("files", {})))
         _update_inventory_cache_entries(context, plan, outcome.extracted)
         planning.status_by_language[plan.language] = ExtractorStatus(
             plan.language, "ok", outcome.files_found
@@ -1370,28 +1430,36 @@ def _collect_inventory_outcomes(
 def _update_inventory_cache_entries(
     context: _InventoryBuildContext, plan: _ExtractionPlan, extracted: dict
 ) -> None:
-    if not _can_use_inventory_cache(context, plan.is_builtin):
+    if not plan.is_builtin:
         return
+    persist = _can_use_inventory_cache(context, plan.is_builtin)
     cache = context.cache
-    if cache is None:
-        return
-    cache.stats.fresh_extracted += len(plan.fresh_source_files)
+    if persist:
+        assert cache is not None
+        cache.stats.fresh_extracted += len(plan.fresh_source_files)
     for rel_path in plan.fresh_source_files:
         source_file = context.source_file_by_path[rel_path]
-        file_hash = context.source_hashes.get(rel_path)
+        # Logical commitments describe captured analysis, independently of cache
+        # I/O. Preview hashes come from the snapshot, never a cache probe/read.
+        file_hash = context.source_snapshot.captured_content_hashes.get(rel_path)
         if file_hash is None:
             continue
         raw_entry = deepcopy(extracted.get(rel_path, {}))
         if raw_entry:
             raw_entry.pop("package", None)
             raw_entry.pop("python_import_scope", None)
-        context.updated_cache_files[rel_path] = make_cache_entry(
+        entry = make_cache_entry(
             source_file, file_hash, raw_entry
         )
         if plan.language == "python":
-            context.updated_cache_files[rel_path]["python_observations"] = deepcopy(
+            entry["python_observations"] = deepcopy(
                 context.python_sidecars.get(rel_path, {})
             )
+            if rel_path in context.python_implementations:
+                entry["python_implementation"] = deepcopy(context.python_implementations[rel_path])
+        context.raw_bundle_hashes[rel_path] = extraction_bundle_hash(entry)
+        if persist:
+            context.updated_cache_files[rel_path] = entry
 
 
 def _merge_inventory_results(
@@ -2393,12 +2461,14 @@ def build_extract_payload(
     else:
         entrypoints = []
     call_edges = resolve_call_edges(inventory) if deep and entrypoints else []
+    flow_context = build_flow_context(call_edges) if deep and entrypoints else None
     data_effect_observations = result.data_effect_observations if deep else None
     data_flow_context = (
         build_data_flow_context(
             inventory,
             call_edges,
             data_effect_observations=data_effect_observations,
+            include_detailed=True,
         )
         if deep and entrypoints
         else None
@@ -2411,6 +2481,7 @@ def build_extract_payload(
                     entrypoint,
                     call_edges,
                     max_depth=DEFAULT_FLOW_DEPTH,
+                    context=flow_context,
                 ),
                 call_edges,
                 context=data_flow_context,
@@ -2424,7 +2495,7 @@ def build_extract_payload(
         [
             analyze_data_flow(
                 inventory,
-                build_flow(entrypoint, call_edges),
+                build_flow(entrypoint, call_edges, context=flow_context),
                 call_edges,
                 context=data_flow_context,
             )

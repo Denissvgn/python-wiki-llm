@@ -31,15 +31,15 @@ sequenceDiagram
     participant p17 as _string_list
     participant p18 as _reason
     participant p19 as require_trimmed_text
-    participant p20 as require_exact_choice
-    participant p21 as _default_path_error
-    participant p22 as _bound_record
-    participant p23 as _check_path_collision
-    participant p24 as require_portable_path_component
-    participant p25 as require_nonempty_text
-    participant p26 as _nonnegative_int
-    participant p27 as require_nonnegative_int
-    participant p28 as is_supported_relationship_kind
+    participant p20 as require_mapping
+    participant p21 as require_exact_fields
+    participant p22 as require_exact_choice
+    participant p23 as _default_path_error
+    participant p24 as _bound_record
+    participant p25 as _check_path_collision
+    participant p26 as require_portable_path_component
+    participant p27 as require_nonempty_text
+    participant p28 as require_string
     participant p29 as str (src/llm_wiki_cli/services…py:qualify_claim_evidence)
     participant p30 as service.get_concept
     p0->>p1: _identifier
@@ -61,22 +61,22 @@ sequenceDiagram
     p4->>p17: _string_list
     p7->>p18: _reason
     p10->>p19: require_trimmed_text
-    p16->>p20: require_exact_choice
-    p15->>p21: _default_path_error
-    p13->>p22: _bound_record
-    p15->>p23: _check_path_collision
-    p15->>p24: require_portable_path_component
-    p19->>p25: require_nonempty_text
-    p22->>p26: _nonnegative_int
-    p26->>p27: require_nonnegative_int
-    p4->>p28: is_supported_relationship_kind
+    p12->>p20: require_mapping
+    p14->>p21: require_exact_fields
+    p16->>p22: require_exact_choice
+    p15->>p23: _default_path_error
+    p13->>p24: _bound_record
+    p15->>p25: _check_path_collision
+    p15->>p26: require_portable_path_component
+    p19->>p27: require_nonempty_text
+    p22->>p28: require_string
     p0-->>p29: str (src/llm_wiki_cli/services…py:qualify_claim_evidence)(...)
     p0-->>p30: service.get_concept(query)
 ```
 
-> Call sequence diagram shows 30 of 273 interactions; 243 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 286 interactions; 256 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 85 (84 omitted); unresolved 1 of 70 (69 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 86 (85 omitted); unresolved 1 of 71 (70 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -84,13 +84,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_identifier` | 2 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_text` | 3 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_identifier` | 2 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_portable_path` | 13 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 2 |
-> Omission summary shows 8 of 73 groups; 65 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 77 groups; 69 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 119; effect analysis evaluated: 69, partial: 4, unavailable: 46. Counts include steps omitted from the displayed trace.
+Source steps: 130; effect analysis evaluated: 80, partial: 4, unavailable: 46. Counts include steps omitted from the displayed trace.
 
-Collector observations for 73 source steps with known totals: observed: 320, emitted: 307, omitted: 13. Unavailable totals are excluded.
+Collector observations for 84 source steps with known totals: observed: 360, emitted: 346, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -116,15 +116,15 @@ Collector observations for 73 source steps with known totals: observed: 320, emi
 | `qualify_claim_evidence` | `available` | `evaluated` | `available` | `17` | `17` | `0` |
 | `_identifier` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `_SAFE_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
@@ -134,31 +134,31 @@ flowchart LR
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
     s6["6. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
-    s7["7. value.strip"]
-    s8["8. contains_control_character"]
-    s9["9. pattern.search"]
-    s10["10. DocumentationClaimEvidenceError"]
-    s11["11. _SAFE_ID_RE.fullmatch"]
-    s12["12. DocumentationClaimEvidenceError"]
+    s7["7. _validation_error"]
+    s8["8. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s9["9. error"]
+    s10["10. value.strip"]
+    s11["11. _validation_error"]
+    s12["12. _validation_error"]
     s1 -->|"_identifier(claim_id, 'claim_id')"| s2
     s2 -->|"_text(value, field_name)"| s3
     s3 -->|"require_trimmed_text(value, error=DocumentationClaimEvidenceError(...))"| s4
-    s4 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
+    s4 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
     s5 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s6
-    s5 -. "value.strip(data not statically known)" .-> s7
-    s5 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s8
-    s8 -. "pattern.search(value)" .-> s9
-    s3 -->|"DocumentationClaimEvidenceError(...)"| s10
-    s2 -. "_SAFE_ID_RE.fullmatch(text)" .-> s11
-    s2 -->|"DocumentationClaimEvidenceError(...)"| s12
+    s5 -->|"_validation_error(error, error_context)"| s7
+    s7 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s8
+    s7 -. "error(context)" .-> s9
+    s5 -. "value.strip(data not statically known)" .-> s10
+    s5 -->|"_validation_error(error, error_context)"| s11
+    s5 -->|"_validation_error(..., error_context)"| s12
     click s1 "../modules/documentation_claim_evidence.md"
     click s2 "../modules/documentation_claim_evidence.md"
     click s3 "../modules/documentation_claim_evidence.md"
     click s4 "../modules/validation.md"
     click s5 "../modules/validation.md"
-    click s8 "../modules/validation.md"
-    click s10 "../modules/documentation_claim_evidence.md"
-    click s12 "../modules/documentation_claim_evidence.md"
+    click s7 "../modules/validation.md"
+    click s11 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -168,15 +168,15 @@ flowchart LR
 | `qualify_claim_evidence` | `service: DocumentationGraphQueryService`, `claim_id: str`, `canonical_page: str`, `concept_query: str`, `section_locator: str \| None`, `graph_query: Mapping[str, Any] \| None`, `safe_evidence_link: str \| None`, `internal_evidence_ref: str \| None` | `DocumentationQueryError`, `Mapping`, `_UNEVALUATED_FRESHNESS_DISCLOSURE`, `DocumentationQueryError`, `DocumentationQueryError`, `CLAIM_EVIDENCE_SCHEMA_VERSION` | `bounds[...]`, `bounds[...]` | `record` |
 | `_identifier` | `value: object`, `field_name: str` | - | - | `text` |
 | `_text` | `value: object`, `field_name: str` | - | - | `require_trimmed_text(...)` |
-| `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
-| `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
+| `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
+| `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
-| `pattern.search` | - | - | - | - |
-| `DocumentationClaimEvidenceError` | - | - | - | - |
-| `_SAFE_ID_RE.fullmatch` | - | - | - | - |
-| `DocumentationClaimEvidenceError` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
@@ -185,14 +185,14 @@ flowchart LR
 | qualify_claim_evidence | _identifier | 238 | `_identifier(claim_id, 'claim_id')` |
 | _identifier | _text | 1362 | `_text(value, field_name)` |
 | _text | require_trimmed_text | 1390 | `require_trimmed_text(value, error=DocumentationClaimEvidenceError(...))` |
-| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
-| _text | DocumentationClaimEvidenceError | 1392 | `DocumentationClaimEvidenceError(...)` |
-| _identifier | _SAFE_ID_RE.fullmatch | 1363 | `_SAFE_ID_RE.fullmatch(text)` |
-| _identifier | DocumentationClaimEvidenceError | 1364 | `DocumentationClaimEvidenceError(...)` |
+| require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
+| require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |
+| require_nonempty_text | _validation_error | 644 | `_validation_error(..., error_context)` |
 
 ### Boundary effects
 
@@ -202,10 +202,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 631 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
-| unresolved_call | `_identifier` | `_SAFE_ID_RE.fullmatch` | 1363 |
+| external_call | `require_nonempty_text` | `isinstance` | 637 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 639 |
 | step_limit | `qualify_claim_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `qualify_claim_evidence` | `depth limit` | 0 |
 

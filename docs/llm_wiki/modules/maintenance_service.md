@@ -21,12 +21,13 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 | `.knowledge_envelope` | `hash_source_snapshot`, `ConsumedInput`, `is_valid_sha256`, `hash_markdown_snapshot`, `is_valid_sha256` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `validate_governance_projection` |
 | `.knowledge_orchestration` | `capture_committed_knowledge`, `capture_committed_knowledge` |
-| `.knowledge_reuse` | `REUSE_INPUT_KEY`, `REUSE_EXTENSION_KEY` |
+| `.knowledge_reuse` | `REUSE_INPUT_KEY`, `REUSE_EXTENSION_KEY`, `rebind_maintenance_reuse` |
 | `.knowledge_storage` | `canonical_bytes`, `digest`, `MAX_EXPANDED_BYTES` |
 | `.knowledge_storage_io` | `read_guarded`, `_absolute_path` |
 | `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `reconcile_pending_maintenance`, `owner_key` |
 | `.maintenance_projection` | `project_maintenance_knowledge`, `validate_maintenance_projection`, `project_maintenance_knowledge` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `MaintenanceProtocolError`, `WikiWriteBasis`, `governance_writer_lock`, `storage_writer_lock`, `guard_maintenance_owner`, `load_adoption_marker`, `snapshot_wiki`, `save_recovery_snapshot`, `maintenance_write_operation` |
+| `.maintenance_recovery` | `CATALOG_SCHEMA`, `load_recovery_catalog` |
 | `.maintenance_state` | `new_identity`, `validate_maintenance_adoption`, `maintenance_state_hash`, `_identity`, `maintenance_core`, `maintenance_state_hash`, `_identity` |
 | `.maintenance_status` | `build_maintenance_status`, `build_maintenance_status` |
 | `.python_implementation` | `analysis_identity`, `analysis_identity` |
@@ -62,9 +63,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (22) |
+| Outbound | `src` (23) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

@@ -1372,13 +1372,13 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 264,
+        "python": 266,
         "typescript": 3,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 267
+    assert len(snapshot.all_source_paths) == 269
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
@@ -1391,6 +1391,8 @@ def test_committed_profile_freezes_intended_product_census():
         "src/llm_wiki_cli/services/storage_receipts.py",
         "src/llm_wiki_cli/services/sync_transitions.py",
         "src/llm_wiki_cli/services/sync_analysis_cache.py",
+        "src/llm_wiki_cli/services/sync_analysis_storage.py",
+        "src/llm_wiki_cli/services/maintenance_recovery.py",
         "src/llm_wiki_cli/services/sync_generated_sections.py",
         "src/llm_wiki_cli/services/sync_transition_execution.py",
         "src/llm_wiki_cli/services/sync_retained_links.py",

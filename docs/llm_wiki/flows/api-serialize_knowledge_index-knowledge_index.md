@@ -2,7 +2,7 @@
 
 **Entry point:** `serialize_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [implementation_evidence](../modules/implementation_evidence.md), and 19 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [implementation_evidence](../modules/implementation_evidence.md), and 18 more
 
 **Complete modules touched:**
 
@@ -10,7 +10,6 @@
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
@@ -48,23 +47,23 @@ sequenceDiagram
     participant p9 as _first_difference
     participant p10 as _bundle_to_payload
     participant p11 as _record
-    participant p12 as _validate_and_join_inputs
+    participant p12 as _assemble_knowledge_index
     participant p13 as _string
-    participant p14 as _concept_for_page
+    participant p14 as _validator_identity
     participant p15 as _parse_bundle
     participant p16 as _concept_to_payload
     participant p17 as _array (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p18 as _derived_relationship
-    participant p19 as _relationship_to_payload
-    participant p20 as _parse_concept
-    participant p21 as _link_relationship
-    participant p22 as _require_structure_state
-    participant p23 as _parse_relationship
-    participant p24 as _validated_reserved_extensions
-    participant p25 as _validate_index_references
-    participant p26 as validate_implementation_collection
-    participant p27 as freeze
-    participant p28 as validate_maintenance_projection
+    participant p18 as _relationship_to_payload
+    participant p19 as _parse_concept
+    participant p20 as freeze
+    participant p21 as _require_structure_state
+    participant p22 as _parse_relationship
+    participant p23 as _validated_reserved_extensions
+    participant p24 as _validate_index_references
+    participant p25 as validate_implementation_collection
+    participant p26 as validate_maintenance_projection
+    participant p27 as _validate_builder_link
+    participant p28 as validate_governance_projection
     participant p29 as json.dumps
     participant p30 as model.bundle.snapshot.extensions.get
     p0->>p1: _serialize_payload
@@ -78,30 +77,30 @@ sequenceDiagram
     p4->>p9: _first_difference
     p5->>p10: _bundle_to_payload
     p6->>p11: _record
-    p8->>p12: _validate_and_join_inputs
+    p8->>p12: _assemble_knowledge_index
     p6->>p13: _string
-    p8->>p14: _concept_for_page
+    p8->>p14: _validator_identity
     p6->>p15: _parse_bundle
     p5->>p16: _concept_to_payload
     p6->>p17: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p8->>p18: _derived_relationship
-    p5->>p19: _relationship_to_payload
-    p6->>p20: _parse_concept
-    p8->>p21: _link_relationship
-    p7->>p22: _require_structure_state
-    p6->>p23: _parse_relationship
-    p6->>p24: _validated_reserved_extensions
-    p6->>p25: _validate_index_references
-    p6->>p26: validate_implementation_collection
-    p8->>p27: freeze
-    p6->>p28: validate_maintenance_projection
+    p5->>p18: _relationship_to_payload
+    p6->>p19: _parse_concept
+    p8->>p20: freeze
+    p7->>p21: _require_structure_state
+    p6->>p22: _parse_relationship
+    p6->>p23: _validated_reserved_extensions
+    p6->>p24: _validate_index_references
+    p6->>p25: validate_implementation_collection
+    p6->>p26: validate_maintenance_projection
+    p7->>p27: _validate_builder_link
+    p6->>p28: validate_governance_projection
     p1-->>p29: json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
     p7-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1174 interactions; 1144 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1074 interactions; 1044 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 283 (282 omitted); unresolved 1 of 166 (165 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 263 (262 omitted); unresolved 1 of 166 (165 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 16 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_knowledge_index_to_payload_unchecked` | 7 | - | external | 4 |
-> Omission summary shows 8 of 237 groups; 229 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 214 groups; 206 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -128,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 726; effect analysis evaluated: 401, partial: 14, unavailable: 311. Counts include steps omitted from the displayed trace.
+Source steps: 646; effect analysis evaluated: 398, partial: 13, unavailable: 235. Counts include steps omitted from the displayed trace.
 
-Collector observations for 415 source steps with known totals: observed: 2052, emitted: 1958, omitted: 94. Unavailable totals are excluded.
+Collector observations for 411 source steps with known totals: observed: 2073, emitted: 1981, omitted: 92. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -209,17 +208,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_knowledge_index | _serialize_payload | 458 | `_serialize_payload(knowledge_index_to_payload(...))` |
-| _serialize_payload | json.dumps | 443 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
-| _serialize_payload | KnowledgeModelError | 449 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
-| serialize_knowledge_index | knowledge_index_to_payload | 458 | `knowledge_index_to_payload(value)` |
-| knowledge_index_to_payload | _model_to_payload | 292 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 298 | `_knowledge_index_to_payload_unchecked(model)` |
-| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
-| _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 2004 | `_parse_extensions(extensions, path)` |
-| _bundle_to_payload | _wire_enum | 2047 | `_wire_enum(bundle.repository.working_tree)` |
+| serialize_knowledge_index | _serialize_payload | 564 | `_serialize_payload(knowledge_index_to_payload(...))` |
+| _serialize_payload | json.dumps | 549 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
+| _serialize_payload | KnowledgeModelError | 555 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
+| serialize_knowledge_index | knowledge_index_to_payload | 564 | `knowledge_index_to_payload(value)` |
+| knowledge_index_to_payload | _model_to_payload | 303 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 309 | `_knowledge_index_to_payload_unchecked(model)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2232 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2051 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2011 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 2012 | `_parse_extensions(extensions, path)` |
+| _bundle_to_payload | _wire_enum | 2055 | `_wire_enum(bundle.repository.working_tree)` |
 
 ### Boundary effects
 
@@ -229,8 +228,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_serialize_payload` | `json.dumps` | 443 |
-| external_call | `_emit_extensions` | `isinstance` | 2003 |
+| external_call | `_serialize_payload` | `json.dumps` | 549 |
+| external_call | `_emit_extensions` | `isinstance` | 2011 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |
 

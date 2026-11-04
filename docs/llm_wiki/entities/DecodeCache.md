@@ -1,6 +1,6 @@
 # DecodeCache
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:140`
+**Location:** `src/llm_wiki_cli/services/storage_spool.py:162`
 **Kind:** Class
 **Bases:** `MutableMapping`
 **Module:** [storage_spool](../modules/storage_spool.md)

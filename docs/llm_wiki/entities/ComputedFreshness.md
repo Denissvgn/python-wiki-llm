@@ -1,6 +1,6 @@
 # ComputedFreshness
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:170`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:195`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

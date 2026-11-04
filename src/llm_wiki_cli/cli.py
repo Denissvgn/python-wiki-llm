@@ -1,4 +1,5 @@
 import argparse
+from contextlib import contextmanager
 import os
 import sys
 
@@ -2026,7 +2027,7 @@ def _add_sync_command(subparsers):
     sync_parser.add_argument(
         "--rebuild-knowledge",
         action="store_true",
-        help="Force the full knowledge builder independently of inventory caching",
+        help="Force the full knowledge builder independently of inventory caching; initialize reuse for an adopted wiki",
     )
     sync_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
@@ -2663,31 +2664,49 @@ def _dispatch_command(args):
         _COMMAND_MODULES[args.command].run(args)
 
 
-def main():
-    parser = _build_parser()
-    args = parser.parse_args()
+def _print_exception_notes(exc: BaseException) -> None:
+    for note in getattr(exc, "__notes__", ()):
+        print(note, file=sys.stderr)
 
+
+@contextmanager
+def _report_cli_errors():
     try:
-        from .services.analysis_compatibility import comparison_scope
-        with comparison_scope(getattr(args, "comparison_policy", "auto")):
-            _dispatch_command(args)
-    except KeyboardInterrupt:
+        yield
+    except KeyboardInterrupt as exc:
         print("\nAborted.")
+        _print_exception_notes(exc)
         sys.exit(130)
+    except SystemExit as exc:
+        _print_exception_notes(exc)
+        raise
     except PathValidationError as exc:
         print(str(exc), file=sys.stderr)
+        _print_exception_notes(exc)
         sys.exit(1)
     except RuntimeOutputError as exc:
         print(f"Error: {exc}", file=sys.stderr)
+        _print_exception_notes(exc)
         sys.exit(2)
     except Exception as exc:
         if os.environ.get("LLM_WIKI_DEBUG"):
             raise
         print(f"Error: {exc}", file=sys.stderr)
+        _print_exception_notes(exc)
         hint = resource_failure_hint(exc)
         if hint is not None:
             print(f"Resource guidance: {hint}", file=sys.stderr)
         sys.exit(1)
+
+
+def main():
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    with _report_cli_errors():
+        from .services.analysis_compatibility import comparison_scope
+        with comparison_scope(getattr(args, "comparison_policy", "auto")):
+            _dispatch_command(args)
 
 
 if __name__ == "__main__":

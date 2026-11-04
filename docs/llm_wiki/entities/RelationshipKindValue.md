@@ -1,6 +1,6 @@
 # RelationshipKindValue
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:234`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:259`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

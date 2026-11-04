@@ -36,18 +36,18 @@ sequenceDiagram
     participant p14 as _receipt_anchor_mapping
     participant p15 as hash_json
     participant p16 as _parse_check
-    participant p17 as _sha256
-    participant p18 as _checker_id
-    participant p19 as _normalized_anchor_mapping
-    participant p20 as canonical_json_bytes
-    participant p21 as _checker_version
-    participant p22 as _array
-    participant p23 as _parse_diagnostic
-    participant p24 as _parse_coverage
-    participant p25 as before_wiki_write
-    participant p26 as after_wiki_write
-    participant p27 as formatted_json_text
-    participant p28 as _receipt_to_payload
+    participant p17 as require_mapping
+    participant p18 as require_string
+    participant p19 as _sha256
+    participant p20 as _checker_id
+    participant p21 as require_exact_fields
+    participant p22 as _normalized_anchor_mapping
+    participant p23 as canonical_json_bytes
+    participant p24 as _checker_version
+    participant p25 as _array
+    participant p26 as _parse_diagnostic
+    participant p27 as _parse_coverage
+    participant p28 as before_wiki_write
     participant p29 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
     participant p30 as root.is_symlink
     p0->>p1: serialize_verification_receipt
@@ -66,23 +66,23 @@ sequenceDiagram
     p8->>p14: _receipt_anchor_mapping
     p8->>p15: hash_json
     p8->>p16: _parse_check
-    p12->>p17: _sha256
-    p16->>p18: _checker_id
-    p14->>p19: _normalized_anchor_mapping
-    p15->>p20: canonical_json_bytes
-    p16->>p21: _checker_version
-    p16->>p22: _array
-    p16->>p23: _parse_diagnostic
-    p16->>p24: _parse_coverage
-    p2->>p25: before_wiki_write
-    p2->>p26: after_wiki_write
-    p6->>p27: formatted_json_text
-    p7->>p28: _receipt_to_payload
+    p9->>p17: require_mapping
+    p11->>p18: require_string
+    p12->>p19: _sha256
+    p16->>p20: _checker_id
+    p10->>p21: require_exact_fields
+    p14->>p22: _normalized_anchor_mapping
+    p15->>p23: canonical_json_bytes
+    p16->>p24: _checker_version
+    p16->>p25: _array
+    p16->>p26: _parse_diagnostic
+    p16->>p27: _parse_coverage
+    p2->>p28: before_wiki_write
     p0-->>p29: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
     p0-->>p30: root.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 232 interactions; 202 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 238 interactions; 208 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 82 (81 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
 
@@ -91,14 +91,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 5 | - | external | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | - | external | 7 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 15 | - | external | 2 |
-> Omission summary shows 8 of 65 groups; 57 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 68 groups; 60 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 109; effect analysis evaluated: 63, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
+Source steps: 115; effect analysis evaluated: 69, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 64 source steps with known totals: observed: 243, emitted: 242, omitted: 1. Unavailable totals are excluded.
+Collector observations for 70 source steps with known totals: observed: 266, emitted: 264, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

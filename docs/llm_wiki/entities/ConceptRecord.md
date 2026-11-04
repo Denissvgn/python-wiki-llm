@@ -1,6 +1,6 @@
 # ConceptRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:371`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:396`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

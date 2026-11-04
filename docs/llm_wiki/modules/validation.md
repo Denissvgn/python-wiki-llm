@@ -6,9 +6,9 @@
 
 Shared, side-effect-free validators for service-layer contracts.
 
-The helpers in this module deliberately receive caller-owned exceptions.  That
-keeps domain-specific exception types and established diagnostic text at the
-service boundary while ensuring the underlying acceptance rules cannot drift.
+The helpers receive caller-owned exceptions, or reusable factories in hot
+validation paths. Factories receive the caller's error context only on failure,
+preserving domain diagnostics without allocating exceptions for valid values.
 
 ## Imports
 
@@ -45,15 +45,15 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (72) |
+| Inbound | `src` (73) |
 
-> All 72 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 73 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SharedValidationError](../entities/SharedValidationError.md) | 93 | `ValueError` | Raised when a caller uses a shared validator without a domain adapter. |
+| [SharedValidationError](../entities/SharedValidationError.md) | 98 | `ValueError` | Raised when a caller uses a shared validator without a domain adapter. |
 
 ## Functions
 
@@ -63,6 +63,7 @@ flowchart LR
 | `_known_syntax` | `(key)` | — | — |
 | `_remember_syntax` | `(key, value)` | — | — |
 | `_check_path_collision` | `(canonical, collision_seen, collision_error)` | — | — |
+| `_validation_error` | `(error: _ValidationError, context: str) -> Exception` | — | — |
 | `format_field_differences` | `(missing: Iterable[object], unknown: Iterable[object]) -> str` | — | Render deterministic exact-field differences. |
 | `_default_path_error` | `(value: object) -> SharedValidationError` | — | — |
 | `require_portable_path_component` | `(component: str, *, context: str \| None = None, defer_non_nfc_error: bool = False, reject_delete_character: bool = True, utf8_error: Exception \| None = None, control_error: Exception \| None = None, non_nfc_error: Exception \| None = None, nonportable_error: Exception \| None = None, reserved_error: Exception \| None = None) -> str` | — | Return a portable path component or raise a caller-owned exception. |
@@ -88,24 +89,24 @@ flowchart LR
 | `require_existing_directory` | `(path: Path, *, error: Exception) -> None` | — | Require an existing directory while preserving caller diagnostics. |
 | `require_existing_file` | `(path: Path, *, error: Exception) -> Path` | — | Require an existing regular file while preserving caller diagnostics. |
 | `portable_page_component` | `(value: object, *, fallback: str = 'page') -> str` | — | Return a generated wiki page component portable on supported filesystems. |
-| `require_nonempty_text` | `(value: object, *, error: Exception, trim_error: Exception \| None = None, normalize: bool = False, require_trimmed: bool = False, reject_control_characters: bool = True, reject_delete_character: bool = False) -> str` | — | Return non-empty text under an explicit normalization policy. |
+| `require_nonempty_text` | `(value: object, *, error: _ValidationError, trim_error: _ValidationError \| None = None, error_context: str = '', normalize: bool = False, require_trimmed: bool = False, reject_control_characters: bool = True, reject_delete_character: bool = False) -> str` | — | Return non-empty text under an explicit normalization policy. |
 | `require_bounded_text` | `(value: object, *, maximum: int, error: Exception, minimum: int = 1, control_error: Exception \| None = None, require_trimmed: bool = False, reject_control_characters: bool = True, reject_delete_character: bool = True) -> str` | — | Return text within inclusive bounds under an explicit scalar policy. |
 | `require_no_control_characters` | `(value: object, *, error: Exception, reject_delete_character: bool = False) -> str` | — | Return text without ASCII controls, optionally including DEL. |
 | `contains_control_character` | `(value: str, *, reject_delete_character: bool = False) -> bool` | — | Return whether text contains an ASCII control selected by policy. |
-| `require_trimmed_text` | `(value: object, *, error: Exception, reject_control_characters: bool = True) -> str` | — | Return non-empty text with canonical surrounding whitespace. |
+| `require_trimmed_text` | `(value: object, *, error: _ValidationError, error_context: str = '', reject_control_characters: bool = True) -> str` | — | Return non-empty text with canonical surrounding whitespace. |
 | `require_trimmed_text_list` | `(value: object, *, error: Exception, item_error: Exception \| None = None, duplicate_error: Exception \| None = None, sort: bool = False, require_trimmed_items: bool = True, reject_control_characters: bool = True, reject_duplicates: bool = False, container_type: type[object] \| tuple[type[object], ...] = list) -> list[str]` | — | Return text items from a caller-selected sequence container. |
-| `require_string` | `(value: object, *, error: Exception, utf8_error: Exception \| None = None) -> str` | — | Return a string, optionally requiring UTF-8-encodable scalar text. |
-| `require_mapping` | `(value: object, *, error: Exception, require_string_keys: bool = False, key_error: Exception \| None = None, require_utf8_keys: bool = False, utf8_key_error: Exception \| None = None) -> Mapping[str, Any]` | — | Return a mapping with optional JSON string/scalar key requirements. |
+| `require_string` | `(value: object, *, error: _ValidationError, utf8_error: _ValidationError \| None = None, error_context: str = '') -> str` | — | Return a string, optionally requiring UTF-8-encodable scalar text. |
+| `require_mapping` | `(value: object, *, error: _ValidationError, error_context: str = '', require_string_keys: bool = False, key_error: _ValidationError \| None = None, require_utf8_keys: bool = False, utf8_key_error: _ValidationError \| None = None) -> Mapping[str, Any]` | — | Return a mapping with optional JSON string/scalar key requirements. |
 | `require_sequence` | `(value: object, *, error: Exception, container_type: type[object] \| tuple[type[object], ...] = Sequence, reject_mapping: bool = False) -> Sequence[Any]` | — | Return a non-text sequence from caller-selected container types. |
-| `require_list` | `(value: object, *, error: Exception) -> list[Any]` | — | Return a concrete list without accepting other sequence types. |
+| `require_list` | `(value: object, *, error: _ValidationError, error_context: str = '') -> list[Any]` | — | Return a concrete list without accepting other sequence types. |
 | `require_bool` | `(value: object, *, error: Exception) -> bool` | — | Return a strict boolean value. |
-| `require_int` | `(value: object, *, error: Exception) -> int` | — | Return a strict integer (booleans are not integers here). |
-| `require_nonnegative_int` | `(value: object, *, error: Exception) -> int` | — | Return a strict non-negative integer (booleans are not integers here). |
+| `require_int` | `(value: object, *, error: _ValidationError, error_context: str = '') -> int` | — | Return a strict integer (booleans are not integers here). |
+| `require_nonnegative_int` | `(value: object, *, error: _ValidationError, error_context: str = '') -> int` | — | Return a strict non-negative integer (booleans are not integers here). |
 | `nonnegative_int_or_none` | `(value: object) -> int \| None` | — | Return a strict non-negative integer, or ``None`` for other values. |
-| `require_positive_int` | `(value: object, *, invalid_error: Exception, zero_error: Exception \| None = None) -> int` | — | Return a strict positive integer. |
+| `require_positive_int` | `(value: object, *, invalid_error: _ValidationError, zero_error: _ValidationError \| None = None, error_context: str = '') -> int` | — | Return a strict positive integer. |
 | `require_int_at_least` | `(value: object, *, minimum: int, error: Exception) -> int` | — | Return a strict integer at or above a caller-selected lower bound. |
 | `require_bounded_int` | `(value: object, *, minimum: int, maximum: int, invalid_error: Exception, bounds_error: Exception \| None = None) -> int` | — | Return a strict integer within inclusive caller-selected bounds. |
-| `require_bounded_integral_number` | `(value: object, *, invalid_error: Exception, minimum: int \| None = None, maximum: int \| None = None, bounds_error: Exception \| None = None, zero_error: Exception \| None = None) -> int` | — | Return an int or finite integral float within optional inclusive bounds. |
+| `require_bounded_integral_number` | `(value: object, *, invalid_error: _ValidationError, error_context: str = '', minimum: int \| None = None, maximum: int \| None = None, bounds_error: _ValidationError \| None = None, zero_error: _ValidationError \| None = None) -> int` | — | Return an int or finite integral float within optional inclusive bounds. |
 | `positive_int_or_none` | `(value: object) -> int \| None` | — | Return a strict positive integer, or ``None`` for any other value. |
 | `coerce_nonnegative_int` | `(value: object, *, error: Exception) -> int` | — | Coerce an integer-like value and require a non-negative result. |
 | `coerce_positive_int` | `(value: object, *, error: Exception) -> int` | — | Coerce an integer-like value and require a positive result. |
@@ -121,8 +122,8 @@ flowchart LR
 | `require_exact_choice` | `(value: object, choices: Iterable[str], *, error: Exception) -> str` | — | Return an exact string member without trimming or normalization. |
 | `require_enum_value` | `(value: object, enum_type: Callable[[str], _EnumValue], *, text_error: Exception, choice_error: Callable[[], Exception]) -> _EnumValue` | — | Return one exact string-backed enum member with caller diagnostics. |
 | `require_member` | `(value: object, choices: Container[object], *, error: Exception) -> object` | — | Return an exact collection member using the collection's own semantics. |
-| `require_sha256` | `(value: object, *, digest_error: Exception, text_error: Exception \| None = None, reject_control_characters: bool = True, allow_empty: bool = False) -> str` | — | Return a canonical ``sha256:<lowercase hex>`` digest. |
+| `require_sha256` | `(value: object, *, digest_error: _ValidationError, text_error: _ValidationError \| None = None, error_context: str = '', reject_control_characters: bool = True, allow_empty: bool = False) -> str` | — | Return a canonical ``sha256:<lowercase hex>`` digest. |
 | `require_uuid` | `(value: object, *, text_error: Exception, uuid_error: Exception, canonical_error: Exception, reject_control_characters: bool = True) -> str` | — | Return a canonical lowercase, hyphenated UUID. |
 | `is_canonical_uuid` | `(value: object) -> bool` | — | Return whether *value* is a canonical lowercase, hyphenated UUID. |
 | `parse_utc_timestamp` | `(value: object, *, string_error: Exception, timestamp_error: Exception, require_z: bool = False, reject_control_characters: bool = True, control_error: Exception \| None = None, z_error: Exception \| None = None, utc_error: Exception \| None = None) -> tuple[str, datetime]` | — | Return the original timestamp and its timezone-aware UTC value. |
-| `require_exact_fields` | `(value: object, *, allowed: Iterable[str], required: Iterable[str], mapping_error: Exception, missing_error: _ErrorFactory, unknown_error: _ErrorFactory, invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None = None, stringify_keys: bool = False, unknown_first: bool = False) -> None` | — | Require an exact/allowed mapping shape with caller-owned diagnostics. |
+| `require_exact_fields` | `(value: object, *, allowed: Iterable[str], required: Iterable[str], mapping_error: _ValidationError, error_context: str = '', missing_error: _ErrorFactory, unknown_error: _ErrorFactory, invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None = None, stringify_keys: bool = False, unknown_first: bool = False) -> None` | — | Require an exact/allowed mapping shape with caller-owned diagnostics. |

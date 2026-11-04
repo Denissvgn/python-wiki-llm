@@ -42,11 +42,11 @@ flowchart LR
     n4["_validate_native_marker (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n5["_validated_native_artifacts (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n6["_ArtifactValidation.__init__ (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["require_validated_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n9["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n10["validated_artifact_bytes (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n11["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n7["_reuse_same_store_candidate (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n8["_validate_artifact_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n9["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n10["require_validated_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n11["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -69,7 +69,7 @@ flowchart LR
     click n8 "../modules/knowledge_artifacts.md"
     click n9 "../modules/knowledge_artifacts.md"
     click n10 "../modules/knowledge_artifacts.md"
-    click n11 "../modules/knowledge_consumption.md"
+    click n11 "../modules/knowledge_artifacts.md"
 ```
 
 ### Summary
@@ -88,11 +88,11 @@ flowchart LR
 | `_validate_native_marker` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_validated_native_artifacts` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_ArtifactValidation.__init__` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_reuse_same_store_candidate` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_validate_artifact_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `_validate_artifact_parity` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `build_knowledge_commit_plan` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `require_validated_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `validate_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `validated_artifact_bytes` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

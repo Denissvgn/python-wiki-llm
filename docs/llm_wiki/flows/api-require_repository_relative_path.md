@@ -170,15 +170,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 299 | `isinstance(value, str)` |
-| require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
 | _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
 | _syntax_key | type | 55 | `type(v)` |
 | _syntax_key | type | 55 | `type(v)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `len(v)` |
-| require_repository_relative_path | _known_syntax | 303 | `_known_syntax(syntax_key)` |
+| require_repository_relative_path | _known_syntax | 308 | `_known_syntax(syntax_key)` |
 | _known_syntax | _PATH_SYNTAX.get | 64 | `_PATH_SYNTAX.get(key)` |
 | _known_syntax | _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax) | 66 | `_PATH_SYNTAX.move_to_end(key)` |
 
@@ -190,7 +190,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | external_call | `_syntax_key` | `type` | 54 |
 | external_call | `_syntax_key` | `any` | 55 |
 | external_call | `_syntax_key` | `type` | 55 |

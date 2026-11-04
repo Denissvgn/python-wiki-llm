@@ -63,9 +63,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_no_control_characters | isinstance | 677 | `isinstance(value, str)` |
-| require_no_control_characters | contains_control_character | 677 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
+| require_no_control_characters | isinstance | 683 | `isinstance(value, str)` |
+| require_no_control_characters | contains_control_character | 683 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 699 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -75,8 +75,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_no_control_characters` | `isinstance` | 677 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
+| external_call | `require_no_control_characters` | `isinstance` | 683 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 699 |
 
 ## Behavior
 

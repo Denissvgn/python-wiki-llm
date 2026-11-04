@@ -1,6 +1,7 @@
 """Artifact transitions for the verified provenance and structural fixes."""
 
 from dataclasses import replace
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -11,6 +12,7 @@ from llm_wiki_cli.services import (
     extraction_service,
     knowledge_orchestration,
     knowledge_reuse,
+    sync_analysis_cache,
 )
 from llm_wiki_cli.services.doctor_service import build_doctor_report
 from llm_wiki_cli.services.extractor_helpers import (
@@ -19,6 +21,8 @@ from llm_wiki_cli.services.extractor_helpers import (
     typescript_dependencies_ready,
 )
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_index import knowledge_index_to_payload
+from llm_wiki_cli.services.knowledge_evidence import is_valid_sha256
 
 
 def _bootstrap(**options):
@@ -45,6 +49,33 @@ def _artifacts():
         path.name: (path.read_bytes(), path.stat().st_mtime_ns)
         for path in Path("wiki").glob(".llm-wiki-*.json")
     }
+
+
+def _semantic_artifacts():
+    """Keep all semantic/review facts while isolating the two operational hints."""
+    state = load_knowledge_state("wiki")
+    assert state.knowledge is not None and state.manifest_basis is not None
+    assert state.validated_artifacts is not None
+    knowledge = json.loads(json.dumps(knowledge_index_to_payload(state.knowledge)))
+    manifest = state.manifest_basis.to_payload()
+    hints = {
+        key: knowledge["extensions"].pop(key)
+        for key in (knowledge_reuse.REUSE_EXTENSION_KEY, sync_analysis_cache.EXTENSION)
+        if key in knowledge["extensions"]
+    }
+    generation_inputs = manifest["generation_inputs"]
+    artifact_hashes = manifest["artifact_hashes"]
+    assert isinstance(generation_inputs, dict) and isinstance(artifact_hashes, dict)
+    assert generation_inputs.pop(knowledge_reuse.REUSE_INPUT_KEY, None) == hints.get(
+        knowledge_reuse.REUSE_EXTENSION_KEY
+    )
+    assert artifact_hashes.pop("knowledge_index_hash") == state.validated_artifacts.knowledge_index_hash
+    markdown = {
+        path.relative_to("wiki").as_posix(): path.read_bytes()
+        for path in Path("wiki").rglob("*.md")
+    }
+    semantic_json = json.dumps([knowledge, manifest], sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return (semantic_json, markdown), hints
 
 
 @pytest.mark.skipif(
@@ -96,12 +127,40 @@ def test_javascript_health_refresh_and_first_sync_converge(
         _sync(rebuild_knowledge=True)
     assert build_doctor_report("wiki", "src", strict=True).exit_code == 0
     before = _artifacts()
+    semantic_before, hints_before = _semantic_artifacts()
     _sync()
     assert _artifacts() == before
+    assert _semantic_artifacts() == (semantic_before, hints_before)
     _sync(rebuild_knowledge=True)
-    assert {name: value[0] for name, value in _artifacts().items()} == {
-        name: value[0] for name, value in before.items()
+    primed = _artifacts()
+    semantic_after, hints_after = _semantic_artifacts()
+    assert semantic_after == semantic_before
+    assert set(hints_after) == {knowledge_reuse.REUSE_EXTENSION_KEY, sync_analysis_cache.EXTENSION}
+    knowledge_reuse.validate_reuse_commitment(hints_after[knowledge_reuse.REUSE_EXTENSION_KEY])
+    capture = hints_after[sync_analysis_cache.EXTENSION]
+    assert capture["schema_version"] == sync_analysis_cache.SCHEMA
+    assert capture["coverage"] == "full"
+    assert set(capture) == {
+        "schema_version", "coverage", "input_hash", "payload_hash", "graph_concepts_hash",
+        "extraction_files", "implementation_files",
     }
+    assert all(is_valid_sha256(capture[key]) for key in ("input_hash", "payload_hash", "graph_concepts_hash"))
+    if legacy:
+        # This branch was primed above when its incompatible producer was repaired.
+        assert primed == before
+        assert hints_after == hints_before
+    else:
+        # An explicit first rebuild may seed hints; ordinary sync did not do so.
+        assert hints_before == {}
+        assert primed.keys() == before.keys()
+        changed = {name for name in before if primed[name][0] != before[name][0]}
+        assert changed == {".llm-wiki-knowledge.json", ".llm-wiki-manifest.json"}
+        assert all(primed[name] == before[name] for name in before.keys() - changed)
+    _sync(rebuild_knowledge=True)
+    assert _artifacts() == primed
+    _sync()
+    assert _artifacts() == primed
+    assert _semantic_artifacts() == (semantic_after, hints_after)
 
 
 @pytest.mark.parametrize("authored", [False, True])

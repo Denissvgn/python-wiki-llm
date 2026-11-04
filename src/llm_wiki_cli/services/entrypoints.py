@@ -15,10 +15,11 @@ from __future__ import annotations
 
 import re
 from copy import deepcopy
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from types import MappingProxyType
 from typing import Any
 
 from .imports import build_module_path_resolver
@@ -1196,6 +1197,20 @@ def _build_adjacency(edges: list[dict]) -> dict[tuple, list[dict]]:
     return adjacency
 
 
+@dataclass(frozen=True)
+class FlowAnalysisContext:
+    """Read-only adjacency indexes for flows over one caller-owned edge list."""
+
+    adjacency: Mapping[tuple, tuple[dict, ...]]
+
+
+def build_flow_context(edges: list[dict]) -> FlowAnalysisContext:
+    """Index one resolved graph without changing its edges or traversal order."""
+    return FlowAnalysisContext(
+        MappingProxyType({key: tuple(value) for key, value in _build_adjacency(edges).items()})
+    )
+
+
 def _edge_metadata(edge: dict) -> dict:
     metadata = {
         "from": dict(edge["from"]),
@@ -1254,7 +1269,11 @@ def _modules_touched(steps: list[dict]) -> list[str]:
 
 
 def build_flow(
-    entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH
+    entry: dict,
+    edges: list[dict],
+    *,
+    max_depth: int = _DEFAULT_FLOW_DEPTH,
+    context: FlowAnalysisContext | None = None,
 ) -> dict:
     """Trace an ordered call path from *entry* through resolved *edges*.
 
@@ -1264,7 +1283,7 @@ def build_flow(
     boundary crossings remain visible. Returns
     ``{"entry", "steps", "modules_touched", "truncated"}``.
     """
-    adjacency = _build_adjacency(edges)
+    adjacency = context.adjacency if context is not None else _build_adjacency(edges)
     start = (entry["file"], entry["symbol"])
     steps = [
         {"depth": 0, "file": entry["file"], "symbol": entry["symbol"], "kind": "entry"}
@@ -1282,7 +1301,7 @@ def build_flow(
 
 def _reachable_step_count(
     start: tuple,
-    adjacency: dict[tuple, list[dict]],
+    adjacency: Mapping[tuple, Sequence[dict]],
 ) -> int:
     """Count the finite static traversal without applying the depth bound."""
     observed = 1
@@ -1308,6 +1327,7 @@ def build_flow_detailed(
     edges: list[dict],
     *,
     max_depth: int = _DEFAULT_FLOW_DEPTH,
+    context: FlowAnalysisContext | None = None,
 ) -> dict:
     """Return the legacy flow plus versioned, exact reachable-step coverage.
 
@@ -1317,9 +1337,11 @@ def build_flow_detailed(
     than a maximum collection size. ``depth_limit`` records that bound
     explicitly.
     """
-    flow = build_flow(entry, edges, max_depth=max_depth)
+    if context is None:
+        context = build_flow_context(edges)
+    flow = build_flow(entry, edges, max_depth=max_depth, context=context)
     start = (entry["file"], entry["symbol"])
-    observed = _reachable_step_count(start, _build_adjacency(edges))
+    observed = _reachable_step_count(start, context.adjacency)
     emitted = len(flow["steps"])
     omitted = max(0, observed - emitted)
     return {

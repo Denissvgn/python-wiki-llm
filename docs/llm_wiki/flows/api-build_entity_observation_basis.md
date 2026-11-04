@@ -32,14 +32,14 @@ sequenceDiagram
     participant p18 as _structural_copy
     participant p19 as require_repository_relative_path
     participant p20 as require_sha256
-    participant p21 as require_nonnegative_int
-    participant p22 as _validate_module_entity_record
-    participant p23 as _failure
-    participant p24 as _optional_record_array
-    participant p25 as _validate_optional_json_array
-    participant p26 as _validate_optional_mapping
-    participant p27 as _validate_optional_record_array
-    participant p28 as _validate_callable_record
+    participant p21 as require_string
+    participant p22 as require_nonnegative_int
+    participant p23 as _validate_module_entity_record
+    participant p24 as _failure
+    participant p25 as _optional_record_array
+    participant p26 as _validate_optional_json_array
+    participant p27 as _validate_optional_mapping
+    participant p28 as _validate_optional_record_array
     participant p29 as ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)
     participant p30 as diagnostic.at_source
     p0->>p1: _validate_basis_inputs
@@ -62,21 +62,21 @@ sequenceDiagram
     p4->>p18: _structural_copy
     p8->>p19: require_repository_relative_path
     p10->>p20: require_sha256
-    p13->>p21: require_nonnegative_int
-    p17->>p22: _validate_module_entity_record
-    p9->>p23: _failure
-    p14->>p24: _optional_record_array
-    p17->>p25: _validate_optional_json_array
-    p17->>p26: _validate_optional_mapping
-    p17->>p27: _validate_optional_record_array
-    p17->>p28: _validate_callable_record
+    p12->>p21: require_string
+    p13->>p22: require_nonnegative_int
+    p17->>p23: _validate_module_entity_record
+    p9->>p24: _failure
+    p14->>p25: _optional_record_array
+    p17->>p26: _validate_optional_json_array
+    p17->>p27: _validate_optional_mapping
+    p17->>p28: _validate_optional_record_array
     p2-->>p29: ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)('entity_name must be a non-empty string')
     p3-->>p30: diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
 ```
 
-> Call sequence diagram shows 30 of 301 interactions; 271 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 318 interactions; 288 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 73 (72 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 74 (73 omitted); unresolved 1 of 59 (58 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 93 groups; 85 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 99 groups; 91 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 171; effect analysis evaluated: 157, partial: 3, unavailable: 11. Counts include steps omitted from the displayed trace.
+Source steps: 186; effect analysis evaluated: 172, partial: 3, unavailable: 11. Counts include steps omitted from the displayed trace.
 
-Collector observations for 160 source steps with known totals: observed: 766, emitted: 751, omitted: 15. Unavailable totals are excluded.
+Collector observations for 175 source steps with known totals: observed: 827, emitted: 812, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -182,8 +182,8 @@ flowchart LR
 | build_entity_observation_basis | _validate_basis_inputs | 380 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
 | _validate_basis_inputs | _validate_source_path | 840 | `_validate_source_path(source_path)` |
 | _validate_source_path | require_repository_relative_path | 868 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
-| require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `type(value)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
 | _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
@@ -199,7 +199,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | external_call | `_syntax_key` | `type` | 54 |
 | external_call | `_syntax_key` | `any` | 55 |
 | external_call | `_syntax_key` | `type` | 55 |

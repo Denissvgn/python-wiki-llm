@@ -23,6 +23,7 @@ silently accept a different retirement claim.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `canonical_json`, `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.immutable` | `freeze` |
@@ -33,7 +34,7 @@ silently accept a different retirement claim.
 | `.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
 | `.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
-| `.knowledge_index` | `_validated_index_data`, `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_has_validation_operation`, `_validated_index_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
+| `.knowledge_index` | `_validated_index_data`, `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validation_callable_identity`, `_validation_module_identity`, `_validation_policy_value`, `_validator_identity`, `_has_validation_operation`, `_validated_index_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `packed_format`, `parse_packed_root` |
 | `.knowledge_reuse` | `validate_reuse_artifact_parity` |
@@ -79,10 +80,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (32) |
-| Outbound | `src` (28) |
+| Inbound | `src` (33) |
+| Outbound | `src` (30) |
 
-> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -94,8 +95,8 @@ flowchart LR
 | [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 117 | — | One exact-byte action in a knowledge artifact commit. |
 | [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 130 | — | Validated canonical projections and their exact-byte commitments. |
 | [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 150 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 209 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 236 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 213 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 240 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 
@@ -105,6 +106,9 @@ flowchart LR
 | `validated_artifact_bytes` | `(value: ValidatedKnowledgeArtifacts) -> tuple[bytes, bytes]` | — | Read captured canonical bytes without serializing or reparsing models. |
 | `validate_surface_index_bytes` | `(surface_index_bytes: bytes) -> Mapping[str, Any]` | — | Parse and strictly validate canonical surface-index v1 bytes. |
 | `validate_knowledge_artifacts` | `(*, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest, object_reader: Callable[[str, int], bytes] \| None = None, wiki_dir: str \| Path \| None = None, _validation_receipt: object \| None = None, _receipt_wiki_root: Path \| None = None, _storage_validation_receipt: object \| None = None) -> ValidatedKnowledgeArtifacts` | `@observed_phase('knowledge_validation')` | Validate canonical projections, cross-artifact parity, and manifest basis. |
+| `_validate_artifact_parity` | `(*, surface_payload, knowledge, canonical_payload, storage_objects, storage_statistics, surface_index_bytes, knowledge_index_bytes, manifest, validation_receipt = None, storage_validation_receipt = None, receipt_wiki_root = None, recheck = None, validator_identity = None, storage_validator_identity = None) -> ValidatedKnowledgeArtifacts` | `@observed_phase('knowledge_validation')` | Check the new cross-artifact state after its logical model is validated. |
+| `_storage_validator_identity` | `() -> tuple` | — | Bind captured physical validation to its decoders, routes, and policy. |
+| `_reuse_same_store_candidate` | `(*, prior, prepared_store, knowledge, surface_index_bytes, knowledge_index_bytes, manifest, storage_validation_receipt, receipt_wiki_root) -> ValidatedKnowledgeArtifacts \| None` | — | Reuse one captured store only inside its planner, after exact comparisons. |
 | `build_knowledge_commit_plan` | `(wiki_dir: str \| Path, *, surface_index_bytes: bytes, knowledge_index_bytes: bytes \| None = None, manifest: SyncManifest, knowledge_format: str \| None = None, knowledge_index: KnowledgeIndex \| None = None, manifest_format: str \| None = None, prior: ValidatedKnowledgeArtifacts \| None = None, spool = None, maintenance_adoption: Mapping[str, Any] \| None = None) -> KnowledgeCommitPlan` | — | Validate and plan one manifest-last knowledge artifact commit. |
 | `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | `@observed_phase('artifact_commit')` | Apply *plan* in projection/projection/manifest order. |
 | `_commit_flat` | `(plan, fault_injector)` | — | — |

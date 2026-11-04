@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import hashlib
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, replace
 from pathlib import Path
 
@@ -26,6 +26,16 @@ _HASH_FIELDS = frozenset(
         "repository_hash",
         "lifecycle_hash",
         "observation_inputs_hash",
+    }
+)
+_STABLE_IMPLEMENTATION_GAPS = frozenset(
+    {
+        "observation-limit",
+        "object-limit",
+        "unsupported-syntax",
+        "unsupported-producer",
+        "unsupported-language",
+        "ambiguous-owner",
     }
 )
 
@@ -122,6 +132,22 @@ def bind_reuse_commitment(basis: Mapping[str, object], manifest) -> dict:
         "lifecycle_hash": manifest_lifecycle_hash(manifest),
     }
     return validate_reuse_commitment(value)
+
+
+def rebind_maintenance_reuse(knowledge, manifest):
+    """Retain validated input commitments while rebinding a projected owner update."""
+    previous = knowledge.extensions.get(REUSE_EXTENSION_KEY)
+    if previous is None:
+        return knowledge, manifest
+    previous = validate_reuse_commitment(previous)
+    basis = {key: value for key, value in previous.items()
+             if key not in {"schema_version", "lifecycle_hash"}}
+    commitment = bind_reuse_commitment(basis, manifest)
+    manifest = manifest.with_generation_state(
+        surfaces=manifest.surfaces,
+        generation_inputs={**manifest.generation_inputs, REUSE_INPUT_KEY: commitment},
+    )
+    return replace(knowledge, extensions={**knowledge.extensions, REUSE_EXTENSION_KEY: commitment}), manifest
 
 
 def validate_reuse_artifact_parity(knowledge, manifest) -> None:
@@ -236,6 +262,118 @@ def build_reuse_input_basis(
     }
 
 
+def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, source_snapshot) -> Callable[[], None] | None:
+    """Reconcile exact live maintenance inputs before reusing a committed graph.
+
+    Success retains a guarded raw-page recheck for the caller's final boundary.
+    It never allocates an identity, changes review history or publishes evidence.
+    """
+    from .io import decode_markdown_bytes
+    from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
+    from .knowledge_storage_io import StorageReadSession
+    from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
+    from .maintenance_protocol import guard_maintenance_owner
+    from .maintenance_state import MaintenanceError
+    from .python_implementation import analysis_identity
+    from .source_snapshot import confirmed_missing_source_paths
+    from .wiki_surface import collect_wiki_pages
+
+    owner = manifest.maintenance_state
+    if owner is None:
+        return None
+    marker = guard_maintenance_owner(wiki_dir, manifest)
+    captures = inventory_result.implementation_observations
+    analysis_hash = analysis_identity(inventory_result.analysis_components)
+    if not isinstance(captures, Mapping) or analysis_hash is None:
+        return None
+    captured_files = captures.get("files", {})
+    if not isinstance(captured_files, Mapping) or any(
+        source not in captured_files
+        for source, info in inventory_result.inventory.items()
+        if info.get("language") == "python"
+    ):
+        return None
+    root = Path(wiki_dir)
+    reader = StorageReadSession(root)
+    pages = collect_wiki_pages(root)
+    # Decline oversized captures before retaining provisional file observations.
+    # A failed phase cannot recheck evicted handles, so later exhaustion must
+    # fail closed rather than discard possible concurrent mutations as a miss.
+    try:
+        captured_size = sum(page.path.stat().st_size for page in pages)
+    except OSError as exc:
+        raise KnowledgeStorageError("read", "wiki page changed before reuse inspection", code="storage-mutation") from exc
+    if 2 * captured_size > reader.maximum:
+        return None
+    with reader.phase():
+        raw = {page.relative_path: reader.read(page.relative_path, MAX_EXPANDED_BYTES) for page in pages}
+    # The final raw-byte recheck is charged to the same bounded session. Reserve
+    # its exact work before accepting this advisory shortcut; larger wikis still
+    # use the ordinary guarded planner without relaxing the inspection budget.
+    if reader.recheck_work()["bytes"] > reader.maximum - reader.bytes_read:
+        raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
+    content = {name: decode_markdown_bytes(value) for name, value in raw.items()}
+    prior_paths = {row["coordinate"]["source_path"] for row in owner["observations"].values()}
+    missing = confirmed_missing_source_paths(source_snapshot, prior_paths)
+    old_targets = {row["target"]["canonical_path"] for row in owner["observations"].values()}
+    absent = {path for path in old_targets if not (root / path).exists() and not (root / path).is_symlink()}
+    hashes = source_snapshot.captured_content_hashes
+    capture = captured_observations_from_knowledge(
+        knowledge, content_by_page=content, raw_content_by_page=raw,
+        page_source_mappings=manifest.page_source_mappings, captures=captures,
+        source_content_hashes=hashes, captured_paths=set(hashes) | set(missing),
+        missing_source_paths=missing, analysis_compatibility_hash=analysis_hash,
+        previous_state=owner, known_absent_pages=absent,
+    )
+    from .source_retirement import retired_entity_mappings
+    retired = retired_entity_mappings(manifest)
+
+    def has_selected_owner(row):
+        if row["coordinate"]["source_path"] not in hashes:
+            return False
+        previous = retired.get(row["target"]["canonical_path"])
+        return previous is None or row["coordinate"] != {
+            "source_path": previous.source_path, "qualified_owner": previous.entity_name,
+            "occurrence": previous.occurrence,
+        }
+
+    for issue in capture.issues:
+        if issue.get("reason") in _STABLE_IMPLEMENTATION_GAPS:
+            # Exact source/page/analysis commitments may preserve a known gap;
+            # they never make its implementation evidence available. The full
+            # reconciliation below must still preserve every owner byte without
+            # registering an identity, including untracked unsupported scopes.
+            continue
+        # Retired/deselected owners may deliberately retain unavailable history.
+        # Such an issue cannot authorize any selected source, and every affected
+        # recorded observation must already equal this exact current capture.
+        if issue.get("reason") not in {"source-not-captured", "current-owner-not-qualified"}:
+            return None
+        recorded = [row for record_id, row in owner["observations"].items()
+                    if (issue.get("record_id") is None or issue["record_id"] == record_id)
+                    and (issue.get("coordinate") is None or issue["coordinate"] == row["coordinate"])
+                    and issue.get("canonical_path") == row["target"]["canonical_path"]]
+        from .maintenance_evidence import owner_key
+
+        if not recorded or any(has_selected_owner(row)
+                               or capture.by_owner.get(owner_key(row["coordinate"], row["target"])) != row
+                               for row in recorded):
+            return None
+
+    def refuse_registration():
+        raise MaintenanceError("reuse-registration", "Current maintenance capture requires a new durable identity")
+
+    try:
+        reconciled = reconcile_pending_maintenance(owner, marker, capture, allocate_id=refuse_registration)
+    except MaintenanceError as exc:
+        if exc.code == "reuse-registration":
+            return None
+        raise
+    if reconciled != owner:
+        return None
+    return reader.recheck
+
+
 def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
     """Return the ordinary result shape using already captured, validated bytes."""
     from .knowledge_artifacts import (
@@ -265,9 +403,10 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
             )
         )
     from .knowledge_packs import PACKED_SCHEMAS, packed_format
+    from .knowledge_storage import STORE_SCHEMA
     import json
     storage_root = json.loads(writes[1].content)
-    storage_format = "sharded-v2" if state.artifacts.storage_objects else "v1"
+    storage_format = "sharded-v2" if storage_root.get("schema_version") == STORE_SCHEMA else "v1"
     if storage_root.get("schema_version") in PACKED_SCHEMAS:
         storage_format = packed_format(storage_root)
     return KnowledgeCommitResult(

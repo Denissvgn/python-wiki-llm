@@ -129,14 +129,14 @@ def test_destination_exits_do_not_construct_payload(eligible, capsys, monkeypatc
 @pytest.mark.parametrize('payload', [{}, {'é': ['雪', 1, None, True]}, {'nested': {'b': (3, 4)}}])
 def test_size_matches_actual_writer_and_exact_boundary(monkeypatch, payload):
     actual = len(canonical_json_bytes(payload)) + 1
-    monkeypatch.setattr(cache, 'MAX_BYTES', actual)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', actual)
     assert cache.payload_size(payload) == actual
-    monkeypatch.setattr(cache, 'MAX_BYTES', actual - 1)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', actual - 1)
     assert cache.payload_size(payload) is None
 
 
 def test_budget_stops_before_later_values_are_encoded(monkeypatch):
-    monkeypatch.setattr(cache, 'MAX_BYTES', 64)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', 64)
     # The invalid value would raise if encoding continued after the budget.
     assert cache.payload_size({'a': list(range(100)), 'z': object()}) is None
 
@@ -145,7 +145,7 @@ def test_oversized_capture_reports_lower_bound_and_preserves_graph(eligible, cap
     options, prepared, surface = eligible
     original = list(range(1000))
     prepared.graph_observations.flows = original
-    monkeypatch.setattr(cache, 'MAX_BYTES', 128)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', 128)
     assert cache.build_payload(options, prepared, surface) is None
     assert prepared.graph_observations.flows is original
     assert 'skipped (payload-over-budget); destination=eligible; payload_bytes=>128;' in capsys.readouterr().out
@@ -190,7 +190,7 @@ def test_eligible_capture_owns_graph_copy_and_reports_written_bytes(eligible, ca
 def test_partial_capture_retains_unavailable_sidecars(eligible, monkeypatch):
     options, prepared, surface = eligible
     prepared.graph_observations.flows = list(range(10000))
-    monkeypatch.setattr(cache, 'MAX_BYTES', 4096)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', 4096)
     payload = cache.build_payload(options, prepared, surface)
     assert payload is not None and payload['coverage'] == 'inventory'
     assert payload['data_effect_observations'] is None
@@ -202,6 +202,6 @@ def test_partial_capture_does_not_discard_over_budget_sidecars(eligible, monkeyp
     options, prepared, surface = eligible
     prepared.graph_observations.flows = list(range(10000))
     prepared.inventory_result.data_effect_observations = {'retained': 'x' * 10000}
-    monkeypatch.setattr(cache, 'MAX_BYTES', 4096)
+    monkeypatch.setattr(cache, 'MAX_CAPTURE_BYTES', 4096)
     assert cache.build_payload(options, prepared, surface) is None
     assert 'skipped (payload-over-budget)' in capsys.readouterr().out

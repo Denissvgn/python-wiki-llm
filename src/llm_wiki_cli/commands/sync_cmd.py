@@ -55,6 +55,7 @@ from ..services.dependencies import (
 )
 from ..services.entrypoints import (
     build_flow,
+    build_flow_context,
     build_flow_detailed,
     entry_points_from_detailed_observations,
     get_detailed_entry_points,
@@ -1796,6 +1797,7 @@ class _SurfaceInitializationPlan:
     managed_surface_index: bool = False
     prior_surface_source_overrides: tuple[tuple[str, str], ...] = ()
     prior_flow_entries: tuple[dict, ...] = ()
+    protected_retirement_paths: tuple[str, ...] = ()
 
     @property
     def created_pages(self) -> int:
@@ -1859,6 +1861,7 @@ class _GeneratedSurfaceTransition:
     """Prior ownership proof and generated pages that cross the live boundary."""
 
     retired_page_paths: tuple[str, ...] = ()
+    protected_retirement_paths: tuple[str, ...] = ()
     managed_flow_page_paths: frozenset[str] = frozenset()
     managed_workflow_page_paths: frozenset[str] = frozenset()
     managed_surface_index: bool = False
@@ -2221,6 +2224,13 @@ def _print_dry_run_plan(
         f"{len(source_selection_prune.deselected_surface_page_paths)} "
         "generated surface page(s)"
     )
+    if plan.protected_retirement_paths:
+        print(
+            "  protected generated surface retirement: "
+            f"{len(plan.protected_retirement_paths)} page(s) with human-authored Behavior"
+        )
+        for path in plan.protected_retirement_paths:
+            print(f"    PROTECTED {json.dumps(path)} (applying requires --force)")
     infrastructure_label = (
         "deferred infrastructure sources"
         if options.initialize_surfaces
@@ -2331,7 +2341,7 @@ def _print_dry_run_plan(
         )
         is not None
     )
-    requires_force = source_requires_force or surface_requires_force
+    requires_force = source_requires_force or surface_requires_force or bool(plan.protected_retirement_paths)
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
     print("DRY-RUN: no files modified.")
     return requires_force
@@ -2551,6 +2561,7 @@ def _extract_current_inventory(
     options: _SyncRunOptions,
     *,
     source_snapshot: SourceSnapshot | None = None,
+    implementation_cache_artifacts=None,
 ) -> _ExtractedSyncInventory:
     print("Extracting current source inventory...")
     source_snapshot = source_snapshot or build_source_snapshot(
@@ -2572,6 +2583,7 @@ def _extract_current_inventory(
         capture_data_effect_observations=True,
         capture_import_observations=True,
         capture_implementation_observations=True,
+        implementation_cache_artifacts=implementation_cache_artifacts,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
@@ -3142,7 +3154,6 @@ def _planned_generated_surface_prune(
     inventory: Mapping[str, Mapping],
     graph_observations: _RuntimeGraphObservations,
     *,
-    force: bool = False,
     defer_detector_retirement: bool = False,
 ) -> _GeneratedSurfaceTransition:
     """Prove managed live workflows and generated pages absent from the live set."""
@@ -3275,20 +3286,10 @@ def _planned_generated_surface_prune(
             continue
         if not _has_neutral_generated_behavior(page_kind, markdown):
             authored_behavior.append(canonical)
-            if not force:
-                continue
         deselected.add(canonical)
-    if authored_behavior and not force:
-        displayed = ", ".join(authored_behavior[:5])
-        if len(authored_behavior) > 5:
-            displayed += f", and {len(authored_behavior) - 5} more"
-        raise GeneratedSurfacePruneError(
-            "refusing to remove stale generated page(s) with human-authored "
-            f"Behavior: {displayed}. Archive or remove the pages explicitly, "
-            "or re-run with `llm-wiki sync --force` to authorize removal."
-        )
     return _GeneratedSurfaceTransition(
         retired_page_paths=tuple(sorted(deselected)),
+        protected_retirement_paths=tuple(sorted(authored_behavior)),
         managed_flow_page_paths=frozenset(managed_flows),
         managed_workflow_page_paths=frozenset(managed_workflows),
         managed_surface_index=True,
@@ -3572,6 +3573,7 @@ def _canonical_surface_flow_entries(
     return entries
 
 
+@observed_phase("graph_observations")
 def _build_sync_graph_observations(
     options: _SyncRunOptions,
     inventory: dict,
@@ -3592,8 +3594,12 @@ def _build_sync_graph_observations(
         entry_points,
         surface_plan,
     )
-    rendering_flows = [build_flow(entry, call_edges) for entry in flow_entries]
-    flows = [build_flow_detailed(entry, call_edges) for entry in flow_entries]
+    flow_context = (
+        build_flow_context(call_edges)
+        if flow_entries or surface_flow_entry_points else None
+    )
+    rendering_flows = [build_flow(entry, call_edges, context=flow_context) for entry in flow_entries]
+    flows = [build_flow_detailed(entry, call_edges, context=flow_context) for entry in flow_entries]
     generation_options = runtime_generation_options(
         surfaces=surface_plan.surfaces,
         generation_inputs=surface_plan.generation_inputs,
@@ -3606,6 +3612,7 @@ def _build_sync_graph_observations(
             inventory,
             call_edges,
             data_effect_observations=data_effect_observations,
+            include_detailed=bool(flow_entries),
         )
         if data_flow_enabled and surface_flow_entry_points
         else None
@@ -3637,7 +3644,7 @@ def _build_sync_graph_observations(
     surface_rendering_data_flows = rendering_data_flows
     if surface_flow_entry_points != flow_entries:
         surface_rendering_flows = [
-            build_flow(entry, call_edges) for entry in surface_flow_entry_points
+            build_flow(entry, call_edges, context=flow_context) for entry in surface_flow_entry_points
         ]
         surface_rendering_data_flows = (
             [
@@ -3809,6 +3816,10 @@ def _sync_reuse_input_basis(
     repository_evidence: RepositoryEvidence,
     observation_inputs_hash: str | None = None,
 ) -> dict[str, object] | None:
+    if options.repair_paths:
+        # Minting a whole-wiki no-op capability belongs to ordinary full sync,
+        # outside a selected-source evidence repair's publication scope.
+        return None
     generation_options = runtime_generation_options(
         surfaces=surface_plan.surfaces,
         generation_inputs=surface_plan.generation_inputs,
@@ -3839,8 +3850,6 @@ def _try_sync_knowledge_reuse(
     committed_state: CommittedKnowledgeState,
     observation_inputs_hash: str | None = None,
 ) -> _ReusedSync | None:
-    if manifest.maintenance_state is not None:
-        return None  # Reconcile durable review before any source-baseline reuse.
     artifacts = committed_state.artifacts
     if artifacts is None:
         return None
@@ -3872,6 +3881,13 @@ def _try_sync_knowledge_reuse(
         or knowledge_reuse.bind_reuse_commitment(basis, manifest) != commitment
     ):
         return None
+    maintenance_recheck = None
+    if manifest.maintenance_state is not None:
+        maintenance_recheck = knowledge_reuse.maintenance_reuse_check(
+            options.wiki_dir, manifest, artifacts.knowledge, inventory_result, source_snapshot,
+        )
+        if maintenance_recheck is None:
+            return None
     # Recheck additions, exact source bytes, explicit OpenAPI, and live wiki input
     # before returning without any builder/serialization/artifact write.
     if not source_snapshot_matches_current_files(source_snapshot):
@@ -3919,7 +3935,15 @@ def _try_sync_knowledge_reuse(
         raise SyncRuntimeRefreshError(
             "implementation changed while checking knowledge reuse"
         )
+    if maintenance_recheck is not None:
+        maintenance_recheck()
     committed_state.assert_current()
+    from ..services.wiki_write_basis import ACTIVE_WRITE_BASIS
+    from ..services.knowledge_storage_io import _absolute_path
+
+    write_basis = ACTIVE_WRITE_BASIS.get()
+    if write_basis is not None and write_basis.root == _absolute_path(options.wiki_dir):
+        write_basis.source_snapshot = source_snapshot
     record_counts(written_artifacts=0)
     return _ReusedSync(
         knowledge_reuse.unchanged_commit_result(
@@ -4057,7 +4081,10 @@ def _prepare_sync_run(
     extracted = (
         _ExtractedSyncInventory(
             sync_analysis_cache.inventory_result(cached_analysis, source_snapshot, options), source_snapshot,
-        ) if cached_analysis is not None else _extract_current_inventory(options, source_snapshot=source_snapshot)
+        ) if cached_analysis is not None else _extract_current_inventory(
+            options, source_snapshot=source_snapshot,
+            implementation_cache_artifacts=committed_state.artifacts,
+        )
     )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot
@@ -4352,7 +4379,6 @@ def _prepare_sync_run(
             source_snapshot,
             inventory,
             graph_observations,
-            force=options.force,
             defer_detector_retirement=bool(
                 options.initialize_surfaces and not runtime_basis_refresh
             ),
@@ -4393,6 +4419,7 @@ def _prepare_sync_run(
             generated_surface_transition.prior_source_overrides
         ),
         prior_flow_entries=generated_surface_transition.prior_flow_entries,
+        protected_retirement_paths=generated_surface_transition.protected_retirement_paths,
     )
     source_selection_prune = replace(
         source_selection_prune,
@@ -4979,7 +5006,9 @@ def _finalize_prepared_sync(
     )
     analysis_payload = sync_analysis_cache.build_payload(options, prepared, surface)
     prior = prepared.committed_state.artifacts if prepared.committed_state is not None else None
+    maintenance_migration = bool(options.rebuild_knowledge and prepared.manifest.maintenance_state is not None)
     if (prior is not None and sync_analysis_cache.EXTENSION not in prior.knowledge.extensions
+            and not maintenance_migration
             and reuse_basis is not None
             and reuse_basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
             and reuse_basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash):
@@ -5005,6 +5034,7 @@ def _finalize_prepared_sync(
             previous_manifest=prepared.manifest,
             committed_state=prepared.committed_state,
             reuse_input_basis=reuse_basis,
+            allow_maintenance_reuse_migration=maintenance_migration,
             sync_analysis_commitment=sync_analysis_cache.commitment(analysis_payload),
             reuse_typed_graph=prepared.analysis_reused and not options.rebuild_knowledge,
             next_manifest=next_manifest,
@@ -5061,6 +5091,9 @@ def _finalize_prepared_sync(
         dry_run=dry_run,
     )
     _print_sync_artifact_actions(artifact_result)
+    if maintenance_migration:
+        enabled = knowledge_reuse.REUSE_INPUT_KEY in artifact_result.committed_manifest.generation_inputs
+        print("Maintenance reuse migration: " + ("prepared" if dry_run and enabled else "completed" if enabled else "skipped (inputs not qualified)"))
     if dry_run:
         if analysis_payload is not None:
             sync_analysis_cache.report_capture(options, "skipped", "dry-run")
@@ -5244,7 +5277,7 @@ def _run_sync_dry_run(
     if requires_force:
         print(
             "\nPreview completed. After reviewing the page and artifact actions, "
-            "explicitly authorize a broad update by repeating the same invocation "
+            "explicitly authorize the update by repeating the same invocation "
             "with --force instead of --dry-run."
         )
         print(
@@ -5292,8 +5325,19 @@ def _enforce_sync_write_safety(
     options: _SyncRunOptions,
     prepared: _PreparedSyncRun,
 ) -> None:
-    """Apply broad-change guards before a prepared sync can mutate the wiki."""
+    """Require write authorization before a prepared sync can mutate the wiki."""
 
+    protected = prepared.surface_plan.protected_retirement_paths
+    if protected and not options.force:
+        displayed = ", ".join(protected[:5])
+        if len(protected) > 5:
+            displayed += f", and {len(protected) - 5} more"
+        raise GeneratedSurfacePruneError(
+            "refusing to remove stale generated page(s) with human-authored "
+            f"Behavior: {displayed}. Archive or remove the pages explicitly, "
+            "or re-run with `llm-wiki sync --force` to authorize removal.\n"
+            + _sync_preview_hint(options)
+        )
     if (
         (
             not options.initialize_surfaces
@@ -5371,7 +5415,7 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             prepared.repair_boundary.assert_current()
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
+    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -5448,6 +5492,7 @@ def _run_sync_options(options, write_basis=None) -> None:
     if write_basis is not None:
         write_basis.source_snapshot = prepared.inventory_result.source_snapshot
         write_basis.assert_current()
+        write_basis.bind_committed_state(prepared.committed_state)
     _run_prepared_sync(options, prepared)
 
 

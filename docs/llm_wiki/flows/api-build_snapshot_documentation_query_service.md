@@ -2,7 +2,7 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 34 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 32 more
 
 **Complete modules touched:**
 
@@ -14,7 +14,6 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -38,7 +37,6 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [section_ownership](../modules/section_ownership.md)
-- [source_retirement](../modules/source_retirement.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -114,9 +112,9 @@ sequenceDiagram
     p1-->>p30: current.exists
 ```
 
-> Call sequence diagram shows 30 of 1227 interactions; 1197 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1165 interactions; 1135 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 240 (239 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 414 (413 omitted); unresolved 1 of 227 (226 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 271 groups; 263 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 265 groups; 257 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -143,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 541; effect analysis evaluated: 287, partial: 32, unavailable: 222. Counts include steps omitted from the displayed trace.
+Source steps: 525; effect analysis evaluated: 297, partial: 34, unavailable: 194. Counts include steps omitted from the displayed trace.
 
-Collector observations for 319 source steps with known totals: observed: 2254, emitted: 2024, omitted: 230. Unavailable totals are excluded.
+Collector observations for 331 source steps with known totals: observed: 2331, emitted: 2100, omitted: 231. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

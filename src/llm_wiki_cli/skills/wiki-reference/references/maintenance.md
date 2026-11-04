@@ -59,6 +59,8 @@ apply force automatically as an upgrade step. Matching managed pages are not
 rewritten, while current evidence and provenance are committed coherently.
 Force also authorizes stale generated surface retirement, including authored
 Behavior on those retired pages; ownership and integrity checks remain required.
+An ordinary dry-run includes these protected retirements and marks them as
+requiring `--force` to apply. Previewing grants no removal authority.
 The preview is not a saved approval token: force replans current inputs. Changed
 source, helper, selection, provider or wiki inputs require another preview and
 review. Follow the owning loop below, then confirm an unchanged second sync is

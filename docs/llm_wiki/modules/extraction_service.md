@@ -51,17 +51,20 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
 | `.dependencies` | `analyze_dependencies` |
 | `.dockerfile_parser` | `parse_dockerfile` |
-| `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
+| `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `build_flow_context`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
+| `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
-| `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry` |
+| `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
 | `.io` | `write_text_output` |
+| `.knowledge_artifacts` | `require_validated_artifacts` |
+| `.knowledge_evidence` | `hash_json` |
 | `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
-| `.python_implementation` | `SCHEMA`, `comparison_id`, `envelope`, `producer`, `analysis_identity` |
+| `.python_implementation` | `SCHEMA`, `comparison_id`, `envelope`, `producer`, `analysis_identity`, `producer`, `comparison_id` |
 | `.python_imports` | `is_python_source` |
 | `.python_observations` | `data_effect_sidecar`, `import_sidecar`, `partition_sidecars`, `valid_cached_sidecars` |
 | `.resource_diagnostics` | `format_resource_failure` |
@@ -103,23 +106,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (23) |
-| Outbound | `src` (31) |
+| Outbound | `src` (34) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 142 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 150 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 181 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 222 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 242 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 267 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 280 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 293 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 315 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 144 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 152 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 184 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 226 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 246 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 271 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 284 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 297 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 323 | — | — |
 
 ## Functions
 
@@ -156,6 +159,7 @@ flowchart LR
 | `_plan_language_extraction` | `(context: _InventoryBuildContext, language: str, entry_point: str, status_by_language: dict[str, ExtractorStatus], cached_by_language: dict[str, dict]) -> _ExtractionPlan \| None` | — | — |
 | `_can_use_inventory_cache` | `(context: _InventoryBuildContext, is_builtin: bool) -> bool` | — | — |
 | `_fresh_inventory_source_files` | `(context: _InventoryBuildContext, language: str, source_files: list[str] \| None, cached_by_language: dict[str, dict]) -> list[str]` | — | — |
+| `_valid_cached_implementation` | `(context, path, entry, source_hash)` | — | — |
 | `_record_cached_inventory_entry` | `(context: _InventoryBuildContext, cached_by_language: dict[str, dict], language: str, rel_path: str, cached_entry: dict) -> None` | — | — |
 | `_record_stale_cache_entry` | `(cache: InventoryCache, cached_entry: dict, file_hash: str) -> None` | — | — |
 | `_build_extraction_kwargs` | `(context: _InventoryBuildContext, language: str, is_builtin: bool, fresh_source_files: list[str]) -> dict` | — | — |

@@ -25,21 +25,21 @@ sequenceDiagram
     participant p11 as _receipt_anchor_mapping
     participant p12 as hash_json
     participant p13 as _parse_check
-    participant p14 as _sha256
-    participant p15 as _checker_id
-    participant p16 as _normalized_anchor_mapping
-    participant p17 as canonical_json_bytes
-    participant p18 as _checker_version
-    participant p19 as _array
-    participant p20 as _parse_diagnostic
-    participant p21 as _parse_coverage
-    participant p22 as require_sha256
-    participant p23 as _nonnegative_int
-    participant p24 as require_nonnegative_int
-    participant p25 as require_trimmed_text
-    participant p26 as _receipt_to_payload
-    participant p27 as VerificationResult
-    participant p28 as VerificationReceipt
+    participant p14 as require_mapping
+    participant p15 as require_string
+    participant p16 as _sha256
+    participant p17 as _checker_id
+    participant p18 as require_exact_fields
+    participant p19 as _normalized_anchor_mapping
+    participant p20 as canonical_json_bytes
+    participant p21 as _checker_version
+    participant p22 as _array
+    participant p23 as _parse_diagnostic
+    participant p24 as _parse_coverage
+    participant p25 as require_sha256
+    participant p26 as require_list
+    participant p27 as _nonnegative_int
+    participant p28 as require_nonnegative_int
     participant p29 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
     participant p30 as content.decode
     p0->>p1: validate_verification_receipt
@@ -55,28 +55,28 @@ sequenceDiagram
     p1->>p11: _receipt_anchor_mapping
     p1->>p12: hash_json
     p1->>p13: _parse_check
-    p9->>p14: _sha256
-    p13->>p15: _checker_id
-    p11->>p16: _normalized_anchor_mapping
-    p12->>p17: canonical_json_bytes
-    p13->>p18: _checker_version
-    p13->>p19: _array
-    p13->>p20: _parse_diagnostic
-    p13->>p21: _parse_coverage
-    p14->>p22: require_sha256
-    p21->>p23: _nonnegative_int
-    p23->>p24: require_nonnegative_int
-    p22->>p25: require_trimmed_text
-    p1->>p26: _receipt_to_payload
-    p1->>p27: VerificationResult
-    p1->>p28: VerificationReceipt
+    p6->>p14: require_mapping
+    p8->>p15: require_string
+    p9->>p16: _sha256
+    p13->>p17: _checker_id
+    p7->>p18: require_exact_fields
+    p11->>p19: _normalized_anchor_mapping
+    p12->>p20: canonical_json_bytes
+    p13->>p21: _checker_version
+    p13->>p22: _array
+    p13->>p23: _parse_diagnostic
+    p13->>p24: _parse_coverage
+    p16->>p25: require_sha256
+    p22->>p26: require_list
+    p24->>p27: _nonnegative_int
+    p27->>p28: require_nonnegative_int
     p0-->>p29: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
     p0-->>p30: content.decode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 194 interactions; 164 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 54 (53 omitted); unresolved 1 of 20 (19 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 55 (54 omitted); unresolved 1 of 21 (20 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,12 +85,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | - | external | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | - | external | 7 |
+| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | unresolved | 1 |
-> Omission summary shows 8 of 64 groups; 56 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+> Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 109; effect analysis evaluated: 63, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
+Source steps: 119; effect analysis evaluated: 73, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 64 source steps with known totals: observed: 242, emitted: 241, omitted: 1. Unavailable totals are excluded.
+Collector observations for 74 source steps with known totals: observed: 281, emitted: 279, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

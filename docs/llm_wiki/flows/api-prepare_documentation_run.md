@@ -2,7 +2,7 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 32 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 34 more
 
 **Complete modules touched:**
 
@@ -29,6 +29,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [module_maps](../modules/module_maps.md)
@@ -36,6 +37,7 @@
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -112,9 +114,9 @@ sequenceDiagram
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1213 interactions; 1183 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1223 interactions; 1193 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 292 (291 omitted); unresolved 1 of 367 (366 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 296 (295 omitted); unresolved 1 of 363 (362 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 75 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 76 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
-> Omission summary shows 8 of 304 groups; 296 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 313 groups; 305 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +143,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 555; effect analysis evaluated: 360, partial: 29, unavailable: 166. Counts include steps omitted from the displayed trace.
+Source steps: 565; effect analysis evaluated: 368, partial: 30, unavailable: 167. Counts include steps omitted from the displayed trace.
 
-Collector observations for 389 source steps with known totals: observed: 2281, emitted: 2143, omitted: 138. Unavailable totals are excluded.
+Collector observations for 398 source steps with known totals: observed: 2321, emitted: 2190, omitted: 131. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

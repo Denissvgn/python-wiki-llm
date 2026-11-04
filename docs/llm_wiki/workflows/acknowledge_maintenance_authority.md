@@ -1,7 +1,7 @@
 # acknowledge_maintenance_authority
 
 **Entry point:** `maintenance_service.acknowledge_maintenance_authority`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [sync_manifest](../modules/sync_manifest.md)
 
 > Acknowledge one explicitly reviewed exact live basis under the writer locks.
 
@@ -31,15 +31,17 @@
 21. `maintenance_state.maintenance_state_hash`
 22. `maintenance_protocol.guard_maintenance_owner`
 23. `maintenance_projection.project_maintenance_knowledge`
-24. `knowledge_artifacts.validated_artifact_bytes`
-25. `knowledge_artifacts.build_knowledge_commit_plan`
-26. `knowledge_artifacts.commit_knowledge_artifacts`
-27. `maintenance_state.maintenance_state_hash`
+24. `knowledge_reuse.rebind_maintenance_reuse`
+25. `knowledge_artifacts.validated_artifact_bytes`
+26. `knowledge_artifacts.build_knowledge_commit_plan`
+27. `knowledge_artifacts.commit_knowledge_artifacts`
+28. `maintenance_state.maintenance_state_hash`
 
 ## Touches
 
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)

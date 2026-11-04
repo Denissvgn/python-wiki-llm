@@ -30,16 +30,16 @@ sequenceDiagram
     participant p16 as _bounds
     participant p17 as _safe_evidence_link
     participant p18 as _internal_evidence_ref
-    participant p19 as _text
-    participant p20 as require_exact_choice
-    participant p21 as _identifier
-    participant p22 as require_portable_relative_path
-    participant p23 as _bound_record
-    participant p24 as _reason
-    participant p25 as _analyzer_bounds
-    participant p26 as _string_list
-    participant p27 as require_trimmed_text
-    participant p28 as _default_path_error
+    participant p19 as require_list
+    participant p20 as require_exact_fields
+    participant p21 as _text
+    participant p22 as require_exact_choice
+    participant p23 as _identifier
+    participant p24 as require_mapping
+    participant p25 as require_portable_relative_path
+    participant p26 as _bound_record
+    participant p27 as _reason
+    participant p28 as _analyzer_bounds
     participant p29 as tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)
     participant p30 as record.get
     p0->>p1: _object_array
@@ -60,37 +60,37 @@ sequenceDiagram
     p2->>p16: _bounds
     p2->>p17: _safe_evidence_link
     p2->>p18: _internal_evidence_ref
-    p7->>p19: _text
-    p8->>p20: require_exact_choice
-    p9->>p21: _identifier
-    p7->>p22: require_portable_relative_path
-    p16->>p23: _bound_record
-    p12->>p24: _reason
-    p16->>p25: _analyzer_bounds
-    p14->>p26: _string_list
-    p19->>p27: require_trimmed_text
-    p22->>p28: _default_path_error
+    p4->>p19: require_list
+    p6->>p20: require_exact_fields
+    p7->>p21: _text
+    p8->>p22: require_exact_choice
+    p9->>p23: _identifier
+    p4->>p24: require_mapping
+    p7->>p25: require_portable_relative_path
+    p16->>p26: _bound_record
+    p12->>p27: _reason
+    p16->>p28: _analyzer_bounds
     p0-->>p29: tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)(...)
     p2-->>p30: record.get('concept_uid')
 ```
 
-> Call sequence diagram shows 30 of 271 interactions; 241 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 285 interactions; 255 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 84 (83 omitted); unresolved 1 of 47 (46 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 85 (84 omitted); unresolved 1 of 48 (47 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_mapping_list` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_list` | 4 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_list` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_object_array` | 2 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 2 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 14 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 81 groups; 73 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 86 groups; 78 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 141; effect analysis evaluated: 93, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
+Source steps: 153; effect analysis evaluated: 105, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
 
-Collector observations for 97 source steps with known totals: observed: 397, emitted: 384, omitted: 13. Unavailable totals are excluded.
+Collector observations for 109 source steps with known totals: observed: 442, emitted: 428, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -116,15 +116,15 @@ Collector observations for 97 source steps with known totals: observed: 397, emi
 | `normalize_claim_evidence_records` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_object_array` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_mapping_list` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `require_list` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_list` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `isinstance (src/llm_wiki_cli/services…alidation.py:require_list)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -133,31 +133,31 @@ flowchart LR
     s3["3. require_mapping_list"]
     s4["4. require_list"]
     s5["5. isinstance (src/llm_wiki_cli/services…alidation.py:require_list)"]
-    s6["6. require_mapping"]
-    s7["7. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s8["8. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s9["9. key.encode"]
-    s10["10. DocumentationClaimEvidenceError"]
-    s11["11. DocumentationClaimEvidenceError"]
-    s12["12. tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)"]
+    s6["6. _validation_error"]
+    s7["7. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s8["8. error"]
+    s9["9. require_mapping"]
+    s10["10. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s11["11. _validation_error"]
+    s12["12. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
     s1 -->|"_object_array(value, 'claim_evidence')"| s2
     s2 -->|"require_mapping_list(value, error=DocumentationClaimEvidenceError(...), item_error=DocumentationClaimEvidenceError(...), require_string_keys=True)"| s3
     s3 -->|"require_list(value, error=error)"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…alidation.py:require_list)(value, list)" .-> s5
-    s3 -->|"require_mapping(item, error=..., require_string_keys=require_string_keys)"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s7
-    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s8
-    s6 -. "key.encode('utf-8')" .-> s9
-    s2 -->|"DocumentationClaimEvidenceError(...)"| s10
-    s2 -->|"DocumentationClaimEvidenceError(...)"| s11
-    s1 -. "tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)(...)" .-> s12
+    s4 -->|"_validation_error(error, error_context)"| s6
+    s6 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s7
+    s6 -. "error(context)" .-> s8
+    s3 -->|"require_mapping(item, error=..., require_string_keys=require_string_keys)"| s9
+    s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s10
+    s9 -->|"_validation_error(error, error_context)"| s11
+    s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s12
     click s1 "../modules/documentation_claim_evidence.md"
     click s2 "../modules/documentation_claim_evidence.md"
     click s3 "../modules/validation.md"
     click s4 "../modules/validation.md"
     click s6 "../modules/validation.md"
-    click s10 "../modules/documentation_claim_evidence.md"
-    click s11 "../modules/documentation_claim_evidence.md"
+    click s9 "../modules/validation.md"
+    click s11 "../modules/validation.md"
 ```
 
 ### Step data
@@ -167,15 +167,15 @@ flowchart LR
 | `normalize_claim_evidence_records` | `value: object` | - | - | `tuple(...)` |
 | `_object_array` | `value: object`, `field_name: str` | - | - | `require_mapping_list(...)` |
 | `require_mapping_list` | `value: object`, `error: Exception`, `item_error: Exception \| None`, `require_string_keys: bool` | - | - | `items` |
-| `require_list` | `value: object`, `error: Exception` | - | - | `value` |
+| `require_list` | `value: object`, `error: _ValidationError`, `error_context: str` | - | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…alidation.py:require_list)` | - | - | - | - |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
+| `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `key.encode` | - | - | - | - |
-| `DocumentationClaimEvidenceError` | - | - | - | - |
-| `DocumentationClaimEvidenceError` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)` | - | - | - | - |
 
 ### Call data
 
@@ -183,15 +183,15 @@ flowchart LR
 |---|---|---:|---|
 | normalize_claim_evidence_records | _object_array | 192 | `_object_array(value, 'claim_evidence')` |
 | _object_array | require_mapping_list | 1431 | `require_mapping_list(value, error=DocumentationClaimEvidenceError(...), item_error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping_list | require_list | 1061 | `require_list(value, error=error)` |
-| require_list | isinstance (src/llm_wiki_cli/services…alidation.py:require_list) | 810 | `isinstance(value, list)` |
-| require_mapping_list | require_mapping | 1063 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
-| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object_array | DocumentationClaimEvidenceError | 1433 | `DocumentationClaimEvidenceError(...)` |
-| _object_array | DocumentationClaimEvidenceError | 1434 | `DocumentationClaimEvidenceError(...)` |
-| normalize_claim_evidence_records | tuple (src/llm_wiki_cli/services…ze_claim_evidence_records) | 193 | `tuple(...)` |
+| require_mapping_list | require_list | 1073 | `require_list(value, error=error)` |
+| require_list | isinstance (src/llm_wiki_cli/services…alidation.py:require_list) | 820 | `isinstance(value, list)` |
+| require_list | _validation_error | 821 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_mapping_list | require_mapping | 1075 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
 
 ### Boundary effects
 
@@ -201,10 +201,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_list` | `isinstance` | 810 |
-| external_call | `require_mapping` | `isinstance` | 773 |
-| external_call | `require_mapping` | `isinstance` | 777 |
-| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_list` | `isinstance` | 820 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| external_call | `require_mapping` | `isinstance` | 783 |
+| external_call | `require_mapping` | `isinstance` | 787 |
 | step_limit | `normalize_claim_evidence_records` | `first 12 steps` | 0 |
 | truncated_flow | `normalize_claim_evidence_records` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # KnowledgeLoadState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:181`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:206`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

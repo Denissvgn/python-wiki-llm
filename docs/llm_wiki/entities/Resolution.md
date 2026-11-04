@@ -1,6 +1,6 @@
 # Resolution
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:133`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:158`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

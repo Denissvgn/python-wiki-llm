@@ -1,6 +1,6 @@
 # ActorKind
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:198`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:223`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

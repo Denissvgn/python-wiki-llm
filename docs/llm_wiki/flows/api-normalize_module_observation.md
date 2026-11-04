@@ -30,16 +30,16 @@ sequenceDiagram
     participant p16 as _validate_optional_strings
     participant p17 as _validate_optional_string_array
     participant p18 as _validate_optional_booleans
-    participant p19 as _validate_string_array
-    participant p20 as _record_object
-    participant p21 as _pointer
-    participant p22 as require_list
-    participant p23 as is_valid_sha256
-    participant p24 as sha256_bytes
-    participant p25 as _InventoryNormalizationError
-    participant p26 as require_string
-    participant p27 as require_bool
-    participant p28 as contains_control_character
+    participant p19 as require_string
+    participant p20 as require_list
+    participant p21 as _validate_string_array
+    participant p22 as _record_object
+    participant p23 as require_mapping
+    participant p24 as _pointer
+    participant p25 as is_valid_sha256
+    participant p26 as sha256_bytes
+    participant p27 as _InventoryNormalizationError
+    participant p28 as require_bool
     participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
     participant p30 as seen_names.get
     p0->>p1: _normalize_module_observation
@@ -60,23 +60,23 @@ sequenceDiagram
     p4->>p16: _validate_optional_strings
     p6->>p17: _validate_optional_string_array
     p4->>p18: _validate_optional_booleans
-    p17->>p19: _validate_string_array
-    p15->>p20: _record_object
-    p3->>p21: _pointer
-    p9->>p22: require_list
-    p6->>p23: is_valid_sha256
-    p6->>p24: sha256_bytes
-    p13->>p25: _InventoryNormalizationError
-    p16->>p26: require_string
-    p18->>p27: require_bool
-    p14->>p28: contains_control_character
+    p16->>p19: require_string
+    p15->>p20: require_list
+    p17->>p21: _validate_string_array
+    p15->>p22: _record_object
+    p22->>p23: require_mapping
+    p3->>p24: _pointer
+    p6->>p25: is_valid_sha256
+    p6->>p26: sha256_bytes
+    p13->>p27: _InventoryNormalizationError
+    p18->>p28: require_bool
     p1-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
     p1-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 232 interactions; 202 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 244 interactions; 214 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 46 (45 omitted); unresolved 1 of 59 (58 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -89,8 +89,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 56 groups; 48 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_list` | 20 | - | external | 1 |
+> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -101,9 +101,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 130; effect analysis evaluated: 128, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 140; effect analysis evaluated: 138, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 129 source steps with known totals: observed: 668, emitted: 664, omitted: 4. Unavailable totals are excluded.
+Collector observations for 139 source steps with known totals: observed: 705, emitted: 701, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

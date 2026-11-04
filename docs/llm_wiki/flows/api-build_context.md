@@ -79,9 +79,9 @@ sequenceDiagram
     participant p14 as _typed_graph_page_badge
     participant p15 as validate_source_root
     participant p16 as resolve_source_selection
-    participant p17 as validate_request
-    participant p18 as capture_source_selection_inputs
-    participant p19 as validate_live_query_source_selection
+    participant p17 as capture_source_selection_inputs
+    participant p18 as validate_live_query_source_selection
+    participant p19 as validate_request
     participant p20 as build_source_snapshot
     participant p21 as retained_empty_module_paths_from_wiki
     participant p22 as _normalise_protocol_focus
@@ -109,9 +109,9 @@ sequenceDiagram
     p5->>p14: _typed_graph_page_badge
     p12->>p15: validate_source_root
     p12->>p16: resolve_source_selection
-    p13->>p17: validate_request
-    p12->>p18: capture_source_selection_inputs
-    p12->>p19: validate_live_query_source_selection
+    p12->>p17: capture_source_selection_inputs
+    p12->>p18: validate_live_query_source_selection
+    p13->>p19: validate_request
     p12->>p20: build_source_snapshot
     p12->>p21: retained_empty_module_paths_from_wiki
     p13->>p22: _normalise_protocol_focus
@@ -125,9 +125,9 @@ sequenceDiagram
     p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2216 interactions; 2186 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2221 interactions; 2191 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 750 (749 omitted); unresolved 1 of 812 (811 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 753 (752 omitted); unresolved 1 of 813 (812 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -139,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
-> Omission summary shows 8 of 491 groups; 483 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 492 groups; 484 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -154,9 +154,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 655; effect analysis evaluated: 438, partial: 35, unavailable: 182. Counts include steps omitted from the displayed trace.
+Source steps: 656; effect analysis evaluated: 440, partial: 34, unavailable: 182. Counts include steps omitted from the displayed trace.
 
-Collector observations for 473 source steps with known totals: observed: 3216, emitted: 2957, omitted: 259. Unavailable totals are excluded.
+Collector observations for 474 source steps with known totals: observed: 3220, emitted: 2963, omitted: 257. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -174,7 +174,7 @@ Collector observations for 473 source steps with known totals: observed: 3216, e
 | `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_validate_protocol_request` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `_validate_protocol_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -223,7 +223,7 @@ flowchart LR
 | `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
 | `InvalidRequestError` | - | - | - | - |
 | `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
-| `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `PROTOCOL_VERSION`, `KNOWLEDGE_PROTOCOL_VERSION` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
+| `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `_PROTOCOL_REQUEST_KEYS` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
 | `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
 
 ### Call data
@@ -240,7 +240,7 @@ flowchart LR
 | _normalize_optional_knowledge_mode | InvalidRequestError | 400 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 405 | `cast(KnowledgeMode, value)` |
 | build_context | _validate_protocol_request | 1263 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `isinstance(data, dict)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1125 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -254,7 +254,7 @@ flowchart LR
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 398 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 399 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 405 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1114 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1125 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

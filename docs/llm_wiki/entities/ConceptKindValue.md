@@ -1,6 +1,6 @@
 # ConceptKindValue
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:233`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:258`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

@@ -6,7 +6,7 @@ import json
 import pytest
 
 from llm_wiki_cli.services.knowledge_artifacts import (
-    CommitStage, build_knowledge_commit_plan, commit_knowledge_artifacts,
+    CommitStage, build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format,
 )
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, canonical_bytes
@@ -16,7 +16,7 @@ from llm_wiki_cli.services.knowledge_storage_lifecycle import (
 )
 from llm_wiki_cli.services.manifest_storage import (
     OBJECT_LIMIT, ROOT_LIMIT, ManifestStoreReader, build_manifest_store,
-    object_path, read_manifest_header,
+    object_path, read_manifest_header, current_manifest_format,
 )
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from tests.test_knowledge_loader import _committed_state
@@ -59,6 +59,47 @@ def test_large_policy_is_referenced_and_verified():
     bad[object_path(desc["hash"])] = b"{}\n"
     with pytest.raises(KnowledgeStorageError, match="commitment"):
         read_manifest_header(store.root_bytes, lambda name, _: bad[name])
+
+
+@pytest.mark.parametrize("knowledge_format", ["sharded-v2", "packed-v4-deflate"])
+def test_paired_migration_previews_and_recovers_both_original_roots(tmp_path, knowledge_format):
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    _committed_state(wiki)
+    before = {p.relative_to(wiki).as_posix(): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    state = load_knowledge_state(wiki)
+    recovery = tmp_path / "recovery"
+    options = {"to": knowledge_format, "manifest_format": "indexed-v6", "recovery_dir": recovery}
+    preview = migrate_knowledge_storage(wiki, dry_run=True, **options)
+    assert preview["manifest_format"] == "indexed-v6"
+    assert not recovery.exists()
+    assert {p.relative_to(wiki).as_posix(): p.read_bytes() for p in wiki.rglob("*") if p.is_file()} == before
+    applied = migrate_knowledge_storage(wiki, **options)
+    assert applied["root_hash"] == preview["root_hash"]
+    assert current_knowledge_format(wiki) == knowledge_format
+    assert current_manifest_format(wiki) == "indexed-v6"
+    assert load_knowledge_state(wiki).knowledge == state.knowledge
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert (recovery / name).read_bytes() == before[name]
+    assert not migrate_knowledge_storage(wiki, **options)["changed"]
+    recover_knowledge_storage(wiki, recovery)
+    assert current_knowledge_format(wiki) == "v1"
+    assert current_manifest_format(wiki) == "v5"
+    assert all((wiki / name).read_bytes() == content for name, content in before.items())
+
+
+@pytest.mark.parametrize("target,manifest_format", [
+    ("packed-v4-deflate", "indexed-v8"),
+    ("packed-v4-deflate", "v5"),
+    ("indexed-v6", "indexed-v6"),
+])
+def test_paired_migration_refuses_incompatible_manifest_targets(tmp_path, target, manifest_format):
+    _committed_state(tmp_path)
+    before = {p.relative_to(tmp_path).as_posix(): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    with pytest.raises(KnowledgeStorageError):
+        migrate_knowledge_storage(tmp_path, to=target, manifest_format=manifest_format,
+                                  recovery_dir=tmp_path.parent / (tmp_path.name + "-recovery"))
+    assert {p.relative_to(tmp_path).as_posix(): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()} == before
 
 
 def test_missing_wrong_catalog_and_unbounded_expansion_fail():

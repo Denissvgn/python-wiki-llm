@@ -1,6 +1,6 @@
 # InventoryResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:181`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:184`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -36,6 +36,7 @@ The `failed` property covers extractor statuses. A successful diagnostic helper 
 | `import_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `implementation_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `path_outcomes` | `dict` | `field(default_factory=dict)` | — |
+| `extraction_cache_hashes` | `dict[str, str]` | `field(default_factory=dict, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -94,7 +95,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 3 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
+| [extraction_service](../modules/extraction_service.md) | 3 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_cache_hashes`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash` |
 
 ### References
 

@@ -29,24 +29,24 @@ sequenceDiagram
     participant p8 as hash_json
     participant p9 as require_repository_relative_path
     participant p10 as require_sha256
-    participant p11 as canonical_json_bytes
-    participant p12 as require_trimmed_text
-    participant p13 as require_portable_relative_path
-    participant p14 as require_nonempty_text
-    participant p15 as _default_path_error
-    participant p16 as _check_path_collision
-    participant p17 as require_portable_path_component
-    participant p18 as infrastructure_page_name
-    participant p19 as is_valid_sha256
-    participant p20 as InfrastructureSyncError
-    participant p21 as ConceptObservationBasis
-    participant p22 as sha256_bytes
-    participant p23 as require_string
+    participant p11 as require_string
+    participant p12 as canonical_json_bytes
+    participant p13 as require_trimmed_text
+    participant p14 as require_portable_relative_path
+    participant p15 as require_nonempty_text
+    participant p16 as _default_path_error
+    participant p17 as _check_path_collision
+    participant p18 as require_portable_path_component
+    participant p19 as infrastructure_page_name
+    participant p20 as is_valid_sha256
+    participant p21 as InfrastructureSyncError
+    participant p22 as ConceptObservationBasis
+    participant p23 as sha256_bytes
     participant p24 as canonical_json_text
     participant p25 as _syntax_key
-    participant p26 as _known_syntax
-    participant p27 as _remember_syntax
-    participant p28 as SharedValidationError
+    participant p26 as _validation_error
+    participant p27 as _known_syntax
+    participant p28 as _remember_syntax
     participant p29 as sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)
     participant p30 as inventory.items
     p0->>p1: build_infrastructure_page_map
@@ -59,31 +59,31 @@ sequenceDiagram
     p1->>p8: hash_json
     p5->>p9: require_repository_relative_path
     p6->>p10: require_sha256
-    p8->>p11: canonical_json_bytes
-    p10->>p12: require_trimmed_text
-    p9->>p13: require_portable_relative_path
-    p12->>p14: require_nonempty_text
-    p13->>p15: _default_path_error
-    p13->>p16: _check_path_collision
-    p13->>p17: require_portable_path_component
-    p1->>p18: infrastructure_page_name
-    p3->>p19: is_valid_sha256
-    p3->>p20: InfrastructureSyncError
-    p2->>p21: ConceptObservationBasis
-    p8->>p22: sha256_bytes
-    p7->>p23: require_string
-    p11->>p24: canonical_json_text
+    p7->>p11: require_string
+    p8->>p12: canonical_json_bytes
+    p10->>p13: require_trimmed_text
+    p9->>p14: require_portable_relative_path
+    p13->>p15: require_nonempty_text
+    p14->>p16: _default_path_error
+    p14->>p17: _check_path_collision
+    p14->>p18: require_portable_path_component
+    p1->>p19: infrastructure_page_name
+    p3->>p20: is_valid_sha256
+    p3->>p21: InfrastructureSyncError
+    p2->>p22: ConceptObservationBasis
+    p8->>p23: sha256_bytes
+    p12->>p24: canonical_json_text
     p9->>p25: _syntax_key
-    p9->>p26: _known_syntax
-    p9->>p27: _remember_syntax
-    p15->>p28: SharedValidationError
+    p10->>p26: _validation_error
+    p9->>p27: _known_syntax
+    p9->>p28: _remember_syntax
     p0-->>p29: sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)(inventory.items(...))
     p0-->>p30: inventory.items
 ```
 
-> Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 140 interactions; 110 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 41 (40 omitted); unresolved 1 of 41 (40 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 42 (41 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -97,7 +97,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 18 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
-> Omission summary shows 8 of 39 groups; 31 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 44 groups; 36 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -110,9 +110,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 49; effect analysis evaluated: 37, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
+Source steps: 57; effect analysis evaluated: 45, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
 
-Collector observations for 40 source steps with known totals: observed: 168, emitted: 153, omitted: 15. Unavailable totals are excluded.
+Collector observations for 48 source steps with known totals: observed: 196, emitted: 181, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

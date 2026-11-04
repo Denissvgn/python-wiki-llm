@@ -3,19 +3,22 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Protocol, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
+    from .knowledge_orchestration import CommittedKnowledgeState
 
 
 class WriteBasis(Protocol):
     root: Path
-    preimages: dict[str, bytes]
-    expected: dict[str, bytes]
+    preimages: Mapping[str, bytes]
+    expected: MutableMapping[str, bytes]
     source_snapshot: SourceSnapshot | None
     def assert_current(self) -> None: ...
+    def bind_committed_state(self, state: CommittedKnowledgeState) -> None: ...
     def before_write(self, path: Path, content: bytes | None) -> None: ...
     def after_write(self, path: Path, content: bytes | None) -> None: ...
 

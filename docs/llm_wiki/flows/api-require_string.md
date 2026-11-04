@@ -12,15 +12,22 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_string
-    participant p1 as isinstance
-    participant p2 as value.encode
-    p0-->>p1: isinstance(value, str)
-    p0-->>p2: value.encode('utf-8')
+    participant p1 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p2 as _validation_error
+    participant p3 as value.encode
+    participant p4 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p5 as error
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
+    p0->>p2: _validation_error
+    p0-->>p3: value.encode('utf-8')
+    p0->>p2: _validation_error
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p5: error(context)
 ```
 
-> Call sequence diagram shows 2 of 2 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -31,34 +38,52 @@ sequenceDiagram
 
 **Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+Collector observations for 3 source steps with known totals: observed: 11, emitted: 11, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
     s1["1. require_string"]
-    s2["2. isinstance"]
-    s3["3. value.encode"]
-    s1 -. "isinstance(value, str)" .-> s2
-    s1 -. "value.encode('utf-8')" .-> s3
+    s2["2. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s3["3. _validation_error"]
+    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s5["5. error"]
+    s6["6. value.encode"]
+    s7["7. _validation_error"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s2
+    s1 -->|"_validation_error(error, error_context)"| s3
+    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "error(context)" .-> s5
+    s1 -. "value.encode('utf-8')" .-> s6
+    s1 -->|"_validation_error(utf8_error, error_context)"| s7
     click s1 "../modules/validation.md"
+    click s3 "../modules/validation.md"
+    click s7 "../modules/validation.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `value.encode` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string | isinstance | 752 | `isinstance(value, str)` |
-| require_string | value.encode | 756 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_string | value.encode | 765 | `value.encode('utf-8')` |
+| require_string | _validation_error | 767 | `_validation_error(utf8_error, error_context)` |
 
 ### Boundary effects
 
@@ -68,8 +93,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 752 |
-| unresolved_call | `require_string` | `value.encode` | 756 |
+| external_call | `require_string` | `isinstance` | 761 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| unresolved_call | `require_string` | `value.encode` | 765 |
 
 ## Behavior
 

@@ -17,7 +17,7 @@ Owns one private temporary file and a bounded index of immutable byte captures. 
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(*, max_bytes: int = 2147483648, max_index_bytes: int = 16777216)` | — | — |
+| `__init__` | `(*, max_bytes: int = 2147483648, max_index_bytes: int = 16777216, max_entry_bytes: int = MAX_OBJECT_BYTES)` | — | — |
 | `__getitem__` | `(key: str) -> bytes` | — | — |
 | `__setitem__` | `(key: str, value: bytes) -> None` | — | — |
 | `__delitem__` | `(key: str) -> None` | — | — |
@@ -25,6 +25,8 @@ Owns one private temporary file and a bounded index of immutable byte captures. 
 | `__len__` | `() -> int` | — | — |
 | `__contains__` | `(key) -> bool` | — | — |
 | `close` | `() -> None` | — | — |
+| `fork` | `() -> ByteSpool` | — | Retain an independent index while the original owner keeps bytes alive. |
+| `content_hashes` | `() -> dict[str, str]` | — | Return commitments captured while writing; reads still verify bytes. |
 | `__enter__` | `()` | — | — |
 | `__exit__` | `(*exc)` | — | — |
 
@@ -40,8 +42,11 @@ flowchart LR
     n4["prune_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n5["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n6["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n7["JsonSpool.__init__ (src/llm_wiki_cli/services/storage_spool.py)"]
-    n8["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
+    n7["_capture_spooled_wiki (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n8["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n9["ByteSpool.fork (src/llm_wiki_cli/services/storage_spool.py)"]
+    n10["JsonSpool.__init__ (src/llm_wiki_cli/services/storage_spool.py)"]
+    n11["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -50,21 +55,27 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
+    n10 --> n0
+    n11 --> n0
     click n0 "../modules/storage_spool.md"
     click n2 "../modules/knowledge_audit.md"
     click n3 "../modules/knowledge_packs.md"
     click n4 "../modules/knowledge_storage_lifecycle.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
     click n6 "../modules/knowledge_stream_audit.md"
-    click n7 "../modules/storage_spool.md"
-    click n8 "../modules/storage_spool.md"
+    click n7 "../modules/maintenance_protocol.md"
+    click n8 "../modules/maintenance_protocol.md"
+    click n9 "../modules/storage_spool.md"
+    click n10 "../modules/storage_spool.md"
+    click n11 "../modules/storage_spool.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [storage_spool](../modules/storage_spool.md) | 10 | — |
+| [storage_spool](../modules/storage_spool.md) | 12 | — |
 
 ### Structure
 
@@ -81,5 +92,8 @@ flowchart LR
 | `prune_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `knowledge_stream_audit` | import | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) | — |
+| `_capture_spooled_wiki` | type_reference | [maintenance_protocol](../modules/maintenance_protocol.md) | — |
+| `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
+| `ByteSpool.fork` | type_reference | [storage_spool](../modules/storage_spool.md) | — |
 | `JsonSpool.__init__` | type_reference | [storage_spool](../modules/storage_spool.md) | — |
 | `spool_write` | type_reference | [storage_spool](../modules/storage_spool.md) | — |

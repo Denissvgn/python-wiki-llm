@@ -1,6 +1,6 @@
 # KnowledgeGraphError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:111`
+**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:112`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)
@@ -30,14 +30,14 @@ flowchart LR
     n3["src/llm_wiki_cli/services/knowledge_artifacts.py"]
     n4["src/llm_wiki_cli/services/knowledge_generation.py"]
     n5["_aggregate_flow_coverage (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n6["_array (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n7["_canonical_json (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n8["_enum (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n9["_external_uri (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n10["_hash (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n11["_json_value (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n12["_limitation (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n13["_limitations (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n6["_canonical_json (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n7["_enum (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n8["_external_uri (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n9["_json_value (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n10["_limitation (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n11["_limitations (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n12["_locator (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n13["_materialization_state (src/llm_wiki_cli/services/knowledge_graph.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -86,13 +86,13 @@ flowchart LR
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_aggregate_flow_coverage` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
-| `_array` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_canonical_json` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
-| `_enum` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
+| `_enum` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
 | `_external_uri` | call | [knowledge_graph](../modules/knowledge_graph.md) | 3 |
-| `_hash` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_json_value` | call | [knowledge_graph](../modules/knowledge_graph.md) | 5 |
 | `_limitation` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_limitations` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
+| `_locator` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
+| `_materialization_state` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
 
-> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.
+> References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.

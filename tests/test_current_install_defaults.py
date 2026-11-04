@@ -108,6 +108,184 @@ def test_upgrade_retains_complete_recovery_and_prose_and_is_idempotent(project):
     assert files(project / "wiki") == after
 
 
+def test_failed_storage_publication_does_not_adopt_legacy_authority(project, monkeypatch):
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+
+    def fail_publication(plan):
+        raise RuntimeError("storage publication failed")
+
+    monkeypatch.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", fail_publication)
+    with pytest.raises(RuntimeError, match="storage publication failed"):
+        upgrade_current_knowledge("src", "wiki")
+
+    assert files(project / "wiki") == before
+    assert not (project / "wiki/.llm-wiki-maintenance-adoption.json").exists()
+
+
+def test_failed_adoption_keeps_packed_authority_and_legacy_recovery_for_retry(project, monkeypatch):
+    from llm_wiki_cli.services import maintenance_service
+    from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs, recover_knowledge_storage
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+    recovery = None
+
+    def fail_adoption(*args, recovery_dir, **kwargs):
+        nonlocal recovery
+        recovery = recovery_dir.parent
+        raise RuntimeError("adoption capture failed")
+
+    with monkeypatch.context() as fault:
+        fault.setattr(maintenance_service, "adopt_maintenance_authority", fail_adoption)
+        with pytest.raises(RuntimeError, match="adoption capture failed"):
+            upgrade_current_knowledge("src", "wiki")
+
+    assert recovery is not None
+    assert current_knowledge_format("wiki") == "packed-v4-deflate"
+    assert not (project / "wiki/.llm-wiki-maintenance-adoption.json").exists()
+    _committed_inputs("wiki")
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(recovery / "knowledge")[name] == before[name]
+    assert recover_knowledge_storage("wiki", recovery / "knowledge", dry_run=True)["changed"]
+
+    assert upgrade_current_knowledge("src", "wiki")["state"] == "current"
+    assert current_manifest_format("wiki") == "indexed-v8"
+    _committed_inputs("wiki")
+    for name, digest in before.items():
+        if name.endswith(".md"):
+            assert files(project / "wiki")[name] == digest
+
+
+@pytest.mark.parametrize("operation", ["knowledge", "adoption"])
+@pytest.mark.parametrize("stage", ["knowledge-index-written", "manifest-written"])
+def test_interrupted_upgrade_reports_recovery_and_can_resume(project, monkeypatch, operation, stage):
+    from llm_wiki_cli.services import knowledge_storage_lifecycle, maintenance_service
+    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+    from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME, load_adoption_marker
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+    source = files(project / "src")
+    failure = OSError("interrupted publication")
+
+    def interrupt(actual):
+        if actual == CommitStage(stage):
+            raise failure
+
+    def publish(plan, *, fault_injector=None):
+        return commit_knowledge_artifacts(plan, fault_injector=interrupt)
+
+    owner = knowledge_storage_lifecycle if operation == "knowledge" else maintenance_service
+    with monkeypatch.context() as fault:
+        fault.setattr(owner, "commit_knowledge_artifacts", publish)
+        with pytest.raises(OSError) as error:
+            upgrade_current_knowledge("src", "wiki")
+
+    assert error.value is failure
+    recovery = Path(next(note.removeprefix("Native upgrade recovery: ")
+                         for note in getattr(error.value, "__notes__", ())
+                         if note.startswith("Native upgrade recovery: ")))
+    assert recovery.is_dir()
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(recovery / "knowledge")[name] == before[name]
+    if operation == "knowledge":
+        assert not (project / "wiki" / ADOPTION_FILENAME).exists()
+        knowledge_storage_lifecycle.recover_knowledge_storage("wiki", recovery / "knowledge")
+        for name, content_hash in before.items():
+            assert files(project / "wiki")[name] == content_hash
+    else:
+        marker = load_adoption_marker("wiki")
+        assert marker is not None
+        maintenance_service.recover_maintenance_authority("wiki", recovery_dir=recovery / "adoption/prepared",
+            expected_adoption_id=marker["adoption_id"], allow_prepared_adoption=True, src_dir="src")
+
+    assert upgrade_current_knowledge("src", "wiki")["state"] == "current"
+    assert current_knowledge_format("wiki") == "packed-v4-deflate"
+    assert current_manifest_format("wiki") == "indexed-v8"
+    assert files(project / "src") == source
+    after = files(project / "wiki")
+    assert all(after[name] == content_hash for name, content_hash in before.items() if name.endswith(".md"))
+
+
+@pytest.mark.parametrize("command", ["init", "upgrade"])
+def test_native_setup_failure_prints_the_retained_storage_recovery(project, monkeypatch, capsys, command):
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+
+    def interrupt(stage):
+        if stage == CommitStage.KNOWLEDGE_INDEX_WRITTEN:
+            raise OSError("interrupted publication")
+
+    def publish(plan):
+        return commit_knowledge_artifacts(plan, fault_injector=interrupt)
+
+    capsys.readouterr()
+    arguments = [command, "--wiki-dir", "wiki", "--agent", "generic", "--no-skills"]
+    if command == "upgrade":
+        arguments.extend(["--src-dir", "src"])
+    with monkeypatch.context() as fault:
+        fault.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", publish)
+        with pytest.raises(SystemExit) as error:
+            (init_cmd if command == "init" else upgrade_cmd).run(cli._build_parser().parse_args(arguments))
+    assert error.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "interrupted publication" in stderr
+    recovery = Path(next(line.removeprefix("Native upgrade recovery: ")
+                         for line in stderr.splitlines() if line.startswith("Native upgrade recovery: ")))
+    assert (recovery / "knowledge/recovery.json").is_file()
+    knowledge_storage_lifecycle.recover_knowledge_storage("wiki", recovery / "knowledge")
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(project / "wiki")[name] == before[name]
+
+
+@pytest.mark.parametrize("command", ["init", "upgrade"])
+@pytest.mark.parametrize("failure_kind,exit_code", [("interrupt", 130), ("unexpected", 1), ("exit", 7)])
+def test_cli_abort_keeps_recovery_diagnostics_and_exit_status(
+    project, monkeypatch, capsys, command, failure_kind, exit_code
+):
+    import sys
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    before = files(project / "wiki")
+    failure = {"interrupt": KeyboardInterrupt(), "unexpected": RuntimeError("publication stopped"),
+               "exit": SystemExit(7)}[failure_kind]
+
+    def interrupt(stage):
+        if stage == CommitStage.KNOWLEDGE_INDEX_WRITTEN:
+            raise failure
+
+    def publish(plan):
+        return commit_knowledge_artifacts(plan, fault_injector=interrupt)
+
+    arguments = ["llm-wiki", command, "--wiki-dir", "wiki", "--agent", "generic", "--no-skills"]
+    if command == "upgrade":
+        arguments.extend(["--src-dir", "src"])
+    monkeypatch.setattr(sys, "argv", arguments)
+    monkeypatch.delenv("LLM_WIKI_DEBUG", raising=False)
+    capsys.readouterr()
+    with monkeypatch.context() as fault:
+        fault.setattr(knowledge_storage_lifecycle, "commit_knowledge_artifacts", publish)
+        with pytest.raises(SystemExit) as stopped:
+            cli.main()
+
+    assert stopped.value.code == exit_code
+    stderr = capsys.readouterr().err
+    recovery = Path(next(line.removeprefix("Native upgrade recovery: ")
+                         for line in stderr.splitlines() if line.startswith("Native upgrade recovery: ")))
+    assert (recovery / "knowledge/recovery.json").is_file()
+    knowledge_storage_lifecycle.recover_knowledge_storage("wiki", recovery / "knowledge")
+    for name in (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json"):
+        assert files(project / "wiki")[name] == before[name]
+
+
 @pytest.mark.parametrize("agent", AGENT_CHOICES)
 @pytest.mark.parametrize("no_skills", [False, True])
 def test_all_agents_init_and_upgrade_install_current_defaults(project, agent, no_skills):
@@ -291,7 +469,7 @@ def test_current_team_resolution_never_decodes_native_packs(project, monkeypatch
 @pytest.mark.parametrize("coverage", ["full", "inventory"])
 def test_current_static_cache_reuses_observations_but_reconciles_prose(project, monkeypatch, coverage):
     from llm_wiki_cli.commands import sync_cmd
-    from llm_wiki_cli.services import sync_analysis_cache
+    from llm_wiki_cli.services import sync_analysis_cache, sync_analysis_storage
     from llm_wiki_cli.services.sync_manifest import SyncManifest
     api.bootstrap_wiki("src", "wiki")
     page = Path("wiki/modules/app.md")
@@ -299,14 +477,19 @@ def test_current_static_cache_reuses_observations_but_reconciles_prose(project, 
     command = ["sync", "--src-dir", "src", "--wiki-dir", "wiki", "--cache-dir", "cache", "--no-plugins"]
     sync_cmd.run(cli._build_parser().parse_args(command))
     cache = Path("cache") / sync_analysis_cache.FILENAME
-    initial = cache.read_bytes()
-    payload = json.loads(initial)
+    def cached_payload():
+        return sync_analysis_storage.load(cache, root_limit=sync_analysis_cache.MAX_BYTES,
+                                          total_limit=sync_analysis_cache.MAX_CAPTURE_BYTES)
+
+    payload = cached_payload()
     assert payload["input_key"]["ordinary_owner"] == json.loads(Path("wiki/.llm-wiki-maintenance-adoption.json").read_bytes())["adoption_id"]
     if coverage == "inventory":
-        monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", len(initial) - 1)
+        initial_size = sync_analysis_cache.payload_size(payload)
+        assert initial_size is not None
+        monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", initial_size - 1)
         page.write_text(page.read_text().replace("First authored purpose.", "Prime bounded inventory."))
         sync_cmd.run(cli._build_parser().parse_args(command))
-        assert json.loads(cache.read_bytes())["coverage"] == "inventory"
+        assert cached_payload()["coverage"] == "inventory"
     status = api.get_maintenance_status("src", "wiki")
     record = next(row for row in status["records"] if row["expected_basis"] is not None
                   and row["expected_basis"]["target"]["canonical_path"] == "modules/app.md")

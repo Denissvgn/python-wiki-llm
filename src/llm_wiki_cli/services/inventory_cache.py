@@ -176,6 +176,7 @@ def _implementation_fingerprint() -> str:
         "services/python_stdlib.py",
         "services/packages.py",
         "services/python_observations.py",
+        "services/python_implementation.py",
         "services/extraction_service.py",
         "services/dockerfile_parser.py",
         "extractors/haskell_scripts/Inventory.hs",
@@ -480,3 +481,11 @@ def make_cache_entry(
         "hash": file_hash,
         "inventory": inventory_entry,
     }
+
+
+def extraction_bundle_hash(entry: dict) -> str:
+    """Commit every raw analysis value reused together, excluding file metadata."""
+    from .knowledge_evidence import hash_json
+    return hash_json({key: entry.get(key) for key in (
+        "language", "hash", "inventory", "python_observations", "python_implementation",
+    )})

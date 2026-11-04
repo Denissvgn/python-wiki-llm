@@ -2,7 +2,7 @@
 
 **Entry point:** `get_maintenance_status` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), and 58 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), and 57 more
 
 **Complete modules touched:**
 
@@ -51,7 +51,6 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
@@ -87,24 +86,24 @@ sequenceDiagram
     participant p8 as capture_committed_knowledge
     participant p9 as build_maintenance_status
     participant p10 as _capture
-    participant p11 as capture_context_read
-    participant p12 as guard_incomplete_bootstrap
-    participant p13 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    participant p14 as load_adoption_marker
-    participant p15 as SyncManifest.load
-    participant p16 as _decode_json_object
-    participant p17 as validate_knowledge_artifacts
-    participant p18 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    participant p19 as owner_key
-    participant p20 as compare_implementation_observations
-    participant p21 as _validate_range
-    participant p22 as validate_surface_index_bytes
-    participant p23 as pending_bootstrap
-    participant p24 as require
-    participant p25 as guard_windows_directory_chain
-    participant p26 as open_windows_readonly_file
-    participant p27 as _require_validation_receipt
-    participant p28 as _unique_json_object
+    participant p11 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    participant p12 as capture_context_read
+    participant p13 as _wiki_files
+    participant p14 as guard_incomplete_bootstrap
+    participant p15 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    participant p16 as load_adoption_marker
+    participant p17 as SyncManifest.load
+    participant p18 as _decode_json_object
+    participant p19 as validate_knowledge_artifacts
+    participant p20 as canonical_hash
+    participant p21 as owner_key
+    participant p22 as compare_implementation_observations
+    participant p23 as _validate_range
+    participant p24 as _validator_identity
+    participant p25 as pending_bootstrap
+    participant p26 as _storage_validator_identity
+    participant p27 as require
+    participant p28 as guard_windows_directory_chain
     participant p29 as type (src/llm_wiki_cli/api.py:get_maintenance_status)
     participant p30 as prior.assert_current
     p0->>p1: get_maintenance_status_authority
@@ -117,31 +116,31 @@ sequenceDiagram
     p1->>p8: capture_committed_knowledge
     p1->>p9: build_maintenance_status
     p1->>p10: _capture
-    p10->>p11: capture_context_read
-    p7->>p12: guard_incomplete_bootstrap
-    p4->>p13: _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    p7->>p14: load_adoption_marker
-    p7->>p15: SyncManifest.load
-    p8->>p16: _decode_json_object
-    p8->>p17: validate_knowledge_artifacts
-    p6->>p18: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    p9->>p19: owner_key
-    p9->>p20: compare_implementation_observations
-    p18->>p21: _validate_range
-    p17->>p22: validate_surface_index_bytes
-    p12->>p23: pending_bootstrap
-    p13->>p24: require
-    p18->>p25: guard_windows_directory_chain
-    p18->>p26: open_windows_readonly_file
-    p17->>p27: _require_validation_receipt
-    p16->>p28: _unique_json_object
+    p6->>p11: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    p10->>p12: capture_context_read
+    p6->>p13: _wiki_files
+    p7->>p14: guard_incomplete_bootstrap
+    p4->>p15: _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    p7->>p16: load_adoption_marker
+    p7->>p17: SyncManifest.load
+    p8->>p18: _decode_json_object
+    p8->>p19: validate_knowledge_artifacts
+    p9->>p20: canonical_hash
+    p9->>p21: owner_key
+    p9->>p22: compare_implementation_observations
+    p11->>p23: _validate_range
+    p19->>p24: _validator_identity
+    p14->>p25: pending_bootstrap
+    p19->>p26: _storage_validator_identity
+    p15->>p27: require
+    p11->>p28: guard_windows_directory_chain
     p0-->>p29: type (src/llm_wiki_cli/api.py:get_maintenance_status)(live)
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2510 interactions; 2480 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2391 interactions; 2361 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 827 (826 omitted); unresolved 1 of 581 (580 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 827 (826 omitted); unresolved 1 of 559 (558 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 596 groups; 588 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 578 groups; 570 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,9 +167,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1103; effect analysis evaluated: 689, partial: 57, unavailable: 357. Counts include steps omitted from the displayed trace.
+Source steps: 1006; effect analysis evaluated: 630, partial: 58, unavailable: 318. Counts include steps omitted from the displayed trace.
 
-Collector observations for 746 source steps with known totals: observed: 4904, emitted: 4559, omitted: 345. Unavailable totals are excluded.
+Collector observations for 688 source steps with known totals: observed: 4526, emitted: 4269, omitted: 257. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -252,8 +251,8 @@ flowchart LR
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1617 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
 | get_maintenance_status | get_maintenance_status_authority | 1617 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| get_maintenance_status_authority | _validate_status_request | 411 | `_validate_status_request(live, record_id, limit)` |
-| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 338 | `type(live)` |
+| get_maintenance_status_authority | _validate_status_request | 414 | `_validate_status_request(live, record_id, limit)` |
+| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 341 | `type(live)` |
 
 ### Boundary effects
 
@@ -269,7 +268,7 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
 | external_call | `get_maintenance_status` | `cast` | 1617 |
-| external_call | `_validate_status_request` | `type` | 338 |
+| external_call | `_validate_status_request` | `type` | 341 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |
 

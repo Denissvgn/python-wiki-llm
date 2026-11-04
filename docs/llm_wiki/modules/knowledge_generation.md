@@ -38,9 +38,9 @@ producer incompatibility can still downgrade historical provenance explicitly.
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256`, `hash_json` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
-| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_knowledge_validation_operation` |
+| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_assemble_knowledge_index`, `_knowledge_validation_operation` |
 | `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
-| `.knowledge_model` | `ProducerRecord`, `concept_kind_for_page_kind` |
+| `.knowledge_model` | `KnowledgeModelError`, `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
 | `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
 | `.maintenance_projection` | `project_maintenance_knowledge` |
@@ -53,7 +53,7 @@ producer incompatibility can still downgrade historical provenance explicitly.
 | `.wiki_surface` | `PageKind`, `WikiSurfacePage` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence`, `Set` |
-| `dataclasses` | `dataclass`, `field`, `asdict` |
+| `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `TYPE_CHECKING` |
@@ -85,14 +85,14 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 98 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 108 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 99 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 109 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Construct one validated atomic commit plan from evaluated inputs. |
+| `build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | `@observed_phase('knowledge_plan')` | Construct one validated atomic commit plan from evaluated inputs. |
 | `_build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | — |
 | `_application_knowledge_extensions` | `(inputs: KnowledgeGenerationInputs, *, inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str], envelope: EvaluatedEnvelope) -> dict[str, Any]` | — | Build reserved extensions from the exact final evaluated snapshot. |
 | `_graph_concepts` | `(pages: Sequence[WikiSurfacePage], *, module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str]) -> tuple[GraphConcept, ...]` | — | Project final surface coordinates into graph ownership coordinates. |

@@ -13,8 +13,10 @@ protection. Context tokens isolate each operation and are reset on failure.
 
 | Source | Symbols |
 |--------|---------|
+| `.knowledge_orchestration` | `CommittedKnowledgeState` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Mapping`, `MutableMapping` |
 | `contextvars` | `ContextVar` |
 | `pathlib` | `Path` |
 | `typing` | `Protocol`, `TYPE_CHECKING` |
@@ -24,71 +26,83 @@ protection. Context tokens isolate each operation and are reset on failure.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/bootstrap_recovery.py"]
-    n1["src/llm_wiki_cli/services/documentation_native.py"]
-    n2["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n3["src/llm_wiki_cli/services/io.py"]
-    n4["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n5["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n7["src/llm_wiki_cli/services/maintenance_service.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
-    n9["src/llm_wiki_cli/services/sync_recovery.py"]
-    n10["src/llm_wiki_cli/services/wiki_write_basis.py"]
-    n0 --> n2
+    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
+    n1["src/llm_wiki_cli/services/bootstrap_recovery.py"]
+    n2["src/llm_wiki_cli/services/documentation_native.py"]
+    n3["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n4["src/llm_wiki_cli/services/io.py"]
+    n5["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n6["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n7["src/llm_wiki_cli/services/maintenance_protocol.py"]
+    n8["src/llm_wiki_cli/services/maintenance_service.py"]
+    n9["src/llm_wiki_cli/services/source_snapshot.py"]
+    n10["src/llm_wiki_cli/services/sync_recovery.py"]
+    n11["src/llm_wiki_cli/services/wiki_write_basis.py"]
     n0 --> n4
+    n0 --> n5
     n0 --> n6
+    n0 --> n7
+    n0 --> n9
     n0 --> n10
+    n0 --> n11
+    n1 --> n3
     n1 --> n5
-    n1 --> n6
-    n1 --> n8
-    n1 --> n10
-    n2 --> n10
-    n3 --> n10
-    n4 --> n3
-    n4 --> n10
+    n1 --> n7
+    n1 --> n11
+    n2 --> n6
+    n2 --> n7
+    n2 --> n9
+    n2 --> n11
+    n3 --> n11
+    n4 --> n11
     n5 --> n4
-    n5 --> n6
-    n5 --> n8
-    n5 --> n10
-    n6 --> n0
-    n6 --> n2
-    n6 --> n3
-    n6 --> n4
-    n6 --> n8
-    n6 --> n10
-    n7 --> n2
+    n5 --> n11
+    n6 --> n5
+    n6 --> n7
+    n6 --> n9
+    n6 --> n11
+    n7 --> n1
     n7 --> n3
     n7 --> n4
     n7 --> n5
     n7 --> n6
-    n7 --> n8
-    n7 --> n10
-    n8 --> n2
-    n9 --> n2
+    n7 --> n9
+    n7 --> n11
+    n8 --> n3
+    n8 --> n4
+    n8 --> n5
+    n8 --> n6
+    n8 --> n7
+    n8 --> n9
+    n8 --> n11
     n9 --> n3
-    n9 --> n4
-    n9 --> n6
-    n9 --> n8
-    n9 --> n10
-    n10 --> n8
-    click n0 "../modules/bootstrap_recovery.md"
-    click n1 "../modules/documentation_native.md"
-    click n2 "../modules/filesystem_guard.md"
-    click n3 "../modules/io.md"
-    click n4 "../modules/knowledge_governance.md"
-    click n5 "../modules/knowledge_orchestration.md"
-    click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/maintenance_service.md"
-    click n8 "../modules/source_snapshot.md"
-    click n9 "../modules/sync_recovery.md"
-    click n10 "../modules/wiki_write_basis.md"
+    n10 --> n3
+    n10 --> n4
+    n10 --> n5
+    n10 --> n7
+    n10 --> n9
+    n10 --> n11
+    n11 --> n6
+    n11 --> n9
+    click n0 "../modules/sync_cmd.md"
+    click n1 "../modules/bootstrap_recovery.md"
+    click n2 "../modules/documentation_native.md"
+    click n3 "../modules/filesystem_guard.md"
+    click n4 "../modules/io.md"
+    click n5 "../modules/knowledge_governance.md"
+    click n6 "../modules/knowledge_orchestration.md"
+    click n7 "../modules/maintenance_protocol.md"
+    click n8 "../modules/maintenance_service.md"
+    click n9 "../modules/source_snapshot.md"
+    click n10 "../modules/sync_recovery.md"
+    click n11 "../modules/wiki_write_basis.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [bootstrap_recovery](../modules/bootstrap_recovery.md) |
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [filesystem_guard](../modules/filesystem_guard.md) |
@@ -98,14 +112,15 @@ flowchart LR
 | Inbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Inbound | [maintenance_service](../modules/maintenance_service.md) |
 | Inbound | [sync_recovery](../modules/sync_recovery.md) |
+| Outbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [WriteBasis](../entities/WriteBasis.md) | 13 | `Protocol` | — |
-| [PageWriteObserver](../entities/PageWriteObserver.md) | 22 | `Protocol` | — |
+| [WriteBasis](../entities/WriteBasis.md) | 15 | `Protocol` | — |
+| [PageWriteObserver](../entities/PageWriteObserver.md) | 25 | `Protocol` | — |
 
 ## Functions
 

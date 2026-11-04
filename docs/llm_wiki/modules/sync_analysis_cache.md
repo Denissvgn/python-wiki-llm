@@ -65,6 +65,7 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `sync_analysis_storage` |
 | `..config` | `EXTRACTOR_REGISTRY` |
 | `.analysis_capture` | `capture_analysis`, `capture_operation`, `analysis_diagnostics` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
@@ -72,7 +73,7 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options`, `resolve_inventory_cache_path` |
 | `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
 | `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `canonical_json_bytes`, `hash_json`, `sha256_bytes` |
+| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_generation` | `_graph_concepts` |
 | `.knowledge_reuse` | `implementation_hash`, `REUSE_INPUT_KEY` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
@@ -106,15 +107,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (16) |
+| Outbound | `src` (17) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 25 | `ValueError` | A matched static-input snapshot changed before publication. |
+| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 28 | `ValueError` | A matched static-input snapshot changed before publication. |
 
 ## Functions
 
@@ -125,6 +126,7 @@ flowchart LR
 | `cache_path` | `(options)` | — | — |
 | `report_capture` | `(options, status, reason, *, payload_bytes = None, over_budget = False)` | — | Emit fixed vocabulary and counts, never source content or unbounded paths. |
 | `payload_size` | `(payload)` | — | Count the exact writer encoding up to the budget, without retaining it. |
+| `_payload_hash` | `(payload)` | — | — |
 | `load` | `(options, snapshot, manifest, generation_inputs, state)` | `@observed_phase('sync_analysis_reuse')` | A cache is advisory; only exact prior committed content authorizes reuse. |
 | `build_payload` | `(options, prepared, surface)` | — | — |
 | `commitment` | `(payload)` | — | — |

@@ -4,6 +4,7 @@ from copy import deepcopy
 from collections.abc import MutableMapping
 from typing import cast
 from dataclasses import replace
+from functools import partial
 import json
 from typing import Any
 
@@ -11,6 +12,8 @@ import pytest
 
 from llm_wiki_cli.services import contracts, knowledge_artifacts as artifacts
 from llm_wiki_cli.services import knowledge_index as index, knowledge_model as model
+from llm_wiki_cli.services import implementation_evidence, knowledge_graph, validation
+from llm_wiki_cli.services import python_implementation
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
 from llm_wiki_cli.services.sync_manifest import SyncManifest
@@ -149,7 +152,11 @@ def test_receipt_rejects_changed_canonical_bytes(tmp_path, alter):
 
 
 @pytest.mark.parametrize('owner,field', [(index, 'parse_knowledge_index'), (model, 'parse_knowledge_index'),
-    (index, 'validate_knowledge_index'), (index, '_validate_builder_model'), (index, '_serialize_payload')])
+    (index, 'validate_knowledge_index'), (index, '_validate_builder_model'), (index, '_serialize_payload'),
+    (model, '_parse_concept'), (model, '_parse_extensions'),
+    (knowledge_graph, 'validate_typed_graph'),
+    (implementation_evidence, 'validate_concept_implementation'),
+    (validation, 'require_repository_relative_path')])
 def test_receipt_rejects_changed_validator_identity(tmp_path, monkeypatch, owner, field):
     plan, knowledge = _case(tmp_path)
     with index._knowledge_validation_operation(tmp_path):
@@ -157,6 +164,151 @@ def test_receipt_rejects_changed_validator_identity(tmp_path, monkeypatch, owner
         original = getattr(owner, field)
         monkeypatch.setattr(owner, field, lambda *a, **k: original(*a, **k))
         with pytest.raises(TypeError, match='validators'):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_snapshots_mutable_reserved_extension_policy(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setitem(knowledge_graph._CORE_KIND_ANALYZERS, "calls", "dependencies")
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_cannot_skip_changed_local_semantic_helper(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+
+        def refuse(*args, **kwargs):
+            raise model.KnowledgeModelError("structure", "changed local semantic helper")
+
+        monkeypatch.setattr(index, "_require_structure_state", refuse)
+        with pytest.raises(model.KnowledgeModelError, match="changed local semantic helper"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_snapshots_mutable_local_semantic_policy(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setitem(index._STRUCTURAL_SCOPE_BY_PAGE_KIND, index.PageKind.MODULES,
+                            model.ObservationScope.ENTITY)
+        with pytest.raises(model.KnowledgeModelError, match="scope"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+@pytest.mark.parametrize("cycle", ["default", "kwdefault", "partial", "wrapped"])
+def test_receipt_supports_cyclic_callable_metadata_and_tracks_its_policy(tmp_path, monkeypatch, cycle):
+    plan, knowledge = _case(tmp_path)
+    original = model._parse_concept
+
+    def forwarding(value, path, policy=None, *, metadata=None):
+        return original(value, path)
+
+    policy = {"validator": forwarding, "revision": [1]}
+    if cycle == "default":
+        forwarding.__defaults__ = (policy,)
+    elif cycle == "partial":
+        forwarding.__kwdefaults__ = {"metadata": partial(forwarding, metadata=policy)}
+    else:
+        forwarding.__kwdefaults__ = {"metadata": policy}
+        if cycle == "wrapped":
+            forwarding.__wrapped__ = forwarding
+    monkeypatch.setattr(model, "_parse_concept", forwarding)
+    assert index.validate_knowledge_index(knowledge) == knowledge
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+        policy["revision"].append(2)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+@pytest.mark.parametrize("entrypoint", ["partial_args", "partial_keywords", "wrapped_partial", "property_partial"])
+def test_receipt_tracks_active_partial_validator_policy(tmp_path, monkeypatch, entrypoint):
+    plan, knowledge = _case(tmp_path)
+    policy = {"reject": False}
+    original = model._parse_concept
+
+    def configured(policy, value, path, *, metadata=None):
+        if policy["reject"]:
+            raise model.KnowledgeModelError(path, "partial policy now rejects")
+        return original(value, path)
+
+    callback = (partial(configured, policy) if entrypoint == "partial_args"
+                else partial(configured, policy=policy))
+    if entrypoint in {"partial_keywords", "wrapped_partial"}:
+        # The keyword policy precedes the parser arguments, so give the active
+        # callable its ordinary public signature before binding the policy.
+        def configured_keywords(value, path, *, policy, metadata=None):
+            return configured(policy, value, path, metadata=metadata)
+
+        callback = partial(configured_keywords, policy=policy)
+    if entrypoint == "wrapped_partial":
+        def forwarding(value, path):
+            return callback(value, path)
+
+        forwarding.__wrapped__ = callback
+        monkeypatch.setattr(model, "_parse_concept", forwarding)
+    elif entrypoint == "property_partial":
+        original_property = model.RelationshipTarget.endpoint_kind.fget
+        assert original_property is not None
+
+        def endpoint(target, *, policy, metadata=None):
+            return "unexpected" if policy["reject"] else original_property(target)
+
+        callback = partial(endpoint, policy=policy)
+        monkeypatch.setattr(model.RelationshipTarget, "endpoint_kind", property(callback))
+    else:
+        monkeypatch.setattr(model, "_parse_concept", callback)
+    callback.keywords["metadata"] = {"callback": callback}
+    assert index.validate_knowledge_index(knowledge) == knowledge
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+        policy["reject"] = True
+        with pytest.raises(model.KnowledgeModelError, match="partial policy|incompatible"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_rejects_nested_parser_code_change_on_same_function(tmp_path):
+    plan, knowledge = _case(tmp_path)
+    function = model._parse_concept
+    original = function.__code__
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        try:
+            function.__code__ = (lambda value, path: None).__code__
+            with pytest.raises(TypeError, match="validators"):
+                _consume(plan, receipt, tmp_path)
+        finally:
+            function.__code__ = original
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+
+
+def test_receipt_rejects_changed_relationship_semantic_property(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setattr(model.RelationshipTarget, "endpoint_kind", property(lambda self: "none"))
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
+def test_receipt_rejects_changed_implementation_schema_limits(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        monkeypatch.setattr(python_implementation, "MAX_OBJECT_BYTES", 1)
+        with pytest.raises(TypeError, match="validators"):
             _consume(plan, receipt, tmp_path)
 
 

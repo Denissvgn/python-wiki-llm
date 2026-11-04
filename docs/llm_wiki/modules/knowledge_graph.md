@@ -30,6 +30,7 @@ subprocess work, network access, or LLM calls.
 | `collections` | `defaultdict` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass`, `field` |
+| `functools` | `partial` |
 | `json` | `json` |
 | `math` | `math` |
 | `re` | `re` |
@@ -54,20 +55,20 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (14) |
+| Inbound | `src` (15) |
 | Outbound | `src` (6) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGraphError](../entities/KnowledgeGraphError.md) | 111 | `ValueError` | Field-specific typed-graph contract or materialization failure. |
-| [GraphConcept](../entities/GraphConcept.md) | 121 | — | One already-built concept coordinate used for endpoint lifting. |
-| [KnowledgeGraphInputs](../entities/KnowledgeGraphInputs.md) | 133 | — | Complete evaluated inputs for one pure graph materialization. |
-| [_EdgeAccumulator](../entities/EdgeAccumulator.md) | 149 | — | — |
-| [_MaterializationState](../entities/MaterializationState.md) | 206 | — | — |
+| [KnowledgeGraphError](../entities/KnowledgeGraphError.md) | 112 | `ValueError` | Field-specific typed-graph contract or materialization failure. |
+| [GraphConcept](../entities/GraphConcept.md) | 134 | — | One already-built concept coordinate used for endpoint lifting. |
+| [KnowledgeGraphInputs](../entities/KnowledgeGraphInputs.md) | 146 | — | Complete evaluated inputs for one pure graph materialization. |
+| [_EdgeAccumulator](../entities/EdgeAccumulator.md) | 162 | — | — |
+| [_MaterializationState](../entities/MaterializationState.md) | 219 | — | — |
 
 ## Functions
 

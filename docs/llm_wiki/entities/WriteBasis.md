@@ -1,6 +1,6 @@
 # WriteBasis
 
-**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:13`
+**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:15`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [wiki_write_basis](../modules/wiki_write_basis.md)
@@ -14,8 +14,8 @@ _Auto-generated from `WriteBasis` in `src/llm_wiki_cli/services/wiki_write_basis
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `root` | `Path` | *required* | — |
-| `preimages` | `dict[str, bytes]` | *required* | — |
-| `expected` | `dict[str, bytes]` | *required* | — |
+| `preimages` | `Mapping[str, bytes]` | *required* | — |
+| `expected` | `MutableMapping[str, bytes]` | *required* | — |
 | `source_snapshot` | `SourceSnapshot \| None` | *required* | — |
 
 ## Methods
@@ -23,6 +23,7 @@ _Auto-generated from `WriteBasis` in `src/llm_wiki_cli/services/wiki_write_basis
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `assert_current` | `() -> None` | — | — |
+| `bind_committed_state` | `(state: CommittedKnowledgeState) -> None` | — | — |
 | `before_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
 | `after_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
 
@@ -41,7 +42,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [wiki_write_basis](../modules/wiki_write_basis.md) | 3 | `expected`, `preimages`, `root`, `source_snapshot` |
+| [wiki_write_basis](../modules/wiki_write_basis.md) | 4 | `expected`, `preimages`, `root`, `source_snapshot` |
 
 ### Structure
 

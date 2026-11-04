@@ -23,23 +23,23 @@ sequenceDiagram
     participant p9 as contains_uri_authority_userinfo
     participant p10 as require_nonempty_text
     participant p11 as GovernanceError
-    participant p12 as contains_control_character
-    participant p13 as _uri_candidate_contains_authority_userinfo
-    participant p14 as isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
-    participant p15 as value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p16 as TypeError
-    participant p17 as isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)
-    participant p18 as tuple
-    participant p19 as sorted
-    participant p20 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p21 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p22 as _CONTROL_RE.search
-    participant p23 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
-    participant p24 as _SENSITIVE_RE.search
-    participant p25 as _SHA256_RE.fullmatch
-    participant p26 as value.startswith
-    participant p27 as _WINDOWS_ABSOLUTE_RE.match
-    participant p28 as isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
+    participant p12 as _validation_error
+    participant p13 as contains_control_character
+    participant p14 as _uri_candidate_contains_authority_userinfo
+    participant p15 as isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
+    participant p16 as value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p17 as TypeError
+    participant p18 as isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)
+    participant p19 as tuple
+    participant p20 as sorted
+    participant p21 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p22 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p23 as _CONTROL_RE.search
+    participant p24 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
+    participant p25 as _SENSITIVE_RE.search
+    participant p26 as _SHA256_RE.fullmatch
+    participant p27 as value.startswith
+    participant p28 as _WINDOWS_ABSOLUTE_RE.match
     p0->>p1: _review_evidence
     p0->>p2: ReviewEvidence
     p1->>p3: _safe_name
@@ -51,30 +51,30 @@ sequenceDiagram
     p6->>p9: contains_uri_authority_userinfo
     p8->>p10: require_nonempty_text
     p1->>p11: GovernanceError
-    p7->>p12: contains_control_character
-    p9->>p13: _uri_candidate_contains_authority_userinfo
-    p0-->>p14: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)(concept, ConceptRecord)
-    p3-->>p15: value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    p0-->>p16: TypeError('concept must be a ConceptRecord')
-    p1-->>p17: isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)(value, ReviewEvidence)
-    p1-->>p18: tuple(sorted(...))
-    p1-->>p19: sorted(...)
-    p1-->>p18: tuple(sorted(...))
-    p1-->>p19: sorted(...)
-    p3-->>p20: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value, str)
-    p3-->>p21: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value)
-    p3-->>p22: _CONTROL_RE.search(value)
-    p5-->>p23: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
-    p6-->>p24: _SENSITIVE_RE.search(value)
-    p5-->>p25: _SHA256_RE.fullmatch(parsed)
-    p6-->>p26: value.startswith('/')
-    p6-->>p27: _WINDOWS_ABSOLUTE_RE.match(value)
-    p7-->>p28: isinstance (src/llm_wiki_cli/services…uire_no_control_characters)(value, str)
+    p5->>p12: _validation_error
+    p7->>p13: contains_control_character
+    p9->>p14: _uri_candidate_contains_authority_userinfo
+    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)(concept, ConceptRecord)
+    p3-->>p16: value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    p0-->>p17: TypeError('concept must be a ConceptRecord')
+    p1-->>p18: isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)(value, ReviewEvidence)
+    p1-->>p19: tuple(sorted(...))
+    p1-->>p20: sorted(...)
+    p1-->>p19: tuple(sorted(...))
+    p1-->>p20: sorted(...)
+    p3-->>p21: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value, str)
+    p3-->>p22: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value)
+    p3-->>p23: _CONTROL_RE.search(value)
+    p5-->>p24: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
+    p6-->>p25: _SENSITIVE_RE.search(value)
+    p5-->>p26: _SHA256_RE.fullmatch(parsed)
+    p6-->>p27: value.startswith('/')
+    p6-->>p28: _WINDOWS_ABSOLUTE_RE.match(value)
 ```
 
-> Call sequence diagram shows 30 of 67 interactions; 37 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 75 interactions; 45 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 15 (4 omitted); unresolved 6 of 23 (17 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 16 (6 omitted); unresolved 6 of 24 (18 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -83,12 +83,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:current_review_evidence` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_review_evidence` | 6 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_safe_name` | 15 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_no_control_characters` | 22 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 24 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
 | `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | external | 1 |
-| `src/llm_wiki_cli/services/wiki_media.py:_uri_candidate_contains_authority_userinfo` | 39 | - | unresolved | 1 |
-> Omission summary shows 8 of 14 groups; 6 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -99,9 +99,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 30; effect analysis evaluated: 15, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
+Source steps: 36; effect analysis evaluated: 21, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
 
-Collector observations for 15 source steps with known totals: observed: 75, emitted: 75, omitted: 0. Unavailable totals are excluded.
+Collector observations for 21 source steps with known totals: observed: 96, emitted: 96, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.

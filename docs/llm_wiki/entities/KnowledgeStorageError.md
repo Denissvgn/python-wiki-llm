@@ -37,7 +37,7 @@ flowchart LR
     n10["_pack_structure (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n11["decode_member (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n12["inspect_pack (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n13["_concept_aliases (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n13["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -63,7 +63,7 @@ flowchart LR
     click n10 "../modules/knowledge_packs.md"
     click n11 "../modules/knowledge_packs.md"
     click n12 "../modules/knowledge_packs.md"
-    click n13 "../modules/knowledge_storage.md"
+    click n13 "../modules/knowledge_reuse.md"
 ```
 
 ### Summary
@@ -93,6 +93,6 @@ flowchart LR
 | `_pack_structure` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `decode_member` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `inspect_pack` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
-| `_concept_aliases` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
+| `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
 
-> References: showing 12 of 94 logical references; 82 omitted by the 12-row generated summary limit.
+> References: showing 12 of 95 logical references; 83 omitted by the 12-row generated summary limit.

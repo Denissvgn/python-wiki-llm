@@ -50,8 +50,8 @@ sequenceDiagram
     participant p12 as parse_knowledge_index
     participant p13 as _knowledge_index_to_payload_unchecked
     participant p14 as _record
-    participant p15 as require_trimmed_text
-    participant p16 as _parse_extensions
+    participant p15 as _parse_extensions
+    participant p16 as require_trimmed_text
     participant p17 as _basis_to_payload
     participant p18 as _relationship_target_to_payload
     participant p19 as _parse_bundle
@@ -80,8 +80,8 @@ sequenceDiagram
     p2->>p12: parse_knowledge_index
     p2->>p13: _knowledge_index_to_payload_unchecked
     p12->>p14: _record
-    p7->>p15: require_trimmed_text
-    p8->>p16: _parse_extensions
+    p8->>p15: _parse_extensions
+    p7->>p16: require_trimmed_text
     p10->>p17: _basis_to_payload
     p11->>p18: _relationship_target_to_payload
     p12->>p19: _parse_bundle
@@ -98,9 +98,9 @@ sequenceDiagram
     p0-->>p30: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
 ```
 
-> Call sequence diagram shows 30 of 1298 interactions; 1268 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1305 interactions; 1275 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 341 (340 omitted); unresolved 1 of 193 (192 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 342 (341 omitted); unresolved 1 of 194 (193 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,13 +108,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/verification_contracts.py:build_artifact_verification_context` | 1 | - | external | 8 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | unresolved | 1 |
-> Omission summary shows 8 of 302 groups; 294 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 11 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+> Omission summary shows 8 of 305 groups; 297 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -127,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 765; effect analysis evaluated: 492, partial: 12, unavailable: 261. Counts include steps omitted from the displayed trace.
+Source steps: 770; effect analysis evaluated: 501, partial: 12, unavailable: 257. Counts include steps omitted from the displayed trace.
 
-Collector observations for 504 source steps with known totals: observed: 2385, emitted: 2244, omitted: 141. Unavailable totals are excluded.
+Collector observations for 513 source steps with known totals: observed: 2461, emitted: 2318, omitted: 143. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -141,14 +141,14 @@ Collector observations for 504 source steps with known totals: observed: 2385, e
 | `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_sha256` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_sha256` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `require_sha256` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -158,28 +158,28 @@ flowchart LR
     s4["4. _sha256"]
     s5["5. require_sha256"]
     s6["6. isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)"]
-    s7["7. require_trimmed_text"]
-    s8["8. require_nonempty_text"]
-    s9["9. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
-    s10["10. value.strip"]
-    s11["11. contains_control_character"]
-    s12["12. pattern.search"]
+    s7["7. _validation_error"]
+    s8["8. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s9["9. error"]
+    s10["10. require_trimmed_text"]
+    s11["11. require_nonempty_text"]
+    s12["12. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…fact_verification_context)('knowledge must be a KnowledgeIndex')" .-> s3
     s1 -->|"_sha256(knowledge_hash, 'knowledge_hash')"| s4
     s4 -->|"require_sha256(value, digest_error=VerificationContractError(...))"| s5
     s5 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)(value, str)" .-> s6
-    s5 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s7
-    s7 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s9
-    s8 -. "value.strip(data not statically known)" .-> s10
-    s8 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s11
-    s11 -. "pattern.search(value)" .-> s12
+    s5 -->|"_validation_error(digest_error, error_context)"| s7
+    s7 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s8
+    s7 -. "error(context)" .-> s9
+    s5 -->|"require_trimmed_text(value, error=text_error, error_context=error_context, reject_control_characters=reject_control_characters)"| s10
+    s10 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s11
+    s11 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s12
     click s1 "../modules/verification_contracts.md"
     click s4 "../modules/verification_contracts.md"
     click s5 "../modules/validation.md"
     click s7 "../modules/validation.md"
-    click s8 "../modules/validation.md"
+    click s10 "../modules/validation.md"
     click s11 "../modules/validation.md"
 ```
 
@@ -191,14 +191,14 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | - | - | - | - |
 | `_sha256` | `value: object`, `field_name: str` | - | - | `require_sha256(...)` |
-| `require_sha256` | `value: object`, `digest_error: Exception`, `text_error: Exception \| None`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
+| `require_sha256` | `value: object`, `digest_error: _ValidationError`, `text_error: _ValidationError \| None`, `error_context: str`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
 | `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | - | - | - | - |
-| `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
-| `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
+| `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
+| `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
-| `value.strip` | - | - | - | - |
-| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
-| `pattern.search` | - | - | - | - |
 
 ### Call data
 
@@ -208,13 +208,13 @@ flowchart LR
 | build_artifact_verification_context | TypeError (src/llm_wiki_cli/services…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
 | build_artifact_verification_context | _sha256 | 354 | `_sha256(knowledge_hash, 'knowledge_hash')` |
 | _sha256 | require_sha256 | 1454 | `require_sha256(value, digest_error=VerificationContractError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1146 | `isinstance(value, str)` |
-| require_sha256 | require_trimmed_text | 1150 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1159 | `isinstance(value, str)` |
+| require_sha256 | _validation_error | 1160 | `_validation_error(digest_error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_sha256 | require_trimmed_text | 1163 | `require_trimmed_text(value, error=text_error, error_context=error_context, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -226,10 +226,10 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `build_artifact_verification_context` | `isinstance` | 352 |
 | external_call | `build_artifact_verification_context` | `TypeError` | 353 |
-| external_call | `require_sha256` | `isinstance` | 1146 |
-| external_call | `require_nonempty_text` | `isinstance` | 631 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
+| external_call | `require_sha256` | `isinstance` | 1159 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| external_call | `require_nonempty_text` | `isinstance` | 637 |
 | step_limit | `build_artifact_verification_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_artifact_verification_context` | `depth limit` | 0 |
 

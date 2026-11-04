@@ -98,9 +98,9 @@ sequenceDiagram
     p3-->>p30: counts.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1947 interactions; 1917 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1944 interactions; 1914 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 509 (508 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 510 (509 omitted); unresolved 1 of 333 (332 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 10 | - | external | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 15 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 15 | - | unresolved | 1 |
 > Omission summary shows 8 of 478 groups; 470 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -127,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1107; effect analysis evaluated: 727, partial: 23, unavailable: 357. Counts include steps omitted from the displayed trace.
+Source steps: 1102; effect analysis evaluated: 733, partial: 23, unavailable: 346. Counts include steps omitted from the displayed trace.
 
-Collector observations for 750 source steps with known totals: observed: 3756, emitted: 3535, omitted: 221. Unavailable totals are excluded.
+Collector observations for 756 source steps with known totals: observed: 3843, emitted: 3620, omitted: 223. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -147,7 +147,7 @@ Collector observations for 750 source steps with known totals: observed: 3756, e
 | `isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parse_knowledge_index` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_record` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -196,7 +196,7 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)` | - | - | - | - |
 | `parse_knowledge_index` | `payload: object` | `KNOWLEDGE_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` | - | `model` |
 | `_record` | `value: object`, `path: str`, `fields: AbstractSet[str]`, `required: AbstractSet[str]` | - | - | `(...)` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | - | - | `dict(...)` |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR`, `_UTF8_ERROR` | - | `dict(...)` |
 | `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | - | - | - | - |
 
 ### Call data
@@ -205,15 +205,15 @@ flowchart LR
 |---|---|---:|---|
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 264 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
 | evaluate_knowledge_freshness | require_validated_artifacts | 263 | `require_validated_artifacts(knowledge)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 177 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 178 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 195 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 182 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 185 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 199 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 266 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 265 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
-| parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1694 | `dict(require_mapping(...))` |
+| parse_knowledge_index | _record | 551 | `_record(payload, '', {...}, required={...})` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1633 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1719 | `dict(require_mapping(...))` |
 
 ### Boundary effects
 
@@ -224,10 +224,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 264 |
-| external_call | `require_validated_artifacts` | `isinstance` | 177 |
-| external_call | `require_validated_artifacts` | `TypeError` | 178 |
 | external_call | `require_validated_artifacts` | `isinstance` | 181 |
-| external_call | `require_validated_artifacts` | `TypeError` | 195 |
+| external_call | `require_validated_artifacts` | `TypeError` | 182 |
+| external_call | `require_validated_artifacts` | `isinstance` | 185 |
+| external_call | `require_validated_artifacts` | `TypeError` | 199 |
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 266 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |

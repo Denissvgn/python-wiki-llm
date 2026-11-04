@@ -24,28 +24,39 @@ Streams the existing compact, sorted UTF-8 JSON representation in bounded chunks
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/canonical_json.py"]
-    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n2["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n3["src/llm_wiki_cli/services/manifest_storage.py"]
+    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n3["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n4["src/llm_wiki_cli/services/manifest_storage.py"]
+    n5["src/llm_wiki_cli/services/sync_analysis_storage.py"]
     n1 --> n0
+    n1 --> n2
+    n1 --> n4
     n2 --> n0
-    n2 --> n1
-    n2 --> n3
     n3 --> n0
-    n3 --> n1
+    n3 --> n2
+    n3 --> n4
+    n4 --> n0
+    n4 --> n1
+    n4 --> n2
+    n5 --> n0
     click n0 "../modules/canonical_json.md"
-    click n1 "../modules/knowledge_storage.md"
-    click n2 "../modules/knowledge_stream_audit.md"
-    click n3 "../modules/manifest_storage.md"
+    click n1 "../modules/knowledge_artifacts.md"
+    click n2 "../modules/knowledge_storage.md"
+    click n3 "../modules/knowledge_stream_audit.md"
+    click n4 "../modules/manifest_storage.md"
+    click n5 "../modules/sync_analysis_storage.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
 | Inbound | [manifest_storage](../modules/manifest_storage.md) |
+| Inbound | [sync_analysis_storage](../modules/sync_analysis_storage.md) |
 
 ## Classes
 

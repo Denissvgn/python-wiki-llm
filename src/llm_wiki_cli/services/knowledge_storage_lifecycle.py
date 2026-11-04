@@ -131,20 +131,27 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str, target_m
 
 def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
                               recovery_dir: str | Path | None = None,
-                              to: str = "sharded-v2") -> dict[str, Any]:
+                              to: str = "sharded-v2",
+                              manifest_format: str | None = None) -> dict[str, Any]:
+    """Migrate storage, optionally indexing its manifest in the same commit."""
     if type(dry_run) is not bool or to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("request", "unsupported storage migration request")
+    if manifest_format not in (None, "indexed-v6", "indexed-v8"):
+        raise KnowledgeStorageError("manifest_format", "must be indexed-v6 or indexed-v8")
+    if manifest_format is not None and to in {"indexed-v6", "indexed-v8"}:
+        raise KnowledgeStorageError("manifest_format", "requires a knowledge storage migration target")
     try:
         operation = maintenance_write_operation(wiki_dir, dry_run=dry_run) if load_adoption_marker(wiki_dir) is not None else nullcontext()
         with operation:
-            return _migrate_knowledge_storage(wiki_dir, dry_run=dry_run, recovery_dir=recovery_dir, to=to)
+            return _migrate_knowledge_storage(wiki_dir, dry_run=dry_run, recovery_dir=recovery_dir,
+                                              to=to, manifest_format=manifest_format)
     except MaintenanceProtocolError as exc:
         raise KnowledgeStorageError("maintenance", str(exc), code=exc.reason) from exc
 
 
 def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
                                recovery_dir: str | Path | None,
-                               to: str) -> dict[str, Any]:
+                               to: str, manifest_format: str | None = None) -> dict[str, Any]:
     """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
@@ -154,14 +161,15 @@ def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
     adopted = state.manifest_basis.maintenance_state is not None
-    if to == "indexed-v8" and not adopted:
-        raise KnowledgeStorageError("to", "indexed-v8 requires explicit maintenance adoption")
-    if to == "indexed-v6" and adopted:
-        raise KnowledgeStorageError("to", "adopted authority cannot be downgraded to indexed-v6; select indexed-v8")
-    manifest_target = to if to in {"indexed-v6", "indexed-v8"} else None
+    manifest_target = to if to in {"indexed-v6", "indexed-v8"} else manifest_format
+    manifest_field = "manifest_format" if manifest_format is not None else "to"
+    if manifest_target == "indexed-v8" and not adopted:
+        raise KnowledgeStorageError(manifest_field, "indexed-v8 requires explicit maintenance adoption")
+    if manifest_target == "indexed-v6" and adopted:
+        raise KnowledgeStorageError(manifest_field, "adopted authority cannot be downgraded to indexed-v6; select indexed-v8")
     plan = build_knowledge_commit_plan(root, surface_index_bytes=previous[SURFACE_INDEX_FILENAME],
         knowledge_index=state.knowledge, manifest=state.manifest_basis.without_artifact_hashes(),
-        knowledge_format=None if manifest_target is not None else to,
+        knowledge_format=None if to in {"indexed-v6", "indexed-v8"} else to,
         manifest_format=manifest_target,
         prior=state.validated_artifacts)
     # The complete v1 logical model was validated before encoding; the plan's
@@ -183,6 +191,9 @@ def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
                                  else PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2"),
               "authority_preserved": ["Markdown", "governance ledger", "review history"],
               "git_history_changed": False}
+    if manifest_format is not None:
+        report["manifest_format"] = manifest_format
+        report["manifest_minimum_reader"] = "manifest/v8" if manifest_format == "indexed-v8" else "manifest/v6"
     if dry_run:
         session.recheck()
         return report

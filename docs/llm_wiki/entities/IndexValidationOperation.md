@@ -1,6 +1,6 @@
 # _IndexValidationOperation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:324`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:335`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

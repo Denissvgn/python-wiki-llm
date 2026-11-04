@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
@@ -15,16 +15,23 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
+    from .knowledge_orchestration import CommittedKnowledgeState
 
 from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes
 from .io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest, MAX_EXPANDED_BYTES
 from .knowledge_storage_io import read_guarded, _absolute_path
+from .progress import observed_phase
+from .storage_spool import ByteSpool
 
 ADOPTION_FILENAME = ".llm-wiki-maintenance-adoption.json"
 STORAGE_LOCK_FILENAME = "llm-wiki-storage.lock"
 _OWNED_STORAGE: ContextVar[tuple | None] = ContextVar("llm_wiki_storage_owner", default=None)
 _OWNED_GOVERNANCE: ContextVar[tuple | None] = ContextVar("llm_wiki_governance_owner", default=None)
+_STORAGE_STAGING_ISSUER = object()
+_PUBLICATION_ROOTS = (
+    ".llm-wiki-surface.json", ".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ADOPTION_FILENAME,
+)
 
 
 class MaintenanceProtocolError(ValueError):
@@ -137,14 +144,13 @@ def guard_maintenance_owner(wiki_dir: str | Path, manifest=None):
     return marker
 
 
-def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> dict[str, bytes]:
+def _wiki_files(wiki_dir: str | Path, *, include_transient=False):
     root = _absolute_path(Path(wiki_dir))
     if not root.exists():
-        return {}
-    result = {}
+        return
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
-        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"}:
+        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"} or path.name == "llm-wiki-sync-analysis.lock":
             continue
         if not include_transient and relative.startswith((".llm-wiki-locks/", ".llm-wiki-page-moves-")):
             continue
@@ -152,27 +158,108 @@ def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> d
             raise MaintenanceProtocolError("unsafe-wiki", "Maintenance preimage cannot follow symbolic links")
         if path.is_dir():
             continue
-        raw = read_guarded(path, MAX_EXPANDED_BYTES).content
-        result[relative] = raw
-    return result
+        yield path, relative
+
+
+def snapshot_wiki(wiki_dir: str | Path, *, include_transient: bool = False) -> dict[str, bytes]:
+    return {relative: read_guarded(path, MAX_EXPANDED_BYTES).content
+            for path, relative in _wiki_files(wiki_dir, include_transient=include_transient)}
+
+
+@observed_phase("maintenance_snapshot")
+def _capture_spooled_wiki(root: Path, spool: ByteSpool) -> None:
+    for path, relative in _wiki_files(root):
+        if len(spool) >= 100_000:
+            raise MaintenanceProtocolError("wiki-limit", "Maintenance recovery file limit exceeded")
+        spool[relative] = read_guarded(path, MAX_EXPANDED_BYTES).content
+
+
+@dataclass(frozen=True)
+class _StorageStagingAuthority:
+    basis: object
+    state: CommittedKnowledgeState
+    source_snapshot: SourceSnapshot
+    _issued: object | None = field(default=None, init=False, repr=False)
+    _active: bool = field(default=True, init=False, repr=False)
+
+
+def _hash_addressed_storage(relative: str, content: bytes) -> bool:
+    from .knowledge_storage import object_path
+    from .manifest_storage import object_path as manifest_object_path
+    from .knowledge_packs import PACK_NAME, index_path, index_page_path
+
+    commitment = digest(content)
+    if relative in {object_path(commitment), manifest_object_path(commitment),
+                    index_path(commitment), index_page_path(commitment)}:
+        return True
+    packed = PACK_NAME.fullmatch(relative)
+    return packed is not None and packed.group(2) == commitment[7:]
 
 
 @dataclass
 class WikiWriteBasis:
     root: Path
-    expected: dict[str, bytes]
+    expected: MutableMapping[str, bytes]
     source_snapshot: SourceSnapshot | None = None
     recovery_directory: Path | None = None
     eligible_images: dict[str, list[str | None]] | None = None
     include_transient: bool = False
-    preimages: dict[str, bytes] = field(init=False)
+    recovery_marker: dict | None = None
+    recovery_started: bool = True
+    changed: bool = False
+    preimages: Mapping[str, bytes] = field(init=False)
+    _storage_staging: _StorageStagingAuthority | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
-        self.preimages = dict(self.expected)
+        self.preimages = self.expected.fork() if isinstance(self.expected, ByteSpool) else dict(self.expected)
 
     def _relative(self, path: Path) -> str | None:
         absolute = _absolute_path(path)
         return absolute.relative_to(self.root).as_posix() if absolute.is_relative_to(self.root) else None
+
+    def bind_committed_state(self, state: CommittedKnowledgeState) -> None:
+        """Bind one owning sync's validated prior closure, never a caller skip flag."""
+        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+        from .knowledge_orchestration import CommittedKnowledgeState
+
+        if (ACTIVE_WRITE_BASIS.get() is not self or self.changed
+                or self.source_snapshot is None or self.recovery_marker is None):
+            raise MaintenanceProtocolError("staging-owner", "Storage staging requires its unchanged active adopted writer")
+        if not isinstance(state, CommittedKnowledgeState):
+            raise TypeError("storage staging requires an issued committed knowledge state")
+        state.require_for(self.root)
+        if state.artifacts is None:
+            raise TypeError("storage staging requires a complete validated committed closure")
+        for name in _PUBLICATION_ROOTS:
+            captured = state.captured_bytes.get(name)
+            if captured is None or self.preimages.get(name) != captured or self.expected.get(name) != captured:
+                raise MaintenanceProtocolError("staging-owner", "Committed roots differ from the adopted writer's exact preimage")
+        self._close_storage_staging()
+        authority = _StorageStagingAuthority(self, state, self.source_snapshot)
+        object.__setattr__(authority, "_issued", _STORAGE_STAGING_ISSUER)
+        self._storage_staging = authority
+
+    def _close_storage_staging(self) -> None:
+        if self._storage_staging is not None:
+            object.__setattr__(self._storage_staging, "_active", False)
+        self._storage_staging = None
+
+    def _is_unreferenced_storage_staging(self, relative, content, previous, current) -> bool:
+        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+
+        authority = self._storage_staging
+        if (not isinstance(authority, _StorageStagingAuthority) or not authority._active
+                or authority._issued is not _STORAGE_STAGING_ISSUER or authority.basis is not self
+                or ACTIVE_WRITE_BASIS.get() is not self or self.source_snapshot is not authority.source_snapshot
+                or content is None or previous is not None or current is not None or relative in self.preimages):
+            return False
+        authority.state.require_for(self.root)
+        artifacts = authority.state.artifacts
+        if artifacts is None or relative in artifacts.storage_objects:
+            return False
+        if any(self.expected.get(name) != authority.state.captured_bytes.get(name) for name in _PUBLICATION_ROOTS):
+            return False
+        return _hash_addressed_storage(relative, content)
 
     def before_write(self, path: Path, content: bytes | None) -> None:
         relative = self._relative(path)
@@ -180,8 +267,6 @@ class WikiWriteBasis:
             return
         if relative == ".llm-wiki-manifest.json":
             self.assert_current()
-        else:
-            self.assert_source_current()
         previous = self.expected.get(relative)
         if relative == ADOPTION_FILENAME and previous is not None and previous != content:
             raise MaintenanceProtocolError("adoption-immutable", "Maintenance adoption marker cannot be replaced or removed")
@@ -191,7 +276,20 @@ class WikiWriteBasis:
             current = None
         if current != previous:
             raise MaintenanceProtocolError("wiki-changed", f"Captured wiki input changed before publication: {relative}")
+        if current == content:
+            return
+        staging = self._is_unreferenced_storage_staging(relative, content, previous, current)
+        if relative in _PUBLICATION_ROOTS:
+            self._close_storage_staging()
+        if relative != ".llm-wiki-manifest.json":
+            if not staging:
+                self.assert_source_current()
         if self.recovery_directory is not None:
+            if not self.recovery_started:
+                save_recovery_snapshot(self.recovery_directory, self.preimages,
+                                       marker=self.recovery_marker, kind="captured-preimage",
+                                       owner_root=self.root)
+                self.recovery_started = True
             if self.eligible_images is None:
                 self.eligible_images = {name: [digest(raw)] for name, raw in self.expected.items()}
             images = self.eligible_images.setdefault(relative, [None])
@@ -212,18 +310,28 @@ class WikiWriteBasis:
         relative = self._relative(path)
         if relative is None:
             return
+        previous = self.expected.get(relative)
+        if previous != content:
+            self.changed = True
         if content is None:
             self.expected.pop(relative, None)
             return
-        if relative == ADOPTION_FILENAME and relative in self.expected and self.expected[relative] != content:
+        if relative == ADOPTION_FILENAME and previous is not None and previous != content:
             raise MaintenanceProtocolError("adoption-immutable", "Maintenance adoption marker cannot be replaced")
         if read_guarded(_absolute_path(path), max(1, len(content))).content != content:
             raise MaintenanceProtocolError("wiki-changed", "Published wiki bytes changed during the operation")
-        self.expected[relative] = content
+        if previous != content:
+            self.expected[relative] = content
 
+    @observed_phase("maintenance_verification")
     def assert_current(self) -> None:
         self.assert_source_current()
-        if snapshot_wiki(self.root, include_transient=self.include_transient) != self.expected:
+        seen = set()
+        for path, relative in _wiki_files(self.root, include_transient=self.include_transient):
+            seen.add(relative)
+            if relative not in self.expected or read_guarded(path, MAX_EXPANDED_BYTES).content != self.expected[relative]:
+                raise MaintenanceProtocolError("wiki-changed", "Wiki changed outside its captured publication operation")
+        if seen != set(self.expected):
             raise MaintenanceProtocolError("wiki-changed", "Wiki changed outside its captured publication operation")
 
     def assert_source_current(self) -> None:
@@ -234,12 +342,21 @@ class WikiWriteBasis:
                 raise MaintenanceProtocolError("source-changed", "Source changed after maintenance capture")
 
 
-def save_recovery_snapshot(directory: Path, files: dict[str, bytes], *, marker: dict | None, kind="committed"):
+@observed_phase("maintenance_recovery")
+def save_recovery_snapshot(directory: Path, files: Mapping[str, bytes], *, marker: dict | None,
+                           kind="committed", owner_root: Path | None = None):
+    if owner_root is not None:
+        from .maintenance_recovery import save_recovery_catalog
+        return save_recovery_catalog(directory, files, marker=marker, kind=kind, owner_root=owner_root)
     root = _absolute_path(directory)
     ensure_guarded_directory(root, mode=0o700)
     metadata = {"schema_version": "llm-wiki-maintenance-recovery/v1", "marker": marker, "kind": kind,
-                "files": {name: {"hash": digest(raw), "bytes": len(raw)} for name, raw in sorted(files.items())}}
-    for name, raw in {**files, "maintenance-recovery.json": canonical_bytes(metadata)}.items():
+                "files": {name: {"hash": digest(raw), "bytes": len(raw)}
+                          for name in sorted(files) for raw in (files[name],)}}
+    def entries():
+        yield from files.items()
+        yield "maintenance-recovery.json", canonical_bytes(metadata)
+    for name, raw in entries():
         path = root / name
         ensure_guarded_directory(path.parent, mode=0o700)
         prior = read_guarded(path, MAX_EXPANDED_BYTES).content if path.exists() or path.is_symlink() else None
@@ -250,12 +367,39 @@ def save_recovery_snapshot(directory: Path, files: dict[str, bytes], *, marker: 
     return metadata
 
 
-def _recovery_directory(root: Path, files: dict[str, bytes]) -> Path:
-    from .knowledge_governance import _governance_lock_root
+def _recovery_parent(root: Path) -> Path:
+    """Resolve regular Git metadata and linked-worktree common dirs guardedly."""
+    for ancestor in (root, *root.parents):
+        git = ancestor / ".git"
+        if not git.exists() and not git.is_symlink():
+            continue
+        if first_unsafe_path_component(git) is not None:
+            raise MaintenanceProtocolError("recovery-path", "Recovery Git metadata cannot follow symbolic links")
+        if git.is_dir():
+            return _absolute_path(git)
+        raw = read_guarded(git, 8192).content.decode("utf-8").strip()
+        if not raw.startswith("gitdir: ") or "\n" in raw or "\r" in raw:
+            raise MaintenanceProtocolError("recovery-path", "Invalid linked-worktree Git metadata")
+        metadata = _absolute_path(ancestor / raw[len("gitdir: "):])
+        common_file = metadata / "commondir"
+        if common_file.exists() or common_file.is_symlink():
+            location = read_guarded(common_file, 8192).content.decode("utf-8").strip()
+            if not location or "\n" in location or "\r" in location:
+                raise MaintenanceProtocolError("recovery-path", "Invalid linked-worktree common directory")
+            metadata = _absolute_path(metadata / location)
+        if not metadata.is_dir():
+            raise MaintenanceProtocolError("recovery-path", "Recovery Git directory is unavailable")
+        return metadata
+    return root.parent / ".llm-wiki-maintenance-recovery"
 
-    lock_root = _governance_lock_root(root)
-    parent = lock_root if lock_root != root else root.parent / ".llm-wiki-maintenance-recovery"
-    key = digest(canonical_bytes({name: digest(raw) for name, raw in sorted(files.items())}))[7:]
+
+def _recovery_directory(root: Path, files: Mapping[str, bytes], marker=None) -> Path:
+    from .maintenance_recovery import recovery_catalog_key
+
+    parent = _recovery_parent(root)
+    marker = marker if marker is not None else load_adoption_marker(root)
+    hashes = files.content_hashes() if isinstance(files, ByteSpool) else {name: digest(files[name]) for name in sorted(files)}
+    key = recovery_catalog_key(root, marker, hashes)
     return parent / "maintenance-preimages" / key
 
 
@@ -274,21 +418,29 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
         if marker is None:
             yield None
             return
-        files = snapshot_wiki(root)
-        directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files)
-        if directory == root or directory.is_relative_to(root):
-            raise MaintenanceProtocolError("recovery-path", "Recovery preimages must be outside the managed wiki")
-        save_recovery_snapshot(directory, files, marker=marker, kind="captured-preimage")
-        basis = WikiWriteBasis(root, dict(files), recovery_directory=directory)
-        token = ACTIVE_WRITE_BASIS.set(basis)
-        try:
-            yield basis
-            basis.assert_current()
-            committed = snapshot_wiki(root)
-            committed_directory = _recovery_directory(root, committed) / "committed"
-            save_recovery_snapshot(committed_directory, committed, marker=marker)
-        finally:
-            ACTIVE_WRITE_BASIS.reset(token)
+        with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
+                       max_entry_bytes=MAX_EXPANDED_BYTES) as files:
+            _capture_spooled_wiki(root, files)
+            directory = _absolute_path(Path(recovery_dir)) if recovery_dir is not None else _recovery_directory(root, files, marker)
+            if directory == root or directory.is_relative_to(root):
+                raise MaintenanceProtocolError("recovery-path", "Recovery preimages must be outside the managed wiki")
+            basis = WikiWriteBasis(root, files.fork(), recovery_directory=directory,
+                                   recovery_marker=marker, recovery_started=False)
+            token = ACTIVE_WRITE_BASIS.set(basis)
+            try:
+                yield basis
+                basis.assert_current()
+                if basis.changed:
+                    from .maintenance_recovery import mark_recovery_complete, retain_recovery_catalogs
+
+                    committed_directory = _recovery_directory(root, basis.expected, marker) / "committed"
+                    save_recovery_snapshot(committed_directory, basis.expected, marker=marker, owner_root=root)
+                    mark_recovery_complete(directory, committed_directory)
+                    retain_recovery_catalogs(committed_directory.parent.parent, owner_root=root,
+                                             marker=marker, newest_committed=committed_directory)
+            finally:
+                basis._close_storage_staging()
+                ACTIVE_WRITE_BASIS.reset(token)
 
 
 def unlink_maintenance_page(path: Path) -> None:

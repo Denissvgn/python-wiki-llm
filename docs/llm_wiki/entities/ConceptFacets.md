@@ -1,6 +1,6 @@
 # ConceptFacets
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:364`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:389`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

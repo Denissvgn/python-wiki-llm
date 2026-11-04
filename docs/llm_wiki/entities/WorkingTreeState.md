@@ -1,6 +1,6 @@
 # WorkingTreeState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:206`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:231`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

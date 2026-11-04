@@ -878,7 +878,7 @@ def governance_lock(
 ) -> Iterator[None]:
     """Hold the dedicated non-blocking governance mutation lock."""
 
-    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, "llm-wiki-storage.lock"}:
+    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, "llm-wiki-storage.lock", "maintenance-recovery.lock", "llm-wiki-sync-analysis.lock"}:
         raise GovernanceError("lock", "unknown mutation lock")
     root = Path(wiki_dir)
     if first_unsafe_path_component(root) is not None:

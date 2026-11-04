@@ -190,7 +190,7 @@ flowchart LR
 | _without_github_expression | InstallCiError | 93 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 101 | `_validated_project_path(value, label=label)` |
 | _validated_project_path | require_repository_relative_path | 69 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 299 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -203,7 +203,7 @@ flowchart LR
 | external_call | `normalize_action_ref` | `isinstance` | 63 |
 | unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 63 |
 | unresolved_call | `normalize_action_ref` | `value.lower` | 65 |
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | step_limit | `render_managed_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `render_managed_workflow` | `depth limit` | 0 |
 

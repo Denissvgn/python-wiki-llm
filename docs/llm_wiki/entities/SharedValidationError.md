@@ -1,6 +1,6 @@
 # SharedValidationError
 
-**Location:** `src/llm_wiki_cli/services/validation.py:93`
+**Location:** `src/llm_wiki_cli/services/validation.py:98`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [validation](../modules/validation.md)

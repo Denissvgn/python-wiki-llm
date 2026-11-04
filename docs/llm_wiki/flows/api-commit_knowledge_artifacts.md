@@ -93,7 +93,7 @@ sequenceDiagram
     p2-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 856 interactions; 826 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 860 interactions; 830 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 357 (356 omitted); unresolved 1 of 154 (153 omitted). These counts cover the captured static trace.
 
@@ -109,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:storage_writer_lock` | 8 | - | external | 2 |
-> Omission summary shows 8 of 213 groups; 205 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 215 groups; 207 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -122,9 +122,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 346; effect analysis evaluated: 190, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
+Source steps: 350; effect analysis evaluated: 194, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
 
-Collector observations for 203 source steps with known totals: observed: 1004, emitted: 979, omitted: 25. Unavailable totals are excluded.
+Collector observations for 207 source steps with known totals: observed: 1018, emitted: 992, omitted: 26. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -201,14 +201,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 727 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 728 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 729 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 730 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 731 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 732 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | storage_writer_lock | 738 | `storage_writer_lock(root)` |
-| storage_writer_lock | _absolute_path | 49 | `_absolute_path(Path(...))` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 850 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 851 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 852 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 853 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 854 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 855 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | storage_writer_lock | 861 | `storage_writer_lock(root)` |
+| storage_writer_lock | _absolute_path | 56 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -223,12 +223,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 727 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 728 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 729 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 730 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 731 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 732 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 850 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 851 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 852 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 853 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 854 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 855 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |

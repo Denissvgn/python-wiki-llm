@@ -345,6 +345,8 @@ def run(args):
                                             source_selection=source_selection, _seed_legacy=_seed_legacy_for_current_defaults)
     except (ValueError, OSError) as exc:
         print(f"Error upgrading native defaults: {exc}", file=sys.stderr)
+        for note in getattr(exc, "__notes__", ()):
+            print(note, file=sys.stderr)
         raise SystemExit(2) from exc
     if current.get("recovery_dir"):
         print(f"Native upgrade recovery: {current['recovery_dir']}")

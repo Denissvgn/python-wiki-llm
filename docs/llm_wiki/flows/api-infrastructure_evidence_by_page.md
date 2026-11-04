@@ -22,25 +22,26 @@ sequenceDiagram
     participant p8 as _valid_repository_path
     participant p9 as require_repository_relative_path
     participant p10 as require_sha256
-    participant p11 as is_portable_relative_path
-    participant p12 as require_portable_relative_path
-    participant p13 as require_trimmed_text
-    participant p14 as require_nonempty_text
-    participant p15 as _default_path_error
-    participant p16 as _check_path_collision
-    participant p17 as require_portable_path_component
-    participant p18 as ConceptObservationBasis
-    participant p19 as _valid_page_path
-    participant p20 as is_valid_sha256
-    participant p21 as require_string
+    participant p11 as require_string
+    participant p12 as is_portable_relative_path
+    participant p13 as require_portable_relative_path
+    participant p14 as require_trimmed_text
+    participant p15 as require_nonempty_text
+    participant p16 as _default_path_error
+    participant p17 as _check_path_collision
+    participant p18 as require_portable_path_component
+    participant p19 as ConceptObservationBasis
+    participant p20 as _valid_page_path
+    participant p21 as is_valid_sha256
     participant p22 as _syntax_key
-    participant p23 as _known_syntax
-    participant p24 as _remember_syntax
-    participant p25 as SharedValidationError
-    participant p26 as portable_path_key
-    participant p27 as contains_control_character
-    participant p28 as list
-    participant p29 as state.get
+    participant p23 as _validation_error
+    participant p24 as _known_syntax
+    participant p25 as _remember_syntax
+    participant p26 as SharedValidationError
+    participant p27 as portable_path_key
+    participant p28 as contains_control_character
+    participant p29 as list
+    participant p30 as state.get
     p0->>p1: _prior_infrastructure_state
     p0->>p2: _record_mapping
     p0->>p3: build_infrastructure_observation_basis
@@ -51,31 +52,31 @@ sequenceDiagram
     p2->>p8: _valid_repository_path
     p5->>p9: require_repository_relative_path
     p6->>p10: require_sha256
-    p8->>p11: is_portable_relative_path
-    p11->>p12: require_portable_relative_path
-    p10->>p13: require_trimmed_text
-    p13->>p14: require_nonempty_text
-    p12->>p15: _default_path_error
-    p12->>p16: _check_path_collision
-    p12->>p17: require_portable_path_component
-    p3->>p18: ConceptObservationBasis
-    p2->>p19: _valid_page_path
-    p2->>p20: is_valid_sha256
-    p7->>p21: require_string
+    p7->>p11: require_string
+    p8->>p12: is_portable_relative_path
+    p12->>p13: require_portable_relative_path
+    p10->>p14: require_trimmed_text
+    p14->>p15: require_nonempty_text
+    p13->>p16: _default_path_error
+    p13->>p17: _check_path_collision
+    p13->>p18: require_portable_path_component
+    p3->>p19: ConceptObservationBasis
+    p2->>p20: _valid_page_path
+    p2->>p21: is_valid_sha256
     p9->>p22: _syntax_key
-    p9->>p23: _known_syntax
-    p9->>p24: _remember_syntax
-    p15->>p25: SharedValidationError
-    p16->>p26: portable_path_key
-    p14->>p27: contains_control_character
-    p0-->>p28: list(sources.items(...))
-    p0-->>p29: state.get('sources')
-    p0-->>p29: state.get('tombstones')
+    p10->>p23: _validation_error
+    p9->>p24: _known_syntax
+    p9->>p25: _remember_syntax
+    p16->>p26: SharedValidationError
+    p17->>p27: portable_path_key
+    p15->>p28: contains_control_character
+    p0-->>p29: list(sources.items(...))
+    p0-->>p30: state.get('sources')
 ```
 
-> Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 175 interactions; 145 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 55 (54 omitted); unresolved 2 of 47 (45 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 48 (47 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -89,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_record_mapping` | 11 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_valid_repository_path` | 18 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 40 groups; 32 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -102,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 64; effect analysis evaluated: 35, partial: 4, unavailable: 25. Counts include steps omitted from the displayed trace.
+Source steps: 72; effect analysis evaluated: 43, partial: 4, unavailable: 25. Counts include steps omitted from the displayed trace.
 
-Collector observations for 39 source steps with known totals: observed: 209, emitted: 184, omitted: 25. Unavailable totals are excluded.
+Collector observations for 47 source steps with known totals: observed: 237, emitted: 212, omitted: 25. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

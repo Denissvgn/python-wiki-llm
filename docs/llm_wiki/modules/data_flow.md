@@ -96,7 +96,7 @@ flowchart LR
 | `_incoming_edge_queues` | `(edges: list[dict]) -> dict[tuple, tuple[dict, ...]]` | — | — |
 | `_coverage_count` | `(value: object, field_name: str) -> int` | — | — |
 | `_data_effect_coverage_index` | `(observations: Mapping \| None) -> dict[tuple[str, str], dict[str, dict]] \| None` | — | — |
-| `build_data_flow_context` | `(inventory: dict, edges: list[dict], *, data_effect_observations: Mapping \| None = None) -> DataFlowAnalysisContext` | — | Build reusable indexes for analyzing one or more user flows. |
+| `build_data_flow_context` | `(inventory: dict, edges: list[dict], *, data_effect_observations: Mapping \| None = None, include_detailed: bool = False) -> DataFlowAnalysisContext` | — | Build reusable indexes for analyzing one or more user flows. |
 | `_effect_list` | `(effects: dict, key: str) -> list[dict]` | — | — |
 | `_expr_text` | `(expr: dict) -> str` | — | — |
 | `_call_args` | `(call: dict \| None) -> list[str]` | — | — |

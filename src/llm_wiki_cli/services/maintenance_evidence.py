@@ -25,6 +25,8 @@ from .maintenance_state import (
     new_identity,
     validate_maintenance_adoption,
     validate_maintenance_state,
+    _maintenance_reconciliation,
+    _has_reconciliation_owner,
 )
 from .python_implementation import comparison_id
 from .knowledge_storage import digest
@@ -412,7 +414,9 @@ def captured_observations_from_knowledge(
                 page_semantics is not None and not target_exists
             )
             target_presence = (
-                "deleted" if confirmed_target_missing else old["target_presence"]
+                "present" if target_exists
+                else "deleted" if confirmed_target_missing
+                else old["target_presence"]
             )
             prose = (
                 page_semantics[old["target"]["section_locator"]]["prose_hash"]
@@ -527,7 +531,44 @@ def reconcile_pending_maintenance(
                     )
                 initial[record_id] = deepcopy(observed)
         return core.initial_state(guard, initial)
-    current = validate_maintenance_state(previous_state)
+    if _has_reconciliation_owner():
+        # Public allocation callbacks may reconcile another independent owner.
+        # Such nested work uses the strict public transition path and cannot
+        # borrow the outer invocation's validation or private mutable state.
+        operation = _StrictMaintenanceReconciliation(previous_state, core)
+        return _reconcile_existing_maintenance(
+            operation, guard, capture, confirmed_transfers, ambiguous_transfers, allocate_id,
+        )
+    with _maintenance_reconciliation(previous_state, core) as operation:
+        return _reconcile_existing_maintenance(
+            operation, guard, capture, confirmed_transfers, ambiguous_transfers, allocate_id,
+        )
+
+
+class _StrictMaintenanceReconciliation:
+    def __init__(self, previous_state, core):
+        self._core = core
+        self._state = validate_maintenance_state(previous_state)
+
+    def _apply_owned(self, state, event, current_basis):
+        if state is not self._state:
+            raise MaintenanceError("reconciliation-owner", "event belongs to another private owner")
+        self._state = self._core.transition(state, event, current_basis)
+        return self._state
+
+    def _event_owned(self, state, record_id, kind, **fields):
+        return _event(state, record_id, kind, **fields)
+
+    def finish(self):
+        self._core.validate_state(self._state)
+        return self._state
+
+
+def _reconcile_existing_maintenance(
+    operation, guard, capture, confirmed_transfers, ambiguous_transfers, allocate_id,
+):
+    current = operation._state
+    core = operation._core
     if current["adoption_id"] != guard["adoption_id"] or current[
         "guard_hash"
     ] != canonical_hash(guard):
@@ -539,9 +580,9 @@ def reconcile_pending_maintenance(
     for transfer in confirmed_transfers:
         record_id = transfer["record_id"]
         observed = deepcopy(transfer["observation"])
-        current = core.transition(
+        current = operation._apply_owned(
             current,
-            _event(
+            operation._event_owned(
                 current,
                 record_id,
                 "confirm-move",
@@ -568,9 +609,9 @@ def reconcile_pending_maintenance(
             for candidate in transfer["candidates"]
         )
         observed = deepcopy(transfer["observation"])
-        current = core.transition(
+        current = operation._apply_owned(
             current,
-            _event(
+            operation._event_owned(
                 current,
                 record_id,
                 "ambiguous-move",
@@ -584,6 +625,14 @@ def reconcile_pending_maintenance(
         owner_key(o["coordinate"], o["target"]): record_id
         for record_id, o in current["observations"].items()
     }
+    deleted_implementations, divergent_deleted_coordinates = {}, set()
+    for historical in current["observations"].values():
+        if historical["presence"] != "deleted":
+            continue
+        coordinate = canonical_hash(historical["coordinate"])
+        previous = deleted_implementations.setdefault(coordinate, historical["implementation"])
+        if previous != historical["implementation"]:
+            divergent_deleted_coordinates.add(coordinate)
     for key in sorted(incoming):
         observed = incoming[key]
         record_id = existing.get(key)
@@ -592,20 +641,33 @@ def reconcile_pending_maintenance(
         if record_id is None:
             if observed["presence"] == observed["target_presence"] == "present":
                 record_id = allocate_id()
-                current = core.transition(
+                current = operation._apply_owned(
                     current,
-                    _event(current, record_id, "register", observation=observed),
+                    operation._event_owned(current, record_id, "register", observation=observed),
                     observed["basis"],
                 )
                 existing[key] = record_id
             continue
         old = current["observations"][record_id]
+        if (old["presence"] == "deleted" and observed["presence"] == "present"
+                and observed["coordinate"] == old["coordinate"] and observed["target"] == old["target"]
+                and observed["target_presence"] == "present" and observed["basis"]["prose_hash"] is not None
+                and canonical_hash(old["coordinate"]) not in divergent_deleted_coordinates):
+            # Physical prose can be retained or restored without reviving the
+            # deleted source identity. Keep its unavailable execution/history;
+            # only an explicit transfer may resolve ownership again.
+            # Strict deletion synchronizes source peers, so divergent historical
+            # producers keep their original conservative unresolved behavior.
+            observed = core.observation(
+                old["implementation"], observed["basis"]["prose_hash"],
+                presence="deleted", target=old["target"], target_presence="present",
+            )
         if observed == old:
             continue
         if observed["presence"] == "deleted":
-            current = core.transition(
+            current = operation._apply_owned(
                 current,
-                _event(current, record_id, "delete", observation=observed),
+                operation._event_owned(current, record_id, "delete", observation=observed),
                 observed["basis"],
             )
         elif old["presence"] != "present" or observed["presence"] != "present":
@@ -624,24 +686,23 @@ def reconcile_pending_maintenance(
                     target=old["target"],
                 )
                 if refreshed != old:
-                    current = core.transition(
+                    current = operation._apply_owned(
                         current,
-                        _event(current, record_id, "observe", observation=refreshed),
+                        operation._event_owned(current, record_id, "observe", observation=refreshed),
                         refreshed["basis"],
                     )
-                current = core.transition(
+                current = operation._apply_owned(
                     current,
-                    _event(current, record_id, "delete-target", observation=observed),
+                    operation._event_owned(current, record_id, "delete-target", observation=observed),
                     observed["basis"],
                 )
             else:
-                current = core.transition(
+                current = operation._apply_owned(
                     current,
-                    _event(current, record_id, "observe", observation=observed),
+                    operation._event_owned(current, record_id, "observe", observation=observed),
                     observed["basis"],
                 )
-    core.validate_state(current)
-    return current
+    return operation.finish()
 
 
 @dataclass(frozen=True)

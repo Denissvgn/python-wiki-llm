@@ -226,7 +226,8 @@ def test_governance_fault_retains_complete_recoverable_ordinary_authority(tmp_pa
     with pytest.raises(RuntimeError):
         _run(["init", "--wiki-dir", str(wiki), "--bundle-id", "kb_interrupted_review"])
     assert SyncManifest.load(wiki).maintenance_state is not None
-    recovery_roots = list((tmp_path / ".llm-wiki-maintenance-recovery/maintenance-preimages").glob("*"))
+    recovery_roots = [path for path in (tmp_path / ".llm-wiki-maintenance-recovery/maintenance-preimages").glob("*")
+                      if (path / "maintenance-recovery.json").is_file()]
     assert len(recovery_roots) == 1
     restored = recover_maintenance_authority(wiki, recovery_dir=recovery_roots[0],
                                             expected_adoption_id=adopted["adoption_id"], allow_captured_preimage=True)
@@ -283,7 +284,8 @@ def test_dirty_prose_sync_fault_restores_exact_inputs_then_converges(tmp_path, m
         with patch.object(sys, "argv", ["llm-wiki", "sync", "--src-dir", "src", "--wiki-dir", "wiki", "--no-plugins"]):
             with pytest.raises(RuntimeError):
                 cli.main()
-    recovery_roots = list((tmp_path / ".llm-wiki-maintenance-recovery/maintenance-preimages").glob("*"))
+    recovery_roots = [path for path in (tmp_path / ".llm-wiki-maintenance-recovery/maintenance-preimages").glob("*")
+                      if (path / "maintenance-recovery.json").is_file()]
     assert len(recovery_roots) == 1
     with pytest.raises(MaintenanceProtocolError, match="explicit"):
         load_recovery_snapshot(recovery_roots[0])

@@ -1,8 +1,8 @@
 """Shared, side-effect-free validators for service-layer contracts.
 
-The helpers in this module deliberately receive caller-owned exceptions.  That
-keeps domain-specific exception types and established diagnostic text at the
-service boundary while ensuring the underlying acceptance rules cannot drift.
+The helpers receive caller-owned exceptions, or reusable factories in hot
+validation paths. Factories receive the caller's error context only on failure,
+preserving domain diagnostics without allocating exceptions for valid values.
 """
 
 from __future__ import annotations
@@ -87,7 +87,12 @@ def _check_path_collision(canonical, collision_seen, collision_error):
             raise collision_error(previous, canonical)
 
 _ErrorFactory = Callable[[tuple[str, ...]], Exception]
+_ValidationError = Exception | Callable[[str], Exception]
 _EnumValue = TypeVar("_EnumValue")
+
+
+def _validation_error(error: _ValidationError, context: str) -> Exception:
+    return error if isinstance(error, Exception) else error(context)
 
 
 class SharedValidationError(ValueError):
@@ -619,8 +624,9 @@ def portable_page_component(value: object, *, fallback: str = "page") -> str:
 def require_nonempty_text(
     value: object,
     *,
-    error: Exception,
-    trim_error: Exception | None = None,
+    error: _ValidationError,
+    trim_error: _ValidationError | None = None,
+    error_context: str = "",
     normalize: bool = False,
     require_trimmed: bool = False,
     reject_control_characters: bool = True,
@@ -629,15 +635,15 @@ def require_nonempty_text(
     """Return non-empty text under an explicit normalization policy."""
 
     if not isinstance(value, str):
-        raise error
+        raise _validation_error(error, error_context)
     trimmed = value.strip()
     parsed = trimmed if normalize else value
     if not parsed:
-        raise error
+        raise _validation_error(error, error_context)
     if require_trimmed and trimmed != value:
-        raise trim_error or error
+        raise _validation_error(trim_error or error, error_context)
     if reject_control_characters and contains_control_character(parsed, reject_delete_character=reject_delete_character):
-        raise error
+        raise _validation_error(error, error_context)
     return parsed
 
 
@@ -696,7 +702,8 @@ def contains_control_character(
 def require_trimmed_text(
     value: object,
     *,
-    error: Exception,
+    error: _ValidationError,
+    error_context: str = "",
     reject_control_characters: bool = True,
 ) -> str:
     """Return non-empty text with canonical surrounding whitespace."""
@@ -704,6 +711,7 @@ def require_trimmed_text(
     return require_nonempty_text(
         value,
         error=error,
+        error_context=error_context,
         require_trimmed=True,
         reject_control_characters=reject_control_characters,
     )
@@ -744,44 +752,46 @@ def require_trimmed_text_list(
 def require_string(
     value: object,
     *,
-    error: Exception,
-    utf8_error: Exception | None = None,
+    error: _ValidationError,
+    utf8_error: _ValidationError | None = None,
+    error_context: str = "",
 ) -> str:
     """Return a string, optionally requiring UTF-8-encodable scalar text."""
 
     if not isinstance(value, str):
-        raise error
+        raise _validation_error(error, error_context)
     if utf8_error is not None:
         try:
             value.encode("utf-8")
         except UnicodeEncodeError as exc:
-            raise utf8_error from exc
+            raise _validation_error(utf8_error, error_context) from exc
     return value
 
 
 def require_mapping(
     value: object,
     *,
-    error: Exception,
+    error: _ValidationError,
+    error_context: str = "",
     require_string_keys: bool = False,
-    key_error: Exception | None = None,
+    key_error: _ValidationError | None = None,
     require_utf8_keys: bool = False,
-    utf8_key_error: Exception | None = None,
+    utf8_key_error: _ValidationError | None = None,
 ) -> Mapping[str, Any]:
     """Return a mapping with optional JSON string/scalar key requirements."""
 
     if not isinstance(value, Mapping):
-        raise error
+        raise _validation_error(error, error_context)
     if require_string_keys or require_utf8_keys:
         for key in value:
             if not isinstance(key, str):
-                raise key_error or error
+                raise _validation_error(key_error or error, error_context)
             if not require_utf8_keys:
                 continue
             try:
                 key.encode("utf-8")
             except UnicodeEncodeError as exc:
-                raise utf8_key_error or key_error or error from exc
+                raise _validation_error(utf8_key_error or key_error or error, error_context) from exc
     return value
 
 
@@ -804,11 +814,11 @@ def require_sequence(
     return value
 
 
-def require_list(value: object, *, error: Exception) -> list[Any]:
+def require_list(value: object, *, error: _ValidationError, error_context: str = "") -> list[Any]:
     """Return a concrete list without accepting other sequence types."""
 
     if not isinstance(value, list):
-        raise error
+        raise _validation_error(error, error_context)
     return value
 
 
@@ -820,20 +830,20 @@ def require_bool(value: object, *, error: Exception) -> bool:
     return value
 
 
-def require_int(value: object, *, error: Exception) -> int:
+def require_int(value: object, *, error: _ValidationError, error_context: str = "") -> int:
     """Return a strict integer (booleans are not integers here)."""
 
     if isinstance(value, bool) or not isinstance(value, int):
-        raise error
+        raise _validation_error(error, error_context)
     return value
 
 
-def require_nonnegative_int(value: object, *, error: Exception) -> int:
+def require_nonnegative_int(value: object, *, error: _ValidationError, error_context: str = "") -> int:
     """Return a strict non-negative integer (booleans are not integers here)."""
 
-    parsed = require_int(value, error=error)
+    parsed = require_int(value, error=error, error_context=error_context)
     if parsed < 0:
-        raise error
+        raise _validation_error(error, error_context)
     return parsed
 
 
@@ -848,14 +858,15 @@ def nonnegative_int_or_none(value: object) -> int | None:
 def require_positive_int(
     value: object,
     *,
-    invalid_error: Exception,
-    zero_error: Exception | None = None,
+    invalid_error: _ValidationError,
+    zero_error: _ValidationError | None = None,
+    error_context: str = "",
 ) -> int:
     """Return a strict positive integer."""
 
-    parsed = require_nonnegative_int(value, error=invalid_error)
+    parsed = require_nonnegative_int(value, error=invalid_error, error_context=error_context)
     if parsed == 0:
-        raise zero_error or invalid_error
+        raise _validation_error(zero_error or invalid_error, error_context)
     return parsed
 
 
@@ -892,29 +903,30 @@ def require_bounded_int(
 def require_bounded_integral_number(
     value: object,
     *,
-    invalid_error: Exception,
+    invalid_error: _ValidationError,
+    error_context: str = "",
     minimum: int | None = None,
     maximum: int | None = None,
-    bounds_error: Exception | None = None,
-    zero_error: Exception | None = None,
+    bounds_error: _ValidationError | None = None,
+    zero_error: _ValidationError | None = None,
 ) -> int:
     """Return an int or finite integral float within optional inclusive bounds."""
 
     if isinstance(value, bool):
-        raise invalid_error
+        raise _validation_error(invalid_error, error_context)
     if isinstance(value, int):
         parsed = value
     elif isinstance(value, float) and math.isfinite(value) and value.is_integer():
         parsed = int(value)
     else:
-        raise invalid_error
+        raise _validation_error(invalid_error, error_context)
     if (
         (minimum is not None and parsed < minimum)
         or (maximum is not None and parsed > maximum)
     ):
-        raise bounds_error or invalid_error
+        raise _validation_error(bounds_error or invalid_error, error_context)
     if parsed == 0 and zero_error is not None:
-        raise zero_error
+        raise _validation_error(zero_error, error_context)
     return parsed
 
 
@@ -1135,8 +1147,9 @@ def require_member(
 def require_sha256(
     value: object,
     *,
-    digest_error: Exception,
-    text_error: Exception | None = None,
+    digest_error: _ValidationError,
+    text_error: _ValidationError | None = None,
+    error_context: str = "",
     reject_control_characters: bool = True,
     allow_empty: bool = False,
 ) -> str:
@@ -1144,18 +1157,19 @@ def require_sha256(
 
     if text_error is None:
         if not isinstance(value, str):
-            raise digest_error
+            raise _validation_error(digest_error, error_context)
         parsed = value
     else:
         parsed = require_trimmed_text(
             value,
             error=text_error,
+            error_context=error_context,
             reject_control_characters=reject_control_characters,
         )
     if allow_empty and parsed == "":
         return parsed
     if _SHA256_RE.fullmatch(parsed) is None:
-        raise digest_error
+        raise _validation_error(digest_error, error_context)
     return parsed
 
 
@@ -1238,7 +1252,8 @@ def require_exact_fields(
     *,
     allowed: Iterable[str],
     required: Iterable[str],
-    mapping_error: Exception,
+    mapping_error: _ValidationError,
+    error_context: str = "",
     missing_error: _ErrorFactory,
     unknown_error: _ErrorFactory,
     invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception]
@@ -1249,7 +1264,7 @@ def require_exact_fields(
     """Require an exact/allowed mapping shape with caller-owned diagnostics."""
 
     if not isinstance(value, Mapping):
-        raise mapping_error
+        raise _validation_error(mapping_error, error_context)
     keys = {str(key) for key in value} if stringify_keys else set(value)
     allowed_keys = set(allowed)
     required_keys = set(required)

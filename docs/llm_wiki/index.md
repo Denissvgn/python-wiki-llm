@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 673 | [Open section](#entities) |
-| Modules | 257 | [Open section](#modules) |
-| Workflows | 237 | [Open section](#workflows) |
+| Entities | 677 | [Open section](#entities) |
+| Modules | 259 | [Open section](#modules) |
+| Workflows | 245 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -210,6 +210,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [FastAPIScanner](entities/FastAPIScanner.md)
 - [FaultInjector](entities/FaultInjector.md)
 - [FieldPolicy](entities/FieldPolicy.md)
+- [FlowAnalysisContext](entities/FlowAnalysisContext.md)
 - [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
 - [FlowOverview](entities/FlowOverview.md)
 - [FlowResult](entities/FlowResult.md)
@@ -375,6 +376,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MaintenanceCore](entities/MaintenanceCore.md)
 - [MaintenanceProtocolError](entities/MaintenanceProtocolError.md)
 - [MaintenanceQueueResult](entities/MaintenanceQueueResult.md)
+- [MaintenanceReconciliation](entities/MaintenanceReconciliation.md)
 - [MaintenanceRecordResult](entities/MaintenanceRecordResult.md)
 - [MaintenanceRecoveryResult](entities/MaintenanceRecoveryResult.md)
 - [MaintenanceStatusReport](entities/MaintenanceStatusReport.md)
@@ -593,7 +595,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [StagedPageMove](entities/StagedPageMove.md)
 - [StaticCallQueryOptions](entities/StaticCallQueryOptions.md)
 - [StorageReadSession](entities/StorageReadSession.md)
+- [StorageStagingAuthority](entities/StorageStagingAuthority.md)
 - [StreamCapture](entities/StreamCapture.md)
+- [StrictMaintenanceReconciliation](entities/StrictMaintenanceReconciliation.md)
 - [StructuralFacet](entities/StructuralFacet.md)
 - [StructureUpgradeResult](entities/StructureUpgradeResult.md)
 - [SupervisorReconciliation](entities/SupervisorReconciliation.md)
@@ -828,6 +832,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [maintenance_projection](modules/maintenance_projection.md) - Bounded inspection projections of the separately owned maintenance ledger.
 - [maintenance_protocol](modules/maintenance_protocol.md) - Immutable adoption detection and guarded maintenance publication basis.
 - [maintenance_queue](modules/maintenance_queue.md) - Advisory managed-page selection from existing freshness and worklist evidence.
+- [maintenance_recovery](modules/maintenance_recovery.md) - Complete maintenance recovery catalogs backed by immutable deduplicated bytes.
 - [maintenance_service](modules/maintenance_service.md) - Local maintenance adoption and captured authority operations.
 - [maintenance_shapes](modules/maintenance_shapes.md) - Strict maintenance payload shapes without a JSON Schema runtime dependency.
 - [maintenance_state](modules/maintenance_state.md) - Pure durable maintenance authority and explicit source/prose review transitions.
@@ -911,6 +916,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
 - [sync_analysis_cache](modules/sync_analysis_cache.md) - Optional static sync inputs authenticated by the last complete commit.
+- [sync_analysis_storage](modules/sync_analysis_storage.md) - Bounded content-addressed persistence for advisory sync analysis captures.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
 - [sync_generated_sections](modules/sync_generated_sections.md) - Source-grounded repairs of retained entity/module generated sections.
 - [sync_manifest](modules/sync_manifest.md) - Persistent sync state with explicit versioned maintenance adoption.
@@ -1002,7 +1008,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_knowledge_commit_plan](workflows/build_knowledge_commit_plan.md) - entry: `knowledge_artifacts.build_knowledge_commit_plan`
 - [build_knowledge_context_from_captured_read](workflows/build_knowledge_context_from_captured_read.md) - entry: `context_packet._build_knowledge_context_from_captured_read`
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
-- [build_knowledge_index](workflows/build_knowledge_index.md) - entry: `knowledge_index.build_knowledge_index`
 - [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
 - [build_maintenance_queue](workflows/build_maintenance_queue.md) - entry: `maintenance_queue.build_maintenance_queue`
 - [build_maintenance_status](workflows/build_maintenance_status.md) - entry: `maintenance_status.build_maintenance_status`
@@ -1036,6 +1041,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [classify_uncovered_python_sources](workflows/classify_uncovered_python_sources.md) - entry: `module_coverage.classify_uncovered_python_sources`
 - [clean_agent_schemas](workflows/clean_agent_schemas.md) - entry: `uninstall_cmd._clean_agent_schemas`
 - [collect_lint_inputs](workflows/collect_lint_inputs.md) - entry: `lint_service._collect_lint_inputs`
+- [collect_recovery_blobs](workflows/collect_recovery_blobs.md) - entry: `maintenance_recovery._collect_recovery_blobs`
 - [collect_runtime](workflows/collect_runtime.md) - entry: `documentation_native._collect_runtime`
 - [commit_sharded](workflows/commit_sharded.md) - entry: `knowledge_artifacts._commit_sharded`
 - [committed_artifact_snapshot](workflows/committed_artifact_snapshot.md) - entry: `knowledge_cmd._committed_artifact_snapshot`
@@ -1065,6 +1071,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
 - [get_yaml_infrastructure_inventory](workflows/get_yaml_infrastructure_inventory.md) - entry: `infrastructure_inventory.get_yaml_infrastructure_inventory`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
+- [hash_addressed_storage](workflows/hash_addressed_storage.md) - entry: `maintenance_protocol._hash_addressed_storage`
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
@@ -1088,7 +1095,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [load_snapshot_knowledge_observability](workflows/load_snapshot_knowledge_observability.md) - entry: `knowledge_observability.load_snapshot_knowledge_observability`
 - [maintenance_cmd_flow](workflows/maintenance_cmd_flow.md) - entry: `maintenance_cmd.run`
 - [maintenance_report_from_captured](workflows/maintenance_report_from_captured.md) - entry: `maintenance_service.maintenance_report_from_captured`
+- [maintenance_reuse_check](workflows/maintenance_reuse_check.md) - entry: `knowledge_reuse.maintenance_reuse_check`
+- [maintenance_write_operation](workflows/maintenance_write_operation.md) - entry: `maintenance_protocol.maintenance_write_operation`
 - [manifest_content](workflows/manifest_content.md) - entry: `team._manifest_content`
+- [mark_recovery_complete](workflows/mark_recovery_complete.md) - entry: `maintenance_recovery._mark_recovery_complete`
 - [merge_explicit_consumed_input](workflows/merge_explicit_consumed_input.md) - entry: `knowledge_orchestration._merge_explicit_consumed_input`
 - [merge_inventory_results](workflows/merge_inventory_results.md) - entry: `extraction_service._merge_inventory_results`
 - [migrate_knowledge_storage](workflows/migrate_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._migrate_knowledge_storage`
@@ -1144,6 +1154,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
 - [restore_pruned_storage](workflows/restore_pruned_storage.md) - entry: `knowledge_storage_lifecycle.restore_pruned_storage`
+- [retain_recovery_catalogs](workflows/retain_recovery_catalogs.md) - entry: `maintenance_recovery._retain_recovery_catalogs`
 - [retained_page_repairs](workflows/retained_page_repairs.md) - entry: `sync_transitions._retained_page_repairs`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
@@ -1157,6 +1168,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
 - [save](workflows/save.md) - entry: `sync_analysis_cache.save`
 - [save_record](workflows/save_record.md) - entry: `bootstrap_recovery._save_record`
+- [save_recovery_catalog](workflows/save_recovery_catalog.md) - entry: `maintenance_recovery._save_recovery_catalog`
 - [save_recovery_snapshot](workflows/save_recovery_snapshot.md) - entry: `maintenance_protocol.save_recovery_snapshot`
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`
@@ -1171,6 +1183,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [unchanged_commit_result](workflows/unchanged_commit_result.md) - entry: `knowledge_reuse.unchanged_commit_result`
 - [upgrade_cmd_flow](workflows/upgrade_cmd_flow.md) - entry: `upgrade_cmd.run`
 - [upgrade_current_knowledge](workflows/upgrade_current_knowledge.md) - entry: `current_contracts.upgrade_current_knowledge`
+- [valid_cached_implementation](workflows/valid_cached_implementation.md) - entry: `extraction_service._valid_cached_implementation`
+- [validate_artifact_parity](workflows/validate_artifact_parity.md) - entry: `knowledge_artifacts._validate_artifact_parity`
 - [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
 - [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`

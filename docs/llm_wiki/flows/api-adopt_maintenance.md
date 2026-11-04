@@ -2,7 +2,7 @@
 
 **Entry point:** `adopt_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 60 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 61 more
 
 **Complete modules touched:**
 
@@ -46,6 +46,7 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -98,15 +99,15 @@ sequenceDiagram
     participant p17 as save_recovery_snapshot
     participant p18 as commit_knowledge_artifacts
     participant p19 as capture_context_read
-    participant p20 as ensure_guarded_directory
-    participant p21 as guard_incomplete_bootstrap
-    participant p22 as current_manifest_format
-    participant p23 as read_guarded
-    participant p24 as SyncManifest.load
-    participant p25 as validate_maintenance_adoption
-    participant p26 as governance_lock
-    participant p27 as canonical_bytes
-    participant p28 as canonical_hash
+    participant p20 as save_recovery_catalog
+    participant p21 as _wiki_files
+    participant p22 as guard_incomplete_bootstrap
+    participant p23 as current_manifest_format
+    participant p24 as read_guarded
+    participant p25 as SyncManifest.load
+    participant p26 as validate_maintenance_adoption
+    participant p27 as governance_lock
+    participant p28 as canonical_bytes
     participant p29 as type (src/llm_wiki_cli/api.py:adopt_maintenance)
     participant p30 as view.manifest_basis.with_maintenance_state
     p0->>p1: adopt_maintenance_authority
@@ -128,22 +129,22 @@ sequenceDiagram
     p1->>p17: save_recovery_snapshot
     p1->>p18: commit_knowledge_artifacts
     p11->>p19: capture_context_read
-    p17->>p20: ensure_guarded_directory
-    p8->>p21: guard_incomplete_bootstrap
-    p16->>p22: current_manifest_format
-    p7->>p23: read_guarded
-    p8->>p24: SyncManifest.load
-    p7->>p25: validate_maintenance_adoption
-    p5->>p26: governance_lock
-    p7->>p27: canonical_bytes
-    p13->>p28: canonical_hash
+    p17->>p20: save_recovery_catalog
+    p9->>p21: _wiki_files
+    p8->>p22: guard_incomplete_bootstrap
+    p16->>p23: current_manifest_format
+    p7->>p24: read_guarded
+    p8->>p25: SyncManifest.load
+    p7->>p26: validate_maintenance_adoption
+    p5->>p27: governance_lock
+    p7->>p28: canonical_bytes
     p0-->>p29: type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)
     p1-->>p30: view.manifest_basis.with_maintenance_state(state)
 ```
 
-> Call sequence diagram shows 30 of 3196 interactions; 3166 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2987 interactions; 2957 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1074 (1073 omitted); unresolved 1 of 745 (744 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 986 (985 omitted); unresolved 1 of 716 (715 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 5 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 755 groups; 747 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 746 groups; 738 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -170,9 +171,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1378; effect analysis evaluated: 895, partial: 58, unavailable: 425. Counts include steps omitted from the displayed trace.
+Source steps: 1286; effect analysis evaluated: 849, partial: 62, unavailable: 375. Counts include steps omitted from the displayed trace.
 
-Collector observations for 953 source steps with known totals: observed: 5898, emitted: 5548, omitted: 350. Unavailable totals are excluded.
+Collector observations for 911 source steps with known totals: observed: 5641, emitted: 5371, omitted: 270. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

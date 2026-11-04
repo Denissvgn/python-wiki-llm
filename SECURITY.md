@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-LLM Wiki CLI is currently alpha-stage software. Security fixes target the latest
+LLM Wiki CLI is currently beta-stage software. Security fixes target the latest
 released package and the `main` branch. Older versions may not receive separate
 patch releases.
 

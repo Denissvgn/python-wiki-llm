@@ -55,35 +55,47 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
     ensure_guarded_directory(recovery_base, mode=0o700)
     recovery = Path(tempfile.mkdtemp(prefix=identity + "-", dir=recovery_base))
     _absolute_path(recovery)
-    if not root.exists() and not adopted:
-        from .knowledge_consumption import load_knowledge_read_view
-        from .maintenance_protocol import snapshot_wiki, save_recovery_snapshot
+    try:
+        if not root.exists() and not adopted:
+            from .knowledge_consumption import load_knowledge_read_view
+            from .maintenance_protocol import snapshot_wiki, save_recovery_snapshot
 
-        # Only an independently valid uncommitted legacy surface can be seeded.
-        # A newer commitment to missing native data is corruption, not legacy.
-        if manifest.exists():
-            payload = json.loads(manifest.read_bytes())
-            if payload.get("version") not in (1, 2, 3, 4) or payload.get("artifact_hashes"):
-                raise ValueError("Missing committed native authority requires recovery")
-        if surface.exists() or surface.is_symlink():
-            view = load_knowledge_read_view(wiki, snapshot_only=True)
-            if view.availability != "absent":
-                raise ValueError("Missing committed native authority requires recovery")
-        save_recovery_snapshot(recovery / "legacy", snapshot_wiki(wiki), marker=None, kind="legacy-preimage")
-        if _seed_legacy is None:
-            raise ValueError("Legacy native setup requires owning project init or upgrade")
-        _seed_legacy(src_dir, wiki, helper_cache_dir=helper_cache_dir, source_selection=source_selection)
+            # Only an independently valid uncommitted legacy surface can be seeded.
+            # A newer commitment to missing native data is corruption, not legacy.
+            if manifest.exists():
+                payload = json.loads(manifest.read_bytes())
+                if payload.get("version") not in (1, 2, 3, 4) or payload.get("artifact_hashes"):
+                    raise ValueError("Missing committed native authority requires recovery")
+            if surface.exists() or surface.is_symlink():
+                view = load_knowledge_read_view(wiki, snapshot_only=True)
+                if view.availability != "absent":
+                    raise ValueError("Missing committed native authority requires recovery")
+            save_recovery_snapshot(recovery / "legacy", snapshot_wiki(wiki), marker=None, kind="legacy-preimage")
+            if _seed_legacy is None:
+                raise ValueError("Legacy native setup requires owning project init or upgrade")
+            _seed_legacy(src_dir, wiki, helper_cache_dir=helper_cache_dir, source_selection=source_selection)
 
-    _committed_inputs(wiki)
-    # Ownership adoption captures source/helper bases before publishing. It
-    # creates pending ordinary maintenance, never synthetic human approval.
-    if not adopted:
-        adopt_maintenance_authority(src_dir, wiki, recovery_dir=recovery / "adoption",
-            manifest_format=CURRENT_MANIFEST_FORMAT, helper_cache_dir=helper_cache_dir,
-            source_selection=source_selection, allow_external_src=allow_external_src, _captured=_captured)
-    if current_knowledge_format(wiki) != CURRENT_KNOWLEDGE_FORMAT:
-        migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT, recovery_dir=recovery / "knowledge")
-    if current_manifest_format(wiki) != CURRENT_MANIFEST_FORMAT:
-        migrate_knowledge_storage(wiki, to=CURRENT_MANIFEST_FORMAT, recovery_dir=recovery / "manifest")
-    _committed_inputs(wiki)
+        _committed_inputs(wiki)
+        # Pack knowledge and index its manifest together: either legacy root may
+        # exceed the publication limit. The pre-adoption catalog remains v6;
+        # only explicit adoption can publish the maintenance-owned v8 authority.
+        if current_knowledge_format(wiki) != CURRENT_KNOWLEDGE_FORMAT:
+            migrate_knowledge_storage(wiki, to=CURRENT_KNOWLEDGE_FORMAT,
+                manifest_format=CURRENT_MANIFEST_FORMAT if adopted else "indexed-v6",
+                recovery_dir=recovery / "knowledge")
+        # Ownership adoption captures source/helper bases before publishing. It
+        # creates pending ordinary maintenance, never synthetic human approval.
+        if not adopted:
+            adopt_maintenance_authority(src_dir, wiki, recovery_dir=recovery / "adoption",
+                manifest_format=CURRENT_MANIFEST_FORMAT, helper_cache_dir=helper_cache_dir,
+                source_selection=source_selection, allow_external_src=allow_external_src, _captured=_captured)
+        if current_manifest_format(wiki) != CURRENT_MANIFEST_FORMAT:
+            migrate_knowledge_storage(wiki, to=CURRENT_MANIFEST_FORMAT, recovery_dir=recovery / "manifest")
+        _committed_inputs(wiki)
+    except BaseException as exc:
+        # Preserve the original failure type and ownership diagnostics while
+        # exposing retained preimages on failure or cancellation. Process-control
+        # exceptions are annotated and immediately re-raised, never swallowed.
+        exc.add_note(f"Native upgrade recovery: {recovery}")
+        raise
     return {"changed": True, "state": "current", "recovery_dir": str(recovery)}
