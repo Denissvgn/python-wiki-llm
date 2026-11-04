@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import shutil
 
 import pytest
 
@@ -386,18 +387,25 @@ def test_failed_attempt_delete_cas_preserves_replacements_and_primary_failure(tm
     assert storage._pending(path).exists()
 
 
-def test_attempt_cleanup_preserves_owner_replaced_after_initial_validation(tmp_path, monkeypatch):
+@pytest.mark.parametrize("replace_after", ["shard", "descriptor"])
+def test_attempt_cleanup_preserves_owner_replaced_after_initial_validation(tmp_path, monkeypatch, replace_after):
     path = tmp_path / "capture.json"
-    _leave_interrupted_attempt(path, monkeypatch)
+    abandoned = _leave_interrupted_attempt(path, monkeypatch)
+    assert len(abandoned) > 1
     pending = storage._pending(path)
     owner = pending / storage._ATTEMPT_OWNER
     replacement = b"concurrently replaced owner"
     unlink = storage.unlink_guarded_bytes
     replaced = []
+    removed_shards = []
 
     def replace_owner_after_descriptor(target, *, expected):
         unlink(target, expected=expected)
-        if target.parent == pending and target != owner and not replaced:
+        if target.parent == storage._objects(path):
+            removed_shards.append(target)
+        boundary = (target.parent == storage._objects(path) if replace_after == "shard"
+                    else target.parent == pending and target != owner)
+        if boundary and not replaced:
             owner.write_bytes(replacement)
             replaced.append(True)
 
@@ -406,6 +414,70 @@ def test_attempt_cleanup_preserves_owner_replaced_after_initial_validation(tmp_p
         storage._recover_pending(path, 8192)
     assert replaced
     assert owner.read_bytes() == replacement
+    assert len(removed_shards) == 1
+    remaining = abandoned - set(removed_shards)
+    assert all(target.exists() for target in remaining)
+    assert all((pending / target.name).exists() for target in remaining)
+    if replace_after == "shard":
+        assert (pending / removed_shards[0].name).exists()
+
+
+@pytest.mark.parametrize("replace_after", ["validation", "descriptor"])
+def test_attempt_cleanup_never_adopts_replaced_directory_with_identical_contents(tmp_path, monkeypatch, replace_after):
+    path = tmp_path / "capture.json"
+    abandoned = _leave_interrupted_attempt(path, monkeypatch)
+    pending = storage._pending(path)
+    original = tmp_path / "original-pending"
+    records = storage._pending_records
+    unlink = storage.unlink_guarded_bytes
+    replacement_contents = {}
+
+    def replace_directory():
+        pending.rename(original)
+        shutil.copytree(original, pending)
+        replacement_contents.update({entry.name: entry.read_bytes() for entry in pending.iterdir()})
+
+    def validate_then_replace(target):
+        result = records(target)
+        if replace_after == "validation":
+            replace_directory()
+        return result
+
+    def unlink_then_replace(target, *, expected):
+        unlink(target, expected=expected)
+        if replace_after == "descriptor" and target.parent == pending and target.name != storage._ATTEMPT_OWNER:
+            replace_directory()
+
+    monkeypatch.setattr(storage, "_pending_records", validate_then_replace)
+    monkeypatch.setattr(storage, "unlink_guarded_bytes", unlink_then_replace)
+    with pytest.raises(OSError, match="directory changed after preflight"):
+        storage._recover_pending(path, 8192)
+    assert replacement_contents
+    assert {entry.name: entry.read_bytes() for entry in pending.iterdir()} == replacement_contents
+    assert sum(target.exists() for target in abandoned) == len(abandoned) - (replace_after == "descriptor")
+
+
+def test_attempt_cleanup_preserves_empty_directory_replaced_after_owner_removal(tmp_path, monkeypatch):
+    path = tmp_path / "capture.json"
+    _leave_interrupted_attempt(path, monkeypatch)
+    pending = storage._pending(path)
+    unlink = storage.unlink_guarded_bytes
+    replacement_identity = []
+
+    def replace_empty_directory(target, *, expected):
+        unlink(target, expected=expected)
+        if target == pending / storage._ATTEMPT_OWNER:
+            pending.rename(tmp_path / "original-pending")
+            pending.mkdir()
+            metadata = pending.stat()
+            replacement_identity.append((metadata.st_dev, metadata.st_ino))
+
+    monkeypatch.setattr(storage, "unlink_guarded_bytes", replace_empty_directory)
+    with pytest.raises(OSError, match="changed after preflight"):
+        storage._recover_pending(path, 8192)
+    metadata = pending.stat()
+    assert replacement_identity == [(metadata.st_dev, metadata.st_ino)]
+    assert list(pending.iterdir()) == []
 
 
 @pytest.mark.parametrize("damage", ["unknown-entry", "unknown-owner", "symlink", "invalid-root"])

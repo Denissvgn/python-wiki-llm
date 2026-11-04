@@ -194,12 +194,30 @@ def _record_pending(path, records, logical_hash, size):
 
 def _recover_pending(path, root_limit):
     expected_owner = _pending_owner_bytes(path)
+    directory = _pending(path)
+    try:
+        identity = fresh_no_follow_stat(directory)
+    except FileNotFoundError:
+        return
+    expected_identity = (identity.st_dev, identity.st_ino)
     records = _pending_records(path)
     if records is None:
         return
+
+    def require_current_attempt():
+        def require_directory():
+            current = fresh_no_follow_stat(directory)
+            if (current.st_dev, current.st_ino) != expected_identity:
+                raise OSError("Sync analysis attempt directory changed after preflight")
+
+        require_directory()
+        if read_guarded(directory / _ATTEMPT_OWNER, 8192).content != expected_owner:
+            raise OSError("Sync analysis attempt owner changed after preflight")
+        require_directory()
+
+    require_current_attempt()
     root_bytes = _current_root(path, root_limit)
     references = _root_shards(root_bytes)
-    directory = _pending(path)
     for logical_hash, (size, descriptor) in records.items():
         if _current_root(path, root_limit) != root_bytes:
             return
@@ -210,16 +228,17 @@ def _recover_pending(path, root_limit):
                 continue  # Replaced/unknown bytes retain their ownership evidence.
             if _current_root(path, root_limit) != root_bytes:
                 return
+            require_current_attempt()
             unlink_guarded_bytes(target, expected=raw)
+        require_current_attempt()
         unlink_guarded_bytes(directory / (logical_hash[7:] + ".json"), expected=descriptor)
     if any(entry.name != _ATTEMPT_OWNER for entry in directory.iterdir()):
         return
     owner = directory / _ATTEMPT_OWNER
-    # Preserve owner replacements made after the initial journal validation.
+    require_current_attempt()
     unlink_guarded_bytes(owner, expected=expected_owner)
     if not any(directory.iterdir()):
-        identity = fresh_no_follow_stat(directory)
-        remove_guarded_tree(directory, expected_identity=(identity.st_dev, identity.st_ino), expected_manifest=())
+        remove_guarded_tree(directory, expected_identity=expected_identity, expected_manifest=())
 
 
 def _previous_shards(path, root_limit):
