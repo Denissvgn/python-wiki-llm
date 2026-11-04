@@ -3816,6 +3816,10 @@ def _sync_reuse_input_basis(
     repository_evidence: RepositoryEvidence,
     observation_inputs_hash: str | None = None,
 ) -> dict[str, object] | None:
+    if options.repair_paths:
+        # Minting a whole-wiki no-op capability belongs to ordinary full sync,
+        # outside a selected-source evidence repair's publication scope.
+        return None
     generation_options = runtime_generation_options(
         surfaces=surface_plan.surfaces,
         generation_inputs=surface_plan.generation_inputs,

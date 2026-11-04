@@ -10,7 +10,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services import knowledge_evidence as ke, scoped_sync_repair as scoped
+from llm_wiki_cli.services import knowledge_evidence as ke, knowledge_reuse, scoped_sync_repair as scoped
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
 from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
@@ -156,6 +156,32 @@ def replace_args(args, **changes):
     return Namespace(**(vars(args) | changes))
 
 
+def test_known_source_scoped_noop_preserves_existing_valid_reuse_commitment(tmp_path, monkeypatch):
+    from llm_wiki_cli import api
+
+    monkeypatch.chdir(tmp_path)
+    Path('src').mkdir()
+    Path('src/known.py').write_text('class Known:\n    def value(self):\n        return 1\n')
+    api.bootstrap_wiki('src', 'wiki')
+    api.adopt_maintenance('src', 'wiki', recovery_dir='recovery')
+    sync_cmd.run(_args('--rebuild-knowledge'))
+    before = load_knowledge_state('wiki')
+    assert before.knowledge is not None and before.manifest_basis is not None
+    commitment = before.knowledge.extensions[knowledge_reuse.REUSE_EXTENSION_KEY]
+    assert before.manifest_basis.generation_inputs[knowledge_reuse.REUSE_INPUT_KEY] == commitment
+    assert all(baseline.is_known for baseline in before.manifest_basis.evidence_baselines.values())
+    original = snapshot_wiki('wiki')
+
+    for extra in [('--dry-run',), ()]:
+        sync_cmd.run(_args('--repair-evidence', 'known.py', *extra))
+        assert snapshot_wiki('wiki') == original
+
+    after = load_knowledge_state('wiki')
+    assert after.knowledge is not None and after.manifest_basis is not None
+    assert after.knowledge.extensions[knowledge_reuse.REUSE_EXTENSION_KEY] == commitment
+    assert after.manifest_basis.generation_inputs[knowledge_reuse.REUSE_INPUT_KEY] == commitment
+
+
 @pytest.mark.parametrize('fixture_name', ['sync_guard_2_5_0.json', 'scoped_repair_2_5_0_mixed.json'])
 def test_released_250_dynamic_import_repairs_after_explicit_upgrade(
     tmp_path, monkeypatch, capsys, require_prepared_diagnostics_helper, fixture_name
@@ -180,6 +206,8 @@ def test_released_250_dynamic_import_repairs_after_explicit_upgrade(
     assert before.knowledge is not None and before.manifest_basis is not None
     assert before.knowledge.bundle.producer.tool.version == '2.5.0'
     assert before.manifest_basis.evidence_baselines['modules/dyn.md'].unknown_reason == 'invalid-inventory-shape'
+    assert knowledge_reuse.REUSE_EXTENSION_KEY not in before.knowledge.extensions
+    assert knowledge_reuse.REUSE_INPUT_KEY not in before.manifest_basis.generation_inputs
     original = snapshot_wiki('wiki')
     source = Path('src/dyn.mjs').read_bytes()
     repair = ['sync', *bindings, '--no-cache', '--no-plugins', '--repair-evidence', 'src/dyn.mjs']
@@ -188,6 +216,8 @@ def test_released_250_dynamic_import_repairs_after_explicit_upgrade(
     sync_cmd.run(parser.parse_args(repair))
     after = load_knowledge_state('wiki')
     assert after.knowledge is not None and after.manifest_basis is not None
+    assert knowledge_reuse.REUSE_EXTENSION_KEY not in after.knowledge.extensions
+    assert knowledge_reuse.REUSE_INPUT_KEY not in after.manifest_basis.generation_inputs
     assert after.manifest_basis.evidence_baselines['modules/dyn.md'].is_known
     assert all(baseline == after.manifest_basis.evidence_baselines[page]
                for page, baseline in before.manifest_basis.evidence_baselines.items() if page != 'modules/dyn.md')
