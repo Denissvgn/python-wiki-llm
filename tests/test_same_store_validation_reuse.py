@@ -1,6 +1,7 @@
 """Planner-only exact-store reuse preserves physical integrity and new parity."""
 
 from dataclasses import replace
+from functools import partial
 from unittest.mock import patch
 
 import pytest
@@ -171,6 +172,38 @@ def test_same_store_reuse_supports_cyclic_callable_defaults(stored, monkeypatch)
     reused = build(refreshed)
     assert reused.knowledge_index.content == independent.knowledge_index.content
     assert not reused.changed
+
+
+@pytest.mark.parametrize("wrapped", [False, True])
+def test_same_store_prior_cannot_skip_changed_partial_validator_policy(stored, monkeypatch, wrapped):
+    from llm_wiki_cli.services import knowledge_model
+
+    original = knowledge_model._parse_concept
+
+    def configured(value, path, *, reject, metadata=None):
+        if reject:
+            raise knowledge_model.KnowledgeModelError(path, "partial policy now rejects")
+        return original(value, path)
+
+    callback = partial(configured, reject=False)
+    callback.keywords["metadata"] = {"callback": callback}
+    if wrapped:
+        def forwarding(value, path):
+            return callback(value, path)
+
+        forwarding.__wrapped__ = callback
+        parser = forwarding
+    else:
+        parser = callback
+    monkeypatch.setattr(knowledge_model, "_parse_concept", parser)
+    root, _, original_plan = stored
+    state = load_knowledge_state(root)
+    refreshed = root, state, original_plan
+    assert not build(refreshed).changed
+    callback.keywords["reject"] = True
+    for prior in (state.validated_artifacts, None):
+        with pytest.raises(artifacts.KnowledgeArtifactError, match="partial policy now rejects"):
+            build(refreshed, prior=prior)
 
 
 @pytest.mark.parametrize("change", ["root", "object"])

@@ -400,6 +400,13 @@ def _validation_callable_identity(function, active=frozenset()):
         return type(function), id(function)
     active = active | {id(function)}
     wrapped = getattr(function, "__wrapped__", None)
+    if isinstance(function, partial):
+        return (
+            function, _validation_callable_identity(function.func, active),
+            _validation_policy_value(function.args, active),
+            _validation_policy_value(function.keywords, active),
+            _validation_callable_identity(wrapped, active) if wrapped is not None else None,
+        )
     return (
         function, getattr(function, "__code__", None),
         _validation_policy_value(getattr(function, "__defaults__", None), active),
@@ -412,7 +419,7 @@ def _validation_policy_value(value, active=frozenset()):
     """Retain immutable policy snapshots without borrowing mutable definitions."""
     if type(value) in {str, int, float, bool, bytes, type(None)}:
         return type(value), value
-    if inspect.isfunction(value):
+    if inspect.isfunction(value) or isinstance(value, partial):
         return _validation_callable_identity(value, active)
     if id(value) in active:
         return type(value), id(value)
@@ -421,10 +428,6 @@ def _validation_policy_value(value, active=frozenset()):
         return type(value), value.name, _validation_policy_value(value.value, active)
     if isinstance(value, re.Pattern):
         return type(value), value.pattern, value.flags
-    if isinstance(value, partial):
-        return (type(value), _validation_callable_identity(value.func, active),
-                _validation_policy_value(value.args, active),
-                _validation_policy_value(value.keywords, active))
     if isinstance(value, Mapping):
         return type(value), tuple(sorted(
             ((_validation_policy_value(k, active), _validation_policy_value(v, active))
@@ -443,14 +446,16 @@ def _validation_module_identity(module):
     runtime_state = {"_PATH_SYNTAX", "_PATH_SYNTAX_LOCK", "_CORE"}
     functions, classes, policy = [], [], []
     for name, value in sorted(vars(module).items()):
-        if inspect.isfunction(value) or (callable(value) and hasattr(value, "__wrapped__")):
+        if (inspect.isfunction(value) or isinstance(value, partial)
+                or (callable(value) and hasattr(value, "__wrapped__"))):
             functions.append((name, _validation_callable_identity(value)))
         elif inspect.isclass(value) and value.__module__ == module.__name__:
             methods = []
             for key, method in sorted(vars(value).items()):
                 if isinstance(method, (classmethod, staticmethod)):
                     method = method.__func__
-                if inspect.isfunction(method):
+                if (inspect.isfunction(method) or isinstance(method, partial)
+                        or (callable(method) and hasattr(method, "__wrapped__"))):
                     methods.append((key, _validation_callable_identity(method)))
                 elif isinstance(method, property):
                     methods.append((key, tuple(_validation_callable_identity(accessor)

@@ -230,6 +230,55 @@ def test_receipt_supports_cyclic_callable_metadata_and_tracks_its_policy(tmp_pat
             _consume(plan, receipt, tmp_path)
 
 
+@pytest.mark.parametrize("entrypoint", ["partial_args", "partial_keywords", "wrapped_partial", "property_partial"])
+def test_receipt_tracks_active_partial_validator_policy(tmp_path, monkeypatch, entrypoint):
+    plan, knowledge = _case(tmp_path)
+    policy = {"reject": False}
+    original = model._parse_concept
+
+    def configured(policy, value, path, *, metadata=None):
+        if policy["reject"]:
+            raise model.KnowledgeModelError(path, "partial policy now rejects")
+        return original(value, path)
+
+    callback = (partial(configured, policy) if entrypoint == "partial_args"
+                else partial(configured, policy=policy))
+    if entrypoint in {"partial_keywords", "wrapped_partial"}:
+        # The keyword policy precedes the parser arguments, so give the active
+        # callable its ordinary public signature before binding the policy.
+        def configured_keywords(value, path, *, policy, metadata=None):
+            return configured(policy, value, path, metadata=metadata)
+
+        callback = partial(configured_keywords, policy=policy)
+    if entrypoint == "wrapped_partial":
+        def forwarding(value, path):
+            return callback(value, path)
+
+        forwarding.__wrapped__ = callback
+        monkeypatch.setattr(model, "_parse_concept", forwarding)
+    elif entrypoint == "property_partial":
+        original_property = model.RelationshipTarget.endpoint_kind.fget
+        assert original_property is not None
+
+        def endpoint(target, *, policy, metadata=None):
+            return "unexpected" if policy["reject"] else original_property(target)
+
+        callback = partial(endpoint, policy=policy)
+        monkeypatch.setattr(model.RelationshipTarget, "endpoint_kind", property(callback))
+    else:
+        monkeypatch.setattr(model, "_parse_concept", callback)
+    callback.keywords["metadata"] = {"callback": callback}
+    assert index.validate_knowledge_index(knowledge) == knowledge
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        assert _consume(plan, receipt, tmp_path).knowledge is receipt.model
+        policy["reject"] = True
+        with pytest.raises(model.KnowledgeModelError, match="partial policy|incompatible"):
+            index.validate_knowledge_index(knowledge)
+        with pytest.raises(TypeError, match="validators"):
+            _consume(plan, receipt, tmp_path)
+
+
 def test_receipt_rejects_nested_parser_code_change_on_same_function(tmp_path):
     plan, knowledge = _case(tmp_path)
     function = model._parse_concept
