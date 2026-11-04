@@ -22,24 +22,25 @@ sequenceDiagram
     participant p8 as _mapping_value
     participant p9 as _validate_page_id
     participant p10 as _validate_exact_keys
-    participant p11 as is_safe_page_id
-    participant p12 as is_portable_path_component
-    participant p13 as SourceRetirementError
-    participant p14 as portable_path_key
-    participant p15 as ManifestPageSource
-    participant p16 as WikiSurfaceError
-    participant p17 as require_mapping
-    participant p18 as PageKind
-    participant p19 as require_exact_fields
-    participant p20 as require_portable_path_component
-    participant p21 as isinstance (src/llm_wiki_cli/services…fest_for_source_selection)
-    participant p22 as source_paths.update
-    participant p23 as set (src/llm_wiki_cli/services…fest_for_source_selection)
-    participant p24 as manifest.page_source_mappings.values
-    participant p25 as tuple (src/llm_wiki_cli/services…fest_for_source_selection)
-    participant p26 as sorted (src/llm_wiki_cli/services…fest_for_source_selection)
-    participant p27 as is_selected
-    participant p28 as manifest.page_source_mappings.items
+    participant p11 as require_mapping
+    participant p12 as require_exact_fields
+    participant p13 as is_safe_page_id
+    participant p14 as is_portable_path_component
+    participant p15 as SourceRetirementError
+    participant p16 as portable_path_key
+    participant p17 as ManifestPageSource
+    participant p18 as WikiSurfaceError
+    participant p19 as PageKind
+    participant p20 as _validation_error
+    participant p21 as require_portable_path_component
+    participant p22 as isinstance (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p23 as source_paths.update
+    participant p24 as set (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p25 as manifest.page_source_mappings.values
+    participant p26 as tuple (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p27 as sorted (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p28 as is_selected
+    participant p29 as manifest.page_source_mappings.items
     p0->>p1: read_entity_retirement_state
     p0->>p2: with_entity_retirement_state
     p0->>p3: SyncManifestError
@@ -50,45 +51,45 @@ sequenceDiagram
     p6->>p8: _mapping_value
     p5->>p9: _validate_page_id
     p6->>p10: _validate_exact_keys
-    p9->>p11: is_safe_page_id
-    p11->>p12: is_portable_path_component
-    p1->>p13: SourceRetirementError
-    p1->>p14: portable_path_key
-    p6->>p15: ManifestPageSource
-    p5->>p16: WikiSurfaceError
-    p8->>p17: require_mapping
-    p7->>p18: PageKind
-    p10->>p19: require_exact_fields
-    p12->>p20: require_portable_path_component
-    p0-->>p21: isinstance (src/llm_wiki_cli/services…fest_for_source_selection)(manifest, SyncManifest)
-    p0-->>p22: source_paths.update(...)
-    p0-->>p23: set (src/llm_wiki_cli/services…fest_for_source_selection)(manifest.sources)
-    p0-->>p24: manifest.page_source_mappings.values
-    p0-->>p25: tuple (src/llm_wiki_cli/services…fest_for_source_selection)(sorted(...))
-    p0-->>p26: sorted (src/llm_wiki_cli/services…fest_for_source_selection)(...)
-    p0-->>p27: is_selected(path)
-    p0-->>p23: set (src/llm_wiki_cli/services…fest_for_source_selection)(deselected_sources)
-    p0-->>p28: manifest.page_source_mappings.items
-    p0-->>p25: tuple (src/llm_wiki_cli/services…fest_for_source_selection)(sorted(...))
+    p8->>p11: require_mapping
+    p10->>p12: require_exact_fields
+    p9->>p13: is_safe_page_id
+    p13->>p14: is_portable_path_component
+    p1->>p15: SourceRetirementError
+    p1->>p16: portable_path_key
+    p6->>p17: ManifestPageSource
+    p5->>p18: WikiSurfaceError
+    p7->>p19: PageKind
+    p11->>p20: _validation_error
+    p14->>p21: require_portable_path_component
+    p0-->>p22: isinstance (src/llm_wiki_cli/services…fest_for_source_selection)(manifest, SyncManifest)
+    p0-->>p23: source_paths.update(...)
+    p0-->>p24: set (src/llm_wiki_cli/services…fest_for_source_selection)(manifest.sources)
+    p0-->>p25: manifest.page_source_mappings.values
+    p0-->>p26: tuple (src/llm_wiki_cli/services…fest_for_source_selection)(sorted(...))
+    p0-->>p27: sorted (src/llm_wiki_cli/services…fest_for_source_selection)(...)
+    p0-->>p28: is_selected(path)
+    p0-->>p24: set (src/llm_wiki_cli/services…fest_for_source_selection)(deselected_sources)
+    p0-->>p29: manifest.page_source_mappings.items
 ```
 
-> Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 133 interactions; 103 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 52 (46 omitted); unresolved 4 of 32 (28 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 53 (48 omitted); unresolved 4 of 33 (29 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | [src/llm_wiki_cli/services/sync_manifest.py](../modules/sync_manifest.md) | internal | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | external | 5 |
+| `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | external | 6 |
 | `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | external | 21 |
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | [src/llm_wiki_cli/services/source_retirement.py](../modules/source_retirement.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_entry_for` | 32 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_entry_for` | 32 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
-> Omission summary shows 8 of 26 groups; 18 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 30 groups; 22 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -101,9 +102,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 44; effect analysis evaluated: 12, partial: 5, unavailable: 27. Counts include steps omitted from the displayed trace.
+Source steps: 48; effect analysis evaluated: 16, partial: 5, unavailable: 27. Counts include steps omitted from the displayed trace.
 
-Collector observations for 17 source steps with known totals: observed: 129, emitted: 118, omitted: 11. Unavailable totals are excluded.
+Collector observations for 21 source steps with known totals: observed: 143, emitted: 131, omitted: 12. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

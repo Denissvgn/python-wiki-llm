@@ -39,18 +39,18 @@ sequenceDiagram
     participant p14 as _parse_lifecycle_event
     participant p15 as _parse_review_event
     participant p16 as validate_governance_ledger
-    participant p17 as validate_bundle_id
-    participant p18 as validate_concept_uid
-    participant p19 as validate_concept_kind
-    participant p20 as _alias_type
-    participant p21 as _event_id
-    participant p22 as validate_alias_value
-    participant p23 as _section_locator
-    participant p24 as _hash
-    participant p25 as _parse_review_evidence
-    participant p26 as _parse_actor
-    participant p27 as authored_event_time
-    participant p28 as _machine_code
+    participant p17 as require_mapping
+    participant p18 as require_exact_fields
+    participant p19 as validate_bundle_id
+    participant p20 as validate_concept_uid
+    participant p21 as validate_concept_kind
+    participant p22 as _alias_type
+    participant p23 as _event_id
+    participant p24 as validate_alias_value
+    participant p25 as _section_locator
+    participant p26 as _hash
+    participant p27 as _parse_review_evidence
+    participant p28 as _parse_actor
     participant p29 as Path (src/llm_wiki_cli/services…rnance.py:load_governance)
     participant p30 as ledger.to_bytes
     p0->>p1: _read_governance_bytes
@@ -69,25 +69,25 @@ sequenceDiagram
     p3->>p14: _parse_lifecycle_event
     p3->>p15: _parse_review_event
     p3->>p16: validate_governance_ledger
-    p10->>p17: validate_bundle_id
-    p11->>p18: validate_concept_uid
-    p12->>p19: validate_concept_kind
-    p13->>p20: _alias_type
-    p14->>p21: _event_id
-    p13->>p22: validate_alias_value
-    p15->>p23: _section_locator
-    p15->>p24: _hash
-    p15->>p25: _parse_review_evidence
-    p14->>p26: _parse_actor
-    p14->>p27: authored_event_time
-    p14->>p28: _machine_code
+    p8->>p17: require_mapping
+    p9->>p18: require_exact_fields
+    p10->>p19: validate_bundle_id
+    p11->>p20: validate_concept_uid
+    p12->>p21: validate_concept_kind
+    p13->>p22: _alias_type
+    p14->>p23: _event_id
+    p13->>p24: validate_alias_value
+    p15->>p25: _section_locator
+    p15->>p26: _hash
+    p15->>p27: _parse_review_evidence
+    p14->>p28: _parse_actor
     p0-->>p29: Path (src/llm_wiki_cli/services…rnance.py:load_governance)(wiki_dir)
     p0-->>p30: ledger.to_bytes
 ```
 
-> Call sequence diagram shows 30 of 503 interactions; 473 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 512 interactions; 482 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 127 (126 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 128 (127 omitted); unresolved 1 of 107 (106 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:_decode_unique_json` | 57 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_decode_unique_json` | 57 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_decode_unique_json` | 57 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
-> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 130 groups; 122 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 271; effect analysis evaluated: 143, partial: 3, unavailable: 125. Counts include steps omitted from the displayed trace.
+Source steps: 278; effect analysis evaluated: 150, partial: 3, unavailable: 125. Counts include steps omitted from the displayed trace.
 
-Collector observations for 146 source steps with known totals: observed: 684, emitted: 670, omitted: 14. Unavailable totals are excluded.
+Collector observations for 153 source steps with known totals: observed: 711, emitted: 696, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

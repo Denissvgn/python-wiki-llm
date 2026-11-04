@@ -1,6 +1,6 @@
 # CommittedKnowledgeState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:191`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:192`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -40,6 +40,8 @@ flowchart LR
     n5["capture_committed_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n6["committed_governance_bundle_id (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n7["committed_runtime_provenance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["src/llm_wiki_cli/services/maintenance_protocol.py"]
+    n9["src/llm_wiki_cli/services/wiki_write_basis.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,6 +49,8 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -55,6 +59,8 @@ flowchart LR
     click n5 "../modules/knowledge_orchestration.md"
     click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/knowledge_orchestration.md"
+    click n8 "../modules/maintenance_protocol.md"
+    click n9 "../modules/wiki_write_basis.md"
 ```
 
 ### Summary
@@ -75,3 +81,5 @@ flowchart LR
 | `capture_committed_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_governance_bundle_id` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_runtime_provenance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `maintenance_protocol` | import | [maintenance_protocol](../modules/maintenance_protocol.md) | — |
+| `wiki_write_basis` | import | [wiki_write_basis](../modules/wiki_write_basis.md) | — |

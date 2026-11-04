@@ -1,6 +1,6 @@
 # ConceptKind
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:93`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:118`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

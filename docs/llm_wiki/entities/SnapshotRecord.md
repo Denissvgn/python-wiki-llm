@@ -1,6 +1,6 @@
 # SnapshotRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:293`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:318`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

@@ -1,6 +1,6 @@
 # JsonSpool
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:117`
+**Location:** `src/llm_wiki_cli/services/storage_spool.py:139`
 **Kind:** Class
 **Bases:** `MutableMapping`
 **Module:** [storage_spool](../modules/storage_spool.md)

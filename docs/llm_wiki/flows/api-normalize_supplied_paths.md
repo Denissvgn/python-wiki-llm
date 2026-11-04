@@ -181,13 +181,13 @@ flowchart LR
 | normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 216 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath | 218 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 219 | `isinstance(raw, str)` |
-| require_portable_relative_path | _default_path_error | 220 | `_default_path_error(value)` |
-| require_portable_relative_path | _syntax_key | 221 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath | 223 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 224 | `isinstance(raw, str)` |
+| require_portable_relative_path | _default_path_error | 225 | `_default_path_error(value)` |
+| require_portable_relative_path | _syntax_key | 226 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
 | _syntax_key | type | 54 | `type(value)` |
 
 ### Boundary effects
@@ -198,9 +198,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_portable_relative_path` | `isinstance` | 216 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
-| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `require_portable_relative_path` | `isinstance` | 221 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 223 |
+| external_call | `require_portable_relative_path` | `isinstance` | 224 |
 | external_call | `_syntax_key` | `type` | 54 |
 | step_limit | `normalize_supplied_paths` | `first 12 steps` | 0 |
 

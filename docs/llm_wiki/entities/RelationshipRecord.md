@@ -1,6 +1,6 @@
 # RelationshipRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:439`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:464`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

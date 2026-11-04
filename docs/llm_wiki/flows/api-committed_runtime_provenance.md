@@ -2,7 +2,7 @@
 
 **Entry point:** `committed_runtime_provenance` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 26 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 23 more
 
 **Complete modules touched:**
 
@@ -27,14 +27,11 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
-- [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
@@ -52,27 +49,27 @@ sequenceDiagram
     participant p5 as _decode_json_object
     participant p6 as validate_knowledge_artifacts
     participant p7 as _absolute_path
-    participant p8 as validate_surface_index_bytes
-    participant p9 as guard_incomplete_bootstrap
-    participant p10 as load_adoption_marker
-    participant p11 as SyncManifest.load
-    participant p12 as _require_validation_receipt
-    participant p13 as _unique_json_object
-    participant p14 as _reject_json_constant
-    participant p15 as freeze
-    participant p16 as open_knowledge_store
-    participant p17 as _validated_index_data
-    participant p18 as logical_digest
-    participant p19 as _validate_typed_graph_concept_bindings
-    participant p20 as validate_section_ownership
-    participant p21 as _validate_surface_knowledge_parity
-    participant p22 as _validate_manifest_knowledge_parity
-    participant p23 as validate_reuse_artifact_parity
-    participant p24 as governance_hash_from_knowledge
-    participant p25 as _section_object
-    participant p26 as validate_governance_projection
-    participant p27 as pending_bootstrap
-    participant p28 as _validate_surface_payload
+    participant p8 as _validator_identity
+    participant p9 as _storage_validator_identity
+    participant p10 as guard_incomplete_bootstrap
+    participant p11 as validate_surface_index_bytes
+    participant p12 as load_adoption_marker
+    participant p13 as SyncManifest.load
+    participant p14 as _unique_json_object
+    participant p15 as _reject_json_constant
+    participant p16 as _require_validation_receipt
+    participant p17 as freeze
+    participant p18 as open_knowledge_store
+    participant p19 as _validated_index_data
+    participant p20 as logical_digest
+    participant p21 as _validate_artifact_parity
+    participant p22 as pending_bootstrap
+    participant p23 as _validate_surface_payload
+    participant p24 as validate_knowledge_index
+    participant p25 as _validation_module_identity
+    participant p26 as _surface_page_index
+    participant p27 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    participant p28 as _validate_typed_graph_concept_bindings
     participant p29 as Path (src/llm_wiki_cli/services…pture_committed_knowledge)
     participant p30 as state.require_for
     p0->>p1: _previous_committed_artifacts
@@ -82,34 +79,34 @@ sequenceDiagram
     p3->>p5: _decode_json_object
     p3->>p6: validate_knowledge_artifacts
     p4->>p7: _absolute_path
-    p6->>p8: validate_surface_index_bytes
-    p4->>p9: guard_incomplete_bootstrap
-    p4->>p10: load_adoption_marker
-    p4->>p11: SyncManifest.load
-    p6->>p12: _require_validation_receipt
-    p5->>p13: _unique_json_object
-    p5->>p14: _reject_json_constant
-    p6->>p15: freeze
-    p6->>p16: open_knowledge_store
-    p6->>p17: _validated_index_data
-    p6->>p18: logical_digest
-    p6->>p19: _validate_typed_graph_concept_bindings
-    p6->>p20: validate_section_ownership
-    p6->>p21: _validate_surface_knowledge_parity
-    p6->>p22: _validate_manifest_knowledge_parity
-    p6->>p23: validate_reuse_artifact_parity
-    p6->>p24: governance_hash_from_knowledge
-    p20->>p25: _section_object
-    p24->>p26: validate_governance_projection
-    p9->>p27: pending_bootstrap
-    p8->>p28: _validate_surface_payload
+    p6->>p8: _validator_identity
+    p6->>p9: _storage_validator_identity
+    p4->>p10: guard_incomplete_bootstrap
+    p6->>p11: validate_surface_index_bytes
+    p4->>p12: load_adoption_marker
+    p4->>p13: SyncManifest.load
+    p5->>p14: _unique_json_object
+    p5->>p15: _reject_json_constant
+    p6->>p16: _require_validation_receipt
+    p6->>p17: freeze
+    p6->>p18: open_knowledge_store
+    p6->>p19: _validated_index_data
+    p6->>p20: logical_digest
+    p6->>p21: _validate_artifact_parity
+    p10->>p22: pending_bootstrap
+    p11->>p23: _validate_surface_payload
+    p19->>p24: validate_knowledge_index
+    p8->>p25: _validation_module_identity
+    p11->>p26: _surface_page_index
+    p12->>p27: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    p21->>p28: _validate_typed_graph_concept_bindings
     p3-->>p29: Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)
     p1-->>p30: state.require_for(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 932 interactions; 902 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 758 interactions; 728 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 292 (291 omitted); unresolved 1 of 165 (164 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 262 (261 omitted); unresolved 1 of 141 (140 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -123,7 +120,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 6 | - | external | 2 |
-> Omission summary shows 8 of 186 groups; 178 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 154 groups; 146 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -136,9 +133,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 476; effect analysis evaluated: 273, partial: 19, unavailable: 184. Counts include steps omitted from the displayed trace.
+Source steps: 356; effect analysis evaluated: 191, partial: 20, unavailable: 145. Counts include steps omitted from the displayed trace.
 
-Collector observations for 292 source steps with known totals: observed: 1831, emitted: 1669, omitted: 162. Unavailable totals are excluded.
+Collector observations for 211 source steps with known totals: observed: 1371, emitted: 1298, omitted: 73. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -220,12 +217,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 794 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 765 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 241 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 241 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 244 | `guard_maintenance_owner(root, manifest)` |
-| guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
+| committed_runtime_provenance | _previous_committed_artifacts | 796 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 767 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
+| guard_maintenance_owner | _absolute_path | 111 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -236,14 +233,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 270 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 271 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 241 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 242 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | step_limit | `committed_runtime_provenance` | `first 12 steps` | 0 |

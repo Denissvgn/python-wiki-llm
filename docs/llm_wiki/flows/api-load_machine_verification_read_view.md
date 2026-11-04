@@ -41,15 +41,15 @@ sequenceDiagram
     participant p17 as _scope_uid
     participant p18 as _receipt_anchor_mapping
     participant p19 as _parse_check
-    participant p20 as _sha256
-    participant p21 as _checker_id
-    participant p22 as _normalized_anchor_mapping
-    participant p23 as canonical_json_bytes
-    participant p24 as _checker_version
-    participant p25 as _array
-    participant p26 as _parse_diagnostic
-    participant p27 as _parse_coverage
-    participant p28 as require_validated_artifacts
+    participant p20 as require_mapping
+    participant p21 as require_string
+    participant p22 as _sha256
+    participant p23 as _checker_id
+    participant p24 as require_exact_fields
+    participant p25 as _normalized_anchor_mapping
+    participant p26 as canonical_json_bytes
+    participant p27 as _checker_version
+    participant p28 as _array
     participant p29 as isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
     participant p30 as context
     p0->>p1: load_verification_receipt
@@ -71,20 +71,20 @@ sequenceDiagram
     p9->>p17: _scope_uid
     p9->>p18: _receipt_anchor_mapping
     p9->>p19: _parse_check
-    p16->>p20: _sha256
-    p19->>p21: _checker_id
-    p18->>p22: _normalized_anchor_mapping
-    p5->>p23: canonical_json_bytes
-    p19->>p24: _checker_version
-    p19->>p25: _array
-    p19->>p26: _parse_diagnostic
-    p19->>p27: _parse_coverage
-    p2->>p28: require_validated_artifacts
+    p13->>p20: require_mapping
+    p15->>p21: require_string
+    p16->>p22: _sha256
+    p19->>p23: _checker_id
+    p14->>p24: require_exact_fields
+    p18->>p25: _normalized_anchor_mapping
+    p5->>p26: canonical_json_bytes
+    p19->>p27: _checker_version
+    p19->>p28: _array
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)
     p0-->>p30: context(None)
 ```
 
-> Call sequence diagram shows 30 of 278 interactions; 248 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 284 interactions; 254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 107 (106 omitted); unresolved 1 of 43 (42 omitted). These counts cover the captured static trace.
 
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 36 | - | external | 1 |
-> Omission summary shows 8 of 77 groups; 69 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 78 groups; 70 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 129; effect analysis evaluated: 69, partial: 2, unavailable: 58. Counts include steps omitted from the displayed trace.
+Source steps: 135; effect analysis evaluated: 75, partial: 2, unavailable: 58. Counts include steps omitted from the displayed trace.
 
-Collector observations for 71 source steps with known totals: observed: 306, emitted: 302, omitted: 4. Unavailable totals are excluded.
+Collector observations for 77 source steps with known totals: observed: 329, emitted: 324, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

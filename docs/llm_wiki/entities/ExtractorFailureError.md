@@ -1,6 +1,6 @@
 # ExtractorFailureError
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:242`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:246`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [extraction_service](../modules/extraction_service.md)

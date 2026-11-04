@@ -1,6 +1,6 @@
 # Actor
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:259`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:284`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

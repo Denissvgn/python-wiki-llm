@@ -127,17 +127,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_portable_path_component | require_portable_path_component | 177 | `require_portable_path_component(component)` |
-| require_portable_path_component | component.encode | 139 | `component.encode('utf-8')` |
-| require_portable_path_component | SharedValidationError | 141 | `SharedValidationError(...)` |
-| require_portable_path_component | unicodedata.normalize | 146 | `unicodedata.normalize('NFC', component)` |
-| require_portable_path_component | SharedValidationError | 148 | `SharedValidationError(...)` |
-| require_portable_path_component | any | 151 | `any(...)` |
-| require_portable_path_component | ord | 152 | `ord(character)` |
-| require_portable_path_component | ord | 153 | `ord(character)` |
-| require_portable_path_component | SharedValidationError | 156 | `SharedValidationError(...)` |
-| require_portable_path_component | component.endswith | 159 | `component.endswith((...))` |
-| require_portable_path_component | any | 159 | `any(...)` |
+| is_portable_path_component | require_portable_path_component | 182 | `require_portable_path_component(component)` |
+| require_portable_path_component | component.encode | 144 | `component.encode('utf-8')` |
+| require_portable_path_component | SharedValidationError | 146 | `SharedValidationError(...)` |
+| require_portable_path_component | unicodedata.normalize | 151 | `unicodedata.normalize('NFC', component)` |
+| require_portable_path_component | SharedValidationError | 153 | `SharedValidationError(...)` |
+| require_portable_path_component | any | 156 | `any(...)` |
+| require_portable_path_component | ord | 157 | `ord(character)` |
+| require_portable_path_component | ord | 158 | `ord(character)` |
+| require_portable_path_component | SharedValidationError | 161 | `SharedValidationError(...)` |
+| require_portable_path_component | component.endswith | 164 | `component.endswith((...))` |
+| require_portable_path_component | any | 164 | `any(...)` |
 
 ### Boundary effects
 
@@ -147,13 +147,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_portable_path_component` | `component.encode` | 139 |
-| external_call | `require_portable_path_component` | `unicodedata.normalize` | 146 |
-| external_call | `require_portable_path_component` | `any` | 151 |
-| external_call | `require_portable_path_component` | `ord` | 152 |
-| external_call | `require_portable_path_component` | `ord` | 153 |
-| unresolved_call | `require_portable_path_component` | `component.endswith` | 159 |
-| external_call | `require_portable_path_component` | `any` | 159 |
+| unresolved_call | `require_portable_path_component` | `component.encode` | 144 |
+| external_call | `require_portable_path_component` | `unicodedata.normalize` | 151 |
+| external_call | `require_portable_path_component` | `any` | 156 |
+| external_call | `require_portable_path_component` | `ord` | 157 |
+| external_call | `require_portable_path_component` | `ord` | 158 |
+| unresolved_call | `require_portable_path_component` | `component.endswith` | 164 |
+| external_call | `require_portable_path_component` | `any` | 164 |
 | step_limit | `is_portable_path_component` | `first 12 steps` | 0 |
 
 ## Behavior

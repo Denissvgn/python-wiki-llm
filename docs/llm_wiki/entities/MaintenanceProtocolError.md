@@ -1,6 +1,6 @@
 # MaintenanceProtocolError
 
-**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:30`
+**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:37`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -33,10 +33,10 @@ flowchart LR
     n6["src/llm_wiki_cli/services/context_packet.py"]
     n7["src/llm_wiki_cli/services/knowledge_loader.py"]
     n8["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n9["governance_writer_lock (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n10["guard_maintenance_owner (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n11["load_adoption_marker (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n12["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n9["_capture_spooled_wiki (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n10["_recovery_parent (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n11["_wiki_files (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n12["governance_writer_lock (src/llm_wiki_cli/services/maintenance_protocol.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -87,9 +87,9 @@ flowchart LR
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |
+| `_capture_spooled_wiki` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
+| `_recovery_parent` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 4 |
+| `_wiki_files` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 | `governance_writer_lock` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `guard_maintenance_owner` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 7 |
-| `load_adoption_marker` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 
-> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.
+> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.

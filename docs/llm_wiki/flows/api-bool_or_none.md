@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| bool_or_none | isinstance | 993 | `isinstance(value, bool)` |
+| bool_or_none | isinstance | 1005 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `bool_or_none` | `isinstance` | 993 |
+| external_call | `bool_or_none` | `isinstance` | 1005 |
 
 ## Behavior
 

@@ -1,6 +1,6 @@
 # _InvalidSurfaceJson
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:215`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:219`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_index](../modules/knowledge_index.md)

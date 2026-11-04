@@ -111,7 +111,7 @@ still stop the operation.
 | `..services.bootstrap_runtime` | `_build_entity_relationship_summary_map`, `_build_relationships`, `_generate_dependencies_md`, `_generate_entity_md`, `_generate_flow_md`, `_generate_index_md`, `_generate_load_order_md`, `_generate_module_md`, `_generate_workflow_md`, `_generate_infrastructure_md`, `_generated_diagram_style`, `_module_name_from_path`, `_page_name_for_module`, `_source_snapshot_log_lines`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
 | `..services.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `..services.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations` |
-| `..services.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
+| `..services.entrypoints` | `build_flow`, `build_flow_context`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `..services.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
 | `..services.extraction_service` | `InventoryResult`, `get_call_graph`, `get_inventory_result`, `get_docker_inventory`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
 | `..services.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
@@ -125,7 +125,7 @@ still stop the operation.
 | `..services.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `..services.knowledge_storage` | `MAX_EXPANDED_BYTES` |
-| `..services.knowledge_storage_io` | `StorageReadSession` |
+| `..services.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
 | `..services.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `..services.module_maps` | `build_module_dependency_maps` |
@@ -147,6 +147,7 @@ still stop the operation.
 | `..services.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `..services.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `..services.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
+| `..services.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `contextlib` | `nullcontext`, `redirect_stdout` |
@@ -181,28 +182,28 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (44) |
+| Outbound | `src` (45) |
 
-> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 297 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 301 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 633 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 672 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 694 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1713 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1741 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1748 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1754 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1760 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1776 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1820 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1853 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1859 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 298 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 302 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 634 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 673 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 695 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1714 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1742 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1749 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1755 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1761 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1777 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1821 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1854 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1860 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -291,7 +292,7 @@ flowchart LR
 | `_sync_run_options_from_args` | `(args) -> _SyncRunOptions` | — | — |
 | `_load_or_seed_manifest` | `(options: _SyncRunOptions) -> tuple[Optional['SyncManifest'], bool]` | — | — |
 | `_validate_persisted_source_selection` | `(options: _SyncRunOptions, manifest: SyncManifest \| None) -> None` | — | — |
-| `_extract_current_inventory` | `(options: _SyncRunOptions, *, source_snapshot: SourceSnapshot \| None = None) -> _ExtractedSyncInventory` | — | — |
+| `_extract_current_inventory` | `(options: _SyncRunOptions, *, source_snapshot: SourceSnapshot \| None = None, implementation_cache_artifacts = None) -> _ExtractedSyncInventory` | — | — |
 | `_qualify_surviving_module_inventory` | `(options, snapshot, manifest, result)` | — | Resolve prior-owned sparse paths through attributable parser observations. |
 | `_prepare_sync_page_maps` | `(inventory: dict) -> _SyncPageMaps` | `@observed_phase('page_maps')` | — |
 | `_compute_sync_diff` | `(manifest: 'SyncManifest', inventory: dict, options: _SyncRunOptions, page_maps: _SyncPageMaps, source_content_hashes: Mapping[str, str]) -> 'SyncDiff'` | — | — |
@@ -315,7 +316,7 @@ flowchart LR
 | `_selected_sync_flow_entries` | `(options: _SyncRunOptions, surface_plan: _SurfaceInitializationPlan) -> list[dict]` | — | — |
 | `_canonical_sync_surface_flow_targets` | `(options: _SyncRunOptions, entry_points: list[dict], surface_plan: _SurfaceInitializationPlan) -> list[dict]` | — | Select detected metadata for extant and about-to-be-created flow pages. |
 | `_canonical_surface_flow_entries` | `(inventory: Mapping[str, Mapping], entry_points: list[dict], rendering_flows: list[dict], rendering_data_flows: list[dict]) -> list[dict]` | — | Project sync observations into bootstrap's canonical flow metadata. |
-| `_build_sync_graph_observations` | `(options: _SyncRunOptions, inventory: dict, source_snapshot: SourceSnapshot, entry_points: list[dict], entrypoint_observations: dict, surface_plan: _SurfaceInitializationPlan, dependency_analysis: dict \| None, *, data_effect_observations: Mapping \| None = None, import_observations: Mapping \| None = None) -> _RuntimeGraphObservations` | — | — |
+| `_build_sync_graph_observations` | `(options: _SyncRunOptions, inventory: dict, source_snapshot: SourceSnapshot, entry_points: list[dict], entrypoint_observations: dict, surface_plan: _SurfaceInitializationPlan, dependency_analysis: dict \| None, *, data_effect_observations: Mapping \| None = None, import_observations: Mapping \| None = None) -> _RuntimeGraphObservations` | `@observed_phase('graph_observations')` | — |
 | `_print_sync_summary` | `(result: 'SyncResult', diff: 'SyncDiff', infrastructure_plan: InfrastructureSyncPlan \| None = None) -> None` | — | — |
 | `_print_surface_summary` | `(plan: _SurfaceInitializationPlan) -> None` | — | — |
 | `_discover_infrastructure_plan` | `(source_snapshot: SourceSnapshot, generation_inputs: Mapping[str, object]) -> InfrastructureSyncPlan` | — | — |

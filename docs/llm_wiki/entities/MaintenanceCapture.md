@@ -1,6 +1,6 @@
 # MaintenanceCapture
 
-**Location:** `src/llm_wiki_cli/services/maintenance_evidence.py:99`
+**Location:** `src/llm_wiki_cli/services/maintenance_evidence.py:101`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_evidence](../modules/maintenance_evidence.md)

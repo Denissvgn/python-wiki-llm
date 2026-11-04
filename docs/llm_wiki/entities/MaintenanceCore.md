@@ -1,6 +1,6 @@
 # MaintenanceCore
 
-**Location:** `src/llm_wiki_cli/services/maintenance_state.py:111`
+**Location:** `src/llm_wiki_cli/services/maintenance_state.py:112`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_state](../modules/maintenance_state.md)
@@ -29,6 +29,7 @@ Pure transitions with the installed implementation contract as authority.
 | `initial_state` | `(guard: dict[str, Any], observations: dict[str, dict[str, Any]]) -> dict[str, Any]` | — | Explicit adoption bootstrap records pending/unreviewed, never historical approval. |
 | `_ack` | `(record_id: str, actor: dict[str, Any], basis: dict[str, Any]) -> dict[str, Any]` | — | — |
 | `transition` | `(state: dict[str, Any], event: dict[str, Any], current_basis: dict[str, Any]) -> dict[str, Any]` | — | Pure maintenance transition. The caller supplies independently captured current basis. |
+| `_transition_owned` | `(state: dict[str, Any], event: dict[str, Any], current_basis: dict[str, Any]) -> dict[str, Any]` | — | Apply checked event semantics to a private already validated owner. |
 
 ## Relationships
 
@@ -46,7 +47,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [maintenance_state](../modules/maintenance_state.md) | 12 | — |
+| [maintenance_state](../modules/maintenance_state.md) | 13 | — |
 
 ### References
 

@@ -94,7 +94,7 @@ sequenceDiagram
     p0-->>p30: bundle_payload[…].get(…).get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 798 interactions; 768 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 795 interactions; 765 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 186 (185 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 168 groups; 160 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 507; effect analysis evaluated: 331, partial: 8, unavailable: 168. Counts include steps omitted from the displayed trace.
+Source steps: 504; effect analysis evaluated: 334, partial: 8, unavailable: 162. Counts include steps omitted from the displayed trace.
 
-Collector observations for 339 source steps with known totals: observed: 1573, emitted: 1522, omitted: 51. Unavailable totals are excluded.
+Collector observations for 342 source steps with known totals: observed: 1608, emitted: 1556, omitted: 52. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -211,8 +211,8 @@ flowchart LR
 | _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1948 | `replace(bundle, snapshot=replace(...))` |
 | _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1950 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
 | _validated_bundle_payload | knowledge_index_to_payload | 1956 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
-| knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 663 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload) | 664 | `TypeError('model must be a KnowledgeIndex')` |
+| knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 688 | `isinstance(model, KnowledgeIndex)` |
+| knowledge_index_to_payload | TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload) | 689 | `TypeError('model must be a KnowledgeIndex')` |
 
 ### Boundary effects
 
@@ -228,8 +228,8 @@ flowchart LR
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | external_call | `_validated_bundle_payload` | `replace` | 1948 |
 | external_call | `_validated_bundle_payload` | `replace` | 1950 |
-| external_call | `knowledge_index_to_payload` | `isinstance` | 663 |
-| external_call | `knowledge_index_to_payload` | `TypeError` | 664 |
+| external_call | `knowledge_index_to_payload` | `isinstance` | 688 |
+| external_call | `knowledge_index_to_payload` | `TypeError` | 689 |
 | step_limit | `evaluated_envelope_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `evaluated_envelope_to_payload` | `depth limit` | 0 |
 

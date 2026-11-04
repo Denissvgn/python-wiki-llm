@@ -1,6 +1,6 @@
 # WikiWriteBasis
 
-**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:161`
+**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:200`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -16,12 +16,16 @@ _Auto-generated from `WikiWriteBasis` in `src/llm_wiki_cli/services/maintenance_
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `root` | `Path` | *required* | — |
-| `expected` | `dict[str, bytes]` | *required* | — |
+| `expected` | `MutableMapping[str, bytes]` | *required* | — |
 | `source_snapshot` | `SourceSnapshot \| None` | `None` | — |
 | `recovery_directory` | `Path \| None` | `None` | — |
 | `eligible_images` | `dict[str, list[str \| None]] \| None` | `None` | — |
 | `include_transient` | `bool` | `False` | — |
-| `preimages` | `dict[str, bytes]` | `field(init=False)` | — |
+| `recovery_marker` | `dict \| None` | `None` | — |
+| `recovery_started` | `bool` | `True` | — |
+| `changed` | `bool` | `False` | — |
+| `preimages` | `Mapping[str, bytes]` | `field(init=False)` | — |
+| `_storage_staging` | `_StorageStagingAuthority \| None` | `field(default=None, init=False, repr=False)` | — |
 
 ## Methods
 
@@ -29,9 +33,12 @@ _Auto-generated from `WikiWriteBasis` in `src/llm_wiki_cli/services/maintenance_
 |--------|-----------|------------|-------------|
 | `__post_init__` | `()` | — | — |
 | `_relative` | `(path: Path) -> str \| None` | — | — |
+| `bind_committed_state` | `(state: CommittedKnowledgeState) -> None` | — | Bind one owning sync's validated prior closure, never a caller skip flag. |
+| `_close_storage_staging` | `() -> None` | — | — |
+| `_is_unreferenced_storage_staging` | `(relative, content, previous, current) -> bool` | — | — |
 | `before_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
 | `after_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
-| `assert_current` | `() -> None` | — | — |
+| `assert_current` | `() -> None` | `@observed_phase('maintenance_verification')` | — |
 | `assert_source_current` | `() -> None` | — | — |
 
 ## Relationships
@@ -56,7 +63,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [maintenance_protocol](../modules/maintenance_protocol.md) | 6 | `eligible_images`, `expected`, `include_transient`, `preimages`, `recovery_directory`, `root`, `source_snapshot` |
+| [maintenance_protocol](../modules/maintenance_protocol.md) | 9 | `_storage_staging`, `changed`, `eligible_images`, `expected`, `include_transient`, `preimages`, `recovery_directory`, `recovery_marker`, `recovery_started`, `root`, `source_snapshot` |
 
 ### References
 

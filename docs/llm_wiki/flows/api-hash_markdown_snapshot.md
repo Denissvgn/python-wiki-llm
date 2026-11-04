@@ -193,8 +193,8 @@ flowchart LR
 | hash_markdown_snapshot | pages.items | 788 | `pages.items(data not statically known)` |
 | hash_markdown_snapshot | _repository_relative_path | 789 | `_repository_relative_path(path, 'markdown_pages.path')` |
 | _repository_relative_path | require_repository_relative_path | 1505 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
-| require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
 | _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
@@ -213,7 +213,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `hash_markdown_snapshot` | `isinstance` | 784 |
 | unresolved_call | `hash_markdown_snapshot` | `pages.items` | 788 |
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | external_call | `_syntax_key` | `type` | 54 |
 | external_call | `_syntax_key` | `any` | 55 |
 | step_limit | `hash_markdown_snapshot` | `first 12 steps` | 0 |

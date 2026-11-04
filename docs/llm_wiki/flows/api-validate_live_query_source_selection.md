@@ -54,8 +54,8 @@ sequenceDiagram
     participant p24 as ManifestTombstone.from_payload
     participant p25 as ManifestArtifactHashes.from_payload
     participant p26 as is_portable_relative_path
-    participant p27 as ManifestStoreReader.field
-    participant p28 as range_batches
+    participant p27 as require_mapping
+    participant p28 as ManifestStoreReader.field
     participant p29 as str (src/llm_wiki_cli/services…ve_query_source_selection)
     participant p30 as manifest_path.exists
     p0->>p1: SyncManifest.load
@@ -84,15 +84,15 @@ sequenceDiagram
     p8->>p24: ManifestTombstone.from_payload
     p8->>p25: ManifestArtifactHashes.from_payload
     p10->>p26: is_portable_relative_path
-    p16->>p27: ManifestStoreReader.field
-    p15->>p28: range_batches
+    p11->>p27: require_mapping
+    p16->>p28: ManifestStoreReader.field
     p0-->>p29: str (src/llm_wiki_cli/services…ve_query_source_selection)(exc)
     p1-->>p30: manifest_path.exists
 ```
 
-> Call sequence diagram shows 30 of 491 interactions; 461 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 497 interactions; 467 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 142 (141 omitted); unresolved 1 of 90 (89 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 143 (142 omitted); unresolved 1 of 91 (90 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,7 +106,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 11 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 146 groups; 138 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 149 groups; 141 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -119,9 +119,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 260; effect analysis evaluated: 134, partial: 10, unavailable: 116. Counts include steps omitted from the displayed trace.
+Source steps: 264; effect analysis evaluated: 138, partial: 10, unavailable: 116. Counts include steps omitted from the displayed trace.
 
-Collector observations for 144 source steps with known totals: observed: 733, emitted: 692, omitted: 41. Unavailable totals are excluded.
+Collector observations for 148 source steps with known totals: observed: 747, emitted: 705, omitted: 42. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

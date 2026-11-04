@@ -57,8 +57,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_supported_relationship_kind | isinstance | 105 | `isinstance(value, str)` |
-| is_supported_relationship_kind | _QUALIFIED_NAME_RE.fullmatch | 107 | `_QUALIFIED_NAME_RE.fullmatch(value)` |
+| is_supported_relationship_kind | isinstance | 106 | `isinstance(value, str)` |
+| is_supported_relationship_kind | _QUALIFIED_NAME_RE.fullmatch | 108 | `_QUALIFIED_NAME_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -68,8 +68,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `is_supported_relationship_kind` | `isinstance` | 105 |
-| unresolved_call | `is_supported_relationship_kind` | `_QUALIFIED_NAME_RE.fullmatch` | 107 |
+| external_call | `is_supported_relationship_kind` | `isinstance` | 106 |
+| unresolved_call | `is_supported_relationship_kind` | `_QUALIFIED_NAME_RE.fullmatch` | 108 |
 
 ## Behavior
 

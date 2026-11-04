@@ -57,8 +57,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| portable_path_key | unicodedata.normalize(…).casefold | 461 | `unicodedata.normalize('NFC', value).casefold(data not statically known)` |
-| portable_path_key | unicodedata.normalize | 461 | `unicodedata.normalize('NFC', value)` |
+| portable_path_key | unicodedata.normalize(…).casefold | 466 | `unicodedata.normalize('NFC', value).casefold(data not statically known)` |
+| portable_path_key | unicodedata.normalize | 466 | `unicodedata.normalize('NFC', value)` |
 
 ### Boundary effects
 
@@ -68,8 +68,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `portable_path_key` | `unicodedata.normalize('NFC', value).casefold` | 461 |
-| external_call | `portable_path_key` | `unicodedata.normalize` | 461 |
+| unresolved_call | `portable_path_key` | `unicodedata.normalize('NFC', value).casefold` | 466 |
+| external_call | `portable_path_key` | `unicodedata.normalize` | 466 |
 
 ## Behavior
 

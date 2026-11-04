@@ -74,9 +74,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| concept_kind_for_page_kind | isinstance | 485 | `isinstance(value, PageKind)` |
-| concept_kind_for_page_kind | PageKind | 485 | `PageKind(value)` |
-| concept_kind_for_page_kind | KnowledgeModelError | 487 | `KnowledgeModelError('page_kind', ...)` |
+| concept_kind_for_page_kind | isinstance | 510 | `isinstance(value, PageKind)` |
+| concept_kind_for_page_kind | PageKind | 510 | `PageKind(value)` |
+| concept_kind_for_page_kind | KnowledgeModelError | 512 | `KnowledgeModelError('page_kind', ...)` |
 
 ### Boundary effects
 
@@ -86,7 +86,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `concept_kind_for_page_kind` | `isinstance` | 485 |
+| external_call | `concept_kind_for_page_kind` | `isinstance` | 510 |
 
 ## Behavior
 

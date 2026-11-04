@@ -1,6 +1,6 @@
 # RelationshipEvidence
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:429`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:454`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

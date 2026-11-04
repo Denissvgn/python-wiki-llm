@@ -16,6 +16,7 @@ Persistent inventory cache used by lint and CI validation.
 | `.analysis_capture` | `capture_analysis` |
 | `.analysis_compatibility` | `digest` |
 | `.io` | `write_json_atomic` |
+| `.knowledge_evidence` | `hash_json` |
 | `.plugins` | `lock_path`, `plugin_store` |
 | `.progress` | `observed_phase` |
 | `.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `WarningSink`, `prepare_destination`, `stderr_warning`, `warn` |
@@ -48,9 +49,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -58,7 +59,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 42 | — | Runtime cache controls for inventory-producing commands. |
 | [InventoryCacheStats](../entities/InventoryCacheStats.md) | 56 | — | — |
-| [InventoryCache](../entities/InventoryCache.md) | 358 | — | JSON-backed cache for per-file built-in inventory entries. |
+| [InventoryCache](../entities/InventoryCache.md) | 359 | — | JSON-backed cache for per-file built-in inventory entries. |
 
 ## Functions
 
@@ -83,3 +84,4 @@ flowchart LR
 | `prepare_cache_options` | `(src_dir: str \| Path, options: InventoryCacheOptions \| None) -> InventoryCacheOptions \| None` | — | — |
 | `is_valid_cache_entry` | `(entry: Any, source_file: SourceFile, file_hash: str) -> bool` | — | — |
 | `make_cache_entry` | `(source_file: SourceFile, file_hash: str, inventory_entry: dict) -> dict` | — | — |
+| `extraction_bundle_hash` | `(entry: dict) -> str` | — | Commit every raw analysis value reused together, excluding file metadata. |

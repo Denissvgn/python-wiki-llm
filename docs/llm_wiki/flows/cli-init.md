@@ -39,7 +39,6 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
@@ -47,6 +46,7 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -100,17 +100,17 @@ sequenceDiagram
     participant p15 as replace_schema_block_content
     participant p16 as require_managed_schema_profile
     participant p17 as write_config
-    participant p18 as unlink_guarded_bytes
-    participant p19 as require_committed_config
-    participant p20 as get_agent_config_path
-    participant p21 as config_requires_manual_recovery
-    participant p22 as require_safe_schema_path
-    participant p23 as decode_managed_document_bytes
-    participant p24 as ManagedSchemaPathError
-    participant p25 as ManagedSchemaBlockError
-    participant p26 as helper_preparation_failure_hint
-    participant p27 as reference_recovery_command
-    participant p28 as skills_install_dir
+    participant p18 as require_committed_config
+    participant p19 as get_agent_config_path
+    participant p20 as config_requires_manual_recovery
+    participant p21 as require_safe_schema_path
+    participant p22 as decode_managed_document_bytes
+    participant p23 as ManagedSchemaPathError
+    participant p24 as ManagedSchemaBlockError
+    participant p25 as helper_preparation_failure_hint
+    participant p26 as reference_recovery_command
+    participant p27 as skills_install_dir
+    participant p28 as list_bundled_skills
     participant p29 as getattr (src/llm_wiki_cli/commands/init_cmd.py:run)
     participant p30 as stored.get
     p0->>p1: validate_path
@@ -130,24 +130,24 @@ sequenceDiagram
     p0->>p15: replace_schema_block_content
     p0->>p16: require_managed_schema_profile
     p0->>p17: write_config
-    p0->>p18: unlink_guarded_bytes
-    p0->>p19: require_committed_config
-    p0->>p20: get_agent_config_path
-    p0->>p21: config_requires_manual_recovery
-    p0->>p22: require_safe_schema_path
-    p0->>p23: decode_managed_document_bytes
-    p0->>p24: ManagedSchemaPathError
-    p0->>p25: ManagedSchemaBlockError
-    p0->>p26: helper_preparation_failure_hint
-    p0->>p27: reference_recovery_command
-    p0->>p28: skills_install_dir
+    p0->>p18: require_committed_config
+    p0->>p19: get_agent_config_path
+    p0->>p20: config_requires_manual_recovery
+    p0->>p21: require_safe_schema_path
+    p0->>p22: decode_managed_document_bytes
+    p0->>p23: ManagedSchemaPathError
+    p0->>p24: ManagedSchemaBlockError
+    p0->>p25: helper_preparation_failure_hint
+    p0->>p26: reference_recovery_command
+    p0->>p27: skills_install_dir
+    p0->>p28: list_bundled_skills
     p0-->>p29: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 4059 interactions; 4029 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4201 interactions; 4171 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1398 (1397 omitted); unresolved 1 of 950 (949 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1417 (1416 omitted); unresolved 1 of 987 (986 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 19 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 978 groups; 970 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1044 groups; 1036 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +174,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1712; effect analysis evaluated: 1083, partial: 90, unavailable: 539. Counts include steps omitted from the displayed trace.
+Source steps: 1798; effect analysis evaluated: 1163, partial: 93, unavailable: 542. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1173 source steps with known totals: observed: 7896, emitted: 7272, omitted: 624. Unavailable totals are excluded.
+Collector observations for 1256 source steps with known totals: observed: 8296, emitted: 7685, omitted: 611. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

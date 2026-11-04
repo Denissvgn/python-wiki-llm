@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:108`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:109`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -70,6 +70,7 @@ inventory source.
 | `graph_evidence_limit` | `int` | `DEFAULT_EVIDENCE_LIMIT` | — |
 | `governance` | `GovernanceLedger \| None` | `None` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
+| `allow_maintenance_reuse_migration` | `bool` | `False` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
 | `maintenance_page_transitions` | `PageTransitionPlan \| None` | `None` | — |
 | `maintenance_previous_raw_content_by_page` | `Mapping[str, bytes] \| None` | `None` | — |
@@ -113,7 +114,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_generation](../modules/knowledge_generation.md) | 0 | `asset_paths`, `bundle_extensions`, `call_edges`, `configured_public_identity`, `consumed_inputs`, `content_by_page`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_ref_by_source` |
+| [knowledge_generation](../modules/knowledge_generation.md) | 0 | `allow_maintenance_reuse_migration`, `asset_paths`, `bundle_extensions`, `call_edges`, `configured_public_identity`, `consumed_inputs`, `content_by_page`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies` |
 
 ### References
 

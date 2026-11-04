@@ -15,12 +15,14 @@ the shared writer lock around capture and manifest-last publication.
 
 | Source | Symbols |
 |--------|---------|
-| `.implementation_evidence` | `validate_implementation_evidence` |
+| `.` | `implementation_evidence`, `maintenance_shapes`, `python_implementation` |
+| `.implementation_evidence` | `validate_implementation_evidence`, `validate_implementation_evidence` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.maintenance_shapes` | `MaintenanceError`, `VALIDATORS`, `require` |
 | `.validation` | `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
+| `contextvars` | `ContextVar` |
 | `copy` | `deepcopy` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -45,16 +47,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
-| Outbound | `src` (4) |
+| Inbound | `src` (16) |
+| Outbound | `src` (5) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceCore](../entities/MaintenanceCore.md) | 111 | — | Pure transitions with the installed implementation contract as authority. |
+| [MaintenanceCore](../entities/MaintenanceCore.md) | 112 | — | Pure transitions with the installed implementation contract as authority. |
+| [_MaintenanceReconciliation](../entities/MaintenanceReconciliation.md) | 1029 | — | One detached reconciliation; only membership-preserving observes are local. |
 
 ## Functions
 
@@ -69,4 +72,8 @@ flowchart LR
 | `_detached` | `(value: object) -> dict[str, Any]` | — | — |
 | `validate_maintenance_state` | `(value: object) -> dict[str, Any]` | — | — |
 | `validate_maintenance_adoption` | `(value: object) -> dict[str, Any]` | — | — |
+| `_callable_identity` | `(value)` | — | — |
+| `_reconciliation_validator_identity` | `(core, operation)` | — | — |
+| `_maintenance_reconciliation` | `(previous_state, core = None)` | — | Private invocation owner; no caller can waive public transition validation. |
+| `_has_reconciliation_owner` | `() -> bool` | — | — |
 | `maintenance_state_hash` | `(value: object) -> str` | — | — |

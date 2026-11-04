@@ -1,6 +1,6 @@
 # InventoryRequest
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:150`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:152`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -39,6 +39,7 @@ inputs so the extraction planner receives a stable request.
 | `capture_implementation_observations` | `bool` | `False` | — |
 | `capture_path_outcomes` | `bool` | `False` | — |
 | `retain_empty_paths` | `tuple[str, ...]` | `()` | — |
+| `implementation_cache_artifacts` | `object \| None` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -92,7 +93,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `capture_path_outcomes`, `deep`, `helper_cache_dir`, `include_empty`, `include_plugins`, `include_tests`, `job_request`, `only_files` |
+| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `capture_path_outcomes`, `deep`, `helper_cache_dir`, `implementation_cache_artifacts`, `include_empty`, `include_plugins`, `include_tests`, `job_request` |
 
 ### References
 

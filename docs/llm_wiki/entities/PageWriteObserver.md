@@ -1,6 +1,6 @@
 # PageWriteObserver
 
-**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:22`
+**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:25`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [wiki_write_basis](../modules/wiki_write_basis.md)

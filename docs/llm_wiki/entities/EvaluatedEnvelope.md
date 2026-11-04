@@ -33,7 +33,7 @@ Version-tagged evaluated basis committed through manifest v5.
 ```mermaid
 flowchart LR
     n0["EvaluatedEnvelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n1["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n1["_validate_artifact_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n2["build_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n3["evaluated_envelope_to_payload (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n4["hash_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
@@ -76,7 +76,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `_validate_artifact_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `evaluated_envelope_to_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |

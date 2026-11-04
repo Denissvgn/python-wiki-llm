@@ -24,7 +24,7 @@ across invocations.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `contracts`, `knowledge_model` |
+| `.` | `analysis_compatibility`, `concept_identity`, `contracts`, `implementation_evidence`, `immutable`, `knowledge_evidence`, `knowledge_governance`, `knowledge_graph`, `knowledge_links`, `knowledge_index`, `knowledge_model`, `knowledge_reuse`, `maintenance_projection`, `maintenance_shapes`, `maintenance_state`, `markdown_sections`, `python_implementation`, `section_ownership`, `source_retirement`, `validation`, `wiki_media`, `wiki_surface` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `.immutable` | `freeze` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION`, `EvaluatedEnvelope`, `KnowledgeEnvelopeError`, `evaluated_envelope_to_payload`, `hash_markdown_snapshot` |
@@ -42,7 +42,10 @@ across invocations.
 | `collections.abc` | `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
 | `contextvars` | `ContextVar` |
-| `dataclasses` | `dataclass`, `field` |
+| `dataclasses` | `dataclasses`, `dataclass`, `field` |
+| `enum` | `Enum` |
+| `functools` | `partial` |
+| `inspect` | `inspect` |
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
@@ -69,30 +72,31 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (13) |
+| Outbound | `src` (25) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeIndexBuildError](../entities/KnowledgeIndexBuildError.md) | 132 | `ValueError` | Field-specific failure at the pure knowledge-index join boundary. |
-| [KnowledgeIndexInputs](../entities/KnowledgeIndexInputs.md) | 147 | — | Already evaluated values required to construct one knowledge index. |
-| [_SurfacePage](../entities/SurfacePage.md) | 166 | — | — |
-| [_JoinedPage](../entities/JoinedPage.md) | 178 | — | — |
-| [_BuildContext](../entities/BuildContext.md) | 200 | — | — |
-| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 208 | — | — |
-| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 215 | `ValueError` | — |
-| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 324 | — | — |
-| [_IndexValidationProof](../entities/IndexValidationProof.md) | 370 | — | — |
-| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 391 | — | — |
+| [KnowledgeIndexBuildError](../entities/KnowledgeIndexBuildError.md) | 136 | `ValueError` | Field-specific failure at the pure knowledge-index join boundary. |
+| [KnowledgeIndexInputs](../entities/KnowledgeIndexInputs.md) | 151 | — | Already evaluated values required to construct one knowledge index. |
+| [_SurfacePage](../entities/SurfacePage.md) | 170 | — | — |
+| [_JoinedPage](../entities/JoinedPage.md) | 182 | — | — |
+| [_BuildContext](../entities/BuildContext.md) | 204 | — | — |
+| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 212 | — | — |
+| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 219 | `ValueError` | — |
+| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 335 | — | — |
+| [_IndexValidationProof](../entities/IndexValidationProof.md) | 476 | — | — |
+| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 497 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_knowledge_index` | `(inputs: KnowledgeIndexInputs) -> KnowledgeIndex` | — | Build one deterministic v1 knowledge index without performing I/O. |
+| `_assemble_knowledge_index` | `(inputs: KnowledgeIndexInputs) -> KnowledgeIndex` | — | Join checked generation inputs; the final projected model still needs validation. |
+| `build_knowledge_index` | `(inputs: KnowledgeIndexInputs) -> KnowledgeIndex` | — | Build one deterministic, fully validated v1 index without performing I/O. |
 | `validate_knowledge_index` | `(value: KnowledgeIndex \| object, *, inputs: KnowledgeIndexInputs \| None = None) -> KnowledgeIndex` | — | Validate a model or decoded payload against the knowledge-index contract. |
 | `knowledge_index_to_payload` | `(value: KnowledgeIndex \| object) -> dict[str, Any]` | — | Validate and return the canonical JSON-compatible builder payload. |
 | `_model_to_payload` | `(model: KnowledgeIndex) -> dict[str, Any]` | — | Project model fields without a second parser pass; callers validate inputs. |
@@ -101,6 +105,9 @@ flowchart LR
 | `_knowledge_validation_operation` | `(wiki_root: Path)` | `@contextmanager` | Own a short-lived final-model handoff; perform no filesystem reads. |
 | `_has_validation_operation` | `(wiki_root: Path) -> bool` | — | — |
 | `_validator_identity` | `() -> tuple` | — | — |
+| `_validation_callable_identity` | `(function, active = frozenset())` | — | — |
+| `_validation_policy_value` | `(value, active = frozenset())` | — | Retain immutable policy snapshots without borrowing mutable definitions. |
+| `_validation_module_identity` | `(module)` | — | — |
 | `_validated_index_receipt` | `(value: object, wiki_root: Path) -> _ValidatedIndexReceipt` | — | — |
 | `_require_validation_receipt` | `(value: object, wiki_root: Path, content: bytes) -> KnowledgeIndex` | — | — |
 | `_serialize_payload` | `(payload: dict[str, Any]) -> str` | — | — |

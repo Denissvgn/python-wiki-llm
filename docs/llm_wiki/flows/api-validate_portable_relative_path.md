@@ -181,13 +181,13 @@ flowchart LR
 | validate_portable_relative_path | isinstance (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `isinstance(raw, str)` |
 | validate_portable_relative_path | raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `raw.replace('\\', '/')` |
 | validate_portable_relative_path | require_portable_relative_path | 108 | `require_portable_relative_path(raw, normalize_backslashes=normalize_backslashes, text_error=ProtectedArtifactIntegrityError(...), relative_error=ProtectedArtifactIntegrityError(...), non_nfc_error=ProtectedArtifactIntegrityError(...), nonportable_error=ProtectedArtifactIntegrityError(...), reserved_error=ProtectedArtifactIntegrityError(...))` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 216 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath (src/llm_wiki_cli/services…ire_portable_relative_path) | 218 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 219 | `isinstance(raw, str)` |
-| require_portable_relative_path | _default_path_error | 220 | `_default_path_error(value)` |
-| require_portable_relative_path | _syntax_key | 221 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath (src/llm_wiki_cli/services…ire_portable_relative_path) | 223 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 224 | `isinstance(raw, str)` |
+| require_portable_relative_path | _default_path_error | 225 | `_default_path_error(value)` |
+| require_portable_relative_path | _syntax_key | 226 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
 
 ### Boundary effects
 
@@ -200,9 +200,9 @@ flowchart LR
 | external_call | `validate_portable_relative_path` | `os.fspath` | 106 |
 | external_call | `validate_portable_relative_path` | `isinstance` | 107 |
 | unresolved_call | `validate_portable_relative_path` | `raw.replace` | 107 |
-| external_call | `require_portable_relative_path` | `isinstance` | 216 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
-| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `require_portable_relative_path` | `isinstance` | 221 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 223 |
+| external_call | `require_portable_relative_path` | `isinstance` | 224 |
 | step_limit | `validate_portable_relative_path` | `first 12 steps` | 0 |
 
 ## Behavior

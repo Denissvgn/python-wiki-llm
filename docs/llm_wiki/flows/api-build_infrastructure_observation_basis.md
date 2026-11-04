@@ -18,62 +18,62 @@ sequenceDiagram
     participant p4 as ConceptObservationBasis
     participant p5 as require_repository_relative_path
     participant p6 as require_sha256
-    participant p7 as require_trimmed_text
-    participant p8 as require_portable_relative_path
-    participant p9 as require_nonempty_text
-    participant p10 as _default_path_error
-    participant p11 as _check_path_collision
-    participant p12 as require_portable_path_component
-    participant p13 as require_string
+    participant p7 as require_string
+    participant p8 as require_trimmed_text
+    participant p9 as require_portable_relative_path
+    participant p10 as require_nonempty_text
+    participant p11 as _default_path_error
+    participant p12 as _check_path_collision
+    participant p13 as require_portable_path_component
     participant p14 as _syntax_key
-    participant p15 as _known_syntax
-    participant p16 as _remember_syntax
-    participant p17 as SharedValidationError
-    participant p18 as portable_path_key
-    participant p19 as contains_control_character
-    participant p20 as ValueError (src/llm_wiki_cli/services….py:_validate_source_path)
-    participant p21 as _COMPONENT_ID_RE.fullmatch
-    participant p22 as ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)
-    participant p23 as ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)
-    participant p24 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p25 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
-    participant p26 as isinstance (src/llm_wiki_cli/services…idation.py:require_string)
-    participant p27 as value.encode
+    participant p15 as _validation_error
+    participant p16 as _known_syntax
+    participant p17 as _remember_syntax
+    participant p18 as SharedValidationError
+    participant p19 as portable_path_key
+    participant p20 as contains_control_character
+    participant p21 as ValueError (src/llm_wiki_cli/services….py:_validate_source_path)
+    participant p22 as _COMPONENT_ID_RE.fullmatch
+    participant p23 as ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)
+    participant p24 as ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)
+    participant p25 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p26 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
+    participant p27 as isinstance (src/llm_wiki_cli/services…idation.py:require_string)
     p0->>p1: _validate_source_path
     p0->>p2: _validate_hash
     p0->>p3: _validate_extractor_ref
     p0->>p4: ConceptObservationBasis
     p1->>p5: require_repository_relative_path
     p2->>p6: require_sha256
-    p6->>p7: require_trimmed_text
-    p5->>p8: require_portable_relative_path
-    p7->>p9: require_nonempty_text
-    p8->>p10: _default_path_error
-    p8->>p11: _check_path_collision
-    p8->>p12: require_portable_path_component
-    p3->>p13: require_string
+    p3->>p7: require_string
+    p6->>p8: require_trimmed_text
+    p5->>p9: require_portable_relative_path
+    p8->>p10: require_nonempty_text
+    p9->>p11: _default_path_error
+    p9->>p12: _check_path_collision
+    p9->>p13: require_portable_path_component
     p5->>p14: _syntax_key
-    p5->>p15: _known_syntax
-    p5->>p16: _remember_syntax
-    p10->>p17: SharedValidationError
-    p11->>p18: portable_path_key
-    p9->>p19: contains_control_character
-    p1-->>p20: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a non-empty repository-relative path')
-    p3-->>p21: _COMPONENT_ID_RE.fullmatch(parsed)
-    p2-->>p22: ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)(...)
-    p3-->>p23: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
-    p1-->>p20: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a repository-relative POSIX path')
-    p1-->>p20: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a normalized repository-relative path')
-    p3-->>p23: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
-    p5-->>p24: isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)
-    p6-->>p25: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)(value, str)
-    p13-->>p26: isinstance (src/llm_wiki_cli/services…idation.py:require_string)(value, str)
-    p13-->>p27: value.encode('utf-8')
+    p6->>p15: _validation_error
+    p5->>p16: _known_syntax
+    p5->>p17: _remember_syntax
+    p11->>p18: SharedValidationError
+    p12->>p19: portable_path_key
+    p10->>p20: contains_control_character
+    p1-->>p21: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a non-empty repository-relative path')
+    p3-->>p22: _COMPONENT_ID_RE.fullmatch(parsed)
+    p2-->>p23: ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)(...)
+    p3-->>p24: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
+    p1-->>p21: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a repository-relative POSIX path')
+    p1-->>p21: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a normalized repository-relative path')
+    p3-->>p24: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
+    p5-->>p25: isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)
+    p6-->>p26: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)(value, str)
+    p7-->>p27: isinstance (src/llm_wiki_cli/services…idation.py:require_string)(value, str)
 ```
 
-> Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 109 interactions; 79 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 33 (24 omitted); unresolved 2 of 30 (28 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 9 of 34 (25 omitted); unresolved 1 of 31 (30 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -87,7 +87,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 26 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
 | `src/llm_wiki_cli/services/validation.py:portable_path_key` | 36 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:portable_path_key` | 36 | - | external | 1 |
-> Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -98,9 +98,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 37; effect analysis evaluated: 26, partial: 3, unavailable: 8. Counts include steps omitted from the displayed trace.
+Source steps: 45; effect analysis evaluated: 34, partial: 3, unavailable: 8. Counts include steps omitted from the displayed trace.
 
-Collector observations for 29 source steps with known totals: observed: 141, emitted: 126, omitted: 15. Unavailable totals are excluded.
+Collector observations for 37 source steps with known totals: observed: 169, emitted: 154, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -176,15 +176,15 @@ flowchart LR
 |---|---|---:|---|
 | build_infrastructure_observation_basis | _validate_source_path | 443 | `_validate_source_path(source_path)` |
 | _validate_source_path | require_repository_relative_path | 868 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
-| require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
 | _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
 | _syntax_key | type | 55 | `type(v)` |
 | _syntax_key | type | 55 | `type(v)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `len(v)` |
-| require_repository_relative_path | _known_syntax | 303 | `_known_syntax(syntax_key)` |
+| require_repository_relative_path | _known_syntax | 308 | `_known_syntax(syntax_key)` |
 
 ### Boundary effects
 
@@ -194,7 +194,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | external_call | `_syntax_key` | `type` | 54 |
 | external_call | `_syntax_key` | `any` | 55 |
 | external_call | `_syntax_key` | `type` | 55 |

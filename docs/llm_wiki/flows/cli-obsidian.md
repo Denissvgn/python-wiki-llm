@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 51 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 49 more
 
 **Complete modules touched:**
 
@@ -36,7 +36,6 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
@@ -53,7 +52,6 @@
 - [python_contracts](../modules/python_contracts.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_observations](../modules/python_observations.md)
-- [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -132,9 +130,9 @@ sequenceDiagram
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3207 interactions; 3177 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3197 interactions; 3167 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 960 (959 omitted); unresolved 1 of 872 (871 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 960 (959 omitted); unresolved 1 of 874 (873 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -148,7 +146,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 28 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 778 groups; 770 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 775 groups; 767 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -161,9 +159,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1376; effect analysis evaluated: 928, partial: 44, unavailable: 404. Counts include steps omitted from the displayed trace.
+Source steps: 1364; effect analysis evaluated: 923, partial: 45, unavailable: 396. Counts include steps omitted from the displayed trace.
 
-Collector observations for 972 source steps with known totals: observed: 5365, emitted: 5084, omitted: 281. Unavailable totals are excluded.
+Collector observations for 968 source steps with known totals: observed: 5328, emitted: 5068, omitted: 260. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

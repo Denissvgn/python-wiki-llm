@@ -1,6 +1,6 @@
 # RepositoryIdentitySource
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:212`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:237`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)

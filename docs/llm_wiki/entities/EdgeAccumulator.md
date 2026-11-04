@@ -1,6 +1,6 @@
 # _EdgeAccumulator
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:149`
+**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:162`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)

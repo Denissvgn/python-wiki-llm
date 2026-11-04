@@ -1,6 +1,6 @@
 # PackedKnowledgeStoreReader
 
-**Location:** `src/llm_wiki_cli/services/knowledge_packs.py:568`
+**Location:** `src/llm_wiki_cli/services/knowledge_packs.py:570`
 **Kind:** Class
 **Bases:** `KnowledgeStoreReader`
 **Module:** [knowledge_packs](../modules/knowledge_packs.md)

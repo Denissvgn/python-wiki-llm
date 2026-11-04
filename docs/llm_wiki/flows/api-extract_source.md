@@ -2,7 +2,7 @@
 
 **Entry point:** `extract_source` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 30 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 32 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,8 @@
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -71,12 +73,12 @@ sequenceDiagram
     participant p20 as detect_entry_points
     participant p21 as attach_routes_to_entry_points
     participant p22 as resolve_call_edges
-    participant p23 as build_data_flow_context
-    participant p24 as analyze_data_flow_detailed
-    participant p25 as build_flow_detailed
-    participant p26 as _summarize_inventory
-    participant p27 as validate_path
-    participant p28 as build_source_snapshot
+    participant p23 as build_flow_context
+    participant p24 as build_data_flow_context
+    participant p25 as analyze_data_flow_detailed
+    participant p26 as build_flow_detailed
+    participant p27 as _summarize_inventory
+    participant p28 as validate_path
     participant p29 as str (src/llm_wiki_cli/api.py:extract_source)
     participant p30 as package_filter.strip
     p0->>p1: build_extract_payload
@@ -101,19 +103,19 @@ sequenceDiagram
     p1->>p20: detect_entry_points
     p1->>p21: attach_routes_to_entry_points
     p1->>p22: resolve_call_edges
-    p1->>p23: build_data_flow_context
-    p1->>p24: analyze_data_flow_detailed
-    p1->>p25: build_flow_detailed
-    p1->>p26: _summarize_inventory
-    p6->>p27: validate_path
-    p8->>p28: build_source_snapshot
+    p1->>p23: build_flow_context
+    p1->>p24: build_data_flow_context
+    p1->>p25: analyze_data_flow_detailed
+    p1->>p26: build_flow_detailed
+    p1->>p27: _summarize_inventory
+    p6->>p28: validate_path
     p0-->>p29: str (src/llm_wiki_cli/api.py:extract_source)(exc)
     p1-->>p30: package_filter.strip
 ```
 
-> Call sequence diagram shows 30 of 3211 interactions; 3181 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3242 interactions; 3212 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1067 (1066 omitted); unresolved 1 of 1324 (1323 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1081 (1080 omitted); unresolved 1 of 1334 (1333 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,7 +129,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 716 groups; 708 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 727 groups; 719 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,9 +142,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 821; effect analysis evaluated: 663, partial: 38, unavailable: 120. Counts include steps omitted from the displayed trace.
+Source steps: 828; effect analysis evaluated: 669, partial: 38, unavailable: 121. Counts include steps omitted from the displayed trace.
 
-Collector observations for 701 source steps with known totals: observed: 4268, emitted: 4141, omitted: 127. Unavailable totals are excluded.
+Collector observations for 707 source steps with known totals: observed: 4295, emitted: 4168, omitted: 127. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,7 +220,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 1143 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 2187 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_extract_payload | validate_source_root | 2248 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |

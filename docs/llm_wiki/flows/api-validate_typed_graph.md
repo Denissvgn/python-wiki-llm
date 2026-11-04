@@ -30,24 +30,24 @@ sequenceDiagram
     participant p8 as _locator
     participant p9 as _normalise_edge
     participant p10 as _validate_graph_bindings
-    participant p11 as validate_exact_page_coordinate
-    participant p12 as _nonnegative_int
-    participant p13 as _hash
-    participant p14 as _relationship_kind
-    participant p15 as _normalise_endpoint
-    participant p16 as _aggregate_input_hash
-    participant p17 as _positive_int
-    participant p18 as _limitation
-    participant p19 as _validate_resolution_target
-    participant p20 as _normalise_evidence
-    participant p21 as _validate_edge_concept_references
-    participant p22 as relationship_edge_key
-    participant p23 as _validate_core_direction
-    participant p24 as require_sha256
-    participant p25 as require_nonnegative_int
-    participant p26 as _open_name
-    participant p27 as _validate_endpoint_concept_references
-    participant p28 as require_positive_int
+    participant p11 as require_mapping
+    participant p12 as require_exact_fields
+    participant p13 as require_list
+    participant p14 as validate_exact_page_coordinate
+    participant p15 as _nonnegative_int
+    participant p16 as _hash
+    participant p17 as _relationship_kind
+    participant p18 as _normalise_endpoint
+    participant p19 as _aggregate_input_hash
+    participant p20 as _positive_int
+    participant p21 as _limitation
+    participant p22 as _validate_resolution_target
+    participant p23 as _normalise_evidence
+    participant p24 as _validate_edge_concept_references
+    participant p25 as relationship_edge_key
+    participant p26 as _validate_core_direction
+    participant p27 as require_sha256
+    participant p28 as require_nonnegative_int
     participant p29 as set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
     participant p30 as seen_analyzers.add
     p0->>p1: _parse_typed_graph
@@ -60,45 +60,45 @@ sequenceDiagram
     p1->>p8: _locator
     p1->>p9: _normalise_edge
     p1->>p10: _validate_graph_bindings
-    p8->>p11: validate_exact_page_coordinate
-    p7->>p12: _nonnegative_int
-    p4->>p13: _hash
-    p9->>p14: _relationship_kind
-    p9->>p15: _normalise_endpoint
-    p4->>p16: _aggregate_input_hash
-    p7->>p17: _positive_int
-    p7->>p18: _limitation
-    p9->>p19: _validate_resolution_target
-    p9->>p20: _normalise_evidence
-    p9->>p21: _validate_edge_concept_references
-    p9->>p22: relationship_edge_key
-    p9->>p23: _validate_core_direction
-    p13->>p24: require_sha256
-    p12->>p25: require_nonnegative_int
-    p14->>p26: _open_name
-    p21->>p27: _validate_endpoint_concept_references
-    p17->>p28: require_positive_int
+    p2->>p11: require_mapping
+    p3->>p12: require_exact_fields
+    p5->>p13: require_list
+    p8->>p14: validate_exact_page_coordinate
+    p7->>p15: _nonnegative_int
+    p4->>p16: _hash
+    p9->>p17: _relationship_kind
+    p9->>p18: _normalise_endpoint
+    p4->>p19: _aggregate_input_hash
+    p7->>p20: _positive_int
+    p7->>p21: _limitation
+    p9->>p22: _validate_resolution_target
+    p9->>p23: _normalise_evidence
+    p9->>p24: _validate_edge_concept_references
+    p9->>p25: relationship_edge_key
+    p9->>p26: _validate_core_direction
+    p16->>p27: require_sha256
+    p15->>p28: require_nonnegative_int
     p1-->>p29: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
     p1-->>p30: seen_analyzers.add(analyzer)
 ```
 
-> Call sequence diagram shows 30 of 416 interactions; 386 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 425 interactions; 395 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 97 (96 omitted); unresolved 1 of 74 (73 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 100 (99 omitted); unresolved 1 of 77 (76 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | unresolved | 2 |
-> Omission summary shows 8 of 124 groups; 116 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 122 groups; 114 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 246; effect analysis evaluated: 170, partial: 3, unavailable: 73. Counts include steps omitted from the displayed trace.
+Source steps: 249; effect analysis evaluated: 180, partial: 3, unavailable: 66. Counts include steps omitted from the displayed trace.
 
-Collector observations for 173 source steps with known totals: observed: 776, emitted: 761, omitted: 15. Unavailable totals are excluded.
+Collector observations for 183 source steps with known totals: observed: 893, emitted: 877, omitted: 16. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -123,16 +123,16 @@ Collector observations for 173 source steps with known totals: observed: 776, em
 |---|---|---|---|---:|---:|---:|
 | `validate_typed_graph` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_parse_typed_graph` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
-| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_only_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
@@ -141,24 +141,24 @@ flowchart LR
     s3["3. _object"]
     s4["4. require_mapping"]
     s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s7["7. key.encode"]
-    s8["8. KnowledgeGraphError"]
-    s9["9. KnowledgeGraphError"]
-    s10["10. dict"]
-    s11["11. _only_fields"]
-    s12["12. require_exact_fields"]
+    s6["6. _validation_error"]
+    s7["7. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s8["8. error"]
+    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s10["10. _validation_error"]
+    s11["11. key.encode"]
+    s12["12. _validation_error"]
     s1 -->|"_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)"| s2
     s2 -->|"_object(payload, 'typed_graph')"| s3
-    s3 -->|"require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))"| s4
+    s3 -->|"require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s5
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s6
-    s4 -. "key.encode('utf-8')" .-> s7
-    s3 -->|"KnowledgeGraphError(path, 'must be an object')"| s8
-    s3 -->|"KnowledgeGraphError(path, 'object keys must be strings')"| s9
-    s3 -. "dict(selected)" .-> s10
-    s2 -->|"_only_fields(graph, 'typed_graph', {...}, required={...})"| s11
-    s11 -->|"require_exact_fields(…)"| s12
+    s4 -->|"_validation_error(error, error_context)"| s6
+    s6 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s7
+    s6 -. "error(context)" .-> s8
+    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s9
+    s4 -->|"_validation_error(..., error_context)"| s10
+    s4 -. "key.encode('utf-8')" .-> s11
+    s4 -->|"_validation_error(..., error_context)"| s12
     b0["mutation seen_analyzers.add"]
     s2 -. "mutation seen_analyzers.add" .-> b0
     b1["mutation coverage.append"]
@@ -175,9 +175,8 @@ flowchart LR
     click s2 "../modules/knowledge_graph.md"
     click s3 "../modules/knowledge_graph.md"
     click s4 "../modules/validation.md"
-    click s8 "../modules/knowledge_graph.md"
-    click s9 "../modules/knowledge_graph.md"
-    click s11 "../modules/knowledge_graph.md"
+    click s6 "../modules/validation.md"
+    click s10 "../modules/validation.md"
     click s12 "../modules/validation.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
@@ -194,51 +193,53 @@ flowchart LR
 |---|---|---|---|---|
 | `validate_typed_graph` | `payload: object`, `concept_kinds: Mapping[str, str] \| None` | - | - | `_parse_typed_graph(...)` |
 | `_parse_typed_graph` | `payload: object`, `concept_kinds: Mapping[str, str] \| None`, `complete: bool` | `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` | - | `{...}` |
-| `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
+| `_object` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR` | - | `dict(...)` |
+| `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
-| `KnowledgeGraphError` | - | - | - | - |
-| `KnowledgeGraphError` | - | - | - | - |
-| `dict` | - | - | - | - |
-| `_only_fields` | `value: Mapping[str, Any]`, `path: str`, `allowed: set[str]`, `required: set[str] \| frozenset[str]` | - | - | `require_shared_exact_fields(...)` |
-| `require_exact_fields` | `value: object`, `allowed: Iterable[str]`, `required: Iterable[str]`, `mapping_error: Exception`, `missing_error: _ErrorFactory`, `unknown_error: _ErrorFactory`, `invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None`, `stringify_keys: bool` | `Mapping` | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_typed_graph | _parse_typed_graph | 407 | `_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)` |
-| _parse_typed_graph | _object | 421 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2329 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
-| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2331 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2333 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2335 | `dict(selected)` |
-| _parse_typed_graph | _only_fields | 422 | `_only_fields(graph, 'typed_graph', {...}, required={...})` |
-| _only_fields | require_exact_fields | 2352 | `require_shared_exact_fields(value, allowed=allowed, required=required, mapping_error=KnowledgeGraphError(...), missing_error=..., unknown_error=..., unknown_first=True)` |
+| validate_typed_graph | _parse_typed_graph | 420 | `_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)` |
+| _parse_typed_graph | _object | 434 | `_object(payload, 'typed_graph')` |
+| _object | require_mapping | 2342 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
+| require_mapping | key.encode | 792 | `key.encode('utf-8')` |
+| require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen_analyzers.add` | `_parse_typed_graph` | 467 |
-| mutation | `coverage.append` | `_parse_typed_graph` | 468 |
-| mutation | `seen_keys.add` | `_parse_typed_graph` | 492 |
-| mutation | `edges.append` | `_parse_typed_graph` | 493 |
-| mutation | `edges.sort` | `_parse_typed_graph` | 494 |
-| mutation | `coverage.sort` | `_parse_typed_graph` | 495 |
+| mutation | `seen_analyzers.add` | `_parse_typed_graph` | 480 |
+| mutation | `coverage.append` | `_parse_typed_graph` | 481 |
+| mutation | `seen_keys.add` | `_parse_typed_graph` | 505 |
+| mutation | `edges.append` | `_parse_typed_graph` | 506 |
+| mutation | `edges.sort` | `_parse_typed_graph` | 507 |
+| mutation | `coverage.sort` | `_parse_typed_graph` | 508 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 773 |
-| external_call | `require_mapping` | `isinstance` | 777 |
-| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_mapping` | `isinstance` | 783 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| external_call | `require_mapping` | `isinstance` | 787 |
+| unresolved_call | `require_mapping` | `key.encode` | 792 |
 | step_limit | `validate_typed_graph` | `first 12 steps` | 0 |
 | truncated_flow | `validate_typed_graph` | `depth limit` | 0 |
 

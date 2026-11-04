@@ -83,9 +83,9 @@ sequenceDiagram
     p0-->>p30: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
 ```
 
-> Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 410 interactions; 380 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 82 (81 omitted); unresolved 1 of 97 (96 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 83 (82 omitted); unresolved 1 of 98 (97 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -99,7 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 25 | - | unresolved | 2 |
-> Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 104 groups; 96 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -112,9 +112,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 228; effect analysis evaluated: 108, partial: 3, unavailable: 117. Counts include steps omitted from the displayed trace.
+Source steps: 230; effect analysis evaluated: 110, partial: 3, unavailable: 117. Counts include steps omitted from the displayed trace.
 
-Collector observations for 111 source steps with known totals: observed: 599, emitted: 583, omitted: 16. Unavailable totals are excluded.
+Collector observations for 113 source steps with known totals: observed: 608, emitted: 592, omitted: 16. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

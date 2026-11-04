@@ -1,6 +1,6 @@
 # ExtractPayloadResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:222`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:226`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

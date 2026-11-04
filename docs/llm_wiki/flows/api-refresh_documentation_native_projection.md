@@ -2,7 +2,7 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 70 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 71 more
 
 **Complete modules touched:**
 
@@ -51,11 +51,11 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [markdown_sections](../modules/markdown_sections.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
@@ -70,6 +70,7 @@
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -99,23 +100,23 @@ sequenceDiagram
     participant p9 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
     participant p10 as storage_writer_lock
     participant p11 as validate_maintenance_adoption
-    participant p12 as snapshot_wiki
-    participant p13 as canonical_bytes
+    participant p12 as canonical_bytes
+    participant p13 as _capture_spooled_wiki
     participant p14 as _validate_refresh_artifact_basis
     participant p15 as _native_source_snapshot_preflight
-    participant p16 as _recovery_directory
-    participant p17 as _generation_input_paths
+    participant p16 as _generation_input_paths
+    participant p17 as _recovery_directory
     participant p18 as _collect_runtime
     participant p19 as _retained_empty_paths
-    participant p20 as save_recovery_snapshot
-    participant p21 as _page_maps
-    participant p22 as _runtime_generation_options
-    participant p23 as _evaluate_runtime_surface
-    participant p24 as _markdown_hashes
+    participant p20 as _page_maps
+    participant p21 as _runtime_generation_options
+    participant p22 as _evaluate_runtime_surface
+    participant p23 as _markdown_hashes
+    participant p24 as save_recovery_snapshot
     participant p25 as finalize_runtime_knowledge
-    participant p26 as collect_runtime_repository_evidence
-    participant p27 as _build_context_knowledge_view
-    participant p28 as _validate_range
+    participant p26 as mark_recovery_complete
+    participant p27 as retain_recovery_catalogs
+    participant p28 as collect_runtime_repository_evidence
     participant p29 as nullcontext
     participant p30 as path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
     p0->>p1: load_adoption_marker
@@ -129,30 +130,30 @@ sequenceDiagram
     p1->>p9: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
     p2->>p10: storage_writer_lock
     p1->>p11: validate_maintenance_adoption
-    p2->>p12: snapshot_wiki
-    p1->>p13: canonical_bytes
+    p1->>p12: canonical_bytes
+    p2->>p13: _capture_spooled_wiki
     p3->>p14: _validate_refresh_artifact_basis
     p3->>p15: _native_source_snapshot_preflight
-    p2->>p16: _recovery_directory
-    p3->>p17: _generation_input_paths
+    p3->>p16: _generation_input_paths
+    p2->>p17: _recovery_directory
     p3->>p18: _collect_runtime
     p3->>p19: _retained_empty_paths
-    p2->>p20: save_recovery_snapshot
-    p3->>p21: _page_maps
-    p3->>p22: _runtime_generation_options
-    p3->>p23: _evaluate_runtime_surface
-    p3->>p24: _markdown_hashes
+    p3->>p20: _page_maps
+    p3->>p21: _runtime_generation_options
+    p3->>p22: _evaluate_runtime_surface
+    p3->>p23: _markdown_hashes
+    p2->>p24: save_recovery_snapshot
     p3->>p25: finalize_runtime_knowledge
-    p3->>p26: collect_runtime_repository_evidence
-    p3->>p27: _build_context_knowledge_view
-    p9->>p28: _validate_range
+    p2->>p26: mark_recovery_complete
+    p2->>p27: retain_recovery_catalogs
+    p3->>p28: collect_runtime_repository_evidence
     p0-->>p29: nullcontext
     p1-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 4668 interactions; 4638 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4798 interactions; 4768 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1578 (1577 omitted); unresolved 1 of 1196 (1195 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1626 (1625 omitted); unresolved 1 of 1241 (1240 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | unresolved | 1 |
-> Omission summary shows 8 of 1132 groups; 1124 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1175 groups; 1167 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +180,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1895; effect analysis evaluated: 1192, partial: 80, unavailable: 623. Counts include steps omitted from the displayed trace.
+Source steps: 1932; effect analysis evaluated: 1235, partial: 84, unavailable: 613. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1272 source steps with known totals: observed: 7667, emitted: 7205, omitted: 462. Unavailable totals are excluded.
+Collector observations for 1319 source steps with known totals: observed: 7777, emitted: 7419, omitted: 358. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -259,7 +260,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | refresh_documentation_native_projection | load_adoption_marker | 316 | `load_adoption_marker(wiki_root)` |
-| load_adoption_marker | _absolute_path | 85 | `_absolute_path(Path(...))` |
+| load_adoption_marker | _absolute_path | 92 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |

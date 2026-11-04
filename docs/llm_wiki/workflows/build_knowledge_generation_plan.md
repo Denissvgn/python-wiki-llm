@@ -16,14 +16,14 @@
 8. `infrastructure_sync.infrastructure_evidence_by_page`
 9. `implementation_evidence.project_concept_implementations`
 10. `source_retirement.retired_entity_mappings`
-11. `knowledge_index.build_knowledge_index`
-12. `knowledge_index.KnowledgeIndexInputs`
-13. `knowledge_governance.apply_governance_projection`
-14. `maintenance_evidence.captured_observations_from_knowledge`
-15. `implementation_evidence.analysis_hash_from_producer`
-16. `maintenance_evidence.maintenance_transfers_from_page_plan`
-17. `maintenance_evidence.reconcile_pending_maintenance`
-18. `maintenance_projection.project_maintenance_knowledge`
+11. `knowledge_index.KnowledgeIndexInputs`
+12. `knowledge_governance.apply_governance_projection`
+13. `maintenance_evidence.captured_observations_from_knowledge`
+14. `implementation_evidence.analysis_hash_from_producer`
+15. `maintenance_evidence.maintenance_transfers_from_page_plan`
+16. `maintenance_evidence.reconcile_pending_maintenance`
+17. `maintenance_projection.project_maintenance_knowledge`
+18. `knowledge_reuse.bind_reuse_commitment`
 19. `knowledge_artifacts.build_knowledge_commit_plan`
 
 ## Touches

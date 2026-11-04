@@ -31,23 +31,23 @@ sequenceDiagram
     participant p9 as _validate_projection_relationships
     participant p10 as _json_copy
     participant p11 as require_sha256
-    participant p12 as _require_exact_fields
-    participant p13 as _require_relative_path
-    participant p14 as validate_bundle_id
-    participant p15 as _shape_error
-    participant p16 as _validate_concept_kind
-    participant p17 as _validate_projection_identity
-    participant p18 as validate_configured_public_identity
-    participant p19 as _validate_projection_lifecycle
-    participant p20 as _validate_projection_evidence
-    participant p21 as _validate_projection_freshness
-    participant p22 as _validate_projection_relationship
-    participant p23 as _require_positive_int
-    participant p24 as _require_enum
-    participant p25 as _validate_projection_review
-    participant p26 as _validate_projection_machine_check
-    participant p27 as _validate_projection_producer
-    participant p28 as _validate_safe_json_value
+    participant p12 as require_mapping
+    participant p13 as _require_exact_fields
+    participant p14 as _require_relative_path
+    participant p15 as validate_bundle_id
+    participant p16 as _shape_error
+    participant p17 as _validate_concept_kind
+    participant p18 as _validate_projection_identity
+    participant p19 as validate_configured_public_identity
+    participant p20 as _validate_projection_lifecycle
+    participant p21 as _validate_projection_evidence
+    participant p22 as _validate_projection_freshness
+    participant p23 as _validate_projection_relationship
+    participant p24 as _require_positive_int
+    participant p25 as _require_enum
+    participant p26 as _validate_projection_review
+    participant p27 as _validate_projection_machine_check
+    participant p28 as _validate_projection_producer
     participant p29 as isinstance (src/llm_wiki_cli/services…rojection_concept_summary)
     participant p30 as projection.concept_for_path
     p0->>p1: _validate_projection_structure
@@ -61,30 +61,30 @@ sequenceDiagram
     p1->>p9: _validate_projection_relationships
     p2->>p10: _json_copy
     p3->>p11: require_sha256
-    p6->>p12: _require_exact_fields
-    p7->>p13: _require_relative_path
-    p6->>p14: validate_bundle_id
-    p5->>p15: _shape_error
-    p8->>p16: _validate_concept_kind
-    p8->>p17: _validate_projection_identity
-    p6->>p18: validate_configured_public_identity
-    p8->>p19: _validate_projection_lifecycle
-    p8->>p20: _validate_projection_evidence
-    p8->>p21: _validate_projection_freshness
-    p9->>p22: _validate_projection_relationship
-    p5->>p23: _require_positive_int
-    p6->>p24: _require_enum
-    p8->>p25: _validate_projection_review
-    p8->>p26: _validate_projection_machine_check
-    p6->>p27: _validate_projection_producer
-    p6->>p28: _validate_safe_json_value
+    p4->>p12: require_mapping
+    p6->>p13: _require_exact_fields
+    p7->>p14: _require_relative_path
+    p6->>p15: validate_bundle_id
+    p5->>p16: _shape_error
+    p8->>p17: _validate_concept_kind
+    p8->>p18: _validate_projection_identity
+    p6->>p19: validate_configured_public_identity
+    p8->>p20: _validate_projection_lifecycle
+    p8->>p21: _validate_projection_evidence
+    p8->>p22: _validate_projection_freshness
+    p9->>p23: _validate_projection_relationship
+    p5->>p24: _require_positive_int
+    p6->>p25: _require_enum
+    p8->>p26: _validate_projection_review
+    p8->>p27: _validate_projection_machine_check
+    p6->>p28: _validate_projection_producer
     p0-->>p29: isinstance (src/llm_wiki_cli/services…rojection_concept_summary)(projection, KnowledgeProjection)
     p2-->>p30: projection.concept_for_path(canonical_path)
 ```
 
-> Call sequence diagram shows 30 of 626 interactions; 596 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 640 interactions; 610 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 161 (160 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 162 (161 omitted); unresolved 1 of 118 (117 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -94,11 +94,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | - | external | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 14 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 14 | - | unresolved | 1 |
-> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 13 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 128 groups; 120 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 349; effect analysis evaluated: 301, partial: 6, unavailable: 42. Counts include steps omitted from the displayed trace.
+Source steps: 361; effect analysis evaluated: 313, partial: 6, unavailable: 42. Counts include steps omitted from the displayed trace.
 
-Collector observations for 307 source steps with known totals: observed: 1214, emitted: 1188, omitted: 26. Unavailable totals are excluded.
+Collector observations for 319 source steps with known totals: observed: 1260, emitted: 1233, omitted: 27. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -131,7 +131,7 @@ Collector observations for 307 source steps with known totals: observed: 1214, e
 | `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_require_sha256` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `require_sha256` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `require_sha256` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -182,7 +182,7 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
 | `_require_sha256` | `value: object`, `path: str`, `code: str` | - | - | `require_shared_sha256(...)` |
-| `require_sha256` | `value: object`, `digest_error: Exception`, `text_error: Exception \| None`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
+| `require_sha256` | `value: object`, `digest_error: _ValidationError`, `text_error: _ValidationError \| None`, `error_context: str`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
 | `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | - | - | - | - |
 
 ### Call data
@@ -199,7 +199,7 @@ flowchart LR
 | _validate_projection_structure | KnowledgeProjectionError | 821 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
 | _validate_projection_structure | _require_sha256 | 826 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
 | _require_sha256 | require_sha256 | 2240 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1146 | `isinstance(value, str)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1159 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -213,7 +213,7 @@ flowchart LR
 | external_call | `projection_concept_summary` | `TypeError` | 415 |
 | external_call | `_validate_projection_structure` | `isinstance` | 808 |
 | external_call | `_validate_projection_structure` | `isinstance` | 820 |
-| external_call | `require_sha256` | `isinstance` | 1146 |
+| external_call | `require_sha256` | `isinstance` | 1159 |
 | step_limit | `projection_concept_summary` | `first 12 steps` | 0 |
 | truncated_flow | `projection_concept_summary` | `depth limit` | 0 |
 

@@ -35,11 +35,11 @@ sequenceDiagram
     participant p21 as _validate_optional_strings
     participant p22 as _validate_optional_string_array
     participant p23 as _validate_optional_booleans
-    participant p24 as _validate_string_array
-    participant p25 as _record_object
-    participant p26 as require_bool
-    participant p27 as sha256_bytes
-    participant p28 as _pointer
+    participant p24 as require_string
+    participant p25 as require_list
+    participant p26 as _validate_string_array
+    participant p27 as _record_object
+    participant p28 as require_bool
     participant p29 as TypeError
     participant p30 as seen_names.get
     p0->>p1: _validate_inventory_complete
@@ -65,16 +65,16 @@ sequenceDiagram
     p9->>p21: _validate_optional_strings
     p11->>p22: _validate_optional_string_array
     p9->>p23: _validate_optional_booleans
-    p22->>p24: _validate_string_array
-    p20->>p25: _record_object
-    p1->>p26: require_bool
-    p5->>p27: sha256_bytes
-    p8->>p28: _pointer
+    p21->>p24: require_string
+    p20->>p25: require_list
+    p22->>p26: _validate_string_array
+    p20->>p27: _record_object
+    p1->>p28: require_bool
     p1-->>p29: TypeError('inventory_complete must be a boolean')
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 240 interactions; 210 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
@@ -88,9 +88,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 17 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 17 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 138; effect analysis evaluated: 136, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 145; effect analysis evaluated: 143, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 137 source steps with known totals: observed: 688, emitted: 684, omitted: 4. Unavailable totals are excluded.
+Collector observations for 144 source steps with known totals: observed: 716, emitted: 712, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -197,7 +197,7 @@ flowchart LR
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
 | _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 818 | `isinstance(value, bool)` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 828 | `isinstance(value, bool)` |
 | _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
@@ -220,7 +220,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 818 |
+| external_call | `require_bool` | `isinstance` | 828 |
 | external_call | `_validate_inventory_complete` | `TypeError` | 849 |
 | external_call | `_inventory_language` | `isinstance` | 540 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 542 |

@@ -2,7 +2,7 @@
 
 **Entry point:** `bootstrap_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 39 more
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 41 more
 
 **Complete modules touched:**
 
@@ -34,6 +34,7 @@
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
@@ -43,6 +44,7 @@
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -85,7 +87,7 @@ sequenceDiagram
     participant p25 as storage_writer_lock
     participant p26 as _extract_bootstrap_inventory
     participant p27 as _recover
-    participant p28 as snapshot_wiki
+    participant p28 as _finish_if_empty_bootstrap_inventory
     participant p29 as str (src/llm_wiki_cli/api.py:bootstrap_wiki)
     participant p30 as Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
     p0->>p1: execute_bootstrap
@@ -115,14 +117,14 @@ sequenceDiagram
     p10->>p25: storage_writer_lock
     p13->>p26: _extract_bootstrap_inventory
     p11->>p27: _recover
-    p10->>p28: snapshot_wiki
+    p13->>p28: _finish_if_empty_bootstrap_inventory
     p0-->>p29: str (src/llm_wiki_cli/api.py:bootstrap_wiki)(exc)
     p5-->>p30: Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
 ```
 
-> Call sequence diagram shows 30 of 1310 interactions; 1280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1383 interactions; 1353 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 408 (407 omitted); unresolved 1 of 291 (290 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 397 (396 omitted); unresolved 1 of 322 (321 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -136,7 +138,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 22 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | - | unresolved | 2 |
-> Omission summary shows 8 of 345 groups; 337 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 385 groups; 377 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -149,9 +151,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 612; effect analysis evaluated: 458, partial: 34, unavailable: 120. Counts include steps omitted from the displayed trace.
+Source steps: 665; effect analysis evaluated: 508, partial: 36, unavailable: 121. Counts include steps omitted from the displayed trace.
 
-Collector observations for 492 source steps with known totals: observed: 3016, emitted: 2790, omitted: 226. Unavailable totals are excluded.
+Collector observations for 544 source steps with known totals: observed: 3287, emitted: 3058, omitted: 229. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

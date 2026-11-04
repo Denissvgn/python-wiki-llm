@@ -34,7 +34,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [markdown_sections](../modules/markdown_sections.md)
+- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -112,9 +112,9 @@ sequenceDiagram
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1751 interactions; 1721 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1623 interactions; 1593 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 328 (327 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 536 (535 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 388 groups; 380 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 363 groups; 355 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 883; effect analysis evaluated: 478, partial: 38, unavailable: 367. Counts include steps omitted from the displayed trace.
+Source steps: 781; effect analysis evaluated: 414, partial: 39, unavailable: 328. Counts include steps omitted from the displayed trace.
 
-Collector observations for 516 source steps with known totals: observed: 3310, emitted: 2972, omitted: 338. Unavailable totals are excluded.
+Collector observations for 453 source steps with known totals: observed: 2916, emitted: 2666, omitted: 250. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

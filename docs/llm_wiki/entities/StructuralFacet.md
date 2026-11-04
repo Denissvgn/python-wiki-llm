@@ -1,6 +1,6 @@
 # StructuralFacet
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:347`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:372`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

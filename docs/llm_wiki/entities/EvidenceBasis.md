@@ -1,6 +1,6 @@
 # EvidenceBasis
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:336`
+**Location:** `src/llm_wiki_cli/services/knowledge_model.py:361`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)

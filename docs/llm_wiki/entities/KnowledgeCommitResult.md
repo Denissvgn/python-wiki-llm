@@ -1,6 +1,6 @@
 # KnowledgeCommitResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:236`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:240`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

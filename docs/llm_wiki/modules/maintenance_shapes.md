@@ -20,25 +20,31 @@ Strict maintenance payload shapes without a JSON Schema runtime dependency.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n1["src/llm_wiki_cli/services/maintenance_shapes.py"]
-    n2["src/llm_wiki_cli/services/maintenance_state.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
-    n1 --> n0
-    n1 --> n3
-    n2 --> n0
+    n0["src/llm_wiki_cli/services/knowledge_index.py"]
+    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n2["src/llm_wiki_cli/services/maintenance_shapes.py"]
+    n3["src/llm_wiki_cli/services/maintenance_state.py"]
+    n4["src/llm_wiki_cli/services/validation.py"]
+    n0 --> n2
+    n0 --> n3
+    n0 --> n4
     n2 --> n1
-    n2 --> n3
-    click n0 "../modules/knowledge_storage.md"
-    click n1 "../modules/maintenance_shapes.md"
-    click n2 "../modules/maintenance_state.md"
-    click n3 "../modules/validation.md"
+    n2 --> n4
+    n3 --> n1
+    n3 --> n2
+    n3 --> n4
+    click n0 "../modules/knowledge_index.md"
+    click n1 "../modules/knowledge_storage.md"
+    click n2 "../modules/maintenance_shapes.md"
+    click n3 "../modules/maintenance_state.md"
+    click n4 "../modules/validation.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [maintenance_state](../modules/maintenance_state.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [validation](../modules/validation.md) |

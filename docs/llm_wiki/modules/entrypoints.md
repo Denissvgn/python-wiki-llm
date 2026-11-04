@@ -29,11 +29,12 @@ Static CLI dispatch alias expansion respects captured module bindings. Method-lo
 | `.validation` | `positive_int_or_none`, `resolved_paths_equal` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
-| `collections.abc` | `Iterable`, `Mapping` |
+| `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
+| `types` | `MappingProxyType` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -63,8 +64,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [EntryPointDetectionResult](../entities/EntryPointDetectionResult.md) | 58 | — | — |
-| [_PluginEntryPointDetectionResult](../entities/PluginEntryPointDetectionResult.md) | 64 | — | — |
+| [EntryPointDetectionResult](../entities/EntryPointDetectionResult.md) | 59 | — | — |
+| [_PluginEntryPointDetectionResult](../entities/PluginEntryPointDetectionResult.md) | 65 | — | — |
+| [FlowAnalysisContext](../entities/FlowAnalysisContext.md) | 1201 | — | Read-only adjacency indexes for flows over one caller-owned edge list. |
 
 ## Functions
 
@@ -133,10 +135,11 @@ flowchart LR
 | `entry_points_from_detailed_observations` | `(detailed: Mapping[str, Any], *, include_provenance: bool = False) -> list[dict]` | — | Recover the compatible de-duplicated entries from a detailed result. |
 | `javascript_flow_limitations` | `(inventory: dict, entry_points: list[dict]) -> list[dict]` | — | Return JavaScript HTTP server files that lack flow entry-point coverage. |
 | `_build_adjacency` | `(edges: list[dict]) -> dict[tuple, list[dict]]` | — | — |
+| `build_flow_context` | `(edges: list[dict]) -> FlowAnalysisContext` | — | Index one resolved graph without changing its edges or traversal order. |
 | `_edge_metadata` | `(edge: dict) -> dict` | — | — |
 | `_flow_step_from_edge` | `(edge: dict, depth: int) -> dict` | — | — |
 | `_expand_flow` | `(node, depth, adjacency, steps, visited, max_depth, state) -> None` | — | — |
 | `_modules_touched` | `(steps: list[dict]) -> list[str]` | — | — |
-| `build_flow` | `(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH) -> dict` | — | Trace an ordered call path from *entry* through resolved *edges*. |
-| `_reachable_step_count` | `(start: tuple, adjacency: dict[tuple, list[dict]]) -> int` | — | Count the finite static traversal without applying the depth bound. |
-| `build_flow_detailed` | `(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH) -> dict` | — | Return the legacy flow plus versioned, exact reachable-step coverage. |
+| `build_flow` | `(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH, context: FlowAnalysisContext \| None = None) -> dict` | — | Trace an ordered call path from *entry* through resolved *edges*. |
+| `_reachable_step_count` | `(start: tuple, adjacency: Mapping[tuple, Sequence[dict]]) -> int` | — | Count the finite static traversal without applying the depth bound. |
+| `build_flow_detailed` | `(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH, context: FlowAnalysisContext \| None = None) -> dict` | — | Return the legacy flow plus versioned, exact reachable-step coverage. |

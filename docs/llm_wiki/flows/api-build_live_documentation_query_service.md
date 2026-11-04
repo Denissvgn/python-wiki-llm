@@ -105,7 +105,7 @@ sequenceDiagram
     p0-->>p30: selected_snapshot_builder(source_root, **=snapshot_options)
 ```
 
-> Call sequence diagram shows 30 of 1977 interactions; 1947 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1981 interactions; 1951 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 683 (682 omitted); unresolved 1 of 518 (517 omitted). These counts cover the captured static trace.
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 22 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-> Omission summary shows 8 of 495 groups; 487 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 497 groups; 489 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 777; effect analysis evaluated: 492, partial: 32, unavailable: 253. Counts include steps omitted from the displayed trace.
+Source steps: 781; effect analysis evaluated: 496, partial: 32, unavailable: 253. Counts include steps omitted from the displayed trace.
 
-Collector observations for 524 source steps with known totals: observed: 3010, emitted: 2780, omitted: 230. Unavailable totals are excluded.
+Collector observations for 528 source steps with known totals: observed: 3024, emitted: 2793, omitted: 231. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,13 +218,13 @@ flowchart LR
 | normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 216 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath (src/llm_wiki_cli/services…re_portable_relative_path) | 218 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 219 | `isinstance(raw, str)` |
-| require_portable_relative_path | _default_path_error | 220 | `_default_path_error(value)` |
-| require_portable_relative_path | _syntax_key | 221 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath (src/llm_wiki_cli/services…re_portable_relative_path) | 223 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 224 | `isinstance(raw, str)` |
+| require_portable_relative_path | _default_path_error | 225 | `_default_path_error(value)` |
+| require_portable_relative_path | _syntax_key | 226 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
 
 ### Boundary effects
 
@@ -234,9 +234,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_portable_relative_path` | `isinstance` | 216 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
-| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `require_portable_relative_path` | `isinstance` | 221 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 223 |
+| external_call | `require_portable_relative_path` | `isinstance` | 224 |
 | step_limit | `build_live_documentation_query_service` | `first 12 steps` | 0 |
 | truncated_flow | `build_live_documentation_query_service` | `depth limit` | 0 |
 

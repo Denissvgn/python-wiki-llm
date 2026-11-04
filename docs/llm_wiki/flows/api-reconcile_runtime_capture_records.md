@@ -29,17 +29,17 @@ sequenceDiagram
     participant p15 as _validate_runtime_capture_content
     participant p16 as _section_locator
     participant p17 as _reject_sensitive_metadata
-    participant p18 as _portable_path
-    participant p19 as _enum
-    participant p20 as _string_list
-    participant p21 as _reason
-    participant p22 as require_exact_choice
-    participant p23 as _text
-    participant p24 as require_portable_relative_path
-    participant p25 as require_trimmed_text
-    participant p26 as _default_path_error
-    participant p27 as _check_path_collision
-    participant p28 as require_portable_path_component
+    participant p18 as require_mapping
+    participant p19 as require_exact_fields
+    participant p20 as _portable_path
+    participant p21 as _enum
+    participant p22 as _string_list
+    participant p23 as _reason
+    participant p24 as require_exact_choice
+    participant p25 as _text
+    participant p26 as require_portable_relative_path
+    participant p27 as require_string
+    participant p28 as require_trimmed_text
     participant p29 as Path
     participant p30 as Path(…).resolve
     p0->>p1: _normalize_capture_record
@@ -59,38 +59,38 @@ sequenceDiagram
     p2->>p15: _validate_runtime_capture_content
     p1->>p16: _section_locator
     p1->>p17: _reject_sensitive_metadata
-    p8->>p18: _portable_path
-    p7->>p19: _enum
-    p10->>p20: _string_list
-    p9->>p21: _reason
-    p19->>p22: require_exact_choice
-    p18->>p23: _text
-    p18->>p24: require_portable_relative_path
-    p23->>p25: require_trimmed_text
-    p24->>p26: _default_path_error
-    p24->>p27: _check_path_collision
-    p24->>p28: require_portable_path_component
+    p5->>p18: require_mapping
+    p6->>p19: require_exact_fields
+    p8->>p20: _portable_path
+    p7->>p21: _enum
+    p10->>p22: _string_list
+    p9->>p23: _reason
+    p21->>p24: require_exact_choice
+    p20->>p25: _text
+    p20->>p26: require_portable_relative_path
+    p24->>p27: require_string
+    p25->>p28: require_trimmed_text
     p0-->>p29: Path(wiki_root)
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 297 interactions; 267 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 305 interactions; 275 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 89 (88 omitted); unresolved 1 of 81 (80 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 90 (89 omitted); unresolved 1 of 82 (81 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 8 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 5 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 11 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 3 |
-> Omission summary shows 8 of 77 groups; 69 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 17 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 79 groups; 71 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 128; effect analysis evaluated: 66, partial: 4, unavailable: 58. Counts include steps omitted from the displayed trace.
+Source steps: 134; effect analysis evaluated: 72, partial: 4, unavailable: 58. Counts include steps omitted from the displayed trace.
 
-Collector observations for 70 source steps with known totals: observed: 331, emitted: 318, omitted: 13. Unavailable totals are excluded.
+Collector observations for 76 source steps with known totals: observed: 354, emitted: 340, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -118,13 +118,13 @@ Collector observations for 70 source steps with known totals: observed: 331, emi
 | `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_normalize_capture_record` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `_mapping` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `_exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
@@ -135,22 +135,22 @@ flowchart LR
     s5["5. _mapping"]
     s6["6. require_mapping"]
     s7["7. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s8["8. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s9["9. key.encode"]
-    s10["10. DocumentationClaimEvidenceError"]
-    s11["11. _exact_fields"]
-    s12["12. require_exact_fields"]
+    s8["8. _validation_error"]
+    s9["9. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s10["10. error"]
+    s11["11. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s12["12. _validation_error"]
     s1 -. "Path(…).resolve(data not statically known)" .-> s2
     s1 -. "Path(wiki_root)" .-> s3
     s1 -->|"_normalize_capture_record(raw, 'runtime_captures')"| s4
     s4 -->|"_mapping(value, field_name)"| s5
     s5 -->|"require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)"| s6
     s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s7
-    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s8
-    s6 -. "key.encode('utf-8')" .-> s9
-    s5 -->|"DocumentationClaimEvidenceError(...)"| s10
-    s4 -->|"_exact_fields(record, _CAPTURE_FIELDS, _CAPTURE_REQUIRED, field_name)"| s11
-    s11 -->|"require_exact_fields(value, allowed=allowed, required=required, mapping_error=DocumentationClaimEvidenceError(...), missing_error=..., unknown_error=...)"| s12
+    s6 -->|"_validation_error(error, error_context)"| s8
+    s8 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s9
+    s8 -. "error(context)" .-> s10
+    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s11
+    s6 -->|"_validation_error(..., error_context)"| s12
     b0["mutation current.update"]
     s1 -. "mutation current.update" .-> b0
     b1["mutation reconciled.append"]
@@ -159,8 +159,7 @@ flowchart LR
     click s4 "../modules/documentation_claim_evidence.md"
     click s5 "../modules/documentation_claim_evidence.md"
     click s6 "../modules/validation.md"
-    click s10 "../modules/documentation_claim_evidence.md"
-    click s11 "../modules/documentation_claim_evidence.md"
+    click s8 "../modules/validation.md"
     click s12 "../modules/validation.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
@@ -176,13 +175,13 @@ flowchart LR
 | `Path` | - | - | - | - |
 | `_normalize_capture_record` | `value: object`, `field_name: str` | `_CAPTURE_FIELDS`, `_CAPTURE_REQUIRED`, `RUNTIME_CAPTURE_SCHEMA_VERSION`, `RUNTIME_CAPTURE_SCHEMA_VERSION`, `_UNINSPECTED_MEDIA_SUFFIXES`, `_UNINSPECTED_MEDIA_LIMITATIONS` | - | `normalized` |
 | `_mapping` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
+| `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `key.encode` | - | - | - | - |
-| `DocumentationClaimEvidenceError` | - | - | - | - |
-| `_exact_fields` | `value: Mapping[str, Any]`, `allowed: frozenset[str]`, `required: frozenset[str]`, `field_name: str` | - | - | `require_exact_fields(...)` |
-| `require_exact_fields` | `value: object`, `allowed: Iterable[str]`, `required: Iterable[str]`, `mapping_error: Exception`, `missing_error: _ErrorFactory`, `unknown_error: _ErrorFactory`, `invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None`, `stringify_keys: bool` | `Mapping` | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
@@ -193,12 +192,12 @@ flowchart LR
 | reconcile_runtime_capture_records | _normalize_capture_record | 448 | `_normalize_capture_record(raw, 'runtime_captures')` |
 | _normalize_capture_record | _mapping | 650 | `_mapping(value, field_name)` |
 | _mapping | require_mapping | 1423 | `require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
-| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _mapping | DocumentationClaimEvidenceError | 1425 | `DocumentationClaimEvidenceError(...)` |
-| _normalize_capture_record | _exact_fields | 651 | `_exact_fields(record, _CAPTURE_FIELDS, _CAPTURE_REQUIRED, field_name)` |
-| _exact_fields | require_exact_fields | 1447 | `require_exact_fields(value, allowed=allowed, required=required, mapping_error=DocumentationClaimEvidenceError(...), missing_error=..., unknown_error=...)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 
 ### Boundary effects
 
@@ -212,9 +211,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `reconcile_runtime_capture_records` | `Path(wiki_root).resolve` | 445 |
-| external_call | `require_mapping` | `isinstance` | 773 |
-| external_call | `require_mapping` | `isinstance` | 777 |
-| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_mapping` | `isinstance` | 783 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| external_call | `require_mapping` | `isinstance` | 787 |
 | step_limit | `reconcile_runtime_capture_records` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_runtime_capture_records` | `depth limit` | 0 |
 

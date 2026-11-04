@@ -177,14 +177,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_portable_relative_path | require_portable_relative_path | 360 | `require_portable_relative_path(value, normalize_backslashes=normalize_backslashes)` |
-| require_portable_relative_path | isinstance | 216 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath | 218 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance | 219 | `isinstance(raw, str)` |
-| require_portable_relative_path | _default_path_error | 220 | `_default_path_error(value)` |
-| require_portable_relative_path | _syntax_key | 221 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
+| is_portable_relative_path | require_portable_relative_path | 365 | `require_portable_relative_path(value, normalize_backslashes=normalize_backslashes)` |
+| require_portable_relative_path | isinstance | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath | 223 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance | 224 | `isinstance(raw, str)` |
+| require_portable_relative_path | _default_path_error | 225 | `_default_path_error(value)` |
+| require_portable_relative_path | _syntax_key | 226 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
 | _syntax_key | type | 54 | `type(value)` |
 | _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
 | _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
@@ -197,9 +197,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_portable_relative_path` | `isinstance` | 216 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
-| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `require_portable_relative_path` | `isinstance` | 221 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 223 |
+| external_call | `require_portable_relative_path` | `isinstance` | 224 |
 | external_call | `_syntax_key` | `type` | 54 |
 | external_call | `_syntax_key` | `any` | 55 |
 | step_limit | `is_portable_relative_path` | `first 12 steps` | 0 |

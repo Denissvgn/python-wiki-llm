@@ -18,6 +18,7 @@ Precomputed indexes shared by all data-flow analyses in one run.
 | `callable_index` | `dict[tuple[str \| None, str \| None], dict]` | *required* | — |
 | `incoming_edges` | `dict[tuple, tuple[dict, ...]]` | *required* | — |
 | `data_effect_coverage` | `dict[tuple[str, str], dict[str, dict]] \| None` | `field(default=None)` | — |
+| `detailed_incoming_edges` | `dict[tuple, tuple[dict, ...]] \| None` | `None` | — |
 
 ## Methods
 
@@ -51,7 +52,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [data_flow](../modules/data_flow.md) | 0 | `callable_index`, `data_effect_coverage`, `incoming_edges` |
+| [data_flow](../modules/data_flow.md) | 0 | `callable_index`, `data_effect_coverage`, `detailed_incoming_edges`, `incoming_edges` |
 
 ### References
 

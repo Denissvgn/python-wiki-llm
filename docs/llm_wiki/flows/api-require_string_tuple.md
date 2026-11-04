@@ -19,7 +19,10 @@ sequenceDiagram
     participant p5 as item_parser
     participant p6 as isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
     participant p7 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
-    participant p8 as value.encode
+    participant p8 as _validation_error
+    participant p9 as value.encode
+    participant p10 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p11 as error
     p0->>p1: require_sequence
     p0-->>p2: len(items)
     p0-->>p2: len(items)
@@ -30,14 +33,18 @@ sequenceDiagram
     p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))
     p4-->>p7: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
     p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)
-    p4-->>p8: value.encode('utf-8')
+    p4->>p8: _validation_error
     p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, container_type)
+    p4-->>p9: value.encode('utf-8')
     p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Sequence)
+    p4->>p8: _validation_error
+    p8-->>p10: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p8-->>p11: error(context)
 ```
 
-> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 17 of 17 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 10 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -48,9 +55,9 @@ sequenceDiagram
 
 **Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 5; effect analysis evaluated: 5, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 3 source steps with known totals: observed: 20, emitted: 20, omitted: 0. Unavailable totals are excluded.
+Collector observations for 5 source steps with known totals: observed: 27, emitted: 27, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
@@ -65,7 +72,7 @@ flowchart LR
     s9["9. tuple"]
     s10["10. require_string"]
     s11["11. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
-    s12["12. value.encode"]
+    s12["12. _validation_error"]
     s1 -->|"require_sequence(value, error=error, container_type=container_type)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))" .-> s3
     s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)" .-> s4
@@ -76,10 +83,11 @@ flowchart LR
     s1 -. "tuple(...)" .-> s9
     s1 -->|"require_string(item, error=...)"| s10
     s10 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s11
-    s10 -. "value.encode('utf-8')" .-> s12
+    s10 -->|"_validation_error(error, error_context)"| s12
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
     click s10 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -95,25 +103,25 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `tuple` | - | - | - | - |
-| `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
+| `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
-| `value.encode` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string_tuple | require_sequence | 1017 | `require_sequence(value, error=error, container_type=container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 798 | `isinstance(value, (...))` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 799 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 800 | `isinstance(value, container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 803 | `isinstance(value, Sequence)` |
-| require_string_tuple | len | 1022 | `len(items)` |
-| require_string_tuple | len | 1023 | `len(items)` |
-| require_string_tuple | tuple | 1027 | `tuple(...)` |
-| require_string_tuple | require_string | 1028 | `require_string(item, error=...)` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
-| require_string | value.encode | 756 | `value.encode('utf-8')` |
+| require_string_tuple | require_sequence | 1029 | `require_sequence(value, error=error, container_type=container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 808 | `isinstance(value, (...))` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 809 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 810 | `isinstance(value, container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 813 | `isinstance(value, Sequence)` |
+| require_string_tuple | len | 1034 | `len(items)` |
+| require_string_tuple | len | 1035 | `len(items)` |
+| require_string_tuple | tuple | 1039 | `tuple(...)` |
+| require_string_tuple | require_string | 1040 | `require_string(item, error=...)` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
 
 ### Boundary effects
 
@@ -123,12 +131,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sequence` | `isinstance` | 798 |
-| external_call | `require_sequence` | `isinstance` | 799 |
-| external_call | `require_sequence` | `isinstance` | 800 |
-| external_call | `require_sequence` | `isinstance` | 803 |
-| external_call | `require_string` | `isinstance` | 752 |
-| unresolved_call | `require_string` | `value.encode` | 756 |
+| external_call | `require_sequence` | `isinstance` | 808 |
+| external_call | `require_sequence` | `isinstance` | 809 |
+| external_call | `require_sequence` | `isinstance` | 810 |
+| external_call | `require_sequence` | `isinstance` | 813 |
+| external_call | `require_string` | `isinstance` | 761 |
 | step_limit | `require_string_tuple` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -2,7 +2,7 @@
 
 **Entry point:** `recover_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 31 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 29 more
 
 **Complete modules touched:**
 
@@ -13,8 +13,6 @@
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -27,19 +25,19 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [section_ownership](../modules/section_ownership.md)
-- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
-- [wiki_surface](../modules/wiki_surface.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
@@ -71,11 +69,11 @@ sequenceDiagram
     participant p19 as guard_maintenance_owner
     participant p20 as _load_recovery_snapshot
     participant p21 as _validate_capture_options
-    participant p22 as _unlink_guarded_bytes
-    participant p23 as guard_incomplete_bootstrap
-    participant p24 as _resolve_snapshot_selection
-    participant p25 as _normalize_only_files
-    participant p26 as governance_lock
+    participant p22 as _wiki_files
+    participant p23 as _unlink_guarded_bytes
+    participant p24 as guard_incomplete_bootstrap
+    participant p25 as _resolve_snapshot_selection
+    participant p26 as _normalize_only_files
     participant p27 as _atomic_write_guarded_bytes_windows
     participant p28 as _empty_source_snapshot
     participant p29 as type (src/llm_wiki_cli/api.py:recover_maintenance)
@@ -101,20 +99,20 @@ sequenceDiagram
     p2->>p19: guard_maintenance_owner
     p7->>p20: _load_recovery_snapshot
     p12->>p21: _validate_capture_options
-    p17->>p22: _unlink_guarded_bytes
-    p19->>p23: guard_incomplete_bootstrap
-    p12->>p24: _resolve_snapshot_selection
-    p12->>p25: _normalize_only_files
-    p8->>p26: governance_lock
+    p14->>p22: _wiki_files
+    p17->>p23: _unlink_guarded_bytes
+    p19->>p24: guard_incomplete_bootstrap
+    p12->>p25: _resolve_snapshot_selection
+    p12->>p26: _normalize_only_files
     p16->>p27: _atomic_write_guarded_bytes_windows
     p12->>p28: _empty_source_snapshot
     p0-->>p29: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_prepared_adoption)
     p2-->>p30: intent.get('adoption_id')
 ```
 
-> Call sequence diagram shows 30 of 1849 interactions; 1819 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1893 interactions; 1863 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 624 (623 omitted); unresolved 1 of 407 (406 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 607 (606 omitted); unresolved 1 of 411 (410 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
-> Omission summary shows 8 of 431 groups; 423 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 468 groups; 460 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 819; effect analysis evaluated: 496, partial: 26, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 876; effect analysis evaluated: 554, partial: 30, unavailable: 292. Counts include steps omitted from the displayed trace.
 
-Collector observations for 522 source steps with known totals: observed: 2960, emitted: 2862, omitted: 98. Unavailable totals are excluded.
+Collector observations for 584 source steps with known totals: observed: 3302, emitted: 3189, omitted: 113. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -222,11 +220,11 @@ flowchart LR
 | recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1666 | `type(allow_captured_preimage)` |
 | recover_maintenance | ValueError (src/llm_wiki_cli/api.py:recover_maintenance) | 1667 | `ValueError('Maintenance recovery modes must be booleans')` |
 | recover_maintenance | _identity (src/llm_wiki_cli/services/maintenance_state.py) | 1668 | `_identity(expected_adoption_id)` |
-| _identity (src/llm_wiki_cli/services/maintenance_state.py) | UUID | 56 | `UUID(value)` |
-| _identity (src/llm_wiki_cli/services/maintenance_state.py) | MaintenanceError | 58 | `MaintenanceError('identity-invalid', 'identity must be canonical UUIDv4')` |
-| _identity (src/llm_wiki_cli/services/maintenance_state.py) | require | 61 | `require(..., 'identity-invalid', 'identity must be canonical UUIDv4')` |
+| _identity (src/llm_wiki_cli/services/maintenance_state.py) | UUID | 57 | `UUID(value)` |
+| _identity (src/llm_wiki_cli/services/maintenance_state.py) | MaintenanceError | 59 | `MaintenanceError('identity-invalid', 'identity must be canonical UUIDv4')` |
+| _identity (src/llm_wiki_cli/services/maintenance_state.py) | require | 62 | `require(..., 'identity-invalid', 'identity must be canonical UUIDv4')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
-| _identity (src/llm_wiki_cli/services/maintenance_state.py) | str (src/llm_wiki_cli/services…enance_state.py:_identity) | 62 | `str(parsed)` |
+| _identity (src/llm_wiki_cli/services/maintenance_state.py) | str (src/llm_wiki_cli/services…enance_state.py:_identity) | 63 | `str(parsed)` |
 | recover_maintenance | cast (src/llm_wiki_cli/api.py:recover_maintenance) | 1669 | `cast(MaintenanceRecoveryResult, recover_maintenance_authority(...))` |
 | recover_maintenance | recover_maintenance_authority | 1669 | `recover_maintenance_authority(_validate_wiki_dir(...), recovery_dir=recovery_dir, expected_adoption_id=expected_adoption_id, src_dir=src_dir, allow_prepared_adoption=allow_prepared_adoption, allow_captured_preimage=allow_captured_preimage)` |
 
@@ -240,7 +238,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `recover_maintenance` | `type` | 1666 |
 | external_call | `recover_maintenance` | `ValueError` | 1667 |
-| external_call | `_identity` | `UUID` | 56 |
+| external_call | `_identity` | `UUID` | 57 |
 | external_call | `recover_maintenance` | `cast` | 1669 |
 | step_limit | `recover_maintenance` | `first 12 steps` | 0 |
 | truncated_flow | `recover_maintenance` | `depth limit` | 0 |

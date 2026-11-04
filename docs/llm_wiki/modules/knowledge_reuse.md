@@ -13,18 +13,26 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `..` | `__version__` |
 | `.contracts` | `KNOWLEDGE_REUSE_SCHEMA_VERSION` |
 | `.extraction_service` | `EXTRACTOR_REGISTRY` |
-| `.io` | `read_md` |
+| `.io` | `read_md`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `PlannedArtifactWrite` |
 | `.knowledge_envelope` | `hash_markdown_snapshot`, `INVENTORY_HASH_EXTENSION`, `build_repository_record`, `hash_inventory` |
 | `.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_orchestration` | `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `packed_format` |
+| `.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES`, `STORE_SCHEMA` |
+| `.knowledge_storage_io` | `StorageReadSession` |
+| `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `owner_key` |
+| `.maintenance_protocol` | `guard_maintenance_owner` |
+| `.maintenance_state` | `MaintenanceError` |
+| `.python_implementation` | `analysis_identity` |
+| `.source_retirement` | `retired_entity_mappings` |
+| `.source_snapshot` | `confirmed_missing_source_paths` |
 | `.validation` | `resolve_portable_workspace_path` |
 | `.wiki_media` | `build_asset_index` |
-| `.wiki_surface` | `collect_wiki_pages` |
+| `.wiki_surface` | `collect_wiki_pages`, `collect_wiki_pages` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Mapping`, `Sequence` |
+| `collections.abc` | `Callable`, `Mapping`, `Sequence` |
 | `dataclasses` | `asdict`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
@@ -50,10 +58,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (10) |
-| Outbound | `src` (13) |
+| Inbound | `src` (11) |
+| Outbound | `src` (21) |
 
-> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -66,7 +74,9 @@ flowchart LR
 | `implementation_hash` | `() -> str \| None` | — | Fingerprint installed implementation inputs, without a process-global cache. |
 | `wiki_input_hashes` | `(wiki_dir: str \| Path) -> tuple[str, str]` | — | — |
 | `bind_reuse_commitment` | `(basis: Mapping[str, object], manifest) -> dict` | — | — |
+| `rebind_maintenance_reuse` | `(knowledge, manifest)` | — | Retain validated input commitments while rebinding a projected owner update. |
 | `validate_reuse_artifact_parity` | `(knowledge, manifest) -> None` | — | A manifest hint alone never authorizes reuse of a projection. |
 | `observation_inputs_hash` | `(*, entrypoint_observations: Mapping, entry_points: Sequence[Mapping], api_contracts: Mapping, dependency_analysis: Mapping \| None) -> str` | — | Commit the same raw detector inputs for bootstrap and sync. |
 | `build_reuse_input_basis` | `(wiki_dir, inventory_result, source_snapshot, generation_inputs, generation_options, repository_evidence, *, include_plugins = True, manifest = None, inventory_complete = True, observation_inputs_hash = None) -> dict[str, object] \| None` | — | Capture the inputs of the deterministic built-in sync pipeline. |
+| `maintenance_reuse_check` | `(wiki_dir, manifest, knowledge, inventory_result, source_snapshot) -> Callable[[], None] \| None` | — | Reconcile exact live maintenance inputs before reusing a committed graph. |
 | `unchanged_commit_result` | `(state, manifest, *, dry_run: bool = False)` | — | Return the ordinary result shape using already captured, validated bytes. |

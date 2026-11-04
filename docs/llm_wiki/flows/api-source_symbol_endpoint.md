@@ -29,25 +29,25 @@ sequenceDiagram
     participant p7 as _external_uri
     participant p8 as _array
     participant p9 as _canonical_json
-    participant p10 as _name
-    participant p11 as validate_exact_page_coordinate
-    participant p12 as require_repository_relative_path
-    participant p13 as require_choice
-    participant p14 as contains_uri_authority_userinfo
-    participant p15 as require_trimmed_text
-    participant p16 as _matches_directory_path
-    participant p17 as _matches_directory_uri
-    participant p18 as require_portable_relative_path
-    participant p19 as require_nonempty_text
-    participant p20 as _default_path_error
-    participant p21 as is_safe_page_id
-    participant p22 as canonical_path
-    participant p23 as mcp_uri
-    participant p24 as _check_path_collision
-    participant p25 as require_portable_path_component
-    participant p26 as KnowledgeGraphError
-    participant p27 as require_mapping
-    participant p28 as require_exact_fields
+    participant p10 as require_mapping
+    participant p11 as require_exact_fields
+    participant p12 as _name
+    participant p13 as require_list
+    participant p14 as validate_exact_page_coordinate
+    participant p15 as require_repository_relative_path
+    participant p16 as require_choice
+    participant p17 as contains_uri_authority_userinfo
+    participant p18 as require_trimmed_text
+    participant p19 as _matches_directory_path
+    participant p20 as _matches_directory_uri
+    participant p21 as require_portable_relative_path
+    participant p22 as require_nonempty_text
+    participant p23 as _default_path_error
+    participant p24 as is_safe_page_id
+    participant p25 as canonical_path
+    participant p26 as mcp_uri
+    participant p27 as _check_path_collision
+    participant p28 as require_portable_path_component
     participant p29 as len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
     participant p30 as endpoint.get
     p0->>p1: _normalise_endpoint
@@ -59,46 +59,46 @@ sequenceDiagram
     p1->>p7: _external_uri
     p1->>p8: _array
     p1->>p9: _canonical_json
-    p5->>p10: _name
-    p5->>p11: validate_exact_page_coordinate
-    p6->>p12: require_repository_relative_path
-    p3->>p13: require_choice
-    p7->>p14: contains_uri_authority_userinfo
-    p13->>p15: require_trimmed_text
-    p11->>p16: _matches_directory_path
-    p11->>p17: _matches_directory_uri
-    p12->>p18: require_portable_relative_path
-    p15->>p19: require_nonempty_text
-    p18->>p20: _default_path_error
-    p16->>p21: is_safe_page_id
-    p16->>p22: canonical_path
-    p17->>p23: mcp_uri
-    p18->>p24: _check_path_collision
-    p18->>p25: require_portable_path_component
-    p1->>p26: KnowledgeGraphError
-    p2->>p27: require_mapping
-    p4->>p28: require_exact_fields
+    p2->>p10: require_mapping
+    p4->>p11: require_exact_fields
+    p5->>p12: _name
+    p8->>p13: require_list
+    p5->>p14: validate_exact_page_coordinate
+    p6->>p15: require_repository_relative_path
+    p3->>p16: require_choice
+    p7->>p17: contains_uri_authority_userinfo
+    p16->>p18: require_trimmed_text
+    p14->>p19: _matches_directory_path
+    p14->>p20: _matches_directory_uri
+    p15->>p21: require_portable_relative_path
+    p18->>p22: require_nonempty_text
+    p21->>p23: _default_path_error
+    p19->>p24: is_safe_page_id
+    p19->>p25: canonical_path
+    p20->>p26: mcp_uri
+    p21->>p27: _check_path_collision
+    p21->>p28: require_portable_path_component
     p1-->>p29: len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(present)
     p1-->>p30: endpoint.get('kind')
 ```
 
-> Call sequence diagram shows 30 of 216 interactions; 186 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 227 interactions; 197 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 63 (62 omitted); unresolved 1 of 56 (55 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 66 (65 omitted); unresolved 1 of 59 (58 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | external | 1 |
-> Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 14 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 14 | - | unresolved | 3 |
+> Omission summary shows 8 of 68 groups; 60 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 98; effect analysis evaluated: 63, partial: 4, unavailable: 31. Counts include steps omitted from the displayed trace.
+Source steps: 103; effect analysis evaluated: 72, partial: 4, unavailable: 27. Counts include steps omitted from the displayed trace.
 
-Collector observations for 67 source steps with known totals: observed: 316, emitted: 300, omitted: 16. Unavailable totals are excluded.
+Collector observations for 76 source steps with known totals: observed: 364, emitted: 347, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -123,16 +123,16 @@ Collector observations for 67 source steps with known totals: observed: 316, emi
 |---|---|---|---|---:|---:|---:|
 | `source_symbol_endpoint` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_normalise_endpoint` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
-| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_enum` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
@@ -141,32 +141,31 @@ flowchart LR
     s3["3. _object"]
     s4["4. require_mapping"]
     s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s7["7. key.encode"]
-    s8["8. KnowledgeGraphError"]
-    s9["9. KnowledgeGraphError"]
-    s10["10. dict"]
-    s11["11. _enum"]
-    s12["12. KnowledgeGraphError"]
+    s6["6. _validation_error"]
+    s7["7. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s8["8. error"]
+    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s10["10. _validation_error"]
+    s11["11. key.encode"]
+    s12["12. _validation_error"]
     s1 -->|"_normalise_endpoint({...}, 'endpoint')"| s2
     s2 -->|"_object(value, path)"| s3
-    s3 -->|"require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))"| s4
+    s3 -->|"require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s5
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s6
-    s4 -. "key.encode('utf-8')" .-> s7
-    s3 -->|"KnowledgeGraphError(path, 'must be an object')"| s8
-    s3 -->|"KnowledgeGraphError(path, 'object keys must be strings')"| s9
-    s3 -. "dict(selected)" .-> s10
-    s2 -->|"_enum(endpoint.get(...), ENDPOINT_KINDS, ...)"| s11
-    s11 -->|"KnowledgeGraphError(path, ...)"| s12
+    s4 -->|"_validation_error(error, error_context)"| s6
+    s6 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s7
+    s6 -. "error(context)" .-> s8
+    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s9
+    s4 -->|"_validation_error(..., error_context)"| s10
+    s4 -. "key.encode('utf-8')" .-> s11
+    s4 -->|"_validation_error(..., error_context)"| s12
     click s1 "../modules/knowledge_graph.md"
     click s2 "../modules/knowledge_graph.md"
     click s3 "../modules/knowledge_graph.md"
     click s4 "../modules/validation.md"
-    click s8 "../modules/knowledge_graph.md"
-    click s9 "../modules/knowledge_graph.md"
-    click s11 "../modules/knowledge_graph.md"
-    click s12 "../modules/knowledge_graph.md"
+    click s6 "../modules/validation.md"
+    click s10 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -175,32 +174,32 @@ flowchart LR
 |---|---|---|---|---|
 | `source_symbol_endpoint` | `source_path: str`, `symbol: str` | - | - | `_normalise_endpoint(...)` |
 | `_normalise_endpoint` | `value: object`, `path: str` | `ENDPOINT_KINDS` | `result[...]`, `result[...]` | `{...}`, `{...}`, `{...}`, `result`, `result` |
-| `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
+| `_object` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR` | - | `dict(...)` |
+| `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
-| `KnowledgeGraphError` | - | - | - | - |
-| `KnowledgeGraphError` | - | - | - | - |
-| `dict` | - | - | - | - |
-| `_enum` | `value: object`, `values: Sequence[str]`, `path: str` | - | - | `require_choice(...)` |
-| `KnowledgeGraphError` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| source_symbol_endpoint | _normalise_endpoint | 264 | `_normalise_endpoint({...}, 'endpoint')` |
-| _normalise_endpoint | _object | 1431 | `_object(value, path)` |
-| _object | require_mapping | 2329 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
-| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2331 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2333 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2335 | `dict(selected)` |
-| _normalise_endpoint | _enum | 1432 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
-| _enum | KnowledgeGraphError | 2368 | `KnowledgeGraphError(path, ...)` |
+| source_symbol_endpoint | _normalise_endpoint | 277 | `_normalise_endpoint({...}, 'endpoint')` |
+| _normalise_endpoint | _object | 1444 | `_object(value, path)` |
+| _object | require_mapping | 2342 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
+| require_mapping | key.encode | 792 | `key.encode('utf-8')` |
+| require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |
 
 ### Boundary effects
 
@@ -210,9 +209,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 773 |
-| external_call | `require_mapping` | `isinstance` | 777 |
-| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_mapping` | `isinstance` | 783 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
+| external_call | `require_mapping` | `isinstance` | 787 |
+| unresolved_call | `require_mapping` | `key.encode` | 792 |
 | step_limit | `source_symbol_endpoint` | `first 12 steps` | 0 |
 | truncated_flow | `source_symbol_endpoint` | `depth limit` | 0 |
 

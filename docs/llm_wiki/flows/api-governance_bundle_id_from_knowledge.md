@@ -34,24 +34,24 @@ sequenceDiagram
     participant p8 as _validate_supersession_projection
     participant p9 as _validate_governance_ledger_parity
     participant p10 as apply_governance_projection
-    participant p11 as validate_bundle_id
-    participant p12 as _governance_concept_summaries
-    participant p13 as strip_governance_projection
-    participant p14 as _supersession_records
-    participant p15 as _array (src/llm_wiki_cli/services/knowledge_governance.py)
-    participant p16 as _add_supersession_edges
-    participant p17 as _supersession_edges
-    participant p18 as _governance_supersession_edge_payloads
-    participant p19 as _concept_uid
-    participant p20 as _concept_kind
-    participant p21 as _identity_value
-    participant p22 as _identity_ownership_key
-    participant p23 as _validate_bounded_events
-    participant p24 as _validate_lifecycle_event_fields
-    participant p25 as _validate_lifecycle_histories
-    participant p26 as _validate_review_event_fields
-    participant p27 as _machine_text
-    participant p28 as validate_concept_uid
+    participant p11 as require_mapping
+    participant p12 as require_exact_fields
+    participant p13 as validate_bundle_id
+    participant p14 as _governance_concept_summaries
+    participant p15 as strip_governance_projection
+    participant p16 as _supersession_records
+    participant p17 as _array (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p18 as _add_supersession_edges
+    participant p19 as _supersession_edges
+    participant p20 as _governance_supersession_edge_payloads
+    participant p21 as _concept_uid
+    participant p22 as _concept_kind
+    participant p23 as _identity_value
+    participant p24 as _identity_ownership_key
+    participant p25 as _validate_bounded_events
+    participant p26 as _validate_lifecycle_event_fields
+    participant p27 as _validate_lifecycle_histories
+    participant p28 as _validate_review_event_fields
     participant p29 as isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)
     participant p30 as knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)
     p0->>p1: validate_governance_projection
@@ -64,31 +64,31 @@ sequenceDiagram
     p1->>p8: _validate_supersession_projection
     p1->>p9: _validate_governance_ledger_parity
     p1->>p10: apply_governance_projection
-    p4->>p11: validate_bundle_id
-    p9->>p12: _governance_concept_summaries
-    p10->>p13: strip_governance_projection
-    p9->>p14: _supersession_records
-    p7->>p15: _array (src/llm_wiki_cli/services/knowledge_governance.py)
-    p10->>p16: _add_supersession_edges
-    p9->>p17: _supersession_edges
-    p9->>p18: _governance_supersession_edge_payloads
-    p5->>p19: _concept_uid
-    p5->>p20: _concept_kind
-    p5->>p21: _identity_value
-    p5->>p22: _identity_ownership_key
-    p7->>p23: _validate_bounded_events
-    p5->>p24: _validate_lifecycle_event_fields
-    p5->>p25: _validate_lifecycle_histories
-    p5->>p26: _validate_review_event_fields
-    p11->>p27: _machine_text
-    p19->>p28: validate_concept_uid
+    p2->>p11: require_mapping
+    p3->>p12: require_exact_fields
+    p4->>p13: validate_bundle_id
+    p9->>p14: _governance_concept_summaries
+    p10->>p15: strip_governance_projection
+    p9->>p16: _supersession_records
+    p7->>p17: _array (src/llm_wiki_cli/services/knowledge_governance.py)
+    p10->>p18: _add_supersession_edges
+    p9->>p19: _supersession_edges
+    p9->>p20: _governance_supersession_edge_payloads
+    p5->>p21: _concept_uid
+    p5->>p22: _concept_kind
+    p5->>p23: _identity_value
+    p5->>p24: _identity_ownership_key
+    p7->>p25: _validate_bounded_events
+    p5->>p26: _validate_lifecycle_event_fields
+    p5->>p27: _validate_lifecycle_histories
+    p5->>p28: _validate_review_event_fields
     p0-->>p29: isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)(value, str)
     p1-->>p30: knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)(GOVERNANCE_EXTENSION_KEY)
 ```
 
-> Call sequence diagram shows 30 of 1084 interactions; 1054 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1094 interactions; 1064 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 325 (324 omitted); unresolved 1 of 276 (275 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 326 (325 omitted); unresolved 1 of 277 (276 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -99,10 +99,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_projection` | 2 | - | external | 16 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_projection` | 2 | - | unresolved | 12 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_projection` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 20 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | unresolved | 1 |
-> Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_cli/services/validation.py:_validation_error` | 19 | - | external | 1 |
+> Omission summary shows 8 of 234 groups; 226 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -115,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 484; effect analysis evaluated: 306, partial: 7, unavailable: 171. Counts include steps omitted from the displayed trace.
+Source steps: 492; effect analysis evaluated: 314, partial: 7, unavailable: 171. Counts include steps omitted from the displayed trace.
 
-Collector observations for 313 source steps with known totals: observed: 1541, emitted: 1504, omitted: 37. Unavailable totals are excluded.
+Collector observations for 321 source steps with known totals: observed: 1589, emitted: 1551, omitted: 38. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -201,10 +201,10 @@ flowchart LR
 |---|---|---:|---|
 | governance_bundle_id_from_knowledge | validate_governance_projection | 2123 | `validate_governance_projection(knowledge)` |
 | validate_governance_projection | require_validated_artifacts | 1872 | `require_validated_artifacts(_validated_artifacts)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 177 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 178 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 195 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 182 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 185 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 199 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1874 | `TypeError('governance validation requires its exact validated knowledge')` |
 | validate_governance_projection | isinstance (src/llm_wiki_cli/services…ate_governance_projection) | 1876 | `isinstance(knowledge, KnowledgeIndex)` |
 | validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1877 | `TypeError('knowledge must be a KnowledgeIndex')` |
@@ -223,10 +223,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_validated_artifacts` | `isinstance` | 177 |
-| external_call | `require_validated_artifacts` | `TypeError` | 178 |
 | external_call | `require_validated_artifacts` | `isinstance` | 181 |
-| external_call | `require_validated_artifacts` | `TypeError` | 195 |
+| external_call | `require_validated_artifacts` | `TypeError` | 182 |
+| external_call | `require_validated_artifacts` | `isinstance` | 185 |
+| external_call | `require_validated_artifacts` | `TypeError` | 199 |
 | external_call | `validate_governance_projection` | `TypeError` | 1874 |
 | external_call | `validate_governance_projection` | `isinstance` | 1876 |
 | external_call | `validate_governance_projection` | `TypeError` | 1877 |

@@ -24,11 +24,14 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as require_string
     participant p12 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
-    participant p13 as value.strip
-    participant p14 as contains_control_character
-    participant p15 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
-    participant p16 as pattern.search
-    participant p17 as value.encode
+    participant p13 as _validation_error
+    participant p14 as value.strip
+    participant p15 as contains_control_character
+    participant p16 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p17 as pattern.search
+    participant p18 as value.encode
+    participant p19 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p20 as error
     p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)
     p0-->>p2: TypeError('left and right must be RepositoryRecord values')
@@ -42,21 +45,26 @@ sequenceDiagram
     p3->>p6: KnowledgeModelError
     p4->>p9: _string
     p4->>p10: require_nonempty_text
-    p4->>p6: KnowledgeModelError
     p9->>p11: require_string
     p10-->>p12: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
-    p9->>p6: KnowledgeModelError
-    p10-->>p13: value.strip
-    p9->>p6: KnowledgeModelError
-    p10->>p14: contains_control_character
-    p11-->>p15: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
-    p14-->>p16: pattern.search(value)
-    p11-->>p17: value.encode('utf-8')
+    p10->>p13: _validation_error
+    p10-->>p14: value.strip
+    p10->>p13: _validation_error
+    p10->>p13: _validation_error
+    p10->>p15: contains_control_character
+    p10->>p13: _validation_error
+    p11-->>p16: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
+    p15-->>p17: pattern.search(value)
+    p11->>p13: _validation_error
+    p11-->>p18: value.encode('utf-8')
+    p11->>p13: _validation_error
+    p13-->>p19: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p13-->>p20: error(context)
 ```
 
-> Call sequence diagram shows 23 of 23 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 28 of 28 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 6 of 6 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 7 of 7 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -67,9 +75,9 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 13; effect analysis evaluated: 8, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+Source steps: 16; effect analysis evaluated: 14, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 8 source steps with known totals: observed: 37, emitted: 37, omitted: 0. Unavailable totals are excluded.
+Collector observations for 14 source steps with known totals: observed: 60, emitted: 60, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -81,13 +89,13 @@ Collector observations for 8 source steps with known totals: observed: 37, emitt
 | `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_repository_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `_nonempty_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `require_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_nonempty_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_string` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_string` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -100,27 +108,26 @@ flowchart LR
     s7["7. _string"]
     s8["8. require_string"]
     s9["9. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
-    s10["10. value.encode"]
-    s11["11. KnowledgeModelError"]
-    s12["12. KnowledgeModelError"]
+    s10["10. _validation_error"]
+    s11["11. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s12["12. error"]
     s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)" .-> s2
     s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)" .-> s3
     s1 -. "TypeError('left and right must be RepositoryRecord values')" .-> s4
     s1 -->|"_repository_identity(left.identity, 'left.identity')"| s5
     s5 -->|"_nonempty_string(value, path)"| s6
     s6 -->|"_string(value, path)"| s7
-    s7 -->|"require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))"| s8
+    s7 -->|"require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)"| s8
     s8 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s9
-    s8 -. "value.encode('utf-8')" .-> s10
-    s7 -->|"KnowledgeModelError(path, 'must be a string')"| s11
-    s7 -->|"KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')"| s12
+    s8 -->|"_validation_error(error, error_context)"| s10
+    s10 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s11
+    s10 -. "error(context)" .-> s12
     click s1 "../modules/knowledge_model.md"
     click s5 "../modules/knowledge_model.md"
     click s6 "../modules/knowledge_model.md"
     click s7 "../modules/knowledge_model.md"
     click s8 "../modules/validation.md"
-    click s11 "../modules/knowledge_model.md"
-    click s12 "../modules/knowledge_model.md"
+    click s10 "../modules/validation.md"
 ```
 
 ### Step data
@@ -132,29 +139,29 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_repository_identity` | `value: object`, `path: str` | - | - | `text` |
-| `_nonempty_string` | `value: object`, `path: str` | - | - | `require_nonempty_text(...)` |
-| `_string` | `value: object`, `path: str` | - | - | `require_string(...)` |
-| `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
+| `_nonempty_string` | `value: object`, `path: str` | `_NONEMPTY_ERROR` | - | `require_nonempty_text(...)` |
+| `_string` | `value: object`, `path: str` | `_STRING_ERROR`, `_UTF8_ERROR` | - | `require_string(...)` |
+| `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
-| `value.encode` | - | - | - | - |
-| `KnowledgeModelError` | - | - | - | - |
-| `KnowledgeModelError` | - | - | - | - |
+| `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
+| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `error` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 503 | `isinstance(left, RepositoryRecord)` |
-| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 503 | `isinstance(right, RepositoryRecord)` |
-| repository_identities_match | TypeError | 506 | `TypeError('left and right must be RepositoryRecord values')` |
-| repository_identities_match | _repository_identity | 507 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1823 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1730 | `_string(value, path)` |
-| _string | require_string | 1719 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
-| require_string | value.encode | 756 | `value.encode('utf-8')` |
-| _string | KnowledgeModelError | 1721 | `KnowledgeModelError(path, 'must be a string')` |
-| _string | KnowledgeModelError | 1722 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 528 | `isinstance(left, RepositoryRecord)` |
+| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 528 | `isinstance(right, RepositoryRecord)` |
+| repository_identities_match | TypeError | 531 | `TypeError('left and right must be RepositoryRecord values')` |
+| repository_identities_match | _repository_identity | 532 | `_repository_identity(left.identity, 'left.identity')` |
+| _repository_identity | _nonempty_string | 1831 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1750 | `_string(value, path)` |
+| _string | require_string | 1741 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
+| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | error | 95 | `error(context)` |
 
 ### Boundary effects
 
@@ -164,10 +171,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `repository_identities_match` | `isinstance` | 503 |
-| external_call | `repository_identities_match` | `TypeError` | 506 |
-| external_call | `require_string` | `isinstance` | 752 |
-| unresolved_call | `require_string` | `value.encode` | 756 |
+| external_call | `repository_identities_match` | `isinstance` | 528 |
+| external_call | `repository_identities_match` | `TypeError` | 531 |
+| external_call | `require_string` | `isinstance` | 761 |
+| external_call | `_validation_error` | `isinstance` | 95 |
+| unresolved_call | `_validation_error` | `error` | 95 |
 | step_limit | `repository_identities_match` | `first 12 steps` | 0 |
 
 ## Behavior

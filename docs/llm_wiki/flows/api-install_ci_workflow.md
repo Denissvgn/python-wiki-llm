@@ -94,7 +94,7 @@ sequenceDiagram
     p0-->>p30: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 748 interactions; 718 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 752 interactions; 722 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 223 (222 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
-> Omission summary shows 8 of 206 groups; 198 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 343; effect analysis evaluated: 170, partial: 12, unavailable: 161. Counts include steps omitted from the displayed trace.
+Source steps: 347; effect analysis evaluated: 174, partial: 12, unavailable: 161. Counts include steps omitted from the displayed trace.
 
-Collector observations for 182 source steps with known totals: observed: 985, emitted: 926, omitted: 59. Unavailable totals are excluded.
+Collector observations for 186 source steps with known totals: observed: 999, emitted: 939, omitted: 60. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -216,7 +216,7 @@ flowchart LR
 | _without_github_expression | InstallCiError | 93 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 101 | `_validated_project_path(value, label=label)` |
 | _validated_project_path | require_repository_relative_path | 69 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -231,7 +231,7 @@ flowchart LR
 | external_call | `normalize_action_ref` | `isinstance` | 63 |
 | unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 63 |
 | unresolved_call | `normalize_action_ref` | `value.lower` | 65 |
-| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | step_limit | `install_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_ci_workflow` | `depth limit` | 0 |
 

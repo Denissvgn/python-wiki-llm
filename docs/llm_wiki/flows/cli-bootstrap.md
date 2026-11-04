@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 52 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 54 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -52,6 +53,7 @@
 - [services_schema](../modules/services_schema.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -95,8 +97,8 @@ sequenceDiagram
     participant p23 as storage_writer_lock
     participant p24 as _extract_bootstrap_inventory
     participant p25 as _recover
-    participant p26 as snapshot_wiki
-    participant p27 as _finish_if_empty_bootstrap_inventory
+    participant p26 as _finish_if_empty_bootstrap_inventory
+    participant p27 as _capture_spooled_wiki
     participant p28 as _bootstrap_result
     participant p29 as SystemExit
     participant p30 as (…).resolve
@@ -125,16 +127,16 @@ sequenceDiagram
     p8->>p23: storage_writer_lock
     p11->>p24: _extract_bootstrap_inventory
     p9->>p25: _recover
-    p8->>p26: snapshot_wiki
-    p11->>p27: _finish_if_empty_bootstrap_inventory
+    p11->>p26: _finish_if_empty_bootstrap_inventory
+    p8->>p27: _capture_spooled_wiki
     p11->>p28: _bootstrap_result
     p0-->>p29: SystemExit(1)
     p4-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 3531 interactions; 3501 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3643 interactions; 3613 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1197 (1196 omitted); unresolved 1 of 1021 (1020 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1179 (1178 omitted); unresolved 1 of 1060 (1059 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -148,7 +150,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 772 groups; 764 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 822 groups; 814 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -161,9 +163,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1314; effect analysis evaluated: 944, partial: 73, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1405; effect analysis evaluated: 1029, partial: 75, unavailable: 301. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1017 source steps with known totals: observed: 6269, emitted: 5801, omitted: 468. Unavailable totals are excluded.
+Collector observations for 1104 source steps with known totals: observed: 6675, emitted: 6203, omitted: 472. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
