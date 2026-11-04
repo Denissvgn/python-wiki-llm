@@ -77,6 +77,35 @@ def committed_capture(root, result, *, bundles=True):
     return validated
 
 
+@pytest.mark.parametrize("implementations", [False, True])
+def test_uncached_raw_bundle_commitments_match_persisted_and_authenticated_warm_capture(
+    source_case, monkeypatch, implementations,
+):
+    from llm_wiki_cli.services import inventory_cache
+
+    src, cache, parsed = source_case
+
+    def refuse(*args, **kwargs):
+        pytest.fail("uncached logical commitments must not probe, read, or write a cache")
+
+    with monkeypatch.context() as guard:
+        guard.setattr(inventory_cache, "resolve_inventory_cache_path", refuse)
+        guard.setattr(inventory_cache, "prepare_destination", refuse)
+        guard.setattr(inventory_cache.InventoryCache, "load", refuse)
+        guard.setattr(inventory_cache.InventoryCache, "save", refuse)
+        fresh = extract(src, cache, enabled=False, implementations=implementations)
+    assert not cache.exists()
+    assert set(fresh.extraction_cache_hashes) == {"a.py", "b.py"}
+    artifacts = committed_capture(src.parent / "authority", fresh) if implementations else None
+    persisted = extract(src, cache, implementations=implementations, artifacts=artifacts)
+    parsed.clear()
+    warm = extract(src, cache, implementations=implementations, artifacts=artifacts)
+    assert parsed == []
+    assert warm.cache_stats is not None and warm.cache_stats.hits == 2
+    assert semantic_payload(fresh) == semantic_payload(persisted) == semantic_payload(warm)
+    assert fresh.extraction_cache_hashes == persisted.extraction_cache_hashes == warm.extraction_cache_hashes
+
+
 def test_implementation_cache_requires_authenticated_capture_then_elides_parse(source_case):
     src, cache, parsed = source_case
     first = extract(src, cache, implementations=True)
@@ -151,7 +180,9 @@ def test_committed_capture_authenticates_entire_raw_extraction_bundle(source_cas
     assert actual.cache_stats is not None
     assert parsed == ["a.py"]
     assert actual.cache_stats.hits == 1
-    assert semantic_payload(actual) == semantic_payload(extract(src, cache, implementations=True, enabled=False))
+    oracle = extract(src, cache, implementations=True, enabled=False)
+    assert semantic_payload(actual) == semantic_payload(oracle)
+    assert actual.extraction_cache_hashes == oracle.extraction_cache_hashes == first.extraction_cache_hashes
 
 
 def test_legacy_implementation_only_commitment_cannot_authorize_bundle(source_case):

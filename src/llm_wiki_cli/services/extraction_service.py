@@ -316,6 +316,7 @@ class _InventoryBuildContext:
     python_implementations: dict[str, dict] = field(default_factory=dict)
     implementation_cache_hashes: Mapping[str, str] = field(default_factory=dict)
     extraction_cache_hashes: Mapping[str, str] = field(default_factory=dict)
+    raw_bundle_hashes: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -590,8 +591,7 @@ def _completed_inventory_result(
         ),
         source_snapshot=evaluated_source_snapshot,
         implementation_observations=implementation_observations,
-        extraction_cache_hashes={path: extraction_bundle_hash(entry)
-                                 for path, entry in context.updated_cache_files.items()},
+        extraction_cache_hashes=dict(context.raw_bundle_hashes),
         path_outcomes=_inventory_path_outcomes(context, inventory, outcomes_by_language),
         **_python_extraction_sidecars(context, outcomes_by_language),
     )
@@ -1222,6 +1222,7 @@ def _record_cached_inventory_entry(
     if raw_inventory:
         cached_by_language[language][rel_path] = deepcopy(raw_inventory)
     context.updated_cache_files[rel_path] = cached_entry
+    context.raw_bundle_hashes[rel_path] = extraction_bundle_hash(cached_entry)
     if language == "python":
         implementation = cached_entry.get("python_implementation")
         if context.request.capture_implementation_observations and isinstance(implementation, dict):
@@ -1429,30 +1430,36 @@ def _collect_inventory_outcomes(
 def _update_inventory_cache_entries(
     context: _InventoryBuildContext, plan: _ExtractionPlan, extracted: dict
 ) -> None:
-    if not _can_use_inventory_cache(context, plan.is_builtin):
+    if not plan.is_builtin:
         return
+    persist = _can_use_inventory_cache(context, plan.is_builtin)
     cache = context.cache
-    if cache is None:
-        return
-    cache.stats.fresh_extracted += len(plan.fresh_source_files)
+    if persist:
+        assert cache is not None
+        cache.stats.fresh_extracted += len(plan.fresh_source_files)
     for rel_path in plan.fresh_source_files:
         source_file = context.source_file_by_path[rel_path]
-        file_hash = context.source_hashes.get(rel_path)
+        # Logical commitments describe captured analysis, independently of cache
+        # I/O. Preview hashes come from the snapshot, never a cache probe/read.
+        file_hash = context.source_snapshot.captured_content_hashes.get(rel_path)
         if file_hash is None:
             continue
         raw_entry = deepcopy(extracted.get(rel_path, {}))
         if raw_entry:
             raw_entry.pop("package", None)
             raw_entry.pop("python_import_scope", None)
-        context.updated_cache_files[rel_path] = make_cache_entry(
+        entry = make_cache_entry(
             source_file, file_hash, raw_entry
         )
         if plan.language == "python":
-            context.updated_cache_files[rel_path]["python_observations"] = deepcopy(
+            entry["python_observations"] = deepcopy(
                 context.python_sidecars.get(rel_path, {})
             )
             if rel_path in context.python_implementations:
-                context.updated_cache_files[rel_path]["python_implementation"] = deepcopy(context.python_implementations[rel_path])
+                entry["python_implementation"] = deepcopy(context.python_implementations[rel_path])
+        context.raw_bundle_hashes[rel_path] = extraction_bundle_hash(entry)
+        if persist:
+            context.updated_cache_files[rel_path] = entry
 
 
 def _merge_inventory_results(
