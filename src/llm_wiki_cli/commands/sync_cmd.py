@@ -55,6 +55,7 @@ from ..services.dependencies import (
 )
 from ..services.entrypoints import (
     build_flow,
+    build_flow_context,
     build_flow_detailed,
     entry_points_from_detailed_observations,
     get_detailed_entry_points,
@@ -3570,6 +3571,7 @@ def _canonical_surface_flow_entries(
     return entries
 
 
+@observed_phase("graph_observations")
 def _build_sync_graph_observations(
     options: _SyncRunOptions,
     inventory: dict,
@@ -3590,8 +3592,12 @@ def _build_sync_graph_observations(
         entry_points,
         surface_plan,
     )
-    rendering_flows = [build_flow(entry, call_edges) for entry in flow_entries]
-    flows = [build_flow_detailed(entry, call_edges) for entry in flow_entries]
+    flow_context = (
+        build_flow_context(call_edges)
+        if flow_entries or surface_flow_entry_points else None
+    )
+    rendering_flows = [build_flow(entry, call_edges, context=flow_context) for entry in flow_entries]
+    flows = [build_flow_detailed(entry, call_edges, context=flow_context) for entry in flow_entries]
     generation_options = runtime_generation_options(
         surfaces=surface_plan.surfaces,
         generation_inputs=surface_plan.generation_inputs,
@@ -3604,6 +3610,7 @@ def _build_sync_graph_observations(
             inventory,
             call_edges,
             data_effect_observations=data_effect_observations,
+            include_detailed=bool(flow_entries),
         )
         if data_flow_enabled and surface_flow_entry_points
         else None
@@ -3635,7 +3642,7 @@ def _build_sync_graph_observations(
     surface_rendering_data_flows = rendering_data_flows
     if surface_flow_entry_points != flow_entries:
         surface_rendering_flows = [
-            build_flow(entry, call_edges) for entry in surface_flow_entry_points
+            build_flow(entry, call_edges, context=flow_context) for entry in surface_flow_entry_points
         ]
         surface_rendering_data_flows = (
             [
