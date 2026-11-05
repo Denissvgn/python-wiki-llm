@@ -159,18 +159,28 @@ def test_mutation_workspace_reset_refuses_unexpected_leaf_and_cleanup_failure(tm
     assert (workspace / "retained.txt").read_text() == "must survive failed cleanup\n"
 
 
-def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path, monkeypatch):
+@pytest.mark.parametrize("lanes", [
+    pytest.param(("context-v1", "context-v2"), id="context-v1-v2"),
+    pytest.param(("changed-sync",), id="changed-sync"),
+    pytest.param(("unchanged-sync",), id="unchanged-sync"),
+    pytest.param(("prose-reanchor",), id="prose-reanchor"),
+    pytest.param(("strict-validation",), id="strict-validation"),
+])
+def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path, monkeypatch, lanes):
     monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "analysis-cache"))
     output = tmp_path / "measurements"
+    arguments = (str(provider), str(output), json.dumps(lanes))
     result = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "r=run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1)\n"
-        "print(json.dumps(r))\n", str(provider), str(output))
-    assert result["total_samples"] == result["completed_calls"] == 12
+        "selected_lanes=json.loads(sys.argv[3]),warm=1)\n"
+        "print(json.dumps(r))\n", *arguments)
+    assert result["total_samples"] == result["completed_calls"] == 2 * len(lanes)
+    assert [report["lane"] for report in result["workloads"]] == list(lanes)
     assert result["all_logical_outputs_repeatable"]
     assert result["model_execution_established"] is result["field_evidence_established"] is False
     plan = json.loads((output / "plan.json").read_text())
+    assert plan["lanes"] == list(lanes)
     assert plan["cold_repetitions"] == plan["warm_repetitions"] == 1
     assert plan["disk_cache"] == "uncontrolled"
     assert plan["provider"]["module"].startswith(str(provider))
@@ -196,29 +206,30 @@ def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path, m
     resumed = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "r=run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
-        "print(json.dumps(r))\n", str(provider), str(output))
+        "selected_lanes=json.loads(sys.argv[3]),warm=1,resume=True)\n"
+        "print(json.dumps(r))\n", *arguments)
     assert result == resumed
-    directory = output / "tiny-context-v1"
+    retained_lane = lanes[0]
+    directory = output / f"tiny-{retained_lane}"
     report = json.loads((directory / "summary.json").read_bytes())
     for field in ("canonical_contexts_validated", "cli_successes"):
         invalid = deepcopy(report)
         invalid[field] += 1
         with pytest.raises(ValueError, match="summary differs"):
-            measure.validate_retained_workload(directory, invalid, plan, "tiny", "context-v1")
+            measure.validate_retained_workload(directory, invalid, plan, "tiny", retained_lane)
     preparation_path = directory / "preparation.json"
     preparation_bytes = preparation_path.read_bytes()
     preparation_path.unlink()
     with pytest.raises(ValueError, match="preparation changed or is missing"):
-        measure.validate_retained_workload(directory, report, plan, "tiny", "context-v1")
+        measure.validate_retained_workload(directory, report, plan, "tiny", retained_lane)
     preparation_path.write_bytes(preparation_bytes)
     retained_source = directory / "inputs/src/policy.py"
     source_bytes = retained_source.read_bytes()
     retained_source.write_bytes(source_bytes + b"\n# Unreviewed baseline modification\n")
     with pytest.raises(ValueError, match="preparation inputs differ"):
-        measure.validate_retained_workload(directory, report, plan, "tiny", "context-v1")
+        measure.validate_retained_workload(directory, report, plan, "tiny", retained_lane)
     retained_source.write_bytes(source_bytes)
-    sample_path = output / "tiny-context-v1/sample-0.json"
+    sample_path = directory / "sample-0.json"
     original = sample_path.read_bytes()
     changed = json.loads(original)
     changed["wall_ns"] = 1
@@ -226,21 +237,21 @@ def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path, m
     rejected = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "try:\n run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
+        "selected_lanes=json.loads(sys.argv[3]),warm=1,resume=True)\n"
         "except ValueError as e:\n print(json.dumps({'rejected':True,'reason':str(e)}))\n"
-        "else:\n print(json.dumps({'rejected':False}))\n", str(provider), str(output))
+        "else:\n print(json.dumps({'rejected':False}))\n", *arguments)
     assert rejected["rejected"] and "sample bytes changed" in rejected["reason"]
     sample_path.write_bytes(original)
-    summary_path = output / "tiny-context-v1/summary.json"
+    summary_path = directory / "summary.json"
     summary = json.loads(summary_path.read_bytes())
     summary["completed_calls"] = 100
     summary_path.write_text(json.dumps(summary))
     rejected = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "try:\n run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
+        "selected_lanes=json.loads(sys.argv[3]),warm=1,resume=True)\n"
         "except ValueError as e:\n print(json.dumps({'rejected':True,'reason':str(e)}))\n"
-        "else:\n print(json.dumps({'rejected':False}))\n", str(provider), str(output))
+        "else:\n print(json.dumps({'rejected':False}))\n", *arguments)
     assert rejected["rejected"] and "summary differs" in rejected["reason"]
 
 
