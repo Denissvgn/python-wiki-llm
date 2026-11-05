@@ -413,7 +413,8 @@ def test_tag_push_cannot_follow_origin_changes_after_its_final_validation(projec
             return subprocess.CompletedProcess(args, 0, source_sha + "\n")
         assert args[0] == "push"
         pushes.append(args)
-        actual_destination = aliases.get(args[1], args[1])
+        assert args[1] == "--no-follow-tags"
+        actual_destination = aliases.get(args[2], args[2])
         assert actual_destination == selected, "The write followed a changed alias"
         return subprocess.CompletedProcess(args, 0, "")
 
@@ -421,7 +422,27 @@ def test_tag_push_cannot_follow_origin_changes_after_its_final_validation(projec
     api = backend(project, None)
     api.perform({"version": "9.0.0", "candidate_sha": source_sha}, {"action": "tag"})
     assert reads == 2 and aliases["origin"] != selected
-    assert pushes == [("push", selected, "refs/tags/v9.0.0:refs/tags/v9.0.0")]
+    assert pushes == [("push", "--no-follow-tags", selected, "refs/tags/v9.0.0:refs/tags/v9.0.0")]
+
+
+def test_tag_push_does_not_publish_unrelated_annotations_from_git_configuration(project, tmp_path, monkeypatch):
+    git(project, "tag", "--annotate", "unrelated-version", "--message", "Other annotation")
+    (project / "next.txt").write_text("Release source")
+    git(project, "add", "next.txt")
+    git(project, "commit", "-qm", "Release candidate")
+    git(project, "tag", "--annotate", "v9.0.0", "--message", "Release annotation")
+    git(project, "config", "push.followTags", "true")
+    original_tags = git(project, "for-each-ref", "--format=%(refname) %(objectname)", "refs/tags")
+    destination = tmp_path / "selected-repository.git"
+    git(project, "init", "--bare", "-q", str(destination))
+    api = backend(project, None)
+    # Exercise real Git against a disposable local remote after destination
+    # admission, without contacting the selected hosted repository.
+    monkeypatch.setattr(api, "_origin", lambda: str(destination))
+    api.perform({"version": "9.0.0", "candidate_sha": git(project, "rev-parse", "HEAD")}, {"action": "tag"})
+    assert git(destination, "for-each-ref", "--format=%(refname)") == "refs/tags/v9.0.0"
+    assert git(project, "for-each-ref", "--format=%(refname) %(objectname)", "refs/tags") == original_tags
+    assert git(project, "config", "push.followTags") == "true"
 
 
 def test_reader_must_execute_from_candidate_checkout(project):

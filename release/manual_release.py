@@ -492,7 +492,9 @@ class GitHubBackend:
                     and git(self.root, "rev-list", "-n", "1", "refs/tags/" + tag).stdout.strip() == state["candidate_sha"],
                     "Existing tag is not the exact annotated qualified tag")
             require(self._origin() == destination, "Origin push destination changed before submission")
-            git(self.root, "push", destination, f"refs/tags/{tag}:refs/tags/{tag}")
+            # An explicit refspec still inherits push.followTags, which could
+            # publish unrelated reachable annotations under this authorization.
+            git(self.root, "push", "--no-follow-tags", destination, f"refs/tags/{tag}:refs/tags/{tag}")
             return {}
         require(action == "github-release", "Unknown release action")
         manifest = self.check_bundle(state)
