@@ -736,6 +736,47 @@ def test_incomplete_capabilities_block_before_any_expensive_contract(planned_pro
     assert result["status"] == "blocked" and result["attempts"][0]["stage"] == "readiness"
 
 
+def test_actual_plan_retains_corrupt_helper_identity_and_aggregated_admission(
+    planned_project, monkeypatch
+):
+    from release import readiness
+
+    root, _, _ = planned_project
+    source = Path(__file__).parents[1]
+    names = {readiness.CONTRACT, "release/toolchain-lock.json"}
+    names.update(row[1] for row in readiness.REQUIRED_CONSUMERS.values())
+    for name in names:
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes((source / name).read_bytes())
+    _git(root, "add", ".")
+    _git(root, "commit", "--quiet", "-m", "Bind admission declarations")
+    candidate = _git(root, "rev-parse", "HEAD")
+    review = root / "private/release-review.json"
+    preflight.write_document(review, _review_record(candidate), root=root)
+    cache = root / "private/helper-cache"
+    metadata = cache / "llm-wiki-extractors/typescript/current.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_bytes(b'{"broken":')
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache))
+    monkeypatch.setattr(readiness.importlib.util, "find_spec", lambda name: None)
+    monkeypatch.setattr(preflight, "_admission", lambda root, binding, stages=preflight.STAGES: readiness.inspect(
+        root, stages=stages, environment=binding["environment"], helper=binding["helper"]
+    ))
+    plan = preflight.create_plan(root, candidate, review_file=review)
+    assert plan["readiness"]["status"] == "blocked_unavailable"
+    assert plan["binding"]["helper"]["status"] == "blocked"
+    assert plan["binding"]["helper"]["metadata"] == hashlib.sha256(metadata.read_bytes()).hexdigest()
+    ids = {row["id"] for row in plan["readiness"]["admission"]["blockers"]}
+    assert {"helper:typescript", "tool:node", "tool:actionlint", "module:mcp"} <= ids
+    metadata.write_bytes(b'{"different-broken":')
+    assert preflight._capture_binding(root)["helper"] != plan["binding"]["helper"]
+    path = root / "private/corrupt-helper-plan.json"
+    preflight.write_document(path, plan, root=root)
+    with pytest.raises(preflight.PreflightError, match="Stale plan"):
+        preflight.run_plan(path, root / "private/corrupt-helper-work")
+
+
 @pytest.mark.parametrize("relative", ["frozen/candidate-source.tar", "archive-budget/candidate-source.zip"])
 def test_owned_source_archive_evidence_retains_and_replays_above_generic_bound(local_receipt, monkeypatch, relative):
     _root, work, path, value = local_receipt

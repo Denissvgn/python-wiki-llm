@@ -473,7 +473,13 @@ def capabilities(
     native_languages=None,
 ) -> dict:
     from release import preflight
-    from llm_wiki_cli.services import extractor_helpers as helpers
+
+    helper_import_error = None
+    try:
+        from llm_wiki_cli.services import extractor_helpers as helpers
+    except (ImportError, OSError, ValueError) as error:
+        helpers = None
+        helper_import_error = str(error)[:500]
 
     stages = tuple(stages)
     if (
@@ -596,32 +602,63 @@ def capabilities(
                     "remedy": "Install the maintained development/validation dependency profile into the project virtual environment",
                 }
             )
-    base = helper_cache_base(root)
-    cache = helpers.resolve_helper_cache_root(root, str(base))
+    cache_error = helper_import_error
+    cache_remedy = (
+        "Install the exact candidate into the project virtual environment "
+        "before preparing helpers"
+    )
+    try:
+        base = helper_cache_base(root)
+        cache = (
+            helpers.resolve_helper_cache_root(root, str(base))
+            if helpers is not None else None
+        )
+    except (OSError, ValueError) as error:
+        base, cache = None, None
+        cache_error = str(error)[:500]
+        cache_remedy = "Repair the selected helper cache path before preparation"
     for language in LANGUAGES:
-        if language == "typescript":
-            ready = helper.get("status") == "ready"
-        else:
-            ready = helpers.get_prepared_binary(language, root, str(base)) is not None
+        reason = cache_error
+        ready = False
+        if reason is None:
+            try:
+                if language == "typescript":
+                    ready = helper.get("status") == "ready"
+                    reason = helper.get("reason") if not ready else None
+                else:
+                    ready = (
+                        helpers is not None
+                        and helpers.get_prepared_binary(language, root, str(base))
+                        is not None
+                    )
+            except (OSError, ValueError, TypeError, KeyError) as error:
+                reason = str(error)[:500]
         row = {
             "id": "helper:" + language,
             "status": "ready" if ready else "unavailable",
             "required": language in required,
-            "cache_base": str(base),
+            "cache_base": str(base) if base is not None else None,
             "cache_root": str(cache) if cache else None,
+            "reason": reason,
         }
         rows.append(row)
         if not ready:
             issue = {
                 "id": row["id"],
-                "reason": "Prepared source/platform-matching helper is unavailable in the selected cache base",
-                "remedy": "Run explicit prepare-extractors for this language with --cache-dir "
-                + str(base),
+                "reason": reason or (
+                    "Prepared source/platform-matching helper is unavailable "
+                    "in the selected cache base"
+                ),
+                "remedy": cache_remedy
+                if cache_error else (
+                    "Run explicit prepare-extractors for this language with --cache-dir "
+                    + str(base)
+                ),
             }
             (blockers if row["required"] else pending).append(issue)
     return {
         "selected_stages": list(stages),
-        "cache_base": str(base),
+        "cache_base": str(base) if base is not None else None,
         "capabilities": rows,
         "blockers": blockers,
         "hosted_pending": pending,

@@ -286,6 +286,34 @@ def _environment(root: Path) -> dict:
 
 
 def _helper(root: Path, environment: dict) -> dict:
+    """Retain failed helper observations without hiding other prerequisites."""
+    try:
+        return _inspect_helper(root, environment)
+    except (ImportError, OSError, ValueError, TypeError, KeyError, AttributeError) as error:
+        from release.readiness import helper_cache_base
+
+        # Bind readable rejected metadata as data. Never follow an alias or
+        # relax the input bounds merely to describe why preparation failed.
+        metadata = None
+        try:
+            path = (
+                helper_cache_base(root)
+                / "llm-wiki-extractors/typescript/current.json"
+            )
+            metadata = _hash(_read(path))
+        except (OSError, ValueError):
+            pass
+        return {
+            "status": "blocked",
+            "reason": str(error)[:2000],
+            "error_type": type(error).__name__,
+            "configured_cache_base": os.environ.get("LLM_WIKI_CACHE_DIR"),
+            "metadata": metadata,
+            "files": {},
+        }
+
+
+def _inspect_helper(root: Path, environment: dict) -> dict:
     """Inspect the configured prepared helper without setup or arbitrary paths."""
     from release.readiness import helper_cache_base
     from llm_wiki_cli.services import extractor_helpers as helpers

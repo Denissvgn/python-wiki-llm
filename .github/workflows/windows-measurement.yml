@@ -11,7 +11,11 @@ on:
       - .github/workflows/release-qualification.yml
       - integrations/wiki-integrity/action.yml
       - tests/test_developer_value_measure.py
+      - tests/__init__.py
+      - tests/conftest.py
+      - tests/pytest_portability.py
       - tests/developer_value/**
+      - tests/provider_conformance/**
       - .github/workflows/windows-measurement.yml
 
 permissions:

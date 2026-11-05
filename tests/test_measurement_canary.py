@@ -32,6 +32,25 @@ def test_complete_canary_requires_every_collected_started_junit_node_and_five_gr
     }
 
 
+def test_windows_regression_runs_when_shared_collection_harness_changes():
+    from fnmatch import fnmatchcase
+    from pathlib import Path
+
+    import yaml
+
+    root = Path(__file__).parents[1]
+    workflow = yaml.safe_load((root / ".github/workflows/windows-measurement.yml").read_text())
+    event = workflow.get("on", workflow.get(True))["pull_request"]
+    assert event["branches"] == ["main"]
+    for path in (
+        "tests/__init__.py", "tests/conftest.py", "tests/pytest_portability.py",
+        canary.MODULE, "tests/developer_value/runtime.py",
+        "tests/provider_conformance/__init__.py", "tests/provider_conformance/python_ast.py",
+    ):
+        assert any(fnmatchcase(path, pattern) for pattern in event["paths"]), path
+    assert not any(fnmatchcase("docs/unrelated.md", pattern) for pattern in event["paths"])
+
+
 @pytest.mark.parametrize(
     "mutation",
     [

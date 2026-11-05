@@ -594,3 +594,99 @@ def test_stage_owned_environments_do_not_require_root_static_packages(
         native_languages=[],
     )
     assert report["blockers"] == [] and set(observed) == {"pytest", "tokenizers"}
+
+
+def test_corrupt_helper_metadata_does_not_hide_other_missing_prerequisites(
+    candidate, monkeypatch
+):
+    cache = candidate / "private/cache-base"
+    metadata = cache / "llm-wiki-extractors/typescript/current.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_bytes(b'{"incomplete":')
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache))
+    monkeypatch.setattr(readiness.importlib.util, "find_spec", lambda name: None)
+    report = readiness.capabilities(
+        candidate, environment={"tools": {}}, native_languages=readiness.LANGUAGES
+    )
+    ids = {row["id"] for row in report["blockers"]}
+    assert {
+        "tool:node", "tool:npm", "tool:go", "tool:rust", "tool:cargo",
+        "tool:haskell", "tool:actionlint", "module:mcp", "module:tokenizers",
+        *("helper:" + language for language in readiness.LANGUAGES),
+    } <= ids
+    helper = next(row for row in report["blockers"] if row["id"] == "helper:typescript")
+    assert "Invalid bounded JSON" in helper["reason"]
+    assert metadata.read_bytes() == b'{"incomplete":'
+
+
+def test_redirected_cache_reports_each_required_helper_without_hiding_tools(
+    candidate, tmp_path, monkeypatch
+):
+    real = tmp_path / "external-cache"
+    real.mkdir()
+    sentinel = real / "preserve"
+    sentinel.write_bytes(b"external data")
+    alias = candidate / "cache-alias"
+    alias.symlink_to(real, target_is_directory=True)
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(alias))
+    monkeypatch.setattr(readiness.importlib.util, "find_spec", lambda name: None)
+    report = readiness.capabilities(
+        candidate, environment={"tools": {}}, native_languages=readiness.LANGUAGES
+    )
+    ids = {row["id"] for row in report["blockers"]}
+    assert {"tool:node", "tool:actionlint", "module:mcp", *("helper:" + language for language in readiness.LANGUAGES)} <= ids
+    assert report["cache_base"] is None
+    assert all("Redirected" in row["reason"] for row in report["blockers"] if row["id"].startswith("helper:"))
+    assert sentinel.read_bytes() == b"external data"
+
+
+def test_one_native_helper_probe_failure_does_not_hide_remaining_languages(
+    candidate, monkeypatch
+):
+    from llm_wiki_cli.services import extractor_helpers as helpers
+
+    observed = []
+
+    def prepared(language, *args):
+        observed.append(language)
+        if language == "go":
+            raise OSError("Cannot inspect Go cache")
+        return None
+
+    monkeypatch.setattr(helpers, "get_prepared_binary", prepared)
+    monkeypatch.setattr(readiness.importlib.util, "find_spec", lambda name: object())
+    report = readiness.capabilities(
+        candidate, environment={"tools": {}}, helper={"status": "unavailable"},
+        native_languages=readiness.LANGUAGES,
+    )
+    assert observed == ["go", "rust", "haskell"]
+    assert {"helper:" + language for language in readiness.LANGUAGES} <= {row["id"] for row in report["blockers"]}
+    assert next(row for row in report["blockers"] if row["id"] == "helper:go")["reason"] == "Cannot inspect Go cache"
+
+
+def test_missing_provider_in_isolated_launcher_preserves_all_admission_rows(tmp_path):
+    import subprocess
+    import sys
+
+    script = """import importlib.abc,json,pathlib,sys
+sys.path.insert(0,sys.argv[1])
+class MissingProvider(importlib.abc.MetaPathFinder):
+ def find_spec(self,fullname,path=None,target=None):
+  if fullname == 'llm_wiki_cli' or fullname.startswith('llm_wiki_cli.'):
+   raise ModuleNotFoundError('Candidate provider is not installed')
+sys.meta_path.insert(0,MissingProvider())
+from release import readiness
+readiness.importlib.util.find_spec=lambda name:None
+report=readiness.inspect(pathlib.Path(sys.argv[1]),environment={'tools':{}},native_languages=readiness.LANGUAGES)
+assert report['status']=='blocked' and report['capabilities'] is not None
+ids={row['id'] for row in report['blockers']}
+assert {'runtime-contract','provider','tool:node','tool:npm','tool:go','tool:rust','tool:cargo','tool:haskell','tool:actionlint','module:mcp','module:tokenizers',*('helper:'+language for language in readiness.LANGUAGES)} <= ids, ids
+assert report['target_execution_verified'] is False and report['publication_authority'] is False
+print(json.dumps({'status':report['status'],'blocker_ids':sorted(ids),'capability_rows':len(report['capabilities']['capabilities'])}))
+"""
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", script, str(ROOT)], cwd=tmp_path,
+        capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["capability_rows"] >= len(readiness.STATIC_MODULES)
