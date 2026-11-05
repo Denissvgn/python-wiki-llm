@@ -912,7 +912,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "206a7816c47d9b81c8f8742c7b47c6a57327bb72f0c639f22b822eb4dc53766e",
+      "declaration_sha256": "e966f5f6779340393f1033d83c7c395d56cecc01558c2760ec8fee029d06ec6d",
       "environments": [
         "ubuntu-24.04"
       ],
