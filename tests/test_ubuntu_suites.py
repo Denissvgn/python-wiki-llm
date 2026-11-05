@@ -652,7 +652,12 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
     assert "!inputs.ubuntu-suite-shadow" in jobs["ubuntu-suites"]["if"]
     assert not {"slow", "product", "shadow-security-macos"} & jobs.keys()
     assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
-    assert "inputs.ubuntu-suite-shadow" not in jobs["security-behavior"]["if"]
+    security_condition = jobs["security-behavior"]["if"]
+    assert "!inputs.ubuntu-suite-shadow" not in security_condition
+    # A shadow run retains its native Mac consumer even though the normal-only
+    # admission job is skipped; a positive mode flag is an explicit bypass.
+    assert "inputs.ubuntu-suite-shadow ||" in security_condition
+    assert "needs.admission.result == 'success'" in security_condition
     assert "ubuntu-union" not in jobs and "ubuntu-comparison" not in jobs
     artifacts = {
         step["with"]["name"]: step
@@ -700,7 +705,9 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
     )
     for job_name in ["bundle", "decision"]:
         assert "!inputs.ubuntu-suite-shadow" in jobs[job_name]["if"]
-    assert "${{ inputs.ubuntu-suite-shadow }}" in workflow["concurrency"]["group"]
+    assert "inputs.ubuntu-suite-shadow" in workflow["concurrency"]["group"]
+    assert "-diagnostic-" in workflow["concurrency"]["group"]
+    assert "inputs.ubuntu-suite-shadow" in workflow["concurrency"]["cancel-in-progress"]
 
 
 @pytest.mark.parametrize("ubuntu", ["success", "failure", "skipped", "cancelled", ""])

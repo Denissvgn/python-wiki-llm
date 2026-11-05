@@ -102,10 +102,14 @@ def provider_files(root):
             )
             files[path.relative_to(package).as_posix()] = sha(path)
     require(bool(files), "Provider namespace is empty")
-    return {"version": project["project"]["version"], "files": files}
+    return {
+        "version": project["project"]["version"],
+        "files": files,
+        "source_origin": root.resolve().as_uri(),
+    }
 
 
-def verify_provider(expected):
+def _observe_installed_provider(expected):
     import importlib.metadata
     import llm_wiki_cli
 
@@ -118,8 +122,9 @@ def verify_provider(expected):
     distribution = importlib.metadata.distribution("agent-wiki-cli")
     direct = json.loads(distribution.read_text("direct_url.json") or "{}")
     require(
-        direct.get("dir_info", {}).get("editable") is not True,
-        "Editable provider refused",
+        direct.get("dir_info", {}).get("editable") is not True
+        and direct.get("url") == expected["source_origin"],
+        "Installed source origin differs or is editable",
     )
     actual = {}
     for path in package.rglob("*"):
@@ -138,7 +143,60 @@ def verify_provider(expected):
         "provider": str(package),
         "files": len(actual),
         "version": distribution.version,
+        "source_origin": direct["url"],
     }
+
+
+def verify_provider(expected):
+    # The measurement runtime deliberately imports ROOT/src in the controller.
+    # Verify the noneditable installation in another isolated interpreter so
+    # that this probe cannot pin the controller to site-packages beforehand.
+    probe = """import importlib.util,json,sys
+spec=importlib.util.spec_from_file_location('canary_provider_probe',sys.argv[1])
+assert spec is not None and spec.loader is not None
+module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+print(json.dumps(module._observe_installed_provider(json.load(sys.stdin))))
+"""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", probe, str(Path(__file__).resolve())],
+            input=json.dumps(expected, sort_keys=True),
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=120,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise CanaryError("Isolated provider verification timed out") from error
+    require(
+        result.returncode == 0,
+        "Isolated provider verification failed: " + result.stderr[-2000:],
+    )
+    observation = json.loads(result.stdout)
+    require(isinstance(observation, dict), "Provider observation is not an object")
+    return observation
+
+
+def workflow_identity(source_sha, *, frozen, environment):
+    workflow_sha = environment.get("GITHUB_WORKFLOW_SHA", "")
+    workflow_ref = environment.get("GITHUB_WORKFLOW_REF", "")
+    workflow_path = "release-qualification.yml" if frozen else "windows-measurement.yml"
+    prefix = REPOSITORY + "/.github/workflows/" + workflow_path + "@"
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", workflow_sha) is not None
+        and workflow_ref.startswith(prefix),
+        "Workflow execution identity unavailable",
+    )
+    if frozen:
+        run_ref = environment.get("GITHUB_REF", "")
+        require(
+            run_ref.startswith("refs/heads/")
+            and workflow_sha == source_sha
+            and workflow_ref == prefix + run_ref,
+            "Frozen canary workflow identity differs",
+        )
+    return workflow_sha, workflow_ref
 
 
 def capture_reports(basetemp, out):
@@ -412,28 +470,9 @@ def run(args):
             .decode()
             .strip(),
         }
-    workflow_sha, workflow_ref = (
-        os.environ.get("GITHUB_WORKFLOW_SHA", ""),
-        os.environ.get("GITHUB_WORKFLOW_REF", ""),
+    workflow_sha, workflow_ref = workflow_identity(
+        args.source_sha, frozen=args.frozen_identity is not None, environment=os.environ
     )
-    workflow_path = (
-        "release-qualification.yml"
-        if args.frozen_identity is not None
-        else "windows-measurement.yml"
-    )
-    require(
-        re.fullmatch(r"[0-9a-f]{40}", workflow_sha) is not None
-        and workflow_ref.startswith(
-            REPOSITORY + "/.github/workflows/" + workflow_path + "@"
-        ),
-        "Workflow execution identity unavailable",
-    )
-    if args.frozen_identity is not None:
-        require(
-            workflow_sha == args.source_sha
-            and workflow_ref.endswith("@refs/heads/main"),
-            "Frozen canary workflow identity differs",
-        )
     identity = {
         "schema_version": "native-measurement-regression/v2",
         "purpose": "fixed-module native regression; not full qualification or policy ownership",
@@ -459,6 +498,10 @@ def run(args):
     expected = provider_files(root)
     save(out, "expected-provider.json", expected)
     save(out, "installed-origin-before.json", verify_provider(expected))
+    require(
+        "llm_wiki_cli" not in sys.modules,
+        "Canary controller imported a provider before measurement selection",
+    )
     sys.path.insert(0, str(root))
     os.environ["PR_CI_COLLECTION"] = str(out / "collection.json")
     pytest = importlib.import_module("pytest")

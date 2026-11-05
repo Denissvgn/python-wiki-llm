@@ -163,7 +163,7 @@ def test_expensive_supplementary_workflows_cannot_duplicate_pr_and_main_runs():
 
 def test_full_native_release_and_new_native_evidence_are_still_required():
     jobs = workflow("release-qualification.yml")["jobs"]
-    for key in ("core", "core-windows"):
+    for key in ("core-ubuntu", "windows-native"):
         job = jobs[key]
         native = next(
             s
@@ -175,20 +175,19 @@ def test_full_native_release_and_new_native_evidence_are_still_required():
         assert "--minimum-collected 146 --minimum-passed 146" in native["run"]
         assert "continue-on-error" not in native
         upload = next(
-            s for s in job["steps"] if s.get("name") == "Upload lane evidence"
+            s for s in job["steps"] if s.get("name") in {"Upload lane evidence", "Upload independently bound native Windows evidence"}
         )
         assert "evidence/native-regressions/" in upload["with"]["path"]
         assert upload["with"]["if-no-files-found"] == "error"
-        full = [
-            s["run"]
-            for s in job["steps"]
-            if "python -m pytest tests -q" in s.get("run", "")
-        ]
-        assert full
-    assert any("--cov-fail-under=87" in s.get("run", "") for s in jobs["core"]["steps"])
+    for key in ("core", "core-ubuntu", "core-windows"):
+        assert any("python -m pytest tests -q" in step.get("run", "") for step in jobs[key]["steps"])
+    assert "windows-native" in jobs["core-windows"]["needs"]
+    assert "needs.windows-native.result == 'success'" in jobs["core-windows"]["if"]
+    assert any("--cov-fail-under=87" in s.get("run", "") for s in jobs["core-ubuntu"]["steps"])
     assert "pr_ci.py" not in str(jobs["bundle"])
     for name in (
         "core",
+        "core-ubuntu",
         "core-windows",
         "owner-lanes",
         "knowledge-maintenance",

@@ -273,9 +273,10 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
         assert "release/" + name in str(jobs["freeze"]["steps"])
 
 
+@pytest.mark.parametrize("producer", ["core-windows", "core-ubuntu"])
 @pytest.mark.parametrize("windows", ["success", "failure", "cancelled", "skipped"])
 def test_real_decision_mapping_requires_windows_for_core_security_and_product(
-    tmp_path, windows
+    tmp_path, windows, producer
 ):
     import re
     from release import qualification as q
@@ -289,7 +290,7 @@ def test_real_decision_mapping_requires_windows_for_core_security_and_product(
     script = script.replace("${{ needs.freeze.outputs.sha }}", "a" * 40).replace(
         "${{ needs.freeze.outputs.version }}", "1.0.0"
     )
-    script = script.replace("${{ needs.core-windows.result }}", windows)
+    script = script.replace("${{ needs." + producer + ".result }}", windows)
     script = re.sub(r"\$\{\{ needs\.[a-z-]+\.result \}\}", "success", script)
     argv = shlex.split(script)[3:]
     assert argv[0] == "aggregate"

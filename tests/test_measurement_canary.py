@@ -152,3 +152,97 @@ def test_raw_capture_materializes_shared_regular_bytes_without_following_aliases
             source.read_bytes()
         ] * 2
     assert source.stat().st_nlink == 2
+
+
+def test_installed_probe_cannot_poison_measurement_source_provider(tmp_path):
+    import json
+    import os
+    import subprocess
+    import venv
+    from pathlib import Path
+
+    root = Path(__file__).parents[1]
+    prefix = tmp_path / ".venv"
+    venv.EnvBuilder(with_pip=False, symlinks=os.name != "nt").create(prefix)
+    executable = prefix / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    site = Path(
+        subprocess.check_output(
+            [
+                str(executable),
+                "-I",
+                "-c",
+                "import pathlib,site;print(next(p for p in site.getsitepackages() if 'site-packages' in pathlib.Path(p).parts))",
+            ],
+            text=True,
+        ).strip()
+    )
+    provider = tmp_path / "retained"
+    source = provider / "src/llm_wiki_cli"
+    source.mkdir(parents=True)
+    (provider / "pyproject.toml").write_text(
+        '[project]\nversion="9.0.0"\n[tool.setuptools.package-data]\nllm_wiki_cli=[]\n'
+    )
+    (source / "__init__.py").write_text('__version__="9.0.0"\n')
+    (source / "api.py").write_text("VALUE=1\n")
+    installed = site / "llm_wiki_cli"
+    installed.mkdir()
+    for name in ("__init__.py", "api.py"):
+        (installed / name).write_bytes((source / name).read_bytes())
+    metadata = site / "agent_wiki_cli-9.0.0.dist-info"
+    metadata.mkdir()
+    (metadata / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: agent-wiki-cli\nVersion: 9.0.0\n"
+    )
+    (metadata / "direct_url.json").write_text(
+        json.dumps({"url": provider.resolve().as_uri(), "dir_info": {}})
+    )
+    script = """import json,pathlib,sys
+sys.path.insert(0,sys.argv[1])
+from release import measurement_canary as canary
+assert 'llm_wiki_cli' not in sys.modules
+expected=canary.provider_files(pathlib.Path(sys.argv[2]))
+observed=canary.verify_provider(expected)
+assert 'site-packages' in pathlib.Path(observed['provider']).parts
+assert 'llm_wiki_cli' not in sys.modules
+from tests.developer_value.runtime import load_provider
+api=load_provider(pathlib.Path(sys.argv[2]))
+assert pathlib.Path(api.__file__).is_relative_to(pathlib.Path(sys.argv[2])/'src')
+print(json.dumps({'installed_probe':'passed','source_adapter':'passed','controller_provider_imported_before_adapter':False}))
+"""
+    result = subprocess.run(
+        [str(executable), "-I", "-c", script, str(root), str(provider)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (
+        json.loads(result.stdout)["controller_provider_imported_before_adapter"]
+        is False
+    )
+
+
+@pytest.mark.parametrize("branch", ["main", "release/candidate"])
+def test_frozen_canary_preserves_qualification_branch_contract(branch):
+    sha = "a" * 40
+    ref = "refs/heads/" + branch
+    environment = {
+        "GITHUB_WORKFLOW_SHA": sha,
+        "GITHUB_WORKFLOW_REF": canary.REPOSITORY
+        + "/.github/workflows/release-qualification.yml@"
+        + ref,
+        "GITHUB_REF": ref,
+    }
+    assert canary.workflow_identity(sha, frozen=True, environment=environment) == (
+        sha,
+        environment["GITHUB_WORKFLOW_REF"],
+    )
+    for changed in (
+        {"GITHUB_REF": "refs/tags/v4.0.1"},
+        {"GITHUB_WORKFLOW_SHA": "b" * 40},
+        {"GITHUB_REF": "refs/heads/another"},
+    ):
+        with pytest.raises(canary.CanaryError):
+            canary.workflow_identity(
+                sha, frozen=True, environment={**environment, **changed}
+            )
