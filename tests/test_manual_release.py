@@ -245,6 +245,7 @@ def test_partial_release_repair_validates_existing_assets_before_upload(project,
         {"filename": "wheel.whl", "sha256": "a" * 64}, {"filename": "source.tar.gz", "sha256": "b" * 64}]})
     monkeypatch.setattr(api, "_notes", lambda state: notes)
     monkeypatch.setattr(api, "_release_metadata", lambda *a: None)
+    monkeypatch.setattr(api, "_tag", lambda *a, **k: {"source_sha": "1" * 40})
     monkeypatch.setattr(api, "_assets", lambda state: {"wheel.whl": "a" * 64, "source.tar.gz": "b" * 64, "SHA256SUMS": "c" * 64})
     monkeypatch.setattr(api, "_release", lambda tag: {"id": 1, "assets": [
         {"name": "wheel.whl", "state": "uploaded", "digest": "sha256:" + "f" * 64}]})
@@ -326,6 +327,31 @@ def test_tag_push_destination_must_equal_session_repository(project):
     api = backend(project, None)
     with pytest.raises(manual.SessionError, match="push destination"):
         api._origin()
+
+
+def test_single_selected_push_destination_is_validated_without_changing_configuration(project):
+    url = "git@github.com:example/agent-wiki.git"
+    git(project, "remote", "add", "origin", url)
+    api = backend(project, None)
+    assert api._origin() == url
+    assert git(project, "remote", "get-url", "--push", "--all", "origin") == url
+
+
+@pytest.mark.parametrize("second", ["git@github.com:unrelated/repository.git", "git@github.com:example/agent-wiki.git"])
+def test_multiple_push_urls_are_rejected_before_tag_mutation(project, monkeypatch, second):
+    selected = "git@github.com:example/agent-wiki.git"
+    calls = []
+
+    def configured(root, *args, **kwargs):
+        calls.append(args)
+        assert args == ("remote", "get-url", "--push", "--all", "origin"), "No tag mutation or push is allowed"
+        return type("Completed", (), {"stdout": selected + "\n" + second + "\n"})()
+
+    monkeypatch.setattr(manual, "git", configured)
+    api = backend(project, None)
+    with pytest.raises(manual.SessionError, match="exactly one"):
+        api.perform({"version": "9.0.0", "candidate_sha": "a" * 40}, {"action": "tag"})
+    assert calls == [("remote", "get-url", "--push", "--all", "origin")]
 
 
 def test_reader_must_execute_from_candidate_checkout(project):
@@ -525,3 +551,190 @@ def test_invalid_watch_bounds_and_ungranted_scope_do_not_read_credentials(projec
     assert manual.main(["advance", "--root", str(project), "--work", str(controller.store.work)]) == 0
     assert json.loads(capsys.readouterr().out)["observation"] == "awaiting_authorization"
     assert not remote.writes
+
+
+@pytest.mark.parametrize("when", ["prepare", "after-intent"])
+def test_candidate_change_during_preparation_cannot_reach_external_submission(project, monkeypatch, when):
+    remote = Remote()
+    controller, _ = session(project, remote)
+    if when == "prepare":
+        original = remote.prepare
+
+        def prepare(state, action):
+            (project / "concurrent-change.py").write_text("VALUE = 2\n")
+            return original(state, action)
+
+        monkeypatch.setattr(remote, "prepare", prepare)
+    else:
+        original = controller.store.save
+
+        def save(state, event):
+            value = original(state, event)
+            if event == "intent-qualify":
+                (project / "concurrent-change.py").write_text("VALUE = 2\n")
+            return value
+
+        monkeypatch.setattr(controller.store, "save", save)
+    with pytest.raises(manual.SessionError, match="Commit source changes"):
+        controller.advance()
+    assert remote.writes == []
+    assert controller.store.load()["pending"] is None
+
+
+class TagClient:
+    def __init__(self, *, source="a" * 40, kind="tag", absent=False, object_source="c" * 40):
+        self.source, self.kind, self.absent, self.object_source = source, kind, absent, object_source
+        self.calls = []
+
+    def get(self, path):
+        self.calls.append(path)
+        if path == "/git/ref/tags/v9.0.0":
+            if self.absent:
+                raise manual.automation.APIError(404, "Tag is absent")
+            return {"ref": "refs/tags/v9.0.0", "object": {"type": self.kind, "sha": self.object_source}}
+        if path == "/git/tags/" + self.object_source:
+            return {"sha": self.object_source, "tag": "v9.0.0", "object": {"type": "commit", "sha": self.source}}
+        raise AssertionError("Unexpected selected-repository lookup: " + path)
+
+
+def test_tag_reconciliation_uses_selected_repository_not_git_fetch_origin(project, monkeypatch):
+    client = TagClient(source="b" * 40)
+    api = backend(project, client)
+    reads = []
+
+    def fork_git(root, *args, **kwargs):
+        reads.append(args)
+        return type("Completed", (), {"stdout": "a" * 40 + "\trefs/tags/v9.0.0^{}\n"})()
+
+    monkeypatch.setattr(manual, "git", fork_git)
+    with pytest.raises(manual.SessionError, match="qualified commit"):
+        api.reconcile({"version": "9.0.0", "candidate_sha": "a" * 40}, {"action": "tag"})
+    assert reads == []
+    assert client.calls == ["/git/ref/tags/v9.0.0", "/git/tags/" + "c" * 40]
+    client.source = "a" * 40
+    result = api.reconcile({"version": "9.0.0", "candidate_sha": "a" * 40}, {"action": "tag"})
+    assert result is not None
+    assert result["verified"] and result["refs"] == {
+        "refs/tags/v9.0.0": "c" * 40, "refs/tags/v9.0.0^{}": "a" * 40}
+
+
+@pytest.mark.parametrize("case", ["absent", "lightweight", "wrong-source", "retargeted-object"])
+def test_wrong_selected_repository_tag_blocks_release_create_repair_and_completion(project, monkeypatch, case):
+    client = TagClient(absent=case == "absent", kind="commit" if case == "lightweight" else "tag",
+                       source="b" * 40 if case == "wrong-source" else "a" * 40)
+    api = backend(project, client)
+    state = {"version": "9.0.0", "candidate_sha": "a" * 40,
+             "tag": {"refs": {"refs/tags/v9.0.0": "d" * 40 if case == "retargeted-object" else "c" * 40}}}
+    monkeypatch.setattr(api, "check_bundle", lambda state: {"tag": "v9.0.0", "artifacts": []})
+    writes = []
+    monkeypatch.setattr(manual.subprocess, "run", lambda *args, **kwargs: writes.append(args))
+    for operation in (lambda: api.perform(state, {"action": "github-release"}),
+                      lambda: api.reconcile(state, {"action": "github-release"}),
+                      lambda: api.verify_public(state)):
+        with pytest.raises(manual.SessionError):
+            operation()
+    assert writes == []
+    if case == "absent":
+        assert api.reconcile(state, {"action": "tag"}) == {"retry_safe": True}
+
+
+def test_public_cache_interrupted_write_retains_partial_attempt_and_resumes(project, monkeypatch):
+    api = backend(project, None)
+    raw = b"all qualified public bytes must survive"
+    expected = hashlib.sha256(raw).hexdigest()
+    monkeypatch.setattr(manual.hosted, "_http", lambda *args, **kwargs: (200, {}, raw))
+    target = api.work / "public-downloads/pypi/wheel.whl"
+    original = Path.open
+
+    class Interrupted:
+        def __init__(self, path):
+            self.path = path
+
+        def __enter__(self):
+            self.stream = original(self.path, "xb")
+            return self
+
+        def write(self, data):
+            self.stream.write(data[:7])
+            self.stream.flush()
+            raise OSError("Storage interrupted")
+
+        def __exit__(self, *args):
+            self.stream.close()
+
+    def partial(path, mode="r", *args, **kwargs):
+        if path.parent == target.parent and path.name.startswith("wheel.whl.incomplete-") and mode == "xb":
+            return Interrupted(path)
+        return original(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", partial)
+    with pytest.raises(OSError, match="Storage interrupted"):
+        api._public_bytes("pypi", "wheel.whl", "https://files.pythonhosted.org/wheel.whl", len(raw), expected)
+    assert not target.exists()
+    fragments = list(target.parent.glob("wheel.whl.incomplete-*"))
+    assert len(fragments) == 1 and fragments[0].read_bytes() == raw[:7]
+    monkeypatch.setattr(Path, "open", original)
+    api._public_bytes("pypi", "wheel.whl", "https://files.pythonhosted.org/wheel.whl", len(raw), expected)
+    assert target.read_bytes() == raw and fragments[0].read_bytes() == raw[:7]
+
+
+def test_intent_file_and_supported_directory_flush_precede_external_effect(project, monkeypatch):
+    import os
+    import stat
+    remote = Remote()
+    controller, _ = session(project, remote)
+    events = []
+    fsync, replace, perform = os.fsync, os.replace, remote.perform
+
+    def synchronized(descriptor):
+        events.append("directory-flushed" if stat.S_ISDIR(os.fstat(descriptor).st_mode) else "file-flushed")
+        return fsync(descriptor)
+
+    def replaced(before, after):
+        events.append("state-replaced" if after == controller.store.work / "state.json" else "other-replaced")
+        return replace(before, after)
+
+    def submitted(state, pending):
+        events.append("effect")
+        return perform(state, pending)
+
+    monkeypatch.setattr(os, "fsync", synchronized)
+    monkeypatch.setattr(os, "replace", replaced)
+    monkeypatch.setattr(remote, "perform", submitted)
+    controller.advance()
+    assert events.index("file-flushed") < events.index("state-replaced") < events.index("effect")
+    if os.name == "nt":
+        # Windows retains flushed-file/atomic-replacement process recovery;
+        # the controller deliberately does not claim a directory-flush API.
+        assert "directory-flushed" not in events
+    else:
+        assert events.index("state-replaced") < events.index("directory-flushed") < events.index("effect")
+
+
+def test_intent_directory_flush_failure_prevents_external_effect(project, monkeypatch):
+    remote = Remote()
+    controller, _ = session(project, remote)
+
+    def fail(path):
+        if path == controller.store.work:
+            raise OSError("Intent directory did not become durable")
+
+    monkeypatch.setattr(manual, "sync_directory", fail)
+    with pytest.raises(OSError, match="did not become durable"):
+        controller.advance()
+    assert remote.writes == []
+    assert controller.store.load()["pending"]["action"] == "qualify"
+
+
+def test_new_session_directory_ancestors_are_flushed(project, monkeypatch):
+    calls = []
+    original = manual.sync_directory
+
+    def record(path):
+        calls.append(path)
+        return original(path)
+
+    monkeypatch.setattr(manual, "sync_directory", record)
+    store = manual.Store(project, project / "private/nested/session")
+    manual.Controller(store).initialize("example/agent-wiki", git(project, "rev-parse", "HEAD"))
+    assert project in calls and project / "private" in calls and project / "private/nested" in calls

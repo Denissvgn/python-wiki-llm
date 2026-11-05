@@ -92,9 +92,36 @@ def atomic(path: Path, value: dict) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
+        sync_directory(path.parent)
     finally:
         if temporary.exists():
             temporary.unlink()
+
+
+def sync_directory(path: Path) -> None:
+    """Persist POSIX directory entries before a subsequent external write.
+
+    Python exposes no portable directory-flush primitive on Windows. Existing
+    file flushing and atomic replacement retain process-interruption safety
+    there; no Windows power-loss durability is inferred from that behavior.
+    """
+    if os.name != "nt":
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+
+def ensure_directory(path: Path) -> None:
+    missing = []
+    current = safe(path)
+    while not current.exists():
+        missing.append(current)
+        current = current.parent
+    path.mkdir(parents=True, exist_ok=True)
+    for directory in reversed(missing):
+        sync_directory(directory.parent)
 
 
 def git(root: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess:
@@ -187,6 +214,7 @@ class Store:
     def release(self, state: dict) -> None:
         if self.lease.exists() and read(self.lease).get("session_id") == state["session_id"]:
             self.lease.unlink()
+            sync_directory(self.common)
 
 
 class Controller:
@@ -217,7 +245,7 @@ class Controller:
                      "preflight_receipt": str(safe(receipt)) if receipt else None,
                      "authorizations": sorted(set(authorize)), "pending": None,
                      "revision": 0, "created_at": now()}
-            self.store.work.mkdir(parents=True, exist_ok=True)
+            ensure_directory(self.store.work)
             self.store.save(state, "initialized")
             self.store.claim(state)
             return state
@@ -285,10 +313,19 @@ class Controller:
 
     def _effect(self, state: dict, action: str, *, repair: bool = False) -> dict:
         prepared = self.backend.prepare(state, action)
+        self._same_source(state)
         previous = state.get("pending")
         state["pending"] = {"action": action, "started_at": now(), "before": prepared,
                             "operation_id": uuid.uuid4().hex, "repair": repair}
         self.store.save(state, "intent-" + action)
+        try:
+            self._same_source(state)
+        except (SessionError, OSError, subprocess.SubprocessError):
+            # Validation failed before the external effect was attempted. Keep
+            # any unresolved preceding repair intent instead of hiding it.
+            state["pending"] = previous
+            self.store.save(state, "source-refused-before-submission-" + action)
+            raise
         try:
             result = self.backend.perform(state, state["pending"])
         except Exception as exc:
@@ -301,6 +338,11 @@ class Controller:
         if previous:
             state["pending"]["previous_operation_id"] = previous["operation_id"]
         return self.store.save(state, "submitted-" + action)
+
+    def _same_source(self, state: dict) -> None:
+        identity = source(self.store.root)
+        require(identity == {key: state[key] for key in identity},
+                "Candidate source changed before submission")
 
     @staticmethod
     def _accept(state: dict, action: str, result: dict) -> None:
@@ -387,17 +429,24 @@ class GitHubBackend:
         require(ref.get("ref") == "refs/heads/main" and ref.get("object", {}).get("sha") == state["candidate_sha"],
                 "Main advanced; reconcile the candidate before another write")
 
-    def _origin(self) -> None:
-        url = git(self.root, "remote", "get-url", "--push", "origin").stdout.strip()
+    def _origin(self) -> str:
+        urls = git(self.root, "remote", "get-url", "--push", "--all", "origin").stdout.splitlines()
+        require(len(urls) == 1, "Origin must have exactly one effective push destination")
+        url = urls[0]
         require(url in {"git@github.com:" + self.repository + ".git",
                         "https://github.com/" + self.repository + ".git",
                         "ssh://git@github.com/" + self.repository + ".git"},
                 "Origin push destination does not match the selected GitHub repository")
+        return url
 
     def prepare(self, state: dict, action: str) -> dict:
         if action != "github-release":
             self._main(state)
         self._origin()
+        if action == "tag":
+            self._tag(state, allow_absent=True)
+        elif action == "github-release":
+            self._tag(state)
         if action in WORKFLOWS:
             workflow = WORKFLOWS[action][0]
             runs = self.client.list(f"/actions/workflows/{workflow}/runs?event=workflow_dispatch", "workflow_runs")
@@ -421,6 +470,7 @@ class GitHubBackend:
             return self.client.request("POST", f"/actions/workflows/{WORKFLOWS[action][0]}/dispatches",
                                        {"ref": "main", "inputs": self._inputs(state, action)}) or {}
         if action == "tag":
+            destination = self._origin()
             tag = "v" + state["version"]
             existing = git(self.root, "show-ref", "--verify", "--quiet", "refs/tags/" + tag, check=False)
             if existing.returncode == 1:
@@ -430,10 +480,12 @@ class GitHubBackend:
             require(git(self.root, "cat-file", "-t", "refs/tags/" + tag).stdout.strip() == "tag"
                     and git(self.root, "rev-list", "-n", "1", "refs/tags/" + tag).stdout.strip() == state["candidate_sha"],
                     "Existing tag is not the exact annotated qualified tag")
+            require(self._origin() == destination, "Origin push destination changed before submission")
             git(self.root, "push", "origin", f"refs/tags/{tag}:refs/tags/{tag}")
             return {}
         require(action == "github-release", "Unknown release action")
         manifest = self.check_bundle(state)
+        self._tag(state)
         tag = manifest["tag"]
         notes = self._notes(state)
         files = [Path(state["qualification"]["bundle"]) / "dist" / a["filename"] for a in manifest["artifacts"]]
@@ -551,13 +603,14 @@ class GitHubBackend:
         action = pending["action"]
         if action == "tag":
             tag = "v" + state["version"]
-            rows = git(self.root, "ls-remote", "--tags", "origin", "refs/tags/" + tag, "refs/tags/" + tag + "^{}").stdout.splitlines()
-            if not rows:
+            checked = self._tag(state, allow_absent=True)
+            if checked is None:
                 return {"retry_safe": True}
-            refs = {row.split()[1]: row.split()[0] for row in rows}
-            require(refs.get("refs/tags/" + tag + "^{}") == state["candidate_sha"], "Remote annotated tag points elsewhere")
+            refs = {"refs/tags/" + tag: checked["object_sha"],
+                    "refs/tags/" + tag + "^{}": checked["source_sha"]}
             return {"verified": True, "candidate_sha": state["candidate_sha"], "refs": refs}
         if action == "github-release":
+            self._tag(state)
             release = self._release("v" + state["version"])
             if release is None:
                 return {"retry_safe": True}
@@ -653,6 +706,36 @@ class GitHubBackend:
                 return None
             raise
 
+    def _tag(self, state: dict, *, allow_absent: bool = False) -> dict | None:
+        """Read the selected repository, never an ambient Git fetch alias."""
+        tag = "v" + state["version"]
+        reference = "refs/tags/" + tag
+        try:
+            ref = self.client.get("/git/ref/tags/" + tag)
+        except automation.APIError as exc:
+            if exc.status != 404:
+                raise
+            if allow_absent:
+                return None
+            raise SessionError("Selected repository release tag is absent") from exc
+        require(isinstance(ref, dict) and ref.get("ref") == reference
+                and isinstance(ref.get("object"), dict) and ref["object"].get("type") == "tag",
+                "Selected repository release tag is not annotated")
+        object_sha = ref["object"].get("sha")
+        require(isinstance(object_sha, str) and re.fullmatch(r"[0-9a-f]{40}", object_sha),
+                "Selected repository annotated tag object is invalid")
+        annotation = self.client.get("/git/tags/" + object_sha)
+        require(isinstance(annotation, dict) and annotation.get("sha") == object_sha
+                and annotation.get("tag") == tag and isinstance(annotation.get("object"), dict)
+                and annotation["object"].get("type") == "commit"
+                and annotation["object"].get("sha") == state["candidate_sha"],
+                "Selected repository annotated tag does not target the qualified commit")
+        previous = state.get("tag", {}).get("refs", {}).get(reference)
+        require(previous is None or previous == object_sha,
+                "Selected repository annotated tag changed after verification")
+        return {"repository": self.repository, "ref": reference,
+                "object_sha": object_sha, "source_sha": annotation["object"]["sha"]}
+
     def _release_metadata(self, state: dict, release: dict) -> None:
         require(release["tag_name"] == "v" + state["version"] and release["draft"] is False
                 and release["prerelease"] is False and release["body"] == self._notes(state).read_text(), "Existing release metadata differs")
@@ -696,14 +779,24 @@ class GitHubBackend:
             raise SessionError("Public artifact redirect bound exceeded")
         require(len(raw) == size and digest(raw) == expected, "Public artifact bytes differ from qualification")
         path = safe(self.work / "public-downloads" / group / name)
-        path.parent.mkdir(parents=True, exist_ok=True)
+        ensure_directory(path.parent)
         if path.exists():
             require(q.sha256_file(path) == expected, "Retained public download changed")
         else:
-            with path.open("xb") as stream:
+            temporary = path.with_name(path.name + ".incomplete-" + uuid.uuid4().hex)
+            # Interrupted attempts are retained for diagnosis. Only fully
+            # written, flushed and verified bytes acquire the final cache name.
+            with temporary.open("xb") as stream:
                 stream.write(raw)
+                stream.flush()
+                os.fsync(stream.fileno())
+            require(q.sha256_file(temporary) == expected, "Public cache materialization differs")
+            os.replace(temporary, path)
+            sync_directory(path.parent)
 
     def verify_public(self, state: dict) -> dict:
+        first_tag = self._tag(state)
+        require(first_tag is not None, "Selected repository release tag is absent")
         release = self._release("v" + state["version"])
         if release is None:
             raise SessionError("Published GitHub release is absent")
@@ -727,9 +820,10 @@ class GitHubBackend:
                 and all(not a["yanked"] and a["digests"]["sha256"] == expected[n] for n, a in distributions.items()), "Public registry distributions differ")
         for name, asset in distributions.items():
             self._public_bytes("pypi", name, asset["url"], asset["size"], expected[name])
-        rows = git(self.root, "ls-remote", "--tags", "origin", "refs/tags/v" + state["version"] + "^{}").stdout.split()
-        require(rows and rows[0] == state["candidate_sha"], "Public tag source differs")
-        atomic(self.work / "public-verification.json", {"registry": registry, "release": release, "verified_at": now()})
+        final_tag = self._tag(state)
+        require(first_tag == final_tag, "Selected repository release tag changed during public verification")
+        atomic(self.work / "public-verification.json", {"registry": registry, "release": release,
+                                                        "tag": final_tag, "verified_at": now()})
         return {"verified": True, "candidate_sha": state["candidate_sha"], "release_url": release["html_url"],
                 "pypi_url": "https://pypi.org/project/agent-wiki-cli/" + state["version"] + "/"}
 
