@@ -34,6 +34,7 @@ HARNESS_FILES = (
     "core_shard_runner.py",
     "core-shard-timings.json",
     "core_coverage.py",
+    "measurement_canary.py",
 )
 ISOLATED_ENVIRONMENT_KEYS = (
     "PYTHONPATH", "PYTHONHOME", "PYTEST_ADDOPTS", "PYTEST_PLUGINS",
@@ -177,6 +178,7 @@ def environment(root: Path, lane: str) -> dict:
         in Path(str(provider.locate_file(""))).resolve().parents,
         "candidate installation is outside the isolated environment",
     )
+    verify_provider_namespace(root, provider)
     result = {
         "profile": expected,
         "python": platform.python_version(),
@@ -186,6 +188,33 @@ def environment(root: Path, lane: str) -> dict:
     }
     s.validate_environment(result, lane)
     return result
+
+
+def verify_provider_namespace(root: Path, provider) -> None:
+    """Check the complete installed payload without importing candidate code."""
+    spec = importlib.util.spec_from_file_location(
+        "_core_provider_inventory", Path(__file__).with_name("measurement_canary.py")
+    )
+    assert spec is not None and spec.loader is not None
+    inventory = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(inventory)
+    expected = inventory.provider_files(root)
+    package = inventory.safe(Path(str(provider.locate_file("llm_wiki_cli"))))
+    s.require(package.is_relative_to(Path(sys.prefix).resolve()),
+              "candidate namespace is outside the isolated environment")
+    observed = {}
+    total = 0
+    for path in sorted(package.rglob("*")):
+        inventory.safe(path)
+        name = path.relative_to(package)
+        if path.is_file() and "__pycache__" not in name.parts and path.suffix != ".pyc":
+            size = path.stat().st_size
+            total += size
+            s.require(size <= 64 * 1024 * 1024 and total <= 256 * 1024 * 1024
+                      and len(observed) < 10000, "installed candidate namespace exceeds bound")
+            observed[name.as_posix()] = q.sha256_file(path)
+    s.require(observed == expected["files"] and provider.version == expected["version"],
+              "installed candidate namespace differs from frozen source")
 
 
 def verify_source(root: Path, archive_path: Path, identity: dict) -> None:
@@ -610,7 +639,7 @@ def probe_coverage_transport(root: Path | None = None) -> None:
     root = (root or Path.cwd()).resolve()
     s.require(not os.environ.get("COVERAGE_RCFILE"),
               "alternate COVERAGE_RCFILE is outside the frozen coverage profile")
-    for name in (".coveragerc", "setup.cfg", "tox.ini", "pyproject.toml", "pytest.ini", ".pytest.ini", "pytest.toml"):
+    for name in (".coveragerc", ".coveragerc.toml", "setup.cfg", "tox.ini", "pyproject.toml", "pytest.ini", ".pytest.ini", "pytest.toml", ".pytest.toml"):
         path = root / name
         if path.exists() or path.is_symlink():
             s.require(not path.is_symlink() and path.is_file()
@@ -631,6 +660,66 @@ def probe_coverage_transport(root: Path | None = None) -> None:
                   "candidate coverage context policy differs")
         s.require(not analyzer.get_option("run:plugins"),
                   "candidate coverage plugins are outside the frozen coverage profile")
+        # Explicit source package/directory settings are additive to --cov.
+        # Older compatible coverage readers predate source_dirs/source_pkgs.
+        s.require(set(getattr(analyzer.config, "source_pkgs", ()) or ()) <= {"llm_wiki_cli"},
+                  "candidate coverage measures additional source packages")
+        directories = getattr(analyzer.config, "source_dirs", ()) or ()
+        if directories:
+            package = (root / "src/llm_wiki_cli").resolve()
+            allowed = {package, package_root(root)}
+            s.require(all(Path(name).resolve() in allowed for name in directories),
+                      "candidate coverage measures additional source directories")
+
+        # Replay the effective report settings against every frozen source file.
+        # Seed line data without importing or executing candidate code. This
+        # detects filters that would make the final XML disagree with the raw
+        # union, while retaining supported exclusions and presentation options.
+        package = root / "src/llm_wiki_cli"
+        if package.is_dir():
+            with tempfile.TemporaryDirectory(prefix="coverage-report-") as temporary:
+                output = Path(temporary)
+                analyzer.set_option("run:source", [str(package)])
+                analyzer.set_option("run:data_file", str(output / "coverage.data"))
+                # Coverage retains its debug stream process-wide. A null
+                # device avoids both configured outputs and a live handle into
+                # the temporary directory during native Windows cleanup.
+                analyzer.set_option("run:debug_file", os.devnull)
+                sources = source_manifest(package)
+                analyzer.get_data().add_lines({
+                    str(package / name): set(range(1, item["line_count"] + 1))
+                    if item["line_count"] else {0}
+                    for name, item in sources.items()
+                })
+                analyzer.save()
+                statements = {}
+                for name in sources:
+                    _, lines, excluded, _, _ = analyzer.analysis2(str(package / name))
+                    statements[name] = sorted(set(lines) - set(excluded))
+                try:
+                    analyzer.xml_report(outfile=str(output / "coverage-core-ubuntu-3.11.xml"))
+                    # Coverage's text reporter applies report:contexts even on
+                    # versions whose XML reporter does not. Aggregation uses
+                    # both reporters, so both must retain all seeded hits.
+                    s.require(analyzer.report(file=io.StringIO()) == 100,
+                              "coverage report filters synthetic executed statements")
+                    spec = importlib.util.spec_from_file_location(
+                        "_coverage_report_transport", Path(__file__).with_name("core_coverage.py")
+                    )
+                    assert spec is not None and spec.loader is not None
+                    report_transport = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(report_transport)
+                    receipt = {
+                        "schema_version": COVERAGE_SCHEMA, "sources": sources,
+                        "source_roots": [package.as_posix()], "statements": statements,
+                        "lines": coverage_rows(output / "coverage.data", [package.as_posix()], sources),
+                    }
+                    q.write_json(output / "coverage.json", receipt)
+                    report_transport.validate_combination(output, [output], package, s.read)
+                except Exception as error:
+                    raise q.QualificationError(
+                        f"candidate coverage report cannot preserve complete source inventory: {error}"
+                    ) from error
     finally:
         os.chdir(previous)
     _coverage_pytest_configuration(root)

@@ -559,6 +559,94 @@ def test_executor_rejects_wrong_installation_before_running_tests(
         r.environment(tmp_path, "core-ubuntu-3.11")
 
 
+@pytest.mark.parametrize("lane", ["core-ubuntu-3.11", "core-windows-3.13"])
+@pytest.mark.parametrize("mutation", [
+    None, "python", "packaged-data", "extra-python", "extra-data", "missing", "symlink-file", "symlink-parent",
+])
+def test_complete_provider_namespace_is_checked_before_collection(
+    tmp_path, monkeypatch, lane, mutation,
+):
+    root = tmp_path / "candidate"
+    package = root / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    marker = tmp_path / "candidate-executed"
+    (root / "pyproject.toml").write_text(
+        '[project]\nversion="1.0.0"\n[tool.setuptools.package-data]\nllm_wiki_cli=["*.txt"]\n'
+    )
+    (package / "__init__.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\n"
+    )
+    (package / "owned.txt").write_bytes(b"frozen payload\n")
+    prefix = tmp_path / "venv"
+    installed = prefix / "lib/site-packages/llm_wiki_cli"
+    installed.mkdir(parents=True)
+    for path in package.iterdir():
+        (installed / path.name).write_bytes(path.read_bytes())
+    if mutation == "python":
+        (installed / "__init__.py").write_text("STALE = True\n")
+    elif mutation == "packaged-data":
+        (installed / "owned.txt").write_text("STALE\n")
+    elif mutation == "extra-python":
+        (installed / "extra.py").write_text("EXTRA = True\n")
+    elif mutation == "extra-data":
+        (installed / "extra.txt").write_text("EXTRA\n")
+    elif mutation == "missing":
+        (installed / "owned.txt").unlink()
+    elif mutation == "symlink-file":
+        (installed / "owned.txt").unlink()
+        (installed / "owned.txt").symlink_to(package / "owned.txt")
+    elif mutation == "symlink-parent":
+        original = installed.parent
+        original.rename(original.with_name("retained-site-packages"))
+        original.symlink_to(original.with_name("retained-site-packages"), target_is_directory=True)
+
+    class Distribution:
+        version = "1.0.0"
+
+        def __init__(self, name):
+            self.metadata = {"Name": name}
+
+        def read_text(self, name):
+            return r.json.dumps({"url": root.resolve().as_uri(), "dir_info": {}})
+
+        def locate_file(self, name):
+            return installed.parent / name
+
+    distributions = [Distribution(name) for name in (
+        "agent-wiki-cli", "pytest", "pytest-cov", "coverage", "tokenizers",
+    )]
+    monkeypatch.setattr(r.importlib.metadata, "distribution", lambda name: distributions[0])
+    monkeypatch.setattr(r.importlib.metadata, "distributions", lambda: distributions)
+    monkeypatch.setattr(r.sys, "prefix", str(prefix))
+    monkeypatch.setattr(r.platform, "system", lambda: "Windows" if "windows" in lane else "Linux")
+    monkeypatch.setattr(r.platform, "release", lambda: "2025")
+    monkeypatch.setattr(r.platform, "python_version", lambda: r.s.PROFILES[lane]["python"] + ".21")
+    monkeypatch.setattr(r.platform, "freedesktop_os_release",
+                        lambda: {"ID": "ubuntu", "VERSION_ID": "24.04"}, raising=False)
+
+    def observed_context(args):
+        value = context(lane)
+        value["environment"] = r.environment(root, lane)
+        return value
+
+    events = []
+
+    def no_collection(*args, **kwargs):
+        events.append("collection")
+        raise RuntimeError("stop after verified namespace")
+
+    monkeypatch.setattr(r, "context", observed_context)
+    monkeypatch.setattr(r, "invoke", no_collection)
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2, lane=lane, archive=tmp_path / "unused.tar")
+    with pytest.raises((ValueError, RuntimeError), match=(
+        "stop after verified namespace" if mutation is None else "namespace differs|Redirected canary path"
+    )):
+        r.prepare(args)
+    assert events == (["collection"] if mutation is None else [])
+    assert not marker.exists()
+    assert r.s.read(args.output / "preparation.json")["complete"] is False
+
+
 @pytest.mark.parametrize("failing", [False, True])
 @pytest.mark.parametrize("purpose", ["shadow", "qualification"])
 def test_real_execution_protocol_retains_success_and_failure_evidence(
@@ -774,6 +862,7 @@ def test_real_coverage_storage_is_admitted_before_qualifying_collection():
     ("dynamic_context = test_function", "context policy"),
     ("context = inherited-context", "context policy"),
     ("plugins = unowned_plugin", "coverage plugins"),
+    ("source_pkgs = unowned_package", "additional source packages"),
 ])
 def test_actual_candidate_coverage_configuration_is_rejected_before_collection(
     tmp_path, monkeypatch, setting, reason,
@@ -824,10 +913,105 @@ def test_coverage_admission_does_not_execute_candidate_conftest_or_plugin(tmp_pa
         "[pytest]\nrequired_plugins = sentinel-plugin\naddopts = -p sentinel_plugin\n"
     )
     (tmp_path / ".coveragerc").write_text("[run]\nbranch = False\n")
-    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    package = tmp_path / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text(source)
+    before = {p.relative_to(tmp_path).as_posix(): p.read_bytes()
+              for p in tmp_path.rglob("*") if p.is_file()}
     r.probe_coverage_transport(tmp_path)
     assert not marker.exists()
-    assert before == {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    assert before == {p.relative_to(tmp_path).as_posix(): p.read_bytes()
+                      for p in tmp_path.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize("setting", [
+    "omit = */hidden.py", "include = */owned.py", "skip_empty = True", "contexts = ^unowned$",
+])
+def test_coverage_report_inventory_mismatch_is_rejected_before_collection(
+    tmp_path, monkeypatch, setting,
+):
+    root = tmp_path / "candidate"
+    package = root / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_bytes(b"")
+    for name in ("owned.py", "hidden.py"):
+        (package / name).write_text("VALUE = 1\n")
+    (root / "pytest.ini").write_text("[pytest]\n")
+    config = root / ".coveragerc"
+    original = "[report]\n" + setting + "\n"
+    config.write_text(original)
+    monkeypatch.setattr(r, "context", lambda args: context())
+
+    def no_collection(*args, **kwargs):
+        raise AssertionError("Invalid report policy reached collection")
+
+    monkeypatch.setattr(r, "invoke", no_collection)
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2)
+    with pytest.raises(r.q.QualificationError, match="report cannot preserve complete source inventory"):
+        r.prepare(args)
+    assert config.read_text() == original
+    assert r.s.read(args.output / "preparation.json")["complete"] is False
+    assert not (args.output / "collected.json").exists()
+
+
+@pytest.mark.parametrize("setting", [
+    "exclude_lines = ^SECOND", "skip_covered = True", "include = */llm_wiki_cli/*",
+    "omit = */unowned.py", "contexts = ^$",
+])
+def test_compatible_coverage_report_settings_remain_supported(tmp_path, setting):
+    package = tmp_path / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_bytes(b"")
+    (package / "owned.py").write_text("FIRST = 1\nSECOND = 2\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    (tmp_path / ".coveragerc").write_text("[report]\n" + setting + "\n")
+    r.probe_coverage_transport(tmp_path)
+
+
+def test_coverage_additional_source_directory_is_rejected_before_collection(tmp_path, monkeypatch):
+    package = tmp_path / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "owned.py").write_text("VALUE = 1\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    (tmp_path / ".coveragerc").write_text("[run]\nsource_dirs = ../unowned\n")
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    with pytest.raises(r.q.QualificationError, match="additional source directories"):
+        r.probe_coverage_transport(tmp_path)
+
+
+@pytest.mark.parametrize("setting", [
+    "omit = */unowned.py", "source_pkgs = llm_wiki_cli", "parallel = True", "concurrency = multiprocessing",
+])
+def test_compatible_coverage_run_settings_remain_supported(tmp_path, setting):
+    package = tmp_path / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "owned.py").write_text("VALUE = 1\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    (tmp_path / ".coveragerc").write_text("[run]\n" + setting + "\n")
+    r.probe_coverage_transport(tmp_path)
+
+
+def test_coverage_report_probe_preserves_active_configured_outputs(tmp_path):
+    package = tmp_path / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "owned.py").write_text("VALUE = 1\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    data, debug, xml = (tmp_path / name for name in ("active.data", "active.log", "active.xml"))
+    for path in (data, debug, xml):
+        path.write_bytes(b"retained prior bytes")
+    (tmp_path / ".coveragerc").write_text(
+        f"[run]\ndata_file = {data}\ndebug_file = {debug}\ndebug = dataio\n[xml]\noutput = {xml}\n"
+    )
+    r.probe_coverage_transport(tmp_path)
+    assert all(path.read_bytes() == b"retained prior bytes" for path in (data, debug, xml))
+
+
+@pytest.mark.parametrize("name", [".coveragerc.toml", ".pytest.toml"])
+def test_alternative_configuration_files_are_bounded_before_reading(tmp_path, name):
+    config = tmp_path / name
+    config.write_bytes(b"#" * (1024 * 1024 + 1))
+    with pytest.raises(r.q.QualificationError, match="configuration is redirected or oversized"):
+        r.probe_coverage_transport(tmp_path)
 
 
 def test_alternate_coverage_rcfile_is_rejected_before_reading_it(tmp_path, monkeypatch):
