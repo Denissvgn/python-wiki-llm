@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import stat
 import statistics
 import subprocess
 import sys
@@ -207,6 +208,23 @@ def logical_signature(lane: str, output: dict[str, Any], changes: list[str]) -> 
             "content_commitments": output["content_commitments"]}
 
 
+def _fresh_mutation_workspace(owner: Path) -> Path:
+    """Reset only a descendant of the worker's private temporary directory."""
+    workspace = owner / "workspace"
+    try:
+        previous = workspace.lstat()
+    except FileNotFoundError:
+        return workspace
+    if (not stat.S_ISDIR(previous.st_mode) or stat.S_ISLNK(previous.st_mode)
+            or getattr(previous, "st_file_attributes", 0) & 0x400):
+        raise ValueError("mutation workspace is not an owned regular directory")
+    # TemporaryDirectory handles read-only copied files on Windows. Moving only
+    # this owned clone lets its cleanup finish before the next fresh copy.
+    with tempfile.TemporaryDirectory(prefix="dv-retired-", dir=owner) as retired:
+        workspace.rename(Path(retired) / "workspace")
+    return workspace
+
+
 def worker(provider_root: Path, project: str, lane: str, prepared: Path, output: Path, warm: int) -> dict[str, Any]:
     load_started = time.perf_counter_ns()
     api = runtime.load_provider(provider_root)
@@ -219,7 +237,7 @@ def worker(provider_root: Path, project: str, lane: str, prepared: Path, output:
             clone_ns = 0
             workspace = prepared
             if lane in MUTATING_LANES:
-                workspace = Path(directory) / f"sample-{index}"
+                workspace = _fresh_mutation_workspace(Path(directory))
                 started = time.perf_counter_ns()
                 shutil.copytree(prepared, workspace, ignore=shutil.ignore_patterns("__pycache__"))
                 clone_ns = time.perf_counter_ns() - started
