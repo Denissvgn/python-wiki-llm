@@ -253,7 +253,8 @@ def test_capture_and_knowledge_proof_share_exact_native_python_and_doctor_path()
     integrity = yaml.safe_load((ROOT / "integrations/wiki-integrity/action.yml").read_text())
     release = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())
     job = release["jobs"]["action"]
-    groups = (capture_workflow["jobs"]["capture"]["steps"], integrity["runs"]["steps"], job["steps"])
+    groups = (capture_workflow["jobs"]["capture"]["steps"], integrity["runs"]["steps"],
+              release["jobs"]["artifact-smoke"]["steps"], job["steps"])
     setups = []
     for steps in groups:
         matches = [step for step in steps if str(step.get("uses", "")).startswith("actions/setup-python@")]
