@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.13.17", "3.13.18"]
+        python: ["3.13.16", "3.13.17"]
     defaults:
       run:
         shell: bash
@@ -40,6 +40,26 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
+      - name: Initialize bounded evidence before interpreter setup
+        shell: pwsh
+        env:
+          EVIDENCE: ${{ runner.temp }}/measurement-${{ matrix.python }}
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:EVIDENCE | Out-Null
+          "EVIDENCE=$env:EVIDENCE" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          [ordered]@{
+            schema_version = "native-measurement-bootstrap/v1"
+            purpose = "setup trace only; no runtime or test success established"
+            repository = $env:GITHUB_REPOSITORY
+            candidate_sha = $env:CANDIDATE_SHA
+            head_sha = $env:HEAD_SHA
+            base_sha = $env:BASE_SHA
+            run_id = $env:GITHUB_RUN_ID
+            attempt = $env:GITHUB_RUN_ATTEMPT
+            requested_python = $env:EXPECTED_PYTHON
+            workflow_sha = $env:GITHUB_WORKFLOW_SHA
+            workflow_ref = $env:GITHUB_WORKFLOW_REF
+          } | ConvertTo-Json | Set-Content -Path (Join-Path $env:EVIDENCE "bootstrap-identity.json") -Encoding utf8
       - name: Check out the exact PR test merge
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -54,11 +74,8 @@ jobs:
       - name: Create a fresh environment and install the exact candidate
         env:
           BOOTSTRAP_PYTHON: ${{ steps.python.outputs.python-path }}
-          EVIDENCE: ${{ runner.temp }}/measurement-${{ matrix.python }}
         run: |
           set -euo pipefail
-          mkdir -p "${EVIDENCE}"
-          echo "EVIDENCE=${EVIDENCE}" >> "${GITHUB_ENV}"
           "${BOOTSTRAP_PYTHON}" -m venv .venv
           .venv/Scripts/python.exe -m pip install --no-cache-dir ".[dev,tokens]" 2>&1 | tee "${EVIDENCE}/pip-install.log"
           .venv/Scripts/python.exe -m pip check 2>&1 | tee "${EVIDENCE}/pip-check.log"
@@ -383,6 +400,7 @@ jobs:
           archive: true
           name: native-windows-measurement-${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            ${{ runner.temp }}/measurement-${{ matrix.python }}/bootstrap-identity.json
             ${{ runner.temp }}/measurement-${{ matrix.python }}/identity.json
             ${{ runner.temp }}/measurement-${{ matrix.python }}/installed-origin-before.json
             ${{ runner.temp }}/measurement-${{ matrix.python }}/installed-origin-after.json
