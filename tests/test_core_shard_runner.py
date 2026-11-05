@@ -768,6 +768,94 @@ def test_real_coverage_storage_is_admitted_before_qualifying_collection():
     r.probe_coverage_transport()
 
 
+@pytest.mark.parametrize("setting,reason", [
+    ("branch = True", "branch policy"),
+    ("dynamic_context = test_function", "context policy"),
+    ("context = inherited-context", "context policy"),
+    ("plugins = unowned_plugin", "coverage plugins"),
+])
+def test_actual_candidate_coverage_configuration_is_rejected_before_collection(
+    tmp_path, monkeypatch, setting, reason,
+):
+    root = tmp_path / "candidate"
+    root.mkdir()
+    config = root / ".coveragerc"
+    original = "[run]\n" + setting + "\n"
+    config.write_text(original)
+    (root / "pytest.ini").write_text("[pytest]\n")
+    current = context()
+    events = []
+
+    def verified_source(args):
+        events.append("source-and-runtime-verified")
+        return current
+
+    def no_collection(*args, **kwargs):
+        raise AssertionError("Unsupported instrumentation reached expensive work")
+
+    monkeypatch.setattr(r, "context", verified_source)
+    monkeypatch.setattr(r, "invoke", no_collection)
+    previous = Path.cwd()
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2)
+    with pytest.raises(r.q.QualificationError, match=reason):
+        r.prepare(args)
+    assert events == ["source-and-runtime-verified"] and Path.cwd() == previous
+    assert config.read_text() == original
+    assert not (args.output / "collected.json").exists()
+    assert r.s.read(args.output / "preparation.json")["complete"] is False
+
+
+@pytest.mark.parametrize("option", [
+    "--cov-branch", "--cov-context=test", "--cov-config=/unowned/config", "--no-cov", "-p no:pytest_cov",
+])
+def test_candidate_pytest_instrumentation_overrides_are_rejected_without_execution(tmp_path, option):
+    (tmp_path / "pytest.ini").write_text("[pytest]\naddopts = " + option + "\n")
+    with pytest.raises(r.q.QualificationError, match="override frozen coverage flags"):
+        r.probe_coverage_transport(tmp_path)
+
+
+def test_coverage_admission_does_not_execute_candidate_conftest_or_plugin(tmp_path):
+    marker = tmp_path / "executed"
+    source = f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\nraise RuntimeError('must not import')\n"
+    (tmp_path / "conftest.py").write_text(source)
+    (tmp_path / "sentinel_plugin.py").write_text(source)
+    (tmp_path / "pytest.ini").write_text(
+        "[pytest]\nrequired_plugins = sentinel-plugin\naddopts = -p sentinel_plugin\n"
+    )
+    (tmp_path / ".coveragerc").write_text("[run]\nbranch = False\n")
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    r.probe_coverage_transport(tmp_path)
+    assert not marker.exists()
+    assert before == {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+
+def test_alternate_coverage_rcfile_is_rejected_before_reading_it(tmp_path, monkeypatch):
+    outside = tmp_path / "external.coveragerc"
+    outside.write_text("[run]\nbranch = False\n")
+    root = tmp_path / "candidate"
+    root.mkdir()
+    monkeypatch.setenv("COVERAGE_RCFILE", str(outside))
+    with pytest.raises(r.q.QualificationError, match="alternate COVERAGE_RCFILE"):
+        r.probe_coverage_transport(root)
+    assert outside.read_text() == "[run]\nbranch = False\n"
+
+
+def test_execute_checks_actual_coverage_policy_before_starting_worker(tmp_path, monkeypatch):
+    root = tmp_path / "candidate"
+    root.mkdir()
+    (root / ".coveragerc").write_text("[run]\ndynamic_context = test_function\n")
+    monkeypatch.setattr(r, "context", lambda args: context())
+
+    def no_worker(*args, **kwargs):
+        raise AssertionError("Unsupported instrumentation started worker")
+
+    monkeypatch.setattr(r, "invoke", no_worker)
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2, purpose="qualification", index=0)
+    with pytest.raises(r.q.QualificationError, match="context policy"):
+        r.execute(args)
+    assert r.s.read(args.output / "execution.json")["complete"] is False
+
+
 def test_pure_coverage_reader_rejects_oversized_bitset_before_expansion(tmp_path):
     import sqlite3
     from release import core_coverage

@@ -35,6 +35,10 @@ HARNESS_FILES = (
     "core-shard-timings.json",
     "core_coverage.py",
 )
+ISOLATED_ENVIRONMENT_KEYS = (
+    "PYTHONPATH", "PYTHONHOME", "PYTEST_ADDOPTS", "PYTEST_PLUGINS",
+    "COVERAGE_PROCESS_START", "LLM_WIKI_CACHE_DIR",
+)
 
 
 def freeze(args) -> int:
@@ -255,16 +259,8 @@ def child_environment(
     directory: Path, temporary: Path, archive: Path
 ) -> dict[str, str]:
     result = os.environ.copy()
-    for name in (
-        "PYTHONPATH",
-        "PYTHONHOME",
-        "PYTEST_ADDOPTS",
-        "PYTEST_PLUGINS",
-        "COVERAGE_PROCESS_START",
-        # This product option overrides repository/worktree cache precedence.
-        # Isolation belongs to the job and temporary roots, not application flags.
-        "LLM_WIKI_CACHE_DIR",
-    ):
+    # Isolation belongs to the job and temporary roots, not application flags.
+    for name in ISOLATED_ENVIRONMENT_KEYS:
         result.pop(name, None)
     # The OS temporary root is retained so path-redaction assertions retain
     # their native meaning. Each worker receives its own private subdirectory.
@@ -573,9 +569,69 @@ def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
 
 
 
-def probe_coverage_transport() -> None:
-    """Reject a new coverage storage format during admission, before full suites."""
-    from coverage import CoverageData
+def _coverage_pytest_configuration(root: Path) -> dict:
+    """Read effective pytest addopts without applying them or importing project code."""
+    script = """import json,pytest
+config=pytest.Config.fromdictargs({}, ['tests', '--noconftest', '-o', 'required_plugins='])
+print(json.dumps({'addopts':config.getini('addopts'),'ini_path':str(config.inipath) if config.inipath else None}))
+"""
+    env = os.environ.copy()
+    for name in ISOLATED_ENVIRONMENT_KEYS:
+        env.pop(name, None)
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    with tempfile.TemporaryFile() as log:
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", script], cwd=root, env=env,
+            stdin=subprocess.DEVNULL, stdout=log, stderr=log, timeout=30, check=False,
+        )
+        log.seek(0)
+        raw = log.read(1024 * 1024 + 1)
+    s.require(result.returncode == 0 and len(raw) <= 1024 * 1024,
+              "candidate pytest configuration could not be inspected safely")
+    recorded = json.loads(raw)
+    s.require(isinstance(recorded, dict) and set(recorded) == {"addopts", "ini_path"}
+              and isinstance(recorded["addopts"], list)
+              and all(isinstance(option, str) for option in recorded["addopts"]),
+              "invalid candidate pytest coverage configuration")
+    ini = recorded["ini_path"]
+    s.require(ini is None or Path(ini).resolve().is_relative_to(root),
+              "pytest configuration is outside frozen candidate source")
+    s.require(not any(option.startswith(("--cov", "--no-cov"))
+                      or option in {"no:cov", "no:pytest_cov", "-pno:cov", "-pno:pytest_cov"}
+                      for option in recorded["addopts"]),
+              "candidate pytest addopts override frozen coverage flags")
+    return recorded
+
+
+def probe_coverage_transport(root: Path | None = None) -> None:
+    """Admit the actual line-only instrumentation policy before collection or execution."""
+    from coverage import Coverage, CoverageData
+
+    root = (root or Path.cwd()).resolve()
+    s.require(not os.environ.get("COVERAGE_RCFILE"),
+              "alternate COVERAGE_RCFILE is outside the frozen coverage profile")
+    for name in (".coveragerc", "setup.cfg", "tox.ini", "pyproject.toml", "pytest.ini", ".pytest.ini", "pytest.toml"):
+        path = root / name
+        if path.exists() or path.is_symlink():
+            s.require(not path.is_symlink() and path.is_file()
+                      and path.stat().st_size <= 1024 * 1024,
+                      "candidate coverage configuration is redirected or oversized")
+    previous = Path.cwd()
+    try:
+        os.chdir(root)
+        # These are the source and branch options passed by pytest-cov for the
+        # frozen worker flags. None retains the active candidate branch setting.
+        analyzer = Coverage(source=["llm_wiki_cli"], branch=None)
+        s.require(analyzer.get_option("run:branch") is False,
+                  "candidate coverage branch policy differs")
+        s.require(analyzer.get_option("run:dynamic_context") in {None, ""}
+                  and analyzer.get_option("run:context") in {None, ""},
+                  "candidate coverage context policy differs")
+        s.require(not analyzer.get_option("run:plugins"),
+                  "candidate coverage plugins are outside the frozen coverage profile")
+    finally:
+        os.chdir(previous)
+    _coverage_pytest_configuration(root)
 
     spec = importlib.util.spec_from_file_location("_coverage_transport", Path(__file__).with_name("core_coverage.py"))
     assert spec is not None and spec.loader is not None
@@ -615,7 +671,7 @@ def prepare(args) -> int:
         current = context(args)
         s.validate_purpose("qualification", current, args.shards)
         if current["environment"]["profile"]["coverage"]:
-            probe_coverage_transport()
+            probe_coverage_transport(args.root)
         record["context"] = current
         with tempfile.TemporaryDirectory(prefix="core-plan-") as temporary:
             env = child_environment(
@@ -681,6 +737,8 @@ def execute(args) -> int:
     try:
         current = context(args)
         s.validate_purpose(purpose, current, args.shards)
+        if current["environment"]["profile"]["coverage"]:
+            probe_coverage_transport(args.root)
         if purpose == "qualification":
             s.require(
                 args.plan is not None,
