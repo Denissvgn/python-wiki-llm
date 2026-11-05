@@ -7,6 +7,7 @@ executing a candidate or a third-party coverage reader.
 
 from __future__ import annotations
 
+from contextlib import closing
 import hashlib
 from pathlib import Path, PurePosixPath
 import sqlite3
@@ -42,7 +43,7 @@ def raw_lines(path: Path, roots: list[str], sources: dict) -> dict[str, list[int
     require(all(root.is_absolute() and ".." not in root.parts for root in prefixes),
             "invalid coverage source prefix")
     result: dict[str, set[int]] = {}
-    with sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True) as db:
+    with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)) as db:
         db.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, 64 * 1024 * 1024)
         require(not db.execute("SELECT 1 FROM sqlite_master WHERE type IN ('view', 'trigger') LIMIT 1").fetchall(),
                 "coverage database contains executable schema objects")

@@ -1,5 +1,6 @@
 """Native-boundary isolation, actual workers, and coverage merge controls."""
 
+from contextlib import closing
 from pathlib import Path
 import argparse
 import subprocess
@@ -772,7 +773,7 @@ def test_pure_coverage_reader_rejects_oversized_bitset_before_expansion(tmp_path
     from release import core_coverage
     package, directory = coverage_fixture(tmp_path, [1])
     path = directory / "coverage.data"
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection, connection:
         connection.execute("UPDATE line_bits SET numbits = ?", (b"\xff" * 1024,))
     with pytest.raises(ValueError, match="bitset exceeds frozen source"):
         core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package))
@@ -848,3 +849,44 @@ def test_final_native_context_revalidation_refuses_environment_drift_before_rece
         assert not output.exists()
     else:
         assert r.native_context(args) == 0 and r.s.read(output) == before
+
+
+@pytest.mark.parametrize("failure", [None, "schema", "query"])
+def test_raw_coverage_connection_closes_on_success_and_every_failure(tmp_path, monkeypatch, failure):
+    import sqlite3
+    from release import core_coverage
+    package, directory = coverage_fixture(tmp_path, [1, 2])
+    path = directory / "coverage.data"
+    if failure is not None:
+        with closing(sqlite3.connect(path)) as setup, setup:
+            if failure == "schema":
+                setup.execute("UPDATE meta SET value = '1' WHERE key = 'has_arcs'")
+            else:
+                setup.execute("DROP TABLE coverage_schema")
+    connections = []
+    real_connect = sqlite3.connect
+    class TrackedConnection(sqlite3.Connection):
+        close_count = 0
+        def close(self):
+            self.close_count += 1
+            super().close()
+    def tracked_connect(*args, **kwargs):
+        connection = real_connect(*args, factory=TrackedConnection, **kwargs)
+        connections.append(connection)
+        return connection
+    monkeypatch.setattr(core_coverage.sqlite3, "connect", tracked_connect)
+    try:
+        if failure is None:
+            assert core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package)) == {"owned.py": [1, 2]}
+        else:
+            with pytest.raises(ValueError if failure == "schema" else sqlite3.DatabaseError):
+                core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package))
+        assert len(connections) == 1 and connections[0].close_count == 1
+        with pytest.raises(sqlite3.ProgrammingError, match="closed database"):
+            connections[0].execute("SELECT 1")
+    finally:
+        # A failed close assertion must remain the reported failure rather than
+        # leaking this deliberate retained reference into another test's GC.
+        for connection in connections:
+            if connection.close_count == 0:
+                connection.close()
