@@ -247,6 +247,40 @@ def test_runtime_matrix_extensions_need_an_explicit_supported_contract(
     assert {row["id"] for row in result["blockers"]} == {"runtime-owner:windows-probe"}
 
 
+@pytest.mark.parametrize("condition", [False, "false", " FALSE ", "${{ false }}", "${{false}}", None, "", 0])
+def test_constant_disabled_or_invalid_required_job_is_not_runtime_ready(
+    candidate, manifest, condition
+):
+    path = candidate / ".github/workflows/windows-measurement.yml"
+    document = yaml.safe_load(path.read_text())
+    document["jobs"]["measurement"]["if"] = condition
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {"runtime-owner:windows-probe"}
+    assert "job predicate" in result["blockers"][0]["reason"]
+
+
+def test_current_normal_runtime_owner_conditions_remain_admitted():
+    result = readiness.inspect(ROOT, runtime_only=True)
+    assert result["blockers"] == []
+    assert result["status"] == "hosted-required"
+    assert {row["id"] for row in result["runtime_contract"]["consumers"]} == set(readiness.REQUIRED_CONSUMERS)
+    assert result["target_execution_verified"] is False
+
+
+def test_explicit_false_failure_policies_do_not_disable_runtime_owners(candidate, manifest):
+    path = candidate / ".github/workflows/windows-measurement.yml"
+    document = yaml.safe_load(path.read_text())
+    job = document["jobs"]["measurement"]
+    job["continue-on-error"] = job["steps"][0]["continue-on-error"] = False
+    job["if"] = "${{ github.event_name == 'pull_request' }}"
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "ready" and result["blockers"] == []
+    assert result["target_execution_verified"] is False
+
+
 def test_linux_patch_availability_does_not_establish_windows_availability(
     candidate, manifest
 ):

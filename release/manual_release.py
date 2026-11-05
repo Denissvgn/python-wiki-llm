@@ -437,6 +437,17 @@ class GitHubBackend:
                         "https://github.com/" + self.repository + ".git",
                         "ssh://git@github.com/" + self.repository + ".git"},
                 "Origin push destination does not match the selected GitHub repository")
+        # get-url has already expanded origin's URL aliases. Passing its result
+        # as an explicit push argument must not apply a second rewrite. Reject
+        # matching prefixes instead of attempting to duplicate Git's resolver.
+        rules = git(self.root, "config", "--null", "--get-regexp",
+                    r"^url\..*\.(insteadof|pushinsteadof)$", check=False)
+        require(rules.returncode in {0, 1}, "Cannot inspect tag push URL rewriting")
+        for record in rules.stdout.split("\0"):
+            if record:
+                _, separator, prefix = record.partition("\n")
+                require(bool(separator) and not url.startswith(prefix),
+                        "Captured tag push destination has a matching URL rewrite rule")
         return url
 
     def prepare(self, state: dict, action: str) -> dict:
@@ -481,7 +492,7 @@ class GitHubBackend:
                     and git(self.root, "rev-list", "-n", "1", "refs/tags/" + tag).stdout.strip() == state["candidate_sha"],
                     "Existing tag is not the exact annotated qualified tag")
             require(self._origin() == destination, "Origin push destination changed before submission")
-            git(self.root, "push", "origin", f"refs/tags/{tag}:refs/tags/{tag}")
+            git(self.root, "push", destination, f"refs/tags/{tag}:refs/tags/{tag}")
             return {}
         require(action == "github-release", "Unknown release action")
         manifest = self.check_bundle(state)

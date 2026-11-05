@@ -69,6 +69,11 @@ class ReadinessError(ValueError):
     """A required capability or declaration cannot be established."""
 
 
+def literal_false(value) -> bool:
+    # The bounded YAML observer preserves scalar lexemes as strings.
+    return value is False or isinstance(value, str) and value.strip().lower() == "false"
+
+
 def strict_json(raw: bytes):
     def pairs(items):
         result = {}
@@ -339,7 +344,21 @@ def runtime_contract(
             )
             if not isinstance(job, dict):
                 raise ReadinessError("Runtime owner is missing")
-            if job.get("continue-on-error", False) is not False:
+            if "if" in job:
+                condition = job["if"]
+                token = condition.strip() if isinstance(condition, str) else None
+                if token is not None and token.startswith("${{") and token.endswith("}}"):
+                    token = token[3:-2].strip()
+                if condition is False or not isinstance(condition, (str, bool)) or (
+                    isinstance(condition, str)
+                    and (
+                        not token
+                        or token.lower() in {"false", "null", "0"}
+                        or token in {"''", '""'}
+                    )
+                ):
+                    raise ReadinessError("Required runtime owner has a disabled or unsupported job predicate")
+            if not literal_false(job.get("continue-on-error", False)):
                 raise ReadinessError("Required runtime owner cannot soft-fail")
             expected_profile = profiles[consumer["profile"]]
             if consumer["job"] is not None:
@@ -365,7 +384,7 @@ def runtime_contract(
                 raise ReadinessError(
                     "Runtime owner needs one unconditional interpreter setup"
                 )
-            if setups[0].get("continue-on-error", False) is not False:
+            if not literal_false(setups[0].get("continue-on-error", False)):
                 raise ReadinessError("Required interpreter setup cannot soft-fail")
             architecture = setups[0].get("with", {}).get("architecture")
             if architecture is not None and architecture != expected_profile["arch"]:

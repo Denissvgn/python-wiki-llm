@@ -770,6 +770,7 @@ def test_real_coverage_storage_is_admitted_before_qualifying_collection():
 
 @pytest.mark.parametrize("setting,reason", [
     ("branch = True", "branch policy"),
+    ("relative_files = True", "relative path policy"),
     ("dynamic_context = test_function", "context policy"),
     ("context = inherited-context", "context policy"),
     ("plugins = unowned_plugin", "coverage plugins"),

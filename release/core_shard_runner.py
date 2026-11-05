@@ -624,6 +624,8 @@ def probe_coverage_transport(root: Path | None = None) -> None:
         analyzer = Coverage(source=["llm_wiki_cli"], branch=None)
         s.require(analyzer.get_option("run:branch") is False,
                   "candidate coverage branch policy differs")
+        s.require(analyzer.get_option("run:relative_files") is False,
+                  "candidate coverage relative path policy differs")
         s.require(analyzer.get_option("run:dynamic_context") in {None, ""}
                   and analyzer.get_option("run:context") in {None, ""},
                   "candidate coverage context policy differs")

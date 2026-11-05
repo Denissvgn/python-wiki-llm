@@ -337,6 +337,38 @@ def test_single_selected_push_destination_is_validated_without_changing_configur
     assert git(project, "remote", "get-url", "--push", "--all", "origin") == url
 
 
+def test_single_https_to_ssh_expansion_remains_supported_without_config_changes(project):
+    selected = "git@github.com:example/agent-wiki.git"
+    git(project, "remote", "add", "origin", "https://github.com/example/agent-wiki.git")
+    git(project, "config", "url.git@github.com:.insteadOf", "https://github.com/")
+    before = git(project, "config", "--local", "--list")
+    assert backend(project, None)._origin() == selected
+    assert git(project, "config", "--local", "--list") == before
+
+
+@pytest.mark.parametrize("variable", ["insteadOf", "pushInsteadOf"])
+def test_captured_explicit_push_cannot_apply_another_url_rewrite(project, monkeypatch, variable):
+    selected = "git@github.com:example/agent-wiki.git"
+    git(project, "remote", "add", "origin", "review-start")
+    git(project, "config", "url." + selected + "." + variable, "review-start")
+    git(project, "config", "url.git@github.com:unrelated/repository.git." + variable, selected)
+    assert git(project, "remote", "get-url", "--push", "--all", "origin") == selected
+    before = git(project, "config", "--local", "--list")
+    real_git = manual.git
+    writes = []
+
+    def observed(root, *args, **kwargs):
+        if args[0] in {"tag", "push"}:
+            writes.append(args)
+            raise AssertionError("Rewriting must be refused before tag mutation")
+        return real_git(root, *args, **kwargs)
+
+    monkeypatch.setattr(manual, "git", observed)
+    with pytest.raises(manual.SessionError, match="matching URL rewrite"):
+        backend(project, None).perform({"version": "9.0.0", "candidate_sha": "a" * 40}, {"action": "tag"})
+    assert writes == [] and git(project, "config", "--local", "--list") == before
+
+
 @pytest.mark.parametrize("second", ["git@github.com:unrelated/repository.git", "git@github.com:example/agent-wiki.git"])
 def test_multiple_push_urls_are_rejected_before_tag_mutation(project, monkeypatch, second):
     selected = "git@github.com:example/agent-wiki.git"
@@ -352,6 +384,44 @@ def test_multiple_push_urls_are_rejected_before_tag_mutation(project, monkeypatc
     with pytest.raises(manual.SessionError, match="exactly one"):
         api.perform({"version": "9.0.0", "candidate_sha": "a" * 40}, {"action": "tag"})
     assert calls == [("remote", "get-url", "--push", "--all", "origin")]
+
+
+def test_tag_push_cannot_follow_origin_changes_after_its_final_validation(project, monkeypatch):
+    selected = "git@github.com:example/agent-wiki.git"
+    aliases = {"origin": selected}
+    reads = 0
+    pushes = []
+    source_sha = "a" * 40
+
+    def configured(root, *args, **kwargs):
+        nonlocal reads
+        if args == ("remote", "get-url", "--push", "--all", "origin"):
+            reads += 1
+            value = aliases["origin"]
+            if reads == 2:
+                # A concurrent local process changes the alias immediately
+                # after its final validated value has been returned.
+                aliases["origin"] = "git@github.com:unrelated/repository.git"
+            return subprocess.CompletedProcess(args, 0, value + "\n")
+        if args[:3] == ("config", "--null", "--get-regexp"):
+            return subprocess.CompletedProcess(args, 1, "")
+        if args[:2] == ("show-ref", "--verify"):
+            return subprocess.CompletedProcess(args, 0, "")
+        if args[:2] == ("cat-file", "-t"):
+            return subprocess.CompletedProcess(args, 0, "tag\n")
+        if args[:2] == ("rev-list", "-n"):
+            return subprocess.CompletedProcess(args, 0, source_sha + "\n")
+        assert args[0] == "push"
+        pushes.append(args)
+        actual_destination = aliases.get(args[1], args[1])
+        assert actual_destination == selected, "The write followed a changed alias"
+        return subprocess.CompletedProcess(args, 0, "")
+
+    monkeypatch.setattr(manual, "git", configured)
+    api = backend(project, None)
+    api.perform({"version": "9.0.0", "candidate_sha": source_sha}, {"action": "tag"})
+    assert reads == 2 and aliases["origin"] != selected
+    assert pushes == [("push", selected, "refs/tags/v9.0.0:refs/tags/v9.0.0")]
 
 
 def test_reader_must_execute_from_candidate_checkout(project):
