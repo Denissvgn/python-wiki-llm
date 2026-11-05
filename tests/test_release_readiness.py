@@ -166,6 +166,87 @@ def test_runtime_contract_cannot_omit_an_owner_or_reassign_its_cohort(
     assert inspect_runtime(candidate, manifest)["status"] == "blocked"
 
 
+@pytest.mark.parametrize("target", ["existing-owner", "otherwise-unused-job"])
+def test_runtime_owner_cannot_be_retargeted_to_hide_actual_consumer_drift(
+    candidate, manifest, target
+):
+    policy = candidate / readiness.CONTRACT
+    contract = json.loads(policy.read_text())
+    capture = next(c for c in contract["consumers"] if c["id"] == "capture")
+    original_path = candidate / capture["path"]
+    original = yaml.safe_load(original_path.read_text())
+    original["jobs"]["capture"]["steps"][0]["with"]["python-version"] = "3.13"
+    original_path.write_text(yaml.safe_dump(original))
+    capture.update(path=readiness.QUALIFICATION_WORKFLOW, job="readiness")
+    if target == "otherwise-unused-job":
+        path = candidate / readiness.QUALIFICATION_WORKFLOW
+        document = yaml.safe_load(path.read_text())
+        document["jobs"]["unused-exact-runtime"] = deepcopy(document["jobs"]["readiness"])
+        path.write_text(yaml.safe_dump(document))
+        capture["job"] = "unused-exact-runtime"
+    policy.write_text(json.dumps(contract))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert any("canonical owner: capture" in row["reason"] for row in result["blockers"])
+    assert result["target_execution_verified"] is False
+
+
+@pytest.mark.parametrize("platform_version", ["22.04", None])
+def test_available_download_for_other_os_release_cannot_certify_actual_runner(
+    candidate, manifest, platform_version
+):
+    policy = candidate / readiness.CONTRACT
+    contract = json.loads(policy.read_text())
+    contract["profiles"]["knowledge-linux"]["platform_version"] = platform_version
+    policy.write_text(json.dumps(contract))
+    rows = json.loads(manifest.read_text())
+    next(row for row in rows if row["version"] == "3.13.18")["files"][0]["platform_version"] = platform_version
+    manifest.write_text(json.dumps(rows))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {
+        "runtime-owner:" + name for name in ("capture", "rd10", "artifact-smoke", "readiness")
+    }
+    assert all("OS/release/architecture" in row["reason"] for row in result["blockers"])
+
+
+@pytest.mark.parametrize(
+    "shape", ["setup-if-false", "setup-soft-fail", "job-soft-fail", "matrix-exclude"]
+)
+def test_mandatory_runtime_owner_execution_cannot_disable_declared_coverage(
+    candidate, manifest, shape
+):
+    path = candidate / ".github/workflows/windows-measurement.yml"
+    document = yaml.safe_load(path.read_text())
+    job = document["jobs"]["measurement"]
+    if shape == "setup-if-false":
+        job["steps"][0]["if"] = False
+    elif shape == "setup-soft-fail":
+        job["steps"][0]["continue-on-error"] = True
+    elif shape == "job-soft-fail":
+        job["continue-on-error"] = True
+    else:
+        job["strategy"]["matrix"]["exclude"] = [{"python": "3.13.17"}]
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {"runtime-owner:windows-probe"}
+    assert result["target_execution_verified"] is False
+
+
+@pytest.mark.parametrize("extension", [{"include": [{"python": "3.13.18"}]}, {"architecture": ["x64", "arm64"]}])
+def test_runtime_matrix_extensions_need_an_explicit_supported_contract(
+    candidate, manifest, extension
+):
+    path = candidate / ".github/workflows/windows-measurement.yml"
+    document = yaml.safe_load(path.read_text())
+    document["jobs"]["measurement"]["strategy"]["matrix"].update(extension)
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {"runtime-owner:windows-probe"}
+
+
 def test_linux_patch_availability_does_not_establish_windows_availability(
     candidate, manifest
 ):

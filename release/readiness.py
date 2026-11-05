@@ -44,16 +44,24 @@ STATIC_MODULES = {
     "bandit",
     "pip_audit",
 }
+QUALIFICATION_WORKFLOW = ".github/workflows/release-qualification.yml"
+# Role locations are independent coverage expectations. Interpreter versions
+# live only in the runtime policy; that policy cannot relabel a different job
+# as an existing owner and silently leave the real consumer unchecked.
 REQUIRED_CONSUMERS = {
-    "capture": "knowledge-linux",
-    "integrity": "knowledge-linux",
-    "rd10": "knowledge-linux",
-    "artifact-smoke": "knowledge-linux",
-    "readiness": "knowledge-linux",
-    "windows-plan": "windows-core",
-    "windows-canary": "windows-core",
-    "windows-native": "windows-core",
-    "windows-probe": "windows-probe",
+    "capture": ("knowledge-linux", ".github/workflows/reviewed-wiki-capture.yml", "capture", "setup-python"),
+    "integrity": ("knowledge-linux", "integrations/wiki-integrity/action.yml", None, "setup-python"),
+    "rd10": ("knowledge-linux", QUALIFICATION_WORKFLOW, "action", "setup-python"),
+    "artifact-smoke": ("knowledge-linux", QUALIFICATION_WORKFLOW, "artifact-smoke", "setup-python"),
+    "readiness": ("knowledge-linux", QUALIFICATION_WORKFLOW, "readiness", "setup-python"),
+    "windows-plan": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows-plan", "setup-python"),
+    "windows-canary": ("windows-core", QUALIFICATION_WORKFLOW, "windows-canary", "setup-python"),
+    "windows-native": ("windows-core", QUALIFICATION_WORKFLOW, "windows-native", "setup-python"),
+    "windows-probe": ("windows-probe", ".github/workflows/windows-measurement.yml", "measurement", "matrix-python"),
+}
+RUNNER_PROFILES = {
+    "ubuntu-24.04": ("linux", "x64", "24.04"),
+    "windows-2025": ("win32", "x64", None),
 }
 
 
@@ -293,13 +301,18 @@ def runtime_contract(
         or set(ids) != set(REQUIRED_CONSUMERS)
     ):
         raise ReadinessError("Runtime contract omits or duplicates a required consumer")
-    documents = {}
+    documents, bindings = {}, set()
     for consumer in consumers:
         if (
             set(consumer) != {"id", "profile", "path", "job", "selection"}
-            or consumer["profile"] != REQUIRED_CONSUMERS[consumer["id"]]
+            or tuple(consumer[field] for field in ("profile", "path", "job", "selection"))
+            != REQUIRED_CONSUMERS[consumer["id"]]
         ):
-            raise ReadinessError("Invalid runtime consumer")
+            raise ReadinessError("Runtime consumer binding differs from its canonical owner: " + str(consumer.get("id")))
+        binding = (consumer["path"], consumer["job"], consumer["selection"])
+        if binding in bindings:
+            raise ReadinessError("Runtime consumers duplicate a physical owner")
+        bindings.add(binding)
         name = consumer["path"]
         path = PurePosixPath(name)
         if (
@@ -326,16 +339,21 @@ def runtime_contract(
             )
             if not isinstance(job, dict):
                 raise ReadinessError("Runtime owner is missing")
+            if job.get("continue-on-error", False) is not False:
+                raise ReadinessError("Required runtime owner cannot soft-fail")
             expected_profile = profiles[consumer["profile"]]
             if consumer["job"] is not None:
                 declared_runner = job.get("runs-on")
-                runner = {
-                    "ubuntu-24.04": ("linux", "x64"),
-                    "windows-2025": ("win32", "x64"),
-                }.get(declared_runner if isinstance(declared_runner, str) else "")
-                if runner != (expected_profile["platform"], expected_profile["arch"]):
+                runner = RUNNER_PROFILES.get(
+                    declared_runner if isinstance(declared_runner, str) else ""
+                )
+                if runner != (
+                    expected_profile["platform"],
+                    expected_profile["arch"],
+                    expected_profile["platform_version"],
+                ):
                     raise ReadinessError(
-                        "Runtime owner runner differs from its OS/architecture profile"
+                        "Runtime owner runner differs from its OS/release/architecture profile"
                     )
             setups = [
                 s
@@ -343,17 +361,24 @@ def runtime_contract(
                 if isinstance(s, dict)
                 and str(s.get("uses", "")).startswith("actions/setup-python@")
             ]
-            if len(setups) != 1 or setups[0].get("if"):
+            if len(setups) != 1 or "if" in setups[0]:
                 raise ReadinessError(
                     "Runtime owner needs one unconditional interpreter setup"
                 )
+            if setups[0].get("continue-on-error", False) is not False:
+                raise ReadinessError("Required interpreter setup cannot soft-fail")
             architecture = setups[0].get("with", {}).get("architecture")
             if architecture is not None and architecture != expected_profile["arch"]:
                 raise ReadinessError(
                     "Interpreter architecture differs from runtime profile"
                 )
             if consumer["selection"] == "matrix-python":
-                actual = job.get("strategy", {}).get("matrix", {}).get("python")
+                matrix = job.get("strategy", {}).get("matrix")
+                if not isinstance(matrix, dict) or set(matrix) != {"python"}:
+                    raise ReadinessError(
+                        "Runtime Python matrix must contain only its declared axis without include/exclude"
+                    )
+                actual = matrix["python"]
                 if (
                     setups[0].get("with", {}).get("python-version")
                     != "${{ matrix.python }}"
