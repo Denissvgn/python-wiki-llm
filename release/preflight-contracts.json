@@ -71,7 +71,10 @@
       "tests/test_release_qualification.py",
       "tests/test_core_shards.py",
       "tests/test_core_shard_workflow.py",
-      "tests/test_core_shard_runner.py"
+      "tests/test_core_shard_runner.py",
+      "tests/test_release_readiness.py",
+      "tests/test_measurement_canary.py",
+      "tests/test_manual_release.py"
     ],
     "sdk": [
       "tests/test_mcp_sdk.py",
@@ -316,7 +319,7 @@
       ],
       "condition": "",
       "cost": "moderate",
-      "declaration_sha256": "cf2985ad07c7712d8be995f5e0cfb3f359a0f71e6cb1da5a3ee231d0b054d98e",
+      "declaration_sha256": "9cba0ebaefb5fd1e6c608bee3b14d4960defb622f177ea1805894af7ba987765",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -392,20 +395,108 @@
     {
       "applicability": "normal",
       "capabilities": [
+        "python",
+        "hosted-actions",
+        "dependency-registry",
+        "native-linux"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "cheap",
+      "declaration_sha256": "1facb3fe37231466dd01a58519aa10890959483fe5c3e2b2488c55328c2dd007",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-release-readiness"
+      ],
+      "gates": [
+        "RD-00"
+      ],
+      "id": "readiness",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/readiness.py",
+      "timeout_minutes": 15
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
         "git",
-        "native-linux",
+        "hosted-actions",
+        "native-windows"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "18309c1eaff4d5eaff16f4b260584c601129864fa36436cac03d2ce4120405ca",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "evidence-windows-canary"
+      ],
+      "gates": [
+        "RD-00"
+      ],
+      "id": "windows-canary",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "readiness"
+      ],
+      "normal_required": true,
+      "owner": "release/measurement_canary.py",
+      "timeout_minutes": 15
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "hosted-actions"
+      ],
+      "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "cheap",
+      "declaration_sha256": "23f4ed4c1b068cb760cd76fb31e41a76f44f07b265c8347962f5011215dcb1f6",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "successful admission job result"
+      ],
+      "gates": [
+        "RD-00"
+      ],
+      "id": "admission",
+      "matrix": {},
+      "needs": [
+        "readiness",
+        "windows-canary",
+        "smoke-parity"
+      ],
+      "normal_required": true,
+      "owner": "release/readiness.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "git",
         "native-macos",
         "node-typescript",
         "python"
       ],
-      "condition": "${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "cb231ef982cf921e7266d240f9b3c15157245ddf0a44687135d7d82ec0c10ad6",
+      "declaration_sha256": "a44c3b2a8653657d60b1910368a8f51eaaa1b76de6d8cbdd21edb5a2a90ae3e8",
       "environments": [
-        "ubuntu-24.04",
         "macos-15"
       ],
       "expected_evidence": [
+        "native-scoped-evidence-${{ matrix.lane }}-${{ github.run_attempt }}",
+        "native-linux-coverage-boundary-${{ github.run_attempt }}",
         "evidence-${{ matrix.lane }}"
       ],
       "gates": [
@@ -416,12 +507,6 @@
       "matrix": {
         "include": [
           {
-            "coverage": true,
-            "lane": "core-ubuntu-3.11",
-            "os": "ubuntu-24.04",
-            "python": "3.11"
-          },
-          {
             "coverage": false,
             "lane": "core-macos-3.14",
             "os": "macos-15",
@@ -430,7 +515,8 @@
         ]
       },
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -441,24 +527,133 @@
       "capabilities": [
         "python",
         "git",
-        "native-windows"
+        "hosted-actions",
+        "native-linux"
       ],
-      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'platform-sharded' && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "b19608c0fa5ee485c5f26501dcb6fdebffedcf555f17444ab3ab5357a7d6b05b",
+      "declaration_sha256": "a5436e5dbc3488c64fd23d44b54a6625c0810bd8fc91ef6c27e16ffc7910d191",
       "environments": [
-        "windows-2025"
+        "ubuntu-24.04"
       ],
       "expected_evidence": [
-        "evidence-core-windows-plan"
+        "evidence-core-ubuntu-plan"
       ],
       "gates": [
         "RD-01"
       ],
-      "id": "core-windows-plan",
+      "id": "core-ubuntu-plan",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions",
+        "native-linux"
+      ],
+      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'platform-sharded' && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "c34a249e7b7afde840d1e8ce006115c28b1b3f48f6c073e4fe36ac9eb1cd9cf2",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-core-ubuntu-shard-${{ matrix.shard }}"
+      ],
+      "gates": [
+        "RD-01"
+      ],
+      "id": "core-ubuntu-shards",
+      "matrix": {
+        "shard": [
+          0,
+          1
+        ]
+      },
+      "needs": [
+        "freeze",
+        "core-ubuntu-plan"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions",
+        "native-linux",
+        "node-typescript"
+      ],
+      "condition": "${{ !cancelled() && (!cancelled() && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' && (needs.freeze.outputs.core-layout != 'platform-sharded' || (needs.core-ubuntu-plan.result == 'success' && needs.core-ubuntu-shards.result == 'success')) ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
+      "cost": "heavy",
+      "declaration_sha256": "2559fdee619a19e9a33b3907533f9fcd83b5e13cb2df91eadf4c1d31ea879f09",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "native-scoped-evidence-core-ubuntu-3.11-${{ github.run_attempt }}",
+        "native-linux-coverage-boundary-${{ github.run_attempt }}",
+        "evidence-core-ubuntu-3.11"
+      ],
+      "gates": [
+        "RD-01",
+        "RD-02"
+      ],
+      "id": "core-ubuntu",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "core-ubuntu-plan",
+        "core-ubuntu-shards",
+        "admission"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions",
+        "native-windows",
+        "node-typescript"
+      ],
+      "condition": "${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow && needs.freeze.outputs.core-layout == 'platform-sharded' && needs.core-windows-plan.result == 'success' }}",
+      "cost": "heavy",
+      "declaration_sha256": "6bac952849ffd9ba5d2c402a0dc6b0dc1e56d64141f67de9286afa09769141a3",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "native-scoped-evidence-core-windows-3.13-${{ github.run_attempt }}",
+        "native-windows-stdio-${{ github.run_attempt }}",
+        "native-windows-corrections-${{ github.run_attempt }}",
+        "native-windows-provider-${{ github.run_attempt }}",
+        "evidence-windows-native"
+      ],
+      "gates": [
+        "RD-01",
+        "RD-02"
+      ],
+      "id": "windows-native",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "core-windows-plan"
       ],
       "normal_required": true,
       "owner": "release/core_shard_runner.py",
@@ -471,9 +666,38 @@
         "git",
         "native-windows"
       ],
-      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.bandit-parity-verification && needs.freeze.outputs.core-layout != 'unsharded' && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
+      "cost": "moderate",
+      "declaration_sha256": "38ea018629e768b34fd8ea6dbf45b84c3b7533b421aaff10bf0949347f1d86f5",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "evidence-core-windows-plan"
+      ],
+      "gates": [
+        "RD-01"
+      ],
+      "id": "core-windows-plan",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "admission"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "native-windows"
+      ],
+      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout != 'unsharded' && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "9e673042dd7f427f66f03d528300e1cd7f01865903ff9ca095e9ec4c99aa3d2b",
+      "declaration_sha256": "1702a6a52489efffdd553c1e38f80cd5c523bc2b6e5126479941a2d5af25fc72",
       "environments": [
         "windows-2025"
       ],
@@ -506,13 +730,17 @@
         "node-typescript",
         "python"
       ],
-      "condition": "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'\n    && (needs.freeze.outputs.core-layout == 'unsharded'\n        || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && (needs.freeze.outputs.core-layout == 'unsharded' || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && (needs.freeze.outputs.core-layout != 'platform-sharded' || needs.windows-native.result == 'success') && !inputs.knowledge-policy-shadow && (inputs.discovery-mode || inputs.ubuntu-suite-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "7bfd5aca006fc2a986b64b4c2482bef6c2de8a9f8b34e2468a69a5ef7340ef78",
+      "declaration_sha256": "bb710f901d2eb0ccfc6a7c33bb06708893542767b469b2b715bff493b8fcd936",
       "environments": [
         "windows-2025"
       ],
       "expected_evidence": [
+        "native-scoped-evidence-core-windows-3.13-${{ github.run_attempt }}",
+        "native-windows-stdio-${{ github.run_attempt }}",
+        "native-windows-corrections-${{ github.run_attempt }}",
+        "native-windows-provider-${{ github.run_attempt }}",
         "evidence-rd-04-windows-2025",
         "evidence-rd-05-windows-2025",
         "evidence-core-windows-3.13"
@@ -528,7 +756,9 @@
       "needs": [
         "freeze",
         "core-windows-plan",
-        "core-windows-shards"
+        "core-windows-shards",
+        "windows-native",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -541,9 +771,9 @@
         "git",
         "hosted-actions"
       ],
-      "condition": "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&\n    (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-ubuntu.result == 'failure' || needs.core-ubuntu.result == 'skipped' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "38c68b7736ead1b1a88317606d61cbcf5cfc4edf035da5ebffc4861e79c03650",
+      "declaration_sha256": "6369b09bb0777ec3aacd155bab2af98685bcac211509a93767eef9536cefd515",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -556,6 +786,7 @@
       "needs": [
         "freeze",
         "core",
+        "core-ubuntu",
         "core-windows"
       ],
       "normal_required": false,
@@ -569,9 +800,9 @@
         "git",
         "hosted-actions"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "cd9e04d37181351b945859c8efb2a9be78898757e7673e02c8234797e0e45507",
+      "declaration_sha256": "82575c6a3abc4a852b1e94996bbf06e2106f473ecc0b61f83c1f2ebd633442e2",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -589,7 +820,8 @@
       "id": "ubuntu-suites",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/ubuntu_suites.py",
@@ -631,9 +863,9 @@
         "python",
         "native-macos"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "48ff774447b917aa9a583a249add71fa8c0f587890933a1f2202fa3021bebd26",
+      "declaration_sha256": "9adb3fa7442ace44c1fa9b563eccfd481764b754fb51ac082951b24f71aaf7d2",
       "environments": [
         "macos-15"
       ],
@@ -650,7 +882,8 @@
         ]
       },
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -663,9 +896,9 @@
         "mcp-sdk",
         "loopback-sockets"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "d7572e095ea02ebdf41e7b5131ca95ec323c8e7a97b92e99533860f3e37cba5e",
+      "declaration_sha256": "005191ee04fdec68822a17ebec46d78f8dea5aa3b0abcc6e18611873d6310a8a",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -683,7 +916,8 @@
         ]
       },
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -699,9 +933,9 @@
         "haskell",
         "native-linux-x86_64"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "7cff28a4d54b076371f7eb7cc7b981f8cf7588dea18fd0e41203d1abc3c7cbe7",
+      "declaration_sha256": "5163019752d71cdc5a3827d330613587d27941e2cc91b5a195ed61f01c59b50c",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -714,7 +948,8 @@
       "id": "toolchains",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -727,9 +962,9 @@
         "oci-linux-amd64",
         "native-linux-x86_64"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "cfd891d1cbd514c6e57c87b9d9701a20ea7ae24fab426cd61ba8ae179a4c4d63",
+      "declaration_sha256": "7406d5aeaaf0be9a72f9b6463705e90ea1ec11fcb784ca6c1e525a433c8402ed",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -742,7 +977,8 @@
       "id": "oci",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
@@ -755,9 +991,9 @@
         "actionlint",
         "dependency-registry"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "b3d6650462c3a8396c8fa19d4cd1a86545004ed9f9d229a15cf28e19c8ea37a3",
+      "declaration_sha256": "d84dcdc4ccfda7fab712b67cc51a440ae15c4fd835f4570918447de34608c34e",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -770,7 +1006,8 @@
       "id": "static",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/static_checks.py",
@@ -787,9 +1024,9 @@
         "haskell",
         "native-linux-x86_64"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "30b6e9f9c2f397e341718e243a3bb8f7cfbef9d7291f89037b9a61711a8245d6",
+      "declaration_sha256": "8b16d3bc68eab9e2909c486a15b0703fb68f665440f648bc28407a2968b1fc57",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -802,7 +1039,8 @@
       "id": "action",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "integrations/github-action/action.yml",
@@ -814,9 +1052,9 @@
         "authenticated-hosted-policy",
         "native-linux-runtime-basis"
       ],
-      "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}",
+      "condition": "${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "7c932bd71f9453fdfb024dac993d28dc5a394afab64cbdb3b95651953a42358f",
+      "declaration_sha256": "94a167b5ecec875a6523f88467b62ad0d3ecd9ce8512e7e83dd07ad154ee601a",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -828,7 +1066,8 @@
       "matrix": {},
       "needs": [
         "freeze",
-        "action"
+        "action",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/knowledge_maintenance.py",
@@ -976,7 +1215,7 @@
       ],
       "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "b8a3ebdf70f21ac009c4e52b7fd6081148d6578a9b6789acb60bbd529514bc83",
+      "declaration_sha256": "9054476cc6ab25df4d4d71df5be4db51278199f6f0ae4f14c4ae5d5f09386c5c",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -992,6 +1231,7 @@
         "freeze",
         "ubuntu-shadow",
         "core",
+        "core-ubuntu",
         "core-windows",
         "ubuntu-suites",
         "security-behavior",
@@ -1015,9 +1255,9 @@
         "git",
         "hosted-actions"
       ],
-      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "moderate",
-      "declaration_sha256": "fb6b468d71e4b54399f6213064d19bab592e1049a3597906a3144a60c739bddf",
+      "declaration_sha256": "85890ea21febc1f5421e2bc28c28c8527a60e4d2cdad93cd6b3c19fd340854eb",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1030,7 +1270,8 @@
       "id": "analysis-compatibility",
       "matrix": {},
       "needs": [
-        "freeze"
+        "freeze",
+        "admission"
       ],
       "normal_required": true,
       "owner": "release/analysis_pairs.py",
@@ -1042,9 +1283,9 @@
         "hosted-actions",
         "attestation-oidc"
       ],
-      "condition": "${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow\n    && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-windows.result == 'success'\n    && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'\n    && needs.mcp.result == 'success' && needs.toolchains.result == 'success'\n    && needs.oci.result == 'success' && needs.static.result == 'success'\n    && needs.action.result == 'success' && needs.reproducible.result == 'success'\n    && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'\n    && needs.analysis-compatibility.result == 'success'\n    && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')\n    && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}",
+      "condition": "${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-ubuntu.result == 'success' && needs.core-windows.result == 'success' && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success' && needs.mcp.result == 'success' && needs.toolchains.result == 'success' && needs.oci.result == 'success' && needs.static.result == 'success' && needs.action.result == 'success' && needs.reproducible.result == 'success' && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success' && needs.analysis-compatibility.result == 'success' && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success') && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "f67e13a7914825222ff33e477c1012ec03ac852935d6b945cbeb4a19fad479e2",
+      "declaration_sha256": "14a33e9ac8b1869eab31737c4ae6f0e89dd6a66d2097a320315161a43c4bdda6",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1074,6 +1315,7 @@
         "knowledge-maintenance",
         "dependency-warm",
         "core",
+        "core-ubuntu",
         "core-windows",
         "ubuntu-suites",
         "security-behavior",
@@ -1099,7 +1341,7 @@
       ],
       "condition": "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}",
       "cost": "hosted",
-      "declaration_sha256": "37fd3faae519a816b4cb0ff52456ee81513185014b47103842d73ef426f1d83b",
+      "declaration_sha256": "c33798a672d93a22d5db9dbc3fabe764ea27bcc256b9cbc4073f6b6df63aafc3",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1128,6 +1370,7 @@
         "freeze",
         "knowledge-maintenance",
         "core",
+        "core-ubuntu",
         "core-windows",
         "ubuntu-suites",
         "security-behavior",
@@ -1201,9 +1444,29 @@
       "owner": "release/knowledge_maintenance.py",
       "path": "release/core-shard-timings.json",
       "purpose": "Reviewed collection and timing provenance for native sharding"
+    },
+    {
+      "owner": "release/qualification.py",
+      "path": "release/core_coverage.py",
+      "purpose": "Standard-library raw coverage union and source inventory consumer"
+    },
+    {
+      "owner": "release/qualification.py",
+      "path": "release/runtime-policy.json",
+      "purpose": "Per-purpose OS/architecture runtime declarations and availability"
+    },
+    {
+      "owner": "release/qualification.py",
+      "path": "release/readiness.py",
+      "purpose": "Complete capability and runtime admission before costly execution"
+    },
+    {
+      "owner": "release/qualification.py",
+      "path": "release/measurement_canary.py",
+      "purpose": "Bounded native consumer with complete inventory and raw evidence"
     }
   ],
-  "preamble_sha256": "a80d6f57237fb77cdf6c4ff73b184e7ba3f74dde2cedee4385c61fcef291e970",
+  "preamble_sha256": "c108ad0d221c5fd62a16da14d4723cf27f3d1c3b3ac16e66edce4c9bf1f4b81e",
   "schema_version": "agent-wiki-preflight-contracts/v1",
   "workflow": ".github/workflows/release-qualification.yml"
 }

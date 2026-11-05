@@ -82,12 +82,9 @@ def test_plan_is_reproducible_complete_and_balanced_at_file_boundaries():
         reordered = list(NODES)
         random.Random(seed).shuffle(reordered)
         assert s.plan(reordered, context(), 2, history()) == original
-    assert original["shards"][0]["files"] == [
-        "tests/test_one.py",
-        "tests/test_three.py",
-    ]
-    assert original["shards"][1]["files"] == ["tests/test_four.py", "tests/test_two.py"]
-    assert original["fallback_ms"] == 6000
+    assert original["shards"][0]["files"] == ["tests/test_four.py"]
+    assert original["shards"][1]["files"] == ["tests/test_one.py", "tests/test_three.py", "tests/test_two.py"]
+    assert original["fallback_ms"] == 60_000
     assert sorted(
         node for shard in original["shards"] for node in shard["nodes"]
     ) == sorted(NODES)
@@ -113,7 +110,7 @@ def test_missing_or_stale_history_never_drops_current_nodes(kind):
     value = s.plan(NODES, context(), 2, previous)
     assert value["inventory"] == sorted(NODES)
     assert value["history_files_used"] == []
-    assert set(value["weights_ms"].values()) == {1000}
+    assert set(value["weights_ms"].values()) == {60_000}
 
 
 @pytest.mark.parametrize("count", [True, 0, 1, 5, 2.0, "2"])
@@ -181,12 +178,12 @@ def test_invalid_or_stale_plans_fail_even_when_reserialized(mutation):
 
 def test_committed_timing_history_keeps_its_measured_profiles_and_qualified_origin():
     value = s.read(Path(__file__).parents[1] / "release/core-shard-timings.json")
-    assert value["source_sha"] == "4e0ccb95464cea205bab0258ce0fa8598c7c0dbf"
-    assert value["run_id"] == 35923626375 and value["run_attempt"] == 1
+    assert value["source_sha"] == "6aafef5b8d492c030a858426354dfd3dc31ac2fa"
+    assert value["run_id"] == 42021194304 and value["run_attempt"] == 1
     assert set(value["lanes"]) == {
-        "core-ubuntu-3.10", "core-macos-3.14", "core-windows-3.13",
+        "core-ubuntu-3.11", "core-macos-3.14", "core-windows-3.13",
     }
-    assert value["lanes"]["core-ubuntu-3.10"]["profile"]["python"] == "3.10"
+    assert value["lanes"]["core-ubuntu-3.11"]["profile"]["python"] == "3.11"
     for lane in s.PROFILES:
         current = context(lane)
         snapshot = deepcopy(value)
@@ -557,13 +554,13 @@ def test_new_image_policy_keeps_shadow_evidence_ineligible_for_qualification(sch
 @pytest.mark.parametrize(
     "lane,count",
     [
-        ("core-ubuntu-3.11", 2),
+        ("core-ubuntu-3.11", 3),
         ("core-macos-3.14", 2),
         ("core-windows-3.13", 3),
         ("core-windows-3.13", True),
     ],
 )
-def test_qualifying_rollout_is_restricted_to_two_windows_shards(lane, count):
+def test_qualifying_rollout_requires_two_supported_native_shards(lane, count):
     with pytest.raises(s.q.QualificationError):
         s.plan(NODES, context(lane), count, purpose="qualification")
 
@@ -577,3 +574,70 @@ def test_qualifying_plans_and_shadow_plans_are_not_interchangeable():
             s.validate_plan(value, purpose=purpose)
     with pytest.raises(s.q.QualificationError):
         s.plan(NODES, context(s.WINDOWS_LANE), 2, purpose="unknown")
+
+
+def test_qualifying_ubuntu_retains_full_inventory_and_separate_purpose():
+    value = s.plan(NODES, context("core-ubuntu-3.11"), 2, purpose="qualification")
+    assert s.validate_plan(value, purpose="qualification")["inventory"] == sorted(NODES)
+    assert {node for shard in value["shards"] for node in shard["nodes"]} == set(NODES)
+    with pytest.raises(s.q.QualificationError):
+        s.validate_plan(value, purpose="shadow")
+
+
+def test_timing_confidence_reports_unknowns_without_changing_test_eligibility():
+    value = s.plan(NODES, context(), 2, history())
+    report = s.timing_summary(value)
+    assert report["confidence"] == "low" and report["known_files"] == 3
+    assert report["fallback_files"] == ["tests/test_four.py"]
+    assert report["warning"] and report["scheduling_only"]
+    assert value["inventory"] == sorted(NODES)
+    rows = [{"index": index, "plan_sha256": s.digest(value),
+             "context": value["context"], "seconds": seconds}
+            for index, seconds in enumerate([21, 9])]
+    actual = s.timing_summary(value, rows)
+    assert actual["actual_shard_seconds"] == [21, 9]
+    assert actual["balance_ratio"] == pytest.approx(21 / 9)
+    rows[0]["plan_sha256"] = "f" * 64
+    with pytest.raises(s.q.QualificationError, match="plan differs"):
+        s.timing_summary(value, rows)
+
+
+def test_hashed_timing_history_invalidates_changed_files_without_omitting_tests():
+    previous = history()
+    previous["schema_version"] = s.HASHED_HISTORY_SCHEMA
+    lane = previous["lanes"]["core-ubuntu-3.11"]
+    lane["files_sha256"] = {name: "a" * 64 for name in lane["files_ms"]}
+    current = {name: "a" * 64 for name in lane["files_ms"]}
+    current["tests/test_one.py"] = "b" * 64
+    result = s.plan(NODES, context(), 2, previous, file_hashes=current)
+    assert "tests/test_one.py" in result["stale_history_files"]
+    assert result["weights_ms"]["tests/test_one.py"] == 12000
+    assert "tests/test_two.py" in result["fresh_history_files"]
+    assert result["inventory"] == sorted(NODES)
+    assert s.plan(NODES, context(), 2, previous)["fresh_history_files"] == []
+
+
+def test_changed_heavy_file_keeps_conservative_prior_cost_and_no_history_is_unknown():
+    previous = history()
+    previous["schema_version"] = s.HASHED_HISTORY_SCHEMA
+    row = previous["lanes"]["core-ubuntu-3.11"]
+    row["files_ms"]["tests/test_one.py"] = 2_196_670
+    row["files_sha256"] = {name: "a" * 64 for name in row["files_ms"]}
+    hashes = {name: "a" * 64 for name in row["files_ms"]}
+    hashes["tests/test_one.py"] = "b" * 64
+    value = s.plan(NODES, context(), 2, previous, file_hashes=hashes)
+    assert value["weights_ms"]["tests/test_one.py"] == 2_196_670
+    summary = s.timing_summary(value)
+    assert summary["confidence"] == "low" and "tests/test_one.py" in summary["stale_files"]
+    unknown = s.timing_summary(s.plan(NODES, context(), 2))
+    assert unknown["confidence"] == "unknown" and unknown["completion_range_seconds"] is None
+    assert unknown["fallback_file_count"] == len({s.file_name(node) for node in NODES})
+
+
+@pytest.mark.parametrize("purpose", ["shadow", "qualification"])
+def test_previous_plan_formats_replay_without_rewriting_stored_weights(purpose):
+    value = s.plan(NODES, context(s.WINDOWS_LANE), 2, purpose=purpose)
+    value.pop("fresh_history_files")
+    value.pop("stale_history_files")
+    value["schema_version"] = s.PREVIOUS_QUALIFYING_PLAN_SCHEMA if purpose == "qualification" else s.PREVIOUS_PLAN_SCHEMA
+    assert s.validate_plan(value, purpose=purpose) is value

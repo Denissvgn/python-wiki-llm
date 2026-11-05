@@ -2509,3 +2509,50 @@ def test_windows_projection_xml_and_receipt_digests_match_posix(tmp_path, monkey
     assert outputs[0][1]["projected_junit_sha256"] == qualification.sha256_file(
         tmp_path / "windows.xml"
     )
+
+
+@pytest.mark.parametrize("field", ["identity", "harness_sha256", "run_attempt", "python", "machine", "packages"])
+@pytest.mark.parametrize("which_context", ["initial", "final"])
+def test_parallel_native_windows_proof_must_match_the_collected_plan(qualified_sharded_bundle, tmp_path, monkeypatch, field, which_context):
+    from copy import deepcopy
+    from release import core_shards
+    bundle, manifest = qualified_sharded_bundle
+    core = bundle / "evidence/RD-01"
+    for name in ("ubuntu-plan", "ubuntu-shard-0", "ubuntu-shard-1", "windows-native"):
+        (core / name).mkdir()
+    baseline = qualification.load_json(core / "windows-plan/plan.json")["context"]
+    native = deepcopy(baseline)
+    if field == "identity":
+        native["identity"]["source"]["sha"] = "f" * 40
+    elif field == "harness_sha256":
+        native[field] = "f" * 64
+    elif field == "run_attempt":
+        native[field] += 1
+    elif field == "packages":
+        native["environment"][field]["pytest"] = "999.0"
+    else:
+        native["environment"][field] = "3.13.99" if field == "python" else "foreign-architecture"
+    _write_json(core / "windows-native/context.json", native if which_context == "initial" else baseline)
+    _write_json(core / "windows-native/context-final.json", native if which_context == "final" else baseline)
+    original = core_shards.validate_aggregation
+    def isolated_ubuntu_coverage(directory, *args, **kwargs):
+        if directory.name == "ubuntu":
+            # Raw Ubuntu aggregation has its own actual SQLite/coverage test.
+            # This control isolates the new native producer join boundary.
+            assert kwargs["source_root"].is_dir()
+            return {}
+        return original(directory, *args, **kwargs)
+    monkeypatch.setattr(core_shards, "validate_aggregation", isolated_ubuntu_coverage)
+    context = {**manifest["qualification_context"], "core_layout": "platform-sharded"}
+    identity = qualification.load_json(bundle / "evidence/RD-00/source/identity.json")
+    with pytest.raises(qualification.QualificationError, match="shard context differs"):
+        qualification._validate_qualifying_core_bundle(bundle, identity, context, RUN_ID)
+
+
+def test_new_shadow_plan_cannot_become_qualifying_by_relabeling_flags():
+    from release import core_shards
+    from tests.test_core_shards import NODES, context
+    plan = core_shards.plan(NODES, context(core_shards.WINDOWS_LANE), 2)
+    plan.update(purpose="qualification", qualifying=True)
+    with pytest.raises(qualification.QualificationError, match="Nonqualifying shadow"):
+        qualification._reject_shadow_value(plan)

@@ -355,6 +355,8 @@ def stage_commands(
         )
 
     if stage == "prepare":
+        from release.readiness import helper_cache_base
+
         if platform.system() not in {"Darwin", "Linux"}:
             raise RunnerError(
                 "locked routine toolchain preparation requires its supported native setup host"
@@ -375,7 +377,8 @@ def stage_commands(
         active = {
             "PATH": str(toolchains / "node/bin")
             + os.pathsep
-            + os.environ.get("PATH", "")
+            + os.environ.get("PATH", ""),
+            "LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo)),
         }
         command(
             "prepared-typescript-owner",
@@ -387,7 +390,7 @@ def stage_commands(
                 "--src-dir",
                 repo,
                 "--cache-dir",
-                repo / ".git",
+                helper_cache_base(repo),
                 "--language",
                 "typescript",
             ),
@@ -506,6 +509,7 @@ def stage_commands(
         return commands
     if stage in {"contracts", "rehearsal"}:
         from release.preflight_contracts import contract_groups
+        from release.readiness import helper_cache_base
 
         groups = [
             argument for group in contract_groups() for argument in ("--group", group)
@@ -526,6 +530,7 @@ def stage_commands(
                 py,
             ),
             timeout=18000,
+            environment={"LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo))},
         )
     if stage in {"static", "rehearsal"}:
         command(
@@ -617,7 +622,12 @@ def stage_commands(
             raise RunnerError(
                 "host OS/Python has no matching maintained native core lane"
             )
-        host_environment = {"LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive)}
+        from release.readiness import helper_cache_base
+
+        host_environment = {
+            "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive),
+            "LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo)),
+        }
         command(
             "collect-host-core",
             (env_python, "-I", repo / "release/core_shard_runner.py", "worker",

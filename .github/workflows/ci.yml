@@ -176,6 +176,7 @@ jobs:
       shell: bash
       run: '"${{ steps.python.outputs.python-path }}" -m ruff check src tests examples integrations/github-action/render_summary.py
         release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py release/pr_ci_impact.py
+        release/manual_release.py release/readiness.py release/measurement_canary.py release/core_coverage.py release/core_shards.py release/core_shard_runner.py release/qualification.py release/hosted_evidence.py release/qualification_automation.py
         | tee ruff.log'
     - name: Upload typing diagnostics
       if: always()

@@ -59,7 +59,7 @@ def artifact_contract(
 ) -> dict[str, tuple[str, str, tuple[str, ...]]]:
     require(layout in {"legacy", "union"}, "unknown qualifying suite layout")
     require(
-        core_layout in {"unsharded", "windows-sharded"},
+        core_layout in {"unsharded", "windows-sharded", "platform-sharded"},
         "unknown qualifying core layout",
     )
 
@@ -169,7 +169,7 @@ def artifact_contract(
                 "union.xml",
             ),
         )
-    if core_layout == "windows-sharded":
+    if core_layout in {"windows-sharded", "platform-sharded"}:
         contract["RD-01:windows"] = (
             "evidence-core-windows-3.13",
             core("core-windows-3.13"),
@@ -204,6 +204,28 @@ def artifact_contract(
                     "junit.xml",
                 ),
             )
+    if core_layout == "platform-sharded":
+        contract["RD-01:ubuntu"] = (
+            "evidence-core-ubuntu-3.11", core("core-ubuntu-3.11"),
+            ("core-ubuntu-3.11.xml", "result-core-ubuntu-3.11.json", "aggregation.json",
+             "coverage.data", "coverage.json", "coverage-core-ubuntu-3.11.xml"),
+        )
+        contract["RD-01:ubuntu-plan"] = (
+            "evidence-core-ubuntu-plan", "Plan Ubuntu core shards",
+            ("preparation.json", "plan.json", "collected.json", "constraints.txt", "collection.log", "started.jsonl"),
+        )
+        for index in range(2):
+            contract[f"RD-01:ubuntu-shard-{index}"] = (
+                f"evidence-core-ubuntu-shard-{index}", f"Execute Ubuntu core shard ({index})",
+                ("execution.json", "collected.json", "selected.json", "started.jsonl", "worker.log", "junit.xml", "coverage.data", "coverage.json"),
+            )
+        contract["RD-01:windows-native"] = (
+            "evidence-windows-native", "Native Windows owner evidence",
+            ("context.json", "context-final.json", "javascript-evidence-windows.xml", "javascript-evidence-windows-result.json",
+             "native-regressions/scoped-evidence-core-windows-3.13.xml",
+             "native-regressions/scoped-evidence-core-windows-3.13-result.json",
+             "native-regressions/stdio-venv.xml", "native-regressions/native-corrections.xml"),
+        )
     return contract
 
 
@@ -215,12 +237,19 @@ REQUIRED_JOBS = {
 }
 
 
+def required_jobs(core_layout: str = "unsharded") -> set[str]:
+    result = set(REQUIRED_JOBS)
+    if core_layout == "platform-sharded":
+        result |= {"Early qualification readiness", "Native Windows release canary", "Require release admission"}
+    return result
+
+
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
 
-def _http(url: str, token: str | None, limit: int) -> tuple[int, dict[str, str], bytes]:
+def _http(url: str, token: str | None, limit: int, *, media_type: str = "application/vnd.github+json") -> tuple[int, dict[str, str], bytes]:
     parsed = urllib.parse.urlsplit(url)
     require(
         parsed.scheme == "https"
@@ -235,7 +264,7 @@ def _http(url: str, token: str | None, limit: int) -> tuple[int, dict[str, str],
             "credentials may only be sent to GitHub's API",
         )
     headers = {
-        "Accept": "application/vnd.github+json",
+        "Accept": media_type,
         "X-GitHub-Api-Version": "2022-11-28",
         "User-Agent": "agent-wiki-release-evidence",
     }
@@ -554,7 +583,7 @@ def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
         "hosted run failed or is not executing qualification",
     )
     jobs = client.list(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
-    expected_jobs = {row[1] for row in contract.values()} | REQUIRED_JOBS
+    expected_jobs = {row[1] for row in contract.values()} | required_jobs(context.get("core_layout", "unsharded"))
     producers = {}
     for name in sorted(expected_jobs):
         matches = [j for j in jobs if j.get("name") == name]

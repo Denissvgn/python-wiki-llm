@@ -140,8 +140,9 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
     assert "--inventory" in admission.argv and "--started" in admission.argv
     assert admission.argv[admission.argv.index("--minimum-collected") + 1] == "5322"
     assert admission.argv[admission.argv.index("--minimum-passed") + 1] == "5070"
-    assert "LLM_WIKI_CACHE_DIR" not in collection.environment
-    assert "LLM_WIKI_CACHE_DIR" not in full.environment
+    from release.readiness import helper_cache_base
+    assert collection.environment["LLM_WIKI_CACHE_DIR"] == str(helper_cache_base(ROOT))
+    assert full.environment["LLM_WIKI_CACHE_DIR"] == str(helper_cache_base(ROOT))
     assert collection.environment == full.environment
     for name in [
         "compare-builds",

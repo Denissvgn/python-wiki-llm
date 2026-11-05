@@ -29,6 +29,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: publish-agent-wiki-cli-${{ github.repository }}
+  cancel-in-progress: false
+
 permissions:
   actions: read
   contents: read

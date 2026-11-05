@@ -131,7 +131,10 @@
         "tests/test_core_shards.py",
         "tests/test_core_shard_workflow.py",
         "tests/test_core_shard_runner.py",
-        "tests/test_static_quality_architecture.py"
+        "tests/test_static_quality_architecture.py",
+        "tests/test_release_readiness.py",
+        "tests/test_measurement_canary.py",
+        "tests/test_manual_release.py"
       ],
       "lanes": [
         "ubuntu"
@@ -651,7 +654,12 @@
         "release/skip-allowlist.json",
         "release/core_shard*.py",
         "release/core-shard-timings.json",
-        "release/toolchain-lock.json"
+        "release/toolchain-lock.json",
+        "release/manual_release.py",
+        "release/readiness.py",
+        "release/runtime-policy.json",
+        "release/measurement_canary.py",
+        "release/core_coverage.py"
       ],
       "groups": [
         "release",

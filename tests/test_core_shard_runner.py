@@ -226,6 +226,7 @@ def coverage_fixture(tmp_path, lines):
             "schema_version": r.COVERAGE_SCHEMA,
             "source_roots": ["/owned/package"],
             "sources": sources,
+            "statements": r.statement_map(package, output / "coverage.data", package.parents[1]),
             "lines": r.coverage_rows(
                 output / "coverage.data", ["/owned/package"], sources
             ),
@@ -274,6 +275,7 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
             "schema_version": r.COVERAGE_SCHEMA,
             "source_roots": ["/owned/package"],
             "sources": sources,
+            "statements": r.statement_map(package, directory / "coverage.data", package.parents[1]),
             "lines": rows,
         },
     )
@@ -289,7 +291,7 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
     empty = next(
         row
         for row in xml.iter("class")
-        if row.get("filename", "").endswith("/__init__.py")
+        if Path(row.get("filename", "")).name == "__init__.py"
     )
     assert empty.find("lines") is not None and len(list(empty.iter("line"))) == 0
 
@@ -387,6 +389,9 @@ def test_coverage_export_has_unique_verified_roots(tmp_path, monkeypatch, distin
         assert sources == r.source_manifest(source)
         return {"owned.py": [1]}
 
+    data = CoverageData(basename=str(tmp_path / "coverage.data"))
+    data.add_lines({str(package / "owned.py"): {1}})
+    data.write()
     monkeypatch.setattr(r, "coverage_rows", verified_rows)
     r.export_coverage(checkout, tmp_path)
     assert r.s.read(tmp_path / "coverage.json")["source_roots"] == expected
@@ -667,3 +672,179 @@ def test_real_execution_protocol_retains_success_and_failure_evidence(
     assert merged["outcomes"] == r.s.outcomes(
         r.s.junit(tmp_path / "reference/junit.xml")
     )
+
+
+def test_pure_promotion_reader_replays_raw_coverage_union_without_third_party_reader(tmp_path, monkeypatch):
+    from release import core_coverage
+    package, first = coverage_fixture(tmp_path, [1])
+    _, second = coverage_fixture(tmp_path, [2])
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    r.combine_coverage(r.s.plan(NODES, context(), 2), [first, second], package.parents[1], output)
+    core_coverage.validate_combination(output, [first, second], package, r.s.read)
+    data = CoverageData(basename=str(second / "coverage.data"))
+    data.erase()
+    data.add_lines({"/owned/package/owned.py": {1}})
+    data.write()
+    with pytest.raises(ValueError, match="receipt differs"):
+        core_coverage.validate_combination(output, [first, second], package, r.s.read)
+
+
+def test_unexecuted_source_files_cannot_disappear_from_coverage_denominator(tmp_path, monkeypatch):
+    package, first = coverage_fixture(tmp_path, [1, 2])
+    (package / "unexecuted.py").write_text("third = 3\nfourth = 4\n")
+    record = r.s.read(first / "coverage.json")
+    record["sources"] = r.source_manifest(package)
+    record["statements"] = r.statement_map(package, first / "coverage.data", package.parents[1])
+    r.q.write_json(first / "coverage.json", record)
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    with pytest.raises(r.q.QualificationError, match="below 87%"):
+        r.combine_coverage(r.s.plan(NODES, context(), 2), [first], package.parents[1], output)
+
+
+def test_qualifying_ubuntu_command_replays_complete_inventory_and_raw_coverage(tmp_path, monkeypatch):
+    from tests.test_core_shards import execution
+    package, seed = coverage_fixture(tmp_path, [1])
+    root = package.parents[1]
+    (root / "release").mkdir()
+    allowlist = root / "release/skip-allowlist.json"
+    r.q.write_json(allowlist, {"schema_version": r.q.ALLOWLIST_SCHEMA, "entries": []})
+    current = context("core-ubuntu-3.11")
+    nodes = [f"tests/test_group_{index % 2}.py::test_owned_{index}" for index in range(5322)]
+    plan = r.s.plan(nodes, current, 2, purpose="qualification")
+    preparation = tmp_path / "plan"
+    preparation.mkdir()
+    for name, value in (("plan.json", plan), ("collected.json", plan["inventory"])):
+        r.q.write_json(preparation / name, value)
+    (preparation / "constraints.txt").write_text(r.constraints(current["environment"]))
+    (preparation / "collection.log").write_text("owned collection")
+    (preparation / "started.jsonl").write_text("")
+    r.q.write_json(preparation / "preparation.json", {
+        "schema_version": r.s.PREPARATION_SCHEMA, "purpose": "qualification",
+        "qualifying": True, "complete": True, "context": current,
+        "plan_sha256": r.s.digest(plan), "exit_code": 0, "seconds": 1.0, "error": None,
+        "files": {path.name: r.q.sha256_file(path) for path in preparation.iterdir()},
+    })
+    shards = tmp_path / "workers"
+    shards.mkdir()
+    sources = r.source_manifest(package)
+    for index in range(2):
+        directory = execution(shards / str(index), plan, index)
+        data = CoverageData(basename=str(directory / "coverage.data"))
+        data.add_lines({"/owned/package/owned.py": {index + 1}})
+        data.write()
+        r.q.write_json(directory / "coverage.json", {
+            "schema_version": r.COVERAGE_SCHEMA, "sources": sources,
+            "statements": r.statement_map(package, directory / "coverage.data", root),
+            "source_roots": ["/owned/package"], "lines": {"owned.py": [index + 1]},
+        })
+        receipt = r.s.read(directory / "execution.json")
+        receipt["files"].update({name: r.q.sha256_file(directory / name) for name in ("coverage.data", "coverage.json")})
+        r.q.write_json(directory / "execution.json", receipt)
+    monkeypatch.setattr(r, "context", lambda args: current)
+    monkeypatch.setattr(r, "package_root", lambda source: package)
+    output = tmp_path / "aggregate"
+    args = argparse.Namespace(root=root, output=output, preparation=preparation, shards_root=shards)
+    assert r.aggregate_qualification(args) == 0
+    assert len(r.s.junit(output / "core-ubuntu-3.11.xml")) == 5322
+    r.s.validate_aggregation(output, preparation, [shards / "0", shards / "1"],
+        current["identity"], current["harness_sha256"], current["run_id"], current["run_attempt"], allowlist, source_root=root)
+    recorded = r.s.read(output / "coverage.json")
+    recorded["lines"]["owned.py"] = [1]
+    r.q.write_json(output / "coverage.json", recorded)
+    aggregation = r.s.read(output / "aggregation.json")
+    aggregation["files"]["coverage.json"] = r.q.sha256_file(output / "coverage.json")
+    r.q.write_json(output / "aggregation.json", aggregation)
+    with pytest.raises(ValueError, match="complete raw shard union"):
+        r.s.validate_aggregation(output, preparation, [shards / "0", shards / "1"],
+            current["identity"], current["harness_sha256"], current["run_id"], current["run_attempt"], allowlist, source_root=root)
+
+
+def test_real_coverage_storage_is_admitted_before_qualifying_collection():
+    r.probe_coverage_transport()
+
+
+def test_pure_coverage_reader_rejects_oversized_bitset_before_expansion(tmp_path):
+    import sqlite3
+    from release import core_coverage
+    package, directory = coverage_fixture(tmp_path, [1])
+    path = directory / "coverage.data"
+    with sqlite3.connect(path) as connection:
+        connection.execute("UPDATE line_bits SET numbits = ?", (b"\xff" * 1024,))
+    with pytest.raises(ValueError, match="bitset exceeds frozen source"):
+        core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package))
+
+
+def test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line(tmp_path, monkeypatch):
+    from release import core_coverage
+    package, directory = coverage_fixture(tmp_path, [1, 2])
+    (package / "owned.py").write_text("\n".join(f"value_{index} = {index}" for index in range(10)) + "\n")
+    path = directory / "coverage.data"
+    data = CoverageData(basename=str(path))
+    data.erase()
+    data.add_lines({"/owned/package/owned.py": set(range(1, 10))})
+    data.write()
+    r.q.write_json(directory / "coverage.json", {
+        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/package"],
+        "sources": r.source_manifest(package),
+        "statements": r.statement_map(package, path, package.parents[1]),
+        "lines": {"owned.py": list(range(1, 10))},
+    })
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
+    core_coverage.validate_combination(output, [directory], package, r.s.read)
+    xml_path = output / "coverage-core-ubuntu-3.11.xml"
+    tree = ET.parse(xml_path)
+    for node in tree.getroot().iter("class"):
+        lines = node.find("lines")
+        if lines is not None:
+            for line in list(lines):
+                if line.attrib["number"] == "10":
+                    lines.remove(line)
+    tree.getroot().set("lines-valid", "9")
+    tree.getroot().set("lines-covered", "9")
+    tree.getroot().set("line-rate", "1")
+    tree.write(xml_path)
+    with pytest.raises(ValueError, match="omitted executable statements"):
+        core_coverage.validate_combination(output, [directory], package, r.s.read)
+
+
+def test_nested_nonpackage_provider_file_keeps_its_coverage_denominator(tmp_path, monkeypatch):
+    package, directory = coverage_fixture(tmp_path, [1, 2])
+    nested = package / "examples/plugin/data.py"
+    nested.parent.mkdir(parents=True)
+    nested.write_text("never_executed = 1\nnever_executed_again = 2\n")
+    record = r.s.read(directory / "coverage.json")
+    record["sources"] = r.source_manifest(package)
+    record["statements"] = r.statement_map(package, directory / "coverage.data", package.parents[1])
+    r.q.write_json(directory / "coverage.json", record)
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    with pytest.raises(r.q.QualificationError, match="below 87%"):
+        r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
+
+
+@pytest.mark.parametrize("drift", [False, True])
+def test_final_native_context_revalidation_refuses_environment_drift_before_receipt(tmp_path, monkeypatch, drift):
+    from copy import deepcopy
+    before = context("core-windows-3.13")
+    reference = tmp_path / "context.json"
+    r.q.write_json(reference, before)
+    after = deepcopy(before)
+    if drift:
+        after["environment"]["packages"]["injected-build-tool"] = "9.9"
+    monkeypatch.setattr(r, "context", lambda args: after)
+    output = tmp_path / "context-final.json"
+    args = argparse.Namespace(output=output, reference=reference)
+    if drift:
+        with pytest.raises(r.q.QualificationError, match="environment.packages"):
+            r.native_context(args)
+        assert not output.exists()
+    else:
+        assert r.native_context(args) == 0 and r.s.read(output) == before

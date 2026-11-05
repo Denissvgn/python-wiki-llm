@@ -263,6 +263,11 @@ def planned_project(project, monkeypatch):
     }
     monkeypatch.setattr(preflight_contracts, "qualification_contract", lambda root: contract)
     monkeypatch.setattr(preflight, "_version", lambda command, root: {"status": "unavailable", "path": None, "version": None})
+    # These controller fixtures isolate external preparation; capability
+    # admission itself is exercised with real negative observations separately.
+    monkeypatch.setattr(preflight, "_admission", lambda *a, **kw: {
+        "status": "hosted-required", "blockers": [], "hosted_pending": []
+    })
     monkeypatch.setattr(preflight, "_eligibility", lambda root, check_registry: {
         "status": "eligible", "version": "9.0.0", "scope": "local-only",
         "external": "remote-tag-and-registry-not-inspected",
@@ -704,6 +709,31 @@ def test_missing_or_blocking_review_prevents_full_driver_execution(planned_proje
     assert calls == []
     assert result["attempts"][0]["stage"] == "readiness"
     assert all(row["release_pending"] for row in result["plan"]["gates"])
+
+
+def test_incomplete_capabilities_block_before_any_expensive_contract(planned_project, monkeypatch):
+    from release import preflight_runner
+
+    root, _, original = planned_project
+    review = root / "private" / "release-review.json"
+    preflight.write_document(review, _review_record(original["candidate_sha"]), root=root)
+    blockers = [
+        {"id": "tool:actionlint", "reason": "missing"},
+        {"id": "helper:typescript", "reason": "wrong configured cache"},
+    ]
+    monkeypatch.setattr(preflight, "_admission", lambda *a, **kw: {
+        "status": "blocked", "blockers": blockers, "hosted_pending": []
+    })
+    plan = preflight.create_plan(root, original["candidate_sha"], review_file=review)
+    assert plan["readiness"]["status"] == "blocked_unavailable"
+    assert plan["readiness"]["eligibility_status"] == "eligible"
+    assert plan["readiness"]["review"]["status"] == "recorded"
+    assert plan["readiness"]["admission"]["blockers"] == blockers
+    path = root / "private" / "missing-capabilities.json"
+    preflight.write_document(path, plan, root=root)
+    monkeypatch.setattr(preflight_runner, "execute_stage", lambda *a, **kw: pytest.fail("expensive stage executed"))
+    result = preflight.run_plan(path, root / "private" / "missing-capabilities-work")
+    assert result["status"] == "blocked" and result["attempts"][0]["stage"] == "readiness"
 
 
 @pytest.mark.parametrize("relative", ["frozen/candidate-source.tar", "archive-budget/candidate-source.zip"])

@@ -27,12 +27,13 @@ s = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(s)
 q = s.q
 TIMEOUT = 5 * 60 * 60
-COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v1"
+COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v2"
 HARNESS_FILES = (
     "qualification.py",
     "core_shards.py",
     "core_shard_runner.py",
     "core-shard-timings.json",
+    "core_coverage.py",
 )
 
 
@@ -408,6 +409,25 @@ def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> di
     return {name: sorted(lines) for name, lines in result.items()}
 
 
+
+def statement_map(package: Path, data_path: Path, root: Path) -> dict:
+    """Freeze complete native executable statements, including unexecuted files."""
+    from coverage import Coverage
+
+    previous = Path.cwd()
+    try:
+        os.chdir(root)
+        analyzer = Coverage(data_file=str(data_path))
+        analyzer.load()
+        result = {}
+        for name in source_manifest(package):
+            _, statements, excluded, _, _ = analyzer.analysis2(str(package / name))
+            result[name] = sorted(set(statements) - set(excluded))
+        return result
+    finally:
+        os.chdir(previous)
+
+
 def export_coverage(root: Path, output: Path) -> None:
     package = package_root(root)
     sources = source_manifest(package)
@@ -421,6 +441,7 @@ def export_coverage(root: Path, output: Path) -> None:
             "schema_version": COVERAGE_SCHEMA,
             "source_roots": roots,
             "sources": sources,
+            "statements": statement_map(package, output / "coverage.data", root),
             "lines": rows,
         },
     )
@@ -541,12 +562,32 @@ def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
         args.shards,
         s.read(Path(__file__).with_name("core-shard-timings.json")),
         purpose=purpose,
+        file_hashes={name: q.sha256_file(args.root / name) for name in {s.file_name(node) for node in s.read(args.output / "collected.json")}},
     )
     q.write_json(args.output / "plan.json", value)
+    print(json.dumps(s.timing_summary(value), sort_keys=True), flush=True)
     (args.output / "constraints.txt").write_text(
         constraints(current["environment"]), encoding="utf-8"
     )
     return value
+
+
+
+def probe_coverage_transport() -> None:
+    """Reject a new coverage storage format during admission, before full suites."""
+    from coverage import CoverageData
+
+    spec = importlib.util.spec_from_file_location("_coverage_transport", Path(__file__).with_name("core_coverage.py"))
+    assert spec is not None and spec.loader is not None
+    transport = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(transport)
+    with tempfile.TemporaryDirectory(prefix="coverage-format-") as temporary:
+        path = Path(temporary) / "coverage.data"
+        data = CoverageData(basename=str(path))
+        data.add_lines({"/owned/coverage-format/probe.py": {1}})
+        data.write()
+        observed = transport.raw_lines(path, ["/owned/coverage-format"], {"probe.py": {"line_count": 1}})
+        s.require(observed == {"probe.py": [1]}, "coverage transport probe differs")
 
 
 def prepare(args) -> int:
@@ -573,6 +614,8 @@ def prepare(args) -> int:
     try:
         current = context(args)
         s.validate_purpose("qualification", current, args.shards)
+        if current["environment"]["profile"]["coverage"]:
+            probe_coverage_transport()
         record["context"] = current
         with tempfile.TemporaryDirectory(prefix="core-plan-") as temporary:
             env = child_environment(
@@ -742,6 +785,7 @@ def aggregate_qualification(args) -> int:
     q.write_json(args.output / "aggregation.json", record)
     try:
         current = context(args)
+        lane = current["environment"]["profile"]["lane"]
         value = s.validate_plan(
             s.read(args.preparation / "plan.json"), current, purpose="qualification"
         )
@@ -751,13 +795,13 @@ def aggregate_qualification(args) -> int:
             all(path.is_dir() and not path.is_symlink() for path in directories),
             "unexpected qualifying shard artifact",
         )
-        xml = args.output / (s.WINDOWS_LANE + ".xml")
+        xml = args.output / (lane + ".xml")
         merged = s.merge_junit(value, directories, xml, purpose="qualification")
-        result = args.output / ("result-" + s.WINDOWS_LANE + ".json")
+        result = args.output / ("result-" + lane + ".json")
         q.verify_junit(
             argparse.Namespace(
                 junit=xml,
-                lane=s.WINDOWS_LANE,
+                lane=lane,
                 allowlist=args.root / "release/skip-allowlist.json",
                 minimum_collected=5322,
                 minimum_passed=5070,
@@ -765,6 +809,11 @@ def aggregate_qualification(args) -> int:
                 output=result,
             )
         )
+        if current["environment"]["profile"]["coverage"]:
+            combine_coverage(value, directories, args.root, args.output)
+        files = [xml, result]
+        if current["environment"]["profile"]["coverage"]:
+            files += [args.output / name for name in ("coverage.data", "coverage.json", "coverage-" + lane + ".xml")]
         record.update(
             complete=True,
             context=current,
@@ -774,7 +823,7 @@ def aggregate_qualification(args) -> int:
                 str(row["index"]): q.sha256_file(directory / "execution.json")
                 for directory, row in zip(directories, merged["receipts"])
             },
-            files={path.name: q.sha256_file(path) for path in (xml, result)},
+            files={path.name: q.sha256_file(path) for path in files},
         )
         q.write_json(args.output / "aggregation.json", record)
         s.validate_aggregation(
@@ -786,7 +835,9 @@ def aggregate_qualification(args) -> int:
             current["run_id"],
             current["run_attempt"],
             args.root / "release/skip-allowlist.json",
+            source_root=args.root,
         )
+        print(json.dumps(s.timing_summary(value, merged["receipts"]), sort_keys=True), flush=True)
     except BaseException:
         record["complete"] = False
         raise
@@ -802,18 +853,20 @@ def combine_coverage(
 
     package = package_root(root)
     sources = source_manifest(package)
-    combined: dict[str, set[int]] = {}
+    combined: dict[str, set[int]] = {name: set() for name in sources}
+    statements = statement_map(package, directories[0] / "coverage.data", root)
     for directory in directories:
         recorded = s.read(directory / "coverage.json")
         s.fields(
             recorded,
-            {"schema_version", "source_roots", "sources", "lines"},
+            {"schema_version", "source_roots", "sources", "statements", "lines"},
             "coverage receipt",
         )
         s.require(
             recorded["schema_version"] == COVERAGE_SCHEMA
-            and recorded["sources"] == sources,
-            "coverage source identity differs",
+            and recorded["sources"] == sources
+            and recorded["statements"] == statements,
+            "coverage source or statement identity differs",
         )
         lines = coverage_rows(
             directory / "coverage.data", recorded["source_roots"], sources
@@ -831,7 +884,7 @@ def combine_coverage(
     previous = Path.cwd()
     try:
         os.chdir(root)
-        coverage = Coverage(data_file=str(output / "coverage.data"))
+        coverage = Coverage(data_file=str(output / "coverage.data"), source=[str(canonical)])
         coverage.get_data().add_lines(
             {str(canonical / name): lines for name, lines in combined.items()}
         )
@@ -845,6 +898,7 @@ def combine_coverage(
         "schema_version": COVERAGE_SCHEMA,
         "source_roots": [canonical.as_posix()],
         "sources": sources,
+        "statements": statements,
         "lines": {name: sorted(lines) for name, lines in combined.items()},
     }
     q.write_json(output / "coverage.json", result)
@@ -981,6 +1035,14 @@ def compare(args) -> int:
     return 0
 
 
+def native_context(args) -> int:
+    current = context(args)
+    if getattr(args, "reference", None) is not None:
+        s.compatible_context(s.read(args.reference), current)
+    q.write_json(args.output.resolve(), current)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1013,6 +1075,7 @@ def main() -> int:
         ("compare", compare),
         ("prepare", prepare),
         ("aggregate", aggregate_qualification),
+        ("native-context", native_context),
     ):
         child = commands.add_parser(command)
         for name in ("root", "identity", "archive", "harness", "output"):
@@ -1035,6 +1098,8 @@ def main() -> int:
         elif command == "compare":
             child.add_argument("--reference", type=Path, required=True)
             child.add_argument("--shards-root", type=Path, required=True)
+        elif command == "native-context":
+            child.add_argument("--reference", type=Path)
         elif command == "aggregate":
             child.add_argument("--preparation", type=Path, required=True)
             child.add_argument("--shards-root", type=Path, required=True)

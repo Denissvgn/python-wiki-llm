@@ -60,7 +60,7 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
     }
     assert p.validate_workflow_contracts(repository) == []
     value = p.qualification_contract(repository)
-    assert len(value["jobs"]) == 25
+    assert {"readiness", "windows-canary", "admission", "core-ubuntu-plan", "core-ubuntu-shards", "core-ubuntu", "windows-native"} <= {row["id"] for row in value["jobs"]}
     assert len(value["incident_cases"]) == 31
     assert {x["id"] for x in value["jobs"]} == set(
         p.workflow_declarations(repository)[1]
@@ -367,3 +367,16 @@ def test_ci_uses_shared_driver_without_replacing_full_producers():
     assert "verify-qualification-completion" in workflow
     assert "qualified-release/" in workflow
     assert "release/preflight-contracts.json \\\n" in workflow
+
+
+def test_rebound_registry_cannot_remove_admission_dependency(repository):
+    workflow = repository / p.WORKFLOW
+    text = workflow.read_text().replace("needs: [freeze, admission]", "needs: freeze", 1)
+    workflow.write_text(text)
+    _, declarations = p.workflow_declarations(repository)
+    def rebind(value):
+        for row in value["jobs"]:
+            row["declaration_sha256"] = p._digest(declarations[row["id"]])
+            row["needs"] = __import__("re").findall(r"[A-Za-z_][A-Za-z0-9_-]*", p._job_field(declarations[row["id"]], "needs"))
+    change_registry(repository, rebind)
+    assert any("bypasses release admission" in error for error in p.validate_workflow_contracts(repository))

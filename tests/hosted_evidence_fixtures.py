@@ -60,7 +60,7 @@ class HostedEvidence:
                 "completed_at": "2026-09-22T10:10:00Z",
             }
             for number, name in enumerate(
-                sorted({row[1] for row in contract.values()} | hosted.REQUIRED_JOBS), 1
+                sorted({row[1] for row in contract.values()} | hosted.required_jobs(core_layout)), 1
             )
         ]
         self.artifacts = []
