@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 from typing import Any
@@ -111,14 +112,62 @@ def test_logical_signatures_ignore_transport_identity_but_preserve_contract_and_
     assert measure.logical_signature("context-v2", altered, []) != signature
 
 
-def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path):
+def test_mutation_workspace_reset_keeps_one_scope_and_preserves_other_inputs(tmp_path):
+    owner = tmp_path / "worker"
+    owner.mkdir()
+    prepared = tmp_path / "prepared"
+    prepared.mkdir()
+    (prepared / "source.py").write_text("value = 1\n")
+    unrelated = tmp_path / "user.txt"
+    unrelated.write_text("preserved\n")
+    before = runtime.tree_hashes(prepared)
+    roots = []
+    for _ in range(3):
+        workspace = measure._fresh_mutation_workspace(owner)
+        roots.append(workspace)
+        shutil.copytree(prepared, workspace)
+        assert not (workspace / "nested/previous.txt").exists()
+        (workspace / "nested").mkdir()
+        sentinel = workspace / "nested/previous.txt"
+        sentinel.write_text("previous mutation must be removed\n")
+        sentinel.chmod(stat.S_IREAD)
+    assert len(set(roots)) == 1
+    assert measure._fresh_mutation_workspace(owner) == roots[0]
+    assert not roots[0].exists()
+    assert runtime.tree_hashes(prepared) == before
+    assert unrelated.read_text() == "preserved\n"
+
+
+def test_mutation_workspace_reset_refuses_unexpected_leaf_and_cleanup_failure(tmp_path, monkeypatch):
+    owner = tmp_path / "worker"
+    owner.mkdir()
+    workspace = owner / "workspace"
+    workspace.write_text("not a worker directory\n")
+    with pytest.raises(ValueError, match="owned regular directory"):
+        measure._fresh_mutation_workspace(owner)
+    assert workspace.read_text() == "not a worker directory\n"
+    workspace.unlink()
+    workspace.mkdir()
+    (workspace / "retained.txt").write_text("must survive failed cleanup\n")
+
+    def refused_rename(self, target):
+        raise PermissionError("copied workspace is still in use")
+
+    monkeypatch.setattr(Path, "rename", refused_rename)
+    with pytest.raises(PermissionError, match="still in use"):
+        measure._fresh_mutation_workspace(owner)
+    assert (workspace / "retained.txt").read_text() == "must survive failed cleanup\n"
+
+
+def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path, monkeypatch):
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "analysis-cache"))
     output = tmp_path / "measurements"
     result = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "r=run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync'],warm=1)\n"
+        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1)\n"
         "print(json.dumps(r))\n", str(provider), str(output))
-    assert result["total_samples"] == result["completed_calls"] == 6
+    assert result["total_samples"] == result["completed_calls"] == 12
     assert result["all_logical_outputs_repeatable"]
     assert result["model_execution_established"] is result["field_evidence_established"] is False
     plan = json.loads((output / "plan.json").read_text())
@@ -140,10 +189,14 @@ def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path):
             assert first["workspace_copy_ns"] > 0 and second["workspace_copy_ns"] > 0
             assert first["result"]["exit_code"] == second["result"]["exit_code"] == 0
             assert first["wiki_changed_paths"] == second["wiki_changed_paths"]
+            assert first["result"]["content_commitments"] == second["result"]["content_commitments"]
+            if report["lane"] in {"changed-sync", "prose-reanchor"}:
+                assert "Sync analysis capture: ready (qualified-full); destination=eligible" in first["result"]["stdout"]
+                assert "Sync analysis capture: ready (qualified-full); destination=eligible" in second["result"]["stdout"]
     resumed = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "r=run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync'],warm=1,resume=True)\n"
+        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
         "print(json.dumps(r))\n", str(provider), str(output))
     assert result == resumed
     directory = output / "tiny-context-v1"
@@ -173,7 +226,7 @@ def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path):
     rejected = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "try:\n run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync'],warm=1,resume=True)\n"
+        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
         "except ValueError as e:\n print(json.dumps({'rejected':True,'reason':str(e)}))\n"
         "else:\n print(json.dumps({'rejected':False}))\n", str(provider), str(output))
     assert rejected["rejected"] and "sample bytes changed" in rejected["reason"]
@@ -185,7 +238,7 @@ def test_timed_read_and_mutation_restore_equivalent_inputs(provider, tmp_path):
     rejected = fresh(
         "from tests.developer_value.measure import run\nimport json\n"
         "try:\n run(Path(sys.argv[1]),Path(sys.argv[2]),selected_projects=['tiny'],"
-        "selected_lanes=['context-v1','context-v2','changed-sync'],warm=1,resume=True)\n"
+        "selected_lanes=['context-v1','context-v2','changed-sync','unchanged-sync','prose-reanchor','strict-validation'],warm=1,resume=True)\n"
         "except ValueError as e:\n print(json.dumps({'rejected':True,'reason':str(e)}))\n"
         "else:\n print(json.dumps({'rejected':False}))\n", str(provider), str(output))
     assert rejected["rejected"] and "summary differs" in rejected["reason"]
