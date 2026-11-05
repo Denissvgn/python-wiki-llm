@@ -28,6 +28,22 @@ MANIFEST_URL = "https://raw.githubusercontent.com/actions/python-versions/main/v
 MAX_MANIFEST = 2 * 1024 * 1024
 LOCAL_STAGES = ("contracts", "static", "freeze", "host-core", "builds", "artifacts")
 LANGUAGES = ("typescript", "go", "rust", "haskell")
+# Local static checks use the project launcher directly. These top-level
+# packages cover its explicit environment guard and the declared Pyright
+# surface (including examples); their presence establishes no SDK/native proof.
+STATIC_MODULES = {
+    "pytest",
+    "tokenizers",
+    "mcp",
+    "fastapi",
+    "tomli",
+    "markdown_it",
+    "jsonschema",
+    "pyright",
+    "ruff",
+    "bandit",
+    "pip_audit",
+}
 REQUIRED_CONSUMERS = {
     "capture": "knowledge-linux",
     "integrity": "knowledge-linux",
@@ -518,7 +534,7 @@ def capabilities(
         {"pytest", "tokenizers"} if set(stages) & {"contracts", "host-core"} else set()
     )
     if "static" in stages:
-        modules.update({"pyright", "ruff", "bandit", "pip_audit"})
+        modules.update(STATIC_MODULES)
     for module in sorted(modules):
         ready = importlib.util.find_spec(module) is not None
         rows.append(

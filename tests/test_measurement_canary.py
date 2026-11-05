@@ -86,10 +86,10 @@ def test_raw_report_capture_retains_partial_worker_outputs(tmp_path):
         "failed-worker/measurements/partial/sample.json"
     ]["sha256"] == canary.sha(report)
     with tarfile.open(out / "measurement-reports.tar") as archive:
-        assert (
-            archive.extractfile("failed-worker/measurements/partial/sample.json").read()
-            == report.read_bytes()
-        )
+        stream = archive.extractfile("failed-worker/measurements/partial/sample.json")
+        assert stream is not None
+        with stream:
+            assert stream.read() == report.read_bytes()
 
 
 def test_raw_capture_refuses_report_aliases_and_preserves_external_bytes(tmp_path):
@@ -148,9 +148,13 @@ def test_raw_capture_materializes_shared_regular_bytes_without_following_aliases
     with tarfile.open(out / "measurement-reports.tar") as archive:
         members = archive.getmembers()
         assert all(member.isfile() for member in members)
-        assert [archive.extractfile(member).read() for member in members] == [
-            source.read_bytes()
-        ] * 2
+        contents = []
+        for member in members:
+            stream = archive.extractfile(member)
+            assert stream is not None
+            with stream:
+                contents.append(stream.read())
+        assert contents == [source.read_bytes()] * 2
     assert source.stat().st_nlink == 2
 
 

@@ -249,6 +249,7 @@ def test_nonempty_integrity_diagnostic_cannot_pass_prose_case(
         # Retain a real end-to-end failed observation, including every owning
         # sync and the failure status adapter. The remaining variants exercise
         # diagnostic assessment without repeating identical expensive writes.
+        assert integration_root is not None
         result = evaluate.observe_case(controlled, spec, integration_root)
         assert result["status"] == "failed"
         checks, events = result["checks"], result["events"]

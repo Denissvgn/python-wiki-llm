@@ -393,3 +393,89 @@ def test_same_version_stale_provider_is_rejected_by_actual_namespace_bytes(
         readiness.provider_observation(root)
     (installed / "__init__.py").write_bytes((source / "__init__.py").read_bytes())
     assert readiness.provider_observation(root)["files"] == 1
+
+
+def test_static_admission_aggregates_actual_same_launcher_typing_packages(
+    candidate, monkeypatch
+):
+    from llm_wiki_cli.services import extractor_helpers as helpers
+
+    missing = {"mcp", "tokenizers", "fastapi", "tomli", "markdown_it", "jsonschema"}
+    monkeypatch.setattr(readiness, "provider_observation", lambda root: {"files": 2})
+    monkeypatch.setattr(helpers, "get_prepared_binary", lambda *args: None)
+    monkeypatch.setattr(
+        readiness.importlib.util,
+        "find_spec",
+        lambda name: None if name in missing else object(),
+    )
+    environment = {
+        "tools": {
+            "actionlint": {
+                "status": "observed",
+                "version": "v1.7.12",
+                "path": "/controlled/actionlint",
+            }
+        }
+    }
+    report = readiness.capabilities(
+        candidate,
+        stages=("static",),
+        environment=environment,
+        helper={"status": "ready"},
+        native_languages=[],
+    )
+    assert {row["id"] for row in report["blockers"]} == {
+        "module:" + name for name in missing
+    }
+    assert all(
+        row["required"]
+        for row in report["capabilities"]
+        if row["id"] in {"module:" + name for name in missing}
+    )
+
+
+def test_stage_owned_environments_do_not_require_root_static_packages(
+    candidate, monkeypatch
+):
+    from llm_wiki_cli.services import extractor_helpers as helpers
+
+    observed = []
+    monkeypatch.setattr(readiness, "provider_observation", lambda root: {"files": 2})
+    monkeypatch.setattr(helpers, "get_prepared_binary", lambda *args: None)
+    monkeypatch.setattr(
+        readiness.importlib.util,
+        "find_spec",
+        lambda name: observed.append(name) or object(),
+    )
+    for stages in [("freeze",), ("builds",), ("artifacts",)]:
+        report = readiness.capabilities(
+            candidate,
+            stages=stages,
+            environment={"tools": {}},
+            helper={"status": "ready"},
+            native_languages=[],
+        )
+        assert report["blockers"] == []
+    assert observed == []
+    environment = {
+        "tools": {
+            "node": {
+                "status": "observed",
+                "version": "v24.18.0",
+                "path": "/controlled/node",
+            },
+            "npm": {
+                "status": "observed",
+                "version": "11.16.0",
+                "path": "/controlled/npm",
+            },
+        }
+    }
+    report = readiness.capabilities(
+        candidate,
+        stages=("host-core",),
+        environment=environment,
+        helper={"status": "ready"},
+        native_languages=[],
+    )
+    assert report["blockers"] == [] and set(observed) == {"pytest", "tokenizers"}
