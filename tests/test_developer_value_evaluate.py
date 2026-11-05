@@ -32,6 +32,22 @@ def prepared(tmp_path):
     return make
 
 
+@pytest.fixture(scope="module")
+def observed_prose_case(tmp_path_factory):
+    """Keep immutable results from one complete real owning-sync observation."""
+    api = runtime.load_provider(ROOT)
+    spec = next(case for case in verify_corpus()["cases"] if case["id"] == "G03")
+    root = tmp_path_factory.mktemp("prose-observation") / spec["id"]
+    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+        runtime.prepare_workspace(spec["project"], root)
+    result = evaluate.observe_case(api, spec, root)
+    assert result["status"] == "passed", result
+    # Each consumer decodes private dictionaries; no test receives the mutable
+    # provider, workspace, or event structures created by this observation.
+    return (json.dumps(spec), json.dumps(result),
+            (root / "wiki" / spec["mutation"]["path"]).read_bytes())
+
+
 def check_by_id(result, identity):
     return next(check for check in result["checks"] if check["id"] == identity)
 
@@ -190,9 +206,9 @@ def test_cli_requires_both_provider_and_output_before_execution(monkeypatch):
     assert failure.value.code == 2
 
 
-def test_prose_case_observes_real_owning_sync_and_validates_protected_artifacts(prepared):
-    api, spec, root = prepared("G03")
-    result = evaluate.observe_case(api, spec, root)
+def test_prose_case_observes_real_owning_sync_and_validates_protected_artifacts(observed_prose_case):
+    _, observed, _ = observed_prose_case
+    result = json.loads(observed)
     assert result["status"] == "passed"
     assert check_by_id(result, "description-prose-preserved")["observed"] is True
     assert check_by_id(result, "second-sync-idempotent")["observed"] is True
@@ -201,12 +217,23 @@ def test_prose_case_observes_real_owning_sync_and_validates_protected_artifacts(
 
 
 @pytest.mark.parametrize("defect", ["missing-selected", "degraded", "unsupported", "unavailable-coverage", "wrong-selected", "unavailable-result"])
-def test_nonempty_integrity_diagnostic_cannot_pass_prose_case(prepared, defect):
-    api, spec, root = prepared("G03")
-    with evaluate._cwd(root):
-        ready = api.inspect_concept(spec["selector"], src_dir="src", wiki_dir="wiki")
-    diagnostic = deepcopy(ready)
+def test_nonempty_integrity_diagnostic_cannot_pass_prose_case(
+    prepared, observed_prose_case, tmp_path, defect,
+):
+    spec_json, observed_json, page = observed_prose_case
+    spec, observed = json.loads(spec_json), json.loads(observed_json)
+    integrity = [event for event in observed["events"]
+                 if event["step"].get("action") == "validate-protected-artifacts"]
+    assert len(integrity) == 1
+    ready = integrity[0]["result"]
+    integration_root = None
     if defect == "missing-selected":
+        api, spec, integration_root = prepared("G03")
+        with evaluate._cwd(integration_root):
+            ready = api.inspect_concept(spec["selector"], src_dir="src", wiki_dir="wiki")
+    assert evaluate._selected_integrity_ready(ready, spec["selector"]) is True
+    diagnostic = deepcopy(ready)
+    if integration_root is not None:
         diagnostic["concept"]["found"] = False
         diagnostic["concept"]["concept"] = None
     elif defect in {"degraded", "unsupported"}:
@@ -218,11 +245,34 @@ def test_nonempty_integrity_diagnostic_cannot_pass_prose_case(prepared, defect):
     else:
         diagnostic["status"] = "unavailable"
     controlled = SimpleNamespace(inspect_concept=lambda *args, **kwargs: diagnostic)
-    result = evaluate.observe_case(controlled, spec, root)
-    observed = check_by_id(result, "protected-artifacts-validated")
-    assert observed["state"] == "failed" and observed["observed"] is False
-    assert result["status"] == "failed"
-    raw = next(event for event in result["events"] if event["step"].get("action") == "validate-protected-artifacts")
+    if defect == "missing-selected":
+        # Retain a real end-to-end failed observation, including every owning
+        # sync and the failure status adapter. The remaining variants exercise
+        # diagnostic assessment without repeating identical expensive writes.
+        result = evaluate.observe_case(controlled, spec, integration_root)
+        assert result["status"] == "failed"
+        checks, events = result["checks"], result["events"]
+    else:
+        root = tmp_path / "diagnostic-assessment"
+        authored = root / "wiki" / spec["mutation"]["path"]
+        authored.parent.mkdir(parents=True)
+        authored.write_bytes(page)
+        case = evaluate._Case(controlled, spec, root)
+        case.events = [event for event in observed["events"]
+                       if event["step"].get("action") != "validate-protected-artifacts"]
+        before = runtime.tree_hashes(root)
+        with evaluate._cwd(root):
+            case.observe(integrity[0]["step"])
+            checks = evaluate._assess(case)
+        assert runtime.tree_hashes(root) == before
+        events = case.events
+        unchanged = {check["id"]: check for check in observed["checks"]
+                     if check["id"] != "protected-artifacts-validated"}
+        assert {check["id"]: check for check in checks
+                if check["id"] != "protected-artifacts-validated"} == unchanged
+    assessed = check_by_id({"checks": checks}, "protected-artifacts-validated")
+    assert assessed["state"] == "failed" and assessed["observed"] is False
+    raw = next(event for event in events if event["step"].get("action") == "validate-protected-artifacts")
     assert raw["result"] == diagnostic
 
 
