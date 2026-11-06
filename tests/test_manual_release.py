@@ -1,6 +1,7 @@
 """Release-session authority, interruption and literal public-byte boundaries."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from copy import deepcopy
 import hashlib
 import io
@@ -1036,7 +1037,269 @@ def test_intent_directory_flush_failure_prevents_external_effect(project, monkey
     with pytest.raises(OSError, match="did not become durable"):
         controller.advance()
     assert remote.writes == []
-    assert controller.store.load()["pending"]["action"] == "qualify"
+    # The state write itself failed before perform was reached. A successful
+    # rollback is also safe when the directory-flush primitive remains failed.
+    assert controller.store.load()["pending"] is None
+
+
+class DispatchClient(TagClient):
+    def __init__(self, source):
+        super().__init__(source=source)
+        self.main_source, self.main_reads = source, 0
+        self.before_final_main: Callable[[], None] | None = None
+        self.posts = []
+
+    def get(self, path):
+        if path == "/git/ref/heads/main":
+            self.main_reads += 1
+            if self.main_reads == 2 and self.before_final_main is not None:
+                self.before_final_main()
+            return {"ref": "refs/heads/main", "object": {"sha": self.main_source}}
+        return super().get(path)
+
+    def list(self, path, key):
+        assert key == "workflow_runs"
+        return []
+
+    def request(self, method, path, payload):
+        assert method == "POST" and path.endswith("/dispatches")
+        # The pinned 2026-03-10 API returns the exact run details by default.
+        assert set(payload) == {"ref", "inputs"}
+        self.posts.append(payload)
+        return {"workflow_run_id": 42, "run_url": "https://api.github.com/repos/example/agent-wiki/actions/runs/42"}
+
+
+def dispatch_session(project, monkeypatch, action):
+    client = DispatchClient(git(project, "rev-parse", "HEAD"))
+    api = backend(project, client)
+    monkeypatch.setattr(api, "_origin", lambda: "git@github.com:example/agent-wiki.git")
+    monkeypatch.setattr(api, "admit", lambda state: {"admitted": True})
+    monkeypatch.setattr(api, "check_bundle", lambda state: {})
+    controller, _ = session(project, api)
+    state = controller.store.load()
+    state["phase"] = {"qualify": "prepared", "dry-run": "qualified", "publish": "tagged"}[action]
+    state["qualification"] = {"run_id": 7, "artifacts": {
+        "wheel": {"sha256": "a" * 64}, "sdist": {"sha256": "b" * 64}}}
+    state["tag"] = {"verified": True, "candidate_sha": state["candidate_sha"],
+                    "refs": {"refs/tags/v9.0.0": client.object_source,
+                             "refs/tags/v9.0.0^{}": state["candidate_sha"]}}
+    controller.store.save(state, "verified-input-fixture")
+    return controller, client
+
+
+@pytest.mark.parametrize("when", ["prepare", "after-intent"])
+@pytest.mark.parametrize("mutation", ["absent", "lightweight", "wrong-source", "retargeted-object"])
+def test_published_tag_is_revalidated_before_publisher_dispatch(project, monkeypatch, when, mutation):
+    controller, client = dispatch_session(project, monkeypatch, "publish")
+    original_source, original_object = client.source, client.object_source
+
+    def changed():
+        if mutation == "absent":
+            client.absent = True
+        elif mutation == "lightweight":
+            client.kind = "commit"
+        elif mutation == "wrong-source":
+            client.source = "f" * 40
+        else:
+            client.object_source = "d" * 40
+
+    if when == "prepare":
+        changed()
+    else:
+        save = controller.store.save
+
+        def after_intent(state, event):
+            result = save(state, event)
+            if event == "intent-publish":
+                changed()
+            return result
+
+        monkeypatch.setattr(controller.store, "save", after_intent)
+    with pytest.raises(manual.SessionError):
+        controller.advance()
+    assert client.posts == []
+    assert controller.store.load()["phase"] == "tagged"
+    assert controller.store.load()["pending"] is None
+    client.absent, client.kind = False, "tag"
+    client.source, client.object_source = original_source, original_object
+    if when == "after-intent":
+        monkeypatch.setattr(controller.store, "save", save)
+    submitted = controller.advance()
+    assert submitted["pending"]["response"]["workflow_run_id"] == 42
+    assert len(client.posts) == 1 and client.posts[0]["inputs"]["publish"] == "true"
+
+
+@pytest.mark.parametrize("action", manual.WORKFLOWS)
+def test_main_change_at_last_validation_refuses_unattempted_dispatch(project, monkeypatch, action):
+    controller, client = dispatch_session(project, monkeypatch, action)
+    original = client.main_source
+    client.before_final_main = lambda: setattr(client, "main_source", "f" * 40)
+    with pytest.raises(manual.SessionError, match="Main advanced"):
+        controller.advance()
+    assert client.posts == [] and controller.store.load()["pending"] is None
+    client.main_source = original
+    submitted = controller.advance()
+    assert submitted["pending"]["response"]["workflow_run_id"] == 42 and len(client.posts) == 1
+
+
+@pytest.mark.parametrize("mutation", ["interrupt", "source"])
+def test_final_remote_validation_remains_before_last_source_guard(project, monkeypatch, mutation):
+    controller, client = dispatch_session(project, monkeypatch, "publish")
+
+    def changed():
+        if mutation == "interrupt":
+            raise KeyboardInterrupt
+        (project / "uncommitted.txt").write_text("Changed while reading remote refs")
+
+    client.before_final_main = changed
+    error = KeyboardInterrupt if mutation == "interrupt" else manual.SessionError
+    with pytest.raises(error):
+        controller.advance()
+    assert client.posts == [] and controller.store.load()["pending"] is None
+    if mutation == "source":
+        (project / "uncommitted.txt").unlink()
+    assert controller.advance()["pending"]["response"]["workflow_run_id"] == 42
+    assert len(client.posts) == 1
+
+
+@pytest.mark.parametrize("action", ["qualify", "publish"])
+@pytest.mark.parametrize("when", ["intent-save", "source-check"])
+def test_interrupted_unattempted_intent_can_resume_without_stranding_a_write(project, monkeypatch, action, when):
+    remote = Remote()
+    controller, _ = session(project, remote)
+    state = controller.store.load()
+    state["phase"] = "prepared" if action == "qualify" else "tagged"
+    controller.store.save(state, "verified-stage-fixture")
+    if when == "intent-save":
+        save = controller.store.save
+
+        def interrupted(state, event):
+            result = save(state, event)
+            if event == "intent-" + action:
+                raise KeyboardInterrupt
+            return result
+
+        monkeypatch.setattr(controller.store, "save", interrupted)
+    else:
+        same = controller._same_source
+        checks = []
+
+        def interrupted_source(state):
+            checks.append(1)
+            if len(checks) == 2:
+                raise KeyboardInterrupt
+            return same(state)
+
+        monkeypatch.setattr(controller, "_same_source", interrupted_source)
+    with pytest.raises(KeyboardInterrupt):
+        controller.advance()
+    assert remote.writes == [] and controller.store.load()["pending"] is None
+    if when == "intent-save":
+        monkeypatch.setattr(controller.store, "save", save)
+    controller.advance()
+    assert [name for name, _ in remote.writes] == [action]
+
+
+def test_interrupted_repair_restores_the_unresolved_preceding_intent(project, monkeypatch):
+    remote = Remote()
+    controller, _ = session(project, remote)
+    for _ in range(5):
+        controller.advance()
+    previous = deepcopy(controller.store.load()["pending"])
+    assert previous["action"] == "tag"
+    remote.results["tag"] = {"retry_safe": True}
+    save = controller.store.save
+
+    def interrupted(state, event):
+        result = save(state, event)
+        if event == "intent-tag":
+            raise KeyboardInterrupt
+        return result
+
+    monkeypatch.setattr(controller.store, "save", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        controller.advance()
+    assert controller.store.load()["pending"] == previous
+    assert [name for name, _ in remote.writes].count("tag") == 1
+
+
+def test_explicit_tagged_disposition_retains_tag_and_unblocks_a_new_version(project, monkeypatch):
+    git(project, "tag", "--annotate", "v9.0.0", "--message", "Original qualified tag")
+    local_tag = git(project, "show-ref", "--verify", "refs/tags/v9.0.0")
+    controller, client = dispatch_session(project, monkeypatch, "publish")
+    client.object_source = local_tag.split()[0]
+    state = controller.store.load()
+    state.pop("tag")
+    state["tag"] = controller.backend.reconcile(state, {"action": "tag"})
+    controller.store.save(state, "verified-original-tag")
+    original_tag, qualification = deepcopy(state["tag"]), deepcopy(state["qualification"])
+    client.main_source = "f" * 40
+    with pytest.raises(manual.SessionError, match="Main advanced"):
+        controller.advance()
+    assert client.posts == [] and controller.store.load()["pending"] is None
+    assert controller.store.lease.exists()
+    with pytest.raises(manual.SessionError, match="requires a reason"):
+        controller.supersede("  ")
+    reads = client.main_reads, list(client.calls)
+    disposed = controller.supersede("Main advanced; retain v9.0.0 and prepare a new version")
+    assert disposed["phase"] == "superseded" and disposed["supersession_from"] == "tagged"
+    assert disposed["tag"] == original_tag and disposed["qualification"] == qualification
+    assert disposed["tag_retained"] == {"ref": "refs/tags/v9.0.0", "object_sha": client.object_source,
+                                       "source_sha": state["candidate_sha"]}
+    assert (client.main_reads, client.calls) == reads and client.posts == []
+    assert git(project, "show-ref", "--verify", "refs/tags/v9.0.0") == local_tag
+    assert not controller.store.lease.exists()
+    assert controller.advance()["phase"] == "superseded"
+    (project / "pyproject.toml").write_text('[project]\nname="agent-wiki-cli"\nversion="9.0.1"\n')
+    (project / "CHANGELOG.md").write_text("## [9.0.1] - 2026-11-06\n\nNew product version.\n")
+    git(project, "add", ".")
+    git(project, "commit", "-qm", "New candidate version")
+    next_store = manual.Store(project, project / "private/next-version")
+    replacement = manual.Controller(next_store).initialize("example/agent-wiki", git(project, "rev-parse", "HEAD"))
+    assert replacement["version"] == "9.0.1" and replacement["candidate_sha"] != state["candidate_sha"]
+    assert next_store.lease.exists()
+    assert controller.supersede("Retry the recorded local disposition") == disposed
+    assert manual.read(next_store.lease)["session_id"] == replacement["session_id"]
+    assert git(project, "show-ref", "--verify", "refs/tags/v9.0.0") == local_tag
+
+
+@pytest.mark.parametrize("case", [
+    "pending-publish", "failed-publish", "publication-receipt", "published", "github-released", "unverified-tag",
+])
+def test_tagged_disposition_cannot_abandon_publication_or_unverified_tag(project, monkeypatch, case):
+    controller, client = dispatch_session(project, monkeypatch, "publish")
+    state = controller.store.load()
+    if case in {"pending-publish", "failed-publish"}:
+        pending: dict[str, object] = {"action": "publish", "operation_id": "possibly-submitted"}
+        if case == "failed-publish":
+            pending["failure"] = {"failed": True, "conclusion": "failure"}
+        state["pending"] = pending
+    elif case == "publication-receipt":
+        state["publication"] = {"verified": True}
+    elif case in {"published", "github-released"}:
+        state["phase"] = case
+    else:
+        state["tag"]["verified"] = False
+    controller.store.save(state, "retained-publication-fixture")
+    with pytest.raises(manual.SessionError):
+        controller.supersede("A new main candidate is available")
+    assert controller.store.load()["phase"] == state["phase"]
+    assert controller.store.lease.exists() and client.posts == []
+
+
+def test_tagged_disposition_cli_is_local_and_does_not_need_credentials(project, monkeypatch, capsys):
+    controller, client = dispatch_session(project, monkeypatch, "publish")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Local disposition does not query remote credentials or mutate tags")
+
+    monkeypatch.setattr(manual.subprocess, "check_output", forbidden)
+    monkeypatch.setattr(manual, "GitHubBackend", forbidden)
+    assert manual.main(["supersede", "--root", str(project), "--work", str(controller.store.work),
+                        "--reason", "Retain the verified tag; prepare a new version"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["supersession_from"] == "tagged" and result["tag_retained"]["ref"] == "refs/tags/v9.0.0"
+    assert client.posts == [] and not controller.store.lease.exists()
 
 
 def test_new_session_directory_ancestors_are_flushed(project, monkeypatch):

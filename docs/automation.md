@@ -446,6 +446,10 @@ dispatch remains pending rather than being submitted again. Incomplete
 prerequisites are reported together before qualification. Each checkout family
 has one active session lease; `supersede --reason TEXT` records an explicit
 candidate replacement and refuses to abandon unresolved irreversible work.
+A session with a verified tag and no publication attempt can be superseded
+explicitly. Its tag and qualified evidence remain retained; prepare a new version
+instead of recycling that tag for another candidate. Unresolved publication
+attempts and published releases must be reconciled.
 
 The watcher defaults to a six-hour observation budget at thirty-second
 intervals. `--interval` accepts 5–60 seconds, and `--max-polls` accepts 1–2880.

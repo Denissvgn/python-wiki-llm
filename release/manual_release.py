@@ -359,14 +359,17 @@ class Controller:
         previous = state.get("pending")
         state["pending"] = {"action": action, "started_at": now(), "before": prepared,
                             "operation_id": uuid.uuid4().hex, "repair": repair}
-        self.store.save(state, "intent-" + action)
         try:
+            self.store.save(state, "intent-" + action)
+            validate = getattr(self.backend, "validate_submission", None)
+            if validate is not None:
+                validate(state, action)
             self._same_source(state)
-        except (SessionError, OSError, subprocess.SubprocessError):
-            # Validation failed before the external effect was attempted. Keep
-            # any unresolved preceding repair intent instead of hiding it.
+        except BaseException:
+            # No effect has been attempted in this region, including on an
+            # interruption. Restore any preceding unresolved repair intent.
             state["pending"] = previous
-            self.store.save(state, "source-refused-before-submission-" + action)
+            self.store.save(state, "validation-refused-before-submission-" + action)
             raise
         try:
             result = self.backend.perform(state, state["pending"])
@@ -404,11 +407,33 @@ class Controller:
         require(bool(reason.strip()), "Supersession requires a reason")
         with self.store.lock():
             state = self.store.load()
-            require(state["phase"] not in {"tagged", "published", "github-released", "complete"},
-                    "A tagged or published release must be reconciled, not superseded")
+            if state["phase"] == "superseded":
+                self.store.release(state)
+                return state
+            previous_phase = state["phase"]
+            require(previous_phase not in {"published", "github-released", "complete"},
+                    "A published release must be reconciled, not superseded")
             require(not state.get("pending") or state["pending"]["action"] in {"qualify", "dry-run"},
                     "An irreversible write is unresolved")
-            state.update(phase="superseded", supersession_reason=reason.strip())
+            if previous_phase == "tagged":
+                require(state.get("pending") is None and state.get("publication") is None,
+                        "A publication attempt must be reconciled, not superseded")
+                tag = state.get("tag", {})
+                require(isinstance(tag, dict), "Tagged supersession requires a verified tag record")
+                reference = "refs/tags/v" + state["version"]
+                refs = tag.get("refs", {})
+                require(tag.get("verified") is True and tag.get("candidate_sha") == state["candidate_sha"]
+                        and isinstance(refs, dict) and set(refs) == {reference, reference + "^{}"}
+                        and isinstance(refs.get(reference), str)
+                        and re.fullmatch(r"[0-9a-f]{40}", refs[reference]) is not None
+                        and refs[reference + "^{}"] == state["candidate_sha"],
+                        "Tagged supersession requires the recorded verified tag identity")
+                # This is an explicit local disposition, not a remote tag
+                # deletion/move or a fresh assertion about remote state.
+                state["tag_retained"] = {"ref": reference, "object_sha": refs[reference],
+                                         "source_sha": state["candidate_sha"]}
+            state.update(phase="superseded", supersession_from=previous_phase,
+                         supersession_reason=reason.strip())
             self.store.save(state, "explicitly-superseded")
             self.store.release(state)
             return state
@@ -498,7 +523,7 @@ class GitHubBackend:
         self._origin()
         if action == "tag":
             self._tag(state, allow_absent=True)
-        elif action == "github-release":
+        elif action in {"publish", "github-release"}:
             self._tag(state)
         if action in WORKFLOWS:
             workflow = WORKFLOWS[action][0]
@@ -507,6 +532,13 @@ class GitHubBackend:
                     "An existing candidate workflow is active; reconcile it first")
             return {"run_ids": [r["id"] for r in runs]}
         return {}
+
+    def validate_submission(self, state: dict, action: str) -> None:
+        """Recheck mutable remote inputs while a refused write can still roll back."""
+        if action in WORKFLOWS:
+            self._main(state)
+            if action == "publish":
+                self._tag(state)
 
     def _inputs(self, state: dict, action: str) -> dict:
         if action == "qualify":
