@@ -1,4 +1,4 @@
-"""Read-only MCP service helpers for exposing an LLM Wiki to agents.
+"""Workspace read-only MCP services for exposing an LLM Wiki to agents.
 
 The pure ``McpWikiService`` methods intentionally do not import the optional
 MCP SDK.  This keeps the default install dependency-free and provides a stable
@@ -14,6 +14,7 @@ import json
 import re
 import sys
 import secrets
+from functools import wraps
 from contextlib import asynccontextmanager
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
@@ -256,6 +257,8 @@ class McpServerConfig:
     enable_sessions: bool = True
     max_sessions: int = 8
     comparison_policy: str = "auto"
+    helper_preparation: str = "auto"
+    helper_cache_dir: str | None = None
 
 
 @dataclass(frozen=True)
@@ -407,8 +410,30 @@ class OriginValidationMiddleware:
         await self.app(scope, receive, send)
 
 
+def _bound_operation(function):
+    """Give each MCP call a fresh helper binding and its comparison policy."""
+    compared = ac.bound_comparison(function)
+
+    @wraps(function)
+    def wrapped(self, *args, **kwargs):
+        from .helper_runtime import helper_operation
+        # Auto permits setup; it never overrides a stricter trusted host scope.
+        policy = "never" if self.helper_preparation == "never" else None
+        try:
+            with helper_operation(policy, fresh=True,
+                                  cache_dir=self.helper_cache_dir):
+                return compared(self, *args, **kwargs)
+        except Exception as exc:
+            try:
+                public_api._raise_helper_preparation_api_error(exc)
+            except LlmWikiApiError as failure:
+                raise _api_mcp_error(failure) from exc
+            raise
+    return wrapped
+
+
 class McpWikiService:
-    """Pure read/check operations exposed through MCP tools and resources."""
+    """Workspace read/check operations with managed helper provisioning."""
 
     def __init__(
         self,
@@ -423,7 +448,15 @@ class McpWikiService:
         workflow_profile: WorkflowProfile | None = None,
         enable_sessions: bool = True,
         max_sessions: int = 8,
+        helper_preparation: str = "auto",
+        helper_cache_dir: str | None = None,
     ):
+        if not isinstance(helper_preparation, str) or helper_preparation not in {"auto", "never"}:
+            raise McpWikiError("helper_preparation must be auto or never")
+        if helper_cache_dir is not None and not isinstance(helper_cache_dir, str):
+            raise McpWikiError("helper_cache_dir must be a path string")
+        self.helper_preparation = helper_preparation
+        self.helper_cache_dir = helper_cache_dir
         self.comparison_policy = ac.selected_policy(comparison_policy)
         self.src_dir = src_dir
         self.wiki_dir = Path(wiki_dir)
@@ -515,13 +548,13 @@ class McpWikiService:
             return {}
         return {"allow_external_src": True}
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_entity(self, entity_id: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_for("entities", entity_id)
         return self._read_page_result(page)
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_module(self, module_id_or_source_path: str) -> dict:
         source_snapshot = self._assert_source_selection_current()
         page_id = self._resolve_module_page_id(
@@ -531,13 +564,13 @@ class McpWikiService:
         page = self._page_for("modules", page_id)
         return self._read_page_result(page)
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_flow(self, flow_id: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_for("flows", flow_id)
         return self._read_page_result(page)
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_architecture_page(self, page: str) -> dict:
         self._assert_source_selection_current()
         if not isinstance(page, str) or page.strip() not in _ARCHITECTURE_PAGE_KINDS:
@@ -545,7 +578,7 @@ class McpWikiService:
         root_page = self._page_from_uri(wiki_surface.mcp_uri(page.strip()))
         return self._read_page_result(root_page)
 
-    @ac.bound_comparison
+    @_bound_operation
     def query_graph(self, query: Mapping[str, object]) -> dict:
         query_type, value, limit = _graph_query_args(query)
         try:
@@ -563,7 +596,7 @@ class McpWikiService:
         except DocumentationQueryError as exc:
             raise McpWikiError(str(exc)) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def query_documentation(self, request: Mapping[str, Any]) -> dict:
         """Dispatch an exact bounded query through the shared API contract."""
 
@@ -580,7 +613,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_concept(
         self,
         locator_or_exact_route: str,
@@ -595,7 +628,7 @@ class McpWikiService:
             limit=bounded_limit,
         )
 
-    @ac.bound_comparison
+    @_bound_operation
     def related_concepts(
         self,
         locator_or_exact_route: str,
@@ -616,7 +649,7 @@ class McpWikiService:
             kinds=selected_kinds,
         )
 
-    @ac.bound_comparison
+    @_bound_operation
     def list_concept_sections(
         self,
         locator_or_exact_route: str,
@@ -634,7 +667,7 @@ class McpWikiService:
             ownership=selected_ownership,
         )
 
-    @ac.bound_comparison
+    @_bound_operation
     def traverse_typed_graph(
         self,
         locator_or_exact_route: str,
@@ -673,7 +706,7 @@ class McpWikiService:
             include_evidence=include_evidence,
         )
 
-    @ac.bound_comparison
+    @_bound_operation
     def explain_evidence(
         self,
         locator_or_exact_route: str,
@@ -688,7 +721,7 @@ class McpWikiService:
             limit=bounded_limit,
         )
 
-    @ac.bound_comparison
+    @_bound_operation
     def inspect_concept(
         self, locator_or_exact_route: str, *, live: bool = False,
         limit: int = 20, include_evidence: bool = False,
@@ -704,7 +737,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_knowledge_coverage(self, live: bool = False) -> dict:
         """Explain eligible observations without treating unmodeled content as drift."""
         try:
@@ -715,7 +748,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def search_wiki(
         self,
         query: str,
@@ -745,7 +778,7 @@ class McpWikiService:
                 raise
             raise McpWikiError(str(exc)) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def build_budgeted_context(self, request: Mapping[str, Any]) -> str:
         """Return precisely the canonical v3 text counted by the host counter."""
         from .context_budget import validate_request
@@ -778,7 +811,7 @@ class McpWikiService:
                                                         "diagnostics": result.diagnostics})
         return result.rendered
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_maintenance_queue(self, limit: int = 30) -> dict:
         from .maintenance_queue import validate_queue_limit
 
@@ -794,7 +827,7 @@ class McpWikiService:
             raise McpWikiError("Invalid queue limit", code="invalid-request",
                                data={"field": "limit"}) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_maintenance_status(self, record_id: str | None = None,
                                limit: int = 30, live: bool = True) -> dict:
         """Read ordinary review state; mutations remain outside this MCP surface."""
@@ -807,7 +840,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def build_task_context(self, request: Mapping[str, Any]) -> str:
         from .task_contract import normalize_task_request
         from .task_context import _counter
@@ -829,7 +862,7 @@ class McpWikiService:
                                code="cannot-fit", data={"accounting": dict(result.accounting)})
         return result.rendered
 
-    @ac.bound_comparison
+    @_bound_operation
     def open_context_session(self) -> dict:
         if not self.enable_sessions:
             raise McpWikiError("Sessions are not enabled by the host", code="session-unavailable")
@@ -853,14 +886,14 @@ class McpWikiService:
             raise McpWikiError("Unknown or expired session", code="invalid-session")
         return self._sessions[session_id]
 
-    @ac.bound_comparison
+    @_bound_operation
     def read_context_session(self, session_id, request, *, if_result_id=None, delta=False):
         try:
             return self._session(session_id).read(request, if_result_id=if_result_id, delta=delta)
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def read_compact_context_session(
         self, session_id, request, view_options=None, *, if_result_id=None,
         if_view_id=None, delta=False,
@@ -872,7 +905,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_task_context_receipt(
         self, session_id, request_id, result_id, *, current=False,
     ):
@@ -882,7 +915,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def hint_context_session(self, session_id, *, unsaved_buffers=False):
         try:
             self._session(session_id).hint(unsaved_buffers=unsaved_buffers)
@@ -890,19 +923,19 @@ class McpWikiService:
             raise _api_mcp_error(exc) from exc
         return {"state": "hint-recorded", "freshness_established": False}
 
-    @ac.bound_comparison
+    @_bound_operation
     def close_context_session(self, session_id):
         self._session(session_id).close()
         del self._sessions[session_id]
         return {"state": "closed"}
 
-    @ac.bound_comparison
+    @_bound_operation
     def close_sessions(self):
         for session in self._sessions.values():
             session.close()
         self._sessions.clear()
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_context(
         self,
         budget_tokens: int = 32000,
@@ -969,7 +1002,7 @@ class McpWikiService:
             ) from exc
         return context_cmd._protocol_success_payload(validated, payload, warnings)
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_context_packet(
         self,
         budget_tokens: int = 32000,
@@ -1038,7 +1071,7 @@ class McpWikiService:
             "packet": packet.to_payload(),
         }
 
-    @ac.bound_comparison
+    @_bound_operation
     def check_wiki(
         self,
         strict: bool = False,
@@ -1063,7 +1096,7 @@ class McpWikiService:
         payload["format"] = format
         return payload
 
-    @ac.bound_comparison
+    @_bound_operation
     def get_status(self) -> dict:
         self._assert_source_selection_current()
         wiki = self.wiki_dir
@@ -1145,7 +1178,7 @@ class McpWikiService:
             except LlmWikiApiError as failure:
                 raise _api_mcp_error(failure) from exc
 
-    @ac.bound_comparison
+    @_bound_operation
     def read_resource(self, uri: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_from_uri(uri)
@@ -1162,7 +1195,7 @@ class McpWikiService:
             },
         }
 
-    @ac.bound_comparison
+    @_bound_operation
     def list_resources(self) -> list[dict]:
         self._assert_source_selection_current()
         resources = []
@@ -1314,6 +1347,8 @@ def create_mcp_server(config: McpServerConfig):
         workflow_profile=config.workflow_profile,
         enable_sessions=config.enable_sessions,
         max_sessions=config.max_sessions,
+        helper_preparation=config.helper_preparation,
+        helper_cache_dir=config.helper_cache_dir,
     )
 
     @asynccontextmanager
@@ -1326,7 +1361,8 @@ def create_mcp_server(config: McpServerConfig):
     server = FastMCP(
         "llm-wiki",
         instructions=(
-            "Read-only access to the local LLM Wiki. Use tools to fetch wiki pages, "
+            "Read-only workspace access to the local LLM Wiki. Source analysis "
+            "may prepare bundled helpers in managed caches unless disabled. Use tools to fetch wiki pages, "
             "search documentation, query documentation and knowledge graphs, "
             "request generated context, and run checks."
         ),

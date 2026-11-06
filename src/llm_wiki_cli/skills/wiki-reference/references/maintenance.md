@@ -80,7 +80,7 @@ profile, helper/cache bindings and generation options. The examples below use
 source `.`, wiki `docs/llm_wiki` and canonical source `src/orders.py`; replace
 them with the actual bindings. Append the original selection and explicit
 `--helper-cache-dir` to every applicable command. Otherwise retain the same
-Git/environment cache lookup; do not substitute a new cache. Native filesystem
+environment/default helper lookup; do not substitute a new cache. Native filesystem
 and cache arguments retain native spelling; request `source` and extract
 `--paths` use canonical POSIX paths relative to the source root.
 Snippets use POSIX/Git Bash quoting; preserve the same argument values with

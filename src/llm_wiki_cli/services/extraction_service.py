@@ -13,6 +13,7 @@ import subprocess
 import sys
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -842,6 +843,11 @@ def _prepare_inventory_build_context(
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
     source_file_by_path = _source_files_by_path(source_snapshot)
+    from .helper_preparation import prepare_operation_helpers
+    prepare_operation_helpers(
+        source_snapshot, registry, only_files=request.only_files,
+        cache_dir=request.helper_cache_dir,
+    )
     cache_key, cache_files, source_hashes = _load_inventory_cache_state(
         request, source_snapshot, registry, cache, source_file_by_path
     )
@@ -889,6 +895,22 @@ def _prepare_inventory_build_context(
         implementation_cache_hashes=implementation_cache_hashes,
         extraction_cache_hashes=extraction_cache_hashes,
     )
+
+
+def prepare_inventory_helpers(request: InventoryRequest) -> None:
+    """Apply the same validated source/plugin selection before an earlier capture.
+
+    This barrier does not extract files or read/write the inventory cache. It
+    lets owning workflows pin their helpers before computing other cache keys.
+    """
+    from dataclasses import replace
+    from .helper_runtime import current_helper_operation
+    if current_helper_operation() is None:
+        return
+    _prepare_inventory_build_context(replace(
+        request, cache_options=None, capture_implementation_observations=False,
+        implementation_cache_artifacts=None,
+    ))
 
 
 def _source_snapshot_for_inventory_request(
@@ -1339,7 +1361,10 @@ def _build_builtin_extraction_kwargs(
 
 
 def _inventory_helper_cache_dir(request: InventoryRequest) -> str | None:
-    return request.helper_cache_dir
+    from .helper_runtime import current_helper_operation
+    operation = current_helper_operation()
+    return (request.helper_cache_dir if request.helper_cache_dir is not None
+            else operation.cache_dir if operation is not None else None)
 
 
 def _run_inventory_plans(
@@ -1369,10 +1394,11 @@ def _run_parallel_safe_inventory_plans(
         try:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 for outcome in executor.map(
-                    lambda plan: with_progress(
-                        progress, _run_extraction_plan, plan, fresh_instance=True
+                    lambda item: item[0].run(
+                        with_progress, progress, _run_extraction_plan,
+                        item[1], fresh_instance=True,
                     ),
-                    parallel_safe_plans,
+                    [(copy_context(), plan) for plan in parallel_safe_plans],
                 ):
                     outcomes_by_language[outcome.language] = outcome
         except (MemoryError, OSError, RuntimeError) as exc:

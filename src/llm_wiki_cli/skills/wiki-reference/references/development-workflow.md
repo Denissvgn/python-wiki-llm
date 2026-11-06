@@ -63,9 +63,12 @@ bounded change, run those checks, and inspect actual outcomes. Checks should mat
 the change and applicable repository requirements; repeat successful gates only
 for changed inputs, failures, or unresolved concerns.
 
-Establish the capabilities required by a check before running it: prepared
-helpers, runtime/toolchain, and relevant process or socket permissions. A missing
-prerequisite is an environment failure, not a product defect or passing coverage.
+Establish the executable runtime/toolchain and process or socket permissions
+required by a check. Normal analysis prepares required bundled helpers in its
+managed cache automatically; explicit strict reads and inspection never do.
+Prewarm deliberately when a strict check needs an artifact not already present.
+A missing prerequisite or failed setup is an environment failure, not a product
+defect or passing coverage.
 Use [Extractors and dependencies](extractors-dependencies.md) for helper recovery.
 Retain the original failure and successful corrective reruns separately.
 

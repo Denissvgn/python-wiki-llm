@@ -5,7 +5,7 @@ description: Bootstrap a first LLM Wiki for an existing codebase, complete a bou
 
 # wiki-bootstrap
 
-Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **prepare helpers → bootstrap → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → final owning sync/re-anchor → lint/ci-check → policy-aware handoff**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
+Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **bootstrap with automatic helper setup → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → final owning sync/re-anchor → lint/ci-check → policy-aware handoff**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
 
 In an `external_agent_docs` run, this skill supplies the deterministic
 `bootstrap-source` baseline only. Write the wiki inside the explicit
@@ -97,26 +97,38 @@ it from generated artifacts.
    or migration. Do not attempt to preserve it by passing `--overwrite`;
    bootstrap deliberately has no public existing-target mode.
 
-2. **Prepare helpers through the CLI.**
+2. **Use automatic helper setup or optional prewarming.** Normal bootstrap
+   detects the helpers required by the selected source and reuses or prepares
+   them before extraction. It uses a managed shared user cache by default and
+   can reuse valid existing project artifacts. No separate preparation command
+   is required. Cold preparation uses an installed runtime/compiler; a valid
+   native helper can be reused without its compiler. TypeScript still needs
+   Node.js to execute. The library does not install global Node.js, Go, Cargo,
+   or GHC.
+
+   For an explicitly requested warm cache or strict-read recovery, use:
 
    ```bash
    llm-wiki prepare-extractors --src-dir . --source-selection <profile>
    ```
 
-   For an external source root:
+   Optional prewarming for an external source root:
 
    ```bash
    llm-wiki prepare-extractors --src-dir <repo> --allow-external-src --source-selection <profile>
    ```
 
    When selecting a non-default helper cache, pass
-   `prepare-extractors --cache-dir <helper-cache>` here and
+   `prepare-extractors --cache-dir <helper-cache>` when prewarming and
    `bootstrap --helper-cache-dir <same-helper-cache>` below. The names differ,
-   but both refer to the same prepared-helper directory; `--cache-dir` on
+   but both refer to the same helper cache base; `--cache-dir` on
    source-reading commands, where supported, is the separate inventory cache.
    Use documented `LLM_WIKI_GO` / `LLM_WIKI_GHC` overrides when the default
-   toolchain is broken. Do not run npm/go/cargo/ghc helper setup manually. If
-   preparation reports unsupported sources, carry them into the final
+   toolchain is broken. Do not run npm/go/cargo/ghc helper setup manually.
+   Explicit `--read-only`, preview/plan, capability inspection, and
+   `--helper-preparation never` do not prepare helpers. If automatic setup fails,
+   fix the reported cause before retrying; do not repeatedly restart unchanged
+   failures. If preparation reports unsupported sources, carry them into the final
    report/backlog as coverage notices rather than silently treating the wiki as
    complete for those languages.
 

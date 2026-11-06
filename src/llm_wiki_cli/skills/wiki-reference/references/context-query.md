@@ -65,7 +65,9 @@ llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki
 
 `wiki` may be absent. `off` disables native reads; `auto` is not the same no-wiki
 route. Keep the user's actual roots, selection and permissions. The read does
-not create example source, install helpers or execute target code.
+not create example source or execute target code. Normal analysis may prepare
+its bundled helper cache; use `--helper-preparation never` when only existing
+helpers may be consumed.
 
 A native requirement needs current supported native knowledge. New authorized
 bootstrap selects current storage and ordinary maintenance ownership. Existing
@@ -249,11 +251,14 @@ file's detail was downgraded to fit the token budget.
 
 ## When context fails because a helper is unavailable
 
-Treat a missing or stale extractor helper as a recoverable setup prerequisite,
-not as an empty context result. Follow
-[helper recovery](extractors-dependencies.md#recover-a-failed-context-or-extraction-command).
+Normal analysis automatically prepares required bundled helpers before
+extraction. A failed automatic preparation reports its actual cause; resolve
+that cause before retrying. An explicit `--read-only`, preview, inspection, or
+`--helper-preparation never` request does not perform setup. Treat its missing
+or stale helper as a recoverable prerequisite, not an empty context result.
+Follow [helper recovery](extractors-dependencies.md#recover-a-failed-context-or-extraction-command).
 When setup is already authorized, run the error's preparation command separately
-and retry the original read once, preserving its source selection, helper
+and retry the original strict read once, preserving its source selection, helper
 cache, and `--read-only` option. Preparation can write or download; the read-only
 command itself never performs it.
 
@@ -510,8 +515,10 @@ Supplying `service=` performs no new extraction. Query methods on the built
 service perform no file I/O, extraction, network access, writes, or adapter
 registration.
 
-The read-only MCP server exposes `query_documentation` and the same dedicated
-knowledge operations. Use MCP `query_documentation` for snapshot-index
+The MCP server keeps source and wiki content read-only and exposes
+`query_documentation` and the same dedicated knowledge operations. Normal
+source analysis may prepare required bundled helper caches; server mode
+`--helper-preparation never` disables that setup. Use MCP `query_documentation` for snapshot-index
 `concept`, `related`, `surface`, or `typed` operations. Each current dedicated
 MCP knowledge-tool call constructs a live documentation service and therefore
 performs a full inventory; do not present those calls as a cheap narrow route.

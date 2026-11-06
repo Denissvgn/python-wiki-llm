@@ -765,9 +765,13 @@ def test_generated_agents_have_actionable_helper_recovery(agent, profile):
     if profile is SchemaRenderProfile.COMPACT:
         assert "authorized remedy, one retry" in content
         assert "otherwise disclose/use source/wiki" in content
-        assert "Reads never prepare helpers" in content
+        assert "Normal analysis prepares required bundled helpers automatically" in content
+        assert "strict read-only/preview/never calls do not" in content
     else:
         assert "## Helper recovery" in content
+        assert "Normal extraction automatically reuses or prepares" in content
+        assert "Explicit `--read-only`, preview/plan, capability inspection" in content
+        assert "`--helper-preparation never` never build or download helpers" in content
         assert "If setup is already authorized" in content
         assert "retry the original command once, retaining `--read-only`" in content
         assert "do not claim the failed context command succeeded" in content

@@ -401,6 +401,7 @@
     "services/bootstrap_recovery.py",
     "services/contracts.py",
     "services/extraction_service.py",
+    "services/helper_preparation.py",
     "services/helper_runtime.py",
     "services/implementation_evidence.py",
     "services/knowledge_envelope.py",

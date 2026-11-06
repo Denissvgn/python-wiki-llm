@@ -30,7 +30,7 @@ repository policy, or calling application did not provide.
   explicit adoption, durable identity, alias, lifecycle, review, verification,
   conflict, loss, or recovery operation.
 - [Extractors and dependencies](references/extractors-dependencies.md) — use
-  for prepared helpers, language analyzers, API/flow observations, dependency
+  for automatic helper setup, strict-read recovery, language analyzers, API/flow observations, dependency
   reconciliation, cache behavior, or unsupported coverage.
 - [Publishing projections](references/publishing.md) — use for Site or Obsidian
   export/check, projection profiles, receipts, privacy, or publication review.

@@ -80,8 +80,9 @@ def test_installed_package_has_complete_analysis_classification():
 
     rules = capture.registry()
     assert "services/helper_preparation.py" in rules["classified_python_files"]
-    # Setup code is classified without entering the observation commitments.
-    assert "services/helper_preparation.py" not in rules["shared"]
+    # Operation-owned preparation now determines the inputs used for both
+    # observation commitments and extraction, so its coordinator is shared.
+    assert "services/helper_preparation.py" in rules["shared"]
     assert all(
         "services/helper_preparation.py" not in paths
         for paths in rules["providers"].values()

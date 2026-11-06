@@ -19,6 +19,50 @@ task detector with Mermaid styling.
 | Extend and collaborate | [install / plugins](#install-and-plugins), [team](#team), [knowledge](#knowledge) |
 | Manage an installation | [upgrade](#upgrade), [migrate](#migrate), [metrics](#metrics), [status / release / bump / uninstall](#status-release-bump-and-uninstall) |
 
+## Automatic helper preparation
+
+Ordinary source analysis prepares a missing or stale bundled extractor helper
+when the selected files need it, then continues the original command. This
+applies to extraction, bootstrap, sync and source-backed context. JavaScript and
+TypeScript share one helper; Python needs none. Excluded files, unselected
+languages and snapshot-only queries do not trigger setup.
+
+```bash
+llm-wiki extract --deep --paths src/main.ts
+llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --helper-preparation never
+llm-wiki extract --deep --read-only --paths src/main.ts
+```
+
+`--helper-preparation auto` is the ordinary default. It prepares only the
+library's bundled helper and may download locked dependencies or compile that
+helper in a managed cache. It does not install or upgrade Node.js, npm, Go,
+Cargo or GHC, change project dependencies, or modify source/wiki files for
+setup. The requested command retains its own normal workspace behavior.
+Progress and setup failures go to stderr, keeping JSON results on stdout clean.
+
+Use `--helper-preparation never` to reuse existing validated helpers without
+building, downloading or creating helper caches. This also provides an offline
+route after prewarming. Explicit `--read-only`, preview/dry-run modes,
+`prepare-extractors --plan` and `doctor --capabilities` never prepare helpers.
+An explicit request for `auto` conflicts with these strict modes; a request for
+`never` conflicts with an explicit setup command such as `prepare-extractors`
+or `init --prepare-extractors`.
+
+Normal automatic setup uses a dedicated user cache shared across projects:
+`~/Library/Caches/agent-wiki/llm-wiki-extractors` on macOS,
+`${XDG_CACHE_HOME:-~/.cache}/agent-wiki/llm-wiki-extractors` on Linux, and
+`%LOCALAPPDATA%/agent-wiki/llm-wiki-extractors` on Windows. Existing valid
+project helpers may be reused. An explicit helper cache argument or
+`LLM_WIKI_CACHE_DIR` remains authoritative; inventory and wiki state stay
+project-scoped. Projects without Git can use automatic preparation too.
+
+Current helpers are reused without their compiler or package manager;
+TypeScript/JavaScript still needs Node.js to execute its helper. If preparation
+cannot finish, the error identifies the actual missing tool, download, timeout
+or cache problem. Fix that cause and retry the original command. There is no
+fallback to an empty successful inventory.
+
 ## Recover captured evidence
 
 Keep the failure's source, cause and qualifications. Use the same source/wiki
@@ -43,12 +87,13 @@ Request `source` and extract `--paths` are canonical POSIX paths relative to
 snapshot-only by default; choose an exact locator from ambiguous results.
 `live:true` plus `allow_full_inventory:true` authorizes full current analysis.
 The [explanation route](#context) separates captured/current source and producer
-bases, helper identity and active runtime. Raw extraction prints JSON, installs
-no dependencies and cannot repair a stored manifest.
+bases, helper identity and active runtime. The explicit read-only extraction
+above prints JSON, installs no dependencies and cannot repair a stored manifest.
 
-For a missing/stale helper, use its exact [preparation remedy](#prepare-extractors)
-with setup authority, then retry the original read once with the same selection
-and cache. Preparation takes `--cache-dir`, reads take `--helper-cache-dir`.
+For a missing/stale helper in strict read-only mode, use its exact
+[preparation remedy](#prepare-extractors) with setup authority, then retry the
+original read once with the same selection and cache. Ordinary analysis performs
+this preparation automatically when permitted. Preparation takes `--cache-dir`, reads take `--helper-cache-dir`.
 Do not combine explicit `--language` preparation with `--source-selection`.
 A current helper with a runtime mismatch needs the reported runtime selected on
 PATH; preparation does not change PATH. No hand-linked dependencies or internal
@@ -122,9 +167,9 @@ requires Node.js to run its prepared helper.
 
 If preparation fails, setup exits unsuccessfully before changing the scaffold
 or agent configuration. Fix the reported problem and rerun the same command;
-helpers that were successfully prepared are reused. Repeat this setup after a
-package upgrade or a change in selected languages. The flag applies only to
-that invocation and does not enable preparation in read-only commands.
+helpers that were successfully prepared are reused. This flag is optional
+prewarming: ordinary later analysis handles missing or stale helpers itself.
+Explicit read-only commands continue to reuse existing helpers only.
 
 `--helper-cache-dir PATH` requires `--prepare-extractors` and selects the same
 cache base as `prepare-extractors --cache-dir PATH`. Otherwise setup uses
@@ -729,20 +774,17 @@ JSON payload includes top-level `warnings` only when such diagnostics exist.
 
 ## `prepare-extractors`
 
-Prepare TypeScript/JavaScript dependencies and cached Go/Rust/Haskell helper
-binaries outside the lint/extract hot path.
-
-For automatic preparation during project setup, use
-`llm-wiki init --prepare-extractors`. This reuses valid helpers and prepares only
-missing or stale ones. `prepare-extractors` also checks the current build
-toolchain when explicitly rebuilding or refreshing the cache.
+Prewarm TypeScript/JavaScript dependencies and cached Go/Rust/Haskell helper
+binaries, or diagnose setup independently. Ordinary analysis prepares needed
+helpers automatically; this separate command is optional.
+`llm-wiki init --prepare-extractors` can also prewarm helpers before scaffolding.
 
 TypeScript and JavaScript preparation records the complete cached `node_modules`
 tree, including sibling and nested dependencies. A dependency change makes that
-helper unavailable until explicit preparation succeeds again. Older receipts
+helper unavailable until preparation succeeds again. Older receipts
 remain readable for diagnosis but cannot establish this complete identity;
 rerun `prepare-extractors --language typescript` with the same cache base after
-updating the CLI. Read-only commands do not migrate receipts or install packages.
+updating the CLI. Explicit strict read-only operations do not migrate receipts or install packages.
 Go, Rust and Haskell retain their existing receipt formats.
 
 The TypeScript identity read is limited to 10,000 entries, 128 MiB total,
@@ -763,8 +805,10 @@ When `--language` is omitted, only helper languages detected in `--src-dir` are
 prepared. `--plan` validates the same source-selection boundary and reports the
 detected helper languages without creating a cache or invoking a toolchain;
 `--format json` emits the versioned machine-readable plan used by portable CI.
-Helper cache resolution follows `--cache-dir`, then
-`LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`. If Go is installed in a
+Explicit prewarming keeps its project cache behavior: `--cache-dir`, then
+`LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`. Ordinary automatic
+preparation uses the shared user cache described above when no cache override
+or valid existing project helper is selected. If Go is installed in a
 nonstandard location or the `go` on `PATH` cannot run, set
 `LLM_WIKI_GO=/path/to/go` before running `prepare-extractors`. If GHC is
 installed in a nonstandard location, set `LLM_WIKI_GHC=/path/to/ghc` before
@@ -777,8 +821,9 @@ This is separate from inventory-command `--cache-dir PATH`, which only controls
 where `llm-wiki-inventory-cache.json` is read and written.
 
 Missing-helper errors include a preparation command for the failing language,
-source root, and resolved helper cache. Run that command as an authorized setup
-step, then retry the original analysis with the same options. Keep
+source root, and resolved helper cache. In strict read-only or `never` mode, run that command as an authorized setup
+step, then retry the original analysis with the same options. Ordinary automatic
+analysis attempts preparation before reporting its actual failure. Keep
 `--source-selection` on the analysis command; a language-specific preparation
 command uses `--language` and cannot also take `--source-selection`. If no Git
 cache is available, the remedy proposes a cache under the source root's
@@ -1705,12 +1750,24 @@ application-owned prompt rendering supplies the guarded Git or local handoff.
 
 ## `mcp`
 
-Run a local MCP server exposing read-only wiki tools and resources.
+Run a local MCP server exposing workspace read-only wiki tools and resources.
+Source analysis may prepare bundled helpers in managed caches; it never changes
+project dependencies or source/wiki files for setup.
 
 ```bash
 llm-wiki mcp --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki mcp --transport http --host 127.0.0.1 --port 8765
+llm-wiki mcp --helper-preparation never
+llm-wiki mcp --helper-cache-dir .cache/llm-wiki-helpers
 ```
+
+MCP defaults to automatic helper preparation for operations that actually need
+source extraction. `--helper-preparation never` keeps every request on existing
+helpers only, suitable for offline or strictly inert deployments.
+`--helper-cache-dir` selects the same helper cache base used by other commands.
+Each request binds its own validated helpers; independent requests do not share
+a mutable active-helper selection. Preparation failures retain the
+`helper-preparation-failed` code and a bounded language/reason diagnostic.
 
 The MCP server exposes registry-backed wiki resources and search across index,
 log, entities, modules, workflows, guides, flows, infrastructure, dependencies,

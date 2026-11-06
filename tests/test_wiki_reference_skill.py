@@ -44,6 +44,10 @@ def test_reference_documents_extractor_helpers_and_toolchains():
         "llm-wiki sync --cache-dir .cache/llm-wiki-inventory "
         "--helper-cache-dir .cache/llm-wiki-helpers" in content
     )
+    assert "No separate setup command is required" in _squash_ws(content)
+    assert "default automatic cache is user-level and shared across projects" in _squash_ws(content)
+    assert "`--helper-preparation never` reuse existing validated helpers only" in _squash_ws(content)
+    assert "do not prepare, download, or create helper cache state" in _squash_ws(content)
     assert "--include-tests go" in content
     assert "LLM_WIKI_GO=/path/to/go" in content
     assert "LLM_WIKI_GHC=/path/to/ghc" in content

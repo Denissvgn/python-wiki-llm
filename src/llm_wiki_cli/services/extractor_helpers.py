@@ -109,6 +109,10 @@ def resolve_helper_cache_root(
     env: dict[str, str] | None = None,
 ) -> Path | None:
     """Resolve the helper cache root using CLI/env/git precedence."""
+    from .helper_runtime import current_helper_operation
+    operation = current_helper_operation()
+    if cache_dir is None and operation is not None:
+        cache_dir = operation.cache_dir
     env_map = env if env is not None else os.environ
     configured_dir = cache_dir or env_map.get(ENV_CACHE_DIR)
     if configured_dir:
@@ -443,12 +447,18 @@ def helper_preparation_failure_hint(language: str) -> str:
 def get_prepared_binary(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
+    from .helper_runtime import pinned_helper
+    from .helper_cache import lookup_helper, validate_handle
+    pinned = pinned_helper(language, source_root=src_dir)
+    if pinned is not None and cache_dir is not None and resolve_helper_cache_root(src_dir, cache_dir) != pinned.cache_root:
+        return None
+    if pinned is not None:
+        return pinned.path if validate_handle(pinned) else None
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    if cache_root is None:
-        return None
-    manifest = _manifest_current(cache_root, language)
+    manifest = None if cache_root is None else _manifest_current(cache_root, language)
     if not manifest:
-        return None
+        shared = lookup_helper(language, src_dir, cache_dir)
+        return None if shared is None else shared.path
     path_value = manifest.get("path")
     if not isinstance(path_value, str):
         return None
@@ -459,12 +469,18 @@ def get_prepared_binary(
 def get_prepared_typescript_root(
     src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
+    from .helper_runtime import pinned_helper
+    from .helper_cache import lookup_helper, validate_handle
+    pinned = pinned_helper("typescript", source_root=src_dir)
+    if pinned is not None and cache_dir is not None and resolve_helper_cache_root(src_dir, cache_dir) != pinned.cache_root:
+        return None
+    if pinned is not None:
+        return pinned.root if validate_handle(pinned) else None
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    if cache_root is None:
-        return None
-    manifest = _manifest_current(cache_root, "typescript")
+    manifest = None if cache_root is None else _manifest_current(cache_root, "typescript")
     if not manifest:
-        return None
+        shared = lookup_helper("typescript", src_dir, cache_dir)
+        return None if shared is None else shared.root
     root_value = manifest.get("root")
     if not isinstance(root_value, str):
         return None

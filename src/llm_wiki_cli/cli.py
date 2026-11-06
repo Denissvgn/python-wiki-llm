@@ -270,7 +270,41 @@ def _build_parser():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     _register_commands(subparsers)
+    _add_helper_preparation_arguments(parser)
     return parser
+
+
+def _add_helper_preparation_arguments(parser):
+    """Accept the operation policy before or after nested command names."""
+    parser.add_argument(
+        "--helper-preparation", choices=("auto", "never"), default=argparse.SUPPRESS,
+        help="Prepare needed bundled helpers automatically, or reuse existing helpers only",
+    )
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for child in action.choices.values():
+                _add_helper_preparation_arguments(child)
+
+
+def _helper_preparation_policy(args):
+    from .services.helper_runtime import current_helper_configuration
+
+    requested = getattr(args, "helper_preparation", None)
+    configuration = current_helper_configuration()
+    strict = any(bool(getattr(args, name, False)) for name in (
+        "read_only", "dry_run", "preview", "plan_chunks", "capabilities",
+    )) or (args.command == "prepare-extractors" and bool(getattr(args, "plan", False)))
+    if strict and requested == "auto":
+        raise ValueError("Automatic helper preparation conflicts with this read-only or preview operation")
+    selected = "never" if strict else requested or (
+        configuration.policy if configuration is not None else "auto"
+    )
+    if selected == "never" and (
+        args.command == "prepare-extractors" and not bool(getattr(args, "plan", False))
+        or args.command == "init" and bool(getattr(args, "prepare_extractors", False))
+    ):
+        raise ValueError("Explicit helper preparation conflicts with --helper-preparation never")
+    return selected
 
 
 def _add_query_command(subparsers):
@@ -1547,7 +1581,7 @@ def _add_status_command(subparsers):
 def _add_mcp_command(subparsers):
     mcp_parser = subparsers.add_parser(
         "mcp",
-        help="Run a local MCP server exposing read-only LLM Wiki tools and resources",
+        help="Run a local MCP server with workspace read-only tools and optional managed helper preparation",
     )
     mcp_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     mcp_parser.add_argument(
@@ -1591,6 +1625,7 @@ def _add_mcp_command(subparsers):
         help="Additional HTTP Origin allowed to call the local MCP endpoint",
     )
     _add_source_selection_argument(mcp_parser)
+    _add_helper_cache_argument(mcp_parser)
     mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting (Python 3.11+ and [tokens])")
     sessions = mcp_parser.add_mutually_exclusive_group()
     sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
@@ -2705,8 +2740,17 @@ def main():
 
     with _report_cli_errors():
         from .services.analysis_compatibility import comparison_scope
+        from .services.helper_runtime import helper_operation
+        helper_policy = _helper_preparation_policy(args)
         with comparison_scope(getattr(args, "comparison_policy", "auto")):
-            _dispatch_command(args)
+            if args.command == "mcp":
+                # The server owns fresh request scopes, never one operation
+                # retained for the entire server lifetime.
+                args.helper_preparation = helper_policy
+                _dispatch_command(args)
+            else:
+                with helper_operation(helper_policy):
+                    _dispatch_command(args)
 
 
 if __name__ == "__main__":
