@@ -809,47 +809,41 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
 
     key = helper_cache_key("rust", toolchain_version=toolchain)
     build_root = cache_root / "rust" / key
-    target_dir = build_root / "target"
-    binary_path = target_dir / "release" / _binary_name("llm-wiki-rust-extractor")
+    binary_path = build_root / _binary_name("llm-wiki-rust-extractor")
     if _unsafe_native_output(binary_path):
         return HelperPrepareResult("rust", "failed", "Native helper output is not a safe cache file")
     current = _manifest_current(cache_root, "rust")
-    if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
+    legacy_path = build_root / "target" / "release" / binary_path.name
+    if current and Path(current["path"]) in (binary_path, legacy_path):
         return HelperPrepareResult(
-            "rust", "already_current", "Rust helper already prepared", str(binary_path)
+            "rust", "already_current", "Rust helper already prepared", str(current["path"])
         )
 
     build_root.mkdir(parents=True, exist_ok=True)
-    try:
-        subprocess.run(
-            [
-                "cargo",
-                "build",
-                "--locked",
-                "--release",
-                "--target-dir",
-                str(target_dir),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=180,
-            cwd=str(RUST_SCRIPTS_DIR),
-        )
-    except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult(
-            "rust", "failed", f"cargo build failed: {exc.stderr.strip()}"
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return HelperPrepareResult(
-            "rust", "failed", "cargo build timed out or cargo was not found"
-        )
-    if not binary_path.is_file():
-        return HelperPrepareResult(
-            "rust", "failed", "cargo build did not produce the expected helper binary"
-        )
+    # Cargo may hardlink its executable to a file in target/release/deps.
+    # Keep Cargo's whole tree private, then publish an independently owned
+    # executable through the same native validation as the other helpers.
+    with tempfile.TemporaryDirectory(prefix=".build-", dir=build_root) as temporary:
+        stage = Path(temporary)
+        target_dir = stage / "target"
+        try:
+            subprocess.run(
+                ["cargo", "build", "--locked", "--release", "--target-dir", str(target_dir)],
+                capture_output=True, text=True, check=True, timeout=180,
+                cwd=str(RUST_SCRIPTS_DIR),
+            )
+        except subprocess.CalledProcessError as exc:
+            return HelperPrepareResult("rust", "failed", f"cargo build failed: {exc.stderr.strip()}")
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return HelperPrepareResult("rust", "failed", "cargo build timed out or cargo was not found")
 
-    return _publish_native_helper(cache_root, "rust", binary_path, key, toolchain)
+        built = target_dir / "release" / binary_path.name
+        if first_unsafe_path_component(built) is not None or not built.is_file():
+            return HelperPrepareResult("rust", "failed", "cargo build did not produce a regular helper binary")
+        staged = stage / binary_path.name
+        shutil.copy2(built, staged)
+        return _publish_native_helper(cache_root, "rust", binary_path, key, toolchain, staged=staged)
+
 
 
 def prepare_haskell(cache_root: Path) -> HelperPrepareResult:

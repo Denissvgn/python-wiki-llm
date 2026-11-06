@@ -1008,7 +1008,7 @@ def test_resolve_ghc_executable_uses_override_and_path(tmp_path):
 
 
 def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
-    cache_root = tmp_path / "helpers"
+    cache_root = tmp_path / HELPER_CACHE_DIRNAME
     commands = []
 
     monkeypatch.setattr(
@@ -1028,6 +1028,10 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(_native_header())
         output.chmod(0o755)
+        # Cargo exposes the final executable as another name for its deps output.
+        deps = output.parent / "deps"
+        deps.mkdir()
+        os.link(output, deps / (output.name + "-fixture"))
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -1040,7 +1044,12 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     manifest = json.loads(
         (cache_root / "rust" / "current.json").read_text(encoding="utf-8")
     )
-    assert manifest["path"] == result.path
+    assert result.path is not None and manifest["path"] == result.path
+    published = Path(result.path)
+    assert published.stat().st_nlink == 1
+    assert get_prepared_binary("rust", tmp_path, str(tmp_path)) == published
+    assert prepare_rust(cache_root).status == "already_current"
+    assert len(commands) == 1
 
 
 def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
