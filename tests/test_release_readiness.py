@@ -39,6 +39,18 @@ def candidate(tmp_path):
         if consumer["selection"] == "matrix-python":
             job["strategy"] = {"matrix": {"python": profile["python"]}}
             job["steps"][0]["with"]["python-version"] = "${{ matrix.python }}"
+        elif consumer["selection"] in {"plan-python", "plan-python-fallback"}:
+            job["needs"] = ["core-windows-plan"]
+            fallback = (
+                " || '" + profile["python"][0] + "'"
+                if consumer["selection"] == "plan-python-fallback" else ""
+            )
+            job["steps"][0]["with"]["python-version"] = (
+                "${{ needs.core-windows-plan.outputs.python-version" + fallback + " }}"
+            )
+        if consumer["id"] == "windows-plan":
+            job["steps"][0]["id"] = "python"
+            job["outputs"] = {"python-version": "${{ steps.python.outputs.python-version }}"}
     for name, document in documents.items():
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -266,6 +278,69 @@ def test_current_normal_runtime_owner_conditions_remain_admitted():
     assert result["blockers"] == []
     assert result["status"] == "hosted-required"
     assert {row["id"] for row in result["runtime_contract"]["consumers"]} == set(readiness.REQUIRED_CONSUMERS)
+    assert result["target_execution_verified"] is False
+
+
+@pytest.mark.parametrize("owner, mutation", [
+    ("core-windows-shards", "fixed-runtime"),
+    ("core-windows-shards", "wrong-output"),
+    ("core-windows-shards", "missing-plan-dependency"),
+    ("core-windows", "unsupported-fallback"),
+    ("core-windows", "fixed-runtime"),
+    ("core-windows", "missing-plan-dependency"),
+])
+def test_every_derived_windows_consumer_uses_its_collected_runtime_and_exact_fallback(
+    candidate, manifest, owner, mutation,
+):
+    path = candidate / readiness.QUALIFICATION_WORKFLOW
+    document = yaml.safe_load(path.read_text())
+    job = document["jobs"][owner]
+    setup = job["steps"][0]["with"]
+    if mutation == "unsupported-fallback":
+        setup["python-version"] = "${{ needs.core-windows-plan.outputs.python-version || '3.13.18' }}"
+    elif mutation == "fixed-runtime":
+        setup["python-version"] = "3.13.18"
+    elif mutation == "wrong-output":
+        setup["python-version"] = "${{ needs.freeze.outputs.dependency-python-version }}"
+    else:
+        job["needs"] = []
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    identity = "windows-shards" if owner.endswith("-shards") else "windows-core"
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {"runtime-owner:" + identity}
+    assert "collected runtime/fallback" in result["blockers"][0]["reason"]
+
+
+@pytest.mark.parametrize("mutation", ["missing-output", "wrong-step", "renamed-unbound-step"])
+def test_windows_planner_output_must_come_from_its_actual_setup_step(
+    candidate, manifest, mutation,
+):
+    path = candidate / readiness.QUALIFICATION_WORKFLOW
+    document = yaml.safe_load(path.read_text())
+    job = document["jobs"]["core-windows-plan"]
+    if mutation == "missing-output":
+        job["outputs"] = {}
+    elif mutation == "wrong-step":
+        job["outputs"]["python-version"] = "${{ steps.unused.outputs.python-version }}"
+    else:
+        job["steps"][0]["id"] = "renamed"
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert {row["id"] for row in result["blockers"]} == {"runtime-owner:windows-plan"}
+    assert "planner output" in result["blockers"][0]["reason"]
+
+
+def test_windows_planner_setup_can_be_renamed_when_its_output_is_rebound(candidate, manifest):
+    path = candidate / readiness.QUALIFICATION_WORKFLOW
+    document = yaml.safe_load(path.read_text())
+    job = document["jobs"]["core-windows-plan"]
+    job["steps"][0]["id"] = "selected-python"
+    job["outputs"]["python-version"] = "${{ steps.selected-python.outputs.python-version }}"
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "ready" and result["blockers"] == []
     assert result["target_execution_verified"] is False
 
 

@@ -55,6 +55,8 @@ REQUIRED_CONSUMERS = {
     "artifact-smoke": ("knowledge-linux", QUALIFICATION_WORKFLOW, "artifact-smoke", "setup-python"),
     "readiness": ("knowledge-linux", QUALIFICATION_WORKFLOW, "readiness", "setup-python"),
     "windows-plan": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows-plan", "setup-python"),
+    "windows-shards": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows-shards", "plan-python"),
+    "windows-core": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows", "plan-python-fallback"),
     "windows-canary": ("windows-core", QUALIFICATION_WORKFLOW, "windows-canary", "setup-python"),
     "windows-native": ("windows-core", QUALIFICATION_WORKFLOW, "windows-native", "setup-python"),
     "windows-probe": ("windows-probe", ".github/workflows/windows-measurement.yml", "measurement", "matrix-python"),
@@ -391,6 +393,17 @@ def runtime_contract(
                 raise ReadinessError(
                     "Interpreter architecture differs from runtime profile"
                 )
+            if consumer["id"] == "windows-plan":
+                setup_id = setups[0].get("id")
+                if (
+                    not isinstance(setup_id, str)
+                    or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", setup_id)
+                    or job.get("outputs", {}).get("python-version")
+                    != "${{ steps." + setup_id + ".outputs.python-version }}"
+                ):
+                    raise ReadinessError(
+                        "Windows planner output does not bind its interpreter setup"
+                    )
             if consumer["selection"] == "matrix-python":
                 matrix = job.get("strategy", {}).get("matrix")
                 if not isinstance(matrix, dict) or set(matrix) != {"python"}:
@@ -407,6 +420,23 @@ def runtime_contract(
                     )
             elif consumer["selection"] == "setup-python":
                 actual = [setups[0].get("with", {}).get("python-version")]
+            elif consumer["selection"] in {"plan-python", "plan-python-fallback"}:
+                needs = job.get("needs", [])
+                needs = [needs] if isinstance(needs, str) else needs
+                fallback = (
+                    " || '" + expected_profile["python"][0] + "'"
+                    if consumer["selection"] == "plan-python-fallback" else ""
+                )
+                if (
+                    not isinstance(needs, list)
+                    or "core-windows-plan" not in needs
+                    or setups[0].get("with", {}).get("python-version")
+                    != "${{ needs.core-windows-plan.outputs.python-version" + fallback + " }}"
+                ):
+                    raise ReadinessError(
+                        "Windows consumer does not use its exact collected runtime/fallback"
+                    )
+                actual = list(expected_profile["python"])
             else:
                 raise ReadinessError("Unsupported runtime selection")
             expected = profiles[consumer["profile"]]["python"]
