@@ -1329,3 +1329,137 @@ def test_every_toolchain_setup_shell_script_has_valid_bash_syntax() -> None:
             text=True,
         )
         assert completed.returncode == 0, (script, completed.stderr)
+
+
+@pytest.fixture
+def worktree_setup_harness(setup_harness: SetupHarness, tmp_path: Path) -> SetupHarness:
+    root = setup_harness.root
+    (root / ".gitignore").write_text("ignored/\n.venv/\n", encoding="utf-8")
+    common = ["git", "-C", str(root), "-c", "user.name=Worktree installer",
+              "-c", "user.email=installer@example.invalid", "-c", "commit.gpgsign=false",
+              "-c", f"core.hooksPath={tmp_path / 'no-hooks'}"]
+    subprocess.run([*common, "add", ".gitignore", ".github", "release"], check=True, capture_output=True)
+    subprocess.run([*common, "commit", "-qm", "Installer fixture"], check=True, capture_output=True)
+    linked = tmp_path / "linked checkout"
+    subprocess.run([*common, "worktree", "add", "--detach", str(linked), "HEAD"], check=True, capture_output=True)
+    python = linked / ".venv/bin/python"
+    python.parent.mkdir(parents=True)
+    python.symlink_to(Path(sys.executable))
+    (linked / "ignored").mkdir()
+    return SetupHarness(root=linked, script=linked / ".github/scripts" / SETUP_SCRIPT.name, python=python)
+
+
+def _worktree_metadata(harness: SetupHarness) -> Path:
+    return Path(subprocess.check_output(
+        ["git", "--no-replace-objects", "-C", str(harness.root),
+         "--git-dir", str(harness.root / ".git"), "rev-parse", "--absolute-git-dir"], text=True,
+    ).strip())
+
+
+def test_local_worktree_setup_installs_only_in_its_metadata_and_defaults_handoff(
+    worktree_setup_harness: SetupHarness, setup_harness: SetupHarness, fake_lock: Path,
+) -> None:
+    metadata = _worktree_metadata(worktree_setup_harness)
+    install_root = metadata / "llm-wiki-ci-toolchains"
+    environment = {**os.environ, "GIT_DIR": str(setup_harness.root / ".git"),
+                   "GIT_COMMON_DIR": str(setup_harness.root / ".git"),
+                   "GIT_WORK_TREE": str(setup_harness.root),
+                   "GIT_INDEX_FILE": str(setup_harness.root / ".git/index")}
+    completed = _run_setup(worktree_setup_harness, "--mode", "routine", "--install-root", install_root,
+                           "--lock", fake_lock, environment=environment)
+    _assert_success(completed)
+    handoff = metadata / "llm-wiki-ci-toolchains.env"
+    assert handoff.is_file() and (install_root / "node/bin/node").is_file()
+    assert not (setup_harness.root / ".git/llm-wiki-ci-toolchains").exists()
+    assert (worktree_setup_harness.root / ".git").is_file()
+    observed = subprocess.run(
+        ["bash", "-c", 'source "$1"; node --version; npm --version', "bash", str(handoff)],
+        capture_output=True, text=True, check=False,
+    )
+    assert observed.returncode == 0 and observed.stdout == f"v{NODE_VERSION}\n{NPM_VERSION}\n"
+
+
+@pytest.mark.parametrize("location", ["unreserved-metadata", "common-metadata", "unrelated-outside"])
+@pytest.mark.parametrize("destination", ["install", "environment"])
+def test_local_worktree_metadata_namespace_does_not_authorize_other_locations(
+    worktree_setup_harness: SetupHarness, setup_harness: SetupHarness,
+    fake_lock: Path, tmp_path: Path, location: str, destination: str,
+) -> None:
+    metadata = _worktree_metadata(worktree_setup_harness)
+    roots = {"unreserved-metadata": metadata / "not-reserved",
+             "common-metadata": setup_harness.root / ".git/llm-wiki-ci-not-this-checkout",
+             "unrelated-outside": tmp_path / "llm-wiki-ci-not-owned"}
+    install_root = roots[location] if destination == "install" else metadata / "llm-wiki-ci-refused"
+    environment_file = roots[location] if destination == "environment" else metadata / "llm-wiki-ci-refused.env"
+    completed = _run_setup(worktree_setup_harness, "--mode", "routine", "--install-root", install_root,
+                           "--environment-file", environment_file, "--lock", fake_lock)
+    expected = "local install root must be ignored" if destination == "install" else "local environment file must be ignored"
+    assert completed.returncode != 0 and expected in completed.stderr
+    assert not install_root.exists()
+    assert not environment_file.exists()
+
+
+def test_local_worktree_tracking_protection_ignores_ambient_alternate_index(
+    worktree_setup_harness: SetupHarness, setup_harness: SetupHarness, fake_lock: Path,
+) -> None:
+    metadata = _worktree_metadata(worktree_setup_harness)
+    tracked = worktree_setup_harness.root / "ignored/tracked.env"
+    tracked.write_text("retained tracked bytes\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(worktree_setup_harness.root), "add", "--force", "ignored/tracked.env"],
+                   check=True, capture_output=True)
+    completed = _run_setup(worktree_setup_harness, "--mode", "routine", "--install-root", metadata / "llm-wiki-ci-refused",
+                           "--environment-file", tracked, "--lock", fake_lock,
+                           environment={**os.environ, "GIT_INDEX_FILE": str(setup_harness.root / ".git/index"),
+                                        "GIT_DIR": str(setup_harness.root / ".git")})
+    assert completed.returncode != 0 and "environment file must not be tracked" in completed.stderr
+    assert tracked.read_text(encoding="utf-8") == "retained tracked bytes\n"
+    assert not (metadata / "llm-wiki-ci-refused").exists()
+
+
+def test_hosted_extracted_source_setup_does_not_require_git(
+    setup_harness: SetupHarness, fake_lock: Path, tmp_path: Path,
+) -> None:
+    root = tmp_path / "extracted"
+    script = root / ".github/scripts" / SETUP_SCRIPT.name
+    helper = root / "release/qualification.py"
+    for path in (script, helper):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(SETUP_SCRIPT, script)
+    shutil.copy2(ROOT / "release/qualification.py", helper)
+    harness = SetupHarness(root=root, script=script, python=setup_harness.python)
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    bin_dir = tmp_path / "no-git"
+    bin_dir.mkdir()
+    sentinel = tmp_path / "git-called"
+    git = bin_dir / "git"
+    git.write_text(f'#!/usr/bin/env bash\nprintf invoked > "{sentinel}"\nexit 91\n', encoding="utf-8")
+    git.chmod(0o755)
+    environment["PATH"] = str(bin_dir) + os.pathsep + environment["PATH"]
+    install_root = runner_temp / "routine"
+    completed = _run_setup(harness, "--mode", "routine", "--install-root", install_root,
+                           "--lock", fake_lock, "--python", harness.python,
+                           environment=environment, github_actions=True)
+    _assert_success(completed)
+    assert not (root / ".git").exists() and not sentinel.exists()
+    assert github_path.read_text(encoding="utf-8").strip() == str(install_root / "node/bin")
+    assert github_env.read_text(encoding="utf-8") == ""
+
+
+@pytest.mark.parametrize("marker", ["missing", "redirected"])
+def test_local_setup_requires_its_own_nonredirected_git_marker(
+    setup_harness: SetupHarness, fake_lock: Path, tmp_path: Path, marker: str,
+) -> None:
+    git_dir = setup_harness.root / ".git"
+    retained = tmp_path / "retained-metadata"
+    git_dir.rename(retained)
+    before = (retained / "config").read_bytes()
+    if marker == "redirected":
+        git_dir.symlink_to(retained, target_is_directory=True)
+    install_root = setup_harness.root / "ignored/toolchains"
+    environment_file = setup_harness.root / "ignored/toolchains.env"
+    completed = _run_setup(setup_harness, *_local_arguments(
+        mode="routine", install_root=install_root, environment_file=environment_file, lock=fake_lock,
+    ))
+    assert completed.returncode != 0 and "requires non-redirected checkout Git metadata" in completed.stderr
+    assert not install_root.exists() and not environment_file.exists()
+    assert (retained / "config").read_bytes() == before

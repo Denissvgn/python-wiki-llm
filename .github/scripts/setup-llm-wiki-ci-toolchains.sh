@@ -25,7 +25,8 @@ Required:
   --install-root PATH       Install below this dedicated root.
 
 Options:
-  --environment-file PATH   Local shell handoff file. Defaults below .git/.
+  --environment-file PATH   Local shell handoff file. Defaults below checkout
+                            Git metadata (including linked worktrees).
   --lock PATH               Toolchain lock (default: release/toolchain-lock.json).
   --python PATH             Qualification Python. Local use is restricted to
                             .venv/bin/python; Actions may pass setup-python's
@@ -34,7 +35,8 @@ Options:
 
 When GITHUB_ACTIONS=true, --install-root must be below RUNNER_TEMP and the
 script persists executable paths through GITHUB_PATH/GITHUB_ENV. Otherwise,
-the install root and environment file must be ignored paths in this checkout.
+the install root and environment file must be ignored paths in this checkout
+or use its dedicated llm-wiki-ci-* Git metadata namespace.
 Routine Node/npm supports Linux x86_64/ARM64 and Darwin ARM64. Other modes
 require their own locked host artifact.
 EOF
@@ -135,19 +137,34 @@ install_root="$(absolute_path_with_existing_parent "${install_root_input}")"
   die "install root must not contain ':' because it becomes a PATH entry"
 lock_path="$(canonical_existing_file "${lock_path}")"
 github_actions=false
+checkout_git_dir=""
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
   github_actions=true
 fi
 
+checkout_git() {
+  # The install destination belongs to this checkout, not an ambient alternate
+  # repository/index. Linked worktree gitfiles must resolve their own metadata.
+  env -u GIT_DIR -u GIT_WORK_TREE -u GIT_COMMON_DIR -u GIT_INDEX_FILE \
+    -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES \
+    git --no-replace-objects -C "${PROJECT_ROOT}" \
+      --git-dir "${PROJECT_ROOT}/.git" --work-tree "${PROJECT_ROOT}" "$@"
+}
+
 is_checkout_ignored_path() {
   local path="$1"
   local relative
+  if [[ -n "${checkout_git_dir}" ]]; then
+    case "${path}" in
+      "${checkout_git_dir}/llm-wiki-ci-"*) return 0 ;;
+      "${checkout_git_dir}/"*) return 1 ;;
+    esac
+  fi
   case "${path}" in
-    "${PROJECT_ROOT}/.git/llm-wiki-ci-"*) return 0 ;;
     "${PROJECT_ROOT}/.git/"*) return 1 ;;
     "${PROJECT_ROOT}/"*)
       relative="${path#"${PROJECT_ROOT}/"}"
-      git -C "${PROJECT_ROOT}" check-ignore -q -- "${relative}"
+      checkout_git check-ignore -q -- "${relative}"
       return
       ;;
     *) return 1 ;;
@@ -165,7 +182,7 @@ checkout_path_is_tracked() {
   esac
   while IFS= read -r -d '' tracked; do
     [[ "${tracked}" == "${relative}" ]] && return 0
-  done < <(git -C "${PROJECT_ROOT}" ls-files -z)
+  done < <(checkout_git ls-files -z)
   return 1
 }
 
@@ -182,7 +199,7 @@ checkout_tree_contains_tracked_paths() {
     case "${tracked}" in
       "${relative}"|"${relative}/"*) return 0 ;;
     esac
-  done < <(git -C "${PROJECT_ROOT}" ls-files -z)
+  done < <(checkout_git ls-files -z)
   return 1
 }
 
@@ -203,20 +220,29 @@ if ${github_actions}; then
     qualification_python="${pythonLocation}/bin/python"
   fi
 else
+  [[ ! -L "${PROJECT_ROOT}/.git" &&
+     ( -d "${PROJECT_ROOT}/.git" || -f "${PROJECT_ROOT}/.git" ) ]] ||
+    die "local setup requires non-redirected checkout Git metadata"
+  checkout_git_dir="$(checkout_git rev-parse --absolute-git-dir)" ||
+    die "local checkout Git metadata cannot be resolved"
+  reject_multiline_path "${checkout_git_dir}" "checkout Git metadata"
+  [[ -d "${checkout_git_dir}" && ! -L "${checkout_git_dir}" &&
+     "$(cd -- "${checkout_git_dir}" && pwd -P)" == "${checkout_git_dir}" ]] ||
+    die "local checkout Git metadata must be a real canonical directory"
   checkout_tree_contains_tracked_paths "${install_root}" &&
     die "local install root must not be tracked or contain tracked paths"
   is_checkout_ignored_path "${install_root}" ||
-    die "local install root must be ignored and inside this checkout"
+    die "local install root must be ignored in this checkout or use its reserved Git metadata namespace"
   if [[ -z "${environment_file_input}" ]]; then
     case "${mode}" in
       routine)
-        environment_file_input="${PROJECT_ROOT}/.git/llm-wiki-ci-toolchains.env"
+        environment_file_input="${checkout_git_dir}/llm-wiki-ci-toolchains.env"
         ;;
       qualification-go)
-        environment_file_input="${PROJECT_ROOT}/.git/llm-wiki-ci-qualification-go.env"
+        environment_file_input="${checkout_git_dir}/llm-wiki-ci-qualification-go.env"
         ;;
       *)
-        environment_file_input="${PROJECT_ROOT}/.git/llm-wiki-ci-${mode}.env"
+        environment_file_input="${checkout_git_dir}/llm-wiki-ci-${mode}.env"
         ;;
     esac
   fi
@@ -228,7 +254,7 @@ else
   checkout_path_is_tracked "${environment_file}" &&
     die "local environment file must not be tracked"
   is_checkout_ignored_path "${environment_file}" ||
-    die "local environment file must be ignored and inside this checkout"
+    die "local environment file must be ignored in this checkout or use its reserved Git metadata namespace"
   expected_python="${PROJECT_ROOT}/.venv/bin/python"
   if [[ -z "${qualification_python}" ]]; then
     qualification_python="${expected_python}"
