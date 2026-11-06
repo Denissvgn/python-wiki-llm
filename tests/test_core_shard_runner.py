@@ -87,6 +87,7 @@ def test_worker_temporary_and_cache_roots_are_private_and_addopts_are_removed(
 ):
     monkeypatch.setenv("PYTEST_ADDOPTS", "--deselect everything")
     monkeypatch.setenv("PYTEST_PLUGINS", "unexpected_plugin")
+    monkeypatch.setenv("COVERAGE_FORCE_CONFIG", str(tmp_path / "foreign.coveragerc"))
     monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "caller-cache"))
     one = r.child_environment(
         tmp_path / "one", tmp_path / "temp-one", tmp_path / "source.tar"
@@ -106,7 +107,7 @@ def test_worker_temporary_and_cache_roots_are_private_and_addopts_are_removed(
             and Path(one[name]).is_dir()
             and Path(two[name]).is_dir()
         )
-    assert not {"PYTEST_ADDOPTS", "PYTEST_PLUGINS", "LLM_WIKI_CACHE_DIR"}.intersection(
+    assert not {"PYTEST_ADDOPTS", "PYTEST_PLUGINS", "COVERAGE_FORCE_CONFIG", "LLM_WIKI_CACHE_DIR"}.intersection(
         one
     )
     assert "LLM_WIKI_CACHE_DIR" not in two
@@ -441,6 +442,142 @@ def test_downloaded_plan_and_pins_are_bound_before_package_install(tmp_path, mut
     else:
         with pytest.raises(r.q.QualificationError):
             r.verify_plan_input(args)
+
+
+@pytest.fixture
+def frozen_input_tree(tmp_path):
+    import io
+
+    root = tmp_path / "candidate"
+    root.mkdir()
+    files = {
+        ".gitignore": b"reports/\n.venv/\nbuild/\n",
+        "pyproject.toml": b'[project]\nname="agent-wiki-cli"\nversion="1.0.0"\n',
+        "pytest.ini": b"[pytest]\n",
+        "src/llm_wiki_cli/__init__.py": b"VALUE = 1\n",
+        "tests/test_owned.py": b"def test_owned(): pass\n",
+        "release/helper.py": b"VALUE = 1\n",
+        "docs/public.md": b"Public documentation\n",
+        "examples/owned.py": b"VALUE = 1\n",
+        "src/llm_wiki_cli/extractors/rust_scripts/.gitignore": b"target/\n",
+        "src/llm_wiki_cli/extractors/rust_scripts/Cargo.toml": b"frozen Rust input\n",
+        "src/llm_wiki_cli/extractors/ts_scripts/.gitignore": b"node_modules/\n",
+        "src/llm_wiki_cli/extractors/ts_scripts/extract.js": b"frozen JavaScript input\n",
+    }
+    archive = tmp_path / "source.tar"
+    with tarfile.open(archive, "w", format=tarfile.PAX_FORMAT,
+                      pax_headers={"comment": "1" * 40}) as stream:
+        for name, data in files.items():
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+            member = tarfile.TarInfo(name)
+            member.size = len(data)
+            stream.addfile(member, io.BytesIO(data))
+    identity = {"source": {"sha": "1" * 40, "archive_sha256": r.q.sha256_file(archive)}}
+    return root, archive, identity
+
+
+@pytest.mark.parametrize("extra", [
+    "conftest.py", ".pytest.toml", "tokenizers/__init__.py", "namespace_shadow/module.py",
+    "tests/conftest.py", "tests/fixtures/rogue.json", "release/unfrozen.py",
+    "src/new_module.py", "src/llm_wiki_cli/extra.json",
+    "src/agent_wiki_cli.egg-info/rogue.py", "tests/__pycache__/rogue.py",
+])
+def test_unfrozen_execution_inputs_are_rejected_before_collection(
+    frozen_input_tree, tmp_path, monkeypatch, extra,
+):
+    root, archive, identity = frozen_input_tree
+    path = root / extra
+    path.parent.mkdir(parents=True, exist_ok=True)
+    marker = tmp_path / "unfrozen-executed"
+    path.write_text(f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\n")
+
+    def verified_context(args):
+        r.verify_source(args.root, archive, identity)
+        return context()
+
+    monkeypatch.setattr(r, "context", verified_context)
+    monkeypatch.setattr(r, "invoke", lambda *a: pytest.fail("Unfrozen input reached collection"))
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2, archive=archive)
+    with pytest.raises(r.q.QualificationError, match="unfrozen source"):
+        r.prepare(args)
+    assert not marker.exists()
+    assert r.s.read(args.output / "preparation.json")["complete"] is False
+    assert not (args.output / "collected.json").exists()
+
+
+def test_source_additions_are_rechecked_after_collection(frozen_input_tree, tmp_path, monkeypatch):
+    root, archive, identity = frozen_input_tree
+
+    current = context("core-windows-3.13")
+    current["identity"]["source"].update(identity["source"])
+
+    def verified_context(args):
+        r.verify_source(args.root, archive, identity)
+        return current
+
+    def collect(*args):
+        (root / "conftest.py").write_text("UNFROZEN = True\n")
+        return r.s.plan(NODES, current, 2, purpose="qualification")
+
+    monkeypatch.setattr(r, "context", verified_context)
+    monkeypatch.setattr(r, "collect_plan", collect)
+    args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2, archive=archive)
+    with pytest.raises(r.q.QualificationError, match="unfrozen source input: conftest.py"):
+        r.prepare(args)
+    assert r.s.read(args.output / "preparation.json")["complete"] is False
+
+
+def test_frozen_source_parent_cannot_redirect_to_matching_bytes(frozen_input_tree, tmp_path):
+    root, archive, identity = frozen_input_tree
+    real = tmp_path / "retained-src"
+    (root / "src").rename(real)
+    (root / "src").symlink_to(real, target_is_directory=True)
+    with pytest.raises(r.q.QualificationError, match="redirected source parent"):
+        r.verify_source(root, archive, identity)
+    assert (real / "llm_wiki_cli/__init__.py").read_bytes() == b"VALUE = 1\n"
+
+
+def test_source_guards_keep_ordinary_checkout_scaffolding_opaque(frozen_input_tree, monkeypatch):
+    root, archive, identity = frozen_input_tree
+    residue = {
+        ".git/config": b"git metadata",
+        ".venv/lib/python/site-packages/provider/__init__.py": b"installed dependency",
+        "build/lib/llm_wiki_cli/__init__.py": b"build output",
+        "reports/__init__.py": b"internal tooling",
+        "docs/plans/internal.py": b"internal planning tool",
+        "examples/project/.venv/foreign.py": b"sample environment",
+        "src/.DS_Store": b"Finder metadata",
+        "src/llm_wiki_cli/extractors/rust_scripts/target/debug/deps/cache.rlib": b"native build output",
+        "src/llm_wiki_cli/extractors/ts_scripts/node_modules/dependency/index.js": b"native dependency cache",
+        "src/agent_wiki_cli.egg-info/PKG-INFO": b"built metadata",
+        "src/llm_wiki_cli/__pycache__/__init__.cpython-311.pyc": b"generated bytecode",
+    }
+    for name, data in residue.items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    (root / "tests/fixtures/empty/nested").mkdir(parents=True)
+    actual_walk = r.os.walk
+    actual_scandir = r.os.scandir
+    walks = []
+    opaque = [root / "src/llm_wiki_cli/extractors" / path
+              for path in ("rust_scripts/target", "ts_scripts/node_modules")]
+
+    def bounded_scandir(path):
+        assert not any(Path(path) == cache or cache in Path(path).parents for cache in opaque)
+        return actual_scandir(path)
+
+    def bounded_walk(top, **kwargs):
+        walks.append(top.relative_to(root).as_posix())
+        return actual_walk(top, **kwargs)
+
+    monkeypatch.setattr(r.os, "walk", bounded_walk)
+    monkeypatch.setattr(r.os, "scandir", bounded_scandir)
+    r.verify_source(root, archive, identity)
+    assert set(walks) == {"src", "tests", "release"}
+    assert all((root / name).read_bytes() == data for name, data in residue.items())
 
 
 def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
@@ -1014,13 +1151,16 @@ def test_alternative_configuration_files_are_bounded_before_reading(tmp_path, na
         r.probe_coverage_transport(tmp_path)
 
 
-def test_alternate_coverage_rcfile_is_rejected_before_reading_it(tmp_path, monkeypatch):
+@pytest.mark.parametrize("variable", ["COVERAGE_RCFILE", "COVERAGE_FORCE_CONFIG"])
+def test_alternate_coverage_rcfile_is_rejected_before_reading_it(tmp_path, monkeypatch, variable):
+    import coverage
     outside = tmp_path / "external.coveragerc"
     outside.write_text("[run]\nbranch = False\n")
     root = tmp_path / "candidate"
     root.mkdir()
-    monkeypatch.setenv("COVERAGE_RCFILE", str(outside))
-    with pytest.raises(r.q.QualificationError, match="alternate COVERAGE_RCFILE"):
+    monkeypatch.setenv(variable, str(outside))
+    monkeypatch.setattr(coverage, "Coverage", lambda **kwargs: pytest.fail("Alternate config reached constructor"))
+    with pytest.raises(r.q.QualificationError, match="alternate " + variable):
         r.probe_coverage_transport(root)
     assert outside.read_text() == "[run]\nbranch = False\n"
 

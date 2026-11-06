@@ -158,15 +158,24 @@ def sync_artifact_cache(folder: Path, inventory: dict) -> None:
 
 
 def git(root: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", "-C", str(root), *arguments], capture_output=True,
+    return subprocess.run(["git", "--no-replace-objects", "-C", str(root), *arguments], capture_output=True,
                           text=True, encoding="utf-8", check=check)
 
 
 def source(root: Path) -> dict:
+    from release.measurement_canary import verify_tracked_source
+
     require(not git(root, "status", "--porcelain", "--untracked-files=all").stdout,
             "Commit source changes before creating or advancing a release session")
-    return {"candidate_sha": git(root, "rev-parse", "HEAD").stdout.strip(),
-            "candidate_tree": git(root, "rev-parse", "HEAD^{tree}").stdout.strip(),
+    candidate = git(root, "rev-parse", "HEAD").stdout.strip()
+    tree = git(root, "rev-parse", candidate + "^{tree}").stdout.strip()
+    try:
+        verify_tracked_source(root, candidate)
+    except (OSError, ValueError) as error:
+        raise SessionError("Candidate tracked source differs: " + str(error)) from error
+    require(git(root, "rev-parse", "HEAD").stdout.strip() == candidate,
+            "Candidate source changed during inspection")
+    return {"candidate_sha": candidate, "candidate_tree": tree,
             "version": q._project_version(root)}
 
 

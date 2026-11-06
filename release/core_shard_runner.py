@@ -38,7 +38,7 @@ HARNESS_FILES = (
 )
 ISOLATED_ENVIRONMENT_KEYS = (
     "PYTHONPATH", "PYTHONHOME", "PYTEST_ADDOPTS", "PYTEST_PLUGINS",
-    "COVERAGE_PROCESS_START", "LLM_WIKI_CACHE_DIR",
+    "COVERAGE_PROCESS_START", "COVERAGE_FORCE_CONFIG", "LLM_WIKI_CACHE_DIR",
 )
 
 
@@ -190,14 +190,20 @@ def environment(root: Path, lane: str) -> dict:
     return result
 
 
-def verify_provider_namespace(root: Path, provider) -> None:
-    """Check the complete installed payload without importing candidate code."""
+def _inventory_reader():
+    """Load the transferred standard-library source and namespace reader."""
     spec = importlib.util.spec_from_file_location(
         "_core_provider_inventory", Path(__file__).with_name("measurement_canary.py")
     )
     assert spec is not None and spec.loader is not None
     inventory = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(inventory)
+    return inventory
+
+
+def verify_provider_namespace(root: Path, provider) -> None:
+    """Check the complete installed payload without importing candidate code."""
+    inventory = _inventory_reader()
     expected = inventory.provider_files(root)
     package = inventory.safe(Path(str(provider.locate_file("llm_wiki_cli"))))
     s.require(package.is_relative_to(Path(sys.prefix).resolve()),
@@ -222,17 +228,26 @@ def verify_source(root: Path, archive_path: Path, identity: dict) -> None:
         q.sha256_file(archive_path) == identity["source"]["archive_sha256"],
         "source archive digest differs",
     )
+    names = set()
+    inventory = _inventory_reader()
     with tarfile.open(archive_path, "r:") as archive:
         s.require(
             archive.pax_headers.get("comment") == identity["source"]["sha"],
             "source archive revision differs",
         )
         for member in archive:
+            names.add(member.name.rstrip("/"))
             path = root / member.name
+            for parent in path.relative_to(root).parents:
+                if parent == Path("."):
+                    continue
+                s.require(not inventory._source_redirected(root / parent),
+                          f"redirected source parent: {parent}")
             if member.isfile():
                 stream = archive.extractfile(member)
                 s.require(
-                    stream is not None and not path.is_symlink(),
+                    stream is not None and not inventory._source_redirected(path)
+                    and path.is_file() and path.stat().st_size == member.size,
                     "source member differs",
                 )
                 assert stream is not None
@@ -246,6 +261,10 @@ def verify_source(root: Path, archive_path: Path, identity: dict) -> None:
                     path.is_symlink() and os.readlink(path) == member.linkname,
                     "source symlink differs",
                 )
+    try:
+        inventory._verify_source_additions(root, names)
+    except ValueError as error:
+        raise q.QualificationError(str(error)) from error
 
 
 def context(args) -> dict:
@@ -637,8 +656,9 @@ def probe_coverage_transport(root: Path | None = None) -> None:
     from coverage import Coverage, CoverageData
 
     root = (root or Path.cwd()).resolve()
-    s.require(not os.environ.get("COVERAGE_RCFILE"),
-              "alternate COVERAGE_RCFILE is outside the frozen coverage profile")
+    for name in ("COVERAGE_RCFILE", "COVERAGE_FORCE_CONFIG"):
+        s.require(not os.environ.get(name),
+                  f"alternate {name} is outside the frozen coverage profile")
     for name in (".coveragerc", ".coveragerc.toml", "setup.cfg", "tox.ini", "pyproject.toml", "pytest.ini", ".pytest.ini", "pytest.toml", ".pytest.toml"):
         path = root / name
         if path.exists() or path.is_symlink():

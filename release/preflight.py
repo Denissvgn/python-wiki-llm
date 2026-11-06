@@ -152,7 +152,7 @@ def read_document(path: Path) -> dict:
 
 def _git(root: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args],
+        ["git", "--no-replace-objects", *args],
         cwd=root,
         stdin=subprocess.DEVNULL,
         capture_output=True,
@@ -378,6 +378,7 @@ def _admission(root: Path, binding: dict, stages=STAGES) -> dict:
 
 
 def _capture_binding(root: Path) -> dict:
+    from release.measurement_canary import verify_tracked_source
     from release.preflight_contracts import qualification_contract
 
     root = _safe(root)
@@ -385,6 +386,15 @@ def _capture_binding(root: Path) -> dict:
         _git(root, "rev-parse", "HEAD").strip(),
         _git(root, "rev-parse", "HEAD^{tree}").strip(),
     )
+    dirty = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
+    try:
+        verify_tracked_source(root, sha)
+    except (OSError, ValueError) as error:
+        # Ordinary dirty plans still support diagnostics and preparation.
+        # Hidden index/stat shortcuts must not turn changed bytes into a clean
+        # exact-candidate binding; retain this in the existing blocking field.
+        if not dirty.strip():
+            dirty = "Canonical tracked source mismatch: " + str(error)
     names = _git(
         root, "ls-files", "--cached", "--others", "--exclude-standard", "-z"
     ).split("\0")
@@ -418,7 +428,7 @@ def _capture_binding(root: Path) -> dict:
     return {
         "sha": sha,
         "tree": tree,
-        "dirty": _git(root, "status", "--porcelain=v1", "--untracked-files=all"),
+        "dirty": dirty,
         "files": files,
         "contract": contract,
         "environment": environment,
@@ -596,8 +606,11 @@ def create_plan(
     )
     readiness["admission"] = _admission(root, binding)
     readiness["eligibility_status"] = readiness["status"]
-    if readiness["status"] == "eligible" and readiness["admission"]["blockers"]:
-        readiness["status"] = "blocked_unavailable"
+    if readiness["status"] == "eligible":
+        if binding["dirty"]:
+            readiness["status"] = "waiting_release_preparation"
+        elif readiness["admission"]["blockers"]:
+            readiness["status"] = "blocked_unavailable"
     return _sealed(
         {
             "schema_version": PLAN_SCHEMA,
@@ -671,6 +684,8 @@ def validate_plan(plan: dict, root: Path) -> None:
         raise PreflightError("Plan omitted or changed local capability admission")
     if admission["blockers"] and plan["readiness"].get("status") == "eligible":
         raise PreflightError("Missing local capabilities cannot be eligible")
+    if plan["binding"]["dirty"] and plan["readiness"].get("status") == "eligible":
+        raise PreflightError("Changed source bytes cannot be eligible")
     if plan["gates"] != _gates(plan["binding"]["contract"]):
         raise PreflightError("Plan omitted or changed required native/hosted gates")
     local = _eligibility(root, False)

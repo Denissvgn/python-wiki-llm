@@ -20,7 +20,7 @@ from release import preflight
 
 def _git(root: Path, *args: str) -> str:
     completed = subprocess.run(
-        ["git", "-C", str(root), *args],
+        ["git", "-C", str(root), "-c", "core.autocrlf=false", *args],
         check=True,
         capture_output=True,
         text=True,
@@ -347,6 +347,53 @@ def test_new_untracked_transitive_input_invalidates_plan(planned_project):
     (root / "shadow.py").write_text("import os\n", encoding="utf-8")
     with pytest.raises(preflight.PreflightError, match="Stale plan"):
         preflight.validate_plan(plan, root)
+
+
+@pytest.mark.parametrize("flag", ["assume-unchanged", "skip-worktree"])
+def test_hidden_changed_source_is_not_an_eligible_exact_candidate(planned_project, monkeypatch, flag):
+    from release import preflight_runner
+
+    root, _, original = planned_project
+    sha = original["candidate_sha"]
+    review = root / "private" / "source-review.json"
+    preflight.write_document(review, _review_record(sha), root=root)
+    _git(root, "update-index", "--" + flag, "app.py")
+    (root / "app.py").write_bytes(b"VALUE = 2\n")
+    assert not _git(root, "status", "--porcelain")
+    plan = preflight.create_plan(root, sha, review_file=review)
+    assert plan["binding"]["dirty"].startswith("Canonical tracked source mismatch:")
+    assert plan["readiness"]["status"] == "waiting_release_preparation"
+    assert plan["readiness"]["eligibility_status"] == "eligible"
+    assert plan["readiness"]["review"]["status"] == "recorded"
+    assert plan["readiness"]["admission"]["blockers"] == []
+    preflight.validate_plan(plan, root)
+    path = root / "private" / "hidden-source-plan.json"
+    preflight.write_document(path, plan, root=root)
+    monkeypatch.setattr(preflight_runner, "execute_stage",
+                        lambda *a, **kw: pytest.fail("Changed canonical bytes reached full rehearsal"))
+    result = preflight.run_plan(path, root / "private" / "hidden-source-work")
+    assert result["status"] == "blocked"
+    assert result["attempts"][0]["stage"] == "readiness"
+    forged = dict(plan)
+    forged["readiness"] = {**plan["readiness"], "status": "eligible"}
+    forged = preflight._sealed({k: v for k, v in forged.items() if k != "plan_hash"}, "plan_hash")
+    with pytest.raises(preflight.PreflightError, match="Changed source bytes cannot be eligible"):
+        preflight.validate_plan(forged, root)
+
+
+def test_ordinary_dirty_plan_still_runs_nonpromoting_contract_diagnostics(local_receipt):
+    root, _, _, original = local_receipt
+    (root / "app.py").write_bytes(b"VALUE = 2\n")
+    plan = preflight.create_plan(root, original["plan"]["candidate_sha"])
+    assert plan["binding"]["dirty"] and not plan["binding"]["dirty"].startswith("Canonical")
+    assert plan["readiness"]["status"] == "waiting_release_preparation"
+    path = root / "private" / "ordinary-dirty-plan.json"
+    preflight.write_document(path, plan, root=root)
+    result = preflight.run_plan(path, root / "private" / "dirty-diagnostic-work", stages=("contracts",))
+    assert result["attempts"][0]["stage"] == "contracts"
+    assert result["attempts"][0]["status"] == "passed"
+    assert result["status"] == "blocked"
+    assert (root / "app.py").read_bytes() == b"VALUE = 2\n"
 
 
 def test_new_commit_cannot_retarget_previous_plan(planned_project):

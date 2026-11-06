@@ -150,6 +150,277 @@ def test_wrong_native_runtime_fails_before_collection_or_source_mutation(
     assert not out.exists() and (root / "sentinel").read_bytes() == b"preserve"
 
 
+@pytest.fixture
+def pr_checkout(tmp_path):
+    import subprocess
+
+    root = tmp_path / "candidate"
+    root.mkdir()
+
+    def git(*args, input=None):
+        return subprocess.check_output(
+            ["git", "-C", str(root), "-c", "user.name=Source guard",
+             "-c", "user.email=source@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false",
+             "-c", f"core.hooksPath={tmp_path / 'absent-hooks'}", *args],
+            input=input, stderr=subprocess.STDOUT,
+        ).decode().strip()
+
+    git("init", "-q")
+    (root / "owned").write_text("original bytes")
+    (root / ".gitignore").write_text("reports/\n.venv/\nbuild/\n")
+    tests = root / "tests"
+    tests.mkdir()
+    (tests / "test_owned.py").write_text("def test_owned():\n    assert True\n")
+    package = root / "src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("VALUE = 1\n")
+    git("add", ".")
+    git("commit", "-qm", "Base")
+    ancestor = git("rev-parse", "HEAD")
+    git("commit", "--allow-empty", "-qm", "PR head")
+    head = git("rev-parse", "HEAD")
+    git("checkout", "--detach", ancestor)
+    (root / "base-only").write_text("base change")
+    git("add", ".")
+    git("commit", "-qm", "Advanced base")
+    base = git("rev-parse", "HEAD")
+    git("merge", "--no-ff", "-m", "PR test merge", head)
+    source = git("rev-parse", "HEAD")
+    tree = canary.verify_pr_source(root, source, base, head, include_untracked=True)
+    return root, git, source, base, head, tree
+
+
+def test_pr_source_guard_allows_generated_files_only_after_initial_admission(pr_checkout):
+    root, _git, source, base, head, tree = pr_checkout
+    generated = root / "generated-report.json"
+    generated.write_bytes(b"retained diagnostic")
+    assert canary.verify_pr_source(root, source, base, head, tree_sha=tree) == tree
+    with pytest.raises(canary.CanaryError, match="source is not clean"):
+        canary.verify_pr_source(root, source, base, head, include_untracked=True)
+    assert generated.read_bytes() == b"retained diagnostic"
+
+
+@pytest.mark.parametrize("mutation", [
+    "clean-reset", "same-tree-commit", "tracked-change", "wrong-parent", "replaced-tree",
+])
+def test_pr_source_guard_rejects_changed_identity_even_when_git_status_is_clean(
+    pr_checkout, mutation,
+):
+    root, git, source, base, head, tree = pr_checkout
+    reason = "PR merge identity differs"
+    if mutation == "clean-reset":
+        git("reset", "--hard", head)
+    elif mutation == "same-tree-commit":
+        git("commit", "--allow-empty", "-qm", "Different clean identity")
+        assert git("rev-parse", "HEAD^{tree}") == tree
+    elif mutation == "tracked-change":
+        (root / "owned").write_text("changed source")
+        reason = "PR tracked source changed"
+    elif mutation == "wrong-parent":
+        base = head
+    else:
+        (root / "owned").write_text("replacement source")
+        git("add", "owned")
+        replacement_tree = git("write-tree")
+        replacement = git("commit-tree", replacement_tree, "-p", base, "-p", head,
+                          input=b"Replacement tree\n")
+        git("reset", "--hard", source)
+        git("replace", source, replacement)
+        git("read-tree", "--reset", "-u", source)
+        assert git("rev-parse", "HEAD") == source
+        assert git("rev-parse", "HEAD^{tree}") != tree
+        reason = "PR tracked source changed"
+    if mutation != "tracked-change":
+        assert not git("status", "--porcelain", "--untracked-files=no")
+    with pytest.raises(canary.CanaryError, match=reason):
+        canary.verify_pr_source(root, source, base, head, tree_sha=tree)
+
+
+@pytest.mark.parametrize("replace_worktree", [False, True])
+def test_pr_initial_admission_and_git_reads_use_original_objects(pr_checkout, replace_worktree):
+    root, git, source, base, head, original_tree = pr_checkout
+    (root / "owned").write_text("replacement source")
+    git("add", "owned")
+    replacement_tree = git("write-tree")
+    replacement = git("commit-tree", replacement_tree, "-p", base, "-p", head,
+                      input=b"Replacement merge\n")
+    git("reset", "--hard", source)
+    git("replace", source, replacement)
+    if replace_worktree:
+        git("read-tree", "--reset", "-u", source)
+        assert not git("status", "--porcelain")
+    assert git("rev-parse", "HEAD") == source
+    assert git("show", "-s", "--format=%P", source).split() == [base, head]
+    assert git("rev-parse", "HEAD^{tree}") == replacement_tree
+    assert canary.git_output(root, "rev-parse", "HEAD^{tree}").decode().strip() == original_tree
+    # The same wrapper reads base-owned readers and the workflow at runtime.
+    assert canary.git_output(root, "show", source + ":owned") == b"original bytes"
+    if replace_worktree:
+        with pytest.raises(canary.CanaryError, match="PR source is not clean"):
+            canary.verify_pr_source(root, source, base, head, include_untracked=True)
+    else:
+        assert canary.verify_pr_source(root, source, base, head, include_untracked=True) == original_tree
+    assert git("replace", "-l") == source
+
+
+@pytest.mark.parametrize("hiding", ["assume-unchanged", "skip-worktree", "stat-cache"])
+def test_canonical_blob_guard_rejects_hidden_dirty_bytes(pr_checkout, hiding):
+    import os
+    import time
+
+    root, git, source, base, head, tree = pr_checkout
+    path = root / "owned"
+    if hiding == "stat-cache":
+        old = time.time_ns() - 10_000_000_000
+        os.utime(path, ns=(old, old))
+        git("update-index", "--refresh")
+        git("config", "core.trustctime", "false")
+        git("config", "core.checkStat", "minimal")
+    else:
+        git("update-index", "--" + hiding, "owned")
+    before = path.stat()
+    path.write_bytes(b"mutated! bytes")
+    assert path.stat().st_size == before.st_size
+    os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert not git("status", "--porcelain")
+    assert git("rev-parse", "HEAD") == source
+    assert git("rev-parse", "HEAD^{tree}") == tree
+    with pytest.raises(canary.CanaryError, match="Canonical tracked source bytes differ"):
+        canary.verify_pr_source(root, source, base, head, tree_sha=tree)
+    assert path.read_bytes() == b"mutated! bytes"
+
+
+@pytest.mark.parametrize("limit", ["files", "single-file", "total-bytes", "metadata"])
+def test_canonical_blob_guard_has_bounded_inventory_and_content(pr_checkout, monkeypatch, limit):
+    root, _git, source, _base, _head, _tree = pr_checkout
+    settings = {
+        "files": ("MAX_TRACKED_SOURCE_FILES", 1),
+        "single-file": ("MAX_TRACKED_FILE_BYTES", 1),
+        "total-bytes": ("MAX_TRACKED_SOURCE_BYTES", 1),
+        "metadata": ("MAX_GIT_OUTPUT", 1),
+    }
+    name, value = settings[limit]
+    monkeypatch.setattr(canary, name, value)
+    with pytest.raises(canary.CanaryError, match="bound"):
+        canary.verify_tracked_source(root, source)
+    assert (root / "owned").read_bytes() == b"original bytes"
+
+
+def test_canonical_blob_guard_preserves_windows_executable_mode_semantics(pr_checkout):
+    root, git, _source, base, head, _tree = pr_checkout
+    git("update-index", "--chmod=+x", "owned")
+    tree = git("write-tree")
+    source = git("commit-tree", tree, "-p", base, "-p", head, input=b"Executable tracked mode\n")
+    git("reset", "--hard", source)
+    (root / "owned").chmod(0o644)
+    git("config", "core.filemode", "false")
+    assert not git("status", "--porcelain")
+    assert canary.verify_pr_source(root, source, base, head, include_untracked=True) == tree
+
+
+def test_canonical_blob_guard_refuses_tracked_symlink_types_without_following(pr_checkout, tmp_path):
+    root, git, _source, base, head, _tree = pr_checkout
+    outside = tmp_path / "external"
+    outside.write_bytes(b"external retained")
+    (root / "aliased").symlink_to(outside)
+    git("add", "aliased")
+    tree = git("write-tree")
+    source = git("commit-tree", tree, "-p", base, "-p", head, input=b"Unsupported link\n")
+    with pytest.raises(canary.CanaryError, match="Unsupported tracked source type"):
+        canary.verify_tracked_source(root, source)
+    assert outside.read_bytes() == b"external retained"
+
+
+def test_canonical_blob_guard_refuses_tracked_parent_redirects(pr_checkout, tmp_path):
+    root, git, _source, base, head, _tree = pr_checkout
+    nested = root / "nested"
+    nested.mkdir()
+    (nested / "data").write_bytes(b"original bytes")
+    git("add", "nested")
+    tree = git("write-tree")
+    source = git("commit-tree", tree, "-p", base, "-p", head, input=b"Nested source\n")
+    outside = tmp_path / "retained-source"
+    nested.rename(outside)
+    nested.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(canary.CanaryError, match="Redirected canary path"):
+        canary.verify_tracked_source(root, source)
+    assert (outside / "data").read_bytes() == b"original bytes"
+
+
+def test_canonical_blob_metadata_rejects_drive_relative_windows_paths(pr_checkout, monkeypatch):
+    from pathlib import PureWindowsPath
+
+    root, _git, source, _base, _head, _tree = pr_checkout
+    name = "C:escaped.py"
+    assert PureWindowsPath(name).drive and not PureWindowsPath(name).is_absolute()
+    metadata = b"100644 blob " + b"a" * 40 + b" 1\t" + name.encode() + b"\0"
+    monkeypatch.setattr(canary, "git_output", lambda *a: metadata)
+    with pytest.raises(canary.CanaryError, match="Invalid tracked source path"):
+        canary.verify_tracked_source(root, source)
+
+
+def test_redirect_detection_uses_windows_reparse_metadata_without_new_path_apis():
+    import stat
+
+    class ReparseDirectory:
+        def lstat(self):
+            return SimpleNamespace(st_mode=stat.S_IFDIR, st_file_attributes=0x400)
+
+    assert canary.redirected(ReparseDirectory())
+
+
+@pytest.mark.parametrize("name", [
+    "conftest.py", "shadow.py", "shadow_package/__init__.py", ".pytest.ini",
+    "namespace_shadow/module.py", "namespace_shadow/deep/module.pyc", "namespace_shadow/deep/module.so",
+    "tests/test_added.py", "src/llm_wiki_cli/extra.py", "src/llm_wiki_cli/extra.json",
+])
+def test_pr_source_guard_rejects_executable_and_data_additions_after_observation(pr_checkout, name):
+    root, git, source, base, head, tree = pr_checkout
+    path = root / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    marker = root / "candidate-executed"
+    path.write_text(f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\n")
+    assert not git("status", "--porcelain", "--untracked-files=no")
+    with pytest.raises(canary.CanaryError, match="unfrozen source"):
+        canary.verify_pr_source(root, source, base, head, tree_sha=tree)
+    assert not marker.exists()
+
+
+def test_pr_source_guard_preserves_ordinary_generated_scaffolding(pr_checkout):
+    root, _git, source, base, head, tree = pr_checkout
+    paths = ["reports/nested/control.py", ".venv/pyvenv.cfg", "build/lib/output.py",
+             "src/agent_wiki_cli.egg-info/PKG-INFO",
+             "src/llm_wiki_cli/__pycache__/__init__.cpython-313.pyc"]
+    for name in paths:
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"retained generated bytes")
+    assert canary.verify_pr_source(root, source, base, head, tree_sha=tree) == tree
+    assert all((root / name).read_bytes() == b"retained generated bytes" for name in paths)
+
+
+def test_pr_source_guard_allows_unknown_data_only_and_empty_directories(pr_checkout):
+    root, _git, source, base, head, tree = pr_checkout
+    (root / "empty-diagnostic").mkdir()
+    data = root / "diagnostic/nested/values.json"
+    data.parent.mkdir(parents=True)
+    data.write_bytes(b'{"captured": true}')
+    assert canary.verify_pr_source(root, source, base, head, tree_sha=tree) == tree
+    assert data.read_bytes() == b'{"captured": true}'
+
+
+def test_pr_source_guard_rejects_unknown_directory_redirect_before_following(pr_checkout, tmp_path):
+    root, _git, source, base, head, tree = pr_checkout
+    outside = tmp_path / "external-package"
+    outside.mkdir()
+    marker = outside / "module.py"
+    marker.write_bytes(b"raise RuntimeError('must not execute')\n")
+    (root / "unknown-package").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(canary.CanaryError, match="redirected source input"):
+        canary.verify_pr_source(root, source, base, head, tree_sha=tree)
+    assert marker.read_bytes() == b"raise RuntimeError('must not execute')\n"
+
+
 def test_raw_capture_materializes_shared_regular_bytes_without_following_aliases(
     tmp_path,
 ):

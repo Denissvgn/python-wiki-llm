@@ -14,15 +14,15 @@ import importlib
 import importlib.util
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import platform
 import re
 import stat
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
-import tomllib
 
 MODULE = "tests/test_developer_value_measure.py"
 GROUPS = (
@@ -35,6 +35,10 @@ GROUPS = (
 READERS = ("pr_ci_pytest.py", "core_shards.py", "qualification.py")
 MAX_REPORT_BYTES = 128 * 1024 * 1024
 MAX_REPORT_FILES = 5000
+MAX_GIT_OUTPUT = 16 * 1024 * 1024
+MAX_TRACKED_SOURCE_FILES = 50000
+MAX_TRACKED_FILE_BYTES = 64 * 1024 * 1024
+MAX_TRACKED_SOURCE_BYTES = 512 * 1024 * 1024
 REPOSITORY = "Denissvgn/python-wiki-llm"
 
 
@@ -59,7 +63,13 @@ def save(out, name, value):
 
 
 def redirected(path):
-    return path.is_symlink() or getattr(path, "is_junction", lambda: False)()
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    return stat.S_ISLNK(metadata.st_mode) or bool(
+        getattr(metadata, "st_file_attributes", 0) & 0x400
+    )
 
 
 def safe(path):
@@ -87,6 +97,8 @@ def load(name, path):
 
 
 def provider_files(root):
+    import tomllib
+
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
     package = root / "src/llm_wiki_cli"
     paths = set(package.rglob("*.py"))
@@ -197,6 +209,211 @@ def workflow_identity(source_sha, *, frozen, environment):
             "Frozen canary workflow identity differs",
         )
     return workflow_sha, workflow_ref
+
+
+def git_output(root, *command):
+    """Read original Git objects even when local replacement refs exist."""
+    with tempfile.TemporaryFile() as output:
+        try:
+            subprocess.run(
+                ["git", "--no-replace-objects", *command], cwd=root,
+                stdout=output, stderr=subprocess.PIPE, timeout=30, check=True,
+            )
+        except subprocess.SubprocessError as error:
+            raise CanaryError("Original Git source inspection failed") from error
+        output.seek(0)
+        raw = output.read(MAX_GIT_OUTPUT + 1)
+    require(len(raw) <= MAX_GIT_OUTPUT, "Git source metadata exceeds bound")
+    return raw
+
+
+def _source_redirected(path: Path) -> bool:
+    return path.is_symlink() or bool(
+        getattr(path.lstat(), "st_file_attributes", 0) & 0x400
+    )
+
+
+def _literal_ignored_directories(path: Path) -> set[str]:
+    """Read only frozen literal directory rules, not arbitrary ignore patterns."""
+    return {
+        line.strip("/")
+        for line in path.read_text(encoding="utf-8", errors="surrogateescape").splitlines()
+        if re.fullmatch(r"/?[A-Za-z0-9_.-]+/", line)
+        and line.strip("/") not in {".", ".."}
+    }
+
+
+def _verify_source_additions(root: Path, names: set[str]) -> None:
+    """Bind frozen input trees without traversing unrelated checkout scratch."""
+    input_roots = {"src", "tests", "release"}.intersection(
+        name.partition("/")[0] for name in names
+    )
+    directories = {parent.as_posix() for name in names
+                   for parent in PurePosixPath(name).parents if parent != PurePosixPath(".")}
+    config_files = {
+        ".coveragerc", ".coveragerc.toml", "pytest.ini", ".pytest.ini", "pytest.toml",
+        ".pytest.toml", "setup.cfg", "tox.ini", "pyproject.toml",
+    }
+    executable_suffixes = {".py", ".pyc", ".pyo", ".so", ".pyd", ".dll", ".dylib"}
+    # Keep declared top-level scratch, such as reports and .venv, opaque. Only
+    # literal directory rules are needed here; this is not a Gitignore matcher.
+    ignored_roots = {".git"}
+    if ".gitignore" in names:
+        ignored_roots.update(_literal_ignored_directories(root / ".gitignore"))
+    # Native helper assets have their own tracked build-output rules. These
+    # non-Python caches are not shipped or imported by core execution. Keep
+    # them opaque without extending that exception to Python/fixture inputs.
+    native_outputs = set()
+    for name in names:
+        parts = PurePosixPath(name).parts
+        if (len(parts) == 5 and parts[:3] == ("src", "llm_wiki_cli", "extractors")
+                and parts[3].endswith("_scripts") and parts[4] == ".gitignore"):
+            parent = PurePosixPath(name).parent
+            if any(row.startswith(parent.as_posix() + "/") and row.endswith(".py") for row in names):
+                continue
+            for folder in _literal_ignored_directories(root / name):
+                output = (parent / folder).as_posix()
+                if output not in names and output not in directories:
+                    native_outputs.add(output)
+    archived_roots = {name.partition("/")[0] for name in names}
+    limit = max(10000, len(names) * 4)
+    entries = 0
+    for path in root.iterdir():
+        entries += 1
+        require(entries <= limit, "source input inventory exceeds bound")
+        if path.name in archived_roots:
+            continue
+        if not path.is_dir():
+            require(path.suffix.casefold() not in executable_suffixes
+                      and path.name.casefold() not in config_files,
+                      f"unfrozen source input: {path.name}")
+        elif path.name not in ignored_roots:
+            require(not _source_redirected(path),
+                    f"redirected source input: {path.name}")
+            # Namespace packages do not require __init__.py. Inspect only
+            # unknown, unignored roots and share the input-tree entry budget.
+            for current, folders, files in os.walk(path, followlinks=False):
+                for child in [*folders, *files]:
+                    entries += 1
+                    require(entries <= limit, "source input inventory exceeds bound")
+                    extra = Path(current) / child
+                    text = extra.relative_to(root).as_posix()
+                    require(not _source_redirected(extra),
+                            f"redirected source input: {text}")
+                    if not extra.is_dir():
+                        require(extra.suffix.casefold() not in executable_suffixes,
+                                f"unfrozen source package: {text}")
+    for name in sorted(input_roots):
+        top = root / name
+        if not top.is_dir() or top.is_symlink():
+            continue  # The archived member/parent checks reject changed types.
+        for current, folders, files in os.walk(top, followlinks=False):
+            directory = Path(current)
+            folders[:] = [folder for folder in folders
+                          if (directory / folder).relative_to(root).as_posix() not in native_outputs]
+            for child in [*folders, *files]:
+                entries += 1
+                require(entries <= limit, "source input inventory exceeds bound")
+                path = directory / child
+                relative = path.relative_to(root)
+                text = relative.as_posix()
+                if text in names or text in directories:
+                    continue
+                require(not _source_redirected(path),
+                          f"redirected source input: {text}")
+                if path.is_dir():
+                    continue  # Git does not record benign empty directories.
+                # These are generated by the interpreter and setuptools in the
+                # source tree. They never authorize extra Python input files.
+                cache = "__pycache__" in relative.parts
+                metadata = (len(relative.parts) >= 2
+                            and relative.parts[0] == "src"
+                            and relative.parts[1].endswith(".egg-info"))
+                generated = ((cache and path.suffix == ".pyc")
+                             or (metadata and path.suffix.casefold() not in executable_suffixes)
+                             or (path.name == ".DS_Store" and path.is_file()))
+                require(generated, f"unfrozen source input: {text}")
+
+
+def verify_tracked_source(root, source_sha):
+    """Compare actual tracked bytes, independently of Git's index/stat shortcuts."""
+    raw = git_output(root, "ls-tree", "-rlz", "--full-tree", source_sha)
+    records = raw.split(b"\0")
+    require(records[-1] == b"" and 0 < len(records) - 1 <= MAX_TRACKED_SOURCE_FILES,
+            "Tracked source inventory exceeds file bound")
+    files, total, names = [], 0, set()
+    for record in records[:-1]:
+        header, separator, raw_name = record.partition(b"\t")
+        fields = header.split()
+        require(separator and len(fields) == 4
+                and fields[0] in {b"100644", b"100755"} and fields[1] == b"blob"
+                and re.fullmatch(rb"[0-9a-f]{40}", fields[2]) is not None
+                and fields[3].isdigit(), "Unsupported tracked source type")
+        name = raw_name.decode("utf-8")
+        path = Path(name)
+        require(0 < len(raw_name) <= 4096 and not path.is_absolute()
+                and not path.drive and not PureWindowsPath(name).drive
+                and path.as_posix() == name and ".." not in path.parts
+                and "\\" not in name and name not in names,
+                "Invalid tracked source path")
+        names.add(name)
+        size = int(fields[3])
+        total += size
+        require(size <= MAX_TRACKED_FILE_BYTES and total <= MAX_TRACKED_SOURCE_BYTES,
+                "Tracked source exceeds byte bound")
+        files.append((path, size, fields[2].decode("ascii")))
+    for relative, size, expected in files:
+        path = safe(root / relative)
+        before = path.lstat()
+        require(stat.S_ISREG(before.st_mode) and before.st_size == size,
+                "Canonical tracked source bytes differ")
+        # Git blob IDs include this header. Executable bits are represented by
+        # the canonical tree; Windows need not expose POSIX executable modes.
+        checksum = hashlib.sha1(usedforsecurity=False)
+        checksum.update(b"blob " + str(size).encode("ascii") + b"\0")
+        with path.open("rb") as stream:
+            opened = os.fstat(stream.fileno())
+            require((opened.st_dev, opened.st_ino) == (before.st_dev, before.st_ino),
+                    "Tracked source changed during inspection")
+            remaining = size
+            while remaining:
+                data = stream.read(min(1024 * 1024, remaining))
+                require(bool(data), "Canonical tracked source bytes differ")
+                checksum.update(data)
+                remaining -= len(data)
+            require(not stream.read(1), "Canonical tracked source bytes differ")
+        after = path.lstat()
+        require((before.st_dev, before.st_ino, before.st_size,
+                 before.st_mtime_ns, before.st_ctime_ns)
+                == (after.st_dev, after.st_ino, after.st_size,
+                    after.st_mtime_ns, after.st_ctime_ns)
+                and checksum.hexdigest() == expected,
+                "Canonical tracked source bytes differ")
+    return names
+
+
+def verify_pr_source(root, source_sha, base_sha, head_sha, *, tree_sha=None,
+                     include_untracked=False):
+    """Bind each PR observation to the same clean test-merge commit and tree."""
+    def git(*command):
+        return git_output(root, *command)
+
+    observed_tree = git("rev-parse", "HEAD^{tree}").decode().strip()
+    require(
+        git("rev-parse", "HEAD").decode().strip() == source_sha
+        and git("show", "-s", "--format=%P", source_sha).decode().split()
+        == [base_sha, head_sha]
+        and (tree_sha is None or observed_tree == tree_sha),
+        "PR merge identity differs",
+    )
+    require(
+        not git("status", "--porcelain",
+                "--untracked-files=all" if include_untracked else "--untracked-files=no").strip(),
+        "PR source is not clean" if include_untracked else "PR tracked source changed",
+    )
+    names = verify_tracked_source(root, source_sha)
+    _verify_source_additions(root, names)
+    return observed_tree
 
 
 def capture_reports(basetemp, out):
@@ -383,7 +600,7 @@ def run(args):
         out.mkdir(parents=True)
 
     def git(*command):
-        return subprocess.check_output(["git", *command], cwd=root)
+        return git_output(root, *command)
 
     tools = out / "base-tools"
     tools.mkdir()
@@ -426,13 +643,9 @@ def run(args):
             all(re.fullmatch(r"[0-9a-f]{40}", value) for value in (base, head)),
             "PR base/head identity unavailable",
         )
-        require(
-            git("rev-parse", "HEAD").decode().strip() == args.source_sha
-            and git("show", "-s", "--format=%P", args.source_sha).decode().split()
-            == [base, head],
-            "PR merge identity differs",
+        source_tree = verify_pr_source(
+            root, args.source_sha, base, head, include_untracked=True
         )
-        require(not git("status", "--porcelain").strip(), "PR source is not clean")
         remote = git("remote", "get-url", "origin").decode().strip()
         require(
             remote
@@ -448,10 +661,7 @@ def run(args):
         reader = load("measurement_core_reader", tools / "core_shards.py")
 
         def unchanged():
-            require(
-                not git("status", "--porcelain", "--untracked-files=no").strip(),
-                "PR tracked source changed",
-            )
+            verify_pr_source(root, args.source_sha, base, head, tree_sha=source_tree)
 
         unchanged()
         workflow = ".github/workflows/windows-measurement.yml"
@@ -462,7 +672,7 @@ def run(args):
         )
         source = {
             "mode": "pull-request",
-            "tree": git("rev-parse", "HEAD^{tree}").decode().strip(),
+            "tree": source_tree,
             "head_sha": head,
             "base_sha": base,
             "canonical_origin": remote,

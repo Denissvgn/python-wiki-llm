@@ -19,7 +19,7 @@ from release import manual_release as manual
 
 def git(root, *args):
     return subprocess.check_output(["git", "-C", str(root), "-c", "user.name=Release control",
-        "-c", "user.email=release@example.invalid", *args], text=True).strip()
+        "-c", "user.email=release@example.invalid", "-c", "core.autocrlf=false", *args], text=True).strip()
 
 
 @pytest.fixture
@@ -141,6 +141,47 @@ def test_source_change_invalidates_session_before_any_remote_write(project):
     with pytest.raises(manual.SessionError, match="source changed"):
         controller.advance()
     assert not remote.writes
+
+
+@pytest.mark.parametrize("when", ["advance", "after-intent"])
+def test_hidden_worktree_change_cannot_dispatch_despite_clean_git_status(project, monkeypatch, when):
+    remote = Remote()
+    controller, _ = session(project, remote)
+    git(project, "update-index", "--assume-unchanged", "CHANGELOG.md")
+    if when == "advance":
+        (project / "CHANGELOG.md").write_bytes(b"Uncommitted hidden product notes\n")
+    else:
+        save = controller.store.save
+
+        def changed(state, event):
+            result = save(state, event)
+            if event == "intent-qualify":
+                (project / "CHANGELOG.md").write_bytes(b"Uncommitted hidden product notes\n")
+            return result
+
+        monkeypatch.setattr(controller.store, "save", changed)
+    assert git(project, "status", "--porcelain") == ""
+    with pytest.raises(manual.SessionError, match="Candidate tracked source differs"):
+        controller.advance()
+    assert remote.writes == []
+    assert controller.store.load()["pending"] is None
+    assert git(project, "ls-files", "-v", "CHANGELOG.md").startswith("h ")
+
+
+def test_original_source_and_product_notes_ignore_git_replacement_objects(project):
+    original = manual.source(project)
+    (project / "CHANGELOG.md").write_bytes(b"## [9.0.0] - 2026-11-05\n\nReplacement product notes.\n")
+    git(project, "add", "CHANGELOG.md")
+    git(project, "commit", "-qm", "Replacement object")
+    replacement = git(project, "rev-parse", "HEAD")
+    git(project, "reset", "--hard", original["candidate_sha"])
+    git(project, "replace", original["candidate_sha"], replacement)
+    assert git(project, "rev-parse", "HEAD^{tree}") != original["candidate_tree"]
+    assert "Replacement product notes" in git(project, "show", original["candidate_sha"] + ":CHANGELOG.md")
+    assert manual.source(project) == original
+    api = backend(project, None)
+    assert api._notes(original).read_bytes() == b"Product behavior.\n"
+    assert git(project, "replace", "-l") == original["candidate_sha"]
 
 
 def test_raw_index_metadata_is_not_the_source_identity(project):
