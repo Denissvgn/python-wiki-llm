@@ -37,6 +37,8 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.entrypoints` | `build_flow` |
 | `.services.evidence_explanation` | `explain_source`, `explanation_provenance` |
 | `.services.flow_followup` | `validate_request`, `validate_request` |
+| `.services.helper_cache` | `HelperPreparationError` |
+| `.services.helper_runtime` | `current_helper_operation`, `helper_operation`, `helper_policy` |
 | `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
@@ -91,9 +93,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (50) |
+| Outbound | `src` (52) |
 
-> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -104,7 +106,7 @@ flowchart LR
 | [InvalidRequestError](../entities/InvalidRequestError.md) | 370 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
 | [WorkspaceStateError](../entities/WorkspaceStateError.md) | 374 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
 | [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 378 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1505 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [ContextSession](../entities/api_ContextSession.md) | 1605 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -126,7 +128,10 @@ flowchart LR
 | `_raise_api_error` | `(exc: Exception) -> NoReturn` | — | Translate one internal exception at the supported API boundary. |
 | `_is_maintenance_error` | `(exc: Exception) -> bool` | — | — |
 | `_raise_maintenance_api_error` | `(exc: Exception) -> NoReturn` | — | — |
+| `_bounded_helper_diagnostic` | `(value: str) -> str` | — | — |
+| `_raise_helper_preparation_api_error` | `(exc: BaseException) -> None` | — | Keep preparation failures operational even through service wrappers. |
 | `_api_boundary` | `(function: Callable[_P, _R], *, translate_error: Callable[[Exception], NoReturn] = _raise_api_error) -> Callable[_P, _R]` | — | Wrap a synchronous public callable in the stable exception taxonomy. |
+| `helper_preparation` | `(policy: Literal['auto', 'never'], *, cache_dir: str \| Path \| None = None, progress: Callable[[str], None] \| None = None) -> Iterator[None]` | `@contextmanager` | Configure managed helper setup for calls made inside this scope. |
 | `_raise_native_query_api_error` | `(exc: Exception) -> NoReturn` | — | Retain public catch points while exposing only fixed query diagnostics. |
 | `_native_query_boundary` | `(function: Callable[_P, _R]) -> Callable[_P, _R]` | — | — |
 | `get_knowledge_coverage` | `(*, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, live: bool = False, service: DocumentationGraphQueryService \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None, comparison_policy: str \| None = None) -> KnowledgeCoverageResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Explain modeled coverage from a snapshot, live capture or existing service. |

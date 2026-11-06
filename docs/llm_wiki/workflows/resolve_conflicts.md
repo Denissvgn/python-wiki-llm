@@ -1,7 +1,7 @@
 # resolve_conflicts
 
 **Entry point:** `team.resolve_conflicts`
-**Modules involved:** [extraction_service](../modules/extraction_service.md), [io](../modules/io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md), [team](../modules/team.md)
+**Modules involved:** [extraction_service](../modules/extraction_service.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md), [team](../modules/team.md)
 
 ## Sequence
 
@@ -15,15 +15,20 @@
 7. `source_selection.validate_persisted_source_selection_identity`
 8. `source_snapshot.build_source_snapshot`
 9. `source_selection.validate_persisted_source_selection_identity`
-10. `extraction_service.get_inventory_result`
-11. `knowledge_storage_lifecycle.is_storage_path`
-12. `io.read_md`
-13. `io.write_md`
+10. `knowledge_storage_lifecycle.is_storage_path`
+11. `io.decode_markdown_bytes`
+12. `extraction_service.get_inventory_result`
+13. `extraction_service.ExtractorFailureError`
+14. `io.decode_markdown_bytes`
+15. `filesystem_guard.atomic_write_guarded_bytes`
+16. `knowledge_storage_io._absolute_path`
 
 ## Touches
 
 - [extraction_service](../modules/extraction_service.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)

@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 677 | [Open section](#entities) |
-| Modules | 259 | [Open section](#modules) |
-| Workflows | 245 | [Open section](#workflows) |
+| Entities | 683 | [Open section](#entities) |
+| Modules | 261 | [Open section](#modules) |
+| Workflows | 250 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 466 | [Open section](#entry-point-flows) |
+| Entry-point flows | 467 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -256,6 +256,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HealthScope](entities/HealthScope.md)
 - [HealthSelection](entities/HealthSelection.md)
 - [HealthSnapshot](entities/HealthSnapshot.md)
+- [HelperConfiguration](entities/HelperConfiguration.md)
+- [HelperOperation](entities/HelperOperation.md)
+- [HelperPolicy](entities/HelperPolicy.md)
+- [HelperPreparationError](entities/HelperPreparationError.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
@@ -472,11 +476,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [PlannedArtifactWrite](entities/PlannedArtifactWrite.md)
 - [PluginEntryPointDetectionResult](entities/PluginEntryPointDetectionResult.md)
 - [PluginError](entities/PluginError.md)
+- [PreparedHelperHandle](entities/PreparedHelperHandle.md)
 - [PreparedRuntimeGenerationOptions](entities/PreparedRuntimeGenerationOptions.md)
 - [PreparedSyncRun](entities/PreparedSyncRun.md)
 - [ProducerComponent](entities/ProducerComponent.md)
 - [ProducerComponentInput](entities/ProducerComponentInput.md)
 - [ProducerRecord](entities/ProducerRecord.md)
+- [Profile](entities/Profile.md)
 - [Progress](entities/Progress.md)
 - [ProtectedArtifactDurabilityError](entities/ProtectedArtifactDurabilityError.md)
 - [ProtectedArtifactError](entities/ProtectedArtifactError.md)
@@ -777,7 +783,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
 - [health_policy](modules/health_policy.md) - Pure release-health decisions derived from one validated CI evaluation.
 - [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
-- [helper_preparation](modules/helper_preparation.md) - Explicit setup-time preparation for helpers selected by a source boundary.
+- [helper_cache](modules/helper_cache.md) - Transactional, project-independent storage for bundled extractor helpers.
+- [helper_preparation](modules/helper_preparation.md) - Preparation of bundled helpers within a validated source boundary.
+- [helper_runtime](modules/helper_runtime.md) - Operation-owned helper policy and immutable prepared-artifact bindings.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
@@ -840,7 +848,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [manifest_storage](modules/manifest_storage.md) - Bounded legacy and maintenance roots with immutable field catalogs.
 - [markdown_sections](modules/markdown_sections.md) - Deterministic Markdown section parsing and legacy sync splice helpers.
 - [mcp_cmd](modules/mcp_cmd.md) - Run llm-wiki as a local Model Context Protocol server.
-- [mcp_server](modules/mcp_server.md) - Read-only MCP service helpers for exposing an LLM Wiki to agents.
+- [mcp_server](modules/mcp_server.md) - Workspace read-only MCP services for exposing an LLM Wiki to agents.
 - [metrics](modules/metrics.md) - `src/llm_wiki_cli/services/metrics.py`
 - [metrics_cmd](modules/metrics_cmd.md) - `src/llm_wiki_cli/commands/metrics_cmd.py`
 - [migrate_cmd](modules/migrate_cmd.md) - Legacy wiki migration command.
@@ -1005,6 +1013,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_cmd._build_generated_section_context`
 - [build_impact](workflows/build_impact.md) - entry: `impact.build_impact`
+- [build_inventory_cache_key](workflows/build_inventory_cache_key.md) - entry: `inventory_cache.build_inventory_cache_key`
 - [build_knowledge_commit_plan](workflows/build_knowledge_commit_plan.md) - entry: `knowledge_artifacts.build_knowledge_commit_plan`
 - [build_knowledge_context_from_captured_read](workflows/build_knowledge_context_from_captured_read.md) - entry: `context_packet._build_knowledge_context_from_captured_read`
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
@@ -1022,6 +1031,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_sync_graph_observations](workflows/build_sync_graph_observations.md) - entry: `sync_cmd._build_sync_graph_observations`
 - [build_sync_prompt](workflows/build_sync_prompt.md) - entry: `trigger_cmd._build_sync_prompt`
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
+- [capture_analysis](workflows/capture_analysis.md) - entry: `analysis_capture.capture_analysis`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
 - [capture_discovery](workflows/capture_discovery.md) - entry: `search_discovery_capture.capture_discovery`
@@ -1072,6 +1082,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [get_yaml_infrastructure_inventory](workflows/get_yaml_infrastructure_inventory.md) - entry: `infrastructure_inventory.get_yaml_infrastructure_inventory`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
 - [hash_addressed_storage](workflows/hash_addressed_storage.md) - entry: `maintenance_protocol._hash_addressed_storage`
+- [helper_identity](workflows/helper_identity.md) - entry: `extractor_helpers.helper_identity`
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
@@ -1114,6 +1125,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
 - [preflight](workflows/preflight.md) - entry: `knowledge_maintenance.preflight`
+- [preflight_bootstrap_analysis](workflows/preflight_bootstrap_analysis.md) - entry: `bootstrap_runtime._preflight_bootstrap_analysis`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
@@ -1126,6 +1138,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_extractors_cmd_flow](workflows/prepare_extractors_cmd_flow.md) - entry: `prepare_extractors_cmd.run`
 - [prepare_inventory_build_context](workflows/prepare_inventory_build_context.md) - entry: `extraction_service._prepare_inventory_build_context`
 - [prepare_migration_governance_plan](workflows/prepare_migration_governance_plan.md) - entry: `migrate_cmd._prepare_migration_governance_plan`
+- [prepare_operation_helpers](workflows/prepare_operation_helpers.md) - entry: `helper_preparation.prepare_operation_helpers`
 - [prepare_sync_run](workflows/prepare_sync_run.md) - entry: `sync_cmd._prepare_sync_run`
 - [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
 - [prior_ownership](workflows/prior_ownership.md) - entry: `sync_transitions._prior_ownership`
@@ -1380,6 +1393,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-hash_json](flows/api-hash_json.md) - entry: `hash_json`
 - [api-hash_markdown_snapshot](flows/api-hash_markdown_snapshot.md) - entry: `hash_markdown_snapshot`
 - [api-hash_source_snapshot](flows/api-hash_source_snapshot.md) - entry: `hash_source_snapshot`
+- [api-helper_preparation](flows/api-helper_preparation.md) - entry: `helper_preparation`
 - [api-identity_coordinate_key](flows/api-identity_coordinate_key.md) - entry: `identity_coordinate_key`
 - [api-infrastructure_evidence_by_page](flows/api-infrastructure_evidence_by_page.md) - entry: `infrastructure_evidence_by_page`
 - [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`

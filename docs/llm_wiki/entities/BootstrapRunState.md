@@ -98,4 +98,4 @@ flowchart LR
 | `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_execute_bootstrap_options_locked` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 
-> References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.
+> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.

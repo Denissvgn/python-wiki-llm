@@ -1,6 +1,6 @@
 # _InventoryBuildContext
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:297`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:298`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

@@ -47,6 +47,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `_git_changed_files`, `_partition_snapshot_git_changes`, `analyze_data_flow`, `build_data_flow_context`, `build_flow`, `get_entry_points`, `get_docker_inventory`, `get_inventory_result`, `read_console_scripts`, `resolve_call_edges` |
+| `.helper_cache` | `HelperPreparationError` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `write_text_output`, `write_utf8_stdout` |
@@ -61,6 +62,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.maintenance_protocol` | `ADOPTION_FILENAME` |
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
+| `.progress` | `Progress` |
 | `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
@@ -69,6 +71,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
+| `contextlib` | `contextmanager` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `fnmatch` | `fnmatch` |
@@ -98,17 +101,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (32) |
+| Outbound | `src` (34) |
 
-> All 38 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ProtocolRequestError](../entities/ProtocolRequestError.md) | 187 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
-| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 202 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1878 | — | Operation-scoped query state captured from one knowledge read. |
+| [ProtocolRequestError](../entities/ProtocolRequestError.md) | 188 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
+| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 203 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1879 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
@@ -196,6 +199,7 @@ flowchart LR
 | `_validate_request_cli_options` | `(args, request: Mapping[str, Any]) -> None` | — | Reject conflicting semantic sources before source/wiki capture. |
 | `_run_protocol` | `(args) -> None` | — | — |
 | `_emit_packet_error` | `(error: BaseException, *, protocol: str = PROTOCOL_VERSION) -> None` | — | Keep stdout empty on packet failure and emit bounded structured details. |
+| `_packet_helper_diagnostics` | `(protocol)` | `@contextmanager` | Reserve stderr for the single structured failure of CLI packet output. |
 | `_run_packet_output` | `(*, src_dir: str, wiki_dir: str, budget: int, focus_values: list[str], prefer_fresh: bool, knowledge_mode: str \| None, output_path: str \| None, allow_external_src: bool, source_selection: str \| Path \| None, request: Mapping[str, Any] \| None = None) -> None` | — | Build and emit canonical QCP bytes for the CLI-only packet format. |
 | `run` | `(args) -> None` | — | — |
 | `_normalise_changed_paths` | `(changed: list[str], inventory: dict) -> list[str]` | — | Match git-reported changed paths to inventory keys. |

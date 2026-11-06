@@ -31,6 +31,8 @@ stored provenance.
 | Source | Symbols |
 |--------|---------|
 | `.` | `analysis_compatibility`, `extractor_helpers` |
+| `.helper_cache` | `cache_roots`, `validate_handle`, `lookup_helper` |
+| `.helper_runtime` | `current_helper_operation`, `pinned_helper` |
 | `.immutable` | `FrozenDict`, `freeze` |
 | `.knowledge_envelope` | `hash_component_configuration` |
 | `__future__` | `annotations` |
@@ -66,9 +68,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (4) |
+| Outbound | `src` (6) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

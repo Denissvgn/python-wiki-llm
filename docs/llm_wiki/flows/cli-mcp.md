@@ -29,8 +29,6 @@ sequenceDiagram
     participant p15 as tuple
     participant p16 as runner
     participant p17 as print
-    participant p18 as SystemExit
-    participant p19 as globals().get
     p0->>p1: validate_source_root
     p0->>p2: _mcp_service_export
     p1->>p3: validate_path
@@ -57,20 +55,21 @@ sequenceDiagram
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', True)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_preparation', 'auto')
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_cache_dir', None)
     p0-->>p16: runner(config)
     p0-->>p17: print(..., file=sys.stderr)
-    p0-->>p18: SystemExit(1)
-    p2-->>p19: globals().get(name, _MISSING)
 ```
 
-> Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 132 interactions; 102 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 17 of 82 (65 omitted); unresolved 3 of 23 (20 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 18 of 84 (66 omitted); unresolved 2 of 23 (21 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/commands/mcp_cmd.py:run` | 1 | [src/llm_wiki_cli/commands/mcp_cmd.py](../modules/mcp_cmd.md) | internal | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
@@ -78,8 +77,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 5 |
-> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -185,7 +183,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 75 |
+| output | `print` | `run` | 77 |
 
 ### Static analysis gaps
 

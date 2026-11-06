@@ -249,17 +249,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1487 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 2017 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 2018 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 2022 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 2022 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 2025 | `candidate.setdefault('knowledge_mode', 'auto')` |
-| _normalized_request | candidate.setdefault | 2026 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 2027 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1125 | `isinstance(data, dict)` |
-| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1125 | `data.get('protocol')` |
-| _validate_protocol_request | _validate_protocol_request_impl | 1127 | `_validate_protocol_request_impl(data)` |
+| build_qualified_context | _normalized_request | 1496 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 2026 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 2027 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 2031 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 2031 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 2034 | `candidate.setdefault('knowledge_mode', 'auto')` |
+| _normalized_request | candidate.setdefault | 2035 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 2036 | `context_service._validate_protocol_request(candidate)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1126 | `isinstance(data, dict)` |
+| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1126 | `data.get('protocol')` |
+| _validate_protocol_request | _validate_protocol_request_impl | 1128 | `_validate_protocol_request_impl(data)` |
 
 ### Boundary effects
 
@@ -269,12 +269,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 2017 |
-| external_call | `_normalized_request` | `deepcopy` | 2022 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2025 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2026 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1125 |
-| unresolved_call | `_validate_protocol_request` | `data.get` | 1125 |
+| external_call | `_normalized_request` | `isinstance` | 2026 |
+| external_call | `_normalized_request` | `deepcopy` | 2031 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2034 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2035 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1126 |
+| unresolved_call | `_validate_protocol_request` | `data.get` | 1126 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_qualified_context` | `depth limit` | 0 |
 

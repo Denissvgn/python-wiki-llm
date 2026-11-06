@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [migrate_cmd](../modules/migrate_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 48 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,9 @@
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
+- [helper_cache](../modules/helper_cache.md)
+- [helper_preparation](../modules/helper_preparation.md)
+- [helper_runtime](../modules/helper_runtime.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -126,9 +129,9 @@ sequenceDiagram
     p0-->>p30: wiki_dir.exists (src/llm_wiki_cli/commands/migrate_cmd.py:run)
 ```
 
-> Call sequence diagram shows 30 of 4132 interactions; 4102 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4167 interactions; 4137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1126 (1125 omitted); unresolved 1 of 1534 (1533 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1134 (1133 omitted); unresolved 1 of 1544 (1543 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -142,7 +145,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 30 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 1003 groups; 995 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1011 groups; 1003 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -155,9 +158,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1473; effect analysis evaluated: 1011, partial: 59, unavailable: 403. Counts include steps omitted from the displayed trace.
+Source steps: 1490; effect analysis evaluated: 1025, partial: 59, unavailable: 406. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1070 source steps with known totals: observed: 6255, emitted: 5920, omitted: 335. Unavailable totals are excluded.
+Collector observations for 1084 source steps with known totals: observed: 6338, emitted: 6009, omitted: 329. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -264,7 +267,7 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1739 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1739 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 1740 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 161 | `validate_path(path, label)` |
 
 ### Boundary effects
 

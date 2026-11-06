@@ -34,6 +34,7 @@ and strict validation; help text grants no extra write or setup authority.
 | `.services.analysis_compatibility` | `comparison_scope` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
 | `.services.extraction_jobs` | `ExtractionJobsAction` |
+| `.services.helper_runtime` | `current_helper_configuration`, `helper_operation` |
 | `.services.maintenance_queue` | `DEFAULT_QUEUE_LIMIT`, `MAX_QUEUE_LIMIT`, `MIN_QUEUE_LIMIT`, `validate_queue_limit` |
 | `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
@@ -62,9 +63,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (44) |
+| Outbound | `src` (45) |
 
-> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -88,6 +89,8 @@ flowchart LR
 | `_add_queue_command` | `(subparsers)` | — | — |
 | `_add_maintenance_command` | `(subparsers)` | — | — |
 | `_build_parser` | `()` | — | — |
+| `_add_helper_preparation_arguments` | `(parser)` | — | Accept the operation policy before or after nested command names. |
+| `_helper_preparation_policy` | `(args)` | — | — |
 | `_add_query_command` | `(subparsers)` | — | — |
 | `_add_task_context_command` | `(subparsers)` | — | — |
 | `_register_commands` | `(subparsers)` | — | — |

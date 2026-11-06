@@ -113,7 +113,7 @@ still stop the operation.
 | `..services.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations` |
 | `..services.entrypoints` | `build_flow`, `build_flow_context`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `..services.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
-| `..services.extraction_service` | `InventoryResult`, `get_call_graph`, `get_inventory_result`, `get_docker_inventory`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
+| `..services.extraction_service` | `InventoryResult`, `get_call_graph`, `get_inventory_result`, `get_docker_inventory`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
 | `..services.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `..services.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `..services.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |

@@ -38,7 +38,9 @@ helper, and the active Node runtime remains a separate requirement.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `typescript_helper_identity` |
+| `.` | `typescript_helper_identity`, `helper_cache` |
+| `.helper_cache` | `_legacy_handle`, `cache_roots`, `user_helper_cache_root`, `cache_roots`, `lookup_helper`, `validate_handle`, `cache_roots`, `lookup_helper`, `validate_handle`, `_native_binary`, `_native_fingerprint` |
+| `.helper_runtime` | `current_helper_operation`, `pinned_helper`, `pinned_helper`, `pinned_helper`, `current_helper_operation`, `pinned_helper` |
 | `.inventory_cache` | `ENV_CACHE_DIR` |
 | `.io` | `first_unsafe_path_component` |
 | `.paths` | `render_shell_command` |
@@ -53,6 +55,7 @@ helper, and the active Node runtime remains a separate requirement.
 | `shutil` | `shutil` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
+| `tempfile` | `tempfile` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -73,16 +76,16 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (11) |
-| Outbound | `src` (4) |
+| Inbound | `src` (14) |
+| Outbound | `src` (6) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 53 | — | — |
+| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 56 | — | — |
 
 ## Functions
 
@@ -106,9 +109,8 @@ flowchart LR
 | `_parse_ghc_version` | `(toolchain: str) -> tuple[int, int, int] \| None` | — | — |
 | `_ghc_support_error` | `(toolchain: str) -> str \| None` | — | — |
 | `_env_has_value` | `(env: dict[str, str], name: str) -> bool` | — | Return True when *env* contains a non-empty variable named *name*. |
-| `helper_cache_key` | `(language: str, *, toolchain_version: str \| None = None, platform_value: str \| None = None) -> str` | — | — |
+| `helper_cache_key` | `(language: str, *, toolchain_version: str \| None = None, platform_value: str \| None = None, build_recipe: str \| None = None) -> str` | — | — |
 | `_manifest_path` | `(cache_root: Path, language: str) -> Path` | — | — |
-| `_load_manifest` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
 | `_write_manifest` | `(cache_root: Path, language: str, data: dict[str, Any]) -> None` | — | — |
 | `_typescript_receipt_root` | `(cache_root: Path, manifest: dict[str, Any]) -> Path \| None` | — | — |
 | `_manifest_current` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
@@ -120,6 +122,8 @@ flowchart LR
 | `helper_identity` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> dict[str, Any]` | — | Inspect existing preparation receipts and execution runtime without setup. |
 | `typescript_dependencies_ready` | `(src_dir: str \| Path = '.', cache_dir: str \| None = None) -> bool` | — | — |
 | `prepare_typescript` | `(cache_root: Path) -> HelperPrepareResult` | — | — |
+| `_unsafe_native_output` | `(path: Path) -> bool` | — | — |
+| `_publish_native_helper` | `(cache_root: Path, language: str, binary_path: Path, key: str, toolchain: str, *, staged: Path \| None = None, **metadata: str) -> HelperPrepareResult` | — | — |
 | `prepare_go` | `(cache_root: Path) -> HelperPrepareResult` | — | — |
 | `prepare_rust` | `(cache_root: Path) -> HelperPrepareResult` | — | — |
 | `prepare_haskell` | `(cache_root: Path) -> HelperPrepareResult` | — | — |

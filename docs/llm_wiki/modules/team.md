@@ -16,10 +16,12 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `..config` | `DEFAULT_WIKI_DIR` |
 | `.bootstrap_runtime` | `_generate_index_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_build_relationships`, `_generate_entity_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_docker_md`, `build_module_page_map` |
 | `.canonical_pages` | `canonical_generated_pages` |
-| `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `get_inventory_result` |
+| `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `ExtractorFailureError`, `get_inventory_result` |
+| `.filesystem_guard` | `atomic_write_guarded_bytes` |
 | `.immutable` | `freeze` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.io` | `read_md`, `write_json_atomic`, `write_md` |
+| `.io` | `decode_markdown_bytes`, `read_md`, `write_json_atomic` |
+| `.knowledge_storage_io` | `_absolute_path` |
 | `.knowledge_storage_lifecycle` | `is_storage_path` |
 | `.plugins` | `PluginError`, `iter_components` |
 | `.source_selection` | `with_source_selection_generation_input`, `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
@@ -30,6 +32,7 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `functools` | `lru_cache` |
+| `hashlib` | `hashlib` |
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -55,17 +58,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (13) |
+| Outbound | `src` (15) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TeamConfigError](../entities/TeamConfigError.md) | 71 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
-| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 76 | — | One command's resolved policy and project-anchored wiki identity. |
-| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 85 | — | Inputs needed to check wiki files against team conventions. |
+| [TeamConfigError](../entities/TeamConfigError.md) | 72 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
+| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 77 | — | One command's resolved policy and project-anchored wiki identity. |
+| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 86 | — | Inputs needed to check wiki files against team conventions. |
 
 ## Functions
 
@@ -102,5 +105,6 @@ flowchart LR
 | `_entity_content` | `(page_stem: str, inventory: dict) -> tuple[str \| None, str]` | — | — |
 | `_infrastructure_content` | `(page_stem: str, inventory: dict, src_dir: str, *, source_snapshot: SourceSnapshot \| None = None) -> tuple[str \| None, str]` | — | — |
 | `_merge_conflicted_log` | `(text: str) -> str` | — | — |
-| `_resolution_for_path` | `(rel_path: str, path: Path, wiki_dir: Path, inventory: dict, src_dir: str, *, source_snapshot: SourceSnapshot \| None = None) -> tuple[str \| None, str]` | — | — |
+| `_conflict_target` | `(rel_path: str) -> str \| None` | — | — |
+| `_resolution_for_target` | `(target: str \| None, path: Path, text: str, wiki_dir: Path, inventory: dict, src_dir: str, *, source_snapshot: SourceSnapshot \| None = None) -> tuple[str \| None, str]` | — | — |
 | `resolve_conflicts` | `(wiki_dir: str \| Path, src_dir: str, *, write: bool = False, source_selection: str \| Path \| None = None) -> dict[str, Any]` | — | — |

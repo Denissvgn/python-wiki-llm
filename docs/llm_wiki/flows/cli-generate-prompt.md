@@ -230,13 +230,13 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 645 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 646 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 647 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
+| validate_path | Path.cwd().resolve | 137 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
 | run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 648 | `bool(getattr(...))` |
 
 ### Boundary effects
@@ -257,11 +257,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 645 |
 | external_call | `run` | `getattr` | 646 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
-| external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
 | external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
+| external_call | `validate_path` | `Path.cwd` | 137 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

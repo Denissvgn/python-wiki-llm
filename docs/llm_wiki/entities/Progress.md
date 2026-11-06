@@ -32,18 +32,21 @@ One lightweight heartbeat worker and one bounded stream per command.
 flowchart LR
     n0["Progress (src/llm_wiki_cli/services/progress.py)"]
     n1["_dispatch_command (src/llm_wiki_cli/cli.py)"]
-    n2["current_progress (src/llm_wiki_cli/services/progress.py)"]
-    n3["Progress.run (src/llm_wiki_cli/services/progress.py)"]
-    n4["with_progress (src/llm_wiki_cli/services/progress.py)"]
+    n2["_packet_helper_diagnostics (src/llm_wiki_cli/services/context_service.py)"]
+    n3["current_progress (src/llm_wiki_cli/services/progress.py)"]
+    n4["Progress.run (src/llm_wiki_cli/services/progress.py)"]
+    n5["with_progress (src/llm_wiki_cli/services/progress.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/progress.md"
     click n1 "../modules/cli.md"
-    click n2 "../modules/progress.md"
+    click n2 "../modules/context_service.md"
     click n3 "../modules/progress.md"
     click n4 "../modules/progress.md"
+    click n5 "../modules/progress.md"
 ```
 
 ### Summary
@@ -57,6 +60,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_dispatch_command` | call | [cli](../modules/cli.md) | 1 |
+| `_packet_helper_diagnostics` | call | [context_service](../modules/context_service.md) | 1 |
 | `current_progress` | type_reference | [progress](../modules/progress.md) | — |
 | `Progress.run` | type_reference | [progress](../modules/progress.md) | — |
 | `with_progress` | type_reference | [progress](../modules/progress.md) | — |

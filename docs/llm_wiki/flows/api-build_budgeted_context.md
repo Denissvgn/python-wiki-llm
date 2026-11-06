@@ -261,35 +261,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1341 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
-| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 384 | `validate_request(...)` |
-| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `isinstance(data, Mapping)` |
-| validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `any(...)` |
-| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 77 | `isinstance(key, str)` |
-| validate_request | ProtocolRequestError | 78 | `context.ProtocolRequestError('Request must be an object with string keys', 'request')` |
-| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 79 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
-| validate_request | ProtocolRequestError | 80 | `context.ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
-| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 82 | `set(data)` |
-| validate_request | ProtocolRequestError | 84 | `context.ProtocolRequestError(..., ...)` |
-| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 85 | `sorted(unknown)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1441 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 385 | `validate_request(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 78 | `isinstance(data, Mapping)` |
+| validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 78 | `any(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 78 | `isinstance(key, str)` |
+| validate_request | ProtocolRequestError | 79 | `context.ProtocolRequestError('Request must be an object with string keys', 'request')` |
+| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 80 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
+| validate_request | ProtocolRequestError | 81 | `context.ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
+| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 83 | `set(data)` |
+| validate_request | ProtocolRequestError | 85 | `context.ProtocolRequestError(..., ...)` |
+| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 86 | `sorted(unknown)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `legacy.update` | `build_budgeted_context` | 425 |
-| mutation | `legacy.pop` | `validate_request` | 93 |
+| mutation | `legacy.update` | `build_budgeted_context` | 426 |
 | mutation | `legacy.pop` | `validate_request` | 94 |
 | mutation | `legacy.pop` | `validate_request` | 95 |
+| mutation | `legacy.pop` | `validate_request` | 96 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_request` | `isinstance` | 77 |
-| external_call | `validate_request` | `any` | 77 |
-| unresolved_call | `validate_request` | `data.get` | 79 |
-| external_call | `validate_request` | `sorted` | 85 |
+| external_call | `validate_request` | `isinstance` | 78 |
+| external_call | `validate_request` | `any` | 78 |
+| unresolved_call | `validate_request` | `data.get` | 80 |
+| external_call | `validate_request` | `sorted` | 86 |
 | step_limit | `build_budgeted_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_budgeted_context` | `depth limit` | 0 |
 

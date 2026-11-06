@@ -41,7 +41,9 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.extraction_service` | `InventoryResult` |
+| `.extractor_helpers` | `SUPPORTED_HELPERS` |
 | `.filesystem_guard` | `fresh_no_follow_stat`, `guard_windows_directory_chain`, `hold_windows_readonly_file` |
+| `.helper_cache` | `HelperPreparationError` |
 | `.implementation_evidence` | `validate_implementation_summary` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
@@ -101,9 +103,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
-| Outbound | `src` (34) |
+| Outbound | `src` (36) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -116,11 +118,11 @@ flowchart LR
 | [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 257 | `ContextPacketError` | A required read-only packet capability is unavailable. |
 | [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 267 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
 | [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 303 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 425 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 478 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 515 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 558 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 584 | — | Consumer-time comparison against one fresh official read. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 434 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 487 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 524 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 567 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 593 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

@@ -219,16 +219,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_snapshot_documentation_query_service | _wiki_anchor | 441 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5116 | `str(current)` |
-| _wiki_anchor | directory_identity | 5116 | `directory_identity(current)` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5125 | `str(current)` |
+| _wiki_anchor | directory_identity | 5125 | `directory_identity(current)` |
 | directory_identity | path.stat | 699 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 5117 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 5120 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 5121 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_bytes | 5272 | `sha256_bytes(canonical_json_bytes(...))` |
+| _wiki_anchor | current.exists | 5126 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 5129 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 5130 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_bytes | 5281 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 | sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value)` |
-| _domain_hash | canonical_json_bytes | 5273 | `canonical_json_bytes({...})` |
+| _domain_hash | canonical_json_bytes | 5282 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -239,8 +239,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `directory_identity` | `path.stat` | 699 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 5117 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 5120 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 5126 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 5129 |
 | unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
 | external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |

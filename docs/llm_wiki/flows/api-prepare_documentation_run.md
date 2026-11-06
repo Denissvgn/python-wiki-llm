@@ -2,7 +2,7 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 34 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 36 more
 
 **Complete modules touched:**
 
@@ -10,11 +10,13 @@
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
+- [common](../modules/common.md)
 - [current_contracts](../modules/current_contracts.md)
 - [documentation_native](../modules/documentation_native.md)
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [helper_runtime](../modules/helper_runtime.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -74,12 +76,12 @@ sequenceDiagram
     participant p20 as _is_relative_to
     participant p21 as _assert_input_directory
     participant p22 as _unknown_entries
-    participant p23 as maintenance_write_operation
-    participant p24 as _inspect_markdown
-    participant p25 as bootstrap_write_operation
-    participant p26 as _semantic_page_records
+    participant p23 as _inspect_markdown
+    participant p24 as maintenance_write_operation
+    participant p25 as _semantic_page_records
+    participant p26 as bootstrap_write_operation
     participant p27 as _resolve_metadata_freshness
-    participant p28 as _enforce_freshness_policy
+    participant p28 as _preflight_bootstrap_analysis
     participant p29 as io.StringIO (src/llm_wiki_cli/services…time.py:execute_bootstrap)
     participant p30 as _RefreshArchiveTransaction
     p0->>p1: _prepare_documentation_run_impl
@@ -104,19 +106,19 @@ sequenceDiagram
     p11->>p20: _is_relative_to
     p12->>p21: _assert_input_directory
     p13->>p22: _unknown_entries
-    p7->>p23: maintenance_write_operation
-    p13->>p24: _inspect_markdown
-    p7->>p25: bootstrap_write_operation
-    p13->>p26: _semantic_page_records
+    p13->>p23: _inspect_markdown
+    p7->>p24: maintenance_write_operation
+    p13->>p25: _semantic_page_records
+    p7->>p26: bootstrap_write_operation
     p13->>p27: _resolve_metadata_freshness
-    p13->>p28: _enforce_freshness_policy
+    p7->>p28: _preflight_bootstrap_analysis
     p2-->>p29: io.StringIO (src/llm_wiki_cli/services…time.py:execute_bootstrap)
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1223 interactions; 1193 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1228 interactions; 1198 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 296 (295 omitted); unresolved 1 of 363 (362 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 298 (297 omitted); unresolved 1 of 364 (363 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +132,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 75 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 76 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
-> Omission summary shows 8 of 313 groups; 305 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 323 groups; 315 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -143,9 +145,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 565; effect analysis evaluated: 368, partial: 30, unavailable: 167. Counts include steps omitted from the displayed trace.
+Source steps: 567; effect analysis evaluated: 371, partial: 32, unavailable: 164. Counts include steps omitted from the displayed trace.
 
-Collector observations for 398 source steps with known totals: observed: 2321, emitted: 2190, omitted: 131. Unavailable totals are excluded.
+Collector observations for 403 source steps with known totals: observed: 2343, emitted: 2205, omitted: 138. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

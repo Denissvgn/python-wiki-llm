@@ -33,6 +33,7 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
+| `.helper_runtime` | `helper_operation` |
 | `.io` | `read_md` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
@@ -53,6 +54,7 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `contextlib` | `asynccontextmanager` |
 | `dataclasses` | `dataclass`, `field` |
+| `functools` | `wraps` |
 | `ipaddress` | `ipaddress` |
 | `itertools` | `islice` |
 | `json` | `json` |
@@ -87,7 +89,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (32) |
+| Outbound | `src` (33) |
 
 ### External packages
 
@@ -95,23 +97,23 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 0 |
 
-> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 118 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 122 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 219 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 223 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 227 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 235 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 242 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 262 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 281 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 368 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 410 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 119 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 123 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 220 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 224 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 228 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 236 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 243 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 265 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 284 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 371 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 435 | — | Workspace read/check operations with managed helper provisioning. |
 
 ## Functions
 
@@ -131,6 +133,7 @@ flowchart LR
 | `_default_port_for_scheme` | `(scheme: str) -> int \| None` | — | — |
 | `_normalise_origin` | `(origin: str) -> str` | — | — |
 | `is_origin_allowed` | `(origin: str, *, port: int, allowed_origins: list[str] \| tuple[str, ...]) -> bool` | — | Return True when an HTTP Origin is acceptable for local MCP use. |
+| `_bound_operation` | `(function)` | — | Give each MCP call a fresh helper binding and its comparison policy. |
 | `create_mcp_server` | `(config: McpServerConfig)` | — | Create and register the FastMCP server for a validated config. |
 | `_native_tool_call` | `(callback: Callable[..., Any], *args, **kwargs) -> Any` | — | Preserve semantic native failures through the optional SDK transport. |
 | `_register_mcp_tools` | `(server, service: McpWikiService) -> None` | — | — |

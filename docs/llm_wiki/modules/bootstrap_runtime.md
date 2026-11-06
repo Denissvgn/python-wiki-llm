@@ -35,8 +35,9 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
 | `.dockerfile_parser` | `DOCKERFILE_STAGES_SCHEMA` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
-| `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
+| `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
 | `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
+| `.helper_runtime` | `current_helper_operation` |
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
@@ -95,9 +96,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (39) |
+| Outbound | `src` (40) |
 
-> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -346,6 +347,7 @@ flowchart LR
 | `_preflight_public_bootstrap` | `(options: _BootstrapRunOptions) -> None` | — | Reject overwrite and existing wiki content without reading source. |
 | `_preflight_bootstrap_source_selection` | `(options: _BootstrapRunOptions) -> None` | — | Protect private workspace refreshes from configured-to-broad downgrade. |
 | `_execute_bootstrap_options` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False) -> BootstrapResult` | — | — |
+| `_preflight_bootstrap_analysis` | `(state: _BootstrapRunState) -> None` | — | Validate and ready selected helpers under locks, before journal creation. |
 | `_execute_bootstrap_options_locked` | `(state: _BootstrapRunState, *, write_basis = None) -> BootstrapResult` | — | — |
 | `_preflight_bootstrap_governance` | `(wiki_dir: Path) -> None` | — | Reject corrupt or missing committed governance before creating pages. |
 | `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |

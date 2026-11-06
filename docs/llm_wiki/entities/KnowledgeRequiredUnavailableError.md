@@ -1,6 +1,6 @@
 # KnowledgeRequiredUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/context_service.py:202`
+**Location:** `src/llm_wiki_cli/services/context_service.py:203`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [context_service](../modules/context_service.md)

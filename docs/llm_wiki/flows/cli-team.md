@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 42 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 45 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,9 @@
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
+- [helper_cache](../modules/helper_cache.md)
+- [helper_preparation](../modules/helper_preparation.md)
+- [helper_runtime](../modules/helper_runtime.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -122,9 +125,9 @@ sequenceDiagram
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2525 interactions; 2495 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2750 interactions; 2720 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 728 (727 omitted); unresolved 1 of 852 (851 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 856 (855 omitted); unresolved 1 of 887 (886 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -138,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
-> Omission summary shows 8 of 637 groups; 629 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 673 groups; 665 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -151,9 +154,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 946; effect analysis evaluated: 683, partial: 38, unavailable: 225. Counts include steps omitted from the displayed trace.
+Source steps: 1008; effect analysis evaluated: 724, partial: 42, unavailable: 242. Counts include steps omitted from the displayed trace.
 
-Collector observations for 721 source steps with known totals: observed: 4115, emitted: 3929, omitted: 186. Unavailable totals are excluded.
+Collector observations for 766 source steps with known totals: observed: 4443, emitted: 4257, omitted: 186. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -241,13 +244,13 @@ flowchart LR
 | run | _run_init | 264 | `_run_init(args)` |
 | _run_init | getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init) | 61 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | _run_init | validate_path | 62 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
 
 ### Boundary effects
 
@@ -263,11 +266,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 262 |
 | external_call | `_run_init` | `getattr` | 61 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
-| external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
 | external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
+| external_call | `validate_path` | `Path.cwd` | 137 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

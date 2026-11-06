@@ -1,6 +1,6 @@
 # ExtractorFailureError
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:246`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:247`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -27,10 +27,13 @@ flowchart LR
     n0["ExtractorFailureError (src/llm_wiki_cli/services/extraction_service.py)"]
     n1["RuntimeError"]
     n2["build_extract_payload (src/llm_wiki_cli/services/extraction_service.py)"]
+    n3["resolve_conflicts (src/llm_wiki_cli/services/team.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
+    click n3 "../modules/team.md"
 ```
 
 ### Summary
@@ -50,3 +53,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `resolve_conflicts` | call | [team](../modules/team.md) | 1 |
