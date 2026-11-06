@@ -687,6 +687,14 @@ def _raise_maintenance_api_error(exc: Exception) -> NoReturn:
     raise ArtifactIntegrityError(str(exc), code="maintenance-integrity", details=details) from exc
 
 
+def _bounded_helper_diagnostic(value: str) -> str:
+    if len(value) <= 500:
+        return value
+    # Command failures start with the tool and exit status, and often end
+    # with the compiler or package manager's actual diagnosis.
+    return value[:125] + " … " + value[-372:]
+
+
 def _raise_helper_preparation_api_error(exc: BaseException) -> None:
     """Keep preparation failures operational even through service wrappers."""
     current: BaseException | None = exc
@@ -701,11 +709,16 @@ def _raise_helper_preparation_api_error(exc: BaseException) -> None:
                 language = current.language if isinstance(current.language, str) and current.language in {
                     "typescript", "go", "rust", "haskell",
                 } else "unknown"
-                reason = str(getattr(current, "reason", str(current)))[:500]
+                reason = _bounded_helper_diagnostic(str(current.reason))
+                details = {"field": "helper_preparation", "language": language, "reason": reason}
+                message = f"{language} helper preparation failed: {reason}"
+                if current.cache_root is not None:
+                    details["cache_root"] = _bounded_helper_diagnostic(str(current.cache_root))
+                    message += f" (cache: {details['cache_root']})"
                 raise WorkspaceStateError(
-                    f"{language} helper preparation failed: {reason}",
+                    message,
                     code="helper-preparation-failed",
-                    details={"field": "helper_preparation", "language": language, "reason": reason},
+                    details=details,
                 ) from exc
         current = current.__cause__ or current.__context__
 

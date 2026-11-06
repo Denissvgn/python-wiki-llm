@@ -188,7 +188,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                      source_root: str | Path = ".", languages=None, package_root: Path | None = None) -> dict:
     """Capture immutable JSON inputs once; unavailable providers stay unknown."""
     from . import extractor_helpers
-    from .helper_runtime import pinned_helper
+    from .helper_runtime import current_helper_operation, pinned_helper
     root = package_root or Path(__file__).resolve().parents[1]
     cache = _CAPTURE.get()
     selected = set(registry_entries if languages is None else languages)
@@ -201,10 +201,14 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
     # An unbound observation from another scope cannot satisfy this capture.
     from .helper_cache import cache_roots
     try:
-        helper_scope = tuple(str(path) for path in cache_roots(source_root, helper_cache_dir))
+        helper_scope = cache_roots(source_root, helper_cache_dir)
     except (OSError, ValueError, TypeError):
         helper_scope = ()
     cache_key += (helper_scope,)
+    operation = current_helper_operation()
+    if operation is not None:
+        cache_key += (frozenset(language for language in selected
+                                if operation.missing_scope(source_root, language) is not None),)
     # Preparation can complete after an earlier inspection in this operation.
     # A capture made without a helper must not conceal the newly bound input.
     cache_key += (tuple(
@@ -258,17 +262,17 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                 handle = pinned_helper(owner, source_root=source_root)
                 if handle is not None:
                     from .helper_cache import validate_handle
-                    scope_matches = any(handle.cache_root == Path(path) for path in helper_scope)
-                    prepared = dict(handle.receipt) if scope_matches and validate_handle(handle) else None
+                    if handle.cache_root not in helper_scope or not validate_handle(handle):
+                        continue
                 else:
                     # One owner validates legacy pointers and immutable slots
                     # alike. A legacy receipt must not bypass native/containment
                     # checks merely because this observation has no binding.
                     from .helper_cache import lookup_helper
                     handle = lookup_helper(owner, source_root, helper_cache_dir)
-                    prepared = None if handle is None else dict(handle.receipt)
-                if prepared is None:
-                    continue
+                    if handle is None:
+                        continue
+                prepared = handle.receipt
                 toolchain = prepared.get("toolchain")
                 if not isinstance(toolchain, str) or not toolchain:
                     continue
@@ -283,7 +287,9 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                         "scope": prepared["artifact_scope"],
                         "fingerprint": artifact,
                     }
-                    node = handle.runtime_executables.get("node", "node") if handle is not None else "node"
+                    node = handle.runtime_executables.get("node")
+                    if node is None:
+                        continue
                     active_node = extractor_helpers.command_output([node, "--version"])
                     if not active_node or re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+].+)?", active_node) is None:
                         continue
@@ -293,7 +299,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                         and sys.platform in rules.get("portable_helper_platforms", {}).get(owner, [])
                     )
                     helper += "; active-node " + active_node
-                if handle is not None and not portable_helper:
+                if not portable_helper:
                     dependencies["prepared_helper"] = {
                         "key": handle.key,
                         "artifact": prepared.get("artifact_fingerprint"),

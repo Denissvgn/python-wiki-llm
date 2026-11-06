@@ -223,6 +223,39 @@ def test_missing_source_is_unavailable_across_adapters(packet_project, kind):
     assert str(packet_project).encode() not in result.stderr
 
 
+@pytest.mark.parametrize("protocol", ["llm-wiki-context/v1", "llm-wiki-context/v2", "llm-wiki-context/v3"])
+def test_packet_helper_failure_keeps_single_safe_wire_diagnostic(packet_project, monkeypatch, capsys, protocol):
+    from llm_wiki_cli import cli
+    from llm_wiki_cli.services import helper_cache
+
+    (packet_project / "source.ts").write_text("export const value = 1;\n")
+    private = str(packet_project / "private-toolchain-data")
+    request = {"protocol": protocol, "budget_tokens": 32000, "focus": ["all"]}
+    if protocol.endswith("/v2"):
+        request["knowledge_mode"] = "auto"
+    elif protocol.endswith("/v3"):
+        request.update(format="packet", budget_mode="estimated")
+    path = packet_project / "request.json"
+    path.write_text(json.dumps(request))
+
+    def fail(language, *args, progress, **kwargs):
+        progress("Preparing helper")
+        raise helper_cache.HelperPreparationError(language, "compiler failed in " + private, packet_project)
+
+    monkeypatch.setattr(helper_cache, "ensure_helper", fail)
+    monkeypatch.setattr(sys, "argv", ["llm-wiki", "context", "--request", str(path), "--format", "packet"])
+    with pytest.raises(SystemExit) as error:
+        cli.main()
+    assert error.value.code == 1
+    output = capsys.readouterr()
+    assert output.out == "" and str(packet_project) not in output.err
+    failure = json.loads(output.err)
+    assert failure["protocol"] == protocol and failure["ok"] is False
+    assert failure["error"]["code"] == "helper-preparation-failed"
+    assert failure["error"]["field"] == "helper_preparation"
+    assert failure["error"]["language"] == "typescript"
+
+
 def test_existing_empty_source_remains_a_valid_packet(packet_project):
     empty = packet_project / "empty"
     empty.mkdir()

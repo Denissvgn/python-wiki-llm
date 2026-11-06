@@ -200,12 +200,15 @@ def test_mcp_auto_respects_stricter_host_configuration(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("wrapped", [False, True])
-def test_preparation_failure_is_operational_with_bounded_cause(wrapped):
+def test_preparation_failure_is_operational_with_bounded_cause(tmp_path, wrapped):
     from llm_wiki_cli.services.helper_cache import HelperPreparationError
 
     @api._api_boundary
     def read():
-        failure = HelperPreparationError("typescript", "npm unavailable " * 100)
+        failure = HelperPreparationError(
+            "typescript", "npm exited 1: " + "download notice " * 100 + "EINTEGRITY checksum mismatch",
+            tmp_path / "selected-cache",
+        )
         if wrapped:
             raise ValueError("service wrapper") from failure
         raise failure
@@ -216,6 +219,9 @@ def test_preparation_failure_is_operational_with_bounded_cause(wrapped):
     assert raised.value.details is not None
     assert raised.value.details["language"] == "typescript"
     assert len(raised.value.details["reason"]) <= 500
+    assert raised.value.details["reason"].startswith("npm exited 1:")
+    assert raised.value.details["reason"].endswith("EINTEGRITY checksum mismatch")
+    assert raised.value.details["cache_root"] == str(tmp_path / "selected-cache")
     assert runtime.current_helper_operation() is None
 
 
@@ -223,7 +229,9 @@ def test_mcp_preparation_error_keeps_operational_code(tmp_path, monkeypatch):
     from llm_wiki_cli.services.helper_cache import HelperPreparationError
 
     def read(*args, **kwargs):
-        raise HelperPreparationError("go", "compiler unavailable")
+        raise HelperPreparationError(
+            "go", "go exited 1: " + "building " * 100 + "disk quota exceeded", tmp_path,
+        )
 
     monkeypatch.setattr(mcp_server.public_api, "inspect_concept", read)
     service = mcp_server.McpWikiService(src_dir=str(tmp_path))
@@ -232,6 +240,8 @@ def test_mcp_preparation_error_keeps_operational_code(tmp_path, monkeypatch):
     assert raised.value.code == "helper-preparation-failed"
     assert raised.value.data is not None
     assert raised.value.data["language"] == "go"
+    assert raised.value.data["reason"].endswith("disk quota exceeded")
+    assert raised.value.data["cache_root"] == str(tmp_path)
 
 
 def test_api_configuration_propagates_progress_without_calling_it():

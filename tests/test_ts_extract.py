@@ -64,6 +64,14 @@ skip_no_node = pytest.mark.skipif(
 )
 
 
+@pytest.fixture
+def use_prepared_helper():
+    from llm_wiki_cli.api import helper_preparation
+
+    with helper_preparation("never"):
+        yield
+
+
 @skip_no_node
 @pytest.mark.parametrize("extension", ["js", "jsx", "mjs", "cjs", "ts", "tsx"])
 def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
@@ -257,6 +265,7 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
 
 
 @skip_no_node
+@pytest.mark.usefixtures("use_prepared_helper")
 def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, tmp_path_factory, monkeypatch, capsys):
     helper_root = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper_root is not None
@@ -981,6 +990,7 @@ class TestTypeScriptExtractor:
             assert functions["convert"]["overloads"][0]["line"] == 7
             assert all(item["line"] == 4 for item in classes["Client"]["methods"])
 
+    @pytest.mark.usefixtures("use_prepared_helper")
     def test_optional_properties_bootstrap_and_incremental_sync(
         self, tmp_path, monkeypatch, capsys
     ):

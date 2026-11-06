@@ -26,7 +26,8 @@ def prepared(tmp_path, monkeypatch):
                         "v24.18.0" if argv[0].endswith("node") else "11.16.0")
 
     def npm(argv, **kwargs):
-        assert argv[1:] == ["ci", "--ignore-scripts", "--no-audit", "--no-fund"]
+        assert argv[1:] == ["ci", "--ignore-scripts", "--no-audit", "--no-fund",
+                            "--prefix", str(Path(kwargs["cwd"]).resolve()), "--workspaces=false"]
         root = Path(kwargs["cwd"])
         builds.append(root)
         dependencies = root / "node_modules"

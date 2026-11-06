@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+from llm_wiki_cli import api
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 from llm_wiki_cli.services import analysis_capture
 from llm_wiki_cli.services import extraction_service
@@ -14,6 +15,117 @@ from llm_wiki_cli.services.helper_runtime import bind_helper, helper_operation, 
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 from tests.test_helper_cache import _profile, _typescript_build
+
+
+def test_strict_external_read_does_not_execute_callers_project_helper(tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+
+    caller = tmp_path / "caller"
+    (caller / ".git").mkdir(parents=True)
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "main.ts").write_text("export const value = 1;\n")
+    monkeypatch.chdir(caller)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    monkeypatch.setattr(cache, "user_helper_cache_root", lambda: tmp_path / "empty-shared-cache")
+    monkeypatch.setattr(cache.shutil, "which", lambda name: "node" if name == "node" else None)
+    _prepare_fixture("typescript", caller / ".git" / helpers.HELPER_CACHE_DIRNAME)
+    assert helpers.get_prepared_typescript_root(caller) is not None
+    assert helpers.get_prepared_typescript_root(source) is None
+    monkeypatch.setattr(TypeScriptExtractor, "_run_node_extractor", lambda *a: pytest.fail("executed helper from caller's cache"))
+
+    with pytest.raises(api.WorkspaceStateError, match="helper is not prepared"):
+        api.extract_source(str(source), read_only=True, allow_external_src=True)
+
+
+def test_capture_does_not_discover_a_new_node_for_a_bound_missing_runtime(tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+
+    base = tmp_path / "cache"
+    _prepare_fixture("typescript", base / helpers.HELPER_CACHE_DIRNAME)
+    monkeypatch.setattr(cache.shutil, "which", lambda name: None)
+    with helper_operation("never", cache_dir=base):
+        handle = cache.lookup_helper("typescript", tmp_path)
+        assert handle is not None and "node" not in handle.runtime_executables
+        bind_helper(handle, source_root=tmp_path)
+        # A Node subsequently found via PATH cannot execute this operation's
+        # bound helper. Its version must not qualify an inventory cache entry.
+        monkeypatch.setattr(helpers, "command_output", lambda *a: "v24.18.0")
+        captured = analysis_capture.capture_analysis(
+            EXTRACTOR_REGISTRY, source_root=tmp_path, languages={"typescript"},
+        )
+        assert "llm-wiki/extractor/typescript" not in captured
+
+
+@pytest.mark.parametrize("change_scope", [False, True], ids=["same-cache", "changed-environment-cache"])
+def test_strict_missing_binding_survives_publication_after_inventory_key(tmp_path, monkeypatch, change_scope):
+    from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
+    from tests.test_helper_preparation import _prepare_fixture
+
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "main.ts").write_text("export const value = 1;\n")
+    base = tmp_path / "helpers"
+    initial = tmp_path / "empty" if change_scope else base
+    monkeypatch.setenv(helpers.ENV_CACHE_DIR, str(initial))
+    ready = base / helpers.HELPER_CACHE_DIRNAME
+    unpublished = tmp_path / "ready-to-publish"
+    _prepare_fixture("typescript", ready)
+    ready.rename(unpublished)
+    monkeypatch.setattr(cache.shutil, "which", lambda name: "node" if name == "node" else None)
+    original = extraction_service._run_inventory_plans
+
+    def publish_and_extract(*args, **kwargs):
+        unpublished.rename(ready)
+        monkeypatch.setenv(helpers.ENV_CACHE_DIR, str(base))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(extraction_service, "_run_inventory_plans", publish_and_extract)
+    monkeypatch.setattr(TypeScriptExtractor, "_run_node_extractor", lambda *a: pytest.fail("executed a helper published after capture"))
+    with helper_operation("never"):
+        result = extraction_service.get_inventory_result(source, include_plugins=False,
+            cache_options=InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "inventory")))
+        assert [status.language for status in result.failed] == ["typescript"]
+        assert "llm-wiki/extractor/typescript" not in (result.analysis_components or {})
+        assert helpers.get_prepared_typescript_root(source) is None
+        observed = helpers.helper_identity("typescript", source)
+        assert observed["prepared"] is None
+        if change_scope:
+            assert "helper-cache-scope-mismatch" in observed["issues"]
+            with pytest.raises(cache.HelperPreparationError, match="cache scope changed"):
+                prepare_operation_helpers(build_source_snapshot(source), EXTRACTOR_REGISTRY)
+        assert helpers.get_prepared_typescript_root(tmp_path) is not None
+        with helper_operation("never", cache_dir=base):
+            assert helpers.get_prepared_typescript_root(source) is not None
+    with helper_operation("never"):
+        assert helpers.get_prepared_typescript_root(source) is not None
+
+
+def test_selected_miss_invalidates_an_earlier_unbound_capture(tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+
+    source = tmp_path / "project"
+    source.mkdir()
+    (source / "main.ts").write_text("export const value = 1;\n")
+    base = tmp_path / "helpers"
+    ready = base / helpers.HELPER_CACHE_DIRNAME
+    _prepare_fixture("typescript", ready)
+    monkeypatch.setattr(cache.shutil, "which", lambda name: "node" if name == "node" else None)
+    monkeypatch.setattr(helpers, "command_output", lambda *args: "v24.18.0")
+
+    @analysis_capture.capture_operation
+    def observe():
+        def capture():
+            return analysis_capture.capture_analysis(EXTRACTOR_REGISTRY, source_root=source, languages={"typescript"})
+
+        assert "llm-wiki/extractor/typescript" in capture()
+        ready.rename(tmp_path / "removed")
+        assert prepare_operation_helpers(build_source_snapshot(source), EXTRACTOR_REGISTRY) == ()
+        (tmp_path / "removed").rename(ready)
+        assert "llm-wiki/extractor/typescript" not in capture()
+
+    with helper_operation("never", cache_dir=base):
+        observe()
 
 
 @pytest.fixture

@@ -441,3 +441,25 @@ def test_windows_text_command_preserves_literal_arguments():
         timeout=30,
     )
     assert json.loads(result.stdout) == arguments
+
+
+def test_default_recheck_finds_helper_prewarmed_in_project_git_cache(tmp_path, monkeypatch):
+    from llm_wiki_cli import cli
+    from llm_wiki_cli.services import helper_cache
+    from tests.test_helper_preparation import _prepare_fixture
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "main.go").write_text("package main\n")
+    shared = tmp_path / "user" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    report = capabilities.build_capability_doctor()
+    args = cli._build_parser().parse_args(report["recheck"]["argv"][3:])
+    remedy = next(p for p in report["capabilities"]["providers"] if p["language"] == "go")["remedy"]["argv"]
+    preparation = cli._build_parser().parse_args(remedy[3:])
+    root = capabilities.helpers.resolve_helper_cache_root(preparation.src_dir, preparation.cache_dir)
+    assert root == tmp_path / ".git" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    _prepare_fixture("go", root)
+    rechecked = capabilities.build_capability_diagnostics(args.src_dir, helper_cache_dir=args.helper_cache_dir)
+    assert next(p for p in rechecked["providers"] if p["language"] == "go")["status"] == "ready"

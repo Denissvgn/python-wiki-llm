@@ -100,6 +100,14 @@ class HelperOperation:
     _configuration: HelperConfiguration | None = field(default=None, repr=False, compare=False)
     _handles: dict[str, PreparedHelperHandle] = field(default_factory=dict, repr=False, compare=False)
     _source_roots: dict[tuple[Path, str], Path] = field(default_factory=dict, repr=False, compare=False)
+    _missing: dict[tuple[Path, str], tuple[Path, ...]] = field(default_factory=dict, repr=False, compare=False)
+
+    def missing_scope(self, source_root: str | Path, language: str) -> tuple[Path, ...] | None:
+        return self._missing.get((_absolute(source_root), language))
+
+    def bind_missing(self, language: str, source_root: str | Path, roots: tuple[Path, ...]) -> None:
+        """Keep a selected strict miss stable if a concurrent build publishes later."""
+        self._missing[(_absolute(source_root), language)] = roots
 
     @property
     def handles(self) -> Mapping[str, PreparedHelperHandle]:
@@ -111,6 +119,8 @@ class HelperOperation:
             raise ValueError("a helper cannot be rebound during one analysis operation")
         if source_root is not None:
             source = (_absolute(source_root), handle.language)
+            if source in self._missing:
+                raise ValueError("a missing helper cannot be rebound during one analysis operation")
             bound_root = self._source_roots.get(source)
             if bound_root is not None and bound_root != handle.cache_root:
                 raise ValueError("helper cache scope changed during analysis")
@@ -214,6 +224,7 @@ def helper_operation(
     if not fresh and parent is not None and parent.cache_dir == cache:
         operation._handles.update(parent._handles)
         operation._source_roots.update(parent._source_roots)
+        operation._missing.update(parent._missing)
     token = _OPERATION.set(operation)
     try:
         yield operation

@@ -228,8 +228,9 @@ validated artifacts. `prepare-extractors` remains an optional prewarming and
 repair route.
 
 A failed automatic preparation raises `WorkspaceStateError` with
-`code="helper-preparation-failed"` and bounded `details.language` and
-`details.reason`. Fix the actual toolchain, dependency, permission or timeout
+`code="helper-preparation-failed"`. Its details identify the language, the
+bounded failure reason and, when available, the selected `cache_root`.
+Fix the actual toolchain, dependency, permission or timeout
 cause; missing helpers do not produce an empty successful inventory. MCP uses
 the same error code and exposes its policy through `--helper-preparation`.
 

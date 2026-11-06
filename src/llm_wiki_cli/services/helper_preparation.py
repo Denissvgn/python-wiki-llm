@@ -66,8 +66,15 @@ def prepare_operation_helpers(
                 raise HelperPreparationError(language, "prepared helper changed during analysis")
             handle = pinned
         elif operation.policy == "never":
+            roots = cache_roots(snapshot.root, effective_cache)
+            missing = operation.missing_scope(snapshot.root, language)
+            if missing is not None:
+                if missing != roots:
+                    raise HelperPreparationError(language, "helper cache scope changed during analysis")
+                continue
             handle = lookup_helper(language, snapshot.root, effective_cache)
             if handle is None:
+                operation.bind_missing(language, snapshot.root, roots)
                 continue
         else:
             with phase("helper_preparation"):

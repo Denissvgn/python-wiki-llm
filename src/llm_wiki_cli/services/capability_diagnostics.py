@@ -262,9 +262,13 @@ def build_capability_doctor(wiki_dir="docs/llm_wiki", src_dir=".", **kwargs):
             str(src_dir),
             "--wiki-dir",
             str(wiki_dir),
-            "--helper-cache-dir",
-            str(Path(capabilities["helper_cache"]).parent),
         ]
+        # A default search can reuse both project and shared caches. Pinning
+        # just its build destination would hide project helpers on the retry.
+        from .helper_cache import cache_roots
+        roots = cache_roots(src_dir, kwargs.get("helper_cache_dir"))
+        if len(roots) == 1:
+            argv.extend(["--helper-cache-dir", str(roots[0].parent)])
         for name in ("strict", "allow_external_src"):
             if kwargs.get(name):
                 argv.append("--" + name.replace("_", "-"))

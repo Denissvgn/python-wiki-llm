@@ -234,13 +234,22 @@ def build_inventory_cache_key(
     include_empty: bool,
     extractor_registry: dict[str, str],
     helper_cache_dir: str | None = None,
-) -> dict[str, Any]:
-    """Build cache metadata that must match before entries are reused."""
+) -> dict[str, Any] | None:
+    """Return a cache key only if all selected bundled helpers were observed."""
     from .analysis_capture import capture_analysis
     from .analysis_compatibility import digest
-    analysis = capture_analysis(extractor_registry, source_root=source_snapshot.root, helper_cache_dir=helper_cache_dir, languages={k for k, v in source_snapshot.files_by_language.items() if v})
+    from .helper_runtime import required_helper_languages
+
+    languages = {language for language, files in source_snapshot.files_by_language.items() if files}
+    analysis = capture_analysis(extractor_registry, source_root=source_snapshot.root,
+                                helper_cache_dir=helper_cache_dir, languages=languages)
+    for language in required_helper_languages(source_snapshot, extractor_registry):
+        if not analysis or "llm-wiki/extractor/" + language not in analysis:
+            # Partial observations cannot distinguish an unqualified runtime
+            # that produced data from a missing helper that cannot execute.
+            return None
     project_root = Path.cwd().resolve()
-    active = {"agent-wiki-cli", "llm-wiki/extractor/infrastructure"} | {"llm-wiki/extractor/" + k for k, v in source_snapshot.files_by_language.items() if v}
+    active = {"agent-wiki-cli", "llm-wiki/extractor/infrastructure"} | {"llm-wiki/extractor/" + k for k in languages}
     complete = analysis is not None and active <= set(analysis) and not (project_root / ".llm-wiki/plugins.lock.json").exists() and not (source_snapshot.root / ".llm-wiki/plugins.lock.json").exists()
     identity = None if analysis is None else {k: {f: v[f] for f in ("implementation", "runtime")} for k, v in analysis.items() if k in active}
     return {

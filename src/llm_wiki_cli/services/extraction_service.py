@@ -1057,6 +1057,9 @@ def _load_inventory_cache_state(
         extractor_registry=registry,
         helper_cache_dir=request.helper_cache_dir,
     )
+    if cache_key is None:
+        cache.stats.status = "unqualified-helper"
+        return None, {}, {}
     cache_files = cache.load(cache_key)
     cache.stats.deleted = len(set(cache_files) - set(source_file_by_path))
     source_hashes = source_snapshot.hashes_for(source_file_by_path)
@@ -1541,13 +1544,11 @@ def _save_inventory_cache(
     context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]
 ) -> None:
     cache = context.cache
-    if cache is None or not cache.enabled:
+    if cache is None or not cache.enabled or context.cache_key is None:
         return
 
     cache.finalize_lookup_status()
-    if context.cache_key is None or any(
-        status.state == "failed" for status in statuses.values()
-    ):
+    if any(status.state == "failed" for status in statuses.values()):
         return
     if _should_save_inventory_cache(cache):
         cache.save(context.cache_key, context.updated_cache_files)

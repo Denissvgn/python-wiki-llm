@@ -35,8 +35,11 @@ def read_receipt(path: Path):
     def invalid_constant(value):
         raise ValueError("TypeScript receipt contains a non-finite value")
 
-    return json.loads(read_guarded(path, MAX_RECEIPT_BYTES).content,
-                      object_pairs_hook=unique, parse_constant=invalid_constant)
+    try:
+        return json.loads(read_guarded(path, MAX_RECEIPT_BYTES).content,
+                          object_pairs_hook=unique, parse_constant=invalid_constant)
+    except RecursionError as error:
+        raise ValueError("TypeScript receipt nesting exceeds bound") from error
 
 
 def _identity(value):

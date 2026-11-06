@@ -294,6 +294,8 @@ def _helper_preparation_policy(args):
     strict = any(bool(getattr(args, name, False)) for name in (
         "read_only", "dry_run", "preview", "plan_chunks", "capabilities",
     )) or (args.command == "prepare-extractors" and bool(getattr(args, "plan", False)))
+    if args.command == "team" and args.team_action == "resolve-conflicts" and not args.write:
+        strict = True
     if strict and requested == "auto":
         raise ValueError("Automatic helper preparation conflicts with this read-only or preview operation")
     selected = "never" if strict else requested or (

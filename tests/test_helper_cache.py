@@ -265,6 +265,127 @@ def test_profile_change_creates_an_independent_immutable_slot(prepared_environme
     assert cache.validate_handle(first) and cache.validate_handle(second)
 
 
+def test_strict_lookup_prefers_selected_node_among_multiple_ready_profiles(
+    prepared_environment, tmp_path, monkeypatch,
+):
+    from llm_wiki_cli.services.helper_preparation import prepare_operation_helpers
+    from llm_wiki_cli.services.helper_runtime import helper_operation
+    from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+    from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "main.ts").write_text("export const value = 1;\n")
+    node = tmp_path / "node"
+    monkeypatch.setattr(cache.shutil, "which", lambda name: str(node) if name == "node" else None)
+
+    def profile(language, root, cwd):
+        selected = _profile(language, root, cwd)
+        selected.identity["executables"] = cache._executable_identity({"node": str(node)})
+        selected.executables["node"] = str(node)
+        return selected
+
+    monkeypatch.setattr(cache, "_profile", profile)
+    versions = {}
+    for content in (b"first Node binary", b"replaced Node binary"):
+        node.write_bytes(content)
+        handle = cache.ensure_helper("typescript", project)
+        versions[handle.key] = content
+    assert len(versions) == 2
+    # Filename ordering cannot tell which binary is currently installed.
+    selected_key = max(versions)
+    node.write_bytes(versions[selected_key])
+    monkeypatch.setattr(cache, "_run", lambda *a, **k: pytest.fail("lookup ran a tool"))
+    monkeypatch.setattr(cache, "ensure_helper", lambda *a, **k: pytest.fail("strict read prepared"))
+    with helper_operation("never"):
+        selected, = prepare_operation_helpers(build_source_snapshot(project), EXTRACTOR_REGISTRY)
+    assert selected.key == selected_key
+
+
+def test_failed_verbose_build_reports_the_final_tool_error(tmp_path):
+    command = [sys.executable, "-c", "print('x' * 1100000); print('missing dependency at end'); raise SystemExit(3)"]
+    with pytest.raises(RuntimeError, match="missing dependency at end") as captured:
+        cache._run(command, cwd=tmp_path, env=dict(os.environ), timeout=10)
+    assert len(str(captured.value)) < 5000
+
+
+def test_toolchain_error_includes_cache_selected_by_ensure(prepared_environment, tmp_path, monkeypatch):
+    def missing(*args):
+        raise cache.HelperPreparationError("typescript", "Node missing")
+
+    monkeypatch.setattr(cache, "_profile", missing)
+    with pytest.raises(cache.HelperPreparationError) as error:
+        cache.ensure_helper("typescript", tmp_path)
+    assert error.value.reason == "Node missing"
+    assert str(prepared_environment) in str(error.value)
+
+
+def test_optional_shared_lookup_failure_preserves_verified_legacy_helper(prepared_environment, tmp_path):
+    from tests.test_helper_preparation import _prepare_fixture
+
+    project = tmp_path / "project"
+    (project / ".git").mkdir(parents=True)
+    result = _prepare_fixture("typescript", project / ".git" / helpers.HELPER_CACHE_DIRNAME)
+    prepared_environment.symlink_to(tmp_path / "outside")
+    found = cache.lookup_helper("typescript", project)
+    assert found is not None and str(found.path) == result.path
+
+
+def test_warm_second_profile_does_not_require_a_writable_cache(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    versions = {}
+    for npm in ("11.0.0", "12.0.0"):
+        version = f"node v24.18.0; npm {npm}"
+        monkeypatch.setattr(cache, "_profile", lambda *args, v=version: _profile(*args, toolchain=v))
+        selected = cache.ensure_helper("typescript", project)
+        versions[selected.key] = version
+    wanted = max(versions)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain=versions[wanted]))
+    monkeypatch.setattr(cache, "_lock", lambda *args: pytest.fail("warm read opened a writer lock"))
+    assert cache.ensure_helper("typescript", project).key == wanted
+
+
+def test_racing_profiles_cannot_make_existing_cache_unreadable(prepared_environment, tmp_path, monkeypatch):
+    monkeypatch.setattr(cache, "MAX_HELPER_PROFILES", 1)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain=threading.current_thread().name))
+    started = threading.Barrier(2)
+
+    def build(*args):
+        started.wait(timeout=10)
+        return _typescript_build(*args)
+
+    monkeypatch.setattr(cache, "_build", build)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(cache.ensure_helper, "typescript", tmp_path) for _ in range(2)]
+        failures = [future.exception() for future in futures if future.exception() is not None]
+        assert len(failures) == 1 and isinstance(failures[0], cache.HelperPreparationError)
+        assert "profile limit" in str(failures[0])
+        published, = [future.result() for future in futures if future.exception() is None]
+    found = cache.lookup_helper("typescript", tmp_path)
+    assert found is not None and found.key == published.key
+    monkeypatch.setattr(cache, "_build", lambda *a: pytest.fail("full cache built another profile"))
+    with pytest.raises(cache.HelperPreparationError, match="profile limit"):
+        cache.ensure_helper("typescript", tmp_path)
+    assert cache.validate_handle(published)
+
+
+def test_malformed_deep_receipt_is_repaired(prepared_environment, tmp_path):
+    original = cache.ensure_helper("typescript", tmp_path)
+    (original.root / cache.RECEIPT).write_bytes(b"[" * 5000 + b"]" * 5000)
+    assert cache.lookup_helper("typescript", tmp_path) is None
+    repaired = cache.ensure_helper("typescript", tmp_path)
+    assert repaired.key == original.key and cache.validate_handle(repaired)
+
+
+def test_malformed_deep_legacy_receipt_reports_unavailable(tmp_path):
+    pointer = tmp_path / helpers.HELPER_CACHE_DIRNAME / "typescript" / helpers.HELPER_MANIFEST
+    pointer.parent.mkdir(parents=True)
+    pointer.write_bytes(b"[" * 5000 + b"]" * 5000)
+    identity = helpers.helper_identity("typescript", tmp_path, str(tmp_path))
+    assert identity["status"] == "unavailable-or-mismatched" and identity["prepared"] is None
+
+
 def test_same_version_changed_toolchain_bytes_change_profile_key(prepared_environment, tmp_path, monkeypatch):
     compiler = tmp_path / "compiler"
     compiler.write_bytes(b"first compiler build")

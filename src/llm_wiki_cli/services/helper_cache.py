@@ -54,6 +54,10 @@ class HelperPreparationError(RuntimeError):
         self.runtime_executables: dict[str, str] = {}
         super().__init__(f"{language} helper preparation failed: {message}")
 
+    def __str__(self) -> str:
+        message = super().__str__()
+        return message if self.cache_root is None else f"{message} (helper cache: {self.cache_root})"
+
 
 def _safe(path: Path) -> Path:
     path = Path(os.path.abspath(path))
@@ -103,9 +107,12 @@ def _json(path: Path) -> dict:
             result[key] = value
         return result
 
-    value = json.loads(read_guarded(_safe(path), MAX_RECEIPT_BYTES).content,
-                       object_pairs_hook=unique,
-                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+    try:
+        value = json.loads(read_guarded(_safe(path), MAX_RECEIPT_BYTES).content,
+                           object_pairs_hook=unique,
+                           parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+    except RecursionError as error:
+        raise ValueError("helper receipt nesting exceeds bound") from error
     if not isinstance(value, dict):
         raise ValueError("helper receipt must be an object")
     return value
@@ -231,7 +238,13 @@ def _validate_artifact(language: str, cache_root: Path, root: Path, manifest: di
     return path
 
 
-def _slot_handle(cache_root: Path, language: str, slot: Path) -> PreparedHelperHandle | None:
+def _prepared_with_node(profile: object, identity: dict) -> bool:
+    executables = profile.get("executables") if isinstance(profile, dict) else None
+    return isinstance(executables, dict) and executables.get("node") == identity
+
+
+def _slot_handle(cache_root: Path, language: str, slot: Path, *,
+                 node_identity: dict | None = None) -> PreparedHelperHandle | None:
     try:
         value = _json(slot / RECEIPT)
         if set(value) != {"schema_version", "key", "profile", "manifest"} or value["schema_version"] != SCHEMA:
@@ -240,6 +253,8 @@ def _slot_handle(cache_root: Path, language: str, slot: Path) -> PreparedHelperH
         if not isinstance(key, str) or re.fullmatch(r"[0-9a-f]{64}", key) is None or slot.name != key:
             return None
         if not isinstance(profile, dict) or not isinstance(manifest, dict):
+            return None
+        if node_identity is not None and not _prepared_with_node(profile, node_identity):
             return None
         if profile.get("recipe") != RECIPE or profile.get("host") != helpers.platform_id():
             return None
@@ -250,7 +265,7 @@ def _slot_handle(cache_root: Path, language: str, slot: Path) -> PreparedHelperH
             return None
         path = _validate_artifact(language, cache_root, slot, manifest)
         return _handle(cache_root, language, key, slot, path, manifest)
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
         return None
 
 
@@ -273,34 +288,71 @@ def _legacy_handle(cache_root: Path, language: str) -> PreparedHelperHandle | No
             return None
         path = _validate_artifact(language, cache_root, root, manifest)
         return _handle(cache_root, language, key, root, path, dict(manifest))
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
         return None
+
+
+def _profile_slots(directory: Path) -> list[Path]:
+    _safe(directory)
+    slots = []
+    if directory.is_dir():
+        for path in directory.iterdir():
+            if re.fullmatch(r"[0-9a-f]{64}", path.name) and path.is_dir():
+                slots.append(path)
+                if len(slots) > MAX_HELPER_PROFILES:
+                    raise ValueError("helper profile inventory exceeds bound")
+    return sorted(slots, key=lambda path: path.name)
+
+
+def _check_profile_capacity(destination: Path) -> None:
+    if not destination.is_dir() and len(_profile_slots(destination.parent)) >= MAX_HELPER_PROFILES:
+        raise ValueError("helper cache profile limit reached; select another helper cache directory")
 
 
 def lookup_helper(language: str, src_dir: str | Path = ".", cache_dir: str | None = None) -> PreparedHelperHandle | None:
     """Inspect valid existing project/shared artifacts without writes or builds."""
     if language not in helpers.SUPPORTED_HELPERS:
         raise ValueError("Unsupported helper language: " + language)
+    from .helper_runtime import current_helper_operation
+    operation = current_helper_operation()
+    if operation is not None and operation.missing_scope(src_dir, language) is not None:
+        return None
+    fallback = None
+    node_identity = None
     for root in cache_roots(src_dir, cache_dir):
-        _safe(root)
-        legacy = _legacy_handle(root, language)
-        if legacy is not None:
-            return legacy
-        directory = root / language
-        _safe(directory)
-        if not directory.is_dir():
-            continue
-        slots = []
-        for path in directory.iterdir():
-            if re.fullmatch(r"[0-9a-f]{64}", path.name) and path.is_dir():
-                slots.append(path)
-                if len(slots) > MAX_HELPER_PROFILES:
-                    raise ValueError("helper profile inventory exceeds bound")
-        for slot in sorted(slots, key=lambda path: path.name):
-            handle = _slot_handle(root, language, slot)
-            if handle is not None:
-                return handle
-    return None
+        if fallback is None:
+            fallback = _legacy_handle(root, language)
+            if fallback is not None and not fallback.runtime_executables.get("node"):
+                return fallback
+        try:
+            slots = _profile_slots(root / language)
+        except (OSError, ValueError):
+            if fallback is not None:
+                return fallback
+            raise
+        for slot in slots:
+            if fallback is None:
+                fallback = _slot_handle(root, language, slot)
+                if fallback is not None and not fallback.runtime_executables.get("node"):
+                    return fallback
+                continue
+            # Native artifacts need no runtime selection. For TypeScript, an
+            # earlier compatible artifact remains usable, but prefer the slot
+            # built for the selected Node when several versions coexist.
+            if slot == fallback.root:
+                continue
+            node = fallback.runtime_executables["node"]
+            if node_identity is None:
+                try:
+                    node_identity = _executable_identity({"node": node})["node"]
+                except (OSError, ValueError):
+                    return fallback
+                if _prepared_with_node(fallback.receipt.get("preparation_profile"), node_identity):
+                    return fallback
+            matching = _slot_handle(root, language, slot, node_identity=node_identity)
+            if matching is not None:
+                return _with_runtime(matching, {"node": node})
+    return fallback
 
 
 def validate_handle(handle: PreparedHelperHandle) -> bool:
@@ -532,11 +584,13 @@ def _run(command: list[str], *, cwd: Path, env: dict[str, str], timeout: float) 
                 process.kill()
             process.wait(timeout=10)
             raise
+        if code:
+            end = log.seek(0, os.SEEK_END)
+            log.seek(max(0, end - 4000))
+            tail = log.read(4000).decode("utf-8", errors="replace")
+            raise RuntimeError(f"{Path(command[0]).name} exited {code}: {tail.strip()}")
         log.seek(0)
-        output = log.read(1024 * 1024).decode("utf-8", errors="replace")
-    if code:
-        raise RuntimeError(f"{Path(command[0]).name} exited {code}: {output[-4000:].strip()}")
-    return output
+        return log.read(1024 * 1024).decode("utf-8", errors="replace")
 
 
 @contextmanager
@@ -691,13 +745,19 @@ def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | Non
                 and not (current.root / RECEIPT).exists()
             )):
                 return _with_runtime(current, profile.executables)
+            destination = root / language / key
+            # A matching immutable slot is already usable even if discovery
+            # found a different compatible artifact first. Only a cache miss
+            # needs write permission and a lock; recheck after acquiring it.
+            ready = _slot_handle(root, language, destination)
+            if ready is not None:
+                return _with_runtime(ready, profile.executables)
             root.mkdir(parents=True, exist_ok=True, mode=0o700)
             _safe(root)
             locks = root / ".locks"
             _safe(locks)
             locks.mkdir(exist_ok=True)
             _safe(locks)
-            destination = root / language / key
             _safe(destination.parent)
             destination.parent.mkdir(exist_ok=True)
             _safe(destination)
@@ -705,6 +765,7 @@ def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | Non
                 ready = _slot_handle(root, language, destination)
                 if ready is not None:
                     return _with_runtime(ready, profile.executables)
+                _check_profile_capacity(destination)
                 if progress is not None:
                     progress(f"Preparing {language} helper (first use or changed profile)…")
                 # Package managers inspect ancestor workspace/configuration
@@ -731,11 +792,15 @@ def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | Non
                                         npm_executable=profile.executables["npm"])
                     write_json_atomic(artifact / RECEIPT, {"schema_version": SCHEMA, "key": key,
                                       "profile": profile.identity, "manifest": manifest})
-                    _safe(destination)
-                    if destination.exists():
+                    # Builds for different keys may proceed concurrently. Keep
+                    # the inventory reservation and publication together so a
+                    # race cannot publish more profiles than readers admit.
+                    with _lock(locks / (language + "-inventory.lock"), wait_seconds):
+                        _check_profile_capacity(destination)
                         _safe(destination)
-                        os.rename(destination, destination.with_name(".rejected-" + key + "-" + uuid.uuid4().hex))
-                    os.rename(artifact, destination)
+                        if destination.exists():
+                            os.rename(destination, destination.with_name(".rejected-" + key + "-" + uuid.uuid4().hex))
+                        os.rename(artifact, destination)
                     ready = _slot_handle(root, language, destination)
                     if ready is None:
                         raise HelperPreparationError(language, "published helper failed receipt verification")

@@ -825,10 +825,9 @@ source root, and resolved helper cache. In strict read-only or `never` mode, run
 step, then retry the original analysis with the same options. Ordinary automatic
 analysis attempts preparation before reporting its actual failure. Keep
 `--source-selection` on the analysis command; a language-specific preparation
-command uses `--language` and cannot also take `--source-selection`. If no Git
-cache is available, the remedy proposes a cache under the source root's
-`.llm-wiki/`; select that base on later reads with `--helper-cache-dir` where
-supported, or `LLM_WIKI_CACHE_DIR`. Preparation failures include toolchain and
+command uses `--language` and cannot also take `--source-selection`. Outside Git,
+the suggested command targets the managed user cache by default so the next
+read can find the prepared helper. Preparation failures include toolchain and
 retry guidance. `llm-wiki doctor --capabilities` provides read-only diagnosis.
 After updating the package, `llm-wiki upgrade` refreshes managed agent
 instructions so agents follow the helper recovery procedure.
@@ -1394,13 +1393,13 @@ For a selected external extractor, existing preparation receipt source/artifact
 identities and preparation toolchain are reported separately from active runtime.
 TypeScript also checks the source copy in the prepared execution directory against
 the bundled source fingerprint; missing or changed copies require preparation again.
-Artifact fingerprints cover the receipt's recorded path. For TypeScript this is
-the `ts-morph` subtree, which does not identify sibling transitive dependencies.
-Missing or mismatched data stays explicit. Reads do not install dependencies or
-update source, wiki or helper state. Missing helpers include the existing exact
-preparation command for the selected cache; setup requires authorization, then
-retry with the same roots, source selection and cache. A runtime mismatch also
-requires selecting the matching runtime on PATH. Output limits and truncation
+The native artifact fingerprint covers the executable. The TypeScript fingerprint
+covers the complete prepared `node_modules` tree, including transitive dependencies.
+Snapshot explanations inspect existing helpers. An authorized live inventory
+can prepare a missing helper in its managed cache. Use `--helper-preparation never`
+for an existing-only read. If that read reports a missing helper, its recovery
+command identifies the cache to prewarm before retrying. A runtime mismatch
+also requires selecting the matching Node runtime on PATH. Output limits and truncation
 disclosures apply to explanation and provenance together.
 
 External tools can use the `llm-wiki-context/v1` JSON request protocol:

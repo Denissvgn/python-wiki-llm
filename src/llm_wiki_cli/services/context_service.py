@@ -21,6 +21,7 @@ import re
 import shlex
 import sys
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
@@ -3596,6 +3597,19 @@ def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION
     raise SystemExit(1) from error
 
 
+@contextmanager
+def _packet_helper_diagnostics(protocol):
+    """Reserve stderr for the single structured failure of CLI packet output."""
+    from .helper_cache import HelperPreparationError
+    from .progress import Progress
+
+    with Progress("context", mode="never").run():
+        try:
+            yield
+        except HelperPreparationError as exc:
+            _emit_packet_error(exc, protocol=protocol)
+
+
 def _run_packet_output(
     *,
     src_dir: str,
@@ -3624,16 +3638,17 @@ def _run_packet_output(
         if knowledge_mode is not None:
             request["knowledge_mode"] = knowledge_mode
     try:
-        packet = build_qualified_context(
-            src_dir,
-            wiki_dir,
-            request,
-            allow_external_src=allow_external_src,
-            read_only=True,
-            job_request=ExtractionJobRequest.resolved(1),
-            plan_reporter=None,
-            source_selection=source_selection,
-        )
+        with _packet_helper_diagnostics(request.get("protocol", KNOWLEDGE_PROTOCOL_VERSION)):
+            packet = build_qualified_context(
+                src_dir,
+                wiki_dir,
+                request,
+                allow_external_src=allow_external_src,
+                read_only=True,
+                job_request=ExtractionJobRequest.resolved(1),
+                plan_reporter=None,
+                source_selection=source_selection,
+            )
     except (
         ContextPacketError, PathValidationError, ProtocolRequestError,
         KnowledgeRequiredUnavailableError,

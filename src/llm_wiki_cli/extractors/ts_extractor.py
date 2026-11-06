@@ -143,7 +143,7 @@ class TypeScriptExtractor:
     def _toolchain_root(
         self, src_dir: str, helper_cache_dir: str | None = None
     ) -> Path | None:
-        from ..services.helper_runtime import pinned_helper
+        from ..services.helper_runtime import current_helper_operation, pinned_helper
         handle = pinned_helper("typescript", source_root=src_dir)
         if handle is not None and helper_cache_dir is not None:
             from ..services.extractor_helpers import resolve_helper_cache_root
@@ -161,7 +161,9 @@ class TypeScriptExtractor:
             return None
 
         helper_root = get_prepared_typescript_root(src_dir, helper_cache_dir)
-        if helper_root is None and helper_cache_dir is None and handle is None:
+        if helper_root is None and helper_cache_dir is None and current_helper_operation() is None:
+            # Standalone extractor callers historically prewarm the CWD. An
+            # owned operation already selected its caches for the source root.
             helper_root = get_prepared_typescript_root()
         if helper_root is None:
             self.last_error = missing_helper_message(

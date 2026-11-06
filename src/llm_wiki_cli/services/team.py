@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import stat
@@ -12,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..config import DEFAULT_WIKI_DIR
-from .io import read_md, write_json_atomic, write_md
+from .io import decode_markdown_bytes, read_md, write_json_atomic
 from .plugins import PluginError, iter_components
 from .validation import (
     require_exact_fields,
@@ -958,26 +959,38 @@ def _merge_conflicted_log(text: str) -> str:
     return "\n".join(output).rstrip() + "\n"
 
 
-def _resolution_for_path(
-    rel_path: str,
+def _conflict_target(rel_path: str) -> str | None:
+    if rel_path in {"index.md", ".llm-wiki-manifest.json", "log.md"}:
+        return rel_path
+    directory, separator, _ = rel_path.partition("/")
+    if separator and (directory == "workflows" or (
+        directory in {"modules", "entities", "infrastructure"} and Path(rel_path).suffix == ".md"
+    )):
+        return directory
+    return None
+
+
+def _resolution_for_target(
+    target: str | None,
     path: Path,
+    text: str,
     wiki_dir: Path,
     inventory: dict,
     src_dir: str,
     *,
     source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[str | None, str]:
-    if rel_path == "index.md":
+    if target == "index.md":
         return _index_content(
             wiki_dir, inventory
         ), "rebuilt index from current inventory"
-    if rel_path == ".llm-wiki-manifest.json":
+    if target == ".llm-wiki-manifest.json":
         (
             surfaces,
             generation_inputs,
             previous_manifest,
             error,
-        ) = _manifest_resolution_state_from_conflict(read_md(path))
+        ) = _manifest_resolution_state_from_conflict(text)
         if surfaces is None:
             return None, error
         return _manifest_content(
@@ -993,22 +1006,22 @@ def _resolution_for_path(
             if previous_manifest is not None
             else "rebuilt sync manifest from current inventory"
         )
-    if rel_path == "log.md":
+    if target == "log.md":
         return _merge_conflicted_log(
-            read_md(path)
+            text
         ), "merged unique log lines from both sides"
-    if rel_path.startswith("modules/") and path.suffix == ".md":
+    if target == "modules":
         return _module_content(path.stem, inventory)
-    if rel_path.startswith("entities/") and path.suffix == ".md":
+    if target == "entities":
         return _entity_content(path.stem, inventory)
-    if rel_path.startswith("infrastructure/") and path.suffix == ".md":
+    if target == "infrastructure":
         return _infrastructure_content(
             path.stem,
             inventory,
             src_dir,
             source_snapshot=source_snapshot,
         )
-    if rel_path.startswith("workflows/"):
+    if target == "workflows":
         return None, "workflow conflicts require manual resolution"
     return None, "file is not a supported safe wiki conflict target"
 
@@ -1020,7 +1033,7 @@ def resolve_conflicts(
     write: bool = False,
     source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
-    from .extraction_service import get_inventory_result
+    from .extraction_service import ExtractorFailureError, get_inventory_result
     from .source_selection import (
         SourceSelectionError,
         resolve_source_selection,
@@ -1092,18 +1105,12 @@ def resolve_conflicts(
         operation="team resolve-conflicts",
         live_selection_inputs=source_snapshot.source_selection_inputs,
     )
-    inventory_result = get_inventory_result(
-        src_dir,
-        deep=True,
-        source_snapshot=source_snapshot,
-    )
-    inventory = inventory_result.inventory
-    source_snapshot = inventory_result.source_snapshot or source_snapshot
     resolved: list[dict[str, str]] = []
     unresolved: list[dict[str, str]] = []
 
     from .knowledge_storage_lifecycle import is_storage_path
 
+    conflicts = []
     for path in sorted(p for p in wiki_path.rglob("*") if p.is_file()):
         rel_path = path.relative_to(wiki_path).as_posix()
         # Immutable storage objects are restored through their owning roots;
@@ -1111,14 +1118,33 @@ def resolve_conflicts(
         if is_storage_path(rel_path):
             continue
         try:
-            text = read_md(path)
+            captured = path.read_bytes()
         except OSError:
             continue
-        if not has_conflict_markers(text):
+        if has_conflict_markers(decode_markdown_bytes(captured)):
+            conflicts.append((rel_path, path, _conflict_target(rel_path), hashlib.sha256(captured).digest()))
+
+    inventory = {}
+    if any(target not in {None, "log.md", "workflows"} for _, _, target, _ in conflicts):
+        inventory_result = get_inventory_result(src_dir, deep=True, source_snapshot=source_snapshot)
+        if inventory_result.failed:
+            raise ExtractorFailureError(inventory_result)
+        inventory = inventory_result.inventory
+        source_snapshot = inventory_result.source_snapshot or source_snapshot
+
+    for rel_path, path, target, before in conflicts:
+        # Source extraction can take time. Preserve edits made after discovery.
+        try:
+            captured = path.read_bytes()
+        except OSError:
+            captured = b""
+        if hashlib.sha256(captured).digest() != before:
+            unresolved.append({"path": rel_path, "reason": "file changed during conflict resolution"})
             continue
-        new_content, reason = _resolution_for_path(
-            rel_path,
+        new_content, reason = _resolution_for_target(
+            target,
             path,
+            decode_markdown_bytes(captured),
             wiki_path,
             inventory,
             src_dir,
@@ -1128,7 +1154,11 @@ def resolve_conflicts(
             unresolved.append({"path": rel_path, "reason": reason})
             continue
         if write:
-            write_md(path, new_content)
+            from .filesystem_guard import atomic_write_guarded_bytes
+            from .knowledge_storage_io import _absolute_path
+
+            normalized = new_content.replace("\r\n", "\n").replace("\r", "\n")
+            atomic_write_guarded_bytes(_absolute_path(path), normalized.encode(), expected_existing=captured)
         resolved.append({"path": rel_path, "action": reason})
 
     return {
