@@ -1385,7 +1385,13 @@ def test_committed_profile_freezes_intended_product_census():
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 269
+    expected_typescript = {
+        "integrations/obsidian/llm-wiki/esbuild.config.mjs",
+        "integrations/obsidian/llm-wiki/main.js",
+        "integrations/obsidian/llm-wiki/src/main.ts",
+    }
+    assert set(snapshot.language_paths("typescript")) == expected_typescript
+    assert set(snapshot.all_source_paths) == expected_python | expected_typescript
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
