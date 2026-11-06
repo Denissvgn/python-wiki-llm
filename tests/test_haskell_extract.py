@@ -488,7 +488,12 @@ class TestHaskellExtractorWrapper:
 
 class TestHaskellExtractorInventoryPipeline:
     def test_warm_inventory_cache_skips_haskell_helper(self, tmp_path, monkeypatch):
+        from llm_wiki_cli.services.extractor_helpers import HELPER_CACHE_DIRNAME
+        from tests.test_helper_preparation import _prepare_fixture
+
         _write_haskell(tmp_path, "App.hs", "module App where\n")
+        helper_base = tmp_path / "helper-cache"
+        _prepare_fixture("haskell", helper_base / HELPER_CACHE_DIRNAME)
         calls = []
 
         class FakeHaskellExtractor:
@@ -518,10 +523,10 @@ class TestHaskellExtractorInventoryPipeline:
         )
 
         first = extract_cmd.get_inventory_result(
-            str(tmp_path), deep=True, cache_options=options
+            str(tmp_path), deep=True, cache_options=options, helper_cache_dir=str(helper_base)
         )
         second = extract_cmd.get_inventory_result(
-            str(tmp_path), deep=True, cache_options=options
+            str(tmp_path), deep=True, cache_options=options, helper_cache_dir=str(helper_base)
         )
 
         assert calls == [["App.hs"]]
