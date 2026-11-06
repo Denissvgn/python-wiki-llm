@@ -75,6 +75,10 @@ def user_helper_cache_root() -> Path:
 
 def cache_roots(src_dir: str | Path = ".", cache_dir: str | None = None) -> tuple[Path, ...]:
     """Keep explicit/environment scope authoritative; otherwise reuse legacy data."""
+    from .helper_runtime import current_helper_operation
+    operation = current_helper_operation()
+    if cache_dir is None and operation is not None:
+        cache_dir = operation.cache_dir
     configured = cache_dir or os.environ.get(helpers.ENV_CACHE_DIR)
     if configured:
         root = helpers.resolve_helper_cache_root(src_dir, configured)
@@ -404,6 +408,15 @@ def _profile(language: str, cache_root: Path, cwd: Path) -> _Profile:
             error.runtime_executables = {"node": executables["node"]}
             raise error
         executables["npm"] = str(Path(os.path.abspath(path)))
+        # npm commonly launches through /usr/bin/env node. Its preparation
+        # process must use the same physical Node selected above even if a
+        # version-manager alias in the original PATH changes during this call.
+        env["PATH"] = str(Path(executables["node"]).parent) + os.pathsep + env.get("PATH", "")
+        selected_node = shutil.which("node", path=env["PATH"])
+        if selected_node is None or Path(selected_node).resolve(strict=True) != Path(executables["node"]):
+            error = HelperPreparationError(language, "npm cannot use the selected Node executable")
+            error.runtime_executables = {"node": executables["node"]}
+            raise error
         try:
             npm = _output([executables["npm"], "--version"], cwd=cwd, env=env)
         except (OSError, RuntimeError, subprocess.SubprocessError) as original:
@@ -589,6 +602,22 @@ def _build(language: str, stage: Path, profile: _Profile, cwd: Path) -> dict:
             **({"artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE} if language == "typescript" else {})}
 
 
+def _artifact_path(language: str, root: Path) -> Path:
+    return (root / "node_modules/ts-morph" if language == "typescript"
+            else root / helpers._binary_name("llm-wiki-" + language + "-extractor"))
+
+
+def _copy_artifact(language: str, source: Path, destination: Path) -> None:
+    """Copy only verified execution inputs to the cache-local publish stage."""
+    destination.mkdir()
+    if language == "typescript":
+        for name in helpers._TS_FILES:
+            shutil.copy2(source / name, destination / name)
+        shutil.copytree(source / "node_modules", destination / "node_modules")
+    else:
+        shutil.copy2(_artifact_path(language, source), _artifact_path(language, destination))
+
+
 def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | None = None,
                   *, progress: Callable[[str], None] | None = None,
                   wait_seconds: float = LOCK_WAIT_SECONDS) -> PreparedHelperHandle:
@@ -636,14 +665,25 @@ def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | Non
                     return _with_runtime(ready, profile.executables)
                 if progress is not None:
                     progress(f"Preparing {language} helper (first use or changed profile)…")
+                # Package managers inspect ancestor workspace/configuration
+                # even when given our own package.json. An explicit cache may
+                # live inside the target project, so all builds stay in the
+                # already verified external sandbox. The cache stage is only
+                # populated after a successful, verified build.
+                build_stage = cwd / "build"
+                build_stage.mkdir()
+                manifest = _build(language, build_stage, profile, cwd)
+                built = build_stage / "artifact"
+                manifest.update(key=key, root=str(built), path=str(_artifact_path(language, built)))
+                _validate_artifact(language, cwd, built, manifest)
                 staging = root / (".prepare-" + language + "-" + uuid.uuid4().hex)
                 staging.mkdir(mode=0o700)
                 try:
-                    manifest = _build(language, staging, profile, cwd)
                     artifact = staging / "artifact"
-                    manifest.update(key=key, root=str(destination),
-                                    path=str(destination / "node_modules/ts-morph" if language == "typescript"
-                                             else destination / helpers._binary_name("llm-wiki-" + language + "-extractor")))
+                    _copy_artifact(language, built, artifact)
+                    manifest.update(root=str(artifact), path=str(_artifact_path(language, artifact)))
+                    _validate_artifact(language, root, artifact, manifest)
+                    manifest.update(root=str(destination), path=str(_artifact_path(language, destination)))
                     if language == "typescript":
                         manifest.update(node_executable=profile.executables["node"],
                                         npm_executable=profile.executables["npm"])

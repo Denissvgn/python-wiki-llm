@@ -261,6 +261,42 @@ def test_typescript_runtime_pins_physical_node_when_selection_alias_changes(
     assert cache.validate_handle(handle)
 
 
+def test_npm_shebang_uses_pinned_node_when_selection_alias_changes(tmp_path, monkeypatch):
+    first, second, aliases = (tmp_path / name for name in ("first", "second", "aliases"))
+    for directory in (first, second, aliases):
+        directory.mkdir()
+    node_name = "node.exe" if os.name == "nt" else "node"
+    one, two = first / node_name, second / node_name
+    for path in (one, two):
+        path.write_bytes(b"owned Node executable " + str(path.parent).encode())
+        path.chmod(0o755)
+    alias = aliases / node_name
+    alias.symlink_to(one)
+    npm = aliases / ("npm.cmd" if os.name == "nt" else "npm")
+    npm.write_bytes(b"owned npm launcher")
+    npm.chmod(0o755)
+    monkeypatch.setenv("PATH", str(aliases))
+
+    def output(command, *, cwd, env):
+        if command[0] == str(npm):
+            alias.unlink()
+            alias.symlink_to(two)
+            selected = cache.shutil.which("node", path=env["PATH"])
+            assert selected is not None and Path(selected).resolve() == one
+            return "11.16.0"
+        assert command[0] == str(one)
+        if command[1] == "--version":
+            return "v24.18.0"
+        return {"windows": "win32"}.get(cache._system(), cache._system()) + " " + {
+            "x86_64": "x64", "i386": "ia32",
+        }.get(cache._machine(), cache._machine())
+
+    monkeypatch.setattr(cache, "_output", output)
+    profile = cache._profile("typescript", tmp_path / "cache", tmp_path)
+    assert profile.executables["node"] == str(one)
+    assert profile.identity["executables"]["node"]["path"] == str(one)
+
+
 def test_failed_build_and_cancellation_preserve_prior_valid_slot(prepared_environment, tmp_path, monkeypatch):
     project = tmp_path / "project"
     project.mkdir()
@@ -285,6 +321,116 @@ def test_failed_build_and_cancellation_preserve_prior_valid_slot(prepared_enviro
     with pytest.raises(KeyboardInterrupt):
         cache.ensure_helper("typescript", project)
     assert cache.validate_handle(first)
+    assert not list(prepared_environment.glob(".prepare-*"))
+
+
+@pytest.mark.parametrize("language", ["typescript", "go", "rust", "haskell"])
+def test_explicit_cache_build_stays_outside_target_project_workspace(
+    prepared_environment, tmp_path, monkeypatch, language,
+):
+    project = tmp_path / "workspace"
+    dependencies = project / "node_modules"
+    dependencies.mkdir(parents=True)
+    sentinel = dependencies / "user-dependency"
+    sentinel.write_text("keep target dependencies")
+    (project / "package.json").write_text(json.dumps({"name": "user-workspace", "private": True,
+        "workspaces": ["cache/llm-wiki-extractors/.prepare-typescript-*/artifact"]}))
+    selected = project / "cache"
+    stages = []
+
+    def build(language, stage, profile, cwd):
+        # npm can discover a matching ancestor workspace through its own
+        # package.json; Go and Rust also search ancestors for configuration.
+        assert not stage.resolve().is_relative_to(project.resolve())
+        assert not cwd.resolve().is_relative_to(project.resolve())
+        stages.append(stage)
+        if language == "typescript":
+            return _typescript_build(language, stage, profile, cwd)
+        artifact = stage / "artifact"
+        artifact.mkdir()
+        path = artifact / helpers._binary_name("llm-wiki-" + language + "-extractor")
+        path.write_bytes(_native_header())
+        path.chmod(0o755)
+        return {"version": helpers.HELPER_MANIFEST_VERSION, "language": language,
+                "platform": helpers.platform_id(), "toolchain": profile.identity["toolchain"],
+                "preparation_profile": profile.identity,
+                "source_fingerprint": helpers.helper_source_fingerprint(language),
+                "artifact_fingerprint": cache._native_fingerprint(path)}
+
+    monkeypatch.setattr(cache, "_build", build)
+    handle = cache.ensure_helper(language, project, str(selected))
+    assert handle.root.is_relative_to(selected) and cache.validate_handle(handle)
+    assert sentinel.read_text() == "keep target dependencies"
+    assert stages and not any(path.exists() for path in stages)
+    assert not list(handle.cache_root.glob(".prepare-*"))
+
+
+@pytest.mark.parametrize("failure", [OSError, KeyboardInterrupt])
+def test_failed_or_cancelled_artifact_copy_preserves_prior_slot(
+    prepared_environment, tmp_path, monkeypatch, failure,
+):
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("typescript", project)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain="changed profile"))
+    build_stages = []
+
+    def build(*args):
+        build_stages.append(args[1])
+        return _typescript_build(*args)
+
+    def copy(language, source, destination):
+        destination.mkdir()
+        (destination / "partial").write_bytes(b"partial copy")
+        raise failure("interrupted artifact copy")
+
+    monkeypatch.setattr(cache, "_build", build)
+    monkeypatch.setattr(cache, "_copy_artifact", copy)
+    expected = KeyboardInterrupt if failure is KeyboardInterrupt else cache.HelperPreparationError
+    with pytest.raises(expected, match="interrupted artifact copy"):
+        cache.ensure_helper("typescript", project)
+    assert cache.validate_handle(first)
+    assert list((prepared_environment / "typescript").iterdir()) == [first.root]
+    assert not list(prepared_environment.glob(".prepare-*"))
+    assert build_stages and not any(path.exists() for path in build_stages)
+
+
+def test_artifact_copy_is_verified_before_publication(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("typescript", project)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain="changed profile"))
+    original = cache._copy_artifact
+
+    def copy(language, source, destination):
+        original(language, source, destination)
+        (destination / "node_modules/ts-morph/index.js").write_bytes(b"changed during copy")
+
+    monkeypatch.setattr(cache, "_copy_artifact", copy)
+    with pytest.raises(cache.HelperPreparationError, match="artifact changed"):
+        cache.ensure_helper("typescript", project)
+    assert cache.validate_handle(first)
+    assert list((prepared_environment / "typescript").iterdir()) == [first.root]
+    assert not list(prepared_environment.glob(".prepare-*"))
+
+
+def test_failed_atomic_publication_preserves_prior_slot(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("typescript", project)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain="changed profile"))
+    original = cache.os.rename
+
+    def rename(source, destination):
+        if Path(source).name == "artifact":
+            raise OSError("publication unavailable")
+        return original(source, destination)
+
+    monkeypatch.setattr(cache.os, "rename", rename)
+    with pytest.raises(cache.HelperPreparationError, match="publication unavailable"):
+        cache.ensure_helper("typescript", project)
+    assert cache.validate_handle(first)
+    assert list((prepared_environment / "typescript").iterdir()) == [first.root]
     assert not list(prepared_environment.glob(".prepare-*"))
 
 
