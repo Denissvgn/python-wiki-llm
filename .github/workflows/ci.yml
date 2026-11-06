@@ -301,7 +301,8 @@ jobs:
         BASE_POLICY_SHA256: ${{ needs.plan.outputs.policy-sha256 }}
         SELECTED_LANE: ${{ matrix.lane }}
       run: |
-        "${PR_CI_PYTHON}" -I - <<'PY'
+        set -euo pipefail
+        file_count=$("${PR_CI_PYTHON}" -I - <<'PY'
         import hashlib, json, os, pathlib
         root = pathlib.Path("incoming/pr-ci")
         names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json", "pr_ci_impact.py", "pr-ci-impact-requirements.txt")
@@ -309,10 +310,26 @@ jobs:
         identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
             raise SystemExit("Base-owned selection driver or plan digest differs")
+        plan = json.loads((root / "plan.json").read_bytes())
+        selectors = plan["lanes"][os.environ["SELECTED_LANE"]]["selectors"]
+        print(len({s.partition("::")[0] for s in selectors}))
         PY
+        )
+        second_collection=""
+        if [[ "${SELECTED_LANE}" == ubuntu && "${file_count}" -ge 100 ]]; then
+          "${PR_CI_PYTHON}" -m pip install --require-hashes --only-binary=:all: --no-deps -r .github/pr-ci-workers-requirements.txt
+          "${PR_CI_PYTHON}" -m pip check
+          # Keep each file on one worker. Both base-owned collection witnesses
+          # record all cases. Clear scheduling options before running nested pytest.
+          second_collection="${RUNNER_TEMP}/pr-ci-evidence/collection-worker-2.json"
+          export PYTEST_ADDOPTS="--dist=loadfile --max-worker-restart=0 --tx=popen//env:PYTEST_ADDOPTS= --tx='popen//env:PYTEST_ADDOPTS=//env:PR_CI_COLLECTION=${second_collection}'"
+        fi
         "${PR_CI_PYTHON}" -I incoming/pr-ci/pr_ci.py run --root . \
           --plan incoming/pr-ci/plan.json --expected-sha256 "${PLAN_SHA256}" \
           --lane "${SELECTED_LANE}" --output "${RUNNER_TEMP}/pr-ci-evidence"
+        if [[ -n "${second_collection}" ]]; then
+          cmp "${RUNNER_TEMP}/pr-ci-evidence/collection.json" "${second_collection}"
+        fi
     - name: Retain selected case evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
