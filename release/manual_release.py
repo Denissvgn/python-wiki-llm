@@ -83,12 +83,16 @@ def read(path: Path) -> dict:
 
 
 def atomic(path: Path, value: dict) -> None:
+    atomic_bytes(path, canonical(value))
+
+
+def atomic_bytes(path: Path, value: bytes) -> None:
     safe(path)
     temporary = path.with_name(path.name + "." + uuid.uuid4().hex)
     try:
         with temporary.open("xb") as stream:
             os.chmod(temporary, 0o600)
-            stream.write(canonical(value))
+            stream.write(value)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
@@ -124,9 +128,38 @@ def ensure_directory(path: Path) -> None:
         sync_directory(directory.parent)
 
 
+def sync_artifact_cache(folder: Path, inventory: dict) -> None:
+    """Persist a complete POSIX cache before publishing or reusing its name.
+
+    Windows retains the process-interruption boundary described by
+    ``sync_directory``; no portable directory power-loss guarantee is claimed.
+    """
+    if os.name == "nt":
+        return
+    folder = safe(folder)
+    directories = {folder}
+    paths = [folder / "artifact.zip", folder / "transport.json"]
+    paths.extend(folder / "files" / member for member in inventory)
+    for path in paths:
+        path = safe(path)
+        require(path.is_relative_to(folder) and path != folder,
+                "Artifact cache member escapes its directory")
+        metadata = path.lstat()
+        require(stat.S_ISREG(metadata.st_mode) and metadata.st_nlink == 1,
+                "Retained artifact cache must contain regular single-link files")
+        with path.open("rb") as stream:
+            os.fsync(stream.fileno())
+        parent = path.parent
+        while parent != folder:
+            directories.add(parent)
+            parent = parent.parent
+    for directory in sorted(directories, key=lambda path: len(path.parts), reverse=True):
+        sync_directory(directory)
+
+
 def git(root: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(root), *arguments], capture_output=True,
-                          text=True, check=check)
+                          text=True, encoding="utf-8", check=check)
 
 
 def source(root: Path) -> dict:
@@ -595,6 +628,7 @@ class GitHubBackend:
         require(len(raw) == artifact["size_in_bytes"] and "sha256:" + digest(raw) == artifact["digest"], "Artifact transport differs")
         inventory = (hosted.qualified_bundle_inventory(raw, repository=self.repository, artifact=artifact, run=run, producer=producer)
                      if name == "qualified-release" else hosted.zip_inventory(raw))
+        materialized = False
         if not folder.exists():
             staging = folder.with_name(folder.name + ".incomplete-" + uuid.uuid4().hex)
             staging.mkdir()
@@ -607,9 +641,14 @@ class GitHubBackend:
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_bytes(data)
             atomic(staging / "transport.json", {"artifact": artifact, "inventory": inventory})
+            sync_artifact_cache(staging, inventory)
             os.rename(staging, folder)
+            materialized = True
         for member, expected in inventory.items():
             require(q.sha256_file(safe(folder / "files" / member)) == expected, "Retained artifact member changed")
+        if not materialized:
+            sync_artifact_cache(folder, inventory)
+        sync_directory(folder.parent)
         return folder / "files"
 
     def reconcile(self, state: dict, pending: dict) -> dict | None:
@@ -706,9 +745,9 @@ class GitHubBackend:
         path = safe(self.work / "product-notes.md")
         expected = match.group(1).strip() + "\n"
         if path.exists():
-            require(path.read_text() == expected, "Release notes changed")
+            require(path.read_text(encoding="utf-8") == expected, "Release notes changed")
         else:
-            path.write_text(expected)
+            atomic_bytes(path, expected.encode("utf-8"))
         return path
 
     def _release(self, tag: str) -> dict | None:
@@ -751,7 +790,7 @@ class GitHubBackend:
 
     def _release_metadata(self, state: dict, release: dict) -> None:
         require(release["tag_name"] == "v" + state["version"] and release["draft"] is False
-                and release["prerelease"] is False and release["body"] == self._notes(state).read_text(), "Existing release metadata differs")
+                and release["prerelease"] is False and release["body"] == self._notes(state).read_text(encoding="utf-8"), "Existing release metadata differs")
 
     def _assets(self, state: dict) -> dict:
         manifest = self.check_bundle(state)

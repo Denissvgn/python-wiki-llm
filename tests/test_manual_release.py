@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import stat
 import subprocess
+import sys
 import zipfile
 
 import pytest
@@ -256,6 +257,72 @@ def test_partial_release_repair_validates_existing_assets_before_upload(project,
     assert not writes
 
 
+def test_interrupted_notes_materialization_resumes_without_accepting_changed_notes(project, monkeypatch):
+    api = backend(project, None)
+    state = {"candidate_sha": git(project, "rev-parse", "HEAD"), "version": "9.0.0"}
+    target = api.work / "product-notes.md"
+    original = Path.open
+
+    class Interrupted:
+        def __init__(self, path, mode, args, kwargs):
+            self.path, self.mode, self.args, self.kwargs = path, mode, args, kwargs
+
+        def __enter__(self):
+            self.stream = original(self.path, self.mode, *self.args, **self.kwargs)
+            return self
+
+        def write(self, data):
+            self.stream.write(data[:5])
+            self.stream.flush()
+            raise OSError("Notes write interrupted")
+
+        def __exit__(self, *args):
+            self.stream.close()
+
+    def partial(path, mode="r", *args, **kwargs):
+        if path.parent == target.parent and path.name.startswith(target.name) and mode in {"w", "xb"}:
+            return Interrupted(path, mode, args, kwargs)
+        return original(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", partial)
+    with pytest.raises(OSError, match="Notes write interrupted"):
+        api._notes(state)
+    assert not target.exists()
+    monkeypatch.setattr(Path, "open", original)
+    assert api._notes(state).read_bytes() == b"Product behavior.\n"
+    target.write_text("Unreviewed changes\n", encoding="utf-8")
+    with pytest.raises(manual.SessionError, match="Release notes changed"):
+        api._notes(state)
+    assert target.read_bytes() == b"Unreviewed changes\n"
+
+
+def test_utf8_committed_notes_survive_a_non_utf8_process_locale(project):
+    expected = "Café – public notes.\n"
+    (project / "CHANGELOG.md").write_text("## [9.0.0] - 2026-11-05\n\n" + expected, encoding="utf-8")
+    git(project, "add", "CHANGELOG.md")
+    git(project, "commit", "-qm", "Unicode product notes")
+    script = """import json,locale,sys
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+from release import manual_release as manual
+api=manual.GitHubBackend.__new__(manual.GitHubBackend)
+api.root=Path(sys.argv[2]);api.work=api.root/'private/locale-notes';api.work.mkdir(parents=True)
+state={'candidate_sha':sys.argv[3],'version':'9.0.0'}
+notes=api._notes(state).read_text(encoding='utf-8')
+api._release_metadata(state,{'tag_name':'v9.0.0','draft':False,'prerelease':False,'body':notes})
+print(json.dumps({'notes':notes,'utf8_mode':sys.flags.utf8_mode,'locale_encoding':locale.getencoding()}))
+"""
+    result = subprocess.run(
+        [sys.executable, "-I", "-X", "utf8=0", "-c", script,
+         str(Path(manual.__file__).parents[1]), str(project), git(project, "rev-parse", "HEAD")],
+        env={**manual.os.environ, "LC_ALL": "C", "LANG": "C", "PYTHONCOERCECLOCALE": "0"},
+        capture_output=True, text=True, encoding="utf-8", timeout=30, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    observed = json.loads(result.stdout)
+    assert observed["utf8_mode"] == 0 and observed["notes"] == expected
+
+
 def test_session_tampering_and_linked_work_are_rejected(project, tmp_path):
     remote = Remote()
     controller, _ = session(project, remote)
@@ -458,6 +525,120 @@ def artifact_zip(name="decision.json"):
         info.external_attr = (stat.S_IFREG | 0o644) << 16
         archive.writestr(info, b"{}")
     return stream.getvalue()
+
+
+@pytest.fixture
+def artifact_cache(project):
+    raw = artifact_zip("nested/decision.json")
+    sha = git(project, "rev-parse", "HEAD")
+    run = {"id": 42, "run_attempt": 1, "repository": {"id": 7}, "head_repository": {"id": 7}}
+    artifact = {"id": 11, "name": "promotion-decision", "expired": False, "size_in_bytes": len(raw),
+                "digest": "sha256:" + hashlib.sha256(raw).hexdigest(), "created_at": "2026-11-05T01:01:00Z",
+                "updated_at": "2026-11-05T01:01:00Z", "workflow_run": {"id": 42, "head_sha": sha, "repository_id": 7, "head_repository_id": 7}}
+    producer = {"name": "Verify qualified promotion input", "conclusion": "success", "head_sha": sha,
+                "run_id": 42, "run_attempt": 1, "started_at": "2026-11-05T01:00:00Z", "completed_at": "2026-11-05T01:02:00Z"}
+
+    class Client:
+        downloads = 0
+
+        def list(self, path, key):
+            return [artifact] if key == "artifacts" else [producer]
+
+        def archive(self, identity):
+            assert identity == 11
+            self.downloads += 1
+            return raw
+
+    return backend(project, Client()), {"candidate_sha": sha}, run, producer["name"]
+
+
+def test_artifact_cache_payload_is_durable_before_final_name_and_retained_reuse(artifact_cache, monkeypatch):
+    api, state, run, producer = artifact_cache
+    events = []
+    original_fsync, original_rename = manual.os.fsync, manual.os.rename
+
+    def synchronized(descriptor):
+        info = manual.os.fstat(descriptor)
+        for path in [api.work, *api.work.rglob("*")]:
+            observed = path.stat()
+            if (observed.st_dev, observed.st_ino) == (info.st_dev, info.st_ino):
+                events.append(("directory" if stat.S_ISDIR(info.st_mode) else "file", path))
+                break
+        return original_fsync(descriptor)
+
+    def renamed(before, after):
+        if manual.os.name != "nt":
+            for path in before.rglob("*"):
+                if path.is_file():
+                    assert ("file", path) in events, path
+            directories = [before / "files/nested", before / "files", before]
+            indexes = [max(i for i, event in enumerate(events) if event == ("directory", path))
+                       for path in directories]
+            assert indexes == sorted(indexes), "Nested directories must become durable before their parents"
+        events.append(("rename", after))
+        return original_rename(before, after)
+
+    monkeypatch.setattr(manual.os, "fsync", synchronized)
+    monkeypatch.setattr(manual.os, "rename", renamed)
+    files = api._artifact(state, run, "promotion-decision", producer)
+    assert (files / "nested/decision.json").read_bytes() == b"{}"
+    if manual.os.name != "nt":
+        assert events.index(("rename", files.parent)) < max(
+            i for i, event in enumerate(events) if event == ("directory", api.work)
+        )
+    events.clear()
+    assert api._artifact(state, run, "promotion-decision", producer) == files
+    assert api.client.downloads == 1
+    if manual.os.name != "nt":
+        assert all(("file", path) in events for path in files.parent.rglob("*") if path.is_file())
+        assert events[-1] == ("directory", api.work)
+
+
+@pytest.mark.parametrize("failure", ["payload", "parent-directory"])
+def test_artifact_flush_failure_keeps_pending_intent_and_resumes_without_redispatch(
+    project, artifact_cache, monkeypatch, failure,
+):
+    api, _, run, producer = artifact_cache
+
+    class ArtifactRemote(Remote):
+        def reconcile(self, state, pending):
+            files = api._artifact(state, run, "promotion-decision", producer)
+            return {**self.results[pending["action"]], "bundle": str(files)}
+
+    remote = ArtifactRemote()
+    controller, _ = session(project, remote, scopes=("qualify",))
+    api.work = controller.store.work
+    controller.advance()
+    pending = controller.store.load()["pending"]
+    sync_cache, sync_directory = manual.sync_artifact_cache, manual.sync_directory
+    final = api.work / "promotion-decision-42-1"
+
+    def fail_cache(folder, inventory):
+        raise OSError("Artifact payload flush interrupted")
+
+    def fail_directory(path):
+        if path == api.work and final.exists():
+            raise OSError("Artifact parent directory flush interrupted")
+        return sync_directory(path)
+
+    monkeypatch.setattr(manual, "sync_artifact_cache", fail_cache if failure == "payload" else sync_cache)
+    monkeypatch.setattr(manual, "sync_directory", fail_directory if failure == "parent-directory" else sync_directory)
+    with pytest.raises(OSError, match="flush interrupted"):
+        controller.advance()
+    failed = controller.store.load()
+    assert failed["phase"] == "prepared" and failed["pending"] == pending
+    assert len(remote.writes) == 1
+    assert final.exists() is (failure == "parent-directory")
+    attempts = list(api.work.glob("promotion-decision-42-1.incomplete-*"))
+    retained = {path: path.read_bytes() for attempt in attempts for path in attempt.rglob("*") if path.is_file()}
+    monkeypatch.setattr(manual, "sync_artifact_cache", sync_cache)
+    monkeypatch.setattr(manual, "sync_directory", sync_directory)
+    complete = controller.advance()
+    assert complete["phase"] == "qualified" and complete["pending"] is None
+    assert len(remote.writes) == 1
+    assert (final / "files/nested/decision.json").read_bytes() == b"{}"
+    assert all(path.read_bytes() == raw for path, raw in retained.items())
+    assert api.client.downloads == (2 if failure == "payload" else 1)
 
 
 @pytest.mark.parametrize("unsafe", [False, True], ids=["complete", "traversal"])
