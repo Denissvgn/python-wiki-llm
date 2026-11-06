@@ -463,3 +463,23 @@ def test_default_recheck_finds_helper_prewarmed_in_project_git_cache(tmp_path, m
     _prepare_fixture("go", root)
     rechecked = capabilities.build_capability_diagnostics(args.src_dir, helper_cache_dir=args.helper_cache_dir)
     assert next(p for p in rechecked["providers"] if p["language"] == "go")["status"] == "ready"
+
+
+def test_doctor_distinguishes_a_damaged_shared_slot_from_first_use(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import helper_cache
+    from tests.test_helper_cache import _profile, _typescript_build
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    shared = tmp_path / "state" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    monkeypatch.setattr(helper_cache, "_profile", _profile)
+    monkeypatch.setattr(helper_cache, "_build", _typescript_build)
+    (tmp_path / "main.ts").write_text("export const answer = 42;\n")
+    handle = helper_cache.ensure_helper("typescript", tmp_path)
+    dependency = handle.root / "node_modules/ts-morph/index.js"
+    dependency.write_text("damaged")
+    report = capabilities.build_capability_diagnostics()
+    ts = next(item for item in report["providers"] if item["language"] == "typescript")
+    assert ts["helper"]["status"] == "stale-or-invalid"
+    assert dependency.read_text() == "damaged"

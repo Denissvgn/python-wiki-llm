@@ -44,8 +44,9 @@ def build_capability_diagnostics(
     snapshot = build_source_snapshot(
         root, source_selection=source_selection, include_tests=include_tests
     )
-    cache = helpers.resolve_helper_cache_root(root, helper_cache_dir)
-    from .helper_cache import preparation_cache_root
+    from .helper_cache import _profile_slots, cache_roots, preparation_cache_root
+
+    roots = cache_roots(root, helper_cache_dir)
     effective_cache = preparation_cache_root(root, helper_cache_dir)
     providers = []
     for language, (provider, tool_names) in _PROVIDERS.items():
@@ -67,12 +68,14 @@ def build_capability_diagnostics(
                 if language == "typescript"
                 else helpers.get_prepared_binary(language, root, helper_cache_dir)
             )
-            exists = (
-                cache is not None and helpers._manifest_path(cache, language).exists()
-            )
-            helper_state = (
-                "current" if artifact else "stale-or-invalid" if exists else "missing"
-            )
+            if artifact:
+                helper_state = "current"
+            else:
+                previously_prepared = any(
+                    helpers._manifest_path(cache, language).exists() or _profile_slots(cache / language)
+                    for cache in roots
+                )
+                helper_state = "stale-or-invalid" if previously_prepared else "missing"
             runtime_missing = language == "typescript" and tools["node"] is None
             state = (
                 "missing-toolchain"
