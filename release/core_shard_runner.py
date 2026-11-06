@@ -49,17 +49,26 @@ def freeze(args) -> int:
 
     def git(*words):
         return subprocess.check_output(
-            ["git", *words], cwd=root, stdin=subprocess.DEVNULL
+            ["git", "--no-replace-objects", *words], cwd=root, stdin=subprocess.DEVNULL
         )
 
-    s.require(
-        git("rev-parse", "HEAD").decode().strip() == args.candidate_sha,
-        "shadow checkout differs",
-    )
-    s.require(
-        not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
-        "shadow source must be clean",
-    )
+    inventory = _inventory_reader()
+
+    def verify_checkout():
+        s.require(
+            git("rev-parse", "HEAD").decode().strip() == args.candidate_sha,
+            "shadow checkout differs",
+        )
+        s.require(
+            not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
+            "shadow source must be clean",
+        )
+        try:
+            inventory.verify_tracked_source(root, args.candidate_sha)
+        except ValueError as error:
+            raise q.QualificationError(str(error)) from error
+
+    verify_checkout()
     s.require(
         not output.exists() and root not in output.parents,
         "frozen shadow output must be new and outside source",
@@ -83,6 +92,7 @@ def freeze(args) -> int:
         *("release/" + name for name in HARNESS_FILES),
     )
     version = q._project_version(root)
+    verify_checkout()
     identity = {
         "schema_version": q.IDENTITY_SCHEMA,
         "repository": args.repository,
@@ -91,8 +101,8 @@ def freeze(args) -> int:
         "tag": "v" + version,
         "source": {
             "sha": args.candidate_sha,
-            "tree": git("rev-parse", "HEAD^{tree}").decode().strip(),
-            "commit_epoch": int(git("show", "-s", "--format=%ct", "HEAD")),
+            "tree": git("rev-parse", args.candidate_sha + "^{tree}").decode().strip(),
+            "commit_epoch": int(git("show", "-s", "--format=%ct", args.candidate_sha)),
             "archive_sha256": q.sha256_file(archive),
         },
     }

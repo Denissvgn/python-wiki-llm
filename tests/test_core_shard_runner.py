@@ -580,21 +580,23 @@ def test_source_guards_keep_ordinary_checkout_scaffolding_opaque(frozen_input_tr
     assert all((root / name).read_bytes() == data for name, data in residue.items())
 
 
-def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
-    tmp_path, monkeypatch
-):
+@pytest.fixture
+def shadow_checkout(tmp_path):
     root = tmp_path / "repository"
     root.mkdir()
 
     def git(*arguments):
         return subprocess.check_output(
-            ["git", *arguments], cwd=root, stdin=subprocess.DEVNULL
+            ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+             "-c", "commit.gpgsign=false", "-c", f"core.hooksPath={tmp_path / 'absent-hooks'}",
+             *arguments], cwd=root, stdin=subprocess.DEVNULL
         )
 
     git("init")
     git("config", "core.autocrlf", "false")
     (root / ".gitattributes").write_text("* -text\n")
     (root / "pyproject.toml").write_text('[project]\nversion = "1.0.0"\n')
+    (root / "owned.py").write_text('VALUE = "original"\n')
     (root / "release").mkdir()
     for name in r.HARNESS_FILES:
         (root / "release" / name).write_bytes(
@@ -616,6 +618,13 @@ def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
     sha = git("rev-parse", "HEAD").decode().strip()
     # Shadow evidence remains useful after the current package version is tagged.
     git("tag", "v1.0.0")
+    return root, git, sha
+
+
+def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
+    shadow_checkout, tmp_path, monkeypatch
+):
+    root, git, sha = shadow_checkout
     monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
     output = tmp_path / "frozen"
     assert (
@@ -645,6 +654,86 @@ def test_freezer_and_preflight_bind_real_git_archives_and_detect_source_changes(
     (root / "pyproject.toml").write_text('[project]\nversion = "2.0.0"\n')
     with pytest.raises(r.q.QualificationError, match="source content differs"):
         r.context(args)
+
+
+@pytest.mark.parametrize("flag", ["--assume-unchanged", "--skip-worktree"])
+def test_shadow_freezer_rejects_hidden_source_bytes_before_creating_outputs(
+    shadow_checkout, tmp_path, monkeypatch, flag,
+):
+    root, git, sha = shadow_checkout
+    git("update-index", flag, "owned.py")
+    (root / "owned.py").write_text('VALUE = "hidden modification"\n')
+    assert not git("status", "--porcelain").strip()
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    output = tmp_path / "frozen"
+    with pytest.raises(r.q.QualificationError, match="Canonical tracked source bytes differ"):
+        r.freeze(argparse.Namespace(root=root, output=output, candidate_sha=sha, repository="owned/repo"))
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("replace_worktree", [False, True])
+def test_shadow_freezer_uses_original_objects_without_deleting_replacement_refs(
+    shadow_checkout, tmp_path, monkeypatch, replace_worktree,
+):
+    root, git, sha = shadow_checkout
+    tree = git("--no-replace-objects", "rev-parse", sha + "^{tree}").decode().strip()
+    epoch = int(git("--no-replace-objects", "show", "-s", "--format=%ct", sha))
+    original_bytes = (root / "owned.py").read_bytes()
+    (root / "owned.py").write_text('VALUE = "replacement"\n')
+    git("add", "owned.py")
+    git("commit", "-qm", "Replacement source")
+    replacement = git("rev-parse", "HEAD").decode().strip()
+    git("reset", "--hard", sha)
+    git("replace", sha, replacement)
+    if replace_worktree:
+        git("read-tree", "--reset", "-u", "HEAD")
+        assert not git("status", "--porcelain").strip()
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    output = tmp_path / "frozen"
+    args = argparse.Namespace(root=root, output=output, candidate_sha=sha, repository="owned/repo")
+    if replace_worktree:
+        with pytest.raises(r.q.QualificationError, match="shadow source must be clean"):
+            r.freeze(args)
+        assert not output.exists()
+    else:
+        assert r.freeze(args) == 0
+        identity = r.s.read(output / "identity.json")
+        assert identity["source"]["sha"] == sha
+        assert identity["source"]["tree"] == tree
+        assert identity["source"]["commit_epoch"] == epoch
+        with tarfile.open(output / "candidate-source.tar", "r:") as archive:
+            stream = archive.extractfile("owned.py")
+            assert stream is not None and stream.read() == original_bytes
+    assert git("replace", "--list").decode().strip() == sha
+
+
+def test_shadow_freezer_rechecks_source_after_archive_creation(
+    shadow_checkout, tmp_path, monkeypatch,
+):
+    root, git, sha = shadow_checkout
+    (root / "owned.py").write_text('VALUE = "next source"\n')
+    git("add", "owned.py")
+    git("commit", "-qm", "Next source")
+    changed = git("rev-parse", "HEAD").decode().strip()
+    git("reset", "--hard", sha)
+    original = subprocess.check_output
+    archives = []
+
+    def switch_after_first_archive(command, **kwargs):
+        result = original(command, **kwargs)
+        if "archive" in command:
+            archives.append(command)
+            if len(archives) == 1:
+                original(["git", "reset", "--hard", changed], cwd=root, stdin=subprocess.DEVNULL)
+        return result
+
+    monkeypatch.setattr(r.subprocess, "check_output", switch_after_first_archive)
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    output = tmp_path / "frozen"
+    with pytest.raises(r.q.QualificationError, match="shadow checkout differs"):
+        r.freeze(argparse.Namespace(root=root, output=output, candidate_sha=sha, repository="owned/repo"))
+    assert (output / "candidate-source.tar").is_file()
+    assert not (output / "freeze.json").exists()
 
 
 @pytest.mark.parametrize(
