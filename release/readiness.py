@@ -134,8 +134,37 @@ def helper_cache_base(root: Path) -> Path:
     return safe_path(
         Path(os.path.abspath(Path(configured).expanduser()))
         if configured
-        else root / ".git/llm-wiki-extractors"
+        else git_metadata_directory(root) / "llm-wiki-extractors"
     )
+
+
+def git_metadata_directory(root: Path) -> Path:
+    """Keep local preparation in this checkout's Git metadata, including worktrees."""
+    root = safe_path(root)
+    marker = safe_path(root / ".git")
+    if marker.is_dir():
+        return marker
+    if not marker.is_file():
+        raise ReadinessError("Checkout Git metadata is missing or unsupported")
+    bounded_read(marker, 64 * 1024)
+    try:
+        result = subprocess.run(
+            ["git", "--no-replace-objects", "-C", str(root), "--git-dir", str(marker),
+             "rev-parse", "--absolute-git-dir"],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True,
+            encoding="utf-8", timeout=20, check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ReadinessError("Checkout Git metadata cannot be resolved") from error
+    if result.returncode or len(result.stdout) > 64 * 1024:
+        raise ReadinessError("Checkout Git metadata cannot be resolved")
+    directory = Path(result.stdout.rstrip("\r\n"))
+    if not directory.is_absolute():
+        raise ReadinessError("Checkout Git metadata path is not absolute")
+    directory = safe_path(directory)
+    if not directory.is_dir():
+        raise ReadinessError("Checkout Git metadata directory is unavailable")
+    return directory
 
 
 def python_manifest(path: Path | None = None):

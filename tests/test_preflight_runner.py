@@ -781,3 +781,89 @@ def test_local_core_rejects_incomplete_or_unowned_outcomes(tmp_path, mutation):
     tree.write(inputs["junit_path"], encoding="utf-8")
     with pytest.raises(ValueError):
         runner.verify_host_junit(**inputs)
+
+
+@pytest.mark.parametrize("explicit_cache", [False, True])
+def test_worktree_preparation_uses_worktree_metadata_without_installing_tools(tmp_path, monkeypatch, explicit_cache):
+    from release.readiness import git_metadata_directory, helper_cache_base
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    def git(*args):
+        return subprocess.check_output(
+            ["git", "-C", str(repo), "-c", "user.name=Metadata guard",
+             "-c", "user.email=metadata@example.invalid", "-c", "commit.gpgsign=false",
+             "-c", "core.autocrlf=false", "-c", f"core.hooksPath={tmp_path / 'no-hooks'}", *args],
+            stderr=subprocess.STDOUT,
+        ).decode().strip()
+
+    git("init", "-q")
+    (repo / "release").mkdir()
+    (repo / "release/toolchain-lock.json").write_bytes((ROOT / "release/toolchain-lock.json").read_bytes())
+    git("add", ".")
+    git("commit", "-qm", "Metadata fixture")
+    worktree = tmp_path / "worktree"
+    git("worktree", "add", "--detach", str(worktree), "HEAD")
+    expected = Path(subprocess.check_output(
+        ["git", "-C", str(worktree), "rev-parse", "--absolute-git-dir"], text=True,
+    ).strip())
+    assert (worktree / ".git").is_file()
+    monkeypatch.setenv("GIT_DIR", str(repo / ".git"))
+    assert git_metadata_directory(worktree) == expected
+    assert expected != repo / ".git"
+    if explicit_cache:
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "selected-cache"))
+    else:
+        monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    base = helper_cache_base(worktree)
+    base.mkdir()
+    assert base == (tmp_path / "selected-cache" if explicit_cache else expected / "llm-wiki-extractors")
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
+    commands = runner.stage_commands("prepare", worktree, tmp_path / "scratch",
+                                     candidate_sha=SHA, version="9.0.0")
+    helper = next(command for command in commands if command.name == "prepared-typescript-owner")
+    assert helper.argv[helper.argv.index("--cache-dir") + 1] == str(base)
+    assert helper.environment["LLM_WIKI_CACHE_DIR"] == str(base)
+    from llm_wiki_cli.services.extractor_helpers import resolve_helper_cache_root
+    prepared_root = resolve_helper_cache_root(worktree, helper.argv[helper.argv.index("--cache-dir") + 1])
+    for name in ("repository-doctor", "wiki-lint", "repository-ci"):
+        consumer = next(command for command in commands if command.name == name)
+        selected = consumer.argv[consumer.argv.index("--helper-cache-dir") + 1]
+        assert selected == str(base)
+        assert consumer.environment["LLM_WIKI_CACHE_DIR"] == str(base)
+        assert resolve_helper_cache_root(worktree, selected) == prepared_root
+    target = expected / "llm-wiki-ci-toolchains"
+    assert helper.environment["PATH"].split(os.pathsep)[0] == str(target / "node/bin")
+    node = target / "node/bin/node"
+    npm = target / "node/lib/node_modules/npm/bin/npm-cli.js"
+    for path in (node, npm):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"controlled runtime fixture")
+    monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {"launcher": "/owned/.venv/bin/python"})
+    original_run = runner.subprocess.run
+    lock = json.loads((worktree / "release/toolchain-lock.json").read_bytes())
+    seen = []
+
+    def run(argv, **kwargs):
+        if argv[0] == "git":
+            return original_run(argv, **kwargs)
+        assert argv[0] == str(node), "Prepared runtime must not invoke installation or removal"
+        seen.append(argv)
+        name = "npm" if str(npm) in argv else "node"
+        return subprocess.CompletedProcess(argv, 0, lock["toolchains"][name]["version_output"] + "\n", "")
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+    result = runner.prepare_runtime(worktree)
+    assert result["status"] == "ready" and result["reused"]
+    assert len(seen) == 2
+    assert result["runtime"]["node"]["path"] == str(node)
+    assert (worktree / ".git").is_file()
+
+
+def test_prepare_runtime_refuses_extracted_source_without_creating_git_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {"launcher": "/owned/.venv/bin/python"})
+    monkeypatch.setattr(runner.subprocess, "run", lambda *a, **k: pytest.fail("Source without Git must not install a runtime"))
+    with pytest.raises(ValueError, match="Git metadata"):
+        runner.prepare_runtime(tmp_path)
+    assert not (tmp_path / ".git").exists()

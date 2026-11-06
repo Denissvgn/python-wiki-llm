@@ -784,6 +784,7 @@ def run(args):
     require(set(nodes) == set(collection["collected"]), "Collection reader differs")
     unchanged()
     save(out, "installed-origin-after.json", verify_provider(expected))
+    unchanged()
     save(
         out,
         "result.json",

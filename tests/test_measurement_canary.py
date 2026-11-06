@@ -540,3 +540,106 @@ def test_frozen_canary_preserves_qualification_branch_contract(branch):
             canary.workflow_identity(
                 sha, frozen=True, environment={**environment, **changed}
             )
+
+
+def final_probe_scenario(module, tmp_path, monkeypatch, *, mutate):
+    """Exercise finalization with real Git; native execution is deliberately stubbed."""
+    import json
+    import subprocess
+    import sys
+
+    root = tmp_path / "candidate"
+    root.mkdir()
+
+    def git(*args):
+        return subprocess.check_output(
+            ["git", "-C", str(root), "-c", "user.name=Final source guard",
+             "-c", "user.email=source@example.invalid", "-c", "commit.gpgsign=false",
+             "-c", "core.autocrlf=false", "-c", f"core.hooksPath={tmp_path / 'no-hooks'}", *args],
+            stderr=subprocess.STDOUT,
+        ).decode().strip()
+
+    git("init", "-q")
+    files = {"owned": "original", ".gitignore": ".venv/\n", module.MODULE: "# controlled\n",
+             ".github/workflows/windows-measurement.yml": "name: controlled\n"}
+    files.update({"release/" + name: "# controlled base reader\n" for name in module.READERS})
+    for name, text in files.items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    git("add", ".")
+    git("commit", "-qm", "Base")
+    ancestor = git("rev-parse", "HEAD")
+    git("commit", "--allow-empty", "-qm", "PR head")
+    head = git("rev-parse", "HEAD")
+    git("checkout", "--detach", ancestor)
+    (root / "base-only").write_text("base change")
+    git("add", ".")
+    git("commit", "-qm", "Advanced base")
+    base = git("rev-parse", "HEAD")
+    git("merge", "--no-ff", "-m", "PR test merge", head)
+    source = git("rev-parse", "HEAD")
+    prefix = root / ".venv"
+    prefix.mkdir()
+    out = tmp_path / "evidence"
+    env = {"GITHUB_REPOSITORY": module.REPOSITORY, "GITHUB_RUN_ID": "42",
+           "GITHUB_RUN_ATTEMPT": "1", "BASE_SHA": base, "HEAD_SHA": head,
+           "GITHUB_WORKFLOW_SHA": source,
+           "GITHUB_WORKFLOW_REF": module.REPOSITORY + "/.github/workflows/windows-measurement.yml@refs/pull/7/merge"}
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+    for name in ("PYTEST_ADDOPTS", "PYTEST_PLUGINS"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(module, "sys", SimpleNamespace(
+        platform="win32", prefix=str(prefix), base_prefix=str(tmp_path / "base"),
+        maxsize=2**63 - 1, modules={}, path=list(sys.path), executable=sys.executable,
+        orig_argv=[], argv=[],
+    ))
+    monkeypatch.setattr(module, "platform", SimpleNamespace(
+        python_version=lambda: "3.13.17", machine=lambda: "AMD64",
+    ))
+    collection, started, cases, capture = complete_result()
+    reader = SimpleNamespace(
+        q=SimpleNamespace(load_json=lambda p: json.loads(p.read_bytes())),
+        inventory=sorted, junit=lambda p: cases,
+    )
+    monkeypatch.setattr(module, "load", lambda name, path: reader if name == "measurement_core_reader" else object())
+    monkeypatch.setattr(module, "provider_files", lambda path: {"version": "9.0.0"})
+    probes = []
+
+    def verify(expected):
+        probes.append(expected)
+        if len(probes) == 2 and mutate:
+            (root / "owned").write_text("changed by final provider observation")
+        return {"controlled_observation": len(probes)}
+
+    monkeypatch.setattr(module, "verify_provider", verify)
+
+    def execute(command, plugins):
+        (out / "collection.json").write_text(json.dumps(collection))
+        (out / "started.jsonl").write_text("".join(json.dumps(n) + "\n" for n in started))
+        (out / "junit.xml").write_text("<testsuite />")
+        return 0
+
+    original_import = module.importlib.import_module
+    monkeypatch.setattr(module.importlib, "import_module", lambda name: (
+        SimpleNamespace(main=execute) if name == "pytest" else original_import(name)
+    ))
+    monkeypatch.setattr(module, "capture_reports", lambda *args: capture)
+    git("remote", "add", "origin", "https://github.com/" + module.REPOSITORY + ".git")
+    return SimpleNamespace(root=root, output=out, expected_python="3.13.17", source_sha=source,
+                           expected_prefix=None, frozen_identity=None, harness_root=None)
+
+
+@pytest.mark.parametrize("mutate", [False, True])
+def test_canary_rechecks_source_after_final_provider_observation(tmp_path, monkeypatch, mutate):
+    args = final_probe_scenario(canary, tmp_path, monkeypatch, mutate=mutate)
+    if mutate:
+        with pytest.raises(canary.CanaryError, match="PR tracked source changed"):
+            canary.run(args)
+        assert not (args.output / "result.json").exists()
+        assert (args.root / "owned").read_text() == "changed by final provider observation"
+    else:
+        assert canary.run(args) == 0
+        assert canary.git_output(args.root, "status", "--porcelain").strip() == b""
+    assert (args.output / "installed-origin-after.json").exists()

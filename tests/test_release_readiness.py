@@ -18,6 +18,7 @@ ROOT = Path(__file__).parents[1]
 def candidate(tmp_path):
     root = tmp_path / "candidate"
     root.mkdir()
+    (root / ".git").mkdir()
     contract = json.loads((ROOT / readiness.CONTRACT).read_text())
     documents = {}
     for consumer in contract["consumers"]:
@@ -765,3 +766,32 @@ print(json.dumps({'status':report['status'],'blocker_ids':sorted(ids),'capabilit
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["capability_rows"] >= len(readiness.STATIC_MODULES)
+
+
+def test_metadata_directory_preserves_ordinary_checkout_and_explicit_cache(tmp_path, monkeypatch):
+    (tmp_path / ".git").mkdir()
+    assert readiness.git_metadata_directory(tmp_path) == tmp_path / ".git"
+    assert readiness.helper_cache_base(tmp_path) == tmp_path / ".git/llm-wiki-extractors"
+    standalone = tmp_path / "extracted-source"
+    standalone.mkdir()
+    cache = tmp_path / "explicit-cache"
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache))
+    assert readiness.helper_cache_base(standalone) == cache
+    assert not (standalone / ".git").exists()
+
+
+@pytest.mark.parametrize("kind", ["missing", "malformed", "redirected"])
+def test_metadata_directory_refuses_invalid_or_redirected_git_pointer(tmp_path, kind):
+    marker = tmp_path / ".git"
+    external = tmp_path / "retained"
+    external.mkdir()
+    sentinel = external / "data"
+    sentinel.write_bytes(b"preserve")
+    if kind == "malformed":
+        marker.write_text("not a Git metadata pointer\n")
+    elif kind == "redirected":
+        marker.symlink_to(external, target_is_directory=True)
+    with pytest.raises(readiness.ReadinessError, match="Git metadata|Redirected"):
+        readiness.git_metadata_directory(tmp_path)
+    assert sentinel.read_bytes() == b"preserve"
+    assert kind != "missing" or not marker.exists()
