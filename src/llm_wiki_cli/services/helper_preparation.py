@@ -15,6 +15,14 @@ if TYPE_CHECKING:
 
 
 def _helper_progress(message: str) -> None:
+    from .progress import current_progress
+
+    # The command's phase sink owns its mode and output format. Preparation is
+    # already represented by the helper_preparation phase below; emitting a
+    # second free-form line would bypass --progress never and corrupt JSON
+    # progress streams. Calls without that sink retain their bounded notice.
+    if current_progress() is not None:
+        return
     try:
         print("llm-wiki: " + message, file=sys.stderr, flush=True)
     except (OSError, ValueError):
@@ -39,8 +47,9 @@ def prepare_operation_helpers(
         required_helper_languages,
     )
     from .helper_cache import (
-        HelperPreparationError, ensure_helper, lookup_helper, validate_handle,
+        HelperPreparationError, cache_roots, ensure_helper, lookup_helper, validate_handle,
     )
+    from .progress import phase
 
     operation = current_helper_operation()
     if operation is None:
@@ -51,7 +60,7 @@ def prepare_operation_helpers(
     for language in selected:
         pinned = pinned_helper(language, source_root=snapshot.root)
         if pinned is not None:
-            if effective_cache is not None and helpers.resolve_helper_cache_root(snapshot.root, effective_cache) != pinned.cache_root:
+            if pinned.cache_root not in cache_roots(snapshot.root, effective_cache):
                 raise HelperPreparationError(language, "helper cache scope changed during analysis")
             if not validate_handle(pinned):
                 raise HelperPreparationError(language, "prepared helper changed during analysis")
@@ -61,10 +70,11 @@ def prepare_operation_helpers(
             if handle is None:
                 continue
         else:
-            handle = ensure_helper(
-                language, snapshot.root, effective_cache,
-                progress=operation.progress or _helper_progress,
-            )
+            with phase("helper_preparation"):
+                handle = ensure_helper(
+                    language, snapshot.root, effective_cache,
+                    progress=operation.progress or _helper_progress,
+                )
         bind_helper(handle, source_root=snapshot.root)
         handles.append(handle)
     return tuple(handles)

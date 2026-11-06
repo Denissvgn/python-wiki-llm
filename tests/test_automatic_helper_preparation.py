@@ -43,7 +43,7 @@ def test_selected_helpers_are_ready_before_inventory_cache_identity(tmp_path, mo
 
     monkeypatch.setattr(extraction_service, "_load_inventory_cache_state", identity)
     request = extraction_service.InventoryRequest(tmp_path, source_snapshot=snapshot, include_plugins=False)
-    with helper_operation("auto"), pytest.raises(RuntimeError, match="stop before identity"):
+    with helper_operation("auto", cache_dir=prepared.cache_root.parent), pytest.raises(RuntimeError, match="stop before identity"):
         extraction_service.get_inventory_result(request)
     assert events == ["prepare", "capture"]
 
@@ -87,7 +87,7 @@ def test_operation_reuses_handle_but_refuses_mid_operation_mutation(tmp_path, mo
     valid = [True]
     monkeypatch.setattr(helper_cache, "ensure_helper", lambda *a, **k: attempts.append(a[0]) or prepared)
     monkeypatch.setattr(helper_cache, "validate_handle", lambda h: valid[0])
-    with helper_operation("auto"):
+    with helper_operation("auto", cache_dir=prepared.cache_root.parent):
         assert prepare_operation_helpers(snapshot, EXTRACTOR_REGISTRY) == (prepared,)
         assert prepare_operation_helpers(snapshot, EXTRACTOR_REGISTRY) == (prepared,)
         valid[0] = False
@@ -130,7 +130,7 @@ def test_capture_uses_pinned_node_and_new_binding_invalidates_earlier_capture(tm
         after = analysis_capture.capture_analysis(EXTRACTOR_REGISTRY, source_root=tmp_path, languages={"typescript"})
         assert "llm-wiki/extractor/typescript" in after
 
-    with helper_operation("auto"):
+    with helper_operation("auto", cache_dir=prepared.cache_root.parent):
         observe()
     assert commands == [["/pinned/node", "--version"]]
 
@@ -141,7 +141,7 @@ def test_fresh_reobservation_detects_pinned_artifact_mutation(tmp_path, monkeypa
     valid = [True]
     monkeypatch.setattr(helper_cache, "validate_handle", lambda h: valid[0])
     monkeypatch.setattr(helpers, "command_output", lambda *a, **k: "v24.18.0")
-    with helper_operation("auto"):
+    with helper_operation("auto", cache_dir=prepared.cache_root.parent):
         bind_helper(prepared, source_root=tmp_path)
         assert "llm-wiki/extractor/typescript" in _recapture(EXTRACTOR_REGISTRY, tmp_path, None, {"typescript"})
         valid[0] = False

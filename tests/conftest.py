@@ -316,6 +316,7 @@ def _restore_cwd():
 def assert_helper_recovery(request, monkeypatch):
     """Check complete recovery guidance using the selected command shell."""
     from llm_wiki_cli.services import extractor_helpers
+    from llm_wiki_cli.services.helper_cache import user_helper_cache_root
     from llm_wiki_cli.services.paths import render_shell_command
 
     shell = request.param
@@ -326,7 +327,7 @@ def assert_helper_recovery(request, monkeypatch):
     def check(message, *, language, src_dir=".", cache_dir=None):
         source = Path(src_dir).resolve()
         cache = extractor_helpers.resolve_helper_cache_root(source, cache_dir)
-        cache_base = cache.parent if cache is not None else source / ".llm-wiki"
+        cache_base = cache.parent if cache is not None else user_helper_cache_root().parent
         argv = [
             "llm-wiki",
             "prepare-extractors",

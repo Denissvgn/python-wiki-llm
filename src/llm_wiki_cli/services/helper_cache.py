@@ -192,8 +192,22 @@ def _with_runtime(handle: PreparedHelperHandle, executables: dict[str, str]) -> 
                    handle.path, dict(handle.receipt), selected)
 
 
+def _manifest_version(language: str) -> int:
+    return (helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript"
+            else helpers.HELPER_MANIFEST_VERSION)
+
+
 def _validate_artifact(language: str, cache_root: Path, root: Path, manifest: dict) -> Path:
     _safe(root)
+    if type(manifest.get("version")) is not int or manifest["version"] != _manifest_version(language):
+        raise ValueError("helper manifest version differs")
+    toolchain = manifest.get("toolchain")
+    if not isinstance(toolchain, str) or not toolchain:
+        raise ValueError("helper toolchain identity is missing")
+    if "preparation_profile" in manifest:
+        profile = manifest["preparation_profile"]
+        if not isinstance(profile, dict) or profile.get("toolchain") != toolchain:
+            raise ValueError("helper toolchain differs from its preparation profile")
     if manifest.get("language") != language or manifest.get("platform") != helpers.platform_id():
         raise ValueError("helper platform/language differs")
     if manifest.get("source_fingerprint") != helpers.helper_source_fingerprint(language):
@@ -300,7 +314,7 @@ def validate_handle(handle: PreparedHelperHandle) -> bool:
 
 
 def _profile_key(language: str, profile: dict) -> str:
-    value = {"language": language, **profile}
+    value = {**profile, "language": language, "helper_manifest_version": _manifest_version(language)}
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -383,6 +397,37 @@ def _target_matches(target: str) -> bool:
     )
 
 
+def _selected_rust_executable(name: str, env: dict[str, str], cwd: Path) -> str:
+    path = shutil.which(name, path=env.get("PATH"))
+    if path is None:
+        raise HelperPreparationError("rust", name + " not found")
+    selected = Path(os.path.abspath(path))
+    physical = selected.resolve()
+    launcher = physical if physical.name.casefold() in {"rustup", "rustup.exe"} else None
+    if launcher is None:
+        # Rustup can install hardlinked proxies, including Windows .exe files;
+        # their resolved basename alone does not identify the dispatcher.
+        sibling = selected.with_name("rustup.exe" if selected.suffix.casefold() == ".exe" else "rustup")
+        try:
+            if selected.samefile(sibling):
+                launcher = sibling.resolve()
+        except OSError:
+            pass
+    if launcher is None:
+        # Preserve argv0 for other operator-selected compiler launchers.
+        return str(selected)
+    target = Path(_output([str(launcher), "which", name], cwd=cwd, env=env))
+    if not target.is_absolute():
+        raise HelperPreparationError("rust", "rustup did not resolve an absolute " + name + " executable")
+    target = target.resolve(strict=True)
+    if target.samefile(launcher):
+        raise HelperPreparationError("rust", "rustup returned its dispatcher instead of " + name)
+    # Both cargo and rustc must execute these exact targets. Hashing only the
+    # stable dispatcher misses custom same-version toolchain replacements and
+    # RUSTUP_TOOLCHAIN/default changes; `which` observes existing tools only.
+    return str(target)
+
+
 def _profile(language: str, cache_root: Path, cwd: Path) -> _Profile:
     env = _build_environment(cache_root)
     identity: dict[str, object] = {"recipe": RECIPE, "host": helpers.platform_id(),
@@ -438,10 +483,7 @@ def _profile(language: str, cache_root: Path, cwd: Path) -> _Profile:
         identity.update(toolchain=version, target=target)
     elif language == "rust":
         for name in ("cargo", "rustc"):
-            path = shutil.which(name, path=env.get("PATH"))
-            if path is None:
-                raise HelperPreparationError(language, name + " not found")
-            executables[name] = str(Path(os.path.abspath(path)))
+            executables[name] = _selected_rust_executable(name, env, cwd)
         version = _output([executables["cargo"], "--version"], cwd=cwd, env=env)
         rust = _output([executables["rustc"], "-vV"], cwd=cwd, env=env)
         targets = [row.partition(":")[2].strip() for row in rust.splitlines() if row.startswith("host:")]

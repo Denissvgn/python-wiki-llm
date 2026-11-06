@@ -14,6 +14,35 @@ import pytest
 from llm_wiki_cli.services import capability_diagnostics as capabilities
 
 
+@pytest.mark.parametrize("git", [False, True], ids=["no-git", "git"])
+@pytest.mark.parametrize("scope", ["default", "explicit", "environment", "explicit-over-environment"])
+def test_capability_cache_metadata_matches_automatic_destination_without_io(tmp_path, monkeypatch, git, scope):
+    from llm_wiki_cli.services import helper_cache
+
+    source = tmp_path / "project"
+    source.mkdir()
+    (source / "main.go").write_text("package sample\n")
+    if git:
+        (source / ".git").mkdir()
+    monkeypatch.chdir(source)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    shared = tmp_path / "managed-cache" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    explicit = tmp_path / "explicit-cache"
+    environment = tmp_path / "environment-cache"
+    if "environment" in scope:
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(environment))
+    argument = str(explicit) if scope.startswith("explicit") else None
+    expected = (explicit / capabilities.helpers.HELPER_CACHE_DIRNAME if argument is not None else
+                environment / capabilities.helpers.HELPER_CACHE_DIRNAME if scope == "environment" else shared)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("capabilities executed a process"))
+    before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.rglob("*") if p.is_file()}
+    report = capabilities.build_capability_diagnostics(".", helper_cache_dir=argument)
+    assert report["helper_cache"] == str(expected)
+    assert not expected.exists()
+    assert before == {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.rglob("*") if p.is_file()}
+
+
 @pytest.mark.parametrize(
     "language,suffix",
     [("typescript", ".ts"), ("go", ".go"), ("rust", ".rs"), ("haskell", ".hs")],

@@ -45,8 +45,8 @@ def build_capability_diagnostics(
         root, source_selection=source_selection, include_tests=include_tests
     )
     cache = helpers.resolve_helper_cache_root(root, helper_cache_dir)
-    cache_base = cache.parent if cache is not None else root / ".llm-wiki"
-    effective_cache = cache or cache_base / helpers.HELPER_CACHE_DIRNAME
+    from .helper_cache import preparation_cache_root
+    effective_cache = preparation_cache_root(root, helper_cache_dir)
     providers = []
     for language, (provider, tool_names) in _PROVIDERS.items():
         label = _LANGUAGE_LABELS[language]

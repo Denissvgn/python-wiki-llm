@@ -197,6 +197,14 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         selected.add("typescript")
     selected.add("infrastructure")
     cache_key = (str(root), str(source_root), str(helper_cache_dir), tuple(sorted(registry_entries.items())), tuple(sorted(selected)))
+    # The request may inherit its cache from an operation or the environment.
+    # An unbound observation from another scope cannot satisfy this capture.
+    from .helper_cache import cache_roots
+    try:
+        helper_scope = tuple(str(path) for path in cache_roots(source_root, helper_cache_dir))
+    except (OSError, ValueError, TypeError):
+        helper_scope = ()
+    cache_key += (helper_scope,)
     # Preparation can complete after an earlier inspection in this operation.
     # A capture made without a helper must not conceal the newly bound input.
     cache_key += (tuple(
@@ -250,20 +258,15 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                 handle = pinned_helper(owner, source_root=source_root)
                 if handle is not None:
                     from .helper_cache import validate_handle
-                    scope_matches = (helper_cache_dir is None or
-                        extractor_helpers.resolve_helper_cache_root(source_root, helper_cache_dir) == handle.cache_root)
+                    scope_matches = any(handle.cache_root == Path(path) for path in helper_scope)
                     prepared = dict(handle.receipt) if scope_matches and validate_handle(handle) else None
                 else:
-                    helper_root = extractor_helpers.resolve_helper_cache_root(source_root, helper_cache_dir)
-                    prepared = None if helper_root is None else extractor_helpers._manifest_current(helper_root, owner)
-                    if prepared is None:
-                        # Shared immutable slots have ready.json rather than
-                        # a legacy current pointer. Observation may reuse them
-                        # without granting preparation authority or retaining
-                        # a binding for a later operation.
-                        from .helper_cache import lookup_helper
-                        handle = lookup_helper(owner, source_root, helper_cache_dir)
-                        prepared = None if handle is None else dict(handle.receipt)
+                    # One owner validates legacy pointers and immutable slots
+                    # alike. A legacy receipt must not bypass native/containment
+                    # checks merely because this observation has no binding.
+                    from .helper_cache import lookup_helper
+                    handle = lookup_helper(owner, source_root, helper_cache_dir)
+                    prepared = None if handle is None else dict(handle.receipt)
                 if prepared is None:
                     continue
                 toolchain = prepared.get("toolchain")

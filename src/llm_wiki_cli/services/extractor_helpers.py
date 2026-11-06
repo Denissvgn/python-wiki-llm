@@ -417,11 +417,15 @@ def helper_preparation_argv(
     """
     if language not in SUPPORTED_HELPERS:
         raise ValueError(f"Unsupported helper language: {language}")
+    from .helper_cache import cache_roots, user_helper_cache_root
+    from .helper_runtime import pinned_helper
+
     source_root = Path(src_dir).resolve()
     cache_root = resolve_helper_cache_root(source_root, cache_dir)
-    cache_base = (
-        cache_root.parent if cache_root is not None else source_root / ".llm-wiki"
-    )
+    pinned = pinned_helper(language, source_root=source_root)
+    if pinned is not None and pinned.cache_root in cache_roots(source_root, cache_dir):
+        cache_root = pinned.cache_root
+    cache_base = cache_root.parent if cache_root is not None else user_helper_cache_root().parent
     argv = [
         "llm-wiki",
         "prepare-extractors",
@@ -448,73 +452,38 @@ def get_prepared_binary(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
     from .helper_runtime import pinned_helper
-    from .helper_cache import lookup_helper, validate_handle
+    from .helper_cache import cache_roots, lookup_helper, validate_handle
     pinned = pinned_helper(language, source_root=src_dir)
-    if pinned is not None and cache_dir is not None and resolve_helper_cache_root(src_dir, cache_dir) != pinned.cache_root:
+    if pinned is not None and pinned.cache_root not in cache_roots(src_dir, cache_dir):
         return None
     if pinned is not None:
         return pinned.path if validate_handle(pinned) else None
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    manifest = None if cache_root is None else _manifest_current(cache_root, language)
-    if not manifest:
-        shared = lookup_helper(language, src_dir, cache_dir)
-        return None if shared is None else shared.path
-    path_value = manifest.get("path")
-    if not isinstance(path_value, str):
-        return None
-    path = Path(path_value)
-    return path if path.is_file() else None
+    selected = lookup_helper(language, src_dir, cache_dir)
+    return selected.path if selected is not None and selected.path.is_file() else None
 
 
 def get_prepared_typescript_root(
     src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
     from .helper_runtime import pinned_helper
-    from .helper_cache import lookup_helper, validate_handle
+    from .helper_cache import cache_roots, lookup_helper, validate_handle
     pinned = pinned_helper("typescript", source_root=src_dir)
-    if pinned is not None and cache_dir is not None and resolve_helper_cache_root(src_dir, cache_dir) != pinned.cache_root:
+    if pinned is not None and pinned.cache_root not in cache_roots(src_dir, cache_dir):
         return None
     if pinned is not None:
         return pinned.root if validate_handle(pinned) else None
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    manifest = None if cache_root is None else _manifest_current(cache_root, "typescript")
-    if not manifest:
-        shared = lookup_helper("typescript", src_dir, cache_dir)
-        return None if shared is None else shared.root
-    root_value = manifest.get("root")
-    if not isinstance(root_value, str):
-        return None
-    root = Path(root_value)
-    expected_dependency = root / "node_modules" / "ts-morph"
-    if Path(str(manifest["path"])) != expected_dependency:
-        return None
-    if not (root / "extract.js").is_file():
-        return None
-    return root
+    selected = lookup_helper("typescript", src_dir, cache_dir)
+    return None if selected is None else selected.root
 
 
 def missing_helper_message(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> str:
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     argv = helper_preparation_argv(language, src_dir, cache_dir)
     shell = "PowerShell" if os.name == "nt" else "POSIX shell"
     command = render_shell_command(argv, windows=os.name == "nt")
-    reason = (
-        f"{language} helper cache directory is unavailable."
-        if cache_root is None
-        else f"{language} helper is not prepared (missing, stale, or invalid)."
-    )
+    reason = f"{language} helper is not prepared (missing, stale, or invalid)."
     retry = "Then retry the original command with the same source selection and helper cache."
-    if cache_root is None:
-        cache_arg = render_shell_command([argv[-1]], windows=os.name == "nt")
-        if os.name == "nt":
-            cache_arg = cache_arg.removeprefix("& ")
-        retry = (
-            f"Then select that cache with --helper-cache-dir {cache_arg} on commands "
-            "that support it, or set LLM_WIKI_CACHE_DIR to that cache base, "
-            "and retry the original command with the same source selection."
-        )
     return (
         f"{reason} Recovery ({shell}): `{command}`. "
         "Preparation writes the helper cache and may download dependencies or "
@@ -534,11 +503,44 @@ def helper_identity(
     """
     if language not in SUPPORTED_HELPERS:
         raise ValueError(f"Unsupported helper language: {language}")
-    root = resolve_helper_cache_root(src_dir, cache_dir)
-    receipt = None if root is None else _load_manifest(root, language)
-    source = helper_source_fingerprint(language)
+    from . import helper_cache
+    from .helper_runtime import current_helper_operation, pinned_helper
+
+    operation = current_helper_operation()
+    selected_cache = cache_dir if cache_dir is not None else operation.cache_dir if operation is not None else None
+    root = resolve_helper_cache_root(src_dir, selected_cache)
+    handle = pinned_helper(language, source_root=src_dir)
     issues: list[str] = []
-    current = None
+    if handle is not None:
+        if handle.cache_root not in helper_cache.cache_roots(src_dir, selected_cache):
+            issues.append("helper-cache-scope-mismatch")
+            handle = None
+            receipt = None
+        else:
+            root = handle.cache_root
+            receipt = dict(handle.receipt)
+            if not helper_cache.validate_handle(handle):
+                issues.append("artifact-unavailable-or-mismatch")
+    else:
+        try:
+            handle = helper_cache.lookup_helper(language, src_dir, selected_cache)
+        except (OSError, ValueError):
+            issues.append("helper-cache-unavailable")
+        if handle is not None:
+            root = handle.cache_root
+            receipt = dict(handle.receipt)
+        else:
+            if root is None:
+                root = helper_cache.preparation_cache_root(src_dir, selected_cache)
+            try:
+                receipt = (ts_identity.read_receipt(_manifest_path(root, language)) if language == "typescript"
+                           else helper_cache._json(_manifest_path(root, language)))
+            except (OSError, ValueError):
+                receipt = None
+    if not isinstance(receipt, dict):
+        receipt = None
+    source = helper_source_fingerprint(language)
+    current = receipt if handle is not None and not issues else None
     artifact = None
     execution_source = None
     if receipt is None:
@@ -556,16 +558,22 @@ def helper_identity(
                 or receipt.get("artifact_scope") != ts_identity.ARTIFACT_SCOPE):
             issues.append("typescript-dependency-identity-unavailable")
         try:
-            current = None if root is None else _manifest_current(root, language)
-            path = receipt.get("path")
             if current is not None:
                 artifact = current.get("artifact_fingerprint")
             elif language == "typescript" and receipt.get("artifact_scope") == ts_identity.ARTIFACT_SCOPE:
                 prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
                 if prepared_root is not None:
+                    helper_cache._safe(prepared_root)
                     artifact = ts_identity.dependency_fingerprint(prepared_root / "node_modules")
-            elif language != "typescript" and isinstance(path, str) and Path(path).exists():
-                artifact = helper_artifact_fingerprint(Path(path))
+            elif language != "typescript":
+                key, path = receipt.get("key"), receipt.get("path")
+                if (root is not None and isinstance(key, str) and re.fullmatch(r"[0-9a-f]{64}", key)
+                        and isinstance(path, str)):
+                    candidate = Path(os.path.abspath(path))
+                    if candidate.is_relative_to(root / language / key):
+                        helper_cache._safe(candidate)
+                        helper_cache._native_binary(candidate)
+                        artifact = helper_cache._native_fingerprint(candidate)
             if artifact != receipt.get("artifact_fingerprint") or artifact is None:
                 issues.append("artifact-unavailable-or-mismatch")
         except (OSError, ValueError):
@@ -575,6 +583,8 @@ def helper_identity(
         if language == "typescript":
             try:
                 prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
+                if prepared_root is not None:
+                    helper_cache._safe(prepared_root)
                 if prepared_root is None or not (prepared_root / "extract.js").is_file():
                     issues.append("typescript-root-unavailable")
                 if prepared_root is not None:
@@ -585,7 +595,8 @@ def helper_identity(
                 issues.append("typescript-root-unavailable")
     runtime: dict[str, Any] = {"kind": "native-helper", "path": None if current is None else current.get("path")}
     if language == "typescript":
-        node = shutil.which("node")
+        node = (handle.runtime_executables.get("node") if handle is not None else
+                None if "helper-cache-scope-mismatch" in issues else shutil.which("node"))
         version = command_output([node, "--version"]) if node else None
         runtime = {"kind": "node", "path": node, "version": version}
         if not version:
@@ -601,7 +612,7 @@ def helper_identity(
             "Preparing an already-current helper does not change active PATH."
         )
     elif issues:
-        recovery = missing_helper_message(language, src_dir, cache_dir)
+        recovery = missing_helper_message(language, src_dir, None if root is None else str(root.parent))
     return {
         "language": language,
         "status": "ready" if not issues else "unavailable-or-mismatched",
@@ -618,7 +629,7 @@ def helper_identity(
         },
         "active_runtime": runtime,
         "recovery": recovery,
-        "preparation_argv": helper_preparation_argv(language, src_dir, cache_dir),
+        "preparation_argv": helper_preparation_argv(language, src_dir, None if root is None else str(root.parent)),
         "qualification": (
             "Observed receipt and local bytes; no dependencies installed, no release authenticity established."
             + (" TypeScript scope: complete prepared node_modules tree."

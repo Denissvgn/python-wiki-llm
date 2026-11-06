@@ -40,6 +40,8 @@ from llm_wiki_cli.services.paths import render_shell_command
 def test_helper_recovery_plan_preserves_language_root_and_cache(
     tmp_path, monkeypatch, capsys, language, cache_mode
 ):
+    from llm_wiki_cli.services import helper_cache
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: tmp_path / "managed-user-cache" / HELPER_CACHE_DIRNAME)
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     # An external source and quoted paths must survive the printed remedy.
@@ -63,7 +65,8 @@ def test_helper_recovery_plan_preserves_language_root_and_cache(
         cache_dir = "explicit cache"
         monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "wrong cache"))
     else:
-        cache_base = source / ".llm-wiki"
+        from llm_wiki_cli.services.helper_cache import user_helper_cache_root
+        cache_base = user_helper_cache_root().parent
     before = {
         str(p.relative_to(tmp_path)): p.read_bytes()
         for p in tmp_path.rglob("*")
@@ -81,8 +84,7 @@ def test_helper_recovery_plan_preserves_language_root_and_cache(
     assert "only when setup is authorized" in message
     assert "retry the original command" in message
     assert "Read-only commands never prepare helpers" in message
-    if cache_mode == "no-git":
-        assert "set LLM_WIKI_CACHE_DIR to that cache base" in message
+    assert "retry the original command with the same source selection and helper cache" in message
     monkeypatch.setattr(
         prepare_extractors_cmd,
         "prepare_helper",
@@ -289,57 +291,51 @@ def test_helper_cache_root_resolves_git_env_explicit_and_worktree(tmp_path):
     assert resolve_helper_cache_root(worktree, env={}) == gitdir / HELPER_CACHE_DIRNAME
 
 
-def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
-    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
-    binary = cache_root / "go" / "key" / "llm-wiki-go-extractor.exe"
-    binary.parent.mkdir(parents=True)
-    binary.write_text("binary", encoding="utf-8")
-    (cache_root / "go").mkdir(exist_ok=True)
+def _windows_legacy_binary(tmp_path, monkeypatch, language):
+    from llm_wiki_cli.services import helper_cache
+    from tests.test_helper_cache import _native_header
+
     monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "windows-amd64")
+    monkeypatch.setattr(helper_cache, "_system", lambda: "windows")
+    monkeypatch.setattr(helper_cache, "_machine", lambda: "x86_64")
     monkeypatch.setattr(
         extractor_helpers, "helper_source_fingerprint", lambda language: "src"
     )
-    (cache_root / "go" / "current.json").write_text(
+    toolchain = "test Windows native compiler"
+    key = helper_cache_key(language, toolchain_version=toolchain)
+    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    binary = cache_root / language / key / f"llm-wiki-{language}-extractor.exe"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(_native_header())
+    binary.chmod(0o755)
+    (cache_root / language / "current.json").write_text(
         json.dumps(
             {
                 "version": HELPER_MANIFEST_VERSION,
-                "language": "go",
+                "language": language,
                 "platform": "windows-amd64",
                 "source_fingerprint": "src",
                 "artifact_fingerprint": helper_artifact_fingerprint(binary),
                 "path": str(binary),
+                "root": str(binary.parent),
+                "key": key,
+                "toolchain": toolchain,
             }
         ),
         encoding="utf-8",
     )
+    return binary
+
+
+def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
+    binary = _windows_legacy_binary(tmp_path, monkeypatch, "go")
 
     assert get_prepared_binary("go", tmp_path, str(tmp_path / "cache")) == binary
     assert binary.name.endswith(".exe")
 
 
 def test_haskell_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
-    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
-    binary = cache_root / "haskell" / "key" / "llm-wiki-haskell-extractor.exe"
-    binary.parent.mkdir(parents=True)
-    binary.write_text("binary", encoding="utf-8")
-    (cache_root / "haskell").mkdir(exist_ok=True)
-    monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "windows-amd64")
-    monkeypatch.setattr(
-        extractor_helpers, "helper_source_fingerprint", lambda language: "src"
-    )
-    (cache_root / "haskell" / "current.json").write_text(
-        json.dumps(
-            {
-                "version": HELPER_MANIFEST_VERSION,
-                "language": "haskell",
-                "platform": "windows-amd64",
-                "source_fingerprint": "src",
-                "artifact_fingerprint": helper_artifact_fingerprint(binary),
-                "path": str(binary),
-            }
-        ),
-        encoding="utf-8",
-    )
+    binary = _windows_legacy_binary(tmp_path, monkeypatch, "haskell")
 
     assert get_prepared_binary("haskell", tmp_path, str(tmp_path / "cache")) == binary
     assert binary.name.endswith(".exe")

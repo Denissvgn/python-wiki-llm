@@ -15,11 +15,14 @@ from llm_wiki_cli.services.source_selection import SourceSelectionError
 
 
 def _prepare_fixture(language, cache_root):
-    root = cache_root / language / "fixture"
-    toolchain = "node v24.18.0; npm 11.16.0"
+    toolchain = {
+        "typescript": "node v24.18.0; npm 11.16.0",
+        "go": "go version go1.26.3",
+        "rust": "rustc 1.90.0",
+        "haskell": "ghc 9.6.7",
+    }[language]
     key = helpers.helper_cache_key(language, toolchain_version=toolchain)
-    if language == "typescript":
-        root = cache_root / language / key
+    root = cache_root / language / key
     root.mkdir(parents=True, exist_ok=True)
     if language == "typescript":
         artifact = root / "node_modules" / "ts-morph"
@@ -28,8 +31,10 @@ def _prepare_fixture(language, cache_root):
         for name in ("extract.js", "package.json", "package-lock.json"):
             (root / name).write_bytes((helpers.TS_SCRIPTS_DIR / name).read_bytes())
     else:
+        from tests.test_helper_cache import _native_header
         artifact = root / "extractor"
-        artifact.write_text("fixture", encoding="utf-8")
+        artifact.write_bytes(_native_header())
+        artifact.chmod(0o755)
     helpers._write_manifest(
         cache_root,
         language,
@@ -42,8 +47,9 @@ def _prepare_fixture(language, cache_root):
                                      if language == "typescript" else helpers.helper_artifact_fingerprint(artifact)),
             "root": str(root),
             "path": str(artifact),
-            **({"artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE, "key": key,
-                "toolchain": toolchain} if language == "typescript" else {}),
+            "key": key,
+            "toolchain": toolchain,
+            **({"artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE} if language == "typescript" else {}),
         },
     )
     return helpers.HelperPrepareResult(language, "prepared", "ok", str(artifact))

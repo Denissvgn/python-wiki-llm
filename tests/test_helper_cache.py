@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -61,6 +62,19 @@ def _native_header():
         return bytes(header)
     cpu = {"arm64": 183, "x86_64": 62, "i386": 3, "riscv64": 243}[machine]
     return b"\x7fELF\x02\x01" + bytes(12) + cpu.to_bytes(2, "little")
+
+
+def _native_build(language, stage, profile, cwd):
+    artifact = stage / "artifact"
+    artifact.mkdir()
+    path = artifact / helpers._binary_name("llm-wiki-" + language + "-extractor")
+    path.write_bytes(_native_header())
+    path.chmod(0o755)
+    return {"version": helpers.HELPER_MANIFEST_VERSION, "language": language,
+            "platform": helpers.platform_id(), "toolchain": profile.identity["toolchain"],
+            "preparation_profile": profile.identity,
+            "source_fingerprint": helpers.helper_source_fingerprint(language),
+            "artifact_fingerprint": cache._native_fingerprint(path)}
 
 
 @pytest.fixture
@@ -140,6 +154,63 @@ def test_valid_cache_needs_no_package_manager(prepared_environment, tmp_path, mo
     monkeypatch.setattr(cache, "_profile", unavailable)
     monkeypatch.setattr(cache, "_build", lambda *args: pytest.fail("no build tools needed"))
     assert cache.ensure_helper("typescript", project) == expected
+
+
+@pytest.mark.parametrize("language", ["typescript", "go"])
+@pytest.mark.parametrize("invalid", [None, 0, True, "2", 2.0])
+def test_shared_receipt_requires_exact_typed_helper_version(
+    prepared_environment, tmp_path, monkeypatch, language, invalid,
+):
+    if language != "typescript":
+        monkeypatch.setattr(cache, "_build", _native_build)
+    handle = cache.ensure_helper(language, tmp_path)
+    value = json.loads((handle.root / cache.RECEIPT).read_text())
+    value["manifest"]["version"] = invalid
+    (handle.root / cache.RECEIPT).write_text(json.dumps(value))
+    assert cache.lookup_helper(language, tmp_path) is None
+    assert not cache.validate_handle(replace(handle, receipt=value["manifest"]))
+
+
+@pytest.mark.parametrize("invalid", [None, "", True, 2, "different compiler"])
+def test_shared_receipt_toolchain_must_match_keyed_profile(
+    prepared_environment, tmp_path, invalid,
+):
+    handle = cache.ensure_helper("typescript", tmp_path)
+    value = json.loads((handle.root / cache.RECEIPT).read_text())
+    value["manifest"]["toolchain"] = invalid
+    (handle.root / cache.RECEIPT).write_text(json.dumps(value))
+    assert cache.lookup_helper("typescript", tmp_path) is None
+    assert not cache.validate_handle(replace(handle, receipt=value["manifest"]))
+
+
+@pytest.mark.parametrize("language", ["typescript", "go"])
+def test_helper_abi_bump_uses_new_slot_and_preserves_prior_artifact_on_failure(
+    prepared_environment, tmp_path, monkeypatch, language,
+):
+    build = _typescript_build if language == "typescript" else _native_build
+    monkeypatch.setattr(cache, "_build", build)
+    first = cache.ensure_helper(language, tmp_path)
+    original = {path.relative_to(first.root): path.read_bytes()
+                for path in first.root.rglob("*") if path.is_file()}
+    version_name = "TYPESCRIPT_HELPER_MANIFEST_VERSION" if language == "typescript" else "HELPER_MANIFEST_VERSION"
+    prior_version = getattr(helpers, version_name)
+    monkeypatch.setattr(helpers, version_name, prior_version + 1)
+    assert cache.lookup_helper(language, tmp_path) is None
+    assert not cache.validate_handle(first)
+    monkeypatch.setattr(cache, "_build", lambda *args: (_ for _ in ()).throw(RuntimeError("build unavailable")))
+    with pytest.raises(cache.HelperPreparationError, match="build unavailable"):
+        cache.ensure_helper(language, tmp_path)
+    assert original == {path.relative_to(first.root): path.read_bytes()
+                        for path in first.root.rglob("*") if path.is_file()}
+    monkeypatch.setattr(cache, "_build", build)
+    second = cache.ensure_helper(language, tmp_path)
+    assert first.key != second.key and first.root != second.root
+    assert second.receipt["version"] == prior_version + 1 and cache.validate_handle(second)
+    assert original == {path.relative_to(first.root): path.read_bytes()
+                        for path in first.root.rglob("*") if path.is_file()}
+    monkeypatch.setattr(helpers, version_name, prior_version)
+    assert cache.validate_handle(first)
+    assert not list(prepared_environment.glob(".prepare-*"))
 
 
 def test_foreign_typescript_execution_runtime_does_not_reuse_cached_dependencies(
@@ -619,6 +690,102 @@ def test_rust_profile_forces_the_compiler_it_validated(tmp_path, monkeypatch):
     assert profile.environment["RUSTC"] == "/selected/rustc"
     assert profile.environment["RUSTC_WRAPPER"] == profile.environment["RUSTC_WORKSPACE_WRAPPER"] == ""
     assert "CARGO_BUILD_RUSTC" not in profile.environment
+
+
+@pytest.mark.parametrize("proxy_kind", ["symlink", "hardlink"])
+def test_rustup_profiles_pin_actual_same_version_cargo_and_rustc(
+    prepared_environment, tmp_path, monkeypatch, proxy_kind,
+):
+    binaries = tmp_path / "bin"
+    binaries.mkdir()
+    suffix = ".exe" if os.name == "nt" else ""
+    launcher = binaries / ("rustup" + suffix)
+    launcher.write_bytes(b"stable rustup dispatcher")
+    launcher.chmod(0o755)
+    for name in ("cargo", "rustc"):
+        proxy = binaries / (name + suffix)
+        if proxy_kind == "symlink":
+            proxy.symlink_to(launcher)
+        else:
+            os.link(launcher, proxy)
+        for label in ("A", "B"):
+            target = tmp_path / "toolchains" / label / "bin" / (name + suffix)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((name + " actual build " + label).encode())
+            target.chmod(0o755)
+    monkeypatch.setenv("PATH", str(binaries))
+    monkeypatch.setenv("RUSTUP_TOOLCHAIN", "A")
+    monkeypatch.setattr(cache.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(cache.platform, "machine", lambda: "aarch64")
+    monkeypatch.setattr(cache, "_profile", _REAL_PROFILE)
+    probes = []
+
+    def output(command, *, cwd, env):
+        probes.append(command)
+        if command[:2] == [str(launcher), "which"]:
+            return str(tmp_path / "toolchains" / env["RUSTUP_TOOLCHAIN"] / "bin" / (command[2] + suffix))
+        name = Path(command[0]).stem
+        assert "toolchains" in Path(command[0]).parts
+        return "cargo 1.94.0" if name == "cargo" else "rustc 1.94.0\nhost: aarch64-unknown-linux-gnu"
+
+    builds = []
+
+    def build(language, stage, profile, cwd):
+        builds.append(profile.environment["RUSTUP_TOOLCHAIN"])
+        assert profile.environment["RUSTC"] == profile.executables["rustc"]
+        assert all("toolchains" in Path(path).parts for path in profile.executables.values())
+        artifact = stage / "artifact"
+        artifact.mkdir()
+        path = artifact / helpers._binary_name("llm-wiki-rust-extractor")
+        path.write_bytes(_native_header() + profile.environment["RUSTUP_TOOLCHAIN"].encode())
+        path.chmod(0o755)
+        return {"version": helpers.HELPER_MANIFEST_VERSION, "language": language,
+                "platform": helpers.platform_id(), "source_fingerprint": helpers.helper_source_fingerprint(language),
+                "artifact_fingerprint": cache._native_fingerprint(path),
+                "toolchain": profile.identity["toolchain"], "preparation_profile": profile.identity}
+
+    monkeypatch.setattr(cache, "_output", output)
+    monkeypatch.setattr(cache, "_build", build)
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("rust", project)
+    monkeypatch.setenv("RUSTUP_TOOLCHAIN", "B")
+    second = cache.ensure_helper("rust", project)
+    assert first.key != second.key and builds == ["A", "B"]
+    assert first.path.read_bytes().endswith(b"A") and second.path.read_bytes().endswith(b"B")
+    assert first.receipt["toolchain"] == second.receipt["toolchain"]
+    assert {row[2] for row in probes if row[1] == "which"} == {"cargo", "rustc"}
+    recorded = second.receipt["preparation_profile"]
+    assert isinstance(recorded, dict)
+    for row in recorded["executables"].values():
+        assert isinstance(row, dict) and "toolchains" in row["path"]
+    # Replacing either actual tool at the same selected path must also change
+    # identity even if every printed version and the rustup proxy stay fixed.
+    previous = second
+    for name in ("cargo", "rustc"):
+        target = tmp_path / "toolchains/B/bin" / (name + suffix)
+        target.write_bytes(target.read_bytes() + b" same-version replacement")
+        changed = cache.ensure_helper("rust", project)
+        assert changed.key != previous.key and changed.receipt["toolchain"] == previous.receipt["toolchain"]
+        previous = changed
+    assert builds == ["A", "B", "B", "B"]
+
+
+def test_rustup_unresolved_or_recursive_tool_selection_fails_closed(tmp_path, monkeypatch):
+    binaries = tmp_path / "bin"
+    binaries.mkdir()
+    launcher = binaries / ("rustup.exe" if os.name == "nt" else "rustup")
+    launcher.write_bytes(b"owned dispatcher")
+    launcher.chmod(0o755)
+    proxy = binaries / ("cargo.exe" if os.name == "nt" else "cargo")
+    proxy.symlink_to(launcher)
+    monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: str(proxy))
+    monkeypatch.setattr(cache, "_output", lambda *args, **kwargs: "relative-cargo")
+    with pytest.raises(cache.HelperPreparationError, match="absolute cargo"):
+        cache._selected_rust_executable("cargo", {}, tmp_path)
+    monkeypatch.setattr(cache, "_output", lambda *args, **kwargs: str(launcher))
+    with pytest.raises(cache.HelperPreparationError, match="dispatcher instead of cargo"):
+        cache._selected_rust_executable("cargo", {}, tmp_path)
 
 
 def test_build_sandbox_does_not_follow_alias_back_into_project(tmp_path, monkeypatch):

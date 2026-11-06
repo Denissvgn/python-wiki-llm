@@ -134,22 +134,27 @@ def test_cli_and_mcp_share_dispatch_without_altering_legacy_explanation(services
 def _prepared(tmp_path, language):
     cache = tmp_path / "helper cache"
     root = cache / helpers.HELPER_CACHE_DIRNAME
-    artifact = tmp_path / ("artifact" if language != "typescript" else "ts/node_modules/ts-morph")
+    toolchain = "node v24.18.0; npm 11.16.0" if language == "typescript" else "test compiler"
+    key = helpers.helper_cache_key(language, toolchain_version=toolchain)
+    slot = root / language / key
+    slot.mkdir(parents=True)
+    artifact = slot / "extractor"
     if language == "typescript":
-        key = helpers.helper_cache_key("typescript", toolchain_version="node v24.18.0; npm 11.16.0")
-        artifact = root / "typescript" / key / "node_modules/ts-morph"
+        artifact = slot / "node_modules/ts-morph"
         artifact.mkdir(parents=True)
         (artifact / "package.json").write_text("{}")
         for name, path in helpers.helper_source_files("typescript"):
             (artifact.parents[1] / name).write_bytes(path.read_bytes())
     else:
-        artifact.write_bytes(b"native binary")
+        from tests.test_helper_cache import _native_header
+        artifact.write_bytes(_native_header())
+        artifact.chmod(0o755)
     receipt = {"version": helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else helpers.HELPER_MANIFEST_VERSION, "language": language,
         "platform": helpers.platform_id(), "source_fingerprint": helpers.helper_source_fingerprint(language),
         "artifact_fingerprint": (helpers.ts_identity.dependency_fingerprint(artifact.parent)
                                  if language == "typescript" else helpers.helper_artifact_fingerprint(artifact)),
-        "path": str(artifact), "root": str(artifact.parents[1]),
-        "toolchain": "node v24.18.0; npm 11.16.0" if language == "typescript" else "test compiler"}
+        "path": str(artifact), "root": str(slot), "key": key,
+        "toolchain": toolchain}
     if language == "typescript":
         receipt.update(artifact_scope=helpers.ts_identity.ARTIFACT_SCOPE, key=key)
     helpers._write_manifest(root, language, receipt)

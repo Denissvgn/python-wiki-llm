@@ -197,6 +197,8 @@ def test_unsafe_receipts_stay_unavailable_without_preparation(prepared, tmp_path
     cache_base, cache_root, _, builds = prepared
     path = cache_root / "typescript/current.json"
     if mutation == "oversized":
+        from llm_wiki_cli.services import helper_cache
+        monkeypatch.setattr(helper_cache, "MAX_RECEIPT_BYTES", path.stat().st_size - 1)
         monkeypatch.setattr(identity, "MAX_RECEIPT_BYTES", path.stat().st_size - 1)
     elif mutation == "redirected":
         other = tmp_path / "foreign.json"
@@ -263,7 +265,7 @@ def test_unqualified_helper_cannot_issue_ts_or_js_producer(prepared, monkeypatch
         manifest["artifact_scope"] = "legacy-path-only"
     else:
         manifest["artifact_fingerprint"] = "invalid"
-    monkeypatch.setattr(helpers, "_manifest_current", lambda *a: manifest)
+    (cache_root / "typescript/current.json").write_text(json.dumps(manifest))
     result = capture.capture_analysis(EXTRACTOR_REGISTRY, helper_cache_dir=str(cache_base),
                                      languages={"typescript", "javascript"})
     assert "llm-wiki/extractor/typescript" not in result
