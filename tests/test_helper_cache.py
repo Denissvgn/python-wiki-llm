@@ -1,0 +1,546 @@
+"""Automatic helper storage, independent profiles and publication boundaries."""
+
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import threading
+import time
+
+import pytest
+
+from llm_wiki_cli.services import extractor_helpers as helpers
+from llm_wiki_cli.services import helper_cache as cache
+
+_REAL_PROFILE = cache._profile
+
+
+def _typescript_build(language, stage, profile, cwd):
+    assert language == "typescript"
+    artifact = stage / "artifact"
+    artifact.mkdir()
+    dependency = artifact / "node_modules/ts-morph"
+    dependency.mkdir(parents=True)
+    (dependency / "index.js").write_text("module.exports={};\n")
+    for name in helpers._TS_FILES:
+        (artifact / name).write_bytes((helpers.TS_SCRIPTS_DIR / name).read_bytes())
+    return {
+        "version": helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION,
+        "language": language,
+        "platform": helpers.platform_id(),
+        "source_fingerprint": helpers.helper_source_fingerprint(language),
+        "artifact_fingerprint": helpers.ts_identity.dependency_fingerprint(artifact / "node_modules"),
+        "artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE,
+        "toolchain": profile.identity["toolchain"],
+        "preparation_profile": profile.identity,
+    }
+
+
+def _profile(language, root, cwd, toolchain="node v24.18.0; npm 11.16.0"):
+    return cache._Profile({"recipe": cache.RECIPE, "host": helpers.platform_id(),
+                           "source": helpers.helper_source_fingerprint(language),
+                           "toolchain": toolchain},
+                          {"node": "selected-node", "npm": "selected-npm"}, {})
+
+
+def _native_header():
+    machine, system = cache._machine(), cache._system()
+    if system == "darwin":
+        cpu = {"arm64": 0x100000C, "x86_64": 0x1000007}[machine]
+        return b"\xcf\xfa\xed\xfe" + cpu.to_bytes(4, "little")
+    if system == "windows":
+        header = bytearray(70)
+        header[:2] = b"MZ"
+        header[60:64] = (64).to_bytes(4, "little")
+        header[64:68] = b"PE\0\0"
+        header[68:70] = {"arm64": 0xAA64, "x86_64": 0x8664, "i386": 0x14C}[machine].to_bytes(2, "little")
+        return bytes(header)
+    cpu = {"arm64": 183, "x86_64": 62, "i386": 3, "riscv64": 243}[machine]
+    return b"\x7fELF\x02\x01" + bytes(12) + cpu.to_bytes(2, "little")
+
+
+@pytest.fixture
+def prepared_environment(tmp_path, monkeypatch):
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    user = tmp_path / "user helper cache"
+    monkeypatch.setattr(cache, "user_helper_cache_root", lambda: user)
+    monkeypatch.setattr(cache, "_profile", _profile)
+    monkeypatch.setattr(cache, "_build", _typescript_build)
+    return user
+
+
+def test_shared_cold_warm_and_other_project_reuse(prepared_environment, tmp_path, monkeypatch):
+    first, second = tmp_path / "one", tmp_path / "two"
+    first.mkdir()
+    second.mkdir()
+    builds = []
+
+    def build(*args):
+        builds.append(args[0])
+        return _typescript_build(*args)
+
+    monkeypatch.setattr(cache, "_build", build)
+    handle = cache.ensure_helper("typescript", first)
+    assert cache.ensure_helper("typescript", first) == handle
+    assert cache.ensure_helper("typescript", second) == handle
+    assert builds == ["typescript"]
+    assert handle.cache_root == prepared_environment
+    assert cache.validate_handle(handle)
+    assert not (first / ".git").exists() and not (second / ".git").exists()
+    assert (handle.root / cache.RECEIPT).is_file()
+    assert not (handle.cache_root / "typescript/current.json").exists()
+
+
+def test_inspection_is_pure_and_cache_overrides_are_authoritative(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    assert cache.lookup_helper("typescript", project) is None
+    assert not prepared_environment.exists()
+    handle = cache.ensure_helper("typescript", project)
+    selected = tmp_path / "configured"
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(selected))
+    assert cache.lookup_helper("typescript", project) is None
+    explicit = tmp_path / "explicit"
+    assert cache.preparation_cache_root(project, str(explicit)) == explicit / helpers.HELPER_CACHE_DIRNAME
+    assert cache.preparation_cache_root(project) == selected / helpers.HELPER_CACHE_DIRNAME
+    assert cache.validate_handle(handle)
+    assert not selected.exists() and not explicit.exists()
+
+
+def test_valid_legacy_project_helper_is_reused_without_build(prepared_environment, tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+
+    project = tmp_path / "project"
+    (project / ".git").mkdir(parents=True)
+    legacy = project / ".git" / helpers.HELPER_CACHE_DIRNAME
+    result = _prepare_fixture("typescript", legacy)
+    handle = cache.lookup_helper("typescript", project)
+    assert handle is not None and str(handle.path) == result.path
+    monkeypatch.setattr(cache, "_build", lambda *args: pytest.fail("legacy helper remains valid"))
+    selected = cache.ensure_helper("typescript", project)
+    assert selected.root == handle.root and selected.receipt == handle.receipt
+    assert selected.runtime_executables == {"node": "selected-node"}
+    assert not prepared_environment.exists()
+
+
+def test_valid_cache_needs_no_package_manager(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    expected = cache.ensure_helper("typescript", project)
+
+    def unavailable(*args):
+        error = cache.HelperPreparationError("typescript", "npm missing")
+        error.runtime_executables = {"node": "selected-node"}
+        raise error
+
+    monkeypatch.setattr(cache, "_profile", unavailable)
+    monkeypatch.setattr(cache, "_build", lambda *args: pytest.fail("no build tools needed"))
+    assert cache.ensure_helper("typescript", project) == expected
+
+
+def test_foreign_typescript_execution_runtime_does_not_reuse_cached_dependencies(
+    prepared_environment, tmp_path, monkeypatch,
+):
+    project = tmp_path / "project"
+    project.mkdir()
+    handle = cache.ensure_helper("typescript", project)
+
+    def unavailable(*args):
+        raise cache.HelperPreparationError("typescript", "Node is not native for the active platform")
+
+    monkeypatch.setattr(cache, "_profile", unavailable)
+    with pytest.raises(cache.HelperPreparationError, match="not native"):
+        cache.ensure_helper("typescript", project)
+    assert cache.validate_handle(handle)
+
+
+def test_prepared_native_helper_is_reused_without_its_compiler(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+
+    def build(language, stage, profile, cwd):
+        artifact = stage / "artifact"
+        artifact.mkdir()
+        path = artifact / helpers._binary_name("llm-wiki-go-extractor")
+        path.write_bytes(_native_header())
+        path.chmod(0o755)
+        return {"version": helpers.HELPER_MANIFEST_VERSION, "language": language,
+                "platform": helpers.platform_id(), "toolchain": profile.identity["toolchain"],
+                "preparation_profile": profile.identity,
+                "source_fingerprint": helpers.helper_source_fingerprint(language),
+                "artifact_fingerprint": cache._native_fingerprint(path)}
+
+    monkeypatch.setattr(cache, "_build", build)
+    first = cache.ensure_helper("go", project)
+    monkeypatch.setattr(cache, "_profile", lambda *args: (_ for _ in ()).throw(
+        cache.HelperPreparationError("go", "Go compiler not found")))
+    assert cache.ensure_helper("go", project) == first
+    assert cache.validate_handle(first)
+
+
+def test_profile_change_creates_an_independent_immutable_slot(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("typescript", project)
+    before = {p.relative_to(first.root): p.read_bytes() for p in first.root.rglob("*") if p.is_file()}
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain="node v25.0.0; npm 12.0.0"))
+    second = cache.ensure_helper("typescript", project)
+    assert second.key != first.key and second.root != first.root
+    assert before == {p.relative_to(first.root): p.read_bytes() for p in first.root.rglob("*") if p.is_file()}
+    assert cache.validate_handle(first) and cache.validate_handle(second)
+
+
+def test_same_version_changed_toolchain_bytes_change_profile_key(prepared_environment, tmp_path, monkeypatch):
+    compiler = tmp_path / "compiler"
+    compiler.write_bytes(b"first compiler build")
+    base = {"recipe": cache.RECIPE, "host": helpers.platform_id(), "toolchain": "same version",
+            "source": helpers.helper_source_fingerprint("typescript")}
+    first = {**base, "executables": cache._executable_identity({"go": str(compiler)})}
+    project = tmp_path / "project"
+    project.mkdir()
+    monkeypatch.setattr(cache, "_profile", lambda *args: cache._Profile(
+        {**base, "executables": cache._executable_identity({"go": str(compiler)})},
+        {"node": "selected-node", "npm": "selected-npm"}, {}))
+    one = cache.ensure_helper("typescript", project)
+    compiler.write_bytes(b"other compiler build")
+    second = {**base, "executables": cache._executable_identity({"go": str(compiler)})}
+    two = cache.ensure_helper("typescript", project)
+    assert first["toolchain"] == second["toolchain"]
+    assert cache._profile_key("go", first) != cache._profile_key("go", second)
+    assert one.key != two.key and cache.validate_handle(one) and cache.validate_handle(two)
+
+
+def test_operator_toolchain_symlinks_and_hardlinks_are_not_cache_redirects(tmp_path):
+    executable = tmp_path / "compiler"
+    executable.write_bytes(b"selected executable")
+    alias = tmp_path / "compiler-proxy"
+    alias.symlink_to(executable)
+    hardlink = tmp_path / "compiler-hardlink"
+    os.link(executable, hardlink)
+    observed = cache._executable_identity({"proxy": str(alias), "hardlink": str(hardlink)})
+    assert observed["proxy"]["path"] == str(executable)
+    assert observed["proxy"]["sha256"] == observed["hardlink"]["sha256"]
+
+
+def test_typescript_runtime_pins_physical_node_when_selection_alias_changes(
+    prepared_environment, tmp_path, monkeypatch,
+):
+    project = tmp_path / "project"
+    project.mkdir()
+    one, two, npm = (tmp_path / name for name in ("node-one", "node-two", "npm"))
+    one.write_bytes(b"selected Node runtime")
+    two.write_bytes(b"different Node runtime")
+    npm.write_bytes(b"selected package manager")
+    alias = tmp_path / "current-node"
+    alias.symlink_to(one)
+    monkeypatch.setattr(cache, "_profile", _REAL_PROFILE)
+    monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: str(alias if name == "node" else npm))
+
+    def output(command, *, cwd, env):
+        if command[0] == str(npm):
+            return "11.16.0"
+        assert command[0] == str(one)
+        if command[1] == "--version":
+            return "v24.18.0"
+        return {"windows": "win32"}.get(cache._system(), cache._system()) + " " + {
+            "x86_64": "x64", "i386": "ia32",
+        }.get(cache._machine(), cache._machine())
+
+    monkeypatch.setattr(cache, "_output", output)
+    handle = cache.ensure_helper("typescript", project)
+    alias.unlink()
+    alias.symlink_to(two)
+    assert handle.runtime_executables["node"] == str(one)
+    recorded = handle.receipt["preparation_profile"]
+    assert isinstance(recorded, dict)
+    assert recorded["executables"]["node"]["path"] == str(one)
+    assert cache.validate_handle(handle)
+
+
+def test_failed_build_and_cancellation_preserve_prior_valid_slot(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cache.ensure_helper("typescript", project)
+    monkeypatch.setattr(cache, "_profile", lambda *args: _profile(*args, toolchain="changed profile"))
+
+    def fail(*args):
+        (args[1] / "partial").write_bytes(b"partial")
+        raise RuntimeError("network unavailable")
+
+    monkeypatch.setattr(cache, "_build", fail)
+    with pytest.raises(cache.HelperPreparationError, match="network unavailable") as error:
+        cache.ensure_helper("typescript", project)
+    assert error.value.language == "typescript" and error.value.cache_root == prepared_environment
+    assert cache.validate_handle(first)
+    assert not list(prepared_environment.glob(".prepare-*"))
+
+    def cancel(*args):
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(cache, "_build", cancel)
+    with pytest.raises(KeyboardInterrupt):
+        cache.ensure_helper("typescript", project)
+    assert cache.validate_handle(first)
+    assert not list(prepared_environment.glob(".prepare-*"))
+
+
+def test_corrupt_pinned_artifact_is_not_rebound_during_validation(prepared_environment, tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    handle = cache.ensure_helper("typescript", project)
+    (handle.path / "index.js").write_bytes(b"changed")
+    assert not cache.validate_handle(handle)
+    repaired = cache.ensure_helper("typescript", project)
+    assert repaired.root == handle.root and cache.validate_handle(repaired)
+    assert list(handle.root.parent.glob(".rejected-*"))
+
+
+def test_two_threads_publish_once_and_no_reader_sees_staging(prepared_environment, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    started, finish = threading.Event(), threading.Event()
+    builds = []
+
+    def build(*args):
+        builds.append(args[0])
+        started.set()
+        assert finish.wait(5)
+        return _typescript_build(*args)
+
+    monkeypatch.setattr(cache, "_build", build)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(cache.ensure_helper, "typescript", project)
+        assert started.wait(5)
+        second = pool.submit(cache.ensure_helper, "typescript", project)
+        assert cache.lookup_helper("typescript", project) is None
+        finish.set()
+        one, two = first.result(), second.result()
+    assert one == two and builds == ["typescript"]
+
+
+def test_separate_processes_serialize_one_profile(tmp_path):
+    project, user, journal = tmp_path / "project", tmp_path / "shared", tmp_path / "builds"
+    project.mkdir()
+    script = """import json,pathlib,sys,time
+sys.path.insert(0,sys.argv[4])
+from llm_wiki_cli.services import helper_cache as cache
+from tests.test_helper_cache import _profile,_typescript_build
+root,project,journal=map(pathlib.Path,sys.argv[1:4])
+cache.user_helper_cache_root=lambda:root
+cache._profile=_profile
+def build(*args):
+ with journal.open('a') as stream:stream.write('build\\n')
+ time.sleep(0.2)
+ return _typescript_build(*args)
+cache._build=build
+handle=cache.ensure_helper('typescript',project)
+print(json.dumps({'key':handle.key,'root':str(handle.root),'valid':cache.validate_handle(handle)}))
+"""
+    env = dict(os.environ)
+    env.pop("LLM_WIKI_CACHE_DIR", None)
+    root = Path(__file__).resolve().parents[1]
+    children = [subprocess.Popen([sys.executable, "-c", script, str(user), str(project), str(journal), str(root / "src")],
+                                cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True) for _ in range(2)]
+    observed = []
+    try:
+        for child in children:
+            output, error = child.communicate(timeout=15)
+            assert child.returncode == 0, error
+            observed.append(json.loads(output))
+    finally:
+        for child in children:
+            if child.poll() is None:
+                child.kill()
+                child.wait(timeout=5)
+            if child.stdout is not None:
+                child.stdout.close()
+            if child.stderr is not None:
+                child.stderr.close()
+    assert observed[0] == observed[1] and observed[0]["valid"] is True
+    assert journal.read_text().splitlines() == ["build"]
+
+
+@pytest.mark.parametrize("machine,system,header,valid", [
+    ("aarch64", "Linux", b"\x7fELF\x02\x01" + bytes(12) + (183).to_bytes(2, "little"), True),
+    ("aarch64", "Linux", b"\x7fELF\x02\x01" + bytes(12) + (62).to_bytes(2, "little"), False),
+    ("arm64", "Darwin", b"\xcf\xfa\xed\xfe" + (0x100000C).to_bytes(4, "little"), True),
+    ("arm64", "Darwin", b"\xcf\xfa\xed\xfe" + (0x1000007).to_bytes(4, "little"), False),
+])
+def test_native_output_is_bound_to_active_platform(tmp_path, monkeypatch, machine, system, header, valid):
+    path = tmp_path / "helper"
+    path.write_bytes(header)
+    path.chmod(0o755)
+    monkeypatch.setattr(cache.platform, "machine", lambda: machine)
+    monkeypatch.setattr(cache.platform, "system", lambda: system)
+    if valid:
+        cache._native_binary(path)
+    else:
+        with pytest.raises(ValueError, match="not native"):
+            cache._native_binary(path)
+
+
+def test_project_build_targets_are_removed_without_mutating_environment(tmp_path, monkeypatch):
+    supplied = {"GOOS": "windows", "GOARCH": "386", "GOFLAGS": "-mod=mod", "GOWORK": "project.work",
+                "GOROOT": "project SDK", "GOEXPERIMENT": "project experiment",
+                "CARGO_BUILD_TARGET": "foreign", "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "bad",
+                "RUSTC": "project rustc", "RUSTC_WRAPPER": "project wrapper",
+                "RUSTC_WORKSPACE_WRAPPER": "project workspace", "CARGO_BUILD_RUSTC": "other rustc",
+                "CARGO_BUILD_RUSTFLAGS": "foreign flags", "CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS": "false",
+                "RUSTC_BOOTSTRAP": "1",
+                "RUSTFLAGS": "bad", "CARGO_ENCODED_RUSTFLAGS": "bad", "GHC_PACKAGE_PATH": "project",
+                "NODE_OPTIONS": "--require=project.js", "NODE_PATH": "project-node"}
+    for name, value in supplied.items():
+        monkeypatch.setenv(name, value)
+    env = cache._build_environment(tmp_path)
+    assert env["GOENV"] == "off" and env["GOWORK"] == "off" and env["GOTOOLCHAIN"] == "local"
+    assert env["CGO_ENABLED"] == "0" and env["RUSTUP_AUTO_INSTALL"] == "0"
+    assert env["GHC_ENVIRONMENT"] == "-"
+    assert not any(key in env for key in supplied if key not in {"GOOS", "GOARCH", "GOFLAGS", "GOWORK"})
+    assert all(os.environ[name] == value for name, value in supplied.items())
+
+
+def test_go_compiler_host_must_match_actual_platform_before_build(tmp_path, monkeypatch):
+    monkeypatch.setattr(cache.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(cache.platform, "machine", lambda: "arm64")
+    monkeypatch.setattr(helpers, "_resolve_go_executable", lambda env: "selected-go")
+    observed = []
+
+    def output(command, *, cwd, env):
+        observed.append((command, env))
+        return "go version go1.26.5 darwin/amd64"
+
+    monkeypatch.setattr(cache, "_output", output)
+    with pytest.raises(cache.HelperPreparationError, match="host differs"):
+        cache._profile("go", tmp_path / "cache", tmp_path)
+    assert observed[0][1]["GOTOOLCHAIN"] == "local"
+    assert not (tmp_path / "cache").exists()
+
+
+def test_rust_uses_copied_manifest_and_external_build_cwd(tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "Cargo.toml").write_text("user project must not build")
+    stage = project / "explicit cache/staging"
+    stage.mkdir(parents=True)
+    with cache._sandbox(project) as sandbox:
+        cwd = Path(sandbox)
+        assert not cwd.is_relative_to(project)
+        profile = cache._Profile({"toolchain": "cargo owned", "target": "host-triple"},
+                                 {"cargo": "selected-cargo"}, cache._build_environment(stage))
+        commands = []
+
+        def run(command, *, cwd, env, timeout):
+            commands.append((command, cwd, env))
+            source = Path(command[command.index("--manifest-path") + 1])
+            assert source == stage / "source/Cargo.toml"
+            assert source.read_bytes() == (helpers.RUST_SCRIPTS_DIR / "Cargo.toml").read_bytes()
+            target = Path(command[command.index("--target-dir") + 1]) / "host-triple/release"
+            target.mkdir(parents=True)
+            path = target / helpers._binary_name("llm-wiki-rust-extractor")
+            path.write_bytes(_native_header())
+            path.chmod(0o755)
+            return ""
+
+        monkeypatch.setattr(cache, "_run", run)
+        monkeypatch.setattr(cache, "_executable_identity", lambda paths: {})
+        profile.identity["executables"] = {}
+        receipt = cache._build("rust", stage, profile, cwd)
+    assert commands[0][1] == cwd and commands[0][2]["RUSTUP_AUTO_INSTALL"] == "0"
+    assert receipt["language"] == "rust"
+    assert (project / "Cargo.toml").read_text() == "user project must not build"
+
+
+def test_rust_profile_forces_the_compiler_it_validated(tmp_path, monkeypatch):
+    monkeypatch.setenv("RUSTC", "project-compiler")
+    monkeypatch.setenv("RUSTC_WRAPPER", "project-wrapper")
+    monkeypatch.setenv("CARGO_BUILD_RUSTC", "other-compiler")
+    monkeypatch.setattr(cache.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(cache.platform, "machine", lambda: "aarch64")
+    monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: "/selected/" + name)
+    monkeypatch.setattr(cache, "_executable_identity", lambda paths: {name: path for name, path in paths.items()})
+
+    def output(command, *, cwd, env):
+        assert "RUSTC" not in env and "RUSTC_WRAPPER" not in env
+        return "cargo 1.94.0" if command[0].endswith("cargo") else "rustc 1.94.0\nhost: aarch64-unknown-linux-gnu"
+
+    monkeypatch.setattr(cache, "_output", output)
+    profile = cache._profile("rust", tmp_path / "cache", tmp_path)
+    assert profile.environment["RUSTC"] == "/selected/rustc"
+    assert profile.environment["RUSTC_WRAPPER"] == profile.environment["RUSTC_WORKSPACE_WRAPPER"] == ""
+    assert "CARGO_BUILD_RUSTC" not in profile.environment
+
+
+def test_build_sandbox_does_not_follow_alias_back_into_project(tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    (project / "build-temp").mkdir(parents=True)
+    alias = tmp_path / "outside-looking-temp"
+    alias.symlink_to(project / "build-temp", target_is_directory=True)
+    monkeypatch.setattr(cache.tempfile, "gettempdir", lambda: str(alias))
+    with cache._sandbox(project) as name:
+        assert not Path(name).resolve().is_relative_to(project)
+    assert list((project / "build-temp").iterdir()) == []
+
+
+def test_subprocess_timeout_stops_process_tree(tmp_path):
+    marker = tmp_path / "late-write"
+    command = [sys.executable, "-c", "import subprocess,sys,time;subprocess.Popen([sys.executable,'-c',"
+               + repr("import pathlib,time;time.sleep(0.5);pathlib.Path(" + repr(str(marker)) + ").write_text('orphan')")
+               + "]);time.sleep(30)"]
+    with pytest.raises(subprocess.TimeoutExpired):
+        cache._run(command, cwd=tmp_path, env=dict(os.environ), timeout=0.1)
+    time.sleep(0.7)
+    assert not marker.exists()
+
+
+def test_native_cache_fingerprint_matches_existing_receipt_format(tmp_path):
+    path = tmp_path / "helper"
+    path.write_bytes(b"owned bytes")
+    assert cache._native_fingerprint(path) == helpers.helper_artifact_fingerprint(path)
+
+
+def test_internal_language_redirect_is_refused_before_build(prepared_environment, tmp_path, monkeypatch):
+    outside = tmp_path / "unrelated"
+    outside.mkdir()
+    sentinel = outside / "keep"
+    sentinel.write_bytes(b"unrelated bytes")
+    prepared_environment.mkdir()
+    (prepared_environment / "typescript").symlink_to(outside, target_is_directory=True)
+    monkeypatch.setattr(cache, "_build", lambda *args: pytest.fail("unsafe cache must not build"))
+    with pytest.raises(cache.HelperPreparationError, match="link or reparse"):
+        cache.ensure_helper("typescript", tmp_path)
+    assert list(outside.iterdir()) == [sentinel] and sentinel.read_bytes() == b"unrelated bytes"
+
+
+def test_build_dependency_redirect_cannot_receive_writes(tmp_path):
+    root, outside = tmp_path / "cache", tmp_path / "outside"
+    root.mkdir()
+    outside.mkdir()
+    (root / ".dependencies").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="link or reparse"):
+        cache._build_environment(root)
+    assert list(outside.iterdir()) == []
+
+
+def test_legacy_receipt_cannot_read_an_artifact_outside_cache(tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    (source / ".git").mkdir(parents=True)
+    root = source / ".git" / helpers.HELPER_CACHE_DIRNAME
+    (root / "go").mkdir(parents=True)
+    outside = tmp_path / "private"
+    outside.write_bytes(b"do not inspect")
+    key = helpers.helper_cache_key("go", toolchain_version="go selected")
+    (root / "go/current.json").write_text(json.dumps({
+        "version": helpers.HELPER_MANIFEST_VERSION, "language": "go", "platform": helpers.platform_id(),
+        "source_fingerprint": helpers.helper_source_fingerprint("go"), "toolchain": "go selected",
+        "key": key, "path": str(outside), "artifact_fingerprint": "irrelevant",
+    }))
+    monkeypatch.setattr(helpers, "_manifest_current", lambda *args: pytest.fail("legacy reader must not dereference first"))
+    monkeypatch.setattr(cache, "user_helper_cache_root", lambda: tmp_path / "shared")
+    monkeypatch.setattr(cache, "_native_fingerprint", lambda path: pytest.fail("outside artifact must remain unread"))
+    assert cache.lookup_helper("go", source) is None
+    assert outside.read_bytes() == b"do not inspect"

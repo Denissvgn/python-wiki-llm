@@ -151,6 +151,7 @@
     "services/health_details.py",
     "services/health_policy.py",
     "services/health_summary.py",
+    "services/helper_cache.py",
     "services/helper_preparation.py",
     "services/helper_runtime.py",
     "services/immutable.py",
@@ -335,7 +336,8 @@
       "extractors/go_scripts/main.go",
       "extractors/native_diagnostics.py",
       "services/extractor_helpers.py",
-      "services/go_calls.py"
+      "services/go_calls.py",
+      "services/helper_cache.py"
     ],
     "haskell": [
       "extractors/common.py",
@@ -346,7 +348,8 @@
       "extractors/haskell_scripts/Parser.hs",
       "extractors/haskell_scripts/Paths.hs",
       "extractors/native_diagnostics.py",
-      "services/extractor_helpers.py"
+      "services/extractor_helpers.py",
+      "services/helper_cache.py"
     ],
     "infrastructure": [
       "services/dockerfile_parser.py",
@@ -375,7 +378,8 @@
       "extractors/rust_scripts/Cargo.lock",
       "extractors/rust_scripts/Cargo.toml",
       "extractors/rust_scripts/src/main.rs",
-      "services/extractor_helpers.py"
+      "services/extractor_helpers.py",
+      "services/helper_cache.py"
     ],
     "typescript": [
       "extractors/common.py",
@@ -384,6 +388,7 @@
       "extractors/ts_scripts/package-lock.json",
       "extractors/ts_scripts/package.json",
       "services/extractor_helpers.py",
+      "services/helper_cache.py",
       "services/imports.py",
       "services/typescript_helper_identity.py"
     ]
