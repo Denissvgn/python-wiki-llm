@@ -108,7 +108,10 @@ def test_complete_runtime_contract_admits_every_owner_but_grants_no_execution_pr
     assert {r["id"] for r in result["runtime_contract"]["consumers"]} == set(
         readiness.REQUIRED_CONSUMERS
     )
-    assert len(result["runtime_contract"]["availability"]) == 4
+    assert {
+        (row["profile"], row["python"])
+        for row in result["runtime_contract"]["availability"]
+    } == {("knowledge-linux", "3.13.18"), ("windows-core", "3.13.17")}
     assert (
         result["target_execution_verified"] is result["publication_authority"] is False
     )
@@ -367,7 +370,6 @@ def test_linux_patch_availability_does_not_establish_windows_availability(
     assert result["status"] == "blocked"
     assert {r["id"] for r in result["blockers"]} == {
         "python-download:windows-core:3.13.17",
-        "python-download:windows-probe:3.13.17",
     }
 
 
@@ -538,6 +540,16 @@ def test_readiness_output_is_fresh_and_never_overwrites_or_redirects(tmp_path):
     with pytest.raises(ValueError, match="Redirected"):
         readiness.write_report(alias / "new.json", {}, root=root)
     assert not (output.parent / "new.json").exists()
+
+
+def test_windows_pr_probe_refuses_a_second_patch_of_the_release_interpreter(candidate, manifest):
+    path = candidate / ".github/workflows/windows-measurement.yml"
+    document = yaml.safe_load(path.read_text())
+    document["jobs"]["measurement"]["strategy"]["matrix"]["python"].insert(0, "3.13.16")
+    path.write_text(yaml.safe_dump(document))
+    result = inspect_runtime(candidate, manifest)
+    assert result["status"] == "blocked"
+    assert [row["id"] for row in result["blockers"]] == ["runtime-owner:windows-probe"]
 
 
 def test_runtime_matrix_must_actually_feed_interpreter_setup(candidate, manifest):

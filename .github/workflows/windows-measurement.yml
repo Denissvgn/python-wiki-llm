@@ -40,7 +40,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.13.16", "3.13.17"]
+        # Run once on the release patch; reuse it for setup and evidence names.
+        python: ["3.13.17"]
     defaults:
       run:
         shell: bash

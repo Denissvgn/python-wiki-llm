@@ -1,5 +1,6 @@
 """Canary completeness and partial evidence controls without native emulation."""
 
+import json
 import tarfile
 from types import SimpleNamespace
 import xml.etree.ElementTree as ET
@@ -603,7 +604,15 @@ def final_probe_scenario(module, tmp_path, monkeypatch, *, mutate):
         q=SimpleNamespace(load_json=lambda p: json.loads(p.read_bytes())),
         inventory=sorted, junit=lambda p: cases,
     )
-    monkeypatch.setattr(module, "load", lambda name, path: reader if name == "measurement_core_reader" else object())
+    load_reader = module.load
+
+    def load_fixture_reader(name, path):
+        # Import the copied source just like the native runner, including the
+        # bytecode cache that CPython creates beside the trusted reader files.
+        load_reader(name, path)
+        return reader if name == "measurement_core_reader" else object()
+
+    monkeypatch.setattr(module, "load", load_fixture_reader)
     monkeypatch.setattr(module, "provider_files", lambda path: {"version": "9.0.0"})
     probes = []
 
@@ -643,3 +652,5 @@ def test_canary_rechecks_source_after_final_provider_observation(tmp_path, monke
         assert canary.run(args) == 0
         assert canary.git_output(args.root, "status", "--porcelain").strip() == b""
     assert (args.output / "installed-origin-after.json").exists()
+    hashes = json.loads((args.output / "base-reader-hashes.json").read_text())
+    assert hashes == {name: canary.sha(args.output / "base-tools" / name) for name in canary.READERS}

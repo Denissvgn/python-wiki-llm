@@ -703,7 +703,7 @@ def run(args):
         "publication_authority": False,
     }
     save(out, "identity.json", identity)
-    save(out, "base-reader-hashes.json", {p.name: sha(p) for p in tools.iterdir()})
+    save(out, "base-reader-hashes.json", {name: sha(tools / name) for name in READERS})
     witness = load("measurement_collection", tools / "pr_ci_pytest.py")
     expected = provider_files(root)
     save(out, "expected-provider.json", expected)

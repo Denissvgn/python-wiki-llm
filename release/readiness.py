@@ -59,7 +59,7 @@ REQUIRED_CONSUMERS = {
     "windows-core": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows", "plan-python-fallback"),
     "windows-canary": ("windows-core", QUALIFICATION_WORKFLOW, "windows-canary", "setup-python"),
     "windows-native": ("windows-core", QUALIFICATION_WORKFLOW, "windows-native", "setup-python"),
-    "windows-probe": ("windows-probe", ".github/workflows/windows-measurement.yml", "measurement", "matrix-python"),
+    "windows-probe": ("windows-core", ".github/workflows/windows-measurement.yml", "measurement", "matrix-python"),
 }
 RUNNER_PROFILES = {
     "ubuntu-24.04": ("linux", "x64", "24.04"),
@@ -297,7 +297,7 @@ def runtime_contract(
     profiles, consumers = contract["profiles"], contract["consumers"]
     if (
         not isinstance(profiles, dict)
-        or set(profiles) != {"knowledge-linux", "windows-core", "windows-probe"}
+        or set(profiles) != {"knowledge-linux", "windows-core"}
         or not isinstance(consumers, list)
     ):
         raise ReadinessError("Invalid runtime profiles/consumers")
@@ -324,8 +324,6 @@ def runtime_contract(
     if (
         len(profiles["knowledge-linux"]["python"]) != 1
         or len(profiles["windows-core"]["python"]) != 1
-        or not set(profiles["windows-core"]["python"])
-        <= set(profiles["windows-probe"]["python"])
     ):
         raise ReadinessError(
             "Single execution runtimes and their native probe coverage must agree"
