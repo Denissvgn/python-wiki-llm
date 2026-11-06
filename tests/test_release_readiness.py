@@ -769,6 +769,7 @@ print(json.dumps({'status':report['status'],'blocker_ids':sorted(ids),'capabilit
 
 
 def test_metadata_directory_preserves_ordinary_checkout_and_explicit_cache(tmp_path, monkeypatch):
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     (tmp_path / ".git").mkdir()
     assert readiness.git_metadata_directory(tmp_path) == tmp_path / ".git"
     assert readiness.helper_cache_base(tmp_path) == tmp_path / ".git/llm-wiki-extractors"

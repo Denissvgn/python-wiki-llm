@@ -265,6 +265,7 @@ def planned_project(project, monkeypatch):
     monkeypatch.setattr(preflight, "_version", lambda command, root: {"status": "unavailable", "path": None, "version": None})
     # These controller fixtures isolate external preparation; capability
     # admission itself is exercised with real negative observations separately.
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(project / "private" / "helper-cache"))
     monkeypatch.setattr(preflight, "_admission", lambda *a, **kw: {
         "status": "hosted-required", "blockers": [], "hosted_pending": []
     })
