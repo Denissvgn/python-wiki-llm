@@ -1369,10 +1369,17 @@ def test_committed_profile_freezes_intended_product_census():
     assert "src/llm_wiki_cli/services/flow_followup.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/dockerfile_parser.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/wiki_git_delivery.py" in snapshot.language_paths("python")
+    registry = json.loads(
+        (repository / "src/llm_wiki_cli/services/analysis_contracts.json").read_text("utf-8")
+    )
+    expected_python = {
+        "src/llm_wiki_cli/" + path for path in registry["classified_python_files"]
+    } | {"integrations/github-action/render_summary.py"}
+    assert set(snapshot.language_paths("python")) == expected_python
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 266,
+        "python": len(expected_python),
         "typescript": 3,
         "go": 0,
         "rust": 0,
