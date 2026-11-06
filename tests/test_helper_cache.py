@@ -978,3 +978,28 @@ def test_legacy_receipt_cannot_read_an_artifact_outside_cache(tmp_path, monkeypa
     monkeypatch.setattr(cache, "_native_fingerprint", lambda path: pytest.fail("outside artifact must remain unread"))
     assert cache.lookup_helper("go", source) is None
     assert outside.read_bytes() == b"do not inspect"
+
+
+def test_managed_go_profile_versions_reproducible_build_recipe(tmp_path, monkeypatch):
+    go = tmp_path / "go"
+    go.write_bytes(b"selected compiler")
+    monkeypatch.setattr(helpers, "_resolve_go_executable", lambda _env: str(go))
+    machine = {"x86_64": "amd64", "i386": "386", "armv7l": "arm"}.get(cache._machine(), cache._machine())
+    monkeypatch.setattr(cache, "_output", lambda *a, **k: f"go version go1.26.5 {cache._system()}/{machine}")
+    profile = cache._profile("go", tmp_path / "cache", tmp_path)
+    old = dict(profile.identity)
+    old.pop("build_recipe")
+    assert cache._profile_key("go", old) != cache._profile_key("go", profile.identity)
+
+    def compile_helper(argv, **kwargs):
+        assert "-trimpath" in argv and "-buildvcs=false" in argv
+        output = Path(argv[argv.index("-o") + 1])
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
+        return ""
+
+    monkeypatch.setattr(cache, "_run", compile_helper)
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    receipt = cache._build("go", stage, profile, tmp_path)
+    assert receipt["preparation_profile"]["build_recipe"] == helpers.GO_BUILD_RECIPE

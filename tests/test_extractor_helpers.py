@@ -799,9 +799,9 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     build_cmd, build_env = next(
         (cmd, env) for cmd, env in calls if len(cmd) >= 2 and cmd[1] == "build"
     )
-    assert build_cmd[:3] == ["/usr/bin/go", "build", "-o"]
+    assert build_cmd[:5] == ["/usr/bin/go", "build", "-trimpath", "-buildvcs=false", "-o"]
     assert result.path is not None
-    staged = Path(build_cmd[3])
+    staged = Path(build_cmd[5])
     assert staged.name == Path(result.path).name and staged.parent.parent == Path(result.path).parent
     assert not staged.parent.exists()
     assert build_env["GOCACHE"] == str(cache_root / "go-build-cache")
@@ -1248,7 +1248,7 @@ def test_manual_go_recovery_rebuilds_invalid_native_artifact(tmp_path, monkeypat
     root = base / HELPER_CACHE_DIRNAME
     monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
     monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go fixture", ""))
-    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture")
+    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture", build_recipe=extractor_helpers.GO_BUILD_RECIPE)
     binary = root / "go" / key / extractor_helpers._binary_name("llm-wiki-go-extractor")
     binary.parent.mkdir(parents=True)
     binary.write_bytes(b"foreign helper")
@@ -1256,6 +1256,7 @@ def test_manual_go_recovery_rebuilds_invalid_native_artifact(tmp_path, monkeypat
     extractor_helpers._write_manifest(root, "go", {
         "version": extractor_helpers.HELPER_MANIFEST_VERSION, "language": "go",
         "platform": extractor_helpers.platform_id(), "key": key, "toolchain": "go fixture",
+        "build_recipe": extractor_helpers.GO_BUILD_RECIPE,
         "source_fingerprint": extractor_helpers.helper_source_fingerprint("go"),
         "artifact_fingerprint": helper_artifact_fingerprint(binary), "path": str(binary),
     })
@@ -1275,7 +1276,7 @@ def test_manual_go_repair_protects_an_external_hardlink(tmp_path, monkeypatch):
     root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
     monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
     monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go fixture", ""))
-    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture")
+    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture", build_recipe=extractor_helpers.GO_BUILD_RECIPE)
     binary = root / "go" / key / extractor_helpers._binary_name("llm-wiki-go-extractor")
     binary.parent.mkdir(parents=True)
     external = tmp_path / "authored"
@@ -1300,3 +1301,35 @@ def test_manual_go_rejects_foreign_build_output_before_publishing(tmp_path, monk
     result = prepare_go(root)
     assert result.status == "failed" and "native" in result.message
     assert not (root / "go/current.json").exists()
+
+
+def test_manual_go_upgrades_path_dependent_receipt_and_preserves_old_binary(tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+    from llm_wiki_cli.services import helper_cache
+
+    source = tmp_path / "project"
+    source.mkdir()
+    base = tmp_path / "cache"
+    root = base / HELPER_CACHE_DIRNAME
+    _prepare_fixture("go", root)
+    old = get_prepared_binary("go", source, str(base))
+    assert old is not None
+    original = old.read_bytes()
+    # A strict read and a caller without a compiler can still use old receipts.
+    with monkeypatch.context() as absent:
+        absent.setattr(extractor_helpers, "_resolve_go_executable", lambda env: None)
+        assert helper_cache.ensure_helper("go", source, str(base)).path == old
+
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go version go1.26.3", ""))
+    def compile_helper(argv, **kwargs):
+        output = Path(argv[argv.index("-o") + 1])
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", compile_helper)
+    fresh = prepare_go(root)
+    assert fresh.status == "prepared" and fresh.path is not None
+    assert Path(fresh.path).parent != old.parent
+    assert old.read_bytes() == original
+    assert get_prepared_binary("go", source, str(base)) == Path(fresh.path)
+    assert prepare_go(root).status == "already_current"

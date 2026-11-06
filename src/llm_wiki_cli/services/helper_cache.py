@@ -277,10 +277,13 @@ def _legacy_handle(cache_root: Path, language: str) -> PreparedHelperHandle | No
         manifest = _json(cache_root / language / helpers.HELPER_MANIFEST)
         expected_version = helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else helpers.HELPER_MANIFEST_VERSION
         key, toolchain = manifest.get("key"), manifest.get("toolchain")
+        recipe = manifest.get("build_recipe")
+        if recipe is not None and (language != "go" or recipe != helpers.GO_BUILD_RECIPE):
+            return None
         if (type(manifest.get("version")) is not int or manifest["version"] != expected_version
                 or not isinstance(key, str) or re.fullmatch(r"[0-9a-f]{64}", key) is None
                 or not isinstance(toolchain, str) or not toolchain
-                or key != helpers.helper_cache_key(language, toolchain_version=toolchain)):
+                or key != helpers.helper_cache_key(language, toolchain_version=toolchain, build_recipe=recipe)):
             return None
         path = _safe(Path(manifest["path"]))
         root = cache_root / language / key
@@ -532,7 +535,7 @@ def _profile(language: str, cache_root: Path, cwd: Path) -> _Profile:
         if target != _system() + "/" + expected_arch:
             raise HelperPreparationError(language, "Go compiler host differs from the active platform")
         env.update(GOOS=_system(), GOARCH=expected_arch)
-        identity.update(toolchain=version, target=target)
+        identity.update(toolchain=version, target=target, build_recipe=helpers.GO_BUILD_RECIPE)
     elif language == "rust":
         for name in ("cargo", "rustc"):
             executables[name] = _selected_rust_executable(name, env, cwd)
@@ -670,7 +673,7 @@ def _build(language: str, stage: Path, profile: _Profile, cwd: Path) -> dict:
     else:
         path = artifact / helpers._binary_name("llm-wiki-" + language + "-extractor")
         if language == "go":
-            _run([profile.executables["go"], "build", "-mod=readonly", "-o", str(path), "."],
+            _run([profile.executables["go"], "build", *helpers.GO_BUILD_FLAGS, "-mod=readonly", "-o", str(path), "."],
                  cwd=source, env=env, timeout=120)
         elif language == "rust":
             target_dir = stage / "target"
@@ -742,6 +745,7 @@ def ensure_helper(language: str, src_dir: str | Path = ".", cache_dir: str | Non
             key = _profile_key(language, profile.identity)
             if current is not None and (current.key == key or (
                 current.receipt.get("toolchain") == profile.identity["toolchain"]
+                and (language != "go" or current.receipt.get("build_recipe") == helpers.GO_BUILD_RECIPE)
                 and not (current.root / RECEIPT).exists()
             )):
                 return _with_runtime(current, profile.executables)

@@ -35,6 +35,8 @@ HELPER_TOOLCHAIN_HINTS = {
     "rust": "Install the Rust toolchain with Cargo, or make cargo available on PATH",
     "haskell": "Install GHC 9.6.x or set LLM_WIKI_GHC to a supported GHC executable",
 }
+GO_BUILD_FLAGS = ("-trimpath", "-buildvcs=false")
+GO_BUILD_RECIPE = " ".join(GO_BUILD_FLAGS)
 SUPPORTED_GHC_MAJOR = 9
 SUPPORTED_GHC_MINOR = 6
 
@@ -315,6 +317,7 @@ def helper_cache_key(
     *,
     toolchain_version: str | None = None,
     platform_value: str | None = None,
+    build_recipe: str | None = None,
 ) -> str:
     payload = {
         "language": language,
@@ -322,6 +325,8 @@ def helper_cache_key(
         "source": helper_source_fingerprint(language),
         "toolchain": toolchain_version or "",
     }
+    if build_recipe is not None:
+        payload["build_recipe"] = build_recipe
     if language == "typescript":
         payload["artifact_scope"] = ts_identity.ARTIFACT_SCOPE
     data = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -755,7 +760,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
             f"set {ENV_GO_BINARY}=/path/to/go or fix the Go installation",
         )
 
-    key = helper_cache_key("go", toolchain_version=toolchain)
+    key = helper_cache_key("go", toolchain_version=toolchain, build_recipe=GO_BUILD_RECIPE)
     out_dir = cache_root / "go" / key
     binary_path = out_dir / _binary_name("llm-wiki-go-extractor")
     if _unsafe_native_output(binary_path):
@@ -776,7 +781,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
         output = Path(temporary) / binary_path.name
         try:
             subprocess.run(
-                [go_executable, "build", "-o", str(output), "."],
+                [go_executable, "build", *GO_BUILD_FLAGS, "-o", str(output), "."],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -799,7 +804,10 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
                 "go", "failed", "go build did not produce the expected helper binary"
             )
 
-        return _publish_native_helper(cache_root, "go", binary_path, key, toolchain, staged=output, go_executable=go_executable)
+        return _publish_native_helper(
+            cache_root, "go", binary_path, key, toolchain, staged=output,
+            go_executable=go_executable, build_recipe=GO_BUILD_RECIPE,
+        )
 
 
 def prepare_rust(cache_root: Path) -> HelperPrepareResult:
