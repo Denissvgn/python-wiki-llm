@@ -84,9 +84,9 @@ sequenceDiagram
     p30-->>p31: source_metadata.read_text(encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 919 interactions; 889 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 920 interactions; 890 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 113 (112 omitted); unresolved 1 of 596 (595 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 114 (113 omitted); unresolved 1 of 596 (595 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -191,10 +191,10 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3554 | `get_contract(data not statically known)` |
-| get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 282 | `build_cli_contract(build_cli_parser(...), package=_package_identity(...), program='llm-wiki')` |
-| build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 236 | `isinstance(parser, argparse.ArgumentParser)` |
-| build_cli_contract | CLIReferenceError | 237 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
-| build_cli_contract | _value | 240 | `_value(dict(...))` |
+| get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 287 | `build_cli_contract(build_cli_parser(...), package=_package_identity(...), program='llm-wiki')` |
+| build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 241 | `isinstance(parser, argparse.ArgumentParser)` |
+| build_cli_contract | CLIReferenceError | 242 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
+| build_cli_contract | _value | 245 | `_value(dict(...))` |
 | _value | CLIReferenceError | 68 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
 | _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 69 | `isinstance(value, Path)` |
 | _value | value.is_absolute | 70 | `value.is_absolute(data not statically known)` |
@@ -210,7 +210,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_cli_contract` | `isinstance` | 236 |
+| external_call | `build_cli_contract` | `isinstance` | 241 |
 | external_call | `_value` | `isinstance` | 69 |
 | unresolved_call | `_value` | `value.is_absolute` | 70 |
 | unresolved_call | `_value` | `value.as_posix` | 74 |

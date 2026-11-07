@@ -53,7 +53,7 @@ sequenceDiagram
     participant p22 as _locate_exact_path
     participant p23 as _json_tree (src/llm_wiki_cli/services/publication_contracts.py)
     participant p24 as build_cli_contract
-    participant p25 as require_repository_relative_path
+    participant p25 as _text (src/llm_wiki_cli/services/publication_config.py)
     participant p26 as _object
     participant p27 as canonical_json_bytes
     participant p28 as build_cli_parser
@@ -83,7 +83,7 @@ sequenceDiagram
     p15->>p22: _locate_exact_path
     p12->>p23: _json_tree (src/llm_wiki_cli/services/publication_contracts.py)
     p16->>p24: build_cli_contract
-    p13->>p25: require_repository_relative_path
+    p13->>p25: _text (src/llm_wiki_cli/services/publication_config.py)
     p21->>p26: _object
     p18->>p27: canonical_json_bytes
     p16->>p28: build_cli_parser
@@ -91,9 +91,9 @@ sequenceDiagram
     p1-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 635 interactions; 605 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 633 interactions; 603 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 210 (209 omitted); unresolved 1 of 178 (177 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 209 (208 omitted); unresolved 1 of 177 (176 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,8 +106,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 10 | - | external | 4 |
 | `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-| `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 2 |
-> Omission summary shows 8 of 142 groups; 134 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 1 |
+> Omission summary shows 8 of 141 groups; 133 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 248; effect analysis evaluated: 165, partial: 3, unavailable: 80. Counts include steps omitted from the displayed trace.
+Source steps: 248; effect analysis evaluated: 166, partial: 3, unavailable: 79. Counts include steps omitted from the displayed trace.
 
-Collector observations for 168 source steps with known totals: observed: 802, emitted: 787, omitted: 15. Unavailable totals are excluded.
+Collector observations for 169 source steps with known totals: observed: 806, emitted: 791, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

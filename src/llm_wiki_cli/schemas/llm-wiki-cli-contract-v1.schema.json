@@ -69,7 +69,7 @@
     },
     "command": {
       "type": "object", "additionalProperties": false,
-      "required": ["name", "path", "aliases", "help", "description", "epilog", "deprecated", "notes", "arguments", "groups", "exclusive_groups", "commands", "subcommands_required", "defaults"],
+      "required": ["name", "path", "aliases", "help", "description", "epilog", "deprecated", "notes", "arguments", "groups", "exclusive_groups", "commands", "subcommands_required", "defaults", "settings"],
       "properties": {
         "name": {"$ref": "#/$defs/name"}, "path": {"type": "array", "items": {"$ref": "#/$defs/name"}},
         "aliases": {"$ref": "#/$defs/names"}, "help": {"$ref": "#/$defs/nullable_text"},
@@ -80,7 +80,16 @@
         "exclusive_groups": {"type": "array", "items": {"$ref": "#/$defs/exclusive_group"}},
         "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
         "subcommands_required": {"type": "boolean"},
-        "defaults": {"type": "object", "additionalProperties": {"$ref": "#/$defs/json"}}
+        "defaults": {"type": "object", "additionalProperties": {"$ref": "#/$defs/json"}},
+        "settings": {
+          "type": "object", "additionalProperties": false,
+          "required": ["prefix_chars", "allow_abbrev", "fromfile_prefix_chars"],
+          "properties": {
+            "prefix_chars": {"type": "string"},
+            "allow_abbrev": {"type": "boolean"},
+            "fromfile_prefix_chars": {"type": ["string", "null"]}
+          }
+        }
       }
     }
   }

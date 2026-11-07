@@ -431,6 +431,22 @@ def test_legacy_normalization_does_not_add_reference_provider_state():
     assert validate_publication_config(normalized, consumer_root=None) == normalized
 
 
+@pytest.mark.parametrize("count", [335, 336])
+def test_contract_file_paths_retain_the_utf8_byte_bound(count):
+    payload = policy()
+    path = "docs/" + "é/" * count + "reference.json"
+    assert len(path) < 1024
+    payload["reference_providers"] = {"app": {"kind": "contract-file", "path": path}}
+    if count == 335:
+        assert len(path.encode("utf-8")) == 1024
+        assert validate_publication_config(payload, consumer_root=None)[
+            "reference_providers"
+        ]["app"]["path"] == path
+    else:
+        with pytest.raises(PublicationConfigError, match="1024 UTF-8 bytes"):
+            validate_publication_config(payload, consumer_root=None)
+
+
 def test_reference_providers_are_explicit_sorted_detached_data_contracts(tmp_path):
     payload = policy()
     payload["reference_providers"] = {

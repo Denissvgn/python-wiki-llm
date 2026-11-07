@@ -82,12 +82,14 @@ def test_root_workflow_is_manual_read_only_and_uses_the_local_provider():
     assert action["with"] == {
         "config": ".llm-wiki/publication.json",
         "baseline": "${{ inputs.baseline }}",
+        "reviews": "${{ inputs.reviews }}",
         "target-dir": "sibling-wiki",
         "fail-on": "error",
     }
     clone = next(step for step in job["steps"] if "run" in step)
     assert clone["env"]["REPOSITORY"] == "${{ github.repository }}"
     assert clone["env"]["ACCEPTED_BASELINE"] == "${{ inputs.baseline }}"
+    assert clone["env"]["ACCEPTED_REVIEWS"] == "${{ inputs.reviews }}"
     assert "${{" not in clone["run"]
     assert '"${SERVER_URL}/${REPOSITORY}.wiki.git" sibling-wiki' in clone["run"]
     assert "snapshot evidence" in job["name"]

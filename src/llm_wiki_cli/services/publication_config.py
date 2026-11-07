@@ -110,21 +110,21 @@ def _relative_path(value: object, field: str) -> str:
     error = PublicationConfigError(
         field, "must be a canonical portable repository-relative POSIX path"
     )
-    path = require_repository_relative_path(
-        value,
-        text_error=error,
-        posix_error=error,
-        normalized_error=error,
-        absolute_error=error,
-        separator_error=error,
-        control_error=error,
-        reject_delete_character=True,
-        leading_backslash_is_absolute=True,
-        portability_error=error,
+    return _text(
+        require_repository_relative_path(
+            value,
+            text_error=error,
+            posix_error=error,
+            normalized_error=error,
+            absolute_error=error,
+            separator_error=error,
+            control_error=error,
+            reject_delete_character=True,
+            leading_backslash_is_absolute=True,
+            portability_error=error,
+        ),
+        field,
     )
-    if len(path.encode("utf-8")) > 1024:
-        raise PublicationConfigError(field, "must be at most 1024 UTF-8 bytes")
-    return path
 
 
 def _consumer_root(value: str | Path) -> Path:

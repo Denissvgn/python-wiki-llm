@@ -14,7 +14,9 @@ through a file provider.
 
 The JSON schema is `llm-wiki-cli-contract/v1`. It records package identity,
 program name, the command hierarchy, arguments, aliases, choices, argument
-groups and a `contract_id` commitment. Hidden compatibility options retain
+groups, parser settings and a `contract_id` commitment. Parser settings record
+option prefixes, option abbreviation and argument-file prefixes.
+Hidden compatibility options retain
 their visibility metadata. Markdown marks those options explicitly.
 
 Defaults describe the parser's declarations. Runtime configuration and native
@@ -44,12 +46,15 @@ the application or execute its entry points. An invalid contract remains an
 input error that must be repaired.
 
 An application maintainer can capture a caller-owned `argparse` parser with the
-public builder. Run this adapter as part of that application's own workflow:
+public builder. Save this adapter as `tools/export-cli-reference.py`, replacing
+the demonstration parser with the parser factory from the application's exact
+candidate installation:
 
 ```python
 import argparse
 import json
 from pathlib import Path
+import sys
 from llm_wiki_cli.api import build_cli_contract
 
 parser = argparse.ArgumentParser(prog="accounts")
@@ -62,15 +67,45 @@ contract = build_cli_contract(
     package={"name": "accounts-cli", "version": "1.0.0", "requires_python": ">=3.11"},
     program="accounts",
 )
-destination = Path("docs/reference/app-cli.json")
+destination = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/reference/app-cli.json")
 destination.parent.mkdir(parents=True, exist_ok=True)
-destination.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+destination.write_text(json.dumps(contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
 ```
 
 The maintainer supplies the parser and package identity. The builder captures
 declarations without parsing application arguments. Publication later consumes
 the saved data. Applications with another parser can generate the same schema
 through their own adapter.
+
+### Keep an application's saved contract current
+
+A file provider validates the saved data; it cannot determine whether that data
+still matches an application. Run the consumer-owned adapter against the exact
+application candidate before impact evaluation. Use the selected application
+and provider versions in that environment, then compare the fresh result with
+the reviewed artifact:
+
+```bash
+.venv/bin/python tools/export-cli-reference.py reports/app-cli-candidate.json
+.venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+from llm_wiki_cli.api import validate_cli_contract
+
+accepted = json.loads(Path("docs/reference/app-cli.json").read_text(encoding="utf-8"))
+candidate = json.loads(Path("reports/app-cli-candidate.json").read_text(encoding="utf-8"))
+validate_cli_contract(accepted)
+validate_cli_contract(candidate)
+if accepted != candidate:
+    raise SystemExit("Refresh docs/reference/app-cli.json and review the affected public topics")
+PY
+```
+
+Keep this comparison as a prerequisite for the read-only impact job. When it
+differs, update the saved artifact in the consumer's proposed change and rerun
+the normal impact review against the accepted baseline and ledger. Do not
+silently replace the accepted baseline or ledger with the fresh export.
+The library never runs an application adapter while loading a file provider.
 
 ## Connect reference data to public topics
 
@@ -109,10 +144,9 @@ is a list of literal tokens, such as `["knowledge", "status"]`. An empty path
 `[]` selects the complete contract.
 
 A scoped dependency follows its selected command and descendants. Its basis
-also includes ancestor argument declarations and constraints, since a global
-option can change how the command behaves. Parent subcommand lists and global
-help/version display actions are excluded from that scoped context.
-The basis
+also includes ancestor argument declarations, parser settings and constraints,
+since a global option can change how the command behaves. Parent subcommand lists and global
+help/version display actions are excluded from that scoped context. The basis
 retains the program, package name and Python requirement while excluding
 unrelated commands and release-version-only changes. The complete-contract
 dependency includes the complete package and command data.

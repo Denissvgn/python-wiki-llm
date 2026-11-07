@@ -32,6 +32,7 @@ def add_commands(subparsers):
 
 def run(args):
     from ..services.cli_reference import (
+        MAX_CLI_CONTRACT_BYTES,
         get_cli_contract,
         load_cli_contract,
         render_cli_reference,
@@ -43,21 +44,37 @@ def run(args):
             if args.reference_action == "render"
             else get_cli_contract()
         )
-        content = (
-            json.dumps(contract, indent=2, sort_keys=True) + "\n"
-            if args.format == "json"
-            else render_cli_reference(contract)
-        )
+        if args.format == "json":
+            content = (
+                json.dumps(contract, indent=2, sort_keys=True, ensure_ascii=False)
+                + "\n"
+            )
+            if len(content.encode("utf-8")) > MAX_CLI_CONTRACT_BYTES:
+                # A valid near-limit contract must remain readable by the
+                # saved renderer and file provider after whitespace expansion.
+                content = (
+                    json.dumps(
+                        contract,
+                        sort_keys=True,
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                )
+        else:
+            content = render_cli_reference(contract)
         if not args.output:
             print(content, end="")
             return
         destination = _absolute_path(Path(args.output))
-        if args.reference_action == "render" and destination == _absolute_path(
-            Path(args.input)
-        ):
-            raise ValueError(
-                "Reference output must differ from the saved input contract"
-            )
+        if args.reference_action == "render":
+            source = _absolute_path(Path(args.input))
+            if destination == source or (
+                destination.exists() and destination.samefile(source)
+            ):
+                raise ValueError(
+                    "Reference output must differ from the saved input contract"
+                )
         expected = None
         if destination.exists() or destination.is_symlink():
             with StorageReadSession(destination.parent).phase() as session:

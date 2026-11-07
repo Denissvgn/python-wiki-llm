@@ -71,9 +71,9 @@ sequenceDiagram
     p4-->>p24: len (src/llm_wiki_cli/services…ence.py:_validate_command)(groups)
 ```
 
-> Call sequence diagram shows 30 of 124 interactions; 94 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 125 interactions; 95 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 55 (41 omitted); unresolved 5 of 25 (20 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 14 of 56 (42 omitted); unresolved 5 of 25 (20 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +159,7 @@ flowchart LR
 | `validate_cli_contract (src/llm_wiki_cli/api.py)` | `contract: Mapping[str, Any]` | `Mapping` | - | - |
 | `isinstance (src/llm_wiki_cli/api.py:validate_cli_contract)` | - | - | - | - |
 | `ValueError` | - | - | - | - |
-| `validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py)` | `contract: object` | `_MAX_BYTES`, `CLIReferenceError` | - | - |
+| `validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py)` | `contract: object` | `MAX_CLI_CONTRACT_BYTES`, `CLIReferenceError` | - | - |
 | `_json_tree` | `value: object`, `depth: int`, `budget` | `_MAX_NODES`, `_MAX_DEPTH` | `budget[...]` | `none`, `none`, `none`, `none` |
 | `CLIReferenceError` | - | - | - | - |
 | `type (src/llm_wiki_cli/services…i_reference.py:_json_tree)` | - | - | - | - |
@@ -176,14 +176,14 @@ flowchart LR
 | validate_cli_contract (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_cli_contract) | 3572 | `isinstance(contract, Mapping)` |
 | validate_cli_contract (src/llm_wiki_cli/api.py) | ValueError | 3573 | `ValueError('CLI contract must be a mapping')` |
 | validate_cli_contract (src/llm_wiki_cli/api.py) | validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3574 | `validate(dict(...))` |
-| validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _json_tree | 462 | `_json_tree(contract)` |
-| _json_tree | CLIReferenceError | 300 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 301 | `type(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 303 | `type(value)` |
-| _json_tree | math.isfinite | 303 | `math.isfinite(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 305 | `type(value)` |
-| _json_tree | _json_tree | 307 | `_json_tree(item, ..., budget)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 309 | `type(value)` |
+| validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _json_tree | 470 | `_json_tree(contract)` |
+| _json_tree | CLIReferenceError | 305 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 306 | `type(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 308 | `type(value)` |
+| _json_tree | math.isfinite | 308 | `math.isfinite(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 310 | `type(value)` |
+| _json_tree | _json_tree | 312 | `_json_tree(item, ..., budget)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 314 | `type(value)` |
 
 ### Boundary effects
 
@@ -195,11 +195,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_cli_contract` | `isinstance` | 3572 |
 | external_call | `validate_cli_contract` | `ValueError` | 3573 |
-| external_call | `_json_tree` | `type` | 301 |
-| external_call | `_json_tree` | `type` | 303 |
-| external_call | `_json_tree` | `math.isfinite` | 303 |
-| external_call | `_json_tree` | `type` | 305 |
-| external_call | `_json_tree` | `type` | 309 |
+| external_call | `_json_tree` | `type` | 306 |
+| external_call | `_json_tree` | `type` | 308 |
+| external_call | `_json_tree` | `math.isfinite` | 308 |
+| external_call | `_json_tree` | `type` | 310 |
+| external_call | `_json_tree` | `type` | 314 |
 | step_limit | `validate_cli_contract` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -22,9 +22,15 @@ def app_contract(
     other_help="Remove an account",
     version="1.0.0",
     endpoint="production",
+    parser_options=None,
+    version_option=False,
 ):
-    parser = argparse.ArgumentParser(prog="accounts")
-    parser.add_argument("--endpoint", default=endpoint)
+    parser = argparse.ArgumentParser(prog="accounts", **(parser_options or {}))
+    if version_option:
+        parser.add_argument_group("Release display").add_argument(
+            "--version", action="version", version=version
+        )
+    parser.add_argument_group("Network").add_argument("--endpoint", default=endpoint)
     commands = parser.add_subparsers(dest="action", required=True)
     create = commands.add_parser("create", aliases=["add"], help="Create an account")
     create.add_argument("--name", default=name)
@@ -109,6 +115,38 @@ def test_changed_ancestor_default_reopens_descendant_review(consumer):
     path.write_text(json.dumps(app_contract(endpoint="staging")))
     report = impact.compare_publication_impact(capture(consumer, before), before)
     assert report["complete"] and report["review_required"]
+
+
+@pytest.mark.parametrize(
+    "parser_options",
+    [
+        {"allow_abbrev": False},
+        {"fromfile_prefix_chars": "@"},
+        {"prefix_chars": "-+"},
+    ],
+)
+def test_changed_ancestor_parsing_policy_reopens_descendant_review(
+    consumer, parser_options
+):
+    configure(consumer)
+    path = consumer / "app-reference.json"
+    path.write_text(json.dumps(app_contract()))
+    before = capture(consumer)
+    path.write_text(json.dumps(app_contract(parser_options=parser_options)))
+    report = impact.compare_publication_impact(capture(consumer, before), before)
+    assert report["complete"] and report["review_required"]
+
+
+@pytest.mark.parametrize("command", [["create"], ["add"], []])
+def test_added_ancestor_display_action_does_not_shift_scoped_review(consumer, command):
+    configure(consumer, command=command)
+    path = consumer / "app-reference.json"
+    path.write_text(json.dumps(app_contract()))
+    before = capture(consumer)
+    path.write_text(json.dumps(app_contract(version_option=True)))
+    report = impact.compare_publication_impact(capture(consumer, before), before)
+    assert report["complete"] and report["changed"]
+    assert report["review_required"] == (not command)
 
 
 @pytest.mark.parametrize(

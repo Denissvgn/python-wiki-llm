@@ -100,6 +100,50 @@ def test_parser_capture_retains_nested_alias_option_and_group_contracts():
     assert "/private/host" not in json.dumps(value)
 
 
+def test_application_parsers_preserve_non_dash_prefixes_and_parsing_rules():
+    value = argparse.ArgumentParser(
+        prefix_chars="+", allow_abbrev=False, fromfile_prefix_chars="@"
+    )
+    value.add_argument("++value", default="guest")
+    data = reference.build_cli_contract(value, package=PACKAGE, program="example")
+    assert data["root"]["settings"] == {
+        "prefix_chars": "+",
+        "allow_abbrev": False,
+        "fromfile_prefix_chars": "@",
+    }
+    assert any(
+        argument["option_strings"] == ["++value"]
+        for argument in data["root"]["arguments"]
+    )
+    output = reference.render_cli_reference(data)
+    assert "Option prefixes: ` + `" in output
+    assert "Long option abbreviations: disabled" in output
+    assert "Argument file prefixes: ` @ `" in output
+    data["root"]["settings"]["prefix_chars"] = "-"
+    reseal(data)
+    with pytest.raises(reference.CLIReferenceError, match="distinct flags"):
+        reference.validate_cli_contract(data)
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [{"prefix_chars": "+"}, {"allow_abbrev": False}, {"fromfile_prefix_chars": "@"}],
+)
+def test_parser_rule_changes_reopen_the_reference_contract(settings):
+    original = reference.build_cli_contract(
+        argparse.ArgumentParser(add_help=False), package=PACKAGE, program="example"
+    )
+    current = reference.build_cli_contract(
+        argparse.ArgumentParser(add_help=False, **settings),
+        package=PACKAGE,
+        program="example",
+    )
+    assert current["contract_id"] != original["contract_id"]
+    assert reference.render_cli_reference(current) != reference.render_cli_reference(
+        original
+    )
+
+
 def test_exported_data_passes_the_packaged_closed_json_schema():
     schema = json.loads(
         resources.files("llm_wiki_cli.schemas")
@@ -245,6 +289,81 @@ def test_file_contract_roundtrip_and_non_llm_wiki_identity(tmp_path):
     assert reference.parse_cli_contract(raw) == value
     assert reference.load_cli_contract(path) == value
     assert reference.load_cli_contract(path)["package"]["name"] == "example-app"
+
+
+@pytest.mark.parametrize("compact", [False, True])
+def test_cli_json_output_roundtrips_with_unicode_and_byte_limits(
+    tmp_path, monkeypatch, compact
+):
+    value = argparse.ArgumentParser(description="é" * 1_400_000)
+    expected = reference.build_cli_contract(value, package=PACKAGE, program="example")
+    if compact:
+        # Bound the accepted input tightly enough that pretty-print whitespace
+        # would produce an unreadable artifact, even with UTF-8 serialization.
+        monkeypatch.setattr(
+            reference,
+            "MAX_CLI_CONTRACT_BYTES",
+            len(json.dumps(expected, ensure_ascii=False).encode("utf-8")),
+        )
+    monkeypatch.setattr(reference, "get_cli_contract", lambda: expected)
+    destination = tmp_path / "reference.json"
+    monkeypatch.setattr(
+        "sys.argv", ["llm-wiki", "reference", "cli", "--output", str(destination)]
+    )
+    cli.main()
+    assert destination.stat().st_size <= reference.MAX_CLI_CONTRACT_BYTES
+    assert reference.load_cli_contract(destination) == expected
+    markdown = tmp_path / "reference.md"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "reference",
+            "render",
+            "--input",
+            str(destination),
+            "--format",
+            "markdown",
+            "--output",
+            str(markdown),
+        ],
+    )
+    cli.main()
+    assert markdown.read_text(encoding="utf-8") == reference.render_cli_reference(
+        expected
+    )
+
+
+def test_saved_renderer_preserves_input_through_case_aliases(tmp_path, monkeypatch):
+    expected = contract()
+    source = tmp_path / "reference.json"
+    source.write_text(json.dumps(expected), encoding="utf-8")
+    destination = tmp_path / "REFERENCE.json"
+    aliases_input = destination.exists()
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "reference",
+            "render",
+            "--input",
+            str(source),
+            "--format",
+            "markdown",
+            "--output",
+            str(destination),
+        ],
+    )
+    if aliases_input:
+        with pytest.raises(SystemExit) as exc:
+            cli.main()
+        assert exc.value.code == 2
+    else:
+        cli.main()
+        assert destination.read_text(
+            encoding="utf-8"
+        ) == reference.render_cli_reference(expected)
+    assert reference.load_cli_contract(source) == expected
 
 
 @pytest.mark.parametrize(

@@ -91,7 +91,7 @@ flowchart LR
 | `_object` | call | [publication_config](../modules/publication_config.md) | 2 |
 | `_reference_providers` | call | [publication_config](../modules/publication_config.md) | 3 |
 | `_reject_constant` | call | [publication_config](../modules/publication_config.md) | 1 |
-| `_relative_path` | call | [publication_config](../modules/publication_config.md) | 2 |
+| `_relative_path` | call | [publication_config](../modules/publication_config.md) | 1 |
 | `_section` | call | [publication_config](../modules/publication_config.md) | 5 |
 | `_text` | call | [publication_config](../modules/publication_config.md) | 4 |
 

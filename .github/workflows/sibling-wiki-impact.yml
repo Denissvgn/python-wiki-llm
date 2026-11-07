@@ -8,6 +8,11 @@ name: Sibling wiki impact report
         type: string
         default: ""
         required: false
+      reviews:
+        description: Optional accepted review ledger path in this checkout
+        type: string
+        default: ""
+        required: false
 
 permissions:
   contents: read
@@ -38,6 +43,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           SERVER_URL: ${{ github.server_url }}
           ACCEPTED_BASELINE: ${{ inputs.baseline }}
+          ACCEPTED_REVIEWS: ${{ inputs.reviews }}
           GIT_TERMINAL_PROMPT: "0"
         run: |
           set -euo pipefail
@@ -45,19 +51,23 @@ jobs:
           [[ "$(git rev-parse HEAD)" == "${RUN_SHA}" ]]
           [[ "${REPOSITORY}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]
           [[ "${SERVER_URL}" == https://github.com ]]
-          if [[ -n "${ACCEPTED_BASELINE}" ]]; then
-            case "${ACCEPTED_BASELINE}" in
+          for accepted_artifact in "${ACCEPTED_BASELINE}" "${ACCEPTED_REVIEWS}"; do
+            [[ -n "${accepted_artifact}" ]] || continue
+            case "${accepted_artifact}" in
               /*|-*|*\\*|*$'\n'*|*$'\r'*)
-                printf 'The accepted baseline must be a repository-relative snapshot path.\n' >&2
+                printf 'Accepted state must use repository-relative artifact paths.\n' >&2
                 exit 2
                 ;;
             esac
-            IFS=/ read -r -a components <<< "${ACCEPTED_BASELINE}"
+            IFS=/ read -r -a components <<< "${accepted_artifact}"
+            accepted_path=.
             for component in "${components[@]}"; do
-              [[ -n "${component}" && "${component}" != . && "${component}" != .. ]]
+              [[ -n "${component}" && "${component}" != . && "${component}" != .. ]] || exit 2
+              accepted_path="${accepted_path}/${component}"
+              [[ ! -L "${accepted_path}" ]] || exit 2
             done
-            [[ -f "${ACCEPTED_BASELINE}" && ! -L "${ACCEPTED_BASELINE}" ]]
-          fi
+            [[ -f "${accepted_artifact}" ]] || exit 2
+          done
           [[ ! -e sibling-wiki && ! -L sibling-wiki ]]
           git -c credential.helper= -c core.askPass= clone \
             --depth 1 --single-branch --no-tags \
@@ -71,5 +81,6 @@ jobs:
         with:
           config: .llm-wiki/publication.json
           baseline: ${{ inputs.baseline }}
+          reviews: ${{ inputs.reviews }}
           target-dir: sibling-wiki
           fail-on: error

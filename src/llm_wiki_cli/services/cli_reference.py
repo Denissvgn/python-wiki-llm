@@ -21,7 +21,7 @@ from .knowledge_storage_io import read_guarded
 
 CLI_CONTRACT_SCHEMA_VERSION = "llm-wiki-cli-contract/v1"
 _SCHEMA_NAME = "llm-wiki-cli-contract-v1.schema.json"
-_MAX_BYTES = 8 * 1024 * 1024
+MAX_CLI_CONTRACT_BYTES = 8 * 1024 * 1024
 _MAX_NODES = 100_000
 _MAX_DEPTH = 32
 _ACTIONS = {
@@ -226,6 +226,11 @@ def _command(parser, name, path, *, help_text=None, deprecated=False, seen=None)
         "commands": commands,
         "subcommands_required": required,
         "defaults": _value(dict(parser._defaults)),
+        "settings": {
+            "prefix_chars": parser.prefix_chars,
+            "allow_abbrev": parser.allow_abbrev,
+            "fromfile_prefix_chars": parser.fromfile_prefix_chars,
+        },
     }
 
 
@@ -397,7 +402,10 @@ def _validate_command(node, expected_path, program):
         if argument["positional"] != (not argument["option_strings"]):
             raise CLIReferenceError("Positional argument flags disagree")
         for flag in argument["option_strings"]:
-            if not flag.startswith("-") or flag in options:
+            if (
+                not flag.startswith(tuple(node["settings"]["prefix_chars"]))
+                or flag in options
+            ):
                 raise CLIReferenceError("Option names must be distinct flags")
             options.add(flag)
         if (
@@ -463,7 +471,7 @@ def validate_cli_contract(contract: object) -> None:
         encoded = json.dumps(contract, ensure_ascii=False, allow_nan=False).encode(
             "utf-8"
         )
-        if len(encoded) > _MAX_BYTES:
+        if len(encoded) > MAX_CLI_CONTRACT_BYTES:
             raise CLIReferenceError("CLI contract exceeds its byte bound")
         schema = _schema()
         _validate_schema(contract, schema, schema, "contract")
@@ -502,7 +510,10 @@ def parse_cli_contract(raw: bytes | str) -> dict[str, Any]:
     try:
         if not isinstance(raw, (bytes, str)):
             raise CLIReferenceError("CLI contract input must be UTF-8 bytes or text")
-        if len(raw if isinstance(raw, bytes) else raw.encode("utf-8")) > _MAX_BYTES:
+        if (
+            len(raw if isinstance(raw, bytes) else raw.encode("utf-8"))
+            > MAX_CLI_CONTRACT_BYTES
+        ):
             raise CLIReferenceError("CLI contract exceeds its byte bound")
         text = raw.decode("utf-8") if isinstance(raw, bytes) else raw
         value = json.loads(text, object_pairs_hook=_pairs)
@@ -517,7 +528,9 @@ def parse_cli_contract(raw: bytes | str) -> dict[str, Any]:
 def load_cli_contract(path: str | Path) -> dict[str, Any]:
     """Read one guarded contract file as data; never load an application CLI."""
     try:
-        return parse_cli_contract(read_guarded(Path(path), _MAX_BYTES).content)
+        return parse_cli_contract(
+            read_guarded(Path(path), MAX_CLI_CONTRACT_BYTES).content
+        )
     except CLIReferenceError:
         raise
     except (OSError, ValueError, TypeError) as exc:
@@ -552,6 +565,23 @@ def render_cli_reference(contract: object) -> str:
     def render(command):
         label = " ".join([program, *command["path"]])
         lines.extend(["## " + _code(label), ""])
+        settings = command["settings"]
+        lines.extend(
+            [
+                "Option prefixes: "
+                + _code(settings["prefix_chars"])
+                + ". Long option abbreviations: "
+                + ("enabled" if settings["allow_abbrev"] else "disabled")
+                + ". Argument file prefixes: "
+                + (
+                    _code(settings["fromfile_prefix_chars"])
+                    if settings["fromfile_prefix_chars"]
+                    else "disabled"
+                )
+                + ".",
+                "",
+            ]
+        )
         for key in ("help", "description"):
             if command[key]:
                 lines.extend([_prose(command[key]), ""])

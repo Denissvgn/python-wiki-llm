@@ -1347,6 +1347,7 @@ def test_committed_profile_freezes_intended_product_census():
             "integrations/github-action",
             "integrations/wiki-integrity",
             "integrations/obsidian/llm-wiki",
+            "integrations/wiki-impact",
         ],
         "exclude": [],
     }
@@ -1428,6 +1429,7 @@ def test_committed_profile_freezes_intended_product_census():
     )
     assert [item.rel_path for item in snapshot.yaml_candidates] == [
         "integrations/github-action/action.yml",
+        "integrations/wiki-impact/action.yml",
         "integrations/wiki-integrity/action.yml",
     ]
     assert all(not path.startswith("tests/") for path in snapshot.all_source_paths)

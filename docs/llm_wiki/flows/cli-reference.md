@@ -53,7 +53,7 @@ sequenceDiagram
     participant p27 as _restore_posix_quarantined_entry
     participant p28 as _json_tree
     participant p29 as json.dumps (src/llm_wiki_cli/commands/reference_cmd.py:run)
-    participant p30 as destination.exists
+    participant p30 as content.encode
     p0->>p1: load_cli_contract
     p0->>p2: get_cli_contract
     p0->>p3: render_cli_reference
@@ -82,13 +82,13 @@ sequenceDiagram
     p10->>p26: _raise_io_error
     p13->>p27: _restore_posix_quarantined_entry
     p21->>p28: _json_tree
-    p0-->>p29: json.dumps (src/llm_wiki_cli/commands/reference_cmd.py:run)(contract, indent=2, sort_keys=True)
-    p0-->>p30: destination.exists
+    p0-->>p29: json.dumps (src/llm_wiki_cli/commands/reference_cmd.py:run)(contract, indent=2, sort_keys=True, ensure_ascii=False)
+    p0-->>p30: content.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 1509 interactions; 1479 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1515 interactions; 1485 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 456 (455 omitted); unresolved 1 of 675 (674 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 459 (458 omitted); unresolved 1 of 678 (677 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -182,8 +182,8 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `sys` | - | `none` |
-| `load_cli_contract` | `path: str \| Path` | `_MAX_BYTES`, `CLIReferenceError` | - | `parse_cli_contract(...)` |
-| `parse_cli_contract` | `raw: bytes \| str` | `_MAX_BYTES`, `_pairs`, `CLIReferenceError` | - | `value` |
+| `load_cli_contract` | `path: str \| Path` | `MAX_CLI_CONTRACT_BYTES`, `CLIReferenceError` | - | `parse_cli_contract(...)` |
+| `parse_cli_contract` | `raw: bytes \| str` | `MAX_CLI_CONTRACT_BYTES`, `_pairs`, `CLIReferenceError` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract)` | - | - | - | - |
 | `CLIReferenceError` | - | - | - | - |
 | `len (src/llm_wiki_cli/services…nce.py:parse_cli_contract)` | - | - | - | - |
@@ -198,35 +198,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | load_cli_contract | 42 | `load_cli_contract(args.input)` |
-| load_cli_contract | parse_cli_contract | 520 | `parse_cli_contract(...)` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 503 | `isinstance(raw, (...))` |
-| parse_cli_contract | CLIReferenceError | 504 | `CLIReferenceError('CLI contract input must be UTF-8 bytes or text')` |
-| parse_cli_contract | len (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 505 | `len(...)` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 505 | `isinstance(raw, bytes)` |
-| parse_cli_contract | raw.encode | 505 | `raw.encode('utf-8')` |
-| parse_cli_contract | CLIReferenceError | 506 | `CLIReferenceError('CLI contract exceeds its byte bound')` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 507 | `isinstance(raw, bytes)` |
-| parse_cli_contract | raw.decode | 507 | `raw.decode('utf-8')` |
-| parse_cli_contract | json.loads (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 508 | `json.loads(text, object_pairs_hook=_pairs)` |
+| run | load_cli_contract | 43 | `load_cli_contract(args.input)` |
+| load_cli_contract | parse_cli_contract | 531 | `parse_cli_contract(...)` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 511 | `isinstance(raw, (...))` |
+| parse_cli_contract | CLIReferenceError | 512 | `CLIReferenceError('CLI contract input must be UTF-8 bytes or text')` |
+| parse_cli_contract | len (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 514 | `len(...)` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 514 | `isinstance(raw, bytes)` |
+| parse_cli_contract | raw.encode | 514 | `raw.encode('utf-8')` |
+| parse_cli_contract | CLIReferenceError | 517 | `CLIReferenceError('CLI contract exceeds its byte bound')` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 518 | `isinstance(raw, bytes)` |
+| parse_cli_contract | raw.decode | 518 | `raw.decode('utf-8')` |
+| parse_cli_contract | json.loads (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 519 | `json.loads(text, object_pairs_hook=_pairs)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 52 |
-| output | `print` | `run` | 70 |
+| output | `print` | `run` | 67 |
+| output | `print` | `run` | 87 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `parse_cli_contract` | `isinstance` | 503 |
-| external_call | `parse_cli_contract` | `isinstance` | 505 |
-| unresolved_call | `parse_cli_contract` | `raw.encode` | 505 |
-| external_call | `parse_cli_contract` | `isinstance` | 507 |
-| unresolved_call | `parse_cli_contract` | `raw.decode` | 507 |
-| external_call | `parse_cli_contract` | `json.loads` | 508 |
+| external_call | `parse_cli_contract` | `isinstance` | 511 |
+| external_call | `parse_cli_contract` | `isinstance` | 514 |
+| unresolved_call | `parse_cli_contract` | `raw.encode` | 514 |
+| external_call | `parse_cli_contract` | `isinstance` | 518 |
+| unresolved_call | `parse_cli_contract` | `raw.decode` | 518 |
+| external_call | `parse_cli_contract` | `json.loads` | 519 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

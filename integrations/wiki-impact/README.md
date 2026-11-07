@@ -4,6 +4,13 @@ Find public wiki sections that need review when their architecture evidence chan
 
 The provider comes from this action's checkout. Pin the action to a reviewed full commit SHA. The action creates a separate virtual environment, installs that provider noneditably, and verifies its installed code against the action source. Your application's package and virtual environment are not installed or changed.
 
+An opted-in `llm-wiki-cli` reference describes this isolated action provider.
+For an application's own command definitions, use a `contract-file` provider
+and verify its saved data against the exact application candidate before this
+action runs. The [CLI reference guide](../../docs/cli-reference-data.md#keep-an-applications-saved-contract-current)
+provides a consumer-owned export and comparison recipe. The action reads that
+data without importing the application or running its adapter.
+
 Follow the [sibling wiki guide](../../docs/sibling-wiki.md) to configure architecture dependencies and review state. The example below assumes the consumer provides its native wiki, an accepted snapshot and review ledger, and a local public wiki copy at `sibling-wiki/`. An accepted ledger with no decisions has `schema_version: llm-wiki-publication-reviews/v1` and an empty `records` array.
 
 ```yaml

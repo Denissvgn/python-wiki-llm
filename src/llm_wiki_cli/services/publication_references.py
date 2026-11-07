@@ -132,23 +132,44 @@ def _ancestor_context(command):
         for arg in command["arguments"]
         if arg["action"] not in {"subparsers", "help", "version"}
     ]
-    identities = {arg["id"] for arg in arguments}
-    groups = []
-    for group in command["groups"]:
-        members = [member for member in group["members"] if member in identities]
-        if members:
-            groups.append({**group, "members": members})
-    exclusive = []
-    for group in command["exclusive_groups"]:
-        members = [member for member in group["members"] if member in identities]
-        if members:
-            exclusive.append({**group, "members": members})
+    identities = {arg["id"]: f"argument:{index}" for index, arg in enumerate(arguments)}
+
+    def project_groups(key, prefix):
+        groups, identities_for_groups = [], {}
+        for group in command[key]:
+            members = [
+                identities[member]
+                for member in group["members"]
+                if member in identities
+            ]
+            if members:
+                identity = f"{prefix}:{len(groups)}"
+                identities_for_groups[group["id"]] = identity
+                groups.append({**group, "id": identity, "members": members})
+        return groups, identities_for_groups
+
+    groups, group_ids = project_groups("groups", "group")
+    exclusive, exclusive_ids = project_groups("exclusive_groups", "exclusive")
+    # IDs are local coordinates in the full declaration. Rebase retained IDs
+    # so an excluded help/version action cannot shift a scoped review basis.
+    arguments = [
+        {
+            **arg,
+            "id": identities[arg["id"]],
+            "group": group_ids[arg["group"]],
+            "exclusive_groups": [
+                exclusive_ids[identity] for identity in arg["exclusive_groups"]
+            ],
+        }
+        for arg in arguments
+    ]
     return {
         "path": command["path"],
         "aliases": command["aliases"],
         "deprecated": command["deprecated"],
         "notes": command["notes"],
         "defaults": command["defaults"],
+        "settings": command["settings"],
         "arguments": arguments,
         "groups": groups,
         "exclusive_groups": exclusive,

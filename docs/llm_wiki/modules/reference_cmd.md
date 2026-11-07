@@ -10,7 +10,7 @@ Generate or render stable command reference data.
 
 | Source | Symbols |
 |--------|---------|
-| `..services.cli_reference` | `get_cli_contract`, `load_cli_contract`, `render_cli_reference` |
+| `..services.cli_reference` | `MAX_CLI_CONTRACT_BYTES`, `get_cli_contract`, `load_cli_contract`, `render_cli_reference` |
 | `..services.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `..services.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `__future__` | `annotations` |

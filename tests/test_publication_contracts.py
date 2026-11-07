@@ -157,13 +157,20 @@ def cli_contract(*, application=False):
                 "commands": [],
                 "subcommands_required": False,
                 "defaults": {},
+                "settings": {
+                    "prefix_chars": "-",
+                    "allow_abbrev": True,
+                    "fromfile_prefix_chars": None,
+                },
             },
         },
         "contract_id",
     )
 
 
-def reference_basis(*, provider: dict[str, Any] | None = None, contract: Any = "builtin"):
+def reference_basis(
+    *, provider: dict[str, Any] | None = None, contract: Any = "builtin"
+):
     payload = basis()
     provider = {"kind": "llm-wiki-cli"} if provider is None else provider
     payload["config"]["reference_providers"] = {"cli.v1": provider}
