@@ -15,7 +15,7 @@ Read-only public wiki impact and explicit review record preparation.
 | `..services.knowledge_storage` | `KnowledgeStorageError` |
 | `..services.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `..services.publication_config` | `load_publication_config` |
-| `..services.publication_impact` | `IMPACT_SCHEMA`, `capture_publication_basis`, `compare_publication_impact`, `read_publication_document`, `render_publication_impact`, `resolve_publication_finding` |
+| `..services.publication_impact` | `IMPACT_SCHEMA`, `MAX_JSON_BYTES`, `capture_publication_basis`, `compare_publication_impact`, `read_publication_document`, `render_publication_impact`, `resolve_publication_finding` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `json` | `json` |
@@ -82,6 +82,10 @@ flowchart LR
 | `_common` | `(parser, *, child = False)` | — | — |
 | `add_impact_command` | `(docs_sub)` | — | — |
 | `_artifact_path` | `(args, value)` | — | — |
-| `_write` | `(args, value, *, expected_document = None)` | — | — |
+| `_same_file` | `(left: Path, right: Path) -> bool` | — | — |
+| `_inside_input_tree` | `(destination: Path, source: Path) -> bool` | — | — |
+| `_declared_files` | `(config)` | — | — |
+| `_document_bytes` | `(value)` | — | — |
+| `_write` | `(args, value, *, expected_document = None, input_basis = None)` | — | — |
 | `_error_report` | `(message)` | — | — |
 | `run` | `(args)` | — | — |

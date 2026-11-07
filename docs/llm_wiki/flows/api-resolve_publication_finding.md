@@ -94,7 +94,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 23; effect analysis evaluated: 15, partial: 0, unavailable: 8. Counts include steps omitted from the displayed trace.
 
-Collector observations for 15 source steps with known totals: observed: 57, emitted: 57, omitted: 0. Unavailable totals are excluded.
+Collector observations for 15 source steps with known totals: observed: 58, emitted: 58, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -105,7 +105,7 @@ Collector observations for 15 source steps with known totals: observed: 57, emit
 | `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `validate_publication_report` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_guard` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `_json_tree` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_json_tree` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `pending.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_fail` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `PublicationProtocolError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -170,7 +170,7 @@ flowchart LR
 | `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `report: Mapping[str, Any]`, `candidate: Mapping[str, Any]`, `finding_id: str`, `reviewer: str`, `reason: str`, `reviews: Mapping[str, Any] \| None`, `decision: str` | `REVIEWS_SCHEMA` | - | `result` |
 | `validate_publication_report` | `value: object` | `_report` | - | - |
 | `_guard` | `callback`, `value: object` | `PublicationProtocolError` | - | `callback(...)` |
-| `_json_tree` | `value: object` | `Mapping` | - | - |
+| `_json_tree` | `value: object` | `_MAX_JSON_NODES`, `Mapping` | - | - |
 | `pending.pop` | - | - | - | - |
 | `_fail` | `field: str`, `message: str` | - | - | - |
 | `PublicationProtocolError` | - | - | - | - |
@@ -184,33 +184,33 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3623 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
-| resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 478 | `validate_publication_report(report)` |
-| validate_publication_report | _guard | 890 | `_guard(_report, value)` |
-| _guard | _json_tree | 870 | `_json_tree(value)` |
-| _json_tree | pending.pop | 134 | `pending.pop(data not statically known)` |
-| _json_tree | _fail | 137 | `_fail('document', 'exceeds JSON structural bounds')` |
-| _fail | PublicationProtocolError | 42 | `PublicationProtocolError(...)` |
-| _json_tree | isinstance | 138 | `isinstance(item, Mapping)` |
-| _json_tree | any (src/llm_wiki_cli/services…on_contracts.py:_json_tree) | 139 | `any(...)` |
-| _json_tree | type | 139 | `type(key)` |
-| _json_tree | _fail | 140 | `_fail('document', 'object keys must be strings')` |
+| resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 480 | `validate_publication_report(report)` |
+| validate_publication_report | _guard | 891 | `_guard(_report, value)` |
+| _guard | _json_tree | 871 | `_json_tree(value)` |
+| _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
+| _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
+| _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
+| _json_tree | isinstance | 139 | `isinstance(item, Mapping)` |
+| _json_tree | any (src/llm_wiki_cli/services…on_contracts.py:_json_tree) | 140 | `any(...)` |
+| _json_tree | type | 140 | `type(key)` |
+| _json_tree | _fail | 141 | `_fail('document', 'object keys must be strings')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `records.append` | `resolve_publication_finding` | 526 |
-| mutation | `pending.pop` | `_json_tree` | 134 |
-| mutation | `pending.extend` | `_json_tree` | 141 |
-| mutation | `pending.extend` | `_json_tree` | 143 |
+| mutation | `records.append` | `resolve_publication_finding` | 528 |
+| mutation | `pending.pop` | `_json_tree` | 135 |
+| mutation | `pending.extend` | `_json_tree` | 142 |
+| mutation | `pending.extend` | `_json_tree` | 144 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_json_tree` | `isinstance` | 138 |
-| external_call | `_json_tree` | `any` | 139 |
-| external_call | `_json_tree` | `type` | 139 |
+| external_call | `_json_tree` | `isinstance` | 139 |
+| external_call | `_json_tree` | `any` | 140 |
+| external_call | `_json_tree` | `type` | 140 |
 | step_limit | `resolve_publication_finding` | `first 12 steps` | 0 |
 
 ## Behavior

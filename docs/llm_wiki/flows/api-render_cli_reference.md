@@ -184,20 +184,20 @@ flowchart LR
 | render_cli_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_cli_reference) | 3562 | `isinstance(contract, Mapping)` |
 | render_cli_reference (src/llm_wiki_cli/api.py) | ValueError | 3563 | `ValueError('CLI contract must be a mapping')` |
 | render_cli_reference (src/llm_wiki_cli/api.py) | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | 3564 | `render(dict(...))` |
-| render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | validate_cli_contract | 553 | `validate_cli_contract(contract)` |
-| validate_cli_contract | _json_tree | 470 | `_json_tree(contract)` |
-| _json_tree | CLIReferenceError | 305 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 306 | `type(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 308 | `type(value)` |
-| _json_tree | math.isfinite | 308 | `math.isfinite(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 310 | `type(value)` |
-| _json_tree | _json_tree | 312 | `_json_tree(item, ..., budget)` |
+| render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | validate_cli_contract | 569 | `validate_cli_contract(contract)` |
+| validate_cli_contract | _json_tree | 486 | `_json_tree(contract)` |
+| _json_tree | CLIReferenceError | 321 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 322 | `type(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 324 | `type(value)` |
+| _json_tree | math.isfinite | 324 | `math.isfinite(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 326 | `type(value)` |
+| _json_tree | _json_tree | 328 | `_json_tree(item, ..., budget)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.extend` | `render_cli_reference` | 563 |
+| mutation | `lines.extend` | `render_cli_reference` | 579 |
 
 ### Static analysis gaps
 
@@ -205,10 +205,10 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `render_cli_reference` | `isinstance` | 3562 |
 | external_call | `render_cli_reference` | `ValueError` | 3563 |
-| external_call | `_json_tree` | `type` | 306 |
-| external_call | `_json_tree` | `type` | 308 |
-| external_call | `_json_tree` | `math.isfinite` | 308 |
-| external_call | `_json_tree` | `type` | 310 |
+| external_call | `_json_tree` | `type` | 322 |
+| external_call | `_json_tree` | `type` | 324 |
+| external_call | `_json_tree` | `math.isfinite` | 324 |
+| external_call | `_json_tree` | `type` | 326 |
 | step_limit | `render_cli_reference` | `first 12 steps` | 0 |
 
 ## Behavior

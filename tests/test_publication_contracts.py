@@ -1,6 +1,8 @@
 """Imported publication documents retain exact, bounded, qualified contracts."""
 
 from copy import deepcopy
+import argparse
+import json
 from typing import Any
 
 import pytest
@@ -20,6 +22,11 @@ from llm_wiki_cli.services.publication_contracts import (
 )
 from llm_wiki_cli.services.publication_impact import compare_publication_impact
 from llm_wiki_cli.services.publication_snapshot import build_publication_snapshot
+from llm_wiki_cli.services import publication_contracts, publication_impact
+from llm_wiki_cli.services.cli_reference import (
+    build_cli_contract,
+    validate_cli_contract,
+)
 from tests.test_snapshot_query_validation import _committed_snapshot
 
 
@@ -238,6 +245,46 @@ def test_reference_inputs_are_opt_in_and_legacy_bases_retain_their_shape():
     before = deepcopy(payload)
     validate_publication_basis(payload)
     assert payload == before
+
+
+def test_capture_enforces_the_aggregate_basis_node_bound(tmp_path, monkeypatch):
+    fixture = basis()
+    policy = deepcopy(fixture["config"])
+    provider = {"kind": "contract-file", "path": "reference.json"}
+    policy["reference_providers"] = {"first": provider}
+    policy["topics"][0]["depends_on"] = [{"reference": "first", "command": []}]
+    policy = validate_publication_config(policy, consumer_root=None)
+    (tmp_path / "wiki").mkdir()
+    parser = argparse.ArgumentParser(prog="application", add_help=False)
+    parser.add_argument("--values", default=[0] * 400)
+    contract = build_cli_contract(
+        parser,
+        program="application",
+        package={"name": "application", "version": "1", "requires_python": None},
+    )
+    validate_cli_contract(contract)
+    (tmp_path / "reference.json").write_text(json.dumps(contract), encoding="utf-8")
+    monkeypatch.setattr(
+        publication_impact,
+        "load_publication_config",
+        lambda *args, **kwargs: deepcopy(policy),
+    )
+    monkeypatch.setattr(
+        publication_impact,
+        "build_publication_snapshot",
+        lambda root: deepcopy(fixture["architecture"]),
+    )
+    # Each contract and a complete one-provider basis fit. Combining otherwise
+    # valid inputs must fail capture before returning a basis that cannot later
+    # pass the same publication protocol's aggregate structural bound.
+    monkeypatch.setattr(publication_contracts, "_MAX_JSON_NODES", 1000)
+    single = publication_impact.capture_publication_basis(tmp_path)
+    validate_publication_basis(single)
+    policy["reference_providers"]["second"] = provider
+    policy["topics"][0]["depends_on"].append({"reference": "second", "command": []})
+    policy = validate_publication_config(policy, consumer_root=None)
+    with pytest.raises(PublicationProtocolError, match="JSON structural bounds"):
+        publication_impact.capture_publication_basis(tmp_path)
 
 
 def test_custom_cli_and_known_missing_contract_files_are_valid_portable_inputs():

@@ -1,6 +1,6 @@
 # CLIReferenceError
 
-**Location:** `src/llm_wiki_cli/services/cli_reference.py:43`
+**Location:** `src/llm_wiki_cli/services/cli_reference.py:46`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [cli_reference](../modules/cli_reference.md)
@@ -25,10 +25,10 @@ flowchart LR
     n0["CLIReferenceError (src/llm_wiki_cli/services/cli_reference.py)"]
     n1["ValueError"]
     n2["_command (src/llm_wiki_cli/services/cli_reference.py)"]
-    n3["_json_tree (src/llm_wiki_cli/services/cli_reference.py)"]
-    n4["_notes (src/llm_wiki_cli/services/cli_reference.py)"]
-    n5["_pairs (src/llm_wiki_cli/services/cli_reference.py)"]
-    n6["_symbol (src/llm_wiki_cli/services/cli_reference.py)"]
+    n3["_custom_symbol (src/llm_wiki_cli/services/cli_reference.py)"]
+    n4["_json_tree (src/llm_wiki_cli/services/cli_reference.py)"]
+    n5["_notes (src/llm_wiki_cli/services/cli_reference.py)"]
+    n6["_pairs (src/llm_wiki_cli/services/cli_reference.py)"]
     n7["_text (src/llm_wiki_cli/services/cli_reference.py)"]
     n8["_validate_command (src/llm_wiki_cli/services/cli_reference.py)"]
     n9["_validate_schema (src/llm_wiki_cli/services/cli_reference.py)"]
@@ -81,10 +81,10 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_command` | call | [cli_reference](../modules/cli_reference.md) | 1 |
+| `_custom_symbol` | call | [cli_reference](../modules/cli_reference.md) | 1 |
 | `_json_tree` | call | [cli_reference](../modules/cli_reference.md) | 2 |
 | `_notes` | call | [cli_reference](../modules/cli_reference.md) | 1 |
 | `_pairs` | call | [cli_reference](../modules/cli_reference.md) | 1 |
-| `_symbol` | call | [cli_reference](../modules/cli_reference.md) | 1 |
 | `_text` | call | [cli_reference](../modules/cli_reference.md) | 1 |
 | `_validate_command` | call | [cli_reference](../modules/cli_reference.md) | 14 |
 | `_validate_schema` | call | [cli_reference](../modules/cli_reference.md) | 8 |

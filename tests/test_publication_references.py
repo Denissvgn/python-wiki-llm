@@ -11,7 +11,9 @@ from llm_wiki_cli.services.cli_reference import (
     build_cli_contract,
     get_cli_contract,
     render_cli_reference,
+    validate_cli_contract,
 )
+from llm_wiki_cli.services.knowledge_evidence import hash_json
 from llm_wiki_cli.services import publication_impact as impact
 from tests.test_publication_impact import consumer as consumer
 
@@ -137,6 +139,97 @@ def test_changed_ancestor_parsing_policy_reopens_descendant_review(
     assert report["complete"] and report["review_required"]
 
 
+@pytest.mark.parametrize("command", [["create"], ["add"]])
+def test_valid_external_ungrouped_ancestor_argument_remains_reviewable(
+    consumer, command
+):
+    configure(consumer, command=command)
+    path = consumer / "app-reference.json"
+
+    def saved_contract(endpoint):
+        contract = app_contract(endpoint=endpoint)
+        argument = next(
+            item for item in contract["root"]["arguments"] if item["dest"] == "endpoint"
+        )
+        group = next(
+            item
+            for item in contract["root"]["groups"]
+            if item["id"] == argument["group"]
+        )
+        group["members"].remove(argument["id"])
+        argument["group"] = None
+        contract["contract_id"] = hash_json(
+            {key: value for key, value in contract.items() if key != "contract_id"}
+        )
+        validate_cli_contract(contract)
+        return contract
+
+    path.write_text(json.dumps(saved_contract("production")))
+    before = capture(consumer)
+    unchanged = impact.compare_publication_impact(capture(consumer, before), before)
+    assert unchanged["complete"] and not unchanged["review_required"]
+    path.write_text(json.dumps(saved_contract("staging")))
+    report = impact.compare_publication_impact(capture(consumer, before), before)
+    assert report["complete"] and report["review_required"]
+
+
+@pytest.mark.parametrize("command", [["create"], ["add"]])
+def test_ancestor_subcommand_boundary_reopens_positional_syntax_review(
+    consumer, command
+):
+    configure(consumer, command=command)
+    path = consumer / "app-reference.json"
+
+    def parser(after):
+        value = argparse.ArgumentParser(prog="accounts")
+        if not after:
+            value.add_argument("context", nargs="?", default="default")
+        commands = value.add_subparsers(dest="action")
+        commands.add_parser("create", aliases=["add"])
+        if after:
+            value.add_argument("context", nargs="?", default="default")
+        return value
+
+    original, changed = parser(False), parser(True)
+    assert original.parse_args(["user", *command]).context == "user"
+    with pytest.raises(SystemExit):
+        changed.parse_args(["user", *command])
+
+    def write_contract(value):
+        contract = build_cli_contract(
+            value,
+            package={"name": "accounts", "version": "1", "requires_python": None},
+            program="accounts",
+        )
+        path.write_text(json.dumps(contract))
+
+    write_contract(original)
+    before = capture(consumer)
+    write_contract(changed)
+    report = impact.compare_publication_impact(capture(consumer, before), before)
+    assert report["complete"] and report["review_required"]
+
+
+def test_ancestor_subparser_namespace_change_reopens_descendant_review(consumer):
+    configure(consumer)
+    path = consumer / "app-reference.json"
+    original = app_contract()
+    path.write_text(json.dumps(original))
+    before = capture(consumer)
+    changed = deepcopy(original)
+    selector = next(
+        item for item in changed["root"]["arguments"] if item["action"] == "subparsers"
+    )
+    selector["dest"] = "operation"
+    changed["contract_id"] = hash_json(
+        {key: value for key, value in changed.items() if key != "contract_id"}
+    )
+    validate_cli_contract(changed)
+    path.write_text(json.dumps(changed))
+    report = impact.compare_publication_impact(capture(consumer, before), before)
+    assert report["complete"] and report["review_required"]
+
+
 @pytest.mark.parametrize("command", [["create"], ["add"], []])
 def test_added_ancestor_display_action_does_not_shift_scoped_review(consumer, command):
     configure(consumer, command=command)
@@ -240,6 +333,28 @@ def test_builtin_provider_is_explicit_and_legacy_capture_is_unchanged(
         == "llm-wiki"
     )
     assert impact.compare_publication_impact(candidate)["complete"]
+
+
+def test_reference_capture_budget_counts_utf8_without_ascii_expansion(
+    consumer, monkeypatch
+):
+    from llm_wiki_cli.services import publication_references
+
+    value = app_contract(name="é" * 512)
+    policy = configure(consumer)
+    policy["reference_providers"]["another"] = {
+        "kind": "contract-file",
+        "path": "app-reference.json",
+    }
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    (consumer / "app-reference.json").write_text(
+        json.dumps(value, ensure_ascii=False), encoding="utf-8"
+    )
+    budget = 2 * len(
+        json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    )
+    monkeypatch.setattr(publication_references, "MAX_CAPTURE_BYTES", budget)
+    assert len(capture(consumer)["references"]) == 2
 
 
 def test_reference_cli_and_saved_renderer_use_the_same_contract(

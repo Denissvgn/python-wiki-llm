@@ -27,6 +27,7 @@ from .wiki_surface import PageKind, canonical_path, iter_page_kinds, mcp_uri
 
 _MAX_ITEMS = 65_536
 _MAX_REFERENCES = 128
+_MAX_JSON_NODES = 5_000_000
 _BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
 _SNAPSHOT_SCHEMA = "llm-wiki-publication-snapshot/v1"
 _REPORT_SCHEMA = "llm-wiki-publication-impact/v1"
@@ -133,7 +134,7 @@ def _json_tree(value: object) -> None:
     while pending:
         item, depth = pending.pop()
         count += 1
-        if depth > 64 or count > 5_000_000:
+        if depth > 64 or count > _MAX_JSON_NODES:
             _fail("document", "exceeds JSON structural bounds")
         if isinstance(item, Mapping):
             if any(type(key) is not str for key in item):

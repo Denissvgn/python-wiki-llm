@@ -2376,37 +2376,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 241,
+              "line": 257,
               "step": "build_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 69,
+              "line": 72,
               "step": "_value",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 70,
+              "line": 73,
               "step": "_value",
               "target": "value.is_absolute"
             },
             {
               "kind": "unresolved_call",
-              "line": 74,
+              "line": 77,
               "step": "_value",
               "target": "value.as_posix"
             },
             {
               "kind": "external_call",
-              "line": 75,
+              "line": 78,
               "step": "_value",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 77,
+              "line": 80,
               "step": "_value",
               "target": "type"
             },
@@ -2428,7 +2428,7 @@
             "src/llm_wiki_cli/services/cli_reference.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 232,
+          "step_count": 236,
           "truncated": false
         }
       },
@@ -6159,7 +6159,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/instruction_ownership.py"
           ],
-          "step_count": 634,
+          "step_count": 635,
           "truncated": true
         }
       },
@@ -7339,7 +7339,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 399,
+              "line": 401,
               "step": "compare_publication_impact",
               "step_index": 2,
               "target": "findings.append"
@@ -7347,7 +7347,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 134,
+              "line": 135,
               "step": "_json_tree",
               "step_index": 9,
               "target": "pending.pop"
@@ -7355,7 +7355,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 141,
+              "line": 142,
               "step": "_json_tree",
               "step_index": 9,
               "target": "pending.extend"
@@ -7363,7 +7363,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 143,
+              "line": 144,
               "step": "_json_tree",
               "step_index": 9,
               "target": "pending.extend"
@@ -7372,13 +7372,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 373,
+              "line": 375,
               "step": "compare_publication_impact",
               "target": "deepcopy"
             },
             {
               "kind": "external_call",
-              "line": 374,
+              "line": 376,
               "step": "compare_publication_impact",
               "target": "deepcopy"
             },
@@ -11812,31 +11812,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 241,
+              "line": 257,
               "step": "build_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 69,
+              "line": 72,
               "step": "_value",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 70,
+              "line": 73,
               "step": "_value",
               "target": "value.is_absolute"
             },
             {
               "kind": "unresolved_call",
-              "line": 74,
+              "line": 77,
               "step": "_value",
               "target": "value.as_posix"
             },
             {
               "kind": "external_call",
-              "line": 75,
+              "line": 78,
               "step": "_value",
               "target": "type"
             },
@@ -11867,7 +11867,7 @@
             "src/llm_wiki_cli/commands/reference_cmd.py",
             "src/llm_wiki_cli/commands/publication_cmd.py"
           ],
-          "step_count": 921,
+          "step_count": 925,
           "truncated": true
         }
       },
@@ -22334,7 +22334,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 563,
+              "line": 579,
               "step": "render_cli_reference",
               "step_index": 4,
               "target": "lines.extend"
@@ -22355,25 +22355,25 @@
             },
             {
               "kind": "external_call",
-              "line": 306,
+              "line": 322,
               "step": "_json_tree",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 308,
+              "line": 324,
               "step": "_json_tree",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 308,
+              "line": 324,
               "step": "_json_tree",
               "target": "math.isfinite"
             },
             {
               "kind": "external_call",
-              "line": 310,
+              "line": 326,
               "step": "_json_tree",
               "target": "type"
             },
@@ -25350,7 +25350,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 526,
+              "line": 528,
               "step": "resolve_publication_finding",
               "step_index": 2,
               "target": "records.append"
@@ -25358,7 +25358,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 134,
+              "line": 135,
               "step": "_json_tree",
               "step_index": 5,
               "target": "pending.pop"
@@ -25366,7 +25366,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 141,
+              "line": 142,
               "step": "_json_tree",
               "step_index": 5,
               "target": "pending.extend"
@@ -25374,7 +25374,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 143,
+              "line": 144,
               "step": "_json_tree",
               "step_index": 5,
               "target": "pending.extend"
@@ -25383,19 +25383,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 138,
+              "line": 139,
               "step": "_json_tree",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 139,
+              "line": 140,
               "step": "_json_tree",
               "target": "any"
             },
             {
               "kind": "external_call",
-              "line": 139,
+              "line": 140,
               "step": "_json_tree",
               "target": "type"
             },
@@ -29499,31 +29499,31 @@
             },
             {
               "kind": "external_call",
-              "line": 306,
+              "line": 322,
               "step": "_json_tree",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 308,
+              "line": 324,
               "step": "_json_tree",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 308,
+              "line": 324,
               "step": "_json_tree",
               "target": "math.isfinite"
             },
             {
               "kind": "external_call",
-              "line": 310,
+              "line": 326,
               "step": "_json_tree",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 314,
+              "line": 330,
               "step": "_json_tree",
               "target": "type"
             },
@@ -36321,37 +36321,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 511,
+              "line": 527,
               "step": "parse_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 514,
+              "line": 530,
               "step": "parse_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 514,
+              "line": 530,
               "step": "parse_cli_contract",
               "target": "raw.encode"
             },
             {
               "kind": "external_call",
-              "line": 518,
+              "line": 534,
               "step": "parse_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 518,
+              "line": 534,
               "step": "parse_cli_contract",
               "target": "raw.decode"
             },
             {
               "kind": "external_call",
-              "line": 519,
+              "line": 535,
               "step": "parse_cli_contract",
               "target": "json.loads"
             },
@@ -36385,7 +36385,7 @@
             "src/llm_wiki_cli/cli.py",
             "src/llm_wiki_cli/commands/publication_cmd.py"
           ],
-          "step_count": 1516,
+          "step_count": 1520,
           "truncated": true
         }
       },
@@ -70520,5 +70520,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:9a2e9c2d57936f1986c142abfc66ffd9ad6b746984a838266382b24daaa9bf8f"
+  "source_hash": "sha256:1c5641f2f9fced879e458eba5796e69696be6d282516cc25ae15258f2af1d8be"
 }

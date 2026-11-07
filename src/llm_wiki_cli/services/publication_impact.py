@@ -206,7 +206,9 @@ def capture_publication_basis(
     }
     if references:
         result["references"] = references
-    return _seal(result, "basis_id")
+    captured = _seal(result, "basis_id")
+    validate_publication_basis(captured)
+    return captured
 
 
 def _dependency_basis(

@@ -43,7 +43,11 @@ def capture_reference_inputs(config, baseline, root, session):
             if path.exists():
                 raw = session.read(configuration["path"], MAX_REFERENCE_BYTES)
                 contract = parse_cli_contract(raw)
-        total += len(json.dumps(contract, sort_keys=True).encode("utf-8"))
+        total += len(
+            json.dumps(
+                contract, sort_keys=True, ensure_ascii=False, allow_nan=False
+            ).encode("utf-8")
+        )
         if total > MAX_CAPTURE_BYTES:
             raise ValueError(
                 "Captured reference contracts exceed the publication budget"
@@ -133,6 +137,22 @@ def _ancestor_context(command):
         if arg["action"] not in {"subparsers", "help", "version"}
     ]
     identities = {arg["id"]: f"argument:{index}" for index, arg in enumerate(arguments)}
+    positional_syntax = []
+    for argument in command["arguments"]:
+        if argument["action"] == "subparsers":
+            # A subcommand boundary changes how ancestor positionals consume
+            # tokens. Keep its namespace and grammar, excluding sibling choices
+            # and presentation metadata that do not govern this descendant.
+            positional_syntax.append(
+                {
+                    "subcommand": {
+                        key: argument[key]
+                        for key in ("dest", "nargs", "required", "default")
+                    }
+                }
+            )
+        elif argument["positional"] and argument["id"] in identities:
+            positional_syntax.append({"argument": identities[argument["id"]]})
 
     def project_groups(key, prefix):
         groups, identities_for_groups = [], {}
@@ -156,7 +176,7 @@ def _ancestor_context(command):
         {
             **arg,
             "id": identities[arg["id"]],
-            "group": group_ids[arg["group"]],
+            "group": None if arg["group"] is None else group_ids[arg["group"]],
             "exclusive_groups": [
                 exclusive_ids[identity] for identity in arg["exclusive_groups"]
             ],
@@ -171,6 +191,7 @@ def _ancestor_context(command):
         "defaults": command["defaults"],
         "settings": command["settings"],
         "arguments": arguments,
+        "positional_syntax": positional_syntax,
         "groups": groups,
         "exclusive_groups": exclusive,
     }

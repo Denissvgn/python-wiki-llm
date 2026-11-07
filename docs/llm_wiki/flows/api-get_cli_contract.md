@@ -38,17 +38,17 @@ sequenceDiagram
     participant p15 as _text
     participant p16 as _argument
     participant p17 as _add_init_command
-    participant p18 as _add_extract_command
-    participant p19 as _add_lint_command
-    participant p20 as _add_prepare_extractors_command
-    participant p21 as _add_ci_check_command
-    participant p22 as _add_knowledge_command
-    participant p23 as _symbol
+    participant p18 as _custom_symbol
+    participant p19 as _add_extract_command
+    participant p20 as _add_lint_command
+    participant p21 as _add_prepare_extractors_command
+    participant p22 as _add_ci_check_command
+    participant p23 as _add_knowledge_command
     participant p24 as _add_team_command
-    participant p25 as _add_trigger_agent_command
-    participant p26 as _add_bootstrap_command
-    participant p27 as _add_generate_prompt_command
-    participant p28 as _add_metrics_command
+    participant p25 as _symbol
+    participant p26 as _add_trigger_agent_command
+    participant p27 as _add_bootstrap_command
+    participant p28 as _add_generate_prompt_command
     participant p29 as isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)
     participant p30 as _package_identity
     participant p31 as source_metadata.read_text
@@ -69,24 +69,24 @@ sequenceDiagram
     p6->>p15: _text
     p6->>p16: _argument
     p11->>p17: _add_init_command
-    p11->>p18: _add_extract_command
-    p11->>p19: _add_lint_command
-    p11->>p20: _add_prepare_extractors_command
-    p11->>p21: _add_ci_check_command
-    p11->>p22: _add_knowledge_command
-    p16->>p23: _symbol
+    p16->>p18: _custom_symbol
+    p11->>p19: _add_extract_command
+    p11->>p20: _add_lint_command
+    p11->>p21: _add_prepare_extractors_command
+    p11->>p22: _add_ci_check_command
+    p11->>p23: _add_knowledge_command
     p11->>p24: _add_team_command
-    p11->>p25: _add_trigger_agent_command
-    p11->>p26: _add_bootstrap_command
-    p11->>p27: _add_generate_prompt_command
-    p11->>p28: _add_metrics_command
+    p16->>p25: _symbol
+    p11->>p26: _add_trigger_agent_command
+    p11->>p27: _add_bootstrap_command
+    p11->>p28: _add_generate_prompt_command
     p2-->>p29: isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)(parser, argparse.ArgumentParser)
     p30-->>p31: source_metadata.read_text(encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 920 interactions; 890 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 924 interactions; 894 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 114 (113 omitted); unresolved 1 of 596 (595 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 116 (115 omitted); unresolved 1 of 596 (595 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | external | 24 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | unresolved | 14 |
-> Omission summary shows 8 of 120 groups; 112 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 121 groups; 113 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 211; effect analysis evaluated: 176, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
+Source steps: 213; effect analysis evaluated: 178, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
 
-Collector observations for 176 source steps with known totals: observed: 542, emitted: 542, omitted: 0. Unavailable totals are excluded.
+Collector observations for 178 source steps with known totals: observed: 546, emitted: 546, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -191,16 +191,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3554 | `get_contract(data not statically known)` |
-| get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 287 | `build_cli_contract(build_cli_parser(...), package=_package_identity(...), program='llm-wiki')` |
-| build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 241 | `isinstance(parser, argparse.ArgumentParser)` |
-| build_cli_contract | CLIReferenceError | 242 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
-| build_cli_contract | _value | 245 | `_value(dict(...))` |
-| _value | CLIReferenceError | 68 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
-| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 69 | `isinstance(value, Path)` |
-| _value | value.is_absolute | 70 | `value.is_absolute(data not statically known)` |
-| _value | CLIReferenceError | 71 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
-| _value | value.as_posix | 74 | `value.as_posix(data not statically known)` |
-| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 75 | `type(value)` |
+| get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 303 | `build_cli_contract(build_cli_parser(...), package=_package_identity(...), program='llm-wiki')` |
+| build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 257 | `isinstance(parser, argparse.ArgumentParser)` |
+| build_cli_contract | CLIReferenceError | 258 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
+| build_cli_contract | _value | 261 | `_value(dict(...))` |
+| _value | CLIReferenceError | 71 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
+| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 72 | `isinstance(value, Path)` |
+| _value | value.is_absolute | 73 | `value.is_absolute(data not statically known)` |
+| _value | CLIReferenceError | 74 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | value.as_posix | 77 | `value.as_posix(data not statically known)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 78 | `type(value)` |
 
 ### Boundary effects
 
@@ -210,11 +210,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_cli_contract` | `isinstance` | 241 |
-| external_call | `_value` | `isinstance` | 69 |
-| unresolved_call | `_value` | `value.is_absolute` | 70 |
-| unresolved_call | `_value` | `value.as_posix` | 74 |
-| external_call | `_value` | `type` | 75 |
+| external_call | `build_cli_contract` | `isinstance` | 257 |
+| external_call | `_value` | `isinstance` | 72 |
+| unresolved_call | `_value` | `value.is_absolute` | 73 |
+| unresolved_call | `_value` | `value.as_posix` | 77 |
+| external_call | `_value` | `type` | 78 |
 | step_limit | `get_cli_contract` | `first 12 steps` | 0 |
 | truncated_flow | `get_cli_contract` | `depth limit` | 0 |
 

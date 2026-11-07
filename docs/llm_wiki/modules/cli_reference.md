@@ -82,7 +82,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CLIReferenceError](../entities/CLIReferenceError.md) | 43 | `ValueError` | CLI declarations or supplied reference data violate the portable contract. |
+| [CLIReferenceError](../entities/CLIReferenceError.md) | 46 | `ValueError` | CLI declarations or supplied reference data violate the portable contract. |
 
 ## Functions
 
@@ -91,6 +91,7 @@ flowchart LR
 | `_text` | `(value: object) -> str \| None` | — | — |
 | `_notes` | `(owner: object) -> list[str]` | — | — |
 | `_value` | `(value: object, depth: int = 0) -> Any` | — | — |
+| `_custom_symbol` | `(value: object) -> str` | — | — |
 | `_symbol` | `(value: object) -> str \| None` | — | — |
 | `_argument` | `(action, identity, group, exclusive)` | — | — |
 | `_command` | `(parser, name, path, *, help_text = None, deprecated = False, seen = None)` | — | — |

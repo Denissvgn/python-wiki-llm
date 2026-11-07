@@ -93,7 +93,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 37 | `ValueError` | An imported publication document violates its versioned contract. |
+| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 38 | `ValueError` | An imported publication document violates its versioned contract. |
 
 ## Functions
 

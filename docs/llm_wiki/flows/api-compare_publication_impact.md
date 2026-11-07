@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 39; effect analysis evaluated: 34, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
-Collector observations for 34 source steps with known totals: observed: 119, emitted: 119, omitted: 0. Unavailable totals are excluded.
+Collector observations for 34 source steps with known totals: observed: 122, emitted: 122, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -125,7 +125,7 @@ Collector observations for 34 source steps with known totals: observed: 119, emi
 | `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_publication_basis` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_guard` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `_json_tree` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_json_tree` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `pending.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_fail` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `PublicationProtocolError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -189,7 +189,7 @@ flowchart LR
 | `dict` | - | - | - | - |
 | `validate_publication_basis` | `value: object` | `_basis` | - | - |
 | `_guard` | `callback`, `value: object` | `PublicationProtocolError` | - | `callback(...)` |
-| `_json_tree` | `value: object` | `Mapping` | - | - |
+| `_json_tree` | `value: object` | `_MAX_JSON_NODES`, `Mapping` | - | - |
 | `pending.pop` | - | - | - | - |
 | `_fail` | `field: str`, `message: str` | - | - | - |
 | `PublicationProtocolError` | - | - | - | - |
@@ -199,32 +199,32 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3606 | `compare(candidate, baseline, reviews=reviews)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 373 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 373 | `dict(candidate)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 374 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 374 | `dict(baseline)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 375 | `validate_publication_basis(after)` |
-| validate_publication_basis | _guard | 880 | `_guard(_basis, value)` |
-| _guard | _json_tree | 870 | `_json_tree(value)` |
-| _json_tree | pending.pop | 134 | `pending.pop(data not statically known)` |
-| _json_tree | _fail | 137 | `_fail('document', 'exceeds JSON structural bounds')` |
-| _fail | PublicationProtocolError | 42 | `PublicationProtocolError(...)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 375 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 375 | `dict(candidate)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 376 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 376 | `dict(baseline)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 377 | `validate_publication_basis(after)` |
+| validate_publication_basis | _guard | 881 | `_guard(_basis, value)` |
+| _guard | _json_tree | 871 | `_json_tree(value)` |
+| _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
+| _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
+| _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `findings.append` | `compare_publication_impact` | 399 |
-| mutation | `pending.pop` | `_json_tree` | 134 |
-| mutation | `pending.extend` | `_json_tree` | 141 |
-| mutation | `pending.extend` | `_json_tree` | 143 |
+| mutation | `findings.append` | `compare_publication_impact` | 401 |
+| mutation | `pending.pop` | `_json_tree` | 135 |
+| mutation | `pending.extend` | `_json_tree` | 142 |
+| mutation | `pending.extend` | `_json_tree` | 144 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `compare_publication_impact` | `deepcopy` | 373 |
-| external_call | `compare_publication_impact` | `deepcopy` | 374 |
+| external_call | `compare_publication_impact` | `deepcopy` | 375 |
+| external_call | `compare_publication_impact` | `deepcopy` | 376 |
 | step_limit | `compare_publication_impact` | `first 12 steps` | 0 |
 | truncated_flow | `compare_publication_impact` | `depth limit` | 0 |
 

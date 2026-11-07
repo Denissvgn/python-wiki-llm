@@ -16,6 +16,7 @@ from ..services.knowledge_storage import KnowledgeStorageError
 from ..services.publication_config import load_publication_config
 from ..services.publication_impact import (
     IMPACT_SCHEMA,
+    MAX_JSON_BYTES,
     capture_publication_basis,
     compare_publication_impact,
     read_publication_document,
@@ -88,7 +89,52 @@ def _artifact_path(args, value):
     return _absolute_path(Path(args.consumer_root) / path)
 
 
-def _write(args, value, *, expected_document=None):
+def _same_file(left: Path, right: Path) -> bool:
+    return left == right or (left.exists() and right.exists() and left.samefile(right))
+
+
+def _inside_input_tree(destination: Path, source: Path) -> bool:
+    return source in destination.parents or any(
+        _same_file(parent, source) for parent in (destination, *destination.parents)
+    )
+
+
+def _declared_files(config):
+    for provider in config.get("reference_providers", {}).values():
+        if provider["kind"] == "contract-file":
+            yield provider["path"]
+    for topic in config["topics"]:
+        if topic.get("source_document"):
+            yield topic["source_document"]
+        for dependency in topic["depends_on"]:
+            if "source_file" in dependency:
+                yield dependency["source_file"]
+
+
+def _document_bytes(value):
+    content = (
+        json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        + "\n"
+    ).encode("utf-8")
+    if len(content) > MAX_JSON_BYTES:
+        content = (
+            json.dumps(
+                value,
+                sort_keys=True,
+                ensure_ascii=False,
+                allow_nan=False,
+                separators=(",", ":"),
+            )
+            + "\n"
+        ).encode("utf-8")
+    if len(content) > MAX_JSON_BYTES:
+        raise ValueError(
+            f"Publication output exceeds the {MAX_JSON_BYTES}-byte document limit"
+        )
+    return content
+
+
+def _write(args, value, *, expected_document=None, input_basis=None):
     if not args.output:
         return
     destination = _artifact_path(args, args.output)
@@ -104,20 +150,42 @@ def _write(args, value, *, expected_document=None):
     if args.target_dir:
         protected.append(root / args.target_dir)
     for path in protected:
-        if destination == path or path in destination.parents:
+        if _inside_input_tree(destination, path):
             raise ValueError(
                 "Publication output cannot overwrite native or sibling wiki inputs"
             )
-    for name in ("config", "baseline", "report"):
+    for name in ("config", "baseline", "report", "reviews"):
         source = getattr(args, name, None)
-        if source and destination == _artifact_path(args, source):
+        if source and _same_file(destination, _artifact_path(args, source)):
+            if (
+                name == "reviews"
+                and args.impact_action == "resolve"
+                and expected_document is not None
+            ):
+                continue
             raise ValueError(
-                "Publication output cannot overwrite configuration, baseline or report inputs"
+                "Publication output cannot overwrite configuration, baseline, report or accepted review inputs"
             )
+    file_inputs = set(_declared_files(config))
+    if input_basis is not None:
+        file_inputs.update(input_basis["files"])
+        file_inputs.update(
+            reference["configuration"]["path"]
+            for reference in input_basis.get("references", {}).values()
+            if reference["configuration"]["kind"] == "contract-file"
+        )
+    if any(
+        _inside_input_tree(destination, root / source)
+        or destination in (root / source).parents
+        for source in file_inputs
+    ):
+        raise ValueError(
+            "Publication output cannot overwrite declared source or reference inputs"
+        )
     expected = None
     if destination.exists() or destination.is_symlink():
         with StorageReadSession(destination.parent).phase() as session:
-            expected = session.read(destination.name, 64 * 1024 * 1024)
+            expected = session.read(destination.name, MAX_JSON_BYTES)
         prior = read_publication_document(destination)
         if prior.get("schema_version") != value.get("schema_version"):
             raise ValueError(
@@ -131,10 +199,11 @@ def _write(args, value, *, expected_document=None):
             raise ValueError(
                 "Review ledger changed; reload it before preparing a decision"
             )
+    content = _document_bytes(value)
     ensure_guarded_directory(destination.parent)
     atomic_write_private_bytes(
         destination,
-        (json.dumps(value, indent=2, sort_keys=True) + "\n").encode(),
+        content,
         expected_existing=expected,
     )
 
@@ -165,6 +234,7 @@ def _error_report(message):
 
 
 def run(args):
+    candidate = None
     try:
         baseline = (
             read_publication_document(_artifact_path(args, args.baseline))
@@ -179,7 +249,7 @@ def run(args):
         )
         action = args.impact_action
         if action == "snapshot":
-            _write(args, candidate)
+            _write(args, candidate, input_basis=candidate)
             print(
                 json.dumps({"basis_id": candidate["basis_id"], "output": args.output})
             )
@@ -203,11 +273,13 @@ def run(args):
             expected = (
                 reviews
                 if args.reviews
-                and _artifact_path(args, args.reviews)
-                == _artifact_path(args, args.output)
+                and _same_file(
+                    _artifact_path(args, args.reviews),
+                    _artifact_path(args, args.output),
+                )
                 else None
             )
-            _write(args, proposal, expected_document=expected)
+            _write(args, proposal, expected_document=expected, input_basis=candidate)
             print(
                 json.dumps(
                     {
@@ -219,7 +291,7 @@ def run(args):
             )
             return
         report = compare_publication_impact(candidate, baseline, reviews=reviews)
-        _write(args, report)
+        _write(args, report, input_basis=candidate)
     except (OSError, ValueError, KnowledgeStorageError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         if args.impact_action:
@@ -228,7 +300,7 @@ def run(args):
         # Even configuration failures produce stdout JSON. A usable explicit
         # report destination is handled by the same guarded writer when possible.
         try:
-            _write(args, report)
+            _write(args, report, input_basis=candidate)
         except (OSError, ValueError, KnowledgeStorageError):
             pass
     print(

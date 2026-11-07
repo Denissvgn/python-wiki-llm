@@ -148,7 +148,7 @@ also includes ancestor argument declarations, parser settings and constraints,
 since a global option can change how the command behaves. Parent subcommand lists and global
 help/version display actions are excluded from that scoped context. The basis
 retains the program, package name and Python requirement while excluding
-unrelated commands and release-version-only changes. The complete-contract
+unrelated commands and package-version-only metadata changes. The complete-contract
 dependency includes the complete package and command data.
 
 For an application's own saved contract, replace the provider declaration:

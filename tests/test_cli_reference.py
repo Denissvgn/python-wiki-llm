@@ -88,8 +88,8 @@ def test_parser_capture_retains_nested_alias_option_and_group_contracts():
     assert arguments["route"]["default"]["value"] == "/mcp"
     assert arguments["hidden"]["hidden"] is True
     assert arguments["hidden"]["default"] == {"state": "suppressed", "value": None}
-    assert arguments["record"]["action"] == "custom:RecordOnlyAction"
-    assert arguments["record"]["type"] == "custom:positive"
+    assert arguments["record"]["action"] == f"custom:{__name__}:RecordOnlyAction"
+    assert arguments["record"]["type"] == f"custom:{__name__}:positive"
     selected = next(item for item in run["arguments"] if item["dest"] == "values")
     assert selected["nargs"] == "+" and selected["choices"] == [1, 2]
     assert selected["type"] == "integer" and selected["metavar"] == "VALUE"
@@ -123,6 +123,82 @@ def test_application_parsers_preserve_non_dash_prefixes_and_parsing_rules():
     reseal(data)
     with pytest.raises(reference.CLIReferenceError, match="distinct flags"):
         reference.validate_cli_contract(data)
+
+
+def test_custom_converter_module_changes_reopen_the_contract():
+    def first(value):
+        return "first:" + value
+
+    def second(value):
+        return "second:" + value
+
+    first.__module__ = "app.first"
+    second.__module__ = "app.second"
+    first.__qualname__ = second.__qualname__ = "parse"
+    contracts = []
+    parsed = []
+    for converter in (first, second):
+        value = argparse.ArgumentParser()
+        value.add_argument("--value", type=converter)
+        contracts.append(
+            reference.build_cli_contract(value, package=PACKAGE, program="example")
+        )
+        parsed.append(value.parse_args(["--value", "input"]).value)
+    assert parsed == ["first:input", "second:input"]
+    assert contracts[0]["contract_id"] != contracts[1]["contract_id"]
+    assert contracts[0]["root"]["arguments"][1]["type"] == "custom:app.first:parse"
+    assert contracts[1]["root"]["arguments"][1]["type"] == "custom:app.second:parse"
+
+
+def test_custom_action_symbols_preserve_underscores_and_local_identity():
+    class _Record(argparse.Action):
+        def __call__(self, *args, **kwargs):
+            pytest.fail("capture must not execute an action")
+
+    class Record(_Record):
+        pass
+
+    contracts = []
+    for action in (_Record, Record):
+        value = argparse.ArgumentParser()
+        value.add_argument("--record", action=action)
+        data = reference.build_cli_contract(value, package=PACKAGE, program="example")
+        assert data["root"]["arguments"][1]["action"] == (
+            f"custom:{action.__module__}:{action.__qualname__}"
+        )
+        contracts.append(data)
+    assert contracts[0]["contract_id"] != contracts[1]["contract_id"]
+
+
+def test_custom_action_named_like_a_builtin_is_not_misclassified():
+    class _StoreAction(argparse.Action):
+        def __call__(self, *args, **kwargs):
+            pytest.fail("capture must not execute an action")
+
+    value = argparse.ArgumentParser()
+    value.add_argument("--value", action=_StoreAction)
+    data = reference.build_cli_contract(value, package=PACKAGE, program="example")
+    assert data["root"]["arguments"][1]["action"] == (
+        f"custom:{_StoreAction.__module__}:{_StoreAction.__qualname__}"
+    )
+
+
+def test_legacy_custom_symbols_remain_readable_and_change_on_new_capture():
+    current = contract()
+    legacy = deepcopy(current)
+    argument = next(
+        item for item in legacy["root"]["arguments"] if item["dest"] == "record"
+    )
+    argument["action"] = "custom:RecordOnlyAction"
+    argument["type"] = "custom:positive"
+    reseal(legacy)
+    reference.validate_cli_contract(legacy)
+    assert reference.parse_cli_contract(json.dumps(legacy)) == legacy
+    assert (
+        "custom:RecordOnlyAction / custom:positive"
+        in reference.render_cli_reference(legacy)
+    )
+    assert legacy["contract_id"] != current["contract_id"]
 
 
 @pytest.mark.parametrize(
@@ -239,6 +315,17 @@ def test_markdown_code_spans_preserve_literal_reference_values():
     assert "<VALUE>" in output
     assert "&gt;=3.11" not in output
     assert "&lt;VALUE&gt;" not in output
+
+
+def test_markdown_choice_objects_are_identical_before_and_after_json_export():
+    value = argparse.ArgumentParser()
+    value.add_argument(
+        "--value", type=json.loads, choices=[{"z": 1, "a": {"y": 2, "b": 3}}]
+    )
+    data = reference.build_cli_contract(value, package=PACKAGE, program="example")
+    saved = reference.parse_cli_contract(json.dumps(data, sort_keys=True))
+    assert data == saved
+    assert reference.render_cli_reference(data) == reference.render_cli_reference(saved)
 
 
 @pytest.mark.parametrize(

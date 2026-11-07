@@ -24,19 +24,22 @@ _SCHEMA_NAME = "llm-wiki-cli-contract-v1.schema.json"
 MAX_CLI_CONTRACT_BYTES = 8 * 1024 * 1024
 _MAX_NODES = 100_000
 _MAX_DEPTH = 32
+_IDENTIFIER = r"[A-Za-z_][A-Za-z0-9_]*"
+_MODULE = re.compile(_IDENTIFIER + r"(?:\." + _IDENTIFIER + ")*")
+_QUALNAME = re.compile(_IDENTIFIER + r"(?:\.(?:<locals>\.)?" + _IDENTIFIER + ")*")
 _ACTIONS = {
-    "_StoreAction": "store",
-    "_StoreConstAction": "store_const",
-    "_StoreTrueAction": "store_true",
-    "_StoreFalseAction": "store_false",
-    "_AppendAction": "append",
-    "_AppendConstAction": "append_const",
-    "_CountAction": "count",
-    "_ExtendAction": "extend",
-    "_HelpAction": "help",
-    "_VersionAction": "version",
-    "_SubParsersAction": "subparsers",
-    "BooleanOptionalAction": "boolean_optional",
+    argparse._StoreAction: "store",
+    argparse._StoreConstAction: "store_const",
+    argparse._StoreTrueAction: "store_true",
+    argparse._StoreFalseAction: "store_false",
+    argparse._AppendAction: "append",
+    argparse._AppendConstAction: "append_const",
+    argparse._CountAction: "count",
+    argparse._ExtendAction: "extend",
+    argparse._HelpAction: "help",
+    argparse._VersionAction: "version",
+    argparse._SubParsersAction: "subparsers",
+    argparse.BooleanOptionalAction: "boolean_optional",
 }
 
 
@@ -87,6 +90,21 @@ def _value(value: object, depth: int = 0) -> Any:
     )
 
 
+def _custom_symbol(value: object) -> str:
+    module = getattr(value, "__module__", None)
+    qualname = getattr(value, "__qualname__", None)
+    if (
+        not isinstance(module, str)
+        or not _MODULE.fullmatch(module)
+        or not isinstance(qualname, str)
+        or not _QUALNAME.fullmatch(qualname)
+    ):
+        raise CLIReferenceError(
+            "Custom parser declarations require stable module and qualified names"
+        )
+    return "custom:" + module + ":" + qualname
+
+
 def _symbol(value: object) -> str | None:
     if value is None:
         return None
@@ -98,15 +116,13 @@ def _symbol(value: object) -> str | None:
             bool: "boolean",
             Path: "path",
         }[value]
-    name = getattr(value, "__name__", None)
-    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
-        raise CLIReferenceError("Custom parser types require a stable named callable")
-    return "custom:" + name.lstrip("_")
+    return _custom_symbol(value)
 
 
 def _argument(action, identity, group, exclusive):
-    name = type(action).__name__
-    action_name = _ACTIONS.get(name, "custom:" + name.lstrip("_"))
+    action_name = _ACTIONS.get(type(action))
+    if action_name is None:
+        action_name = _custom_symbol(type(action))
     nargs = action.nargs
     if nargs == argparse.REMAINDER:
         nargs = "remainder"
@@ -626,7 +642,7 @@ def render_cli_reference(contract: object) -> str:
                 values = "nargs=" + json.dumps(argument["nargs"])
                 if argument["choices"] is not None:
                     values += "; choices=" + json.dumps(
-                        argument["choices"], ensure_ascii=False
+                        argument["choices"], ensure_ascii=False, sort_keys=True
                     )
                 if argument["metavar"] is not None:
                     values += "; metavar=" + json.dumps(

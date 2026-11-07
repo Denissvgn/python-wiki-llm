@@ -517,6 +517,34 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
     assert "tests/test_pr_ci_workflow.py" not in policy["groups"]["ci-policy"]["tests"]
 
 
+def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
+    policy = ci.policy_load(ROOT / "release")
+    # A workflow has no Python import edges. Keep the actual test inventory
+    # while exercising the declared ownership rules without unrelated edits.
+    tests = {
+        path.relative_to(ROOT).as_posix(): b""
+        for path in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        policy,
+        tests,
+        tests,
+        [changed(".github/workflows/sibling-wiki-impact.yml")],
+        None,
+        {"entries": []},
+        imports_index={},
+    )
+    guard = (
+        "tests/test_github_action_shell.py::"
+        "test_sibling_wiki_accepted_state_paths_are_confined"
+    )
+    assert set(result["lanes"]) == {"ubuntu"}
+    assert any(
+        ci.matches(selected, guard)
+        for selected in result["lanes"]["ubuntu"]["selectors"]
+    )
+
+
 def test_security_document_selects_public_documentation_checks():
     policy = ci.policy_load(ROOT / "release")
     before = {

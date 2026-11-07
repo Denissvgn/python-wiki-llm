@@ -362,6 +362,131 @@ def test_output_cannot_replace_native_or_target_input(consumer, monkeypatch):
     assert page.read_bytes() == previous
 
 
+@pytest.mark.parametrize("kind", ["reference", "source_file", "source_document"])
+@pytest.mark.parametrize("action", [[], ["snapshot"]])
+@pytest.mark.parametrize("overlap", ["exact", "descendant", "ancestor"])
+def test_publication_artifacts_do_not_create_declared_missing_inputs(
+    consumer, monkeypatch, kind, action, overlap
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    target = (
+        "app-input.json/contract.json" if overlap == "ancestor" else "app-input.json"
+    )
+    output = (
+        "app-input.json/report.json" if overlap == "descendant" else "app-input.json"
+    )
+    if kind == "reference":
+        policy["reference_providers"] = {
+            "app": {"kind": "contract-file", "path": target}
+        }
+        policy["topics"][0]["depends_on"] = [{"reference": "app"}]
+    elif kind == "source_file":
+        policy["topics"][0]["depends_on"].append({"source_file": target})
+    else:
+        policy["topics"][0].update(edit_at="repository", source_document=target)
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(monkeypatch, *action, "--target-dir", "public", "--output", output) == 2
+    )
+    assert not (consumer / "app-input.json").exists()
+
+
+def test_former_reference_coordinate_stays_protected_during_rebinding(
+    consumer, monkeypatch
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["reference_providers"] = {
+        "app": {"kind": "contract-file", "path": "former.json"}
+    }
+    policy["topics"][0]["depends_on"] = [{"reference": "app"}]
+    policy_path.write_text(json.dumps(policy))
+    before = impact.capture_publication_basis(consumer, target_dir="public")
+    (consumer / "accepted.json").write_text(json.dumps(before))
+    policy["reference_providers"]["app"]["path"] = "current.json"
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(
+            monkeypatch,
+            "snapshot",
+            "--target-dir",
+            "public",
+            "--baseline",
+            "accepted.json",
+            "--output",
+            "former.json",
+        )
+        == 2
+    )
+    assert not (consumer / "former.json").exists()
+
+
+def test_missing_accepted_ledger_is_not_replaced_by_an_error_report(
+    consumer, monkeypatch
+):
+    assert (
+        invoke(
+            monkeypatch,
+            "--target-dir",
+            "public",
+            "--reviews",
+            "accepted-reviews.json",
+            "--output",
+            "accepted-reviews.json",
+        )
+        == 2
+    )
+    assert not (consumer / "accepted-reviews.json").exists()
+
+
+def test_publication_tree_protection_follows_filesystem_case_aliases(
+    consumer, monkeypatch
+):
+    alias = consumer / "PUBLIC"
+    same_directory = alias.exists()
+    result = invoke(
+        monkeypatch, "--target-dir", "public", "--output", "PUBLIC/report.json"
+    )
+    if same_directory:
+        assert result == 2
+        assert not (consumer / "public/report.json").exists()
+    else:
+        assert result == 0
+        assert (alias / "report.json").exists()
+
+
+def test_snapshot_output_stays_within_its_read_budget(consumer, monkeypatch):
+    from llm_wiki_cli.commands import publication_cmd
+
+    expected = impact.capture_publication_basis(consumer, target_dir="public")
+    budget = len(json.dumps(expected, ensure_ascii=False).encode("utf-8"))
+    monkeypatch.setattr(publication_cmd, "MAX_JSON_BYTES", budget)
+    monkeypatch.setattr(impact, "MAX_JSON_BYTES", budget)
+    assert (
+        invoke(
+            monkeypatch, "snapshot", "--target-dir", "public", "--output", "basis.json"
+        )
+        == 0
+    )
+    path = consumer / "basis.json"
+    assert path.stat().st_size <= budget
+    assert impact.read_publication_document(path) == expected
+    monkeypatch.setattr(publication_cmd, "MAX_JSON_BYTES", 64)
+    assert (
+        invoke(
+            monkeypatch,
+            "snapshot",
+            "--target-dir",
+            "public",
+            "--output",
+            "oversized.json",
+        )
+        == 2
+    )
+    assert not (consumer / "oversized.json").exists()
+
+
 def test_no_edit_review_requires_actual_target(consumer):
     candidate = impact.capture_publication_basis(consumer)
     report = impact.compare_publication_impact(candidate)

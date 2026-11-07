@@ -27,6 +27,7 @@ consumer may point architecture.root at an isolated bootstrap output.
 14. `publication_contracts.PublicationProtocolError`
 15. `publication_config.load_publication_config`
 16. `publication_contracts.PublicationProtocolError`
+17. `publication_contracts.validate_publication_basis`
 
 ## Touches
 

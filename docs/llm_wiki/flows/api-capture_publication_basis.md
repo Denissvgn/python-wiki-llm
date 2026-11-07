@@ -91,7 +91,7 @@ sequenceDiagram
     p1-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 633 interactions; 603 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 634 interactions; 604 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 209 (208 omitted); unresolved 1 of 177 (176 omitted). These counts cover the captured static trace.
 
@@ -120,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 248; effect analysis evaluated: 166, partial: 3, unavailable: 79. Counts include steps omitted from the displayed trace.
+Source steps: 249; effect analysis evaluated: 167, partial: 3, unavailable: 79. Counts include steps omitted from the displayed trace.
 
-Collector observations for 169 source steps with known totals: observed: 806, emitted: 791, omitted: 15. Unavailable totals are excluded.
+Collector observations for 170 source steps with known totals: observed: 809, emitted: 794, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -185,7 +185,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `capture_publication_basis (src/llm_wiki_cli/api.py)` | `consumer_root: str \| Path`, `config_path: str \| Path`, `target_dir: str \| Path \| None`, `baseline: Mapping[str, Any] \| None` | - | - | `capture(...)` |
-| `capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)` | `consumer_root: str \| Path`, `config_path: str \| Path`, `target_dir: str \| Path \| None`, `baseline: Mapping[str, Any] \| None` | `build_bootstrap_publication_snapshot`, `build_publication_snapshot`, `BASIS_SCHEMA` | `files[...]`, `result[...]` | `_seal(...)` |
+| `capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)` | `consumer_root: str \| Path`, `config_path: str \| Path`, `target_dir: str \| Path \| None`, `baseline: Mapping[str, Any] \| None` | `build_bootstrap_publication_snapshot`, `build_publication_snapshot`, `BASIS_SCHEMA` | `files[...]`, `result[...]` | `captured` |
 | `Path(…).absolute` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…capture_publication_basis)` | - | - | - | - |
 | `load_publication_config` | `consumer_root: str \| Path`, `config_path: str \| Path` | `Path`, `SourceSelectionError` | - | `validate_publication_config(...)` |

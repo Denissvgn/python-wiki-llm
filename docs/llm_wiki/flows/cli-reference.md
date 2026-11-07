@@ -86,9 +86,9 @@ sequenceDiagram
     p0-->>p30: content.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 1515 interactions; 1485 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1519 interactions; 1489 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 459 (458 omitted); unresolved 1 of 678 (677 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 461 (460 omitted); unresolved 1 of 678 (677 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -102,7 +102,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_json_tree` | 14 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/cli_reference.py:validate_cli_contract` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/cli_reference.py:validate_cli_contract` | 13 | - | external | 3 |
-> Omission summary shows 8 of 221 groups; 213 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 222 groups; 214 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -115,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 379; effect analysis evaluated: 268, partial: 11, unavailable: 100. Counts include steps omitted from the displayed trace.
+Source steps: 381; effect analysis evaluated: 270, partial: 11, unavailable: 100. Counts include steps omitted from the displayed trace.
 
-Collector observations for 279 source steps with known totals: observed: 1151, emitted: 1134, omitted: 17. Unavailable totals are excluded.
+Collector observations for 281 source steps with known totals: observed: 1155, emitted: 1138, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -199,16 +199,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | load_cli_contract | 43 | `load_cli_contract(args.input)` |
-| load_cli_contract | parse_cli_contract | 531 | `parse_cli_contract(...)` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 511 | `isinstance(raw, (...))` |
-| parse_cli_contract | CLIReferenceError | 512 | `CLIReferenceError('CLI contract input must be UTF-8 bytes or text')` |
-| parse_cli_contract | len (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 514 | `len(...)` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 514 | `isinstance(raw, bytes)` |
-| parse_cli_contract | raw.encode | 514 | `raw.encode('utf-8')` |
-| parse_cli_contract | CLIReferenceError | 517 | `CLIReferenceError('CLI contract exceeds its byte bound')` |
-| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 518 | `isinstance(raw, bytes)` |
-| parse_cli_contract | raw.decode | 518 | `raw.decode('utf-8')` |
-| parse_cli_contract | json.loads (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 519 | `json.loads(text, object_pairs_hook=_pairs)` |
+| load_cli_contract | parse_cli_contract | 547 | `parse_cli_contract(...)` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 527 | `isinstance(raw, (...))` |
+| parse_cli_contract | CLIReferenceError | 528 | `CLIReferenceError('CLI contract input must be UTF-8 bytes or text')` |
+| parse_cli_contract | len (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 530 | `len(...)` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 530 | `isinstance(raw, bytes)` |
+| parse_cli_contract | raw.encode | 530 | `raw.encode('utf-8')` |
+| parse_cli_contract | CLIReferenceError | 533 | `CLIReferenceError('CLI contract exceeds its byte bound')` |
+| parse_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 534 | `isinstance(raw, bytes)` |
+| parse_cli_contract | raw.decode | 534 | `raw.decode('utf-8')` |
+| parse_cli_contract | json.loads (src/llm_wiki_cli/services…nce.py:parse_cli_contract) | 535 | `json.loads(text, object_pairs_hook=_pairs)` |
 
 ### Boundary effects
 
@@ -221,12 +221,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `parse_cli_contract` | `isinstance` | 511 |
-| external_call | `parse_cli_contract` | `isinstance` | 514 |
-| unresolved_call | `parse_cli_contract` | `raw.encode` | 514 |
-| external_call | `parse_cli_contract` | `isinstance` | 518 |
-| unresolved_call | `parse_cli_contract` | `raw.decode` | 518 |
-| external_call | `parse_cli_contract` | `json.loads` | 519 |
+| external_call | `parse_cli_contract` | `isinstance` | 527 |
+| external_call | `parse_cli_contract` | `isinstance` | 530 |
+| unresolved_call | `parse_cli_contract` | `raw.encode` | 530 |
+| external_call | `parse_cli_contract` | `isinstance` | 534 |
+| unresolved_call | `parse_cli_contract` | `raw.decode` | 534 |
+| external_call | `parse_cli_contract` | `json.loads` | 535 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

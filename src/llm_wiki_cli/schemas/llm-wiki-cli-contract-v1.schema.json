@@ -25,6 +25,10 @@
     "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"},
     "strings": {"type": "array", "items": {"type": "string"}},
     "names": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/name"}},
+    "custom_symbol": {"anyOf": [
+      {"type": "string", "pattern": "^custom:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*(?:\\.(?:<locals>\\.)?[A-Za-z_][A-Za-z0-9_]*)*$"},
+      {"type": "string", "pattern": "^custom:[A-Za-z][A-Za-z0-9_]*$"}
+    ]},
     "json": {
       "anyOf": [
         {"type": ["null", "boolean", "number", "string"]},
@@ -40,8 +44,8 @@
         "id": {"$ref": "#/$defs/text"}, "dest": {"$ref": "#/$defs/text"},
         "option_strings": {"$ref": "#/$defs/strings"},
         "positional": {"type": "boolean"}, "required": {"type": "boolean"},
-        "action": {"type": "string", "pattern": "^(store|store_const|store_true|store_false|append|append_const|count|extend|help|version|subparsers|boolean_optional|custom:[A-Za-z][A-Za-z0-9_]*)$"},
-        "type": {"anyOf": [{"type": "null"}, {"enum": ["string", "integer", "number", "boolean", "path"]}, {"type": "string", "pattern": "^custom:[A-Za-z][A-Za-z0-9_]*$"}]},
+        "action": {"anyOf": [{"enum": ["store", "store_const", "store_true", "store_false", "append", "append_const", "count", "extend", "help", "version", "subparsers", "boolean_optional"]}, {"$ref": "#/$defs/custom_symbol"}]},
+        "type": {"anyOf": [{"type": "null"}, {"enum": ["string", "integer", "number", "boolean", "path"]}, {"$ref": "#/$defs/custom_symbol"}]},
         "nargs": {"anyOf": [{"type": "null"}, {"type": "integer", "minimum": 0}, {"enum": ["?", "*", "+", "remainder", "parser"]}]},
         "default": {
           "type": "object", "additionalProperties": false, "required": ["state", "value"],

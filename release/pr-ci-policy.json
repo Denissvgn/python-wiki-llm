@@ -502,7 +502,8 @@
     },
     "publication-action": {
       "tests": [
-        "tests/test_wiki_impact_action.py"
+        "tests/test_wiki_impact_action.py",
+        "tests/test_github_action_shell.py::test_sibling_wiki_accepted_state_paths_are_confined"
       ],
       "lanes": [
         "ubuntu"

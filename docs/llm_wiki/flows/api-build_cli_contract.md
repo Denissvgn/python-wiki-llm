@@ -23,24 +23,25 @@ sequenceDiagram
     participant p9 as _validate_command
     participant p10 as _text
     participant p11 as _argument
-    participant p12 as _symbol
-    participant p13 as _notes
-    participant p14 as CLIReferenceError
-    participant p15 as sha256_bytes
-    participant p16 as _schema
-    participant p17 as canonical_json_text
-    participant p18 as _matches_type
-    participant p19 as isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)
-    participant p20 as json.dumps(…).encode
-    participant p21 as dict (src/llm_wiki_cli/services…nce.py:build_cli_contract)
-    participant p22 as set (src/llm_wiki_cli/services/cli_reference.py:_command)
-    participant p23 as isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)
-    participant p24 as id
-    participant p25 as value.is_absolute
-    participant p26 as len (src/llm_wiki_cli/services/cli_reference.py:_command)
-    participant p27 as json.dumps (src/llm_wiki_cli/services….py:validate_cli_contract)
-    participant p28 as len (src/llm_wiki_cli/services….py:validate_cli_contract)
-    participant p29 as value.as_posix
+    participant p12 as _custom_symbol
+    participant p13 as _symbol
+    participant p14 as _notes
+    participant p15 as CLIReferenceError
+    participant p16 as sha256_bytes
+    participant p17 as _schema
+    participant p18 as canonical_json_text
+    participant p19 as _matches_type
+    participant p20 as isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)
+    participant p21 as json.dumps(…).encode
+    participant p22 as dict (src/llm_wiki_cli/services…nce.py:build_cli_contract)
+    participant p23 as set (src/llm_wiki_cli/services/cli_reference.py:_command)
+    participant p24 as isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)
+    participant p25 as id
+    participant p26 as value.is_absolute
+    participant p27 as len (src/llm_wiki_cli/services/cli_reference.py:_command)
+    participant p28 as json.dumps (src/llm_wiki_cli/services….py:validate_cli_contract)
+    participant p29 as len (src/llm_wiki_cli/services….py:validate_cli_contract)
+    participant p30 as value.as_posix
     p0->>p1: build_cli_contract (src/llm_wiki_cli/services/cli_reference.py)
     p1->>p2: _value
     p1->>p3: _command
@@ -52,30 +53,30 @@ sequenceDiagram
     p5->>p9: _validate_command
     p3->>p10: _text
     p3->>p11: _argument
-    p11->>p12: _symbol
-    p11->>p13: _notes
-    p1->>p14: CLIReferenceError
-    p4->>p15: sha256_bytes
-    p5->>p16: _schema
-    p7->>p17: canonical_json_text
-    p8->>p18: _matches_type
-    p1-->>p19: isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)(parser, argparse.ArgumentParser)
-    p5-->>p20: json.dumps(…).encode('utf-8')
-    p1-->>p21: dict (src/llm_wiki_cli/services…nce.py:build_cli_contract)(package)
-    p3-->>p22: set (src/llm_wiki_cli/services/cli_reference.py:_command)
-    p2-->>p23: isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)(value, Path)
-    p3-->>p24: id(parser)
-    p2-->>p25: value.is_absolute
-    p3-->>p26: len (src/llm_wiki_cli/services/cli_reference.py:_command)(path)
-    p5-->>p27: json.dumps (src/llm_wiki_cli/services….py:validate_cli_contract)(contract, ensure_ascii=False, allow_nan=False)
-    p5-->>p28: len (src/llm_wiki_cli/services….py:validate_cli_contract)(encoded)
-    p2-->>p29: value.as_posix
-    p3-->>p24: id(parser)
+    p11->>p12: _custom_symbol
+    p11->>p13: _symbol
+    p11->>p14: _notes
+    p1->>p15: CLIReferenceError
+    p4->>p16: sha256_bytes
+    p5->>p17: _schema
+    p7->>p18: canonical_json_text
+    p8->>p19: _matches_type
+    p1-->>p20: isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)(parser, argparse.ArgumentParser)
+    p5-->>p21: json.dumps(…).encode('utf-8')
+    p1-->>p22: dict (src/llm_wiki_cli/services…nce.py:build_cli_contract)(package)
+    p3-->>p23: set (src/llm_wiki_cli/services/cli_reference.py:_command)
+    p2-->>p24: isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)(value, Path)
+    p3-->>p25: id(parser)
+    p2-->>p26: value.is_absolute
+    p3-->>p27: len (src/llm_wiki_cli/services/cli_reference.py:_command)(path)
+    p5-->>p28: json.dumps (src/llm_wiki_cli/services….py:validate_cli_contract)(contract, ensure_ascii=False, allow_nan=False)
+    p5-->>p29: len (src/llm_wiki_cli/services….py:validate_cli_contract)(encoded)
+    p2-->>p30: value.as_posix
 ```
 
-> Call sequence diagram shows 30 of 231 interactions; 201 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 235 interactions; 205 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 106 (97 omitted); unresolved 3 of 50 (47 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 108 (100 omitted); unresolved 3 of 50 (47 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,11 +86,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 5 | - | external | 8 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | external | 20 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | external | 21 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/cli_reference.py:_text` | 35 | - | external | 1 |
 | `src/llm_wiki_cli/services/cli_reference.py:_text` | 35 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 1 |
-> Omission summary shows 8 of 38 groups; 30 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 39 groups; 31 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -100,9 +101,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 76; effect analysis evaluated: 41, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
+Source steps: 78; effect analysis evaluated: 43, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
 
-Collector observations for 41 source steps with known totals: observed: 258, emitted: 258, omitted: 0. Unavailable totals are excluded.
+Collector observations for 43 source steps with known totals: observed: 262, emitted: 262, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -177,16 +178,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3546 | `build(parser, package=package, program=program)` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 241 | `isinstance(parser, argparse.ArgumentParser)` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 242 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 245 | `_value(dict(...))` |
-| _value | CLIReferenceError | 68 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
-| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 69 | `isinstance(value, Path)` |
-| _value | value.is_absolute | 70 | `value.is_absolute(data not statically known)` |
-| _value | CLIReferenceError | 71 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
-| _value | value.as_posix | 74 | `value.as_posix(data not statically known)` |
-| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 75 | `type(value)` |
-| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 77 | `type(value)` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 257 | `isinstance(parser, argparse.ArgumentParser)` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 258 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 261 | `_value(dict(...))` |
+| _value | CLIReferenceError | 71 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
+| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 72 | `isinstance(value, Path)` |
+| _value | value.is_absolute | 73 | `value.is_absolute(data not statically known)` |
+| _value | CLIReferenceError | 74 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | value.as_posix | 77 | `value.as_posix(data not statically known)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 78 | `type(value)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 80 | `type(value)` |
 
 ### Boundary effects
 
@@ -196,12 +197,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_cli_contract` | `isinstance` | 241 |
-| external_call | `_value` | `isinstance` | 69 |
-| unresolved_call | `_value` | `value.is_absolute` | 70 |
-| unresolved_call | `_value` | `value.as_posix` | 74 |
-| external_call | `_value` | `type` | 75 |
-| external_call | `_value` | `type` | 77 |
+| external_call | `build_cli_contract` | `isinstance` | 257 |
+| external_call | `_value` | `isinstance` | 72 |
+| unresolved_call | `_value` | `value.is_absolute` | 73 |
+| unresolved_call | `_value` | `value.as_posix` | 77 |
+| external_call | `_value` | `type` | 78 |
+| external_call | `_value` | `type` | 80 |
 | step_limit | `build_cli_contract` | `first 12 steps` | 0 |
 
 ## Behavior
