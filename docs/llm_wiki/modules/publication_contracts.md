@@ -10,6 +10,7 @@ Strict portable validators for captured publication evidence and decisions.
 
 | Source | Symbols |
 |--------|---------|
+| `.cli_reference` | `validate_cli_contract` |
 | `.concept_identity` | `validate_concept_uid` |
 | `.knowledge_evidence` | `hash_json` |
 | `.markdown_sections` | `SECTION_ORDER_DOMAIN`, `section_locator` |
@@ -30,44 +31,48 @@ Strict portable validators for captured publication evidence and decisions.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/concept_identity.py"]
-    n1["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n2["src/llm_wiki_cli/services/markdown_sections.py"]
-    n3["src/llm_wiki_cli/services/publication_config.py"]
-    n4["src/llm_wiki_cli/services/publication_contracts.py"]
-    n5["src/llm_wiki_cli/services/publication_impact.py"]
-    n6["src/llm_wiki_cli/services/sync_manifest.py"]
-    n7["src/llm_wiki_cli/services/validation.py"]
-    n8["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n7
-    n0 --> n8
-    n1 --> n7
-    n2 --> n1
-    n3 --> n0
-    n3 --> n7
-    n4 --> n0
+    n0["src/llm_wiki_cli/services/cli_reference.py"]
+    n1["src/llm_wiki_cli/services/concept_identity.py"]
+    n2["src/llm_wiki_cli/services/knowledge_evidence.py"]
+    n3["src/llm_wiki_cli/services/markdown_sections.py"]
+    n4["src/llm_wiki_cli/services/publication_config.py"]
+    n5["src/llm_wiki_cli/services/publication_contracts.py"]
+    n6["src/llm_wiki_cli/services/publication_impact.py"]
+    n7["src/llm_wiki_cli/services/sync_manifest.py"]
+    n8["src/llm_wiki_cli/services/validation.py"]
+    n9["src/llm_wiki_cli/services/wiki_surface.py"]
+    n0 --> n2
+    n1 --> n8
+    n1 --> n9
+    n2 --> n8
+    n3 --> n2
     n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n6
-    n4 --> n7
     n4 --> n8
+    n5 --> n0
     n5 --> n1
     n5 --> n2
     n5 --> n3
     n5 --> n4
-    n6 --> n1
-    n6 --> n7
-    n8 --> n7
-    click n0 "../modules/concept_identity.md"
-    click n1 "../modules/knowledge_evidence.md"
-    click n2 "../modules/markdown_sections.md"
-    click n3 "../modules/publication_config.md"
-    click n4 "../modules/publication_contracts.md"
-    click n5 "../modules/publication_impact.md"
-    click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/validation.md"
-    click n8 "../modules/wiki_surface.md"
+    n5 --> n7
+    n5 --> n8
+    n5 --> n9
+    n6 --> n2
+    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    n7 --> n2
+    n7 --> n8
+    n9 --> n8
+    click n0 "../modules/cli_reference.md"
+    click n1 "../modules/concept_identity.md"
+    click n2 "../modules/knowledge_evidence.md"
+    click n3 "../modules/markdown_sections.md"
+    click n4 "../modules/publication_config.md"
+    click n5 "../modules/publication_contracts.md"
+    click n6 "../modules/publication_impact.md"
+    click n7 "../modules/sync_manifest.md"
+    click n8 "../modules/validation.md"
+    click n9 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -75,6 +80,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [publication_impact](../modules/publication_impact.md) |
+| Outbound | [cli_reference](../modules/cli_reference.md) |
 | Outbound | [concept_identity](../modules/concept_identity.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
@@ -87,7 +93,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 36 | `ValueError` | An imported publication document violates its versioned contract. |
+| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 37 | `ValueError` | An imported publication document violates its versioned contract. |
 
 ## Functions
 
@@ -110,6 +116,8 @@ flowchart LR
 | `_sections` | `(value: object, page: Mapping[str, Any], field: str) -> None` | — | — |
 | `_snapshot` | `(value: object) -> None` | — | — |
 | `_target` | `(value: object, field: str, *, unevaluated: bool = False) -> None` | — | — |
+| `_provider_configuration` | `(value: object, provider: str, field: str) -> Mapping[str, Any]` | — | — |
+| `_references` | `(value: object, config: Mapping[str, Any]) -> None` | — | — |
 | `_basis` | `(value: object) -> None` | — | — |
 | `_reviews` | `(value: object) -> list[dict[str, Any]]` | — | — |
 | `_dependency` | `(value: object, field: str) -> Mapping[str, Any]` | — | — |

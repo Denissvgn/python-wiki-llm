@@ -26,6 +26,7 @@ from .wiki_surface import PageKind, canonical_path, iter_page_kinds, mcp_uri
 
 
 _MAX_ITEMS = 65_536
+_MAX_REFERENCES = 128
 _BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
 _SNAPSHOT_SCHEMA = "llm-wiki-publication-snapshot/v1"
 _REPORT_SCHEMA = "llm-wiki-publication-impact/v1"
@@ -484,11 +485,80 @@ def _target(value: object, field: str, *, unevaluated: bool = False) -> None:
         _fail(field + ".hash", "must be null for unavailable target content")
 
 
+def _provider_configuration(
+    value: object, provider: str, field: str
+) -> Mapping[str, Any]:
+    config = {
+        "schema_version": PUBLICATION_CONFIG_SCHEMA_VERSION,
+        "architecture": {"baseline": "existing-wiki", "root": "."},
+        "target": {"kind": "github-wiki", "repository": "self"},
+        "enforcement": "advisory",
+        "publish": False,
+        "topics": [],
+        "reference_providers": {provider: value},
+    }
+    normalized = validate_publication_config(config, consumer_root=None)[
+        "reference_providers"
+    ][provider]
+    if normalized != value:
+        _fail(field, "must be normalized provider configuration")
+    return normalized
+
+
+def _references(value: object, config: Mapping[str, Any]) -> None:
+    references = _record(
+        value, "references", set(), set(value) if isinstance(value, Mapping) else set()
+    )
+    if len(references) > _MAX_REFERENCES:
+        _fail("references", "exceeds reference input bounds")
+    for identity, raw in references.items():
+        field = "references." + identity
+        _hash(identity, field)
+        reference = _record(raw, field, {"provider", "configuration", "contract"})
+        provider = _topic_id(reference["provider"], field + ".provider")
+        configuration = _provider_configuration(
+            reference["configuration"], provider, field + ".configuration"
+        )
+        if identity != hash_json(
+            {"provider": provider, "configuration": configuration}
+        ):
+            _fail(
+                field,
+                "reference identity does not match its provider and configuration",
+            )
+        if reference["contract"] is None:
+            if configuration["kind"] != "contract-file":
+                _fail(
+                    field + ".contract",
+                    "only a contract-file provider may record known missing input",
+                )
+        else:
+            from .cli_reference import validate_cli_contract
+
+            validate_cli_contract(reference["contract"])
+            if configuration["kind"] == "llm-wiki-cli" and (
+                reference["contract"]["program"] != "llm-wiki"
+                or reference["contract"]["package"]["name"] != "agent-wiki-cli"
+            ):
+                _fail(
+                    field + ".contract",
+                    "built-in provider identity must be agent-wiki-cli/llm-wiki",
+                )
+    for provider, configuration in config.get("reference_providers", {}).items():
+        identity = hash_json({"provider": provider, "configuration": configuration})
+        if identity not in references:
+            _fail(
+                "references",
+                "requires a captured record for every declared current provider",
+            )
+
+
 def _basis(value: object) -> None:
     data = _record(
         value,
         "basis",
         {"schema_version", "config", "architecture", "files", "targets", "basis_id"},
+        {"references"},
     )
     _seal(data, _BASIS_SCHEMA, "basis_id")
     if (
@@ -519,6 +589,7 @@ def _basis(value: object) -> None:
     for topic, observation in targets.items():
         _topic_id(topic, "targets.topic")
         _target(observation, "targets." + topic)
+    _references(data.get("references", {}), data["config"])
 
 
 def _reviews(value: object) -> list[dict[str, Any]]:
@@ -566,6 +637,9 @@ def _dependency(value: object, field: str) -> Mapping[str, Any]:
             }
         ],
     }
+    if isinstance(value, Mapping) and "reference" in value:
+        provider = _topic_id(value["reference"], field + ".reference")
+        config["reference_providers"] = {provider: {"kind": "llm-wiki-cli"}}
     dependency = validate_publication_config(config, consumer_root=None)["topics"][0][
         "depends_on"
     ][0]
@@ -581,6 +655,13 @@ def _input(value: object, field: str) -> None:
     dependency = _dependency(data["dependency"], field + ".dependency")
     if "source_file" in dependency or data["hash"] is None:
         _hash(data["hash"], field + ".hash", nullable=True)
+        return
+    if "reference" in dependency:
+        evidence = _record(data["hash"], field + ".hash", {"provider", "contract"})
+        _provider_configuration(
+            evidence["provider"], dependency["reference"], field + ".hash.provider"
+        )
+        _hash(evidence["contract"], field + ".hash.contract")
         return
     evidence = _record(
         data["hash"],

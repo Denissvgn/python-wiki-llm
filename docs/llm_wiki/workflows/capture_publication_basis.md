@@ -1,7 +1,7 @@
 # capture_publication_basis
 
 **Entry point:** `publication_impact.capture_publication_basis`
-**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [publication_config](../modules/publication_config.md), [publication_contracts](../modules/publication_contracts.md), [publication_impact](../modules/publication_impact.md)
+**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [publication_config](../modules/publication_config.md), [publication_contracts](../modules/publication_contracts.md), [publication_impact](../modules/publication_impact.md), [publication_references](../modules/publication_references.md)
 
 > Capture a portable input basis without extraction or remote access.
 
@@ -15,16 +15,18 @@ consumer may point architecture.root at an isolated bootstrap output.
 2. `publication_contracts.validate_publication_basis`
 3. `publication_config.publication_path`
 4. `knowledge_storage_io.StorageReadSession`
-5. `publication_config.publication_path`
-6. `publication_contracts.PublicationProtocolError`
-7. `knowledge_storage_io.StorageReadSession`
-8. `publication_contracts.PublicationProtocolError`
-9. `publication_config.publication_path`
-10. `publication_contracts.PublicationProtocolError`
+5. `publication_references.capture_reference_inputs`
+6. `publication_config.publication_path`
+7. `publication_contracts.PublicationProtocolError`
+8. `knowledge_storage_io.StorageReadSession`
+9. `publication_contracts.PublicationProtocolError`
+10. `publication_references.recheck_reference_inputs`
 11. `publication_config.publication_path`
 12. `publication_contracts.PublicationProtocolError`
-13. `publication_config.load_publication_config`
+13. `publication_config.publication_path`
 14. `publication_contracts.PublicationProtocolError`
+15. `publication_config.load_publication_config`
+16. `publication_contracts.PublicationProtocolError`
 
 ## Touches
 
@@ -32,6 +34,7 @@ consumer may point architecture.root at an isolated bootstrap output.
 - [publication_config](../modules/publication_config.md)
 - [publication_contracts](../modules/publication_contracts.md)
 - [publication_impact](../modules/publication_impact.md)
+- [publication_references](../modules/publication_references.md)
 
 ## Behavior
 

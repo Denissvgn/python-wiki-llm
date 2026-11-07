@@ -418,3 +418,160 @@ def test_loader_rejects_config_symlinks_wrong_case_and_missing_file(tmp_path):
         load_publication_config(tmp_path, config_path=".llm-wiki/Publication.json")
     with pytest.raises(PublicationConfigError):
         load_publication_config(tmp_path, config_path=actual)
+
+
+def test_legacy_normalization_does_not_add_reference_provider_state():
+    payload = policy()
+    normalized = validate_publication_config(payload, consumer_root=None)
+    assert "reference_providers" not in normalized
+    assert normalized["topics"][0]["depends_on"] == [
+        {"architecture_page": "modules/cli.md", "facets": ["whole"]},
+        {"source_file": "pyproject.toml"},
+    ]
+    assert validate_publication_config(normalized, consumer_root=None) == normalized
+
+
+def test_reference_providers_are_explicit_sorted_detached_data_contracts(tmp_path):
+    payload = policy()
+    payload["reference_providers"] = {
+        "project.v1": {"kind": "contract-file", "path": "docs/commands.json"},
+        "cli.v1": {"kind": "llm-wiki-cli"},
+    }
+    payload["topics"][0]["depends_on"] = [
+        {"reference": "cli.v1", "command": ["docs", "impact"]},
+        {"reference": "project.v1"},
+    ]
+    normalized = validate_publication_config(payload, consumer_root=tmp_path)
+    assert list(normalized["reference_providers"]) == ["cli.v1", "project.v1"]
+    assert normalized["topics"][0]["depends_on"] == [
+        {"reference": "cli.v1", "command": ["docs", "impact"]},
+        {"reference": "project.v1", "command": []},
+    ]
+    normalized["reference_providers"]["project.v1"]["path"] = "other.json"
+    normalized["topics"][0]["depends_on"][0]["command"].append("resolve")
+    assert payload["reference_providers"]["project.v1"]["path"] == "docs/commands.json"
+    assert payload["topics"][0]["depends_on"][0]["command"] == ["docs", "impact"]
+
+
+def test_explicit_empty_provider_map_is_preserved():
+    payload = policy()
+    payload["reference_providers"] = {}
+    assert (
+        validate_publication_config(payload, consumer_root=None)["reference_providers"]
+        == {}
+    )
+
+
+@pytest.mark.parametrize(
+    "providers",
+    [
+        None,
+        [],
+        {"": {"kind": "llm-wiki-cli"}},
+        {"cli/v1": {"kind": "llm-wiki-cli"}},
+        {"cli.v1": "llm-wiki-cli"},
+        {"cli.v1": {"kind": "executable", "path": "cli.py"}},
+        {"cli.v1": {"kind": "llm-wiki-cli", "path": "cli.json"}},
+        {"cli.v1": {"kind": "llm-wiki-cli", "entrypoint": "os:system"}},
+        {"cli.v1": {"kind": "contract-file"}},
+        {"cli.v1": {"kind": "contract-file", "path": "commands.py"}},
+        {"cli.v1": {"kind": "contract-file", "path": "../commands.json"}},
+        {"cli.v1": {"kind": "contract-file", "path": "/commands.json"}},
+        {"cli.v1": {"kind": "contract-file", "path": "docs\\commands.json"}},
+        {"cli.v1": {"kind": "llm-wiki-cli"}, "CLI.v1": {"kind": "llm-wiki-cli"}},
+        {f"provider-{i}": {"kind": "llm-wiki-cli"} for i in range(65)},
+    ],
+)
+def test_provider_definitions_reject_unsafe_unknown_and_ambiguous_contracts(providers):
+    payload = policy()
+    payload["reference_providers"] = providers
+    with pytest.raises(PublicationConfigError):
+        validate_publication_config(payload, consumer_root=None)
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        {"reference": "not-declared"},
+        {"reference": "CLI.v1"},
+        {"reference": "cli.v1", "source_file": "cli.py"},
+        {"reference": "cli.v1", "architecture_page": "modules/cli.md"},
+        {"reference": "cli.v1", "section": "llm-wiki://modules/cli#section/@preamble"},
+        {"reference": "cli.v1", "facets": ["whole"]},
+        {"reference": "cli.v1", "command": "docs impact"},
+        {"reference": "cli.v1", "command": [""]},
+        {"reference": "cli.v1", "command": ["--help"]},
+        {"reference": "cli.v1", "command": ["../impact"]},
+        {"reference": "cli.v1", "command": ["docs impact"]},
+        {"reference": "cli.v1", "command": ["impact\n"]},
+        {"reference": "cli.v1", "command": [True]},
+        {"reference": "cli.v1", "command": ["x" * 129]},
+        {"reference": "cli.v1", "command": ["impact"] * 33},
+        {"source_file": "cli.py", "command": []},
+        {"architecture_page": "modules/cli.md", "command": []},
+    ],
+)
+def test_reference_dependencies_require_a_declared_provider_and_literal_command_path(
+    dependency,
+):
+    payload = policy()
+    payload["reference_providers"] = {"cli.v1": {"kind": "llm-wiki-cli"}}
+    payload["topics"][0]["depends_on"] = [dependency]
+    with pytest.raises(PublicationConfigError):
+        validate_publication_config(payload, consumer_root=None)
+
+
+def test_reference_provider_is_never_implicitly_enabled():
+    payload = policy()
+    payload["topics"][0]["depends_on"] = [{"reference": "llm-wiki-cli"}]
+    with pytest.raises(PublicationConfigError, match="declared reference provider"):
+        validate_publication_config(payload, consumer_root=None)
+
+
+def test_duplicate_reference_paths_share_the_existing_dependency_duplicate_guard():
+    payload = policy()
+    payload["reference_providers"] = {"cli.v1": {"kind": "llm-wiki-cli"}}
+    payload["topics"][0]["depends_on"] = [
+        {"reference": "cli.v1"},
+        {"reference": "cli.v1", "command": []},
+    ]
+    with pytest.raises(PublicationConfigError, match="duplicates a dependency"):
+        validate_publication_config(payload, consumer_root=None)
+    payload["topics"][0]["depends_on"][1]["command"] = ["docs", "impact"]
+    assert (
+        len(
+            validate_publication_config(payload, consumer_root=None)["topics"][0][
+                "depends_on"
+            ]
+        )
+        == 2
+    )
+
+
+def test_provider_contract_paths_use_consumer_root_and_shared_spelling_guards(
+    tmp_path, monkeypatch
+):
+    payload = policy()
+    payload["reference_providers"] = {
+        "project.v1": {"kind": "contract-file", "path": "docs/commands.json"}
+    }
+    payload["topics"][0]["depends_on"] = [{"reference": "project.v1"}]
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    make_symlink(consumer / "docs", outside, directory=True)
+    monkeypatch.chdir(outside)
+    with pytest.raises(PublicationConfigError, match="symlink"):
+        validate_publication_config(payload, consumer_root=consumer)
+    assert (
+        validate_publication_config(payload, consumer_root=None)["reference_providers"]
+        == payload["reference_providers"]
+    )
+    payload["reference_providers"] = {
+        "one.v1": {"kind": "contract-file", "path": "contracts/one.json"},
+        "two.v1": {"kind": "contract-file", "path": "Contracts/two.json"},
+    }
+    payload["topics"][0]["depends_on"] = [{"reference": "one.v1"}]
+    with pytest.raises(PublicationConfigError, match="collides"):
+        validate_publication_config(payload, consumer_root=None)

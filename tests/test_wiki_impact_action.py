@@ -34,13 +34,20 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
     assert {(topic["wiki_page"], topic["anchor"]) for topic in config["topics"]} == {
         ("Command-Reference.md", "upgrade"),
         ("Migration-and-Upgrades.md", "upgrade-framework-artifacts"),
+        ("Command-Reference.md", "command-reference"),
     }
     expected = {"flows/cli-upgrade.md", "workflows/upgrade_current_knowledge.md"}
     for topic in config["topics"]:
+        if topic["id"] == "command-reference.commands":
+            assert topic["depends_on"] == [{"reference": "llm-wiki", "command": []}]
+            continue
         assert topic["owner"] == "maintainers" and topic["edit_at"] == "wiki"
         assert {
-            dependency["architecture_page"] for dependency in topic["depends_on"]
+            dependency["architecture_page"]
+            for dependency in topic["depends_on"]
+            if "architecture_page" in dependency
         } == expected
+        assert {"reference": "llm-wiki", "command": ["upgrade"]} in topic["depends_on"]
         assert all((ROOT / "docs/llm_wiki" / path).is_file() for path in expected)
     patterns = [exclusion["pattern"] for exclusion in config["exclusions"]]
     assert all(exclusion["reason"] for exclusion in config["exclusions"])

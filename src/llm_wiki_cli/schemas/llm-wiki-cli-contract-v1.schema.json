@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-cli-contract-v1.schema.json",
+  "title": "LLM Wiki CLI reference contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "package", "program", "root", "contract_id"],
+  "properties": {
+    "schema_version": {"const": "llm-wiki-cli-contract/v1"},
+    "package": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "requires_python"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "version": {"$ref": "#/$defs/text"},
+        "requires_python": {"type": ["string", "null"]}
+      }
+    },
+    "program": {"$ref": "#/$defs/name"},
+    "root": {"$ref": "#/$defs/command"},
+    "contract_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "names": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/name"}},
+    "json": {
+      "anyOf": [
+        {"type": ["null", "boolean", "number", "string"]},
+        {"type": "array", "items": {"$ref": "#/$defs/json"}},
+        {"type": "object", "additionalProperties": {"$ref": "#/$defs/json"}}
+      ]
+    },
+    "nullable_text": {"type": ["string", "null"]},
+    "argument": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "dest", "option_strings", "positional", "required", "action", "type", "nargs", "default", "const", "choices", "metavar", "help", "hidden", "deprecated", "notes", "group", "exclusive_groups", "version"],
+      "properties": {
+        "id": {"$ref": "#/$defs/text"}, "dest": {"$ref": "#/$defs/text"},
+        "option_strings": {"$ref": "#/$defs/strings"},
+        "positional": {"type": "boolean"}, "required": {"type": "boolean"},
+        "action": {"type": "string", "pattern": "^(store|store_const|store_true|store_false|append|append_const|count|extend|help|version|subparsers|boolean_optional|custom:[A-Za-z][A-Za-z0-9_]*)$"},
+        "type": {"anyOf": [{"type": "null"}, {"enum": ["string", "integer", "number", "boolean", "path"]}, {"type": "string", "pattern": "^custom:[A-Za-z][A-Za-z0-9_]*$"}]},
+        "nargs": {"anyOf": [{"type": "null"}, {"type": "integer", "minimum": 0}, {"enum": ["?", "*", "+", "remainder", "parser"]}]},
+        "default": {
+          "type": "object", "additionalProperties": false, "required": ["state", "value"],
+          "properties": {"state": {"enum": ["value", "suppressed"]}, "value": {"$ref": "#/$defs/json"}}
+        },
+        "const": {"$ref": "#/$defs/json"},
+        "choices": {"anyOf": [{"type": "null"}, {"type": "array", "items": {"$ref": "#/$defs/json"}}]},
+        "metavar": {"anyOf": [{"type": ["string", "null"]}, {"$ref": "#/$defs/strings"}]},
+        "help": {"$ref": "#/$defs/nullable_text"}, "hidden": {"type": "boolean"},
+        "deprecated": {"type": "boolean"}, "notes": {"$ref": "#/$defs/strings"},
+        "group": {"$ref": "#/$defs/nullable_text"},
+        "exclusive_groups": {"$ref": "#/$defs/strings"},
+        "version": {"$ref": "#/$defs/nullable_text"}
+      }
+    },
+    "group": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "description", "members"],
+      "properties": {"id": {"$ref": "#/$defs/text"}, "title": {"$ref": "#/$defs/nullable_text"}, "description": {"$ref": "#/$defs/nullable_text"}, "members": {"$ref": "#/$defs/strings"}}
+    },
+    "exclusive_group": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "required", "members"],
+      "properties": {"id": {"$ref": "#/$defs/text"}, "required": {"type": "boolean"}, "members": {"$ref": "#/$defs/strings"}}
+    },
+    "command": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "path", "aliases", "help", "description", "epilog", "deprecated", "notes", "arguments", "groups", "exclusive_groups", "commands", "subcommands_required", "defaults"],
+      "properties": {
+        "name": {"$ref": "#/$defs/name"}, "path": {"type": "array", "items": {"$ref": "#/$defs/name"}},
+        "aliases": {"$ref": "#/$defs/names"}, "help": {"$ref": "#/$defs/nullable_text"},
+        "description": {"$ref": "#/$defs/nullable_text"}, "epilog": {"$ref": "#/$defs/nullable_text"},
+        "deprecated": {"type": "boolean"}, "notes": {"$ref": "#/$defs/strings"},
+        "arguments": {"type": "array", "items": {"$ref": "#/$defs/argument"}},
+        "groups": {"type": "array", "items": {"$ref": "#/$defs/group"}},
+        "exclusive_groups": {"type": "array", "items": {"$ref": "#/$defs/exclusive_group"}},
+        "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
+        "subcommands_required": {"type": "boolean"},
+        "defaults": {"type": "object", "additionalProperties": {"$ref": "#/$defs/json"}}
+      }
+    }
+  }
+}

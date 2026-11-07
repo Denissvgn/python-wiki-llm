@@ -19,8 +19,18 @@
       "anchor": "upgrade",
       "edit_at": "wiki",
       "depends_on": [
-        {"architecture_page": "flows/cli-upgrade.md"},
-        {"architecture_page": "workflows/upgrade_current_knowledge.md"}
+        {
+          "architecture_page": "flows/cli-upgrade.md"
+        },
+        {
+          "architecture_page": "workflows/upgrade_current_knowledge.md"
+        },
+        {
+          "reference": "llm-wiki",
+          "command": [
+            "upgrade"
+          ]
+        }
       ]
     },
     {
@@ -30,8 +40,31 @@
       "anchor": "upgrade-framework-artifacts",
       "edit_at": "wiki",
       "depends_on": [
-        {"architecture_page": "flows/cli-upgrade.md"},
-        {"architecture_page": "workflows/upgrade_current_knowledge.md"}
+        {
+          "architecture_page": "flows/cli-upgrade.md"
+        },
+        {
+          "architecture_page": "workflows/upgrade_current_knowledge.md"
+        },
+        {
+          "reference": "llm-wiki",
+          "command": [
+            "upgrade"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "command-reference.commands",
+      "owner": "maintainers",
+      "wiki_page": "Command-Reference.md",
+      "anchor": "command-reference",
+      "edit_at": "wiki",
+      "depends_on": [
+        {
+          "reference": "llm-wiki",
+          "command": []
+        }
       ]
     }
   ],
@@ -88,5 +121,10 @@
       "pattern": "api-contracts.md",
       "reason": "The internal API contract catalog is outside the upgrade CLI topic scope."
     }
-  ]
+  ],
+  "reference_providers": {
+    "llm-wiki": {
+      "kind": "llm-wiki-cli"
+    }
+  }
 }

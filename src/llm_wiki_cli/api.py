@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .services import analysis_compatibility as ac
 
+import argparse
 import inspect
 import json
 import re
@@ -3533,6 +3534,47 @@ def export_documentation_run(
 
 
 @_api_boundary
+def build_cli_contract(
+    parser: argparse.ArgumentParser,
+    *,
+    package: Mapping[str, Any],
+    program: str,
+) -> dict[str, Any]:
+    """Capture a caller-owned parser as data without parsing application arguments."""
+    from .services.cli_reference import build_cli_contract as build
+
+    return build(parser, package=package, program=program)
+
+
+@_api_boundary
+def get_cli_contract() -> dict[str, Any]:
+    """Return the installed llm-wiki command definitions as a versioned contract."""
+    from .services.cli_reference import get_cli_contract as get_contract
+
+    return get_contract()
+
+
+@_api_boundary
+def render_cli_reference(contract: Mapping[str, Any]) -> str:
+    """Validate and render a supplied CLI contract without executing commands."""
+    from .services.cli_reference import render_cli_reference as render
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("CLI contract must be a mapping")
+    return render(dict(contract))
+
+
+@_api_boundary
+def validate_cli_contract(contract: Mapping[str, Any]) -> None:
+    """Validate the structure and commitments of a supplied CLI contract."""
+    from .services.cli_reference import validate_cli_contract as validate
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("CLI contract must be a mapping")
+    validate(dict(contract))
+
+
+@_api_boundary
 def capture_publication_basis(
     consumer_root: str | Path = ".",
     *,
@@ -3968,6 +4010,7 @@ __all__ = [
     "build_documentation_agent_packet",
     "build_p0_calibration_agent_packet",
     "build_context",
+    "build_cli_contract",
     "build_qualified_context",
     "build_budgeted_context",
     "BudgetedContext",
@@ -3992,6 +4035,7 @@ __all__ = [
     "flow_segment",
     "fingerprint_documentation_wiki_input",
     "get_concept",
+    "get_cli_contract",
     "get_calibration_run_status",
     "get_documentation_run_status",
     "get_p0_calibration_run_status",
@@ -4007,12 +4051,14 @@ __all__ = [
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "render_cli_reference",
     "resolve_publication_finding",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
+    "validate_cli_contract",
     "validate_documentation_model_selection",
     "verify_documentation_run",
     "verify_calibration_run",

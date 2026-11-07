@@ -1932,6 +1932,13 @@ allowlist-only; use `--knowledge-profile internal` only for a private derived
 mirror. See [Safe derived projections][native-knowledge-projections] for the
 identity-disclosure, rollback, checker, and authority rules.
 
+## `reference`
+
+Generate versioned command data with `llm-wiki reference cli --format json` or
+render it with `--format markdown`. `reference render --input FILE` validates
+and renders saved data. The [reference-data guide](cli-reference-data.md)
+covers public Python APIs and consumer mappings for command changes.
+
 ## `docs`
 
 Use `docs impact` for read-only architecture-to-sibling wiki review. Configure

@@ -131,6 +131,56 @@ def review_record() -> dict[str, Any]:
     }
 
 
+def cli_contract(*, application=False):
+    program = "application" if application else "llm-wiki"
+    return seal(
+        {
+            "schema_version": "llm-wiki-cli-contract/v1",
+            "package": {
+                "name": "application-cli" if application else "agent-wiki-cli",
+                "version": "1.0.0",
+                "requires_python": ">=3.11",
+            },
+            "program": program,
+            "root": {
+                "name": program,
+                "path": [],
+                "aliases": [],
+                "help": None,
+                "description": None,
+                "epilog": None,
+                "deprecated": False,
+                "notes": [],
+                "arguments": [],
+                "groups": [],
+                "exclusive_groups": [],
+                "commands": [],
+                "subcommands_required": False,
+                "defaults": {},
+            },
+        },
+        "contract_id",
+    )
+
+
+def reference_basis(*, provider: dict[str, Any] | None = None, contract: Any = "builtin"):
+    payload = basis()
+    provider = {"kind": "llm-wiki-cli"} if provider is None else provider
+    payload["config"]["reference_providers"] = {"cli.v1": provider}
+    payload["config"]["topics"][0]["depends_on"] = [{"reference": "cli.v1"}]
+    payload["config"] = validate_publication_config(
+        payload["config"], consumer_root=None
+    )
+    descriptor = {"provider": "cli.v1", "configuration": provider}
+    payload["references"] = {
+        hash_json(descriptor): {
+            **descriptor,
+            "contract": cli_contract() if contract == "builtin" else contract,
+        }
+    }
+    return reseal_basis(payload)
+
+
 def test_real_native_snapshot_validates_without_consulting_its_former_paths(tmp_path):
     _committed_snapshot(tmp_path, "packed-v4-deflate", governed=True)
     payload = basis()
@@ -170,6 +220,162 @@ def test_basis_and_reports_are_accepted_without_mutating_the_caller():
     result[0]["reason"] = "Changed by caller"
     assert ledger["records"][0]["reason"] == "Still correct"
     assert validate_publication_reviews(None) == []
+
+
+def test_reference_inputs_are_opt_in_and_legacy_bases_retain_their_shape():
+    legacy = basis()
+    before = deepcopy(legacy)
+    validate_publication_basis(legacy)
+    assert legacy == before and "references" not in legacy
+    payload = reference_basis()
+    before = deepcopy(payload)
+    validate_publication_basis(payload)
+    assert payload == before
+
+
+def test_custom_cli_and_known_missing_contract_files_are_valid_portable_inputs():
+    provider = {"kind": "contract-file", "path": "contracts/application.json"}
+    for contract in (cli_contract(application=True), None):
+        validate_publication_basis(
+            reference_basis(provider=provider, contract=contract)
+        )
+
+
+def test_remapped_provider_retains_both_current_and_previous_definitions():
+    provider = {"kind": "contract-file", "path": "contracts/current.json"}
+    payload = reference_basis(
+        provider=provider, contract=cli_contract(application=True)
+    )
+    previous = {
+        "provider": "cli.v1",
+        "configuration": {"kind": "contract-file", "path": "contracts/previous.json"},
+    }
+    payload["references"][hash_json(previous)] = {
+        **previous,
+        "contract": cli_contract(application=True),
+    }
+    reseal_basis(payload)
+    validate_publication_basis(payload)
+    del payload["references"][
+        hash_json({"provider": "cli.v1", "configuration": provider})
+    ]
+    reseal_basis(payload)
+    with pytest.raises(
+        PublicationProtocolError, match="every declared current provider"
+    ):
+        validate_publication_basis(payload)
+
+
+def test_reference_union_has_a_bound_for_current_and_previous_provider_sets():
+    payload = basis()
+    provider = {"kind": "contract-file", "path": "contracts/application.json"}
+    payload["references"] = {}
+    for index in range(129):
+        descriptor = {"provider": f"provider-{index}", "configuration": provider}
+        payload["references"][hash_json(descriptor)] = {**descriptor, "contract": None}
+    reseal_basis(payload)
+    with pytest.raises(PublicationProtocolError, match="reference input bounds"):
+        validate_publication_basis(payload)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "missing-map",
+        "empty-map",
+        "null-map",
+        "unknown-field",
+        "identity",
+        "provider-id",
+        "path",
+        "builtin-null",
+        "foreign-builtin",
+        "contract-seal",
+        "contract-schema",
+    ],
+)
+def test_reference_inputs_reject_missing_tampered_or_mislabeled_provider_data(change):
+    payload = reference_basis()
+    identity, reference = next(iter(payload["references"].items()))
+    if change == "missing-map":
+        del payload["references"]
+    elif change == "empty-map":
+        payload["references"] = {}
+    elif change == "null-map":
+        payload["references"] = None
+    elif change == "unknown-field":
+        reference["unknown"] = True
+    elif change == "identity":
+        payload["references"] = {H: reference}
+    elif change == "provider-id":
+        reference["provider"] = "different.v1"
+    elif change == "path":
+        reference["configuration"] = {"kind": "contract-file", "path": "../unsafe.json"}
+        payload["references"] = {
+            hash_json(
+                {key: reference[key] for key in ("provider", "configuration")}
+            ): reference
+        }
+    elif change == "builtin-null":
+        reference["contract"] = None
+    elif change == "foreign-builtin":
+        reference["contract"] = cli_contract(application=True)
+    elif change == "contract-seal":
+        reference["contract"]["contract_id"] = H
+    else:
+        reference["contract"]["root"]["executable"] = "do-not-run"
+        seal(reference["contract"], "contract_id")
+    reseal_basis(payload)
+    with pytest.raises(PublicationProtocolError):
+        validate_publication_basis(payload)
+
+
+def reference_report(evidence):
+    report = compare_publication_impact(basis())
+    finding = report["findings"][0]
+    dependency = {"reference": "cli.v1", "command": ["docs", "impact"]}
+    finding["reasons"] = [
+        {
+            "kind": "dependency-changed",
+            "before": None,
+            "after": {"dependency": dependency, "hash": evidence},
+        }
+    ]
+    seal(finding, "id")
+    return seal(report, "report_id")
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    [
+        None,
+        {"provider": {"kind": "llm-wiki-cli"}, "contract": H},
+        {
+            "provider": {"kind": "contract-file", "path": "contracts/application.json"},
+            "contract": H,
+        },
+    ],
+)
+def test_report_reference_dependencies_carry_only_scoped_commitments(evidence):
+    validate_publication_report(reference_report(evidence))
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    [
+        {"provider": {"kind": "llm-wiki-cli"}, "contract": ""},
+        {"provider": {"kind": "llm-wiki-cli"}, "contract": None},
+        {"provider": {"kind": "executable"}, "contract": H},
+        {
+            "provider": {"kind": "contract-file", "path": "../unsafe.json"},
+            "contract": H,
+        },
+        {"provider": {"kind": "llm-wiki-cli"}, "contract": H, "command": []},
+    ],
+)
+def test_report_reference_dependencies_reject_unsafe_or_missing_commitments(evidence):
+    with pytest.raises(PublicationProtocolError):
+        validate_publication_report(reference_report(evidence))
 
 
 @pytest.mark.parametrize(

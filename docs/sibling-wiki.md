@@ -5,6 +5,11 @@ architecture evidence changes. The command compares local snapshots and a
 consumer-owned mapping. It produces JSON and Markdown reports for maintainers
 and CI. Public pages can stay manually edited on GitHub.
 
+Add [CLI reference dependencies](cli-reference-data.md) when a public topic
+describes commands or options. The provider captures versioned declarations
+from the selected library or a saved application contract, alongside native
+architecture evidence in the same review workflow.
+
 ## Configure a project
 
 Create `.llm-wiki/publication.json` in the consumer project. Paths are relative

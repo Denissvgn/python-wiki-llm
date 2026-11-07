@@ -2,6 +2,7 @@
 
 Whole-page dependencies use whole content commitments. Structural or semantic
 facets require an exact native section with independently committed ownership.
+Reference dependencies require an explicitly declared, non-executable provider.
 """
 
 from __future__ import annotations
@@ -31,6 +32,8 @@ _MAX_CONFIG_BYTES = 256 * 1024
 _MAX_TOPICS = 1024
 _MAX_DEPENDENCIES = 1024
 _MAX_EXCLUSIONS = 1024
+_MAX_REFERENCE_PROVIDERS = 64
+_MAX_COMMAND_TOKENS = 32
 _IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}\Z")
 _REPOSITORY = re.compile(
     r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9_.-]{1,100}\Z"
@@ -229,16 +232,51 @@ def _dependency(
     root: Path | None,
     architecture_root: str,
     spellings: dict[tuple[str, ...], tuple[str, ...]],
+    reference_providers: Mapping[str, Any],
 ) -> dict[str, Any]:
     data = _object(
-        value, field, set(), {"architecture_page", "source_file", "section", "facets"}
+        value,
+        field,
+        set(),
+        {
+            "architecture_page",
+            "source_file",
+            "reference",
+            "command",
+            "section",
+            "facets",
+        },
     )
-    kinds = {"architecture_page", "source_file"} & set(data)
+    kinds = {"architecture_page", "source_file", "reference"} & set(data)
     if len(kinds) != 1:
         raise PublicationConfigError(
-            field, "must contain exactly one architecture_page or source_file"
+            field,
+            "must contain exactly one architecture_page, source_file or reference",
         )
     kind = next(iter(kinds))
+    if kind == "reference":
+        _object(data, field, {"reference"}, {"command"})
+        provider = _text(data["reference"], f"{field}.reference", 128)
+        if not _IDENTIFIER.fullmatch(provider) or provider not in reference_providers:
+            raise PublicationConfigError(
+                f"{field}.reference", "must name a declared reference provider"
+            )
+        command = []
+        for index, raw_token in enumerate(
+            _array(data.get("command", []), f"{field}.command", _MAX_COMMAND_TOKENS)
+        ):
+            token_field = f"{field}.command[{index}]"
+            token = _text(raw_token, token_field, 128)
+            if not _IDENTIFIER.fullmatch(token):
+                raise PublicationConfigError(
+                    token_field, "must be a literal portable command token"
+                )
+            command.append(token)
+        return {"reference": provider, "command": command}
+    if "command" in data:
+        raise PublicationConfigError(
+            f"{field}.command", "is only accepted for reference dependencies"
+        )
     path = _relative_path(data[kind], f"{field}.{kind}")
     actual = (
         f"{architecture_root}/{path}"
@@ -280,6 +318,52 @@ def _dependency(
     return result
 
 
+def _reference_providers(
+    value: object,
+    root: Path | None,
+    spellings: dict[tuple[str, ...], tuple[str, ...]],
+) -> dict[str, dict[str, Any]]:
+    providers = _object(
+        value,
+        "reference_providers",
+        set(),
+        set(value) if isinstance(value, Mapping) else set(),
+    )
+    if len(providers) > _MAX_REFERENCE_PROVIDERS:
+        raise PublicationConfigError(
+            "reference_providers",
+            f"must contain at most {_MAX_REFERENCE_PROVIDERS} providers",
+        )
+    result = {}
+    ids = set()
+    for identity in sorted(providers):
+        raw = providers[identity]
+        field = f"reference_providers.{identity}"
+        _text(identity, field, 128)
+        if not _IDENTIFIER.fullmatch(identity) or identity.casefold() in ids:
+            raise PublicationConfigError(
+                field, "must be a distinct portable provider identifier"
+            )
+        ids.add(identity.casefold())
+        provider = _object(raw, field, {"kind"}, {"path"})
+        kind = _choice(
+            provider["kind"], field + ".kind", {"llm-wiki-cli", "contract-file"}
+        )
+        if kind == "llm-wiki-cli":
+            _object(provider, field, {"kind"})
+            result[identity] = {"kind": kind}
+        else:
+            _object(provider, field, {"kind", "path"})
+            path = _relative_path(provider["path"], field + ".path")
+            if not path.endswith(".json"):
+                raise PublicationConfigError(
+                    field + ".path", "must identify a JSON contract ending in .json"
+                )
+            _check_path(root, path, field + ".path", spellings)
+            result[identity] = {"kind": kind, "path": path}
+    return result
+
+
 def validate_publication_config(
     payload: Mapping[str, Any], *, consumer_root: str | Path | None
 ) -> dict[str, Any]:
@@ -301,7 +385,7 @@ def validate_publication_config(
             "publish",
             "topics",
         },
-        {"source_policy", "exclusions"},
+        {"source_policy", "exclusions", "reference_providers"},
     )
     if data["schema_version"] != PUBLICATION_CONFIG_SCHEMA_VERSION:
         raise PublicationConfigError(
@@ -325,6 +409,11 @@ def validate_publication_config(
     spellings: dict[tuple[str, ...], tuple[str, ...]] = {}
     if architecture_root != ".":
         _check_path(root, architecture_root, "architecture.root", spellings)
+    reference_providers = (
+        _reference_providers(data["reference_providers"], root, spellings)
+        if "reference_providers" in data
+        else {}
+    )
     target = _object(data["target"], "target", {"kind", "repository"})
     kind = _choice(target["kind"], "target.kind", {"github-wiki"})
     repository = _text(target["repository"], "target.repository", 140)
@@ -401,7 +490,7 @@ def validate_publication_config(
                 f"{field}.source_document", "is required when edit_at is repository"
             )
         dependencies = []
-        seen_dependencies: set[tuple[str, str, str | None]] = set()
+        seen_dependencies: set[tuple[str, str, object]] = set()
         for dep_index, raw_dep in enumerate(
             _array(
                 topic["depends_on"],
@@ -412,14 +501,24 @@ def validate_publication_config(
         ):
             dep_field = f"{field}.depends_on[{dep_index}]"
             dependency = _dependency(
-                raw_dep, dep_field, root, architecture_root, spellings
+                raw_dep,
+                dep_field,
+                root,
+                architecture_root,
+                spellings,
+                reference_providers,
             )
-            dep_kind = (
-                "architecture_page"
-                if "architecture_page" in dependency
-                else "source_file"
+            dep_kind = next(
+                key
+                for key in ("architecture_page", "source_file", "reference")
+                if key in dependency
             )
-            dep_key = (dep_kind, dependency[dep_kind], dependency.get("section"))
+            scope = (
+                tuple(dependency["command"])
+                if dep_kind == "reference"
+                else dependency.get("section")
+            )
+            dep_key = (dep_kind, dependency[dep_kind], scope)
             if dep_key in seen_dependencies:
                 raise PublicationConfigError(
                     dep_field, "duplicates a dependency in this topic"
@@ -461,7 +560,7 @@ def validate_publication_config(
                 "reason": _text(exclusion["reason"], f"{field}.reason", 4096),
             }
         )
-    return {
+    result = {
         "schema_version": PUBLICATION_CONFIG_SCHEMA_VERSION,
         "source_policy": source_policy,
         "architecture": {"baseline": baseline, "root": architecture_root},
@@ -471,6 +570,9 @@ def validate_publication_config(
         "topics": topics,
         "exclusions": exclusions,
     }
+    if "reference_providers" in data:
+        result["reference_providers"] = reference_providers
+    return result
 
 
 def _json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:

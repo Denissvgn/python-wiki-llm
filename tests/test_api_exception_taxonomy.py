@@ -34,6 +34,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "build_calibration_agent_packet",
     "build_budgeted_context",
     "build_context",
+    "build_cli_contract",
     "build_qualified_context",
     "build_documentation_agent_packet",
     "build_documentation_query_service",
@@ -56,6 +57,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "flow_for_entrypoint",
     "flow_segment",
     "get_calibration_run_status",
+    "get_cli_contract",
     "get_concept",
     "get_knowledge_coverage",
     "inspect_concept",
@@ -73,12 +75,14 @@ _PUBLIC_FUNCTION_NAMES = (
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "render_cli_reference",
     "resolve_publication_finding",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
+    "validate_cli_contract",
     "validate_documentation_model_selection",
     "verify_calibration_run",
     "verify_documentation_run",
@@ -99,6 +103,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "recover_maintenance",
         "build_budgeted_context",
         "build_context",
+        "build_cli_contract",
         "build_qualified_context",
         "build_documentation_query_service",
         "callees",
@@ -115,6 +120,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "flow_for_entrypoint",
         "flow_segment",
         "get_concept",
+        "get_cli_contract",
         "get_knowledge_coverage",
         "inspect_concept",
         "list_concept_sections",
@@ -126,6 +132,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "record_calibration_agent_result",
         "record_p0_calibration_agent_result",
         "related_concepts",
+        "render_cli_reference",
         "resolve_publication_finding",
         "select_documentation_model",
         "traverse_typed_graph",
@@ -133,6 +140,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "use_p0_calibration_host_broker_authenticator",
         "reconcile_context_packet",
         "validate_context_packet",
+        "validate_cli_contract",
         "validate_documentation_model_selection",
     }
 )
@@ -249,6 +257,17 @@ def _deprecated_context(callable_, *args, **kwargs) -> None:
         _enter(callable_(*args, **kwargs))
 
 
+def _provoke_cli_contract_export_failure():
+    from llm_wiki_cli.services import cli_reference
+
+    def fail():
+        raise ValueError("provoked CLI contract failure")
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(cli_reference, "get_cli_contract", fail)
+        return api.get_cli_contract()
+
+
 def _failure_cases(tmp_path: Path):
     missing_source = tmp_path / "missing-source"
     missing_wiki = tmp_path / "missing-wiki"
@@ -260,6 +279,14 @@ def _failure_cases(tmp_path: Path):
     return {
         "helper_preparation": lambda: _enter(api.helper_preparation(cast(Any, "invalid"))),
         "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
+        "get_cli_contract": _provoke_cli_contract_export_failure,
+        "build_cli_contract": lambda: api.build_cli_contract(
+            cast(Any, None),
+            package={"name": "example", "version": "1.0.0", "requires_python": None},
+            program="example",
+        ),
+        "render_cli_reference": lambda: api.render_cli_reference({}),
+        "validate_cli_contract": lambda: api.validate_cli_contract({}),
         "capture_publication_basis": lambda: api.capture_publication_basis(
             tmp_path, config_path="../publication.json"
         ),
@@ -676,6 +703,10 @@ def test_public_dict_return_annotations_import_and_resolve():
         "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
         "capture_publication_basis": dict[str, typing.Any],
+        "get_cli_contract": dict[str, typing.Any],
+        "build_cli_contract": dict[str, typing.Any],
+        "render_cli_reference": str,
+        "validate_cli_contract": type(None),
         "compare_publication_impact": dict[str, typing.Any],
         "resolve_publication_finding": dict[str, typing.Any],
     }

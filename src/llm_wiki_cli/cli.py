@@ -25,6 +25,7 @@ from .commands import (
     prepare_extractors_cmd,
     queue_cmd,
     query_cmd,
+    reference_cmd,
     release_cmd,
     review_cmd,
     search_cmd,
@@ -186,6 +187,7 @@ _COMMAND_MODULES = {
     "migrate": migrate_cmd,
     "context": context_cmd,
     "docs": docs_cmd,
+    "reference": reference_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
     "maintenance": maintenance_cmd,
@@ -275,6 +277,11 @@ def _build_parser():
     return parser
 
 
+def build_cli_parser() -> argparse.ArgumentParser:
+    """Build the declared CLI without parsing arguments or running commands."""
+    return _build_parser()
+
+
 def _add_helper_preparation_arguments(parser):
     """Accept the operation policy before or after nested command names."""
     parser.add_argument(
@@ -345,6 +352,7 @@ def _add_task_context_command(subparsers):
 
 
 def _register_commands(subparsers):
+    reference_cmd.add_commands(subparsers)
     _add_init_command(subparsers)
     _add_extract_command(subparsers)
     _add_lint_command(subparsers)
@@ -1299,11 +1307,12 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki output directory"
     )
-    bootstrap_parser.add_argument(
+    legacy_overwrite = bootstrap_parser.add_argument(
         "--overwrite",
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    setattr(legacy_overwrite, "reference_notes", ["Compatibility flag rejected by bootstrap; use sync for a managed wiki."])
     bootstrap_parser.add_argument(
         "--depth",
         choices=["shallow", "full"],
@@ -1631,7 +1640,8 @@ def _add_mcp_command(subparsers):
     _add_helper_cache_argument(mcp_parser)
     mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting (Python 3.11+ and [tokens])")
     sessions = mcp_parser.add_mutually_exclusive_group()
-    sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    legacy_sessions = sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    setattr(legacy_sessions, "reference_notes", ["Compatibility flag; session tools are enabled by default. Opening a session is explicit."])
     sessions.add_argument("--disable-sessions", dest="enable_sessions", action="store_false", help="Disable bounded in-memory task sessions")
 
 
@@ -1997,11 +2007,12 @@ def _add_upgrade_command(subparsers):
             "preserved)"
         ),
     )
-    upgrade_parser.add_argument(
+    legacy_force = upgrade_parser.add_argument(
         "--force",
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    setattr(legacy_force, "reference_notes", ["Compatibility flag; it does not override managed ownership checks."])
     upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
     upgrade_hints.add_argument(
         "--quality-hints",

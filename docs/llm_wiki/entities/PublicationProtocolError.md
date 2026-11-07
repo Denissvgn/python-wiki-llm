@@ -1,6 +1,6 @@
 # PublicationProtocolError
 
-**Location:** `src/llm_wiki_cli/services/publication_contracts.py:36`
+**Location:** `src/llm_wiki_cli/services/publication_contracts.py:37`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [publication_contracts](../modules/publication_contracts.md)

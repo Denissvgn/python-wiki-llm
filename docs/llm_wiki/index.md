@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 686 | [Open section](#entities) |
-| Modules | 266 | [Open section](#modules) |
-| Workflows | 256 | [Open section](#workflows) |
+| Entities | 687 | [Open section](#entities) |
+| Modules | 269 | [Open section](#modules) |
+| Workflows | 257 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 470 | [Open section](#entry-point-flows) |
+| Entry-point flows | 475 | [Open section](#entry-point-flows) |
 | Infrastructure | 3 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -56,6 +56,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BundledSkill](entities/BundledSkill.md)
 - [ByteResultBounds](entities/ByteResultBounds.md)
 - [ByteSpool](entities/ByteSpool.md)
+- [CLIReferenceError](entities/CLIReferenceError.md)
 - [CalleesResult](entities/CalleesResult.md)
 - [CallersResult](entities/CallersResult.md)
 - [Candidate](entities/Candidate.md)
@@ -731,6 +732,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
+- [cli_reference](modules/cli_reference.md) - Deterministic CLI reference data and inert Markdown from parser declarations.
 - [commands___init__](modules/commands___init__.md) - `src/llm_wiki_cli/commands/__init__.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
 - [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for knowledge concepts.
@@ -878,6 +880,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [publication_config](modules/publication_config.md) - Portable consumer policy for read-only publication impact and review.
 - [publication_contracts](modules/publication_contracts.md) - Strict portable validators for captured publication evidence and decisions.
 - [publication_impact](modules/publication_impact.md) - Portable, deterministic architecture-to-public-topic impact and review.
+- [publication_references](modules/publication_references.md) - Explicit, inert reference inputs for public documentation review.
 - [publication_snapshot](modules/publication_snapshot.md) - Complete, read-only native page commitments for documentation publication.
 - [python_bindings](modules/python_bindings.md) - Conservative syntax-only binding facts for captured Python calls.
 - [python_calls](modules/python_calls.md) - Shared Python call resolution using captured lexical binding evidence.
@@ -891,6 +894,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [queue_cmd](modules/queue_cmd.md) - Read-only managed-wiki maintenance triage.
 - [record](modules/record.md) - Documentation-run record services.
 - [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
+- [reference_cmd](modules/reference_cmd.md) - Generate or render stable command reference data.
 - [refresh](modules/refresh.md) - Documentation-run refresh services.
 - [relationships](modules/relationships.md) - Pure entity and callable relationship summaries.
 - [release_cmd](modules/release_cmd.md) - release_cmd — stamp the [Unreleased] CHANGELOG section with the current version.
@@ -1169,6 +1173,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
 - [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
+- [reference_cmd_flow](workflows/reference_cmd_flow.md) - entry: `reference_cmd.run`
 - [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native._refresh_documentation_native_projection`
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
@@ -1280,6 +1285,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-build_budgeted_context](flows/api-build_budgeted_context.md) - entry: `build_budgeted_context`
 - [api-build_calibration_agent_packet-api](flows/api-build_calibration_agent_packet-api.md) - entry: `build_calibration_agent_packet`
 - [api-build_calibration_agent_packet-controller](flows/api-build_calibration_agent_packet-controller.md) - entry: `build_calibration_agent_packet`
+- [api-build_cli_contract](flows/api-build_cli_contract.md) - entry: `build_cli_contract`
 - [api-build_compact_task_context](flows/api-build_compact_task_context.md) - entry: `build_compact_task_context`
 - [api-build_context](flows/api-build_context.md) - entry: `build_context`
 - [api-build_context_from_captured_read](flows/api-build_context_from_captured_read.md) - entry: `build_context_from_captured_read`
@@ -1389,6 +1395,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-get_analysis_input_status](flows/api-get_analysis_input_status.md) - entry: `get_analysis_input_status`
 - [api-get_calibration_run_status-api](flows/api-get_calibration_run_status-api.md) - entry: `get_calibration_run_status`
 - [api-get_calibration_run_status-controller](flows/api-get_calibration_run_status-controller.md) - entry: `get_calibration_run_status`
+- [api-get_cli_contract](flows/api-get_cli_contract.md) - entry: `get_cli_contract`
 - [api-get_concept](flows/api-get_concept.md) - entry: `get_concept`
 - [api-get_documentation_run_status](flows/api-get_documentation_run_status.md) - entry: `get_documentation_run_status`
 - [api-get_knowledge_coverage](flows/api-get_knowledge_coverage.md) - entry: `get_knowledge_coverage`
@@ -1520,6 +1527,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-relationship_edge_key](flows/api-relationship_edge_key.md) - entry: `relationship_edge_key`
 - [api-remove_guarded_tree](flows/api-remove_guarded_tree.md) - entry: `remove_guarded_tree`
 - [api-render_api_contracts_markdown](flows/api-render_api_contracts_markdown.md) - entry: `render_api_contracts_markdown`
+- [api-render_cli_reference](flows/api-render_cli_reference.md) - entry: `render_cli_reference`
 - [api-render_compact_task_context](flows/api-render_compact_task_context.md) - entry: `render_compact_task_context`
 - [api-render_doctor_text](flows/api-render_doctor_text.md) - entry: `render_doctor_text`
 - [api-render_flow_api_contract_section](flows/api-render_flow_api_contract_section.md) - entry: `render_flow_api_contract_section`
@@ -1622,6 +1630,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-validate_alias_type](flows/api-validate_alias_type.md) - entry: `validate_alias_type`
 - [api-validate_alias_value](flows/api-validate_alias_value.md) - entry: `validate_alias_value`
 - [api-validate_bundle_id](flows/api-validate_bundle_id.md) - entry: `validate_bundle_id`
+- [api-validate_cli_contract](flows/api-validate_cli_contract.md) - entry: `validate_cli_contract`
 - [api-validate_compact_task_context](flows/api-validate_compact_task_context.md) - entry: `validate_compact_task_context`
 - [api-validate_concept_kind](flows/api-validate_concept_kind.md) - entry: `validate_concept_kind`
 - [api-validate_concept_uid](flows/api-validate_concept_uid.md) - entry: `validate_concept_uid`
@@ -1687,6 +1696,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [cli-prepare-extractors](flows/cli-prepare-extractors.md) - entry: `run`
 - [cli-query](flows/cli-query.md) - entry: `run`
 - [cli-queue](flows/cli-queue.md) - entry: `run`
+- [cli-reference](flows/cli-reference.md) - entry: `run`
 - [cli-release](flows/cli-release.md) - entry: `run`
 - [cli-review](flows/cli-review.md) - entry: `run`
 - [cli-search](flows/cli-search.md) - entry: `run`

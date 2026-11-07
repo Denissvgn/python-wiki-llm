@@ -71,6 +71,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "llm_wiki_cli" = [
+    "schemas/llm-wiki-cli-contract-v1.schema.json",
     "py.typed",
     "services/analysis_contracts.json",
     "schemas/llm-wiki-normalization-diagnostic-v1.schema.json",

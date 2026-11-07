@@ -1,0 +1,180 @@
+# CLI reference data
+
+Use a versioned command contract to keep reference pages and their review
+dependencies aligned with command definitions. The built-in provider describes
+the installed `llm-wiki` CLI. Applications can supply their own saved contract
+through a file provider.
+
+## Export the installed CLI
+
+```bash
+.venv/bin/llm-wiki reference cli --format json --output reports/llm-wiki-cli.json
+.venv/bin/llm-wiki reference cli --format markdown --output reports/llm-wiki-cli.md
+```
+
+The JSON schema is `llm-wiki-cli-contract/v1`. It records package identity,
+program name, the command hierarchy, arguments, aliases, choices, argument
+groups and a `contract_id` commitment. Hidden compatibility options retain
+their visibility metadata. Markdown marks those options explicitly.
+
+Defaults describe the parser's declarations. Runtime configuration and native
+wiki state can determine the effective value of an omitted option. A suppressed
+default is distinct from a default of `null`. Custom argument actions retain
+their declared metadata; the contract does not evaluate their runtime effects.
+
+Choose an immutable provider revision in CI so the exported data corresponds
+to the version being documented. A new export captures the definitions in that
+selected provider.
+
+## Render a saved contract
+
+```bash
+.venv/bin/llm-wiki reference render --input reports/llm-wiki-cli.json --format markdown --output reports/saved-cli-reference.md
+```
+
+The supplied file is the rendering input. Its declared schema and commitments
+are validated before rendering. Keep the accepted JSON artifact in the
+application's normal documentation source when it must be reproduced later.
+Export a fresh artifact explicitly when updating the documented command set.
+
+File providers use the same versioned schema for an application's own package,
+program and command definitions. Loading a contract reads JSON data and
+validates its structure, command coordinates and commitment. It does not import
+the application or execute its entry points. An invalid contract remains an
+input error that must be repaired.
+
+An application maintainer can capture a caller-owned `argparse` parser with the
+public builder. Run this adapter as part of that application's own workflow:
+
+```python
+import argparse
+import json
+from pathlib import Path
+from llm_wiki_cli.api import build_cli_contract
+
+parser = argparse.ArgumentParser(prog="accounts")
+commands = parser.add_subparsers(dest="command", required=True)
+sync = commands.add_parser("sync", help="Synchronize accounts")
+sync.add_argument("--name", default="guest", help="Account name")
+
+contract = build_cli_contract(
+    parser,
+    package={"name": "accounts-cli", "version": "1.0.0", "requires_python": ">=3.11"},
+    program="accounts",
+)
+destination = Path("docs/reference/app-cli.json")
+destination.parent.mkdir(parents=True, exist_ok=True)
+destination.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+```
+
+The maintainer supplies the parser and package identity. The builder captures
+declarations without parsing application arguments. Publication later consumes
+the saved data. Applications with another parser can generate the same schema
+through their own adapter.
+
+## Connect reference data to public topics
+
+Declare reference providers in the consumer's `.llm-wiki/publication.json`.
+This example maps an `llm-wiki sync` topic to its command contract and native
+flow:
+
+```json
+{
+  "schema_version": "llm-wiki-publication/v1",
+  "source_policy": "default-branch",
+  "architecture": {"baseline": "existing-wiki", "root": "docs/llm_wiki"},
+  "target": {"kind": "github-wiki", "repository": "self"},
+  "enforcement": "advisory",
+  "publish": false,
+  "reference_providers": {
+    "cli": {"kind": "llm-wiki-cli"}
+  },
+  "topics": [{
+    "id": "commands.sync",
+    "owner": "maintainers",
+    "wiki_page": "Command-Reference.md",
+    "anchor": "sync",
+    "edit_at": "wiki",
+    "depends_on": [
+      {"reference": "cli", "command": ["sync"]},
+      {"architecture_page": "flows/cli-sync.md"}
+    ]
+  }]
+}
+```
+
+Choose native mappings and reasoned exclusions for the rest of the project's
+scope as described in the [sibling wiki guide](sibling-wiki.md). A command path
+is a list of literal tokens, such as `["knowledge", "status"]`. An empty path
+`[]` selects the complete contract.
+
+A scoped dependency follows its selected command and descendants. Its basis
+also includes ancestor argument declarations and constraints, since a global
+option can change how the command behaves. Parent subcommand lists and global
+help/version display actions are excluded from that scoped context.
+The basis
+retains the program, package name and Python requirement while excluding
+unrelated commands and release-version-only changes. The complete-contract
+dependency includes the complete package and command data.
+
+For an application's own saved contract, replace the provider declaration:
+
+```json
+{
+  "reference_providers": {
+    "app-cli": {"kind": "contract-file", "path": "docs/reference/app-cli.json"}
+  }
+}
+```
+
+Then bind the relevant topic to a dependency such as
+`{"reference": "app-cli", "command": ["sync"]}`. The file path is relative
+to the consumer root. Select `llm-wiki-cli` only when the public topic documents
+`llm-wiki`; the file provider supplies the application's own definitions.
+
+## Review a reference change
+
+Run the normal impact comparison with the accepted baseline, review ledger and
+local public wiki copy:
+
+```bash
+.venv/bin/llm-wiki docs impact --target-dir sibling-wiki --baseline .llm-wiki/publication-baseline.json --reviews .llm-wiki/publication-reviews.json --output reports/wiki-impact.json --format markdown
+```
+
+Changes to a selected command's arguments, defaults or descendants reopen the
+linked topic for review. Inspect the reference change alongside its native
+evidence and update the public topic at its declared edit location. When the
+existing wording remains accurate, prepare a `still-current` decision with
+`docs impact resolve`, the exact report and finding ID, a reviewer and a
+rationale. Submit the proposed ledger through the consumer's normal review
+process before supplying it as accepted state.
+
+A missing command or provider leaves incomplete evidence. Repair the input or
+retire its mapping deliberately. A removed or moved topic retains its former
+destination as a review obligation; record `--decision retired` after checking
+that destination. The [review workflow](sibling-wiki.md#resolve-a-finding)
+describes exact-basis decisions and checkpoint replacement.
+
+## Python API
+
+```python
+import json
+from pathlib import Path
+from llm_wiki_cli.api import (
+    get_cli_contract,
+    render_cli_reference,
+    validate_cli_contract,
+)
+
+contract = get_cli_contract()
+validate_cli_contract(contract)
+markdown = render_cli_reference(contract)
+
+saved = json.loads(Path("docs/reference/app-cli.json").read_text(encoding="utf-8"))
+validate_cli_contract(saved)
+saved_markdown = render_cli_reference(saved)
+```
+
+`get_cli_contract()` returns detached JSON-compatible data. Validation returns
+`None` on success, and rendering returns Markdown text. Invalid contracts raise
+the public `InvalidRequestError` through these API functions.

@@ -16,6 +16,7 @@ Portable, deterministic architecture-to-public-topic impact and review.
 | `.markdown_sections` | `parse_markdown_document` |
 | `.publication_config` | `load_publication_config`, `publication_path` |
 | `.publication_contracts` | `PublicationProtocolError`, `validate_publication_basis`, `validate_publication_report`, `validate_publication_reviews` |
+| `.publication_references` | `capture_reference_inputs`, `recheck_reference_inputs`, `reference_dependency_basis` |
 | `.publication_snapshot` | `build_publication_snapshot`, `build_bootstrap_publication_snapshot` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -40,7 +41,8 @@ flowchart LR
     n6["src/llm_wiki_cli/services/publication_config.py"]
     n7["src/llm_wiki_cli/services/publication_contracts.py"]
     n8["src/llm_wiki_cli/services/publication_impact.py"]
-    n9["src/llm_wiki_cli/services/publication_snapshot.py"]
+    n9["src/llm_wiki_cli/services/publication_references.py"]
+    n10["src/llm_wiki_cli/services/publication_snapshot.py"]
     n0 --> n8
     n1 --> n3
     n1 --> n4
@@ -57,9 +59,12 @@ flowchart LR
     n8 --> n6
     n8 --> n7
     n8 --> n9
+    n8 --> n10
     n9 --> n3
-    n9 --> n4
-    n9 --> n5
+    n9 --> n6
+    n10 --> n3
+    n10 --> n4
+    n10 --> n5
     click n0 "../modules/api.md"
     click n1 "../modules/publication_cmd.md"
     click n2 "../modules/instruction_ownership.md"
@@ -69,7 +74,8 @@ flowchart LR
     click n6 "../modules/publication_config.md"
     click n7 "../modules/publication_contracts.md"
     click n8 "../modules/publication_impact.md"
-    click n9 "../modules/publication_snapshot.md"
+    click n9 "../modules/publication_references.md"
+    click n10 "../modules/publication_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -84,6 +90,7 @@ flowchart LR
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_contracts](../modules/publication_contracts.md) |
+| Outbound | [publication_references](../modules/publication_references.md) |
 | Outbound | [publication_snapshot](../modules/publication_snapshot.md) |
 
 ## Functions
@@ -98,8 +105,8 @@ flowchart LR
 | `_topic_versions` | `(config, baseline)` | — | — |
 | `_target_hash` | `(session: StorageReadSession, topic: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `capture_publication_basis` | `(consumer_root: str \| Path = '.', *, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None) -> dict[str, Any]` | — | Capture a portable input basis without extraction or remote access. |
-| `_dependency_basis` | `(dep: Mapping[str, Any], basis: Mapping[str, Any]) -> Any` | — | — |
-| `_topic_inputs` | `(topic: Mapping[str, Any], basis: Mapping[str, Any]) -> dict[str, Any]` | — | — |
+| `_dependency_basis` | `(dep: Mapping[str, Any], basis: Mapping[str, Any], providers = None) -> Any` | — | — |
+| `_topic_inputs` | `(topic: Mapping[str, Any], basis: Mapping[str, Any], providers = None) -> dict[str, Any]` | — | — |
 | `_finding` | `(kind: str, subject: str, details: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_topic_findings` | `(before, after) -> list[dict[str, Any]]` | — | — |
 | `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | — | Compare complete bases through the union of previous/current bindings. |

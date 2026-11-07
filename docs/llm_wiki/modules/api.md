@@ -22,6 +22,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
 | `.services.calibration.host_broker` | `HostBrokerAuthenticationError`, `HostBrokerAuthenticationProof`, `HostBrokerAuthenticationUnavailable`, `HostBrokerAuthenticator`, `use_calibration_host_broker_authenticator` |
+| `.services.cli_reference` | `build_cli_contract`, `get_cli_contract`, `render_cli_reference`, `validate_cli_contract` |
 | `.services.context_budget` | `BudgetedContext`, `build_budgeted_context`, `validate_budgeted_context` |
 | `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
 | `.services.context_session` | `ContextSession`, `SessionReply`, `CompactSessionReply`, `CanonicalReceipt`, `apply_task_delta` |
@@ -64,6 +65,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.wiki_surface_index` | `evaluate_surface_index` |
 | `.services.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `__future__` | `annotations` |
+| `argparse` | `argparse` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
 | `functools` | `wraps` |
@@ -94,20 +96,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (53) |
+| Outbound | `src` (54) |
 
-> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 274 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 355 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 370 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 374 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 378 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1605 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 275 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 356 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 371 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 375 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 379 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1606 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -212,6 +214,10 @@ flowchart LR
 | `_query_service` | `(service: DocumentationGraphQueryService \| None, *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, read_only: bool, source_selection: str \| Path \| None) -> DocumentationGraphQueryService` | — | — |
 | `_run_query` | `(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]` | — | — |
 | `export_documentation_run` | `(workspace: str \| Path, *, build: bool = False, builder_command: Iterable[str] \| None = None, knowledge_mode: str \| None = None, knowledge_public_repository_identity: str \| None = None) -> DocumentationExportResult` | `@_api_boundary` | Export a documentation workspace through the stable API boundary. |
+| `build_cli_contract` | `(parser: argparse.ArgumentParser, *, package: Mapping[str, Any], program: str) -> dict[str, Any]` | `@_api_boundary` | Capture a caller-owned parser as data without parsing application arguments. |
+| `get_cli_contract` | `() -> dict[str, Any]` | `@_api_boundary` | Return the installed llm-wiki command definitions as a versioned contract. |
+| `render_cli_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Validate and render a supplied CLI contract without executing commands. |
+| `validate_cli_contract` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the structure and commitments of a supplied CLI contract. |
 | `capture_publication_basis` | `(consumer_root: str \| Path = '.', *, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Capture complete local publication inputs without remote access or writes. |
 | `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Compare publication bases and exact-basis review decisions without writes. |
 | `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None, decision: str = 'still-current') -> dict[str, Any]` | `@_api_boundary` | Return a proposed current or retired decision for caller-owned acceptance. |

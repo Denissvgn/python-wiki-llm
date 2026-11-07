@@ -25,6 +25,11 @@ from .publication_snapshot import (
     build_publication_snapshot,
     build_bootstrap_publication_snapshot,
 )
+from .publication_references import (
+    capture_reference_inputs,
+    recheck_reference_inputs,
+    reference_dependency_basis,
+)
 
 
 BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
@@ -163,6 +168,7 @@ def capture_publication_basis(
     with StorageReadSession(root).phase() as session:
         for path in sorted(source_paths):
             files[path] = _file_hash(session, root, path)
+        references = capture_reference_inputs(config, baseline, root, session)
         if target_dir is not None:
             target = publication_path(root, str(target_dir))
             if not target.is_dir():
@@ -176,6 +182,7 @@ def capture_publication_basis(
     # native snapshot after capturing external inputs, including its pages.
     if snapshot_builder(architecture_root)["snapshot_id"] != native["snapshot_id"]:
         raise PublicationImpactError("Native snapshot changed during input capture")
+    recheck_reference_inputs(references, root)
     session.recheck()
     for path, digest in files.items():
         if digest is None and publication_path(root, path).exists():
@@ -190,19 +197,29 @@ def capture_publication_basis(
                 raise PublicationImpactError("Target evidence appeared during capture")
     if config != load_publication_config(root, config_path=config_path):
         raise PublicationImpactError("Publication configuration changed during capture")
-    return _seal(
-        {
-            "schema_version": BASIS_SCHEMA,
-            "config": config,
-            "architecture": native,
-            "files": files,
-            "targets": targets,
-        },
-        "basis_id",
-    )
+    result = {
+        "schema_version": BASIS_SCHEMA,
+        "config": config,
+        "architecture": native,
+        "files": files,
+        "targets": targets,
+    }
+    if references:
+        result["references"] = references
+    return _seal(result, "basis_id")
 
 
-def _dependency_basis(dep: Mapping[str, Any], basis: Mapping[str, Any]) -> Any:
+def _dependency_basis(
+    dep: Mapping[str, Any], basis: Mapping[str, Any], providers=None
+) -> Any:
+    if "reference" in dep:
+        return reference_dependency_basis(
+            dep,
+            basis,
+            providers
+            if providers is not None
+            else basis["config"].get("reference_providers", {}),
+        )
     if "source_file" in dep:
         return basis["files"].get(dep["source_file"])
     page = next(
@@ -241,9 +258,14 @@ def _dependency_basis(dep: Mapping[str, Any], basis: Mapping[str, Any]) -> Any:
     }
 
 
-def _topic_inputs(topic: Mapping[str, Any], basis: Mapping[str, Any]) -> dict[str, Any]:
+def _topic_inputs(
+    topic: Mapping[str, Any], basis: Mapping[str, Any], providers=None
+) -> dict[str, Any]:
     inputs = {
-        hash_json(dep): {"dependency": dep, "hash": _dependency_basis(dep, basis)}
+        hash_json(dep): {
+            "dependency": dep,
+            "hash": _dependency_basis(dep, basis, providers),
+        }
         for dep in topic["depends_on"]
     }
     if topic.get("source_document"):
@@ -272,7 +294,10 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
             assert before is not None
             previous = _topic_inputs(old, before)
         retired = new is None
-        current = _topic_inputs(topic, after)
+        providers = (before if retired else after)["config"].get(
+            "reference_providers", {}
+        )
+        current = _topic_inputs(topic, after, providers)
         reasons = []
         if old != new:
             reasons.append(
