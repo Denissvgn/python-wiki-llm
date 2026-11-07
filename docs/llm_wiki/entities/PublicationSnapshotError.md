@@ -1,6 +1,6 @@
 # PublicationSnapshotError
 
-**Location:** `src/llm_wiki_cli/services/publication_snapshot.py:29`
+**Location:** `src/llm_wiki_cli/services/publication_snapshot.py:30`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [publication_snapshot](../modules/publication_snapshot.md)

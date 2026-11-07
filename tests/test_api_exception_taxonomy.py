@@ -42,6 +42,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "callees",
     "callers",
     "capture_publication_basis",
+    "check_publication_candidate",
     "compare_context_packet_basis",
     "compare_publication_impact",
     "data_flow_for_entrypoint",
@@ -52,6 +53,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "explain_evidence",
     "expand_task_storage_receipt",
     "export_documentation_run",
+    "export_publication_candidate",
     "extract_source",
     "fingerprint_documentation_wiki_input",
     "flow_for_entrypoint",
@@ -77,12 +79,14 @@ _PUBLIC_FUNCTION_NAMES = (
     "related_concepts",
     "render_cli_reference",
     "resolve_publication_finding",
+    "review_publication_candidate",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
     "validate_cli_contract",
+    "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_calibration_run",
     "verify_documentation_run",
@@ -109,6 +113,10 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "callees",
         "callers",
         "capture_publication_basis",
+        "check_publication_candidate",
+        "export_publication_candidate",
+        "review_publication_candidate",
+        "validate_publication_receipt",
         "compare_context_packet_basis",
         "compare_publication_impact",
         "data_flow_for_entrypoint",
@@ -290,6 +298,16 @@ def _failure_cases(tmp_path: Path):
         "capture_publication_basis": lambda: api.capture_publication_basis(
             tmp_path, config_path="../publication.json"
         ),
+        "export_publication_candidate": lambda: api.export_publication_candidate(
+            tmp_path, output_dir="candidate", config_path="../publication.json"
+        ),
+        "check_publication_candidate": lambda: api.check_publication_candidate(
+            tmp_path, candidate_dir="candidate", receipt={}
+        ),
+        "review_publication_candidate": lambda: api.review_publication_candidate(
+            {}, reviewer="reviewer", reason="reviewed"
+        ),
+        "validate_publication_receipt": lambda: api.validate_publication_receipt({}),
         "compare_publication_impact": lambda: api.compare_publication_impact({}),
         "resolve_publication_finding": lambda: api.resolve_publication_finding(
             {}, {}, finding_id="missing", reviewer="reviewer", reason="reviewed"
@@ -703,6 +721,10 @@ def test_public_dict_return_annotations_import_and_resolve():
         "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
         "capture_publication_basis": dict[str, typing.Any],
+        "export_publication_candidate": dict[str, typing.Any],
+        "check_publication_candidate": dict[str, typing.Any],
+        "review_publication_candidate": dict[str, typing.Any],
+        "validate_publication_receipt": type(None),
         "get_cli_contract": dict[str, typing.Any],
         "build_cli_contract": dict[str, typing.Any],
         "render_cli_reference": str,

@@ -13,6 +13,7 @@ include src/llm_wiki_cli/schemas/llm-wiki-knowledge-object-v1.schema.json
 include src/llm_wiki_cli/extractors/ts_scripts/package-lock.json
 include docs/standalone-documentation.md
 include docs/sibling-wiki.md
+include docs/sibling-wiki-candidates.md
 include docs/wiki-guide.md
 include docs/cli-reference.md
 include docs/automation.md

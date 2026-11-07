@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from . import publication_cmd
+from . import publication_candidate_cmd, publication_cmd
 
 from ..config import PathValidationError, validate_source_root
 from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
@@ -41,6 +41,10 @@ _INTAKE_KEYS = {
     "audience_intent",
     "live_service",
 }
+
+
+def add_publication_candidate_commands(docs_sub):
+    publication_candidate_cmd.add_commands(docs_sub)
 
 
 def _read_bounded_text(path: str, *, label: str) -> str:
@@ -656,6 +660,7 @@ def run(args) -> None:
     action = getattr(args, "docs_action", None)
     handlers = {
         "impact": publication_cmd.run,
+        "wiki": publication_candidate_cmd.run,
         "prepare": _prepare,
         "status": _status,
         "packet": _packet,

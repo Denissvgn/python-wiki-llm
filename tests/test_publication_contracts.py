@@ -236,6 +236,31 @@ def test_basis_and_reports_are_accepted_without_mutating_the_caller():
     assert validate_publication_reviews(None) == []
 
 
+def test_basis_requires_declared_asset_observations_and_preserves_content_policy():
+    payload = basis()
+    payload["config"]["content"] = {
+        "root": "docs/public",
+        "assets": [
+            {
+                "source_document": "docs/public/logo.png",
+                "wiki_path": "assets/logo.png",
+                "owner": "maintainers",
+            }
+        ],
+    }
+    payload["config"] = validate_publication_config(
+        payload["config"], consumer_root=None
+    )
+    reseal_basis(payload)
+    with pytest.raises(PublicationProtocolError, match="asset"):
+        validate_publication_basis(payload)
+    payload["files"]["docs/public/logo.png"] = None
+    reseal_basis(payload)
+    unchanged = deepcopy(payload)
+    validate_publication_basis(payload)
+    assert payload == unchanged
+
+
 def test_reference_inputs_are_opt_in_and_legacy_bases_retain_their_shape():
     legacy = basis()
     before = deepcopy(legacy)

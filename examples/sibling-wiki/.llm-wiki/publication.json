@@ -16,7 +16,7 @@
       "id": "accounts.overview",
       "owner": "account-maintainers",
       "wiki_page": "Accounts.md",
-      "edit_at": "wiki",
+      "edit_at": "repository",
       "depends_on": [
         {
           "architecture_page": "modules/app.md"
@@ -24,7 +24,8 @@
         {
           "source_file": "project/app.py"
         }
-      ]
+      ],
+      "source_document": "docs/Accounts.md"
     },
     {
       "id": "wiki-tooling.sync",
@@ -37,6 +38,33 @@
           "command": [
             "sync"
           ]
+        }
+      ]
+    },
+    {
+      "id": "public.home",
+      "owner": "account-maintainers",
+      "wiki_page": "Home.md",
+      "edit_at": "repository",
+      "source_document": "docs/Home.md",
+      "depends_on": [
+        {
+          "architecture_page": "modules/app.md"
+        }
+      ]
+    },
+    {
+      "id": "public.navigation",
+      "owner": "documentation-maintainers",
+      "wiki_page": "_Sidebar.md",
+      "edit_at": "repository",
+      "source_document": "docs/_Sidebar.md",
+      "depends_on": [
+        {
+          "source_file": "docs/Home.md"
+        },
+        {
+          "source_file": "docs/Accounts.md"
         }
       ]
     }
@@ -67,5 +95,22 @@
     "wiki-tooling": {
       "kind": "llm-wiki-cli"
     }
+  },
+  "content": {
+    "root": "docs",
+    "assets": [
+      {
+        "source_document": "docs/assets/account.txt",
+        "wiki_path": "assets/account.txt",
+        "owner": "account-maintainers"
+      }
+    ],
+    "adoptions": [
+      {
+        "path": "Accounts.md",
+        "expected_hash": "sha256:a9a862f18e1502fa2e09cc7be87f204c2381db202768db9c7429091560677a1d",
+        "reason": "Import the reviewed account overview into the repository while preserving its existing explanation."
+      }
+    ]
   }
 }

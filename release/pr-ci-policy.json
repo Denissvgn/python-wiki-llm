@@ -488,7 +488,11 @@
         "tests/test_publication_snapshot.py",
         "tests/test_publication_contracts.py",
         "tests/test_publication_impact.py",
-        "tests/test_publication_references.py"
+        "tests/test_publication_references.py",
+        "tests/test_publication_candidate.py",
+        "tests/test_publication_links.py",
+        "tests/test_publication_candidate_cli.py",
+        "tests/test_publication_output_policy.py"
       ],
       "lanes": [
         "ubuntu",
@@ -831,7 +835,9 @@
         "src/llm_wiki_cli/commands/publication_cmd.py",
         "tests/test_publication_*.py",
         "docs/sibling-wiki.md",
-        ".llm-wiki/publication.json"
+        ".llm-wiki/publication.json",
+        "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+        "docs/sibling-wiki-candidates.md"
       ],
       "groups": [
         "publication"

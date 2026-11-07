@@ -17,3 +17,7 @@ api.build_task_context("task text")  # expected: reportArgumentType
 api.open_context_session(max_entries="many")  # expected: reportArgumentType
 api.apply_task_delta(12, {}, {})  # expected: reportArgumentType
 api.open_context_session().read({}, delta="yes")  # expected: reportArgumentType
+api.export_publication_candidate(output_dir=123)  # expected: reportArgumentType
+api.check_publication_candidate(candidate_dir="candidate", receipt="not a receipt")  # expected: reportArgumentType
+api.review_publication_candidate({}, reviewer=123, reason="reviewed")  # expected: reportArgumentType
+api.validate_publication_receipt("not a receipt")  # expected: reportArgumentType

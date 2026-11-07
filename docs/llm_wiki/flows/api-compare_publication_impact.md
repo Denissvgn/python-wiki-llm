@@ -198,14 +198,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3606 | `compare(candidate, baseline, reviews=reviews)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 375 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 375 | `dict(candidate)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 376 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 376 | `dict(baseline)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 377 | `validate_publication_basis(after)` |
-| validate_publication_basis | _guard | 881 | `_guard(_basis, value)` |
-| _guard | _json_tree | 871 | `_json_tree(value)` |
+| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3694 | `compare(candidate, baseline, reviews=reviews)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 469 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 469 | `dict(candidate)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 470 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 470 | `dict(baseline)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 471 | `validate_publication_basis(after)` |
+| validate_publication_basis | _guard | 886 | `_guard(_basis, value)` |
+| _guard | _json_tree | 876 | `_json_tree(value)` |
 | _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
@@ -214,7 +214,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `findings.append` | `compare_publication_impact` | 401 |
+| mutation | `findings.append` | `compare_publication_impact` | 495 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |
@@ -223,8 +223,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `compare_publication_impact` | `deepcopy` | 375 |
-| external_call | `compare_publication_impact` | `deepcopy` | 376 |
+| external_call | `compare_publication_impact` | `deepcopy` | 469 |
+| external_call | `compare_publication_impact` | `deepcopy` | 470 |
 | step_limit | `compare_publication_impact` | `first 12 steps` | 0 |
 | truncated_flow | `compare_publication_impact` | `depth limit` | 0 |
 

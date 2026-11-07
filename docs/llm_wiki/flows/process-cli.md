@@ -2,14 +2,16 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [cli](../modules/cli.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [helper_runtime](../modules/helper_runtime.md), [progress](../modules/progress.md), and 3 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [docs_cmd](../modules/docs_cmd.md), [helper_runtime](../modules/helper_runtime.md), and 5 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [cli](../modules/cli.md)
+- [docs_cmd](../modules/docs_cmd.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [progress](../modules/progress.md)
+- [publication_candidate_cmd](../modules/publication_candidate_cmd.md)
 - [publication_cmd](../modules/publication_cmd.md)
 - [reference_cmd](../modules/reference_cmd.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
@@ -100,9 +102,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 818 interactions; 788 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 842 interactions; 812 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 604 (603 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 625 (624 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -116,8 +118,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/cli.py:_add_init_command` | 15 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 2 |
 | `src/llm_wiki_cli/cli.py:_add_helper_cache_argument` | 22 | - | unresolved | 1 |
 | `src/llm_wiki_cli/cli.py:_add_source_selection_argument` | 27 | - | unresolved | 1 |
-> Omission summary shows 8 of 115 groups; 107 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 119 groups; 111 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -127,9 +131,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 159; effect analysis evaluated: 156, partial: 1, unavailable: 2. Counts include steps omitted from the displayed trace.
+Source steps: 162; effect analysis evaluated: 159, partial: 1, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 157 source steps with known totals: observed: 382, emitted: 378, omitted: 4. Unavailable totals are excluded.
+Collector observations for 160 source steps with known totals: observed: 385, emitted: 381, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -143,7 +147,7 @@ Collector observations for 157 source steps with known totals: observed: 382, em
 | `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_register_commands` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
-| `add_commands` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `add_commands (src/llm_wiki_cli/commands/reference_cmd.py)` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
 | `subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -158,7 +162,7 @@ flowchart LR
     s4["4. parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)"]
     s5["5. parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)"]
     s6["6. _register_commands"]
-    s7["7. add_commands"]
+    s7["7. add_commands (src/llm_wiki_cli/commands/reference_cmd.py)"]
     s8["8. subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)"]
     s9["9. parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)"]
     s10["10. actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)"]
@@ -169,7 +173,7 @@ flowchart LR
     s2 -. "parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)('--version', action='version', version=...)" .-> s4
     s2 -. "parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)(dest='command', required=True)" .-> s5
     s2 -->|"_register_commands(subparsers)"| s6
-    s6 -->|"add_commands(subparsers)"| s7
+    s6 -->|"add_commands (src/llm_wiki_cli/commands/reference_cmd.py)(subparsers)"| s7
     s7 -. "subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)('reference', help='Export deterministic command reference data')" .-> s8
     s7 -. "parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)(dest='reference_action', required=True)" .-> s9
     s7 -. "actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)('cli', help='Export the installed llm-wiki command contract')" .-> s10
@@ -191,7 +195,7 @@ flowchart LR
 | `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | - | - | - | - |
 | `parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)` | - | - | - | - |
 | `_register_commands` | `subparsers` | - | - | - |
-| `add_commands` | `subparsers` | - | - | - |
+| `add_commands (src/llm_wiki_cli/commands/reference_cmd.py)` | `subparsers` | - | - | - |
 | `subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | - | - | - | - |
 | `parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | - | - | - | - |
 | `actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands)` | - | - | - | - |
@@ -202,17 +206,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2753 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2754 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 270 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 271 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 274 | `parser.add_subparsers(dest='command', required=True)` |
 | _build_parser | _register_commands | 275 | `_register_commands(subparsers)` |
-| _register_commands | add_commands | 355 | `reference_cmd.add_commands(subparsers)` |
-| add_commands | subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 17 | `subparsers.add_parser('reference', help='Export deterministic command reference data')` |
-| add_commands | parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 20 | `parser.add_subparsers(dest='reference_action', required=True)` |
-| add_commands | actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 21 | `actions.add_parser('cli', help='Export the installed llm-wiki command contract')` |
-| add_commands | actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 24 | `actions.add_parser('render', help='Validate and render a saved CLI contract without running it')` |
-| add_commands | render.add_argument | 27 | `render.add_argument('--input', required=True, help='Versioned CLI contract JSON')` |
+| _register_commands | add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | 355 | `reference_cmd.add_commands(subparsers)` |
+| add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | subparsers.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 17 | `subparsers.add_parser('reference', help='Export deterministic command reference data')` |
+| add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | parser.add_subparsers (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 20 | `parser.add_subparsers(dest='reference_action', required=True)` |
+| add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 21 | `actions.add_parser('cli', help='Export the installed llm-wiki command contract')` |
+| add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | actions.add_parser (src/llm_wiki_cli/commands…rence_cmd.py:add_commands) | 24 | `actions.add_parser('render', help='Validate and render a saved CLI contract without running it')` |
+| add_commands (src/llm_wiki_cli/commands/reference_cmd.py) | render.add_argument | 27 | `render.add_argument('--input', required=True, help='Versioned CLI contract JSON')` |
 
 ### Boundary effects
 
@@ -231,6 +235,7 @@ flowchart LR
 | unresolved_call | `add_commands` | `actions.add_parser` | 24 |
 | unresolved_call | `add_commands` | `render.add_argument` | 27 |
 | step_limit | `main` | `first 12 steps` | 0 |
+| truncated_flow | `main` | `depth limit` | 0 |
 
 ## Behavior
 

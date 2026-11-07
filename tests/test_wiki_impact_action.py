@@ -31,13 +31,23 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
     }
     assert config["target"] == {"kind": "github-wiki", "repository": "self"}
     assert config["enforcement"] == "advisory" and config["publish"] is False
-    assert {(topic["wiki_page"], topic["anchor"]) for topic in config["topics"]} == {
+    assert {
+        (topic["wiki_page"], topic.get("anchor")) for topic in config["topics"]
+    } == {
         ("Command-Reference.md", "upgrade"),
         ("Migration-and-Upgrades.md", "upgrade-framework-artifacts"),
         ("Command-Reference.md", "command-reference"),
+        ("Maintaining-a-Sibling-Wiki.md", None),
     }
     expected = {"flows/cli-upgrade.md", "workflows/upgrade_current_knowledge.md"}
     for topic in config["topics"]:
+        if topic["id"] == "sibling-wiki.maintenance":
+            assert topic["edit_at"] == "repository"
+            assert topic["source_document"] == "docs/sibling-wiki.md"
+            assert {"reference": "llm-wiki", "command": ["docs", "wiki"]} in topic[
+                "depends_on"
+            ]
+            continue
         if topic["id"] == "command-reference.commands":
             assert topic["depends_on"] == [{"reference": "llm-wiki", "command": []}]
             continue

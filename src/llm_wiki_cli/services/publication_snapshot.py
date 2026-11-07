@@ -21,6 +21,7 @@ from .markdown_sections import parse_markdown_document
 from .maintenance_protocol import guard_maintenance_owner
 from .sync_manifest import MANIFEST_FILENAME
 from .wiki_surface import collect_wiki_pages
+from .validation import require_portable_relative_path
 
 
 PUBLICATION_SNAPSHOT_SCHEMA_VERSION = "llm-wiki-publication-snapshot/v1"
@@ -32,6 +33,92 @@ class PublicationSnapshotError(ValueError):
     def __init__(self, code: str, message: str) -> None:
         self.code = code
         super().__init__(message)
+
+
+def _output_payload_path(value: object) -> str:
+    return require_portable_relative_path(value)
+
+
+def assert_bootstrap_output_excluded(
+    source_root: Path, destination: Path, files: Mapping[str, bytes]
+) -> None:
+    """Reject future output files that would become bootstrap producer inputs.
+
+    Only prospective source, infrastructure, package or selection inputs need
+    an exclusion. Ordinary Markdown and public media remain usable beneath a
+    source root. This reads the consumer's current selection; it never edits
+    ignore rules or silently adds an exclusion.
+    """
+    from ..config import EXCLUDED_DIRS, GitIgnoreMatcher, is_agent_worktree_path
+    from .source_snapshot import (
+        _is_compose_candidate,
+        _is_dockerfile_candidate,
+        _is_package_marker,
+        _is_rescuable_typescript_src_lib_file,
+        _language_for_path,
+        _unsupported_language_for_path,
+        build_source_snapshot,
+    )
+
+    source = _absolute_path(Path(source_root))
+    output = _absolute_path(Path(destination))
+    try:
+        prefix = output.relative_to(source)
+    except ValueError:
+        prefix = None
+        # On case-insensitive filesystems, lexical ancestors can spell the
+        # same existing source root differently. Compare actual identities.
+        if source.exists():
+            for ancestor in (output, *output.parents):
+                if ancestor.exists() and ancestor.samefile(source):
+                    prefix = output.relative_to(ancestor)
+                    break
+        if prefix is None:
+            return
+    if not isinstance(files, Mapping):
+        raise ValueError("Bootstrap output requires a file mapping")
+    prospective = []
+    for raw_path, raw in files.items():
+        path = Path(_output_payload_path(raw_path))
+        if type(raw) is not bytes:
+            raise ValueError("Bootstrap output file values must be bytes")
+        relative = prefix / path
+        if not EXCLUDED_DIRS.isdisjoint(relative.parts) or is_agent_worktree_path(
+            relative
+        ):
+            continue
+        # Language test files are conservatively potential producer inputs too.
+        language = _language_for_path(relative, frozenset({"go"}))
+        if (
+            language is not None
+            or _unsupported_language_for_path(relative) is not None
+            or _is_dockerfile_candidate(relative)
+            or _is_compose_candidate(relative)
+            or _is_package_marker(relative)
+            or relative.suffix.lower() in {".yml", ".yaml"}
+            or relative.name in {"Kustomization", ".gitignore"}
+        ):
+            prospective.append((relative, language))
+    if not prospective:
+        return
+    snapshot = build_source_snapshot(
+        source, respect_ignores=True, respect_discovery=True, coherent=True
+    )
+    ignored = GitIgnoreMatcher(list(snapshot.gitignore_rules))
+    for relative, language in prospective:
+        name = relative.as_posix()
+        if snapshot.source_selection_policy is not None:
+            selected = snapshot.path_is_effectively_selected(name)
+        else:
+            selected = not ignored.is_ignored(
+                name
+            ) or _is_rescuable_typescript_src_lib_file(ignored, relative, language)
+        if selected:
+            raise ValueError(
+                "Candidate output would become a bootstrap source input: "
+                f"{name}. Choose an excluded output location or explicitly "
+                "exclude it through the consumer's source selection or ignore policy."
+            )
 
 
 def build_publication_snapshot(wiki_dir: str | Path) -> dict[str, Any]:

@@ -587,6 +587,11 @@ def _basis(value: object) -> None:
         _path(path, "files.path")
         _path_spelling(path, "files", spellings)
         _hash(commitment, "files." + path, nullable=True)
+    for asset in data["config"].get("content", {}).get("assets", []):
+        if asset["source_document"] not in files:
+            _fail(
+                "files", "requires a captured record for every declared current asset"
+            )
     for topic, observation in targets.items():
         _topic_id(topic, "targets.topic")
         _target(observation, "targets." + topic)

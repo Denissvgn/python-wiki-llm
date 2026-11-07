@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+import ipaddress
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import stat
 from typing import Any
 import unicodedata
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlsplit
 
 from .concept_identity import ConceptIdentityError, validate_locator
 from .source_selection import (
@@ -24,6 +25,7 @@ from .source_selection import (
     path_is_link_or_reparse,
 )
 from .validation import portable_path_key, require_repository_relative_path
+from .wiki_media import MEDIA_EXTENSIONS
 
 
 PUBLICATION_CONFIG_PATH = ".llm-wiki/publication.json"
@@ -34,6 +36,9 @@ _MAX_DEPENDENCIES = 1024
 _MAX_EXCLUSIONS = 1024
 _MAX_REFERENCE_PROVIDERS = 64
 _MAX_COMMAND_TOKENS = 32
+_MAX_CONTENT_ITEMS = 1024
+_PUBLIC_ASSET_EXTENSIONS = MEDIA_EXTENSIONS | {".pdf", ".txt"}
+_METADATA_DIRECTORIES = frozenset({".git", ".hg", ".svn", ".llm-wiki"})
 _IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}\Z")
 _REPOSITORY = re.compile(
     r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9_.-]{1,100}\Z"
@@ -364,6 +369,217 @@ def _reference_providers(
     return result
 
 
+def _public_content_path(value: object, field: str, *, asset: bool = False) -> str:
+    path = _relative_path(value, field)
+    if any(
+        part.casefold() in _METADATA_DIRECTORIES
+        or part.casefold().startswith(".llm-wiki-")
+        for part in path.split("/")
+    ):
+        raise PublicationConfigError(field, "must not name VCS or native metadata")
+    suffix = PurePosixPath(path).suffix.lower()
+    if suffix in _PUBLIC_ASSET_EXTENSIONS:
+        return path
+    if not asset and path.endswith(".md") and "/" not in path and path != ".md":
+        return path
+    raise PublicationConfigError(
+        field,
+        "must identify a public media, PDF or text asset"
+        if asset
+        else "must identify a flat Markdown wiki page or public asset",
+    )
+
+
+def _content_source_path(
+    path: str, content_root: str, architecture, field: str
+) -> None:
+    if content_root != "." and not path.startswith(content_root + "/"):
+        raise PublicationConfigError(field, "must be within content.root")
+    if architecture["baseline"] == "existing-wiki":
+        native = architecture["root"]
+        if native == "." or path == native or path.startswith(native + "/"):
+            raise PublicationConfigError(field, "must be outside the native wiki")
+    if any(
+        part.casefold() in _METADATA_DIRECTORIES
+        or part.casefold().startswith(".llm-wiki-")
+        for part in path.split("/")
+    ):
+        raise PublicationConfigError(field, "must not import VCS or native metadata")
+
+
+def _content_repository_url(value: object) -> str:
+    field = "content.repository_url"
+    url = _text(value, field, 2048)
+    try:
+        parts = urlsplit(url)
+        host, port = parts.hostname, parts.port
+        if (
+            not host
+            or "%" in host
+            or port == 0
+            or parts.username is not None
+            or parts.password is not None
+        ):
+            raise ValueError
+        if ":" in host:
+            host = "[" + ipaddress.IPv6Address(host).compressed + "]"
+        elif not re.fullmatch(
+            r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*",
+            host,
+        ):
+            raise ValueError
+        origin = (
+            "https://" + host + (":" + str(port) if port not in {None, 443} else "")
+        )
+        repository = parts.path.removeprefix("/")
+        if (
+            parts.scheme != "https"
+            or parts.query
+            or parts.fragment
+            or not _REPOSITORY.fullmatch(repository)
+            or repository.endswith(".git")
+            or repository.split("/")[1] in {".", ".."}
+            or url != origin + "/" + repository
+        ):
+            raise ValueError
+    except (ValueError, UnicodeError) as exc:
+        raise PublicationConfigError(
+            field,
+            "must be a canonical HTTPS repository URL without credentials, query or fragment",
+        ) from exc
+    return url
+
+
+def _content_profile(value, root, architecture, topics, spellings):
+    data = _object(
+        value,
+        "content",
+        {"root"},
+        {"assets", "adoptions", "removals", "repository_url"},
+    )
+    content_root = (
+        "." if data["root"] == "." else _relative_path(data["root"], "content.root")
+    )
+    if content_root != ".":
+        _check_path(root, content_root, "content.root", spellings)
+    if root is not None:
+        directory = root if content_root == "." else root / content_root
+        if directory.exists() and not directory.is_dir():
+            raise PublicationConfigError("content.root", "must identify a directory")
+    result: dict[str, Any] = {"root": content_root}
+    output_spellings = {}
+    active_paths = {}
+    for topic in topics:
+        page = topic["wiki_page"]
+        _public_content_path(page, "topics.wiki_page")
+        _check_path(None, page, "topics.wiki_page", output_spellings)
+        active_paths[portable_path_key(page.replace(" ", "-"))] = page
+        if "source_document" in topic:
+            source = topic["source_document"]
+            _content_source_path(
+                source, content_root, architecture, "topics.source_document"
+            )
+            if not source.endswith(".md"):
+                raise PublicationConfigError(
+                    "topics.source_document", "must identify Markdown ending in .md"
+                )
+    if "assets" in data:
+        assets = []
+        for index, raw in enumerate(
+            _array(data["assets"], "content.assets", _MAX_CONTENT_ITEMS)
+        ):
+            field = f"content.assets[{index}]"
+            entry = _object(raw, field, {"source_document", "wiki_path", "owner"})
+            source = _relative_path(
+                entry["source_document"], field + ".source_document"
+            )
+            _content_source_path(
+                source, content_root, architecture, field + ".source_document"
+            )
+            _public_content_path(source, field + ".source_document", asset=True)
+            _check_path(root, source, field + ".source_document", spellings)
+            path = _public_content_path(
+                entry["wiki_path"], field + ".wiki_path", asset=True
+            )
+            if (
+                PurePosixPath(source).suffix.lower()
+                != PurePosixPath(path).suffix.lower()
+            ):
+                raise PublicationConfigError(
+                    field + ".wiki_path", "must retain the source asset extension"
+                )
+            key = portable_path_key(path.replace(" ", "-"))
+            if key in active_paths:
+                raise PublicationConfigError(
+                    field + ".wiki_path", "collides with another public output"
+                )
+            for previous in active_paths.values():
+                if path.startswith(previous + "/") or previous.startswith(path + "/"):
+                    raise PublicationConfigError(
+                        field + ".wiki_path", "overlaps another public output"
+                    )
+            _check_path(None, path, field + ".wiki_path", output_spellings)
+            active_paths[key] = path
+            assets.append(
+                {
+                    "source_document": source,
+                    "wiki_path": path,
+                    "owner": _text(entry["owner"], field + ".owner", 256),
+                }
+            )
+        result["assets"] = assets
+    operation_paths = set()
+    for kind in ("adoptions", "removals"):
+        if kind not in data:
+            continue
+        operations = []
+        for index, raw in enumerate(
+            _array(data[kind], "content." + kind, _MAX_CONTENT_ITEMS)
+        ):
+            field = f"content.{kind}[{index}]"
+            entry = _object(raw, field, {"path", "expected_hash", "reason"})
+            path = _public_content_path(entry["path"], field + ".path")
+            key = portable_path_key(path.replace(" ", "-"))
+            if key in operation_paths or (kind == "removals" and key in active_paths):
+                raise PublicationConfigError(
+                    field + ".path",
+                    "duplicates or conflicts with public output ownership",
+                )
+            if key in active_paths and active_paths[key] != path:
+                raise PublicationConfigError(
+                    field + ".path", "must use the exact public output spelling"
+                )
+            if any(
+                key.startswith(other + "/") or other.startswith(key + "/")
+                for other in operation_paths | set(active_paths)
+            ):
+                raise PublicationConfigError(
+                    field + ".path", "overlaps another public file coordinate"
+                )
+            expected = entry["expected_hash"]
+            if expected is not None and (
+                type(expected) is not str
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", expected)
+            ):
+                raise PublicationConfigError(
+                    field + ".expected_hash",
+                    "must be a canonical SHA-256 commitment or null",
+                )
+            _check_path(None, path, field + ".path", output_spellings)
+            operation_paths.add(key)
+            operations.append(
+                {
+                    "path": path,
+                    "expected_hash": expected,
+                    "reason": _text(entry["reason"], field + ".reason", 4096),
+                }
+            )
+        result[kind] = operations
+    if "repository_url" in data:
+        result["repository_url"] = _content_repository_url(data["repository_url"])
+    return result
+
+
 def validate_publication_config(
     payload: Mapping[str, Any], *, consumer_root: str | Path | None
 ) -> dict[str, Any]:
@@ -385,7 +601,7 @@ def validate_publication_config(
             "publish",
             "topics",
         },
-        {"source_policy", "exclusions", "reference_providers"},
+        {"source_policy", "exclusions", "reference_providers", "content"},
     )
     if data["schema_version"] != PUBLICATION_CONFIG_SCHEMA_VERSION:
         raise PublicationConfigError(
@@ -572,6 +788,10 @@ def validate_publication_config(
     }
     if "reference_providers" in data:
         result["reference_providers"] = reference_providers
+    if "content" in data:
+        result["content"] = _content_profile(
+            data["content"], root, result["architecture"], topics, spellings
+        )
     return result
 
 

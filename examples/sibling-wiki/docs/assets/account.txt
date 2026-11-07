@@ -1,0 +1,1 @@
+An account records its display name. Choose a name when creating the account.

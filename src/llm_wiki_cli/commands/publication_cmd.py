@@ -100,6 +100,8 @@ def _inside_input_tree(destination: Path, source: Path) -> bool:
 
 
 def _declared_files(config):
+    for asset in config.get("content", {}).get("assets", []):
+        yield asset["source_document"]
     for provider in config.get("reference_providers", {}).values():
         if provider["kind"] == "contract-file":
             yield provider["path"]

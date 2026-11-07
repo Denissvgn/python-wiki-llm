@@ -10,6 +10,7 @@ Complete, read-only native page commitments for documentation publication.
 
 | Source | Symbols |
 |--------|---------|
+| `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `is_agent_worktree_path` |
 | `.bootstrap_runtime` | `execute_bootstrap` |
 | `.bootstrap_service` | `BootstrapRequest`, `BootstrapServiceError` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
@@ -23,7 +24,9 @@ Complete, read-only native page commitments for documentation publication.
 | `.knowledge_storage_lifecycle` | `_committed_inputs` |
 | `.maintenance_protocol` | `guard_maintenance_owner` |
 | `.markdown_sections` | `parse_markdown_document` |
+| `.source_snapshot` | `_is_compose_candidate`, `_is_dockerfile_candidate`, `_is_package_marker`, `_is_rescuable_typescript_src_lib_file`, `_language_for_path`, `_unsupported_language_for_path`, `build_source_snapshot` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
+| `.validation` | `require_portable_relative_path` |
 | `.wiki_surface` | `collect_wiki_pages` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
@@ -51,21 +54,23 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (1) |
-| Outbound | `src` (15) |
+| Inbound | `src` (2) |
+| Outbound | `src` (18) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationSnapshotError](../entities/PublicationSnapshotError.md) | 29 | `ValueError` | A complete, coherent publication input could not be established. |
+| [PublicationSnapshotError](../entities/PublicationSnapshotError.md) | 30 | `ValueError` | A complete, coherent publication input could not be established. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_output_payload_path` | `(value: object) -> str` | — | — |
+| `assert_bootstrap_output_excluded` | `(source_root: Path, destination: Path, files: Mapping[str, bytes]) -> None` | — | Reject future output files that would become bootstrap producer inputs. |
 | `build_publication_snapshot` | `(wiki_dir: str \| Path) -> dict[str, Any]` | — | Commit every canonical native page without extracting source or writing. |
 | `build_bootstrap_publication_snapshot` | `(source_root: Path) -> dict[str, Any]` | — | Build an isolated source-adapter wiki and return its native commitments. |
 | `_build_snapshot` | `(root: Path) -> dict[str, Any]` | — | — |

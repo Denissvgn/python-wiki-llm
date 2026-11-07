@@ -431,6 +431,184 @@ def test_legacy_normalization_does_not_add_reference_provider_state():
     assert validate_publication_config(normalized, consumer_root=None) == normalized
 
 
+def content_policy():
+    payload = policy()
+    payload["topics"][0].update(
+        edit_at="repository", source_document="docs/public/commands.md"
+    )
+    payload["content"] = {
+        "root": "docs/public",
+        "assets": [
+            {
+                "source_document": "docs/public/images/overview.png",
+                "wiki_path": "assets/overview.png",
+                "owner": "documentation-maintainers",
+            }
+        ],
+        "adoptions": [
+            {
+                "path": "Command-Reference.md",
+                "expected_hash": None,
+                "reason": "New owned page",
+            }
+        ],
+        "removals": [
+            {
+                "path": "Former-Commands.md",
+                "expected_hash": "sha256:" + "a" * 64,
+                "reason": "Reviewed rename",
+            }
+        ],
+        "repository_url": "https://git.example.test:8443/Example-org/project",
+    }
+    return payload
+
+
+def test_content_profile_is_opt_in_detached_and_consumer_relative(tmp_path):
+    legacy = validate_publication_config(policy(), consumer_root=None)
+    assert "content" not in legacy
+    payload = content_policy()
+    result = validate_publication_config(payload, consumer_root=tmp_path)
+    assert result["content"] == payload["content"]
+    result["content"]["assets"][0]["owner"] = "other"
+    assert payload["content"]["assets"][0]["owner"] == "documentation-maintainers"
+    minimal = content_policy()
+    minimal["content"] = {"root": "docs/public"}
+    assert validate_publication_config(minimal, consumer_root=None)["content"] == {
+        "root": "docs/public"
+    }
+
+
+@pytest.mark.parametrize("root", [".", "docs/public"])
+def test_content_root_can_select_the_consumer_or_a_subdirectory(root):
+    payload = content_policy()
+    payload["content"]["root"] = root
+    assert (
+        validate_publication_config(payload, consumer_root=None)["content"]["root"]
+        == root
+    )
+
+
+@pytest.mark.parametrize(
+    "damage",
+    [
+        "unknown",
+        "root-escape",
+        "source-outside",
+        "source-native",
+        "source-not-markdown",
+        "asset-outside",
+        "asset-code",
+        "asset-metadata",
+        "asset-output-escape",
+        "asset-extension",
+        "asset-case",
+        "asset-prefix",
+        "asset-owner",
+        "adoption-extra",
+        "adoption-hash",
+        "adoption-reason",
+        "operation-duplicate",
+        "operation-overlap",
+        "remove-active",
+        "native-control-output",
+        "operation-metadata",
+    ],
+)
+def test_content_profile_rejects_unsafe_or_ambiguous_public_inputs(damage):
+    payload = content_policy()
+    profile = payload["content"]
+    asset = profile["assets"][0]
+    if damage == "unknown":
+        profile["command"] = ["run", "application"]
+    elif damage == "root-escape":
+        profile["root"] = "../public"
+    elif damage == "source-outside":
+        payload["topics"][0]["source_document"] = "README.md"
+    elif damage == "source-native":
+        profile["root"] = "."
+        payload["topics"][0]["source_document"] = "docs/llm_wiki/modules/cli.md"
+    elif damage == "source-not-markdown":
+        payload["topics"][0]["source_document"] = "docs/public/app.py"
+    elif damage == "asset-outside":
+        asset["source_document"] = "private/overview.png"
+    elif damage == "asset-code":
+        asset["source_document"] = "docs/public/app.js"
+        asset["wiki_path"] = "assets/app.js"
+    elif damage == "asset-metadata":
+        asset["source_document"] = "docs/public/.llm-wiki-knowledge/image.png"
+    elif damage == "asset-output-escape":
+        asset["wiki_path"] = "../overview.png"
+    elif damage == "asset-extension":
+        asset["wiki_path"] = "assets/overview.pdf"
+    elif damage == "asset-case":
+        profile["assets"].append({**asset, "wiki_path": "Assets/another.png"})
+    elif damage == "asset-prefix":
+        profile["assets"].append(
+            {**asset, "wiki_path": "assets/overview.png/nested.png"}
+        )
+    elif damage == "asset-owner":
+        asset["owner"] = ""
+    elif damage == "adoption-extra":
+        profile["adoptions"][0]["force"] = True
+    elif damage == "adoption-hash":
+        profile["adoptions"][0]["expected_hash"] = True
+    elif damage == "adoption-reason":
+        profile["adoptions"][0]["reason"] = ""
+    elif damage == "operation-duplicate":
+        profile["adoptions"].append({**profile["adoptions"][0]})
+    elif damage == "operation-overlap":
+        profile["removals"][0]["path"] = profile["adoptions"][0]["path"]
+    elif damage == "remove-active":
+        profile["removals"][0]["path"] = "assets/overview.png"
+    elif damage == "native-control-output":
+        asset["wiki_path"] = ".git/overview.png"
+    else:
+        profile["removals"][0]["path"] = ".llm-wiki-manifest.json"
+    with pytest.raises(PublicationConfigError):
+        validate_publication_config(payload, consumer_root=None)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://github.com/org/repo",
+        "https://user:secret@github.com/org/repo",
+        "https://github.com/org/repo?ref=main",
+        "https://github.com/org/repo#fragment",
+        "https://github.com/org/repo/",
+        "https://GitHub.com/org/repo",
+        "https://github.com:443/org/repo",
+        "https://github.com/org/repo.git",
+        "https://github.com/org/repo/extra",
+        "https://github.com/org/%2Frepo",
+        "https://github.com:0/org/repo",
+        "https://bad_host/org/repo",
+    ],
+)
+def test_content_repository_url_is_explicit_canonical_https(url):
+    payload = content_policy()
+    payload["content"]["repository_url"] = url
+    with pytest.raises(PublicationConfigError, match="repository_url"):
+        validate_publication_config(payload, consumer_root=None)
+
+
+def test_content_sources_keep_exact_case_and_directory_checks(tmp_path):
+    payload = content_policy()
+    source = tmp_path / "docs/public/images/overview.png"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(b"public image")
+    payload["content"]["assets"][0]["source_document"] = (
+        "docs/public/images/Overview.png"
+    )
+    with pytest.raises(PublicationConfigError, match="case"):
+        validate_publication_config(payload, consumer_root=tmp_path)
+    payload = content_policy()
+    payload["content"]["root"] = "docs/public/images/overview.png"
+    with pytest.raises(PublicationConfigError, match="directory"):
+        validate_publication_config(payload, consumer_root=tmp_path)
+
+
 @pytest.mark.parametrize("count", [335, 336])
 def test_contract_file_paths_retain_the_utf8_byte_bound(count):
     payload = policy()
@@ -439,9 +617,12 @@ def test_contract_file_paths_retain_the_utf8_byte_bound(count):
     payload["reference_providers"] = {"app": {"kind": "contract-file", "path": path}}
     if count == 335:
         assert len(path.encode("utf-8")) == 1024
-        assert validate_publication_config(payload, consumer_root=None)[
-            "reference_providers"
-        ]["app"]["path"] == path
+        assert (
+            validate_publication_config(payload, consumer_root=None)[
+                "reference_providers"
+            ]["app"]["path"]
+            == path
+        )
     else:
         with pytest.raises(PublicationConfigError, match="1024 UTF-8 bytes"):
             validate_publication_config(payload, consumer_root=None)

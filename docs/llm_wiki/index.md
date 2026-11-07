@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 687 | [Open section](#entities) |
-| Modules | 269 | [Open section](#modules) |
-| Workflows | 257 | [Open section](#workflows) |
+| Entities | 688 | [Open section](#entities) |
+| Modules | 272 | [Open section](#modules) |
+| Workflows | 262 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 475 | [Open section](#entry-point-flows) |
+| Entry-point flows | 479 | [Open section](#entry-point-flows) |
 | Infrastructure | 3 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -240,6 +240,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [GovernanceWriteResult](entities/GovernanceWriteResult.md)
 - [GovernanceWriteStage](entities/GovernanceWriteStage.md)
 - [GraphConcept](entities/GraphConcept.md)
+- [HTML](entities/HTML.md)
 - [HashedInputFile](entities/HashedInputFile.md)
 - [HaskellExtractionRequest](entities/HaskellExtractionRequest.md)
 - [HaskellExtractor](entities/HaskellExtractor.md)
@@ -876,10 +877,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
 - [progress](modules/progress.md) - Bounded command-local phase events; services are silent without a caller sink.
 - [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
+- [publication_candidate](modules/publication_candidate.md) - Portable, review-bound GitHub wiki candidates without remote mutation.
+- [publication_candidate_cmd](modules/publication_candidate_cmd.md) - Local GitHub wiki candidates and exact-artifact review proposals.
 - [publication_cmd](modules/publication_cmd.md) - Read-only public wiki impact and explicit review record preparation.
 - [publication_config](modules/publication_config.md) - Portable consumer policy for read-only publication impact and review.
 - [publication_contracts](modules/publication_contracts.md) - Strict portable validators for captured publication evidence and decisions.
 - [publication_impact](modules/publication_impact.md) - Portable, deterministic architecture-to-public-topic impact and review.
+- [publication_links](modules/publication_links.md) - Pure Markdown rewriting and checks for portable GitHub wiki candidates.
 - [publication_references](modules/publication_references.md) - Explicit, inert reference inputs for public documentation review.
 - [publication_snapshot](modules/publication_snapshot.md) - Complete, read-only native page commitments for documentation publication.
 - [python_bindings](modules/python_bindings.md) - Conservative syntax-only binding facts for captured Python calls.
@@ -1008,6 +1012,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
 - [apply_module_page](workflows/apply_module_page.md) - entry: `sync_cmd._apply_module_page`
 - [apply_task_delta](workflows/apply_task_delta.md) - entry: `context_session.apply_task_delta`
+- [assert_bootstrap_output_excluded](workflows/assert_bootstrap_output_excluded.md) - entry: `publication_snapshot.assert_bootstrap_output_excluded`
 - [attach_maintenance_view_from_inputs](workflows/attach_maintenance_view_from_inputs.md) - entry: `maintenance_status.attach_maintenance_view_from_inputs`
 - [audit_knowledge_stream](workflows/audit_knowledge_stream.md) - entry: `knowledge_stream_audit.audit_knowledge_stream`
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
@@ -1084,6 +1089,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [explanation_provenance](workflows/explanation_provenance.md) - entry: `evidence_explanation.explanation_provenance`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
+- [export_publication_candidate](workflows/export_publication_candidate.md) - entry: `publication_candidate.export_publication_candidate`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
@@ -1095,6 +1101,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
 - [get_yaml_infrastructure_inventory](workflows/get_yaml_infrastructure_inventory.md) - entry: `infrastructure_inventory.get_yaml_infrastructure_inventory`
+- [guard_destination](workflows/guard_destination.md) - entry: `publication_candidate_cmd._guard_destination`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
 - [hash_addressed_storage](workflows/hash_addressed_storage.md) - entry: `maintenance_protocol._hash_addressed_storage`
 - [helper_identity](workflows/helper_identity.md) - entry: `extractor_helpers.helper_identity`
@@ -1149,6 +1156,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [preflight_team_source_selection](workflows/preflight_team_source_selection.md) - entry: `team_cmd._preflight_team_source_selection`
 - [preflight_trigger_source_selection](workflows/preflight_trigger_source_selection.md) - entry: `trigger_cmd._preflight_trigger_source_selection`
 - [preflight_wiki_removal](workflows/preflight_wiki_removal.md) - entry: `uninstall_cmd._preflight_wiki_removal`
+- [prepare](workflows/prepare.md) - entry: `publication_candidate._prepare`
 - [prepare_boundary](workflows/prepare_boundary.md) - entry: `scoped_sync_repair.prepare_boundary`
 - [prepare_extractors_cmd_flow](workflows/prepare_extractors_cmd_flow.md) - entry: `prepare_extractors_cmd.run`
 - [prepare_inventory_build_context](workflows/prepare_inventory_build_context.md) - entry: `extraction_service._prepare_inventory_build_context`
@@ -1160,6 +1168,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [project_maintenance_knowledge](workflows/project_maintenance_knowledge.md) - entry: `maintenance_projection.project_maintenance_knowledge`
 - [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
 - [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
+- [publication_candidate_cmd_flow](workflows/publication_candidate_cmd_flow.md) - entry: `publication_candidate_cmd.run`
+- [publication_target_observation](workflows/publication_target_observation.md) - entry: `publication_impact.publication_target_observation`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
 - [qualify_surviving_module_inventory](workflows/qualify_surviving_module_inventory.md) - entry: `sync_cmd._qualify_surviving_module_inventory`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
@@ -1208,7 +1218,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics._storage_report`
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`
-- [target_hash](workflows/target_hash.md) - entry: `publication_impact._target_hash`
 - [task_cmd_flow](workflows/task_cmd_flow.md) - entry: `task_cmd.run`
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
 - [unchanged_commit_result](workflows/unchanged_commit_result.md) - entry: `knowledge_reuse.unchanged_commit_result`
@@ -1325,6 +1334,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-capture_generated_ownership](flows/api-capture_generated_ownership.md) - entry: `capture_generated_ownership`
 - [api-capture_publication_basis](flows/api-capture_publication_basis.md) - entry: `capture_publication_basis`
 - [api-capture_tree_baseline](flows/api-capture_tree_baseline.md) - entry: `capture_tree_baseline`
+- [api-check_publication_candidate](flows/api-check_publication_candidate.md) - entry: `check_publication_candidate`
 - [api-checker_contract](flows/api-checker_contract.md) - entry: `checker_contract`
 - [api-checker_registry](flows/api-checker_registry.md) - entry: `checker_registry`
 - [api-classify_section_ownership](flows/api-classify_section_ownership.md) - entry: `classify_section_ownership`
@@ -1378,6 +1388,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-explain_evidence](flows/api-explain_evidence.md) - entry: `explain_evidence`
 - [api-export_documentation_run-api](flows/api-export_documentation_run-api.md) - entry: `export_documentation_run`
 - [api-export_documentation_run-export](flows/api-export_documentation_run-export.md) - entry: `export_documentation_run`
+- [api-export_publication_candidate](flows/api-export_publication_candidate.md) - entry: `export_publication_candidate`
 - [api-external_resource_endpoint](flows/api-external_resource_endpoint.md) - entry: `external_resource_endpoint`
 - [api-extract_fastapi_declarations](flows/api-extract_fastapi_declarations.md) - entry: `extract_fastapi_declarations`
 - [api-extract_source](flows/api-extract_source.md) - entry: `extract_source`
@@ -1579,6 +1590,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-resolve_workspace_path](flows/api-resolve_workspace_path.md) - entry: `resolve_workspace_path`
 - [api-resolved_paths_equal](flows/api-resolved_paths_equal.md) - entry: `resolved_paths_equal`
 - [api-retained_concept_page_paths](flows/api-retained_concept_page_paths.md) - entry: `retained_concept_page_paths`
+- [api-review_publication_candidate](flows/api-review_publication_candidate.md) - entry: `review_publication_candidate`
 - [api-review_scope_hash](flows/api-review_scope_hash.md) - entry: `review_scope_hash`
 - [api-run-install_ci_cmd](flows/api-run-install_ci_cmd.md) - entry: `run`
 - [api-run-knowledge_cmd](flows/api-run-knowledge_cmd.md) - entry: `run`
@@ -1649,6 +1661,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-validate_natural_key](flows/api-validate_natural_key.md) - entry: `validate_natural_key`
 - [api-validate_portable_relative_path](flows/api-validate_portable_relative_path.md) - entry: `validate_portable_relative_path`
 - [api-validate_projection_summaries](flows/api-validate_projection_summaries.md) - entry: `validate_projection_summaries`
+- [api-validate_publication_receipt](flows/api-validate_publication_receipt.md) - entry: `validate_publication_receipt`
 - [api-validate_surface_index_bytes](flows/api-validate_surface_index_bytes.md) - entry: `validate_surface_index_bytes`
 - [api-validate_typed_graph](flows/api-validate_typed_graph.md) - entry: `validate_typed_graph`
 - [api-validate_typed_graph_slice](flows/api-validate_typed_graph_slice.md) - entry: `validate_typed_graph_slice`

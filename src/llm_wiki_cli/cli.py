@@ -2319,6 +2319,7 @@ def _add_docs_command(subparsers):
     )
     docs_sub = docs_parser.add_subparsers(dest="docs_action", required=True)
     publication_cmd.add_impact_command(docs_sub)
+    docs_cmd.add_publication_candidate_commands(docs_sub)
 
     prepare = docs_sub.add_parser(
         "prepare",

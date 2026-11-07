@@ -50,6 +50,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.maintenance_service` | `adopt_maintenance_authority`, `get_maintenance_status_authority`, `acknowledge_maintenance_authority`, `recover_maintenance_authority` |
 | `.services.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
+| `.services.publication_candidate` | `export_publication_candidate`, `check_publication_candidate`, `review_publication_candidate`, `validate_publication_receipt` |
 | `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
@@ -96,9 +97,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (54) |
+| Outbound | `src` (55) |
 
-> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 62 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -218,6 +219,10 @@ flowchart LR
 | `get_cli_contract` | `() -> dict[str, Any]` | `@_api_boundary` | Return the installed llm-wiki command definitions as a versioned contract. |
 | `render_cli_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Validate and render a supplied CLI contract without executing commands. |
 | `validate_cli_contract` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the structure and commitments of a supplied CLI contract. |
+| `export_publication_candidate` | `(consumer_root: str \| Path = '.', *, output_dir: str \| Path, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Render an explicitly mapped local wiki candidate without remote delivery. |
+| `check_publication_candidate` | `(consumer_root: str \| Path = '.', *, candidate_dir: str \| Path, receipt: Mapping[str, Any], config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Recheck candidate bytes, current inputs and exact-basis local review. |
+| `review_publication_candidate` | `(receipt: Mapping[str, Any], *, reviewer: str, reason: str) -> dict[str, Any]` | `@_api_boundary` | Prepare an exact-candidate approval for the consumer's review process. |
+| `validate_publication_receipt` | `(receipt: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the shape and commitments of a saved local candidate receipt. |
 | `capture_publication_basis` | `(consumer_root: str \| Path = '.', *, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Capture complete local publication inputs without remote access or writes. |
 | `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Compare publication bases and exact-basis review decisions without writes. |
 | `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None, decision: str = 'still-current') -> dict[str, Any]` | `@_api_boundary` | Return a proposed current or retired decision for caller-owned acceptance. |

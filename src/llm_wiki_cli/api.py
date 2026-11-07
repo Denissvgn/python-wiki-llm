@@ -3575,6 +3575,94 @@ def validate_cli_contract(contract: Mapping[str, Any]) -> None:
 
 
 @_api_boundary
+def export_publication_candidate(
+    consumer_root: str | Path = ".",
+    *,
+    output_dir: str | Path,
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+    reviews: Mapping[str, Any] | None = None,
+    previous_receipt: Mapping[str, Any] | None = None,
+    candidate_review: Mapping[str, Any] | None = None,
+    source_revision: str | None = None,
+    target_revision: str | None = None,
+) -> dict[str, Any]:
+    """Render an explicitly mapped local wiki candidate without remote delivery."""
+    from .services.publication_candidate import export_publication_candidate as export
+
+    return export(
+        consumer_root,
+        output_dir=output_dir,
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+        reviews=reviews,
+        previous_receipt=previous_receipt,
+        candidate_review=candidate_review,
+        source_revision=source_revision,
+        target_revision=target_revision,
+    )
+
+
+@_api_boundary
+def check_publication_candidate(
+    consumer_root: str | Path = ".",
+    *,
+    candidate_dir: str | Path,
+    receipt: Mapping[str, Any],
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+    reviews: Mapping[str, Any] | None = None,
+    previous_receipt: Mapping[str, Any] | None = None,
+    candidate_review: Mapping[str, Any] | None = None,
+    source_revision: str | None = None,
+    target_revision: str | None = None,
+) -> dict[str, Any]:
+    """Recheck candidate bytes, current inputs and exact-basis local review."""
+    from .services.publication_candidate import check_publication_candidate as check
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    return check(
+        consumer_root,
+        candidate_dir=candidate_dir,
+        receipt=dict(receipt),
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+        reviews=reviews,
+        previous_receipt=previous_receipt,
+        candidate_review=candidate_review,
+        source_revision=source_revision,
+        target_revision=target_revision,
+    )
+
+
+@_api_boundary
+def review_publication_candidate(
+    receipt: Mapping[str, Any], *, reviewer: str, reason: str
+) -> dict[str, Any]:
+    """Prepare an exact-candidate approval for the consumer's review process."""
+    from .services.publication_candidate import review_publication_candidate as review
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    return review(dict(receipt), reviewer=reviewer, reason=reason)
+
+
+@_api_boundary
+def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
+    """Validate the shape and commitments of a saved local candidate receipt."""
+    from .services.publication_candidate import validate_publication_receipt as validate
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    validate(dict(receipt))
+
+
+@_api_boundary
 def capture_publication_basis(
     consumer_root: str | Path = ".",
     *,
@@ -4020,6 +4108,7 @@ __all__ = [
     "callees",
     "callers",
     "capture_publication_basis",
+    "check_publication_candidate",
     "compare_context_packet_basis",
     "compare_publication_impact",
     "data_flow_for_entrypoint",
@@ -4030,6 +4119,7 @@ __all__ = [
     "get_analysis_input_status",
     "explain_evidence",
     "export_documentation_run",
+    "export_publication_candidate",
     "extract_source",
     "flow_for_entrypoint",
     "flow_segment",
@@ -4053,12 +4143,14 @@ __all__ = [
     "related_concepts",
     "render_cli_reference",
     "resolve_publication_finding",
+    "review_publication_candidate",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
     "validate_cli_contract",
+    "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_documentation_run",
     "verify_calibration_run",

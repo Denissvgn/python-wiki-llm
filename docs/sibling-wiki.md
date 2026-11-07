@@ -10,6 +10,10 @@ describes commands or options. The provider captures versioned declarations
 from the selected library or a saved application contract, alongside native
 architecture evidence in the same review workflow.
 
+Use [GitHub wiki candidates](sibling-wiki-candidates.md) to render explicitly
+repository-authored public pages, preserve manual content and review the exact
+proposed tree before any separate delivery process.
+
 ## Configure a project
 
 Create `.llm-wiki/publication.json` in the consumer project. Paths are relative

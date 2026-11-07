@@ -30,6 +30,7 @@ from .publication_references import (
     recheck_reference_inputs,
     reference_dependency_basis,
 )
+from .validation import portable_path_key, require_repository_relative_path
 
 
 BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
@@ -101,19 +102,22 @@ def _topic_versions(config, baseline):
     return previous, current
 
 
-def _target_hash(
-    session: StorageReadSession, topic: Mapping[str, Any]
+def publication_target_observation(
+    topic: Mapping[str, Any], raw: bytes | None
 ) -> dict[str, Any]:
-    path = topic["wiki_page"]
-    if not publication_path(session.root, path).exists():
+    """Commit supplied public bytes without filesystem or remote access."""
+    if raw is None:
         return {"state": "missing", "hash": None}
-    raw = session.read(path, MAX_JSON_BYTES)
+    if type(raw) is not bytes or len(raw) > MAX_JSON_BYTES:
+        raise PublicationImpactError("Target content must be bounded bytes or null")
     if not topic.get("anchor"):
         return {"state": "available", "hash": sha256_bytes(raw)}
     try:
         document = parse_markdown_document(raw.decode("utf-8"), "publication://target")
     except UnicodeError as exc:
-        raise PublicationImpactError(f"Target is not UTF-8 Markdown: {path}") from exc
+        raise PublicationImpactError(
+            f"Target is not UTF-8 Markdown: {topic['wiki_page']}"
+        ) from exc
     # Native locators and public anchors remain separate. Resolve only unique
     # ATX anchors supported by this profile; ambiguous legacy pages use page scope.
     matches = [
@@ -125,6 +129,91 @@ def _target_hash(
     if len(matches) != 1:
         return {"state": "unresolved-anchor", "hash": sha256_bytes(raw)}
     return {"state": "available", "hash": matches[0].exact_hash}
+
+
+def _target_hash(
+    session: StorageReadSession, topic: Mapping[str, Any]
+) -> dict[str, Any]:
+    path = topic["wiki_page"]
+    raw = (
+        session.read(path, MAX_JSON_BYTES)
+        if publication_path(session.root, path).exists()
+        else None
+    )
+    return publication_target_observation(topic, raw)
+
+
+def _projected_file_path(value: object) -> str:
+    error = PublicationImpactError(
+        "Projected files require canonical portable relative paths"
+    )
+    return require_repository_relative_path(
+        value,
+        text_error=error,
+        posix_error=error,
+        normalized_error=error,
+        absolute_error=error,
+        separator_error=error,
+        control_error=error,
+        portability_error=error,
+        reject_delete_character=True,
+        leading_backslash_is_absolute=True,
+    )
+
+
+def project_publication_targets(
+    basis: Mapping[str, Any],
+    files: Mapping[str, bytes],
+    baseline: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Rebind a captured input basis to checked candidate bytes, without I/O.
+
+    Callers retain original-target commitments separately. Supply the same
+    accepted baseline used during capture to observe former destinations too.
+    """
+    validate_publication_basis(basis)
+    if baseline is not None:
+        validate_publication_basis(baseline)
+        for key in ("target", "source_policy"):
+            if baseline["config"][key] != basis["config"][key]:
+                raise PublicationImpactError(
+                    "Target or source policy changed; establish a new baseline"
+                )
+    if (
+        not isinstance(files, Mapping)
+        or len(files) > 65_536
+        or any(type(path) is not str for path in files)
+    ):
+        raise PublicationImpactError("Projected files must be a bounded mapping")
+    paths = {}
+    spellings = {}
+    for raw_path in sorted(files):
+        path = _projected_file_path(raw_path)
+        if type(files[raw_path]) is not bytes:
+            raise PublicationImpactError("Projected file values must be bytes")
+        parts = path.split("/")
+        for end in range(1, len(parts) + 1):
+            exact = tuple(parts[:end])
+            folded = tuple(portable_path_key(part) for part in exact)
+            if spellings.setdefault(folded, exact) != exact:
+                raise PublicationImpactError(
+                    "Projected file paths collide across filesystems"
+                )
+            if end < len(parts) and folded in paths:
+                raise PublicationImpactError(
+                    "Projected files overlap a file and directory"
+                )
+        paths[tuple(portable_path_key(part) for part in parts)] = path
+    previous, current = _topic_versions(basis["config"], baseline)
+    result = deepcopy(dict(basis))
+    result["targets"] = {
+        key: publication_target_observation(topic, files.get(topic["wiki_page"]))
+        for key, topic in {**previous, **current}.items()
+    }
+    result.pop("basis_id")
+    result = _seal(result, "basis_id")
+    validate_publication_basis(result)
+    return result
 
 
 def capture_publication_basis(
@@ -165,6 +254,11 @@ def capture_publication_basis(
         for topic in topics.values()
         if topic.get("source_document")
     )
+    for policy in ([] if baseline is None else [baseline["config"]]) + [config]:
+        source_paths.update(
+            asset["source_document"]
+            for asset in policy.get("content", {}).get("assets", [])
+        )
     with StorageReadSession(root).phase() as session:
         for path in sorted(source_paths):
             files[path] = _file_hash(session, root, path)

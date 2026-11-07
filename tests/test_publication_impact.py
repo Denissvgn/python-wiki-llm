@@ -6,7 +6,7 @@ import json
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
 from llm_wiki_cli.services.publication_config import validate_publication_config
 from llm_wiki_cli.services.markdown_sections import parse_markdown_document
 from llm_wiki_cli.services import publication_impact as impact
@@ -288,6 +288,128 @@ def invoke(monkeypatch, *args):
     except SystemExit as exc:
         return exc.code
     return 0
+
+
+def test_content_assets_capture_current_and_former_inputs(consumer):
+    config_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(config_path.read_text())
+    policy["content"] = {
+        "root": "public-source",
+        "assets": [
+            {
+                "source_document": "public-source/before.png",
+                "wiki_path": "assets/diagram.png",
+                "owner": "maintainers",
+            }
+        ],
+    }
+    source = consumer / "public-source"
+    source.mkdir()
+    (source / "before.png").write_bytes(b"first public image")
+    config_path.write_text(json.dumps(policy))
+    before = impact.capture_publication_basis(consumer, target_dir="public")
+    assert before["files"]["public-source/before.png"] == sha256_bytes(
+        b"first public image"
+    )
+    policy["content"]["assets"][0]["source_document"] = "public-source/after.png"
+    config_path.write_text(json.dumps(policy))
+    (source / "before.png").unlink()
+    (source / "after.png").write_bytes(b"replacement public image")
+    after = impact.capture_publication_basis(
+        consumer, target_dir="public", baseline=before
+    )
+    assert after["files"]["public-source/before.png"] is None
+    assert after["files"]["public-source/after.png"] == sha256_bytes(
+        b"replacement public image"
+    )
+
+
+def test_missing_content_asset_is_recorded_as_known_missing(consumer):
+    config_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(config_path.read_text())
+    policy["content"] = {
+        "root": "public-source",
+        "assets": [
+            {
+                "source_document": "public-source/missing.pdf",
+                "wiki_path": "assets/guide.pdf",
+                "owner": "maintainers",
+            }
+        ],
+    }
+    config_path.write_text(json.dumps(policy))
+    captured = impact.capture_publication_basis(consumer)
+    assert captured["files"]["public-source/missing.pdf"] is None
+
+
+def test_target_projection_is_pure_detached_and_deterministic(consumer, monkeypatch):
+    original = impact.capture_publication_basis(consumer, target_dir="public")
+    unchanged = deepcopy(original)
+    raw = b"# Accounts\n\nA revised public description.\n"
+    monkeypatch.setattr(
+        impact,
+        "publication_path",
+        lambda *args: pytest.fail("projection must not use the filesystem"),
+    )
+    projected = impact.project_publication_targets(original, {"Accounts.md": raw})
+    assert projected == impact.project_publication_targets(
+        original, {"Accounts.md": raw}
+    )
+    assert projected["basis_id"] != original["basis_id"]
+    assert projected["targets"]["accounts"] == impact.publication_target_observation(
+        original["config"]["topics"][0], raw
+    )
+    assert original == unchanged
+
+
+def test_projected_targets_retain_previous_destination_obligations(consumer):
+    before = impact.capture_publication_basis(consumer, target_dir="public")
+    config_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(config_path.read_text())
+    policy["topics"][0]["wiki_page"] = "New-Accounts.md"
+    config_path.write_text(json.dumps(policy))
+    inputs = impact.capture_publication_basis(
+        consumer, target_dir="public", baseline=before
+    )
+    projected = impact.project_publication_targets(
+        inputs, {"New-Accounts.md": b"# Accounts\n\nMoved page.\n"}, baseline=before
+    )
+    former = next(key for key in projected["targets"] if key.startswith("previous:"))
+    assert projected["targets"][former] == {"state": "missing", "hash": None}
+    assert projected["targets"]["accounts"]["state"] == "available"
+
+
+@pytest.mark.parametrize(
+    "files",
+    [
+        {"../outside.md": b"public"},
+        {"/outside.md": b"public"},
+        {"Accounts.md": "not bytes"},
+        {"Accounts.md": b"one", "accounts.md": b"two"},
+        {"assets/a.png": b"one", "assets/a.png/nested.png": b"two"},
+        {1: b"public"},
+    ],
+)
+def test_target_projection_rejects_unsafe_file_maps(consumer, files):
+    captured = impact.capture_publication_basis(consumer)
+    with pytest.raises(ValueError):
+        impact.project_publication_targets(captured, files)
+
+
+def test_target_observation_handles_plain_anchors_and_missing_bytes():
+    topic = {"wiki_page": "Guide.md", "anchor": "details"}
+    raw = b"# Guide\n\n## Details\n\nA public section.\n"
+    assert impact.publication_target_observation(topic, None) == {
+        "state": "missing",
+        "hash": None,
+    }
+    assert impact.publication_target_observation(topic, raw)["state"] == "available"
+    assert (
+        impact.publication_target_observation(
+            topic, raw + b"\n## Details\n\nAmbiguous.\n"
+        )["state"]
+        == "unresolved-anchor"
+    )
 
 
 def test_consumer_cli_capture_review_and_rerun(consumer, monkeypatch, capsys):

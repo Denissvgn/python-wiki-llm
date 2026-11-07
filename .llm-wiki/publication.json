@@ -66,6 +66,25 @@
           "command": []
         }
       ]
+    },
+    {
+      "id": "sibling-wiki.maintenance",
+      "owner": "maintainers",
+      "wiki_page": "Maintaining-a-Sibling-Wiki.md",
+      "edit_at": "repository",
+      "source_document": "docs/sibling-wiki.md",
+      "depends_on": [
+        {
+          "architecture_page": "flows/cli-docs.md"
+        },
+        {
+          "reference": "llm-wiki",
+          "command": [
+            "docs",
+            "wiki"
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [
@@ -126,5 +145,9 @@
     "llm-wiki": {
       "kind": "llm-wiki-cli"
     }
+  },
+  "content": {
+    "root": "docs",
+    "repository_url": "https://github.com/Denissvgn/python-wiki-llm"
   }
 }

@@ -29,13 +29,13 @@ flowchart LR
     n4["_hash (src/llm_wiki_cli/services/publication_contracts.py)"]
     n5["_path (src/llm_wiki_cli/services/publication_contracts.py)"]
     n6["_invalid_constant (src/llm_wiki_cli/services/publication_impact.py)"]
-    n7["_target_hash (src/llm_wiki_cli/services/publication_impact.py)"]
+    n7["_projected_file_path (src/llm_wiki_cli/services/publication_impact.py)"]
     n8["_topic_versions (src/llm_wiki_cli/services/publication_impact.py)"]
     n9["_unique_object (src/llm_wiki_cli/services/publication_impact.py)"]
     n10["capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)"]
     n11["compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py)"]
-    n12["read_publication_document (src/llm_wiki_cli/services/publication_impact.py)"]
-    n13["resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)"]
+    n12["project_publication_targets (src/llm_wiki_cli/services/publication_impact.py)"]
+    n13["publication_target_observation (src/llm_wiki_cli/services/publication_impact.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -85,10 +85,12 @@ flowchart LR
 | `_hash` | call | [publication_contracts](../modules/publication_contracts.md) | 1 |
 | `_path` | call | [publication_contracts](../modules/publication_contracts.md) | 1 |
 | `_invalid_constant` | call | [publication_impact](../modules/publication_impact.md) | 1 |
-| `_target_hash` | call | [publication_impact](../modules/publication_impact.md) | 1 |
+| `_projected_file_path` | call | [publication_impact](../modules/publication_impact.md) | 1 |
 | `_topic_versions` | call | [publication_impact](../modules/publication_impact.md) | 1 |
 | `_unique_object` | call | [publication_impact](../modules/publication_impact.md) | 1 |
 | `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 5 |
 | `compare_publication_impact` | call | [publication_impact](../modules/publication_impact.md) | 2 |
-| `read_publication_document` | call | [publication_impact](../modules/publication_impact.md) | 2 |
-| `resolve_publication_finding` | call | [publication_impact](../modules/publication_impact.md) | 6 |
+| `project_publication_targets` | call | [publication_impact](../modules/publication_impact.md) | 5 |
+| `publication_target_observation` | call | [publication_impact](../modules/publication_impact.md) | 2 |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

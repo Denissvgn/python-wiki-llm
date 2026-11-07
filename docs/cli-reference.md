@@ -1948,6 +1948,12 @@ findings, and prepare exact-basis decisions with `docs impact resolve`.
 The [sibling wiki guide](sibling-wiki.md) covers source-only setup, manual and
 repository-authored topics, accepted review ledgers and the portable CI action.
 
+Use `docs wiki export` to render mapped repository content into a fresh GitHub
+wiki candidate. `docs wiki check` verifies its files and current evidence;
+`docs wiki review` prepares an exact-artifact review record. The
+[candidate guide](sibling-wiki-candidates.md) explains page ownership, assets,
+manual-page adoption, receipts and the consumer review workflow.
+
 Prepare and supervise an isolated, agent-driven human-documentation workspace.
 This mode does not replace the managed repo-local wiki workflow.
 
