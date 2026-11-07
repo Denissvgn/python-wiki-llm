@@ -105,6 +105,8 @@ flowchart LR
 | `_json_tree` | `(value: object) -> None` | — | — |
 | `_seal` | `(value: Mapping[str, Any], schema: str, key: str) -> None` | — | — |
 | `_source_basis` | `(value: object, field: str) -> None` | — | — |
+| `_owned_hashes` | `(data: Mapping[str, Any], field: str) -> None` | — | — |
+| `_preamble` | `(value: object, page: Mapping[str, Any], field: str) -> None` | — | — |
 | `_sections` | `(value: object, page: Mapping[str, Any], field: str) -> None` | — | — |
 | `_snapshot` | `(value: object) -> None` | — | — |
 | `_target` | `(value: object, field: str, *, unevaluated: bool = False) -> None` | — | — |

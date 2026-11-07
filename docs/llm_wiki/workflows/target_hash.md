@@ -11,6 +11,7 @@
 3. `markdown_sections.parse_markdown_document`
 4. `publication_contracts.PublicationProtocolError`
 5. `instruction_ownership.markdown_anchor`
+6. `knowledge_evidence.sha256_bytes`
 
 ## Touches
 

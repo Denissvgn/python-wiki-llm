@@ -70,7 +70,9 @@ def add_impact_command(docs_sub):
     _common(resolve, child=True)
     resolve.add_argument("--report", required=True)
     resolve.add_argument("--finding", required=True)
-    resolve.add_argument("--decision", choices=("still-current",), required=True)
+    resolve.add_argument(
+        "--decision", choices=("still-current", "retired"), required=True
+    )
     resolve.add_argument("--reviewer", required=True)
     resolve.add_argument("--reason", required=True)
     resolve.add_argument("--reviews", default=argparse.SUPPRESS)
@@ -196,6 +198,7 @@ def run(args):
                 reviewer=args.reviewer,
                 reason=args.reason,
                 reviews=reviews,
+                decision=args.decision,
             )
             expected = (
                 reviews

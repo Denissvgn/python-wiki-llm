@@ -410,13 +410,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -2264,13 +2264,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -6020,7 +6020,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 152,
+              "line": 158,
               "step": "capture_publication_basis",
               "step_index": 2,
               "target": "source_paths.update"
@@ -6029,7 +6029,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 131,
+              "line": 137,
               "step": "capture_publication_basis",
               "target": "Path(consumer_root).absolute"
             },
@@ -6083,7 +6083,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/instruction_ownership.py"
           ],
-          "step_count": 447,
+          "step_count": 461,
           "truncated": true
         }
       },
@@ -7263,7 +7263,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 346,
+              "line": 374,
               "step": "compare_publication_impact",
               "step_index": 2,
               "target": "findings.append"
@@ -7296,13 +7296,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 320,
+              "line": 348,
               "step": "compare_publication_impact",
               "target": "deepcopy"
             },
             {
               "kind": "external_call",
-              "line": 321,
+              "line": 349,
               "step": "compare_publication_impact",
               "target": "deepcopy"
             },
@@ -7331,7 +7331,7 @@
             "src/llm_wiki_cli/services/publication_contracts.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 105,
+          "step_count": 109,
           "truncated": true
         }
       },
@@ -9028,13 +9028,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -11629,13 +11629,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -19575,13 +19575,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -21137,13 +21137,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -25115,7 +25115,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 466,
+              "line": 501,
               "step": "resolve_publication_finding",
               "step_index": 2,
               "target": "records.append"
@@ -25182,7 +25182,7 @@
             "src/llm_wiki_cli/services/publication_impact.py",
             "src/llm_wiki_cli/services/publication_contracts.py"
           ],
-          "step_count": 39,
+          "step_count": 43,
           "truncated": false
         }
       },
@@ -31592,13 +31592,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 3599,
+              "line": 3601,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -69918,5 +69918,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:2f205808a3bebdbd9135cb1a52f8493aa285a1f8fcc7f4ca5c16eac3eda1ecfa"
+  "source_hash": "sha256:a01eaafcc54dbd421e2d85c6a93487362922b966f4937c48e400cd8552159b8b"
 }

@@ -23,7 +23,7 @@ inputs:
     required: false
     default: .
   fail-on:
-    description: error preserves the configured CLI policy; review-required additionally fails on advisory review findings.
+    description: error preserves the configured CLI policy; review-required additionally requires a ready impact review.
     required: false
     default: error
   evidence-id:
@@ -165,7 +165,9 @@ runs:
         receipt.write_text(json.dumps({"schema_version": "llm-wiki-action-provider/v1",
                                       "version": version, "action_ref": os.environ.get("PROVIDER_ACTION_REF", ""),
                                       "package_sha256": fingerprint, "installed": True,
-                                      "package_origin": str(package)}, indent=2, sort_keys=True) + "\n",
+                                      "package_origin": str(package), "python": sys.version,
+                                      "python_implementation": sys.implementation.name,
+                                      "platform": sys.platform}, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8")
         '''
         # -I prevents a consumer's source tree or PYTHONPATH from selecting the provider.
@@ -244,6 +246,7 @@ runs:
         import json
         import os
         from pathlib import Path
+        from llm_wiki_cli.services.publication_contracts import validate_publication_report
 
         evidence = Path(os.environ["IMPACT_EVIDENCE"])
         summary_path = evidence / "impact.md"
@@ -259,8 +262,8 @@ runs:
                 summary.write("Impact evaluation produced no Markdown summary; inspect the evidence artifact.\n")
         report_path = evidence / "impact.json"
         try:
-            if report_path.is_symlink() or not report_path.is_file() or not 0 < report_path.stat().st_size <= 16777216:
-                raise ValueError("impact report is missing, unsafe or exceeds 16 MiB")
+            if report_path.is_symlink() or not report_path.is_file() or not 0 < report_path.stat().st_size <= 67108864:
+                raise ValueError("impact report is missing, unsafe or exceeds 64 MiB")
             def object_pairs(pairs):
                 result = {}
                 for key, value in pairs:
@@ -272,17 +275,7 @@ runs:
                 raise ValueError("non-standard JSON constant")
             report = json.loads(report_path.read_text(encoding="utf-8"), object_pairs_hook=object_pairs,
                                 parse_constant=constant)
-            if not isinstance(report, dict) or report.get("schema_version") != "llm-wiki-publication-impact/v1":
-                raise ValueError("unsupported impact report schema")
-            for name in ("complete", "review_required", "changed", "ready"):
-                if type(report.get(name)) is not bool:
-                    raise ValueError(f"impact report {name} must be a boolean")
-            if not isinstance(report.get("findings"), list) or any(not isinstance(report.get(name), dict) for name in ("basis", "coverage")):
-                raise ValueError("impact report findings, basis or coverage are invalid")
-            if any(not isinstance(report.get(name), str) or not report[name] for name in ("config_hash", "report_id")):
-                raise ValueError("impact report identities are unavailable")
-            if report["ready"] and (not report["complete"] or report["review_required"]):
-                raise ValueError("impact readiness contradicts evidence or review requirements")
+            validate_publication_report(report)
             code = int(os.environ["IMPACT_EXIT"])
             if code not in {0, 1, 2}:
                 raise ValueError("impact CLI did not finish with a supported exit code")
@@ -293,7 +286,7 @@ runs:
                 raise SystemExit(code)
             if not report["complete"]:
                 raise ValueError("impact evaluation is incomplete")
-            if os.environ["INPUT_FAIL_ON"] == "review-required" and report["review_required"]:
+            if os.environ["INPUT_FAIL_ON"] == "review-required" and not report["ready"]:
                 raise SystemExit(1)
         except (OSError, UnicodeError, ValueError) as error:
             print(f"Publication impact evidence is invalid: {error}")

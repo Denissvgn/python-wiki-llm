@@ -10,15 +10,18 @@
 2. `markdown_sections.parse_markdown_document`
 3. `io.decode_markdown_bytes`
 4. `knowledge_storage.KnowledgeStorageError`
-5. `knowledge_evidence.sha256_bytes`
-6. `wiki_surface.collect_wiki_pages`
-7. `knowledge_storage.KnowledgeStorageError`
-8. `maintenance_protocol.guard_maintenance_owner`
-9. `knowledge_storage.KnowledgeStorageError`
-10. `knowledge_evidence.hash_json`
-11. `knowledge_model._bundle_to_payload`
-12. `knowledge_evidence.sha256_bytes`
+5. `knowledge_storage.KnowledgeStorageError`
+6. `knowledge_evidence.sha256_bytes`
+7. `knowledge_evidence.sha256_bytes`
+8. `knowledge_storage.KnowledgeStorageError`
+9. `wiki_surface.collect_wiki_pages`
+10. `knowledge_storage.KnowledgeStorageError`
+11. `maintenance_protocol.guard_maintenance_owner`
+12. `knowledge_storage.KnowledgeStorageError`
 13. `knowledge_evidence.hash_json`
+14. `knowledge_model._bundle_to_payload`
+15. `knowledge_evidence.sha256_bytes`
+16. `knowledge_evidence.hash_json`
 
 ## Touches
 

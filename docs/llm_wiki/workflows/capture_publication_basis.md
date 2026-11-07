@@ -19,8 +19,12 @@ consumer may point architecture.root at an isolated bootstrap output.
 6. `publication_contracts.PublicationProtocolError`
 7. `knowledge_storage_io.StorageReadSession`
 8. `publication_contracts.PublicationProtocolError`
-9. `publication_config.load_publication_config`
+9. `publication_config.publication_path`
 10. `publication_contracts.PublicationProtocolError`
+11. `publication_config.publication_path`
+12. `publication_contracts.PublicationProtocolError`
+13. `publication_config.load_publication_config`
+14. `publication_contracts.PublicationProtocolError`
 
 ## Touches
 

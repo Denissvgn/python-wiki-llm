@@ -195,6 +195,45 @@ def _source_basis(value: object, field: str) -> None:
         _fail(field + ".extensions", "must be an object")
 
 
+def _owned_hashes(data: Mapping[str, Any], field: str) -> None:
+    _hash(data["exact_hash"], field + ".exact_hash")
+    ownership = data["ownership"]
+    if ownership not in {"generated", "semantic", "mixed", "unknown"}:
+        _fail(field + ".ownership", "has an unknown ownership state")
+    for facet in ("structural_hash", "semantic_hash"):
+        if facet in data:
+            _hash(data[facet], field + "." + facet)
+    expected_facets = {
+        "generated": {"structural_hash"},
+        "semantic": {"semantic_hash"},
+        "mixed": {"structural_hash", "semantic_hash"},
+        "unknown": set(),
+    }[ownership]
+    if ({"structural_hash", "semantic_hash"} & set(data)) != expected_facets:
+        _fail(field, "facet commitments do not match declared section ownership")
+    if ownership in {"generated", "semantic"} and any(
+        data[key] != data["exact_hash"] for key in expected_facets
+    ):
+        _fail(
+            field, "single-owner facet commitment does not match exact section content"
+        )
+
+
+def _preamble(value: object, page: Mapping[str, Any], field: str) -> None:
+    data = _record(
+        value,
+        field,
+        {"locator", "page_locator", "exact_hash", "ownership"},
+        {"structural_hash", "semantic_hash"},
+    )
+    if (
+        data["page_locator"] != page["locator"]
+        or data["locator"] != page["locator"] + "#section/@preamble"
+    ):
+        _fail(field, "must identify its containing page's native preamble")
+    _owned_hashes(data, field)
+
+
 def _sections(value: object, page: Mapping[str, Any], field: str) -> None:
     sections = _array(value, field)
     seen: dict[str, Mapping[str, Any]] = {}
@@ -273,27 +312,7 @@ def _sections(value: object, page: Mapping[str, Any], field: str) -> None:
         if start <= last_start or (parent is not None and end > seen[parent]["end"]):
             _fail(at, "has inconsistent section extents")
         last_start = start
-        _hash(data["exact_hash"], at + ".exact_hash")
-        ownership = data["ownership"]
-        if ownership not in {"generated", "semantic", "mixed", "unknown"}:
-            _fail(at + ".ownership", "has an unknown ownership state")
-        for facet in ("structural_hash", "semantic_hash"):
-            if facet in data:
-                _hash(data[facet], at + "." + facet)
-        expected_facets = {
-            "generated": {"structural_hash"},
-            "semantic": {"semantic_hash"},
-            "mixed": {"structural_hash", "semantic_hash"},
-            "unknown": set(),
-        }[ownership]
-        if ({"structural_hash", "semantic_hash"} & set(data)) != expected_facets:
-            _fail(at, "facet commitments do not match declared section ownership")
-        if ownership in {"generated", "semantic"} and any(
-            data[key] != data["exact_hash"] for key in expected_facets
-        ):
-            _fail(
-                at, "single-owner facet commitment does not match exact section content"
-            )
+        _owned_hashes(data, at)
         for child in _array(data["child_locators"], at + ".child_locators"):
             _text(child, at + ".child_locators")
         if parent is not None:
@@ -406,6 +425,7 @@ def _snapshot(value: object) -> None:
                 "section_ordering_hash",
                 "sections",
             },
+            {"preamble"},
         )
         kind = PageKind(page["kind"])
         entry = kinds[kind.value]
@@ -445,6 +465,8 @@ def _snapshot(value: object) -> None:
                 )
             _path(mapping.source_path, field + ".source_mapping.source_path")
         _sections(page["sections"], page, field + ".sections")
+        if "preamble" in page:
+            _preamble(page["preamble"], page, field + ".preamble")
 
 
 def _target(value: object, field: str, *, unevaluated: bool = False) -> None:
@@ -456,6 +478,8 @@ def _target(value: object, field: str, *, unevaluated: bool = False) -> None:
         _fail(field + ".state", "has an invalid target state")
     if data["state"] == "available":
         _hash(data["hash"], field + ".hash")
+    elif data["state"] == "unresolved-anchor":
+        _hash(data["hash"], field + ".hash", nullable=True)
     elif data["hash"] is not None:
         _fail(field + ".hash", "must be null for unavailable target content")
 
@@ -512,8 +536,8 @@ def _reviews(value: object) -> list[dict[str, Any]]:
             field,
             {"topic", "owner", "reviewer", "reason", "decision", "review_basis"},
         )
-        if record["decision"] != "still-current":
-            _fail(field + ".decision", "must be still-current")
+        if record["decision"] not in {"still-current", "retired"}:
+            _fail(field + ".decision", "must be still-current or retired")
         for key in ("topic", "owner", "reviewer", "reason"):
             _text(record[key], field + "." + key)
         _topic_id(record["topic"], field + ".topic")
@@ -600,6 +624,7 @@ def _reasons(value: object, field: str, *, coverage: bool) -> None:
         elif kind in {
             "initial-review",
             "mapping-changed",
+            "mapping-retired",
             "target-missing",
             "target-unresolved-anchor",
             "target-changed",
@@ -663,7 +688,7 @@ def _report(value: object) -> None:
             _fail(field, "duplicates a finding subject")
         seen.add(identity)
         canonical = {key: item for key, item in finding.items() if key != "id"}
-        if finding["status"] == "reviewed-current":
+        if finding["status"] in {"reviewed-current", "reviewed-retired"}:
             canonical["status"] = "needs-review"
         if finding["id"] != hash_json(canonical):
             _fail(field + ".id", "does not match the finding commitment")
@@ -700,16 +725,46 @@ def _report(value: object) -> None:
                 _text(finding["anchor"], field + ".anchor", maximum=256)
             if finding["edit_at"] not in {"wiki", "repository"} or finding[
                 "status"
-            ] not in {"incomplete", "needs-review", "reviewed-current"}:
+            ] not in {
+                "incomplete",
+                "needs-review",
+                "reviewed-current",
+                "reviewed-retired",
+            }:
                 _fail(field, "has an unknown topic ownership or status")
             _hash(finding["review_basis"], field + ".review_basis")
             _target(finding["target"], field + ".target", unevaluated=True)
-            if (
-                finding["status"] == "reviewed-current"
-                and finding["target"]["state"] != "available"
-            ):
-                _fail(field, "reviewed topics require available target content")
             _reasons(finding["reasons"], field + ".reasons", coverage=False)
+            retirement = any(
+                reason["kind"] == "mapping-retired" for reason in finding["reasons"]
+            )
+            if finding["status"] == "reviewed-current" and (
+                retirement or finding["target"]["state"] != "available"
+            ):
+                _fail(
+                    field,
+                    "current decisions require an active mapping and available target",
+                )
+            if finding["status"] == "reviewed-retired" and (
+                not retirement
+                or finding["target"]["state"]
+                not in {"available", "missing", "unresolved-anchor"}
+                or (
+                    finding["target"]["state"] == "unresolved-anchor"
+                    and finding["target"]["hash"] is None
+                )
+            ):
+                _fail(
+                    field,
+                    "retired decisions require a retired mapping and an observed target",
+                )
+            if finding["status"] == "reviewed-current" and any(
+                reason["kind"] == "evidence-unavailable"
+                for reason in finding["reasons"]
+            ):
+                _fail(
+                    field, "unavailable current evidence cannot be reviewed as complete"
+                )
         else:
             _fail(field + ".kind", "has an unknown finding kind")
     complete = not any(item["status"] == "incomplete" for item in findings)

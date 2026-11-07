@@ -20,21 +20,22 @@ sequenceDiagram
     participant p6 as _json_tree
     participant p7 as _fail
     participant p8 as PublicationProtocolError
-    participant p9 as next
-    participant p10 as reviewer.strip
-    participant p11 as any (src/llm_wiki_cli/services…esolve_publication_finding)
-    participant p12 as reason.strip
-    participant p13 as deepcopy
-    participant p14 as records.append
-    participant p15 as sorted
-    participant p16 as callback
-    participant p17 as pending.pop
-    participant p18 as isinstance
-    participant p19 as any (src/llm_wiki_cli/services…on_contracts.py:_json_tree)
-    participant p20 as type
-    participant p21 as pending.extend
-    participant p22 as item.values
-    participant p23 as math.isfinite
+    participant p9 as _reviewable_target
+    participant p10 as next
+    participant p11 as reviewer.strip
+    participant p12 as any (src/llm_wiki_cli/services…esolve_publication_finding)
+    participant p13 as reason.strip
+    participant p14 as deepcopy
+    participant p15 as records.append
+    participant p16 as sorted
+    participant p17 as callback
+    participant p18 as pending.pop
+    participant p19 as isinstance
+    participant p20 as any (src/llm_wiki_cli/services…on_contracts.py:_json_tree)
+    participant p21 as type
+    participant p22 as pending.extend
+    participant p23 as item.values
+    participant p24 as math.isfinite
     p0->>p1: resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)
     p1->>p2: validate_publication_report
     p1->>p3: validate_publication_basis
@@ -43,33 +44,33 @@ sequenceDiagram
     p5->>p6: _json_tree
     p6->>p7: _fail
     p1->>p8: PublicationProtocolError
-    p1-->>p9: next(..., None)
-    p1-->>p10: reviewer.strip
-    p1-->>p11: any (src/llm_wiki_cli/services…esolve_publication_finding)(...)
-    p1-->>p12: reason.strip
-    p1-->>p13: deepcopy(validate_publication_reviews(...))
-    p1-->>p14: records.append(record)
-    p1-->>p15: sorted(records, key=...)
-    p5-->>p16: callback(value)
-    p6-->>p17: pending.pop
-    p6-->>p18: isinstance(item, Mapping)
-    p6-->>p19: any (src/llm_wiki_cli/services…on_contracts.py:_json_tree)(...)
-    p6-->>p20: type(key)
-    p6-->>p21: pending.extend(...)
-    p6-->>p22: item.values
-    p6-->>p20: type(item)
-    p6-->>p21: pending.extend(...)
-    p6-->>p20: type(item)
-    p6-->>p23: math.isfinite(item)
-    p6-->>p20: type(item)
-    p1->>p8: PublicationProtocolError
-    p1->>p8: PublicationProtocolError
+    p1->>p9: _reviewable_target
+    p1-->>p10: next(..., None)
+    p1-->>p11: reviewer.strip
+    p1-->>p12: any (src/llm_wiki_cli/services…esolve_publication_finding)(...)
+    p1-->>p12: any (src/llm_wiki_cli/services…esolve_publication_finding)(...)
+    p1-->>p13: reason.strip
+    p1-->>p14: deepcopy(validate_publication_reviews(...))
+    p1-->>p15: records.append(record)
+    p1-->>p16: sorted(records, key=...)
+    p5-->>p17: callback(value)
+    p6-->>p18: pending.pop
+    p6-->>p19: isinstance(item, Mapping)
+    p6-->>p20: any (src/llm_wiki_cli/services…on_contracts.py:_json_tree)(...)
+    p6-->>p21: type(key)
+    p6-->>p22: pending.extend(...)
+    p6-->>p23: item.values
+    p6-->>p21: type(item)
+    p6-->>p22: pending.extend(...)
+    p6-->>p21: type(item)
+    p6-->>p24: math.isfinite(item)
+    p6-->>p21: type(item)
     p1->>p8: PublicationProtocolError
 ```
 
-> Call sequence diagram shows 30 of 38 interactions; 8 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 42 interactions; 12 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 11 (0 omitted); unresolved 8 of 8 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 12 of 12 (0 omitted); unresolved 8 of 8 (0 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -79,8 +80,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 5 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_guard` | 4 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/publication_contracts.py:validate_publication_basis` | 24 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/publication_impact.py:resolve_publication_finding` | 2 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/publication_contracts.py:validate_publication_reviews` | 36 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/publication_impact.py:resolve_publication_finding` | 2 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 5 |
+| `src/llm_wiki_cli/services/publication_contracts.py:validate_publication_reviews` | 39 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -91,17 +92,17 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 20; effect analysis evaluated: 13, partial: 0, unavailable: 7. Counts include steps omitted from the displayed trace.
+Source steps: 23; effect analysis evaluated: 15, partial: 0, unavailable: 8. Counts include steps omitted from the displayed trace.
 
-Collector observations for 13 source steps with known totals: observed: 48, emitted: 48, omitted: 0. Unavailable totals are excluded.
+Collector observations for 15 source steps with known totals: observed: 57, emitted: 57, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `resolve_publication_finding (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `resolve_publication_finding (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `validate_publication_report` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_guard` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_json_tree` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
@@ -165,8 +166,8 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `resolve_publication_finding (src/llm_wiki_cli/api.py)` | `report: Mapping[str, Any]`, `candidate: Mapping[str, Any]`, `finding_id: str`, `reviewer: str`, `reason: str`, `reviews: Mapping[str, Any] \| None` | - | - | `resolve(...)` |
-| `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `report: Mapping[str, Any]`, `candidate: Mapping[str, Any]`, `finding_id: str`, `reviewer: str`, `reason: str`, `reviews: Mapping[str, Any] \| None` | `REVIEWS_SCHEMA` | - | `{...}` |
+| `resolve_publication_finding (src/llm_wiki_cli/api.py)` | `report: Mapping[str, Any]`, `candidate: Mapping[str, Any]`, `finding_id: str`, `reviewer: str`, `reason: str`, `reviews: Mapping[str, Any] \| None`, `decision: str` | - | - | `resolve(...)` |
+| `resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)` | `report: Mapping[str, Any]`, `candidate: Mapping[str, Any]`, `finding_id: str`, `reviewer: str`, `reason: str`, `reviews: Mapping[str, Any] \| None`, `decision: str` | `REVIEWS_SCHEMA` | - | `result` |
 | `validate_publication_report` | `value: object` | `_report` | - | - |
 | `_guard` | `callback`, `value: object` | `PublicationProtocolError` | - | `callback(...)` |
 | `_json_tree` | `value: object` | `Mapping` | - | - |
@@ -182,10 +183,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3580 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews)` |
-| resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 423 | `validate_publication_report(report)` |
-| validate_publication_report | _guard | 754 | `_guard(_report, value)` |
-| _guard | _json_tree | 734 | `_json_tree(value)` |
+| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3581 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
+| resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 453 | `validate_publication_report(report)` |
+| validate_publication_report | _guard | 809 | `_guard(_report, value)` |
+| _guard | _json_tree | 789 | `_json_tree(value)` |
 | _json_tree | pending.pop | 133 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 136 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 41 | `PublicationProtocolError(...)` |
@@ -198,7 +199,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `records.append` | `resolve_publication_finding` | 466 |
+| mutation | `records.append` | `resolve_publication_finding` | 501 |
 | mutation | `pending.pop` | `_json_tree` | 133 |
 | mutation | `pending.extend` | `_json_tree` | 140 |
 | mutation | `pending.extend` | `_json_tree` | 142 |

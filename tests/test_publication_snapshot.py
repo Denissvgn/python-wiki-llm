@@ -64,6 +64,80 @@ def test_current_packed_indexed_snapshot_retains_full_native_page_set(
     assert any(
         p["canonical_path"] == "entities/Application.md" for p in result["pages"]
     )
+    assert any(
+        section.get("semantic_hash")
+        for page in result["pages"]
+        for section in page["sections"]
+    )
+    assert any(
+        section.get("structural_hash")
+        for page in result["pages"]
+        for section in page["sections"]
+    )
+
+
+@pytest.mark.parametrize("storage_format", ["v1", "packed-v4-deflate"])
+def test_global_native_ownership_and_preamble_are_available_for_facet_dependencies(
+    tmp_path, storage_format
+):
+    fixture = one_module_two_entities_fixture()
+    preamble = "Préface with native evidence.\n\n"
+    fixture = replace(
+        fixture,
+        pages=tuple(
+            replace(
+                page,
+                content=preamble
+                + page.content
+                + (
+                    "\n## Description\nMaintained context.\n\n## Imports\nGenerated imports.\n"
+                    if page.page_kind == "modules"
+                    else ""
+                ),
+            )
+            if page.page_kind in {"modules", "log"}
+            else page
+            for page in fixture.pages
+        ),
+    )
+    _write_fixture_pages(tmp_path, fixture)
+    plan = build_knowledge_generation_plan(_planner_inputs(tmp_path, fixture))
+    commit_knowledge_artifacts(plan)
+    if storage_format != "v1":
+        commit_knowledge_artifacts(
+            build_knowledge_commit_plan(
+                tmp_path,
+                surface_index_bytes=plan.surface_index.content,
+                knowledge_index_bytes=plan.knowledge_index.content,
+                manifest=plan.committed_manifest.without_artifact_hashes(),
+                knowledge_format=storage_format,
+            )
+        )
+    result = snapshot.build_publication_snapshot(tmp_path)
+    module = next(page for page in result["pages"] if page["kind"] == "modules")
+    sections = {section["title"]: section for section in module["sections"]}
+    assert sections["Description"]["ownership"] == "semantic"
+    assert (
+        sections["Description"]["semantic_hash"]
+        == sections["Description"]["exact_hash"]
+    )
+    assert "structural_hash" not in sections["Description"]
+    assert sections["Imports"]["ownership"] == "generated"
+    assert sections["Imports"]["structural_hash"] == sections["Imports"]["exact_hash"]
+    assert "semantic_hash" not in sections["Imports"]
+    assert module["preamble"] == {
+        "locator": module["locator"] + "#section/@preamble",
+        "page_locator": module["locator"],
+        "exact_hash": sha256_bytes(preamble.encode("utf-8")),
+        "ownership": "unknown",
+    }
+    log = next(page for page in result["pages"] if page["kind"] == "log")
+    assert log["preamble"]["ownership"] == "generated"
+    assert log["preamble"]["structural_hash"] == log["preamble"]["exact_hash"]
+    assert "semantic_hash" not in log["preamble"]
+    assert all(
+        "preamble" not in page for page in result["pages"] if page not in (module, log)
+    )
 
 
 def test_raw_hash_distinguishes_newlines_without_changing_native_hash(tmp_path):

@@ -461,3 +461,189 @@ def test_output_types_and_checkpoints_are_not_replaced_implicitly(
         )
         == 0
     )
+
+
+@pytest.mark.parametrize(
+    "changed", ["target", "source", "target-appeared", "source-appeared"]
+)
+def test_late_external_mutation_cannot_escape_native_revalidation(
+    consumer, monkeypatch, changed
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["topics"][0]["depends_on"].append({"source_file": "limit.json"})
+    policy_path.write_text(json.dumps(policy))
+    if changed != "source-appeared":
+        (consumer / "limit.json").write_text("1")
+    if changed == "target-appeared":
+        (consumer / "public/Accounts.md").unlink()
+    original = impact.build_publication_snapshot
+    calls = 0
+
+    def mutate_after_native_validation(path):
+        nonlocal calls
+        value = original(path)
+        calls += 1
+        if calls == 2:
+            destination = consumer / (
+                "public/Accounts.md" if changed.startswith("target") else "limit.json"
+            )
+            destination.write_text("Changed external evidence")
+        return value
+
+    monkeypatch.setattr(
+        impact, "build_publication_snapshot", mutate_after_native_validation
+    )
+    with pytest.raises(ValueError):
+        impact.capture_publication_basis(consumer, target_dir="public")
+
+
+def test_retired_mapping_and_deleted_page_can_be_reviewed(consumer):
+    before = impact.capture_publication_basis(consumer, target_dir="public")
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["topics"] = []
+    policy_path.write_text(json.dumps(policy))
+    (consumer / "public/Accounts.md").unlink()
+    after = impact.capture_publication_basis(
+        consumer, target_dir="public", baseline=before
+    )
+    report = impact.compare_publication_impact(after, before)
+    finding = report["findings"][0]
+    with pytest.raises(ValueError, match="Decision must match"):
+        impact.resolve_publication_finding(
+            report, after, finding_id=finding["id"], reviewer="alice", reason="Retired"
+        )
+    ledger = api.resolve_publication_finding(
+        report,
+        after,
+        finding_id=finding["id"],
+        reviewer="alice",
+        reason="The topic and public page were retired",
+        decision="retired",
+    )
+    closed = impact.compare_publication_impact(after, before, reviews=ledger)
+    assert closed["ready"] and closed["findings"][0]["status"] == "reviewed-retired"
+
+
+def test_retired_approval_reopens_on_former_live_dependency_changes():
+    before = basis()
+    policy = config()
+    policy["topics"][0].update(
+        wiki_page="Replacement.md", depends_on=[{"source_file": "stable.txt"}]
+    )
+    policy["exclusions"] = [
+        {
+            "pattern": "*",
+            "reason": "Former evidence is retained only for retirement review",
+        }
+    ]
+    after = basis(policy)
+    after["files"]["stable.txt"] = hash_json("stable")
+    previous_id = next(
+        key
+        for key in impact._topic_versions(policy, before)[0]
+        if key.startswith("previous:")
+    )
+    after["targets"][previous_id] = deepcopy(after["targets"]["accounts"])
+    after = seal(after, "basis_id")
+    report = impact.compare_publication_impact(after, before)
+    ledger = None
+    for finding in report["findings"]:
+        ledger = impact.resolve_publication_finding(
+            report,
+            after,
+            finding_id=finding["id"],
+            reviewer="alice",
+            reason="Confirmed current topic and retired destination",
+            reviews=ledger,
+            decision="retired"
+            if finding["subject"] == previous_id
+            else "still-current",
+        )
+    assert impact.compare_publication_impact(after, before, reviews=ledger)["ready"]
+    changed = deepcopy(after)
+    changed["architecture"]["pages"][0]["source_basis"]["source_content_hash"] = (
+        hash_json("new former implementation")
+    )
+    changed["architecture"] = seal(changed["architecture"], "snapshot_id")
+    changed = seal(changed, "basis_id")
+    reopened = impact.compare_publication_impact(changed, before, reviews=ledger)
+    assert not reopened["ready"]
+    assert (
+        next(f for f in reopened["findings"] if f["subject"] == previous_id)["status"]
+        == "needs-review"
+    )
+
+
+def test_formatted_heading_cannot_validate_an_invented_public_anchor(consumer):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["topics"][0]["anchor"] = "upgrade-guidehttpsexamplecom"
+    policy_path.write_text(json.dumps(policy))
+    (consumer / "public/Accounts.md").write_text(
+        "## Upgrade [guide](https://example.com)\n"
+    )
+    captured = impact.capture_publication_basis(consumer, target_dir="public")
+    assert captured["targets"]["accounts"]["state"] == "unresolved-anchor"
+    assert not impact.compare_publication_impact(captured)["complete"]
+
+
+@pytest.mark.parametrize("preamble", [False, True])
+def test_real_native_section_and_preamble_dependencies(consumer, preamble):
+    if preamble:
+        from dataclasses import replace
+        from tests.knowledge_fixtures import one_module_two_entities_fixture
+        from tests.test_knowledge_loader import _write_fixture_pages
+        from tests.test_knowledge_generation import _planner_inputs
+        from llm_wiki_cli.services.knowledge_generation import (
+            build_knowledge_generation_plan,
+        )
+        from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+
+        fixture = one_module_two_entities_fixture()
+        fixture = replace(
+            fixture,
+            pages=tuple(
+                replace(p, content="Preface.\n\n" + p.content)
+                if p.page_kind == "modules"
+                else p
+                for p in fixture.pages
+            ),
+        )
+        native_root = consumer / "prefix-wiki"
+        _write_fixture_pages(native_root, fixture)
+        commit_knowledge_artifacts(
+            build_knowledge_generation_plan(_planner_inputs(native_root, fixture))
+        )
+        policy_path = consumer / ".llm-wiki/publication.json"
+        policy = json.loads(policy_path.read_text())
+        policy["architecture"]["root"] = "prefix-wiki"
+        policy_path.write_text(json.dumps(policy))
+    else:
+        native_root = consumer / "wiki"
+    snapshot = impact.build_publication_snapshot(native_root)
+    if preamble:
+        page = next(page for page in snapshot["pages"] if page.get("preamble"))
+        section = page["preamble"]
+        facets = ["whole"]
+    else:
+        page, section = next(
+            (p, s)
+            for p in snapshot["pages"]
+            for s in p["sections"]
+            if s.get("semantic_hash")
+        )
+        facets = ["semantic"]
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["topics"][0]["depends_on"] = [
+        {
+            "architecture_page": page["canonical_path"],
+            "section": section["locator"],
+            "facets": facets,
+        }
+    ]
+    policy_path.write_text(json.dumps(policy))
+    captured = impact.capture_publication_basis(consumer, target_dir="public")
+    assert impact.compare_publication_impact(captured)["complete"]

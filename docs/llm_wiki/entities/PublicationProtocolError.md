@@ -30,11 +30,12 @@ flowchart LR
     n5["_path (src/llm_wiki_cli/services/publication_contracts.py)"]
     n6["_invalid_constant (src/llm_wiki_cli/services/publication_impact.py)"]
     n7["_target_hash (src/llm_wiki_cli/services/publication_impact.py)"]
-    n8["_unique_object (src/llm_wiki_cli/services/publication_impact.py)"]
-    n9["capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)"]
-    n10["compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py)"]
-    n11["read_publication_document (src/llm_wiki_cli/services/publication_impact.py)"]
-    n12["resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)"]
+    n8["_topic_versions (src/llm_wiki_cli/services/publication_impact.py)"]
+    n9["_unique_object (src/llm_wiki_cli/services/publication_impact.py)"]
+    n10["capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)"]
+    n11["compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py)"]
+    n12["read_publication_document (src/llm_wiki_cli/services/publication_impact.py)"]
+    n13["resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -47,6 +48,7 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
+    n13 --> n0
     click n0 "../modules/publication_contracts.md"
     click n2 "../modules/publication_contracts.md"
     click n3 "../modules/publication_contracts.md"
@@ -59,6 +61,7 @@ flowchart LR
     click n10 "../modules/publication_impact.md"
     click n11 "../modules/publication_impact.md"
     click n12 "../modules/publication_impact.md"
+    click n13 "../modules/publication_impact.md"
 ```
 
 ### Summary
@@ -83,8 +86,9 @@ flowchart LR
 | `_path` | call | [publication_contracts](../modules/publication_contracts.md) | 1 |
 | `_invalid_constant` | call | [publication_impact](../modules/publication_impact.md) | 1 |
 | `_target_hash` | call | [publication_impact](../modules/publication_impact.md) | 1 |
+| `_topic_versions` | call | [publication_impact](../modules/publication_impact.md) | 1 |
 | `_unique_object` | call | [publication_impact](../modules/publication_impact.md) | 1 |
-| `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 3 |
+| `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 5 |
 | `compare_publication_impact` | call | [publication_impact](../modules/publication_impact.md) | 2 |
 | `read_publication_document` | call | [publication_impact](../modules/publication_impact.md) | 2 |
-| `resolve_publication_finding` | call | [publication_impact](../modules/publication_impact.md) | 5 |
+| `resolve_publication_finding` | call | [publication_impact](../modules/publication_impact.md) | 6 |

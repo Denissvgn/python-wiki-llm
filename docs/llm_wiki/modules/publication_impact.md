@@ -23,6 +23,7 @@ Portable, deterministic architecture-to-public-topic impact and review.
 | `fnmatch` | `fnmatchcase` |
 | `json` | `json` |
 | `pathlib` | `Path` |
+| `re` | `re` |
 | `typing` | `Any`, `Mapping` |
 
 ## Local dependency map
@@ -102,5 +103,6 @@ flowchart LR
 | `_finding` | `(kind: str, subject: str, details: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_topic_findings` | `(before, after) -> list[dict[str, Any]]` | — | — |
 | `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | — | Compare complete bases through the union of previous/current bindings. |
-| `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | — | Prepare an exact-basis no-edit decision for normal repository review. |
+| `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None, decision: str = 'still-current') -> dict[str, Any]` | — | Prepare an exact-basis no-edit decision for normal repository review. |
+| `_reviewable_target` | `(target, *, retired)` | — | — |
 | `render_publication_impact` | `(report: Mapping[str, Any]) -> str` | — | Render inert Markdown for CI summaries, including unresolved coverage. |

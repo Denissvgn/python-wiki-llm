@@ -6,6 +6,7 @@ from collections import Counter
 from copy import deepcopy
 from fnmatch import fnmatchcase
 import json
+import re
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -87,6 +88,10 @@ def _topic_versions(config, baseline):
             new.get("anchor"),
         ):
             identity = "previous:" + hash_json(old).removeprefix("sha256:")[:32]
+            if identity in previous or identity in current:
+                raise PublicationImpactError(
+                    "Topic ID collides with a retained destination"
+                )
             previous[identity] = {**old, "id": identity}
     return previous, current
 
@@ -109,10 +114,11 @@ def _target_hash(
     matches = [
         section
         for section in document.sections
+        if not re.search(r"[\[\]<>\\*_&~]", section.title.replace("`", ""))
         if markdown_anchor(section.title) == topic["anchor"]
     ]
     if len(matches) != 1:
-        return {"state": "unresolved-anchor", "hash": None}
+        return {"state": "unresolved-anchor", "hash": sha256_bytes(raw)}
     return {"state": "available", "hash": matches[0].exact_hash}
 
 
@@ -145,13 +151,13 @@ def capture_publication_basis(
     targets = {}
     source_paths = {
         dep["source_file"]
-        for topic in config["topics"]
+        for topic in topics.values()
         for dep in topic["depends_on"]
         if "source_file" in dep
     }
     source_paths.update(
         topic["source_document"]
-        for topic in config["topics"]
+        for topic in topics.values()
         if topic.get("source_document")
     )
     with StorageReadSession(root).phase() as session:
@@ -166,12 +172,22 @@ def capture_publication_basis(
             with StorageReadSession(target).phase() as target_session:
                 for topic in topics.values():
                     targets[topic["id"]] = _target_hash(target_session, topic)
-            target_session.recheck()
-    session.recheck()
     # A prose edit can occur without a manifest write. Revalidate the full
     # native snapshot after capturing external inputs, including its pages.
     if snapshot_builder(architecture_root)["snapshot_id"] != native["snapshot_id"]:
         raise PublicationImpactError("Native snapshot changed during input capture")
+    session.recheck()
+    for path, digest in files.items():
+        if digest is None and publication_path(root, path).exists():
+            raise PublicationImpactError("Source evidence appeared during capture")
+    if target_dir is not None:
+        target_session.recheck()
+        for topic in topics.values():
+            if (
+                targets[topic["id"]]["state"] == "missing"
+                and publication_path(target, topic["wiki_page"]).exists()
+            ):
+                raise PublicationImpactError("Target evidence appeared during capture")
     if config != load_publication_config(root, config_path=config_path):
         raise PublicationImpactError("Publication configuration changed during capture")
     return _seal(
@@ -201,9 +217,11 @@ def _dependency_basis(dep: Mapping[str, Any], basis: Mapping[str, Any]) -> Any:
         return None
     source_basis = page.get("source_basis")
     if dep.get("section"):
-        page = next(
-            (s for s in page["sections"] if s["locator"] == dep["section"]), None
-        )
+        sections = [
+            *page["sections"],
+            *([page["preamble"]] if page.get("preamble") else []),
+        ]
+        page = next((s for s in sections if s["locator"] == dep["section"]), None)
         if page is None:
             return None
     facets = dep.get("facets", ["whole"])
@@ -253,10 +271,19 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
         if old is not None:
             assert before is not None
             previous = _topic_inputs(old, before)
-        current = {} if new is None else _topic_inputs(new, after)
+        retired = new is None
+        current = _topic_inputs(topic, after)
         reasons = []
         if old != new:
-            reasons.append({"kind": "mapping-changed" if old else "initial-review"})
+            reasons.append(
+                {
+                    "kind": "mapping-retired"
+                    if retired
+                    else "mapping-changed"
+                    if old
+                    else "initial-review"
+                }
+            )
         for dep_key in sorted(previous.keys() | current.keys()):
             left, right = previous.get(dep_key), current.get(dep_key)
             if left != right:
@@ -280,7 +307,8 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
                     key,
                     {
                         "status": "incomplete"
-                        if missing or target["state"] == "unresolved-anchor"
+                        if not retired
+                        and (missing or target["state"] == "unresolved-anchor")
                         else "needs-review",
                         "owner": topic["owner"],
                         "wiki_page": topic["wiki_page"],
@@ -360,19 +388,20 @@ def compare_publication_impact(
         )
     decisions = validate_publication_reviews(reviews)
     for finding in findings:
-        if (
-            finding["kind"] != "topic"
-            or finding["status"] == "incomplete"
-            or finding["target"]["state"] != "available"
-        ):
+        if finding["kind"] != "topic" or finding["status"] == "incomplete":
+            continue
+        retired = any(r["kind"] == "mapping-retired" for r in finding["reasons"])
+        target = finding["target"]
+        if not _reviewable_target(target, retired=retired):
             continue
         if any(
             record["topic"] == finding["subject"]
             and record["review_basis"] == finding["review_basis"]
             and record["owner"] == finding["owner"]
+            and record["decision"] == ("retired" if retired else "still-current")
             for record in decisions
         ):
-            finding["status"] = "reviewed-current"
+            finding["status"] = "reviewed-retired" if retired else "reviewed-current"
     complete = not any(f["status"] == "incomplete" for f in findings)
     pending = any(
         f["status"] in {"needs-review", "unmapped", "incomplete"} for f in findings
@@ -418,6 +447,7 @@ def resolve_publication_finding(
     reviewer: str,
     reason: str,
     reviews: Mapping[str, Any] | None = None,
+    decision: str = "still-current",
 ) -> dict[str, Any]:
     """Prepare an exact-basis no-edit decision for normal repository review."""
     validate_publication_report(report)
@@ -433,11 +463,16 @@ def resolve_publication_finding(
         or finding["status"] == "incomplete"
     ):
         raise PublicationImpactError("Only a complete topic finding can be reviewed")
-    if finding["target"]["state"] != "available":
+    retired = any(r["kind"] == "mapping-retired" for r in finding["reasons"])
+    if decision != ("retired" if retired else "still-current"):
+        raise PublicationImpactError(
+            "Decision must match the active or retired topic obligation"
+        )
+    if not _reviewable_target(finding["target"], retired=retired):
         raise PublicationImpactError(
             "Review requires the exact available target page/section"
         )
-    if any(
+    if not retired and any(
         r["kind"] in {"target-missing", "evidence-unavailable"}
         for r in finding["reasons"]
     ):
@@ -452,7 +487,7 @@ def resolve_publication_finding(
         "owner": finding["owner"],
         "reviewer": reviewer,
         "reason": reason,
-        "decision": "still-current",
+        "decision": decision,
         "review_basis": finding["review_basis"],
     }
     records = [
@@ -464,10 +499,21 @@ def resolve_publication_finding(
         )
     ]
     records.append(record)
-    return {
+    result = {
         "schema_version": REVIEWS_SCHEMA,
         "records": sorted(records, key=lambda r: (r["topic"], r["review_basis"])),
     }
+    validate_publication_reviews(result)
+    return result
+
+
+def _reviewable_target(target, *, retired):
+    if target["state"] == "available":
+        return True
+    return retired and (
+        target["state"] == "missing"
+        or (target["state"] == "unresolved-anchor" and target["hash"] is not None)
+    )
 
 
 def render_publication_impact(report: Mapping[str, Any]) -> str:

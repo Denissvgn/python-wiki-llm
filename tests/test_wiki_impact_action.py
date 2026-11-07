@@ -87,6 +87,33 @@ def test_root_workflow_is_manual_read_only_and_uses_the_local_provider():
     assert "secrets." not in path.read_text(encoding="utf-8")
 
 
+def test_consumer_example_reads_accepted_state_from_an_exact_base_checkout():
+    readme = (ACTION_PATH.parent / "README.md").read_text(encoding="utf-8")
+    example = readme.split("```yaml\n", 1)[1].split("```", 1)[0]
+    workflow = yaml.safe_load(example)
+    steps = workflow["jobs"]["impact"]["steps"]
+    checkouts = [
+        step for step in steps if step.get("uses", "").startswith("actions/checkout@")
+    ]
+    assert checkouts[0]["with"]["path"] == "consumer"
+    accepted = checkouts[1]["with"]
+    assert accepted["ref"] == "${{ github.event.pull_request.base.sha || github.sha }}"
+    assert accepted["path"] == "accepted-state"
+    assert all(step["with"]["persist-credentials"] is False for step in checkouts)
+    action = next(
+        step for step in steps if "/integrations/wiki-impact@" in step.get("uses", "")
+    )
+    assert action["with"]["working-directory"] == "consumer"
+    assert (
+        action["with"]["baseline"]
+        == "${{ github.workspace }}/accepted-state/.llm-wiki/publication-baseline.json"
+    )
+    assert (
+        action["with"]["reviews"]
+        == "${{ github.workspace }}/accepted-state/.llm-wiki/publication-reviews.json"
+    )
+
+
 def _script(step_id: str) -> str:
     action = yaml.safe_load(ACTION_PATH.read_text(encoding="utf-8"))
     step = next(step for step in action["runs"]["steps"] if step.get("id") == step_id)
@@ -112,18 +139,55 @@ def _run(
 
 
 def _report(*, complete=True, review=False) -> dict:
-    return {
+    from llm_wiki_cli.services.knowledge_evidence import hash_json
+
+    findings = []
+    coverage = {"total": 0, "mapped": 0, "excluded": 0, "unmapped": 0}
+    if not complete:
+        finding = {
+            "kind": "topic",
+            "subject": "accounts",
+            "status": "incomplete",
+            "reasons": [{"kind": "target-unresolved-anchor"}],
+            "owner": "maintainers",
+            "wiki_page": "Accounts.md",
+            "anchor": "accounts",
+            "edit_at": "wiki",
+            "target": {"state": "unresolved-anchor", "hash": None},
+            "review_basis": hash_json("review basis"),
+        }
+        findings.append({**finding, "id": hash_json(finding)})
+    elif review:
+        finding = {
+            "kind": "coverage",
+            "subject": "guides/accounts.md",
+            "status": "unmapped",
+            "reasons": [
+                {
+                    "kind": "architecture-page-unmapped",
+                    "action": "Map or exclude the page",
+                }
+            ],
+        }
+        findings.append({**finding, "id": hash_json(finding)})
+        coverage.update(total=1, unmapped=1)
+    report = {
         "schema_version": "llm-wiki-publication-impact/v1",
         "complete": complete,
         "review_required": review,
         "changed": True,
         "ready": complete and not review,
-        "findings": [],
-        "coverage": {},
-        "basis": {},
-        "config_hash": "a" * 64,
-        "report_id": "b" * 64,
+        "findings": findings,
+        "coverage": coverage,
+        "basis": {
+            "baseline": hash_json("baseline"),
+            "candidate": hash_json("candidate"),
+        },
+        "config_hash": hash_json("configuration"),
+        "enforcement": "advisory",
+        "limitations": [],
     }
+    return {**report, "report_id": hash_json(report)}
 
 
 @pytest.mark.parametrize(
@@ -173,9 +237,43 @@ def test_report_policy_keeps_required_failures_and_incomplete_evidence_blocking(
     assert "Public sections to review." in summary.read_text()
 
 
+def test_review_required_threshold_rejects_an_unready_report_without_pending_findings(
+    tmp_path,
+):
+    from llm_wiki_cli.services.knowledge_evidence import hash_json
+
+    report = _report()
+    report["ready"] = False
+    report["report_id"] = hash_json(
+        {key: value for key, value in report.items() if key != "report_id"}
+    )
+    (tmp_path / "impact.json").write_text(json.dumps(report), encoding="utf-8")
+    result = _run(
+        _script("result"),
+        cwd=tmp_path,
+        environment={
+            "IMPACT_EVIDENCE": str(tmp_path),
+            "IMPACT_EXIT": "0",
+            "INPUT_FAIL_ON": "review-required",
+            "GITHUB_OUTPUT": str(tmp_path / "outputs"),
+            "GITHUB_STEP_SUMMARY": str(tmp_path / "summary"),
+        },
+    )
+    assert result.returncode == 1
+
+
 @pytest.mark.parametrize(
     "corruption",
-    ["missing", "boolean", "contradiction", "duplicate", "schema", "invalid-exit"],
+    [
+        "missing",
+        "boolean",
+        "contradiction",
+        "duplicate",
+        "schema",
+        "resealed-coverage",
+        "commitment",
+        "invalid-exit",
+    ],
 )
 def test_invalid_or_unavailable_report_cannot_emit_ready_output(tmp_path, corruption):
     report = _report()
@@ -186,6 +284,15 @@ def test_invalid_or_unavailable_report_cannot_emit_ready_output(tmp_path, corrup
         report["review_required"] = True
     elif corruption == "schema":
         report["schema_version"] = "unknown/v1"
+    elif corruption == "resealed-coverage":
+        from llm_wiki_cli.services.knowledge_evidence import hash_json
+
+        report["coverage"]["total"] = 1
+        report["report_id"] = hash_json(
+            {key: value for key, value in report.items() if key != "report_id"}
+        )
+    elif corruption == "commitment":
+        report["report_id"] = "sha256:" + "c" * 64
     elif corruption == "invalid-exit":
         native_exit = "137"
     if corruption != "missing":
@@ -264,7 +371,8 @@ def test_impact_invocation_uses_installed_provider_and_consumer_paths_without_sh
         import sys
         arguments = sys.argv[1:]
         output = Path(arguments[arguments.index('--output') + 1])
-        output.write_text(json.dumps({'cwd': os.getcwd(), 'arguments': arguments}))
+        output.write_text(json.dumps({'cwd': os.getcwd(), 'arguments': arguments,
+                                      'interpreter': sys.executable}))
         print('Consumer impact summary.')
         raise SystemExit(1)
     """),
@@ -287,12 +395,15 @@ def test_impact_invocation_uses_installed_provider_and_consumer_paths_without_sh
             "INPUT_TARGET_DIR": "public wiki",
             "GITHUB_OUTPUT": str(outputs),
             "PYTHONPATH": str(consumer),
+            "PYTHONHOME": str(consumer),
+            "VIRTUAL_ENV": str(consumer / "application-environment"),
         },
     )
     assert result.returncode == 0, result.stderr
     assert outputs.read_text().strip() == "exit-code=1"
     observed = json.loads((evidence / "impact.json").read_text())
     assert Path(observed["cwd"]) == consumer
+    assert Path(observed["interpreter"]) == executable
     assert observed["arguments"] == [
         "docs",
         "impact",

@@ -88,9 +88,9 @@ sequenceDiagram
     p1-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 446 interactions; 416 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 460 interactions; 430 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 144 (143 omitted); unresolved 1 of 127 (126 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 145 (144 omitted); unresolved 1 of 134 (133 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -104,7 +104,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
-> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 107 groups; 99 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -117,9 +117,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 176; effect analysis evaluated: 113, partial: 3, unavailable: 60. Counts include steps omitted from the displayed trace.
+Source steps: 182; effect analysis evaluated: 116, partial: 3, unavailable: 63. Counts include steps omitted from the displayed trace.
 
-Collector observations for 116 source steps with known totals: observed: 517, emitted: 502, omitted: 15. Unavailable totals are excluded.
+Collector observations for 119 source steps with known totals: observed: 527, emitted: 512, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -199,9 +199,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | capture_publication_basis (src/llm_wiki_cli/api.py) | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | 3546 | `capture(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)` |
-| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 131 | `Path(consumer_root).absolute(data not statically known)` |
-| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 131 | `Path(consumer_root)` |
-| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 132 | `load_publication_config(root, config_path=config_path)` |
+| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 137 | `Path(consumer_root).absolute(data not statically known)` |
+| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 137 | `Path(consumer_root)` |
+| capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 138 | `load_publication_config(root, config_path=config_path)` |
 | load_publication_config | _consumer_root | 541 | `_consumer_root(consumer_root)` |
 | _consumer_root | Path(…).expanduser | 129 | `Path(value).expanduser(data not statically known)` |
 | _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 129 | `Path(value)` |
@@ -214,13 +214,13 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `source_paths.update` | `capture_publication_basis` | 152 |
+| mutation | `source_paths.update` | `capture_publication_basis` | 158 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_publication_basis` | `Path(consumer_root).absolute` | 131 |
+| unresolved_call | `capture_publication_basis` | `Path(consumer_root).absolute` | 137 |
 | unresolved_call | `_consumer_root` | `Path(value).expanduser` | 129 |
 | external_call | `_is_link_or_reparse_stat` | `stat.S_ISLNK` | 299 |
 | external_call | `_is_link_or_reparse_stat` | `getattr` | 301 |

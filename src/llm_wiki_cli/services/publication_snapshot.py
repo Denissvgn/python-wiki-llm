@@ -106,6 +106,17 @@ def _build_snapshot(root: Path) -> dict[str, Any]:
     knowledge = state.knowledge
     manifest = state.manifest_basis
     artifacts = state.validated_artifacts
+    extension = knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
+    ownership_by_page = (
+        {
+            page["page_locator"]: {
+                section["locator"]: section for section in page["sections"]
+            }
+            for page in extension.get("pages", [])
+        }
+        if isinstance(extension, Mapping)
+        else {}
+    )
     pages = []
     with session.phase():
         for concept in sorted(
@@ -120,19 +131,15 @@ def _build_snapshot(root: Path) -> dict[str, Any]:
                 raise KnowledgeStorageError(
                     path, "authored input changed", code="storage-mutation"
                 )
-            extension = concept.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
-            ownership = (
-                {
-                    section["locator"]: section
-                    for section in extension.get("sections", [])
-                }
-                if isinstance(extension, Mapping)
-                else {}
-            )
+            ownership = ownership_by_page.get(concept.locator, {})
             sections = []
             for section in document.sections:
                 payload = section.to_payload()
                 observed = ownership.get(section.locator, {})
+                if observed and observed["exact_hash"] != section.exact_hash:
+                    raise KnowledgeStorageError(
+                        path, "section commitment differs", code="storage-mutation"
+                    )
                 payload["ownership"] = observed.get("ownership", "unknown")
                 for name in ("structural_hash", "semantic_hash"):
                     if observed.get(name) is not None:
@@ -173,6 +180,31 @@ def _build_snapshot(root: Path) -> dict[str, Any]:
                     "sections": sections,
                 }
             )
+            preamble_locator = concept.locator + "#section/@preamble"
+            preamble = ownership.get(preamble_locator)
+            if preamble is not None:
+                extent = (
+                    document.sections[0].start_byte
+                    if document.sections
+                    else len(document.normalized_bytes)
+                )
+                if preamble["exact_hash"] != sha256_bytes(
+                    document.normalized_bytes[:extent]
+                ):
+                    raise KnowledgeStorageError(
+                        path, "preamble commitment differs", code="storage-mutation"
+                    )
+                pages[-1]["preamble"] = {
+                    "locator": preamble_locator,
+                    "page_locator": concept.locator,
+                    "exact_hash": preamble["exact_hash"],
+                    "ownership": preamble["ownership"],
+                    **{
+                        key: preamble[key]
+                        for key in ("structural_hash", "semantic_hash")
+                        if preamble.get(key) is not None
+                    },
+                }
     # Include every captured native root/object and page in the same final
     # guarded recheck. A mutation cannot yield a partial or apparently ready view.
     session.recheck()

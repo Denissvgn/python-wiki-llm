@@ -279,6 +279,117 @@ def test_reviewed_status_retains_stable_finding_identity():
     validate_publication_report(reviewed)
 
 
+def test_retirement_ledger_records_are_explicit_and_detached():
+    record = {
+        **review_record(),
+        "decision": "retired",
+        "reason": "The former public topic was removed",
+    }
+    ledger = {"schema_version": "llm-wiki-publication-reviews/v1", "records": [record]}
+    assert validate_publication_reviews(ledger) == [record]
+    assert ledger["records"][0]["decision"] == "retired"
+
+
+def retired_report(target, *, retirement=True, status="reviewed-retired"):
+    report = compare_publication_impact(basis())
+    finding = report["findings"][0]
+    finding["reasons"] = [
+        {"kind": "mapping-retired" if retirement else "mapping-changed"}
+    ]
+    finding["target"] = target
+    finding["status"] = "needs-review"
+    seal(finding, "id")
+    finding["status"] = status
+    report.update(complete=True, review_required=False, ready=True)
+    return seal(report, "report_id")
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        {"state": "available", "hash": H},
+        {"state": "missing", "hash": None},
+        {"state": "unresolved-anchor", "hash": H},
+    ],
+)
+def test_reviewed_retirement_preserves_finding_id_and_observed_target(target):
+    report = retired_report(target)
+    validate_publication_report(report)
+    assert report["findings"][0]["status"] == "reviewed-retired"
+
+
+@pytest.mark.parametrize(
+    "target,retirement,status",
+    [
+        ({"state": "available", "hash": H}, False, "reviewed-retired"),
+        ({"state": "missing", "hash": None}, False, "reviewed-retired"),
+        ({"state": "not-evaluated", "hash": None}, True, "reviewed-retired"),
+        ({"state": "unresolved-anchor", "hash": None}, True, "reviewed-retired"),
+        ({"state": "missing", "hash": None}, True, "reviewed-current"),
+        ({"state": "available", "hash": H}, True, "reviewed-current"),
+    ],
+)
+def test_retirement_dispositions_cannot_bless_active_or_unobserved_content(
+    target, retirement, status
+):
+    with pytest.raises(PublicationProtocolError):
+        validate_publication_report(
+            retired_report(target, retirement=retirement, status=status)
+        )
+
+
+def test_native_preamble_is_separate_from_the_atx_order_commitment():
+    payload = basis()
+    page = payload["architecture"]["pages"][0]
+    ordering = page["section_ordering_hash"]
+    preamble: dict[str, Any] = {
+        "locator": page["locator"] + "#section/@preamble",
+        "page_locator": page["locator"],
+        "exact_hash": H,
+        "ownership": "semantic",
+        "semantic_hash": H,
+    }
+    page["preamble"] = preamble
+    reseal_basis(payload)
+    validate_publication_basis(payload)
+    assert page["section_ordering_hash"] == ordering
+    assert all(
+        section["locator"] != preamble["locator"] for section in page["sections"]
+    )
+
+
+@pytest.mark.parametrize(
+    "change", ["null", "page", "locator", "hash", "ownership", "unknown"]
+)
+def test_native_preamble_rejects_foreign_coordinates_and_invented_ownership(change):
+    payload = basis()
+    page = payload["architecture"]["pages"][0]
+    preamble: dict[str, Any] = {
+        "locator": page["locator"] + "#section/@preamble",
+        "page_locator": page["locator"],
+        "exact_hash": H,
+        "ownership": "semantic",
+        "semantic_hash": H,
+    }
+    if change == "null":
+        page["preamble"] = None
+    else:
+        page["preamble"] = preamble
+        if change == "page":
+            preamble["page_locator"] = "llm-wiki://modules/foreign"
+        elif change == "locator":
+            preamble["locator"] = page["locator"] + "#section/Description~1"
+        elif change == "hash":
+            preamble["semantic_hash"] = sha256_bytes(b"different")
+        elif change == "ownership":
+            preamble["ownership"] = "unknown"
+        else:
+            preamble["unknown"] = True
+    reseal_basis(payload)
+    with pytest.raises(PublicationProtocolError):
+        validate_publication_basis(payload)
+
+
 @pytest.mark.parametrize(
     "change", ["findings", "coverage", "ready", "flags", "seal", "target", "hash"]
 )

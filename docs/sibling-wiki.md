@@ -50,6 +50,10 @@ section locators through `list_concept_sections`. The public anchor and native
 locator have separate formats. Without a section selection, the dependency
 covers the whole native page and its captured source basis.
 
+Native `#section/@preamble` dependencies cover text before the first heading.
+Public section anchors support unique plain headings and inline code labels.
+For headings containing links, emphasis or HTML, map the whole public page.
+
 Use `{"source_file": "config/accounts.toml"}` for a value owned by configuration
 or another input outside native page coverage. For repository-authored public
 content, set `edit_at` to `repository` and provide its `source_document` path.
@@ -122,6 +126,13 @@ at the chosen accepted path and supply it on subsequent comparisons.
 An accepted decision clears the matching finding while its evidence and target
 text remain the same. A later relevant change reopens review. Missing evidence
 or a missing public page must be repaired before accepting a no-edit decision.
+
+When removing a mapping or moving its destination, the report retains the
+former destination as a separate obligation. Use `--decision retired` to record
+an explicit retirement after checking the previous page and its current state.
+This can confirm a deleted page or removed heading. The decision remains bound
+to any former evidence that still exists and to the observed target bytes or
+absence. Changes reopen review until a new accepted checkpoint is established.
 Maintain the previous baseline while any required findings remain unresolved.
 Review-ledger authority comes from the consumer's repository process. Local
 reviewer text alone does not authenticate a GitHub identity.

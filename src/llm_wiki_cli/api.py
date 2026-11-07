@@ -3573,8 +3573,9 @@ def resolve_publication_finding(
     reviewer: str,
     reason: str,
     reviews: Mapping[str, Any] | None = None,
+    decision: str = "still-current",
 ) -> dict[str, Any]:
-    """Return a proposed still-current review ledger for caller-owned acceptance."""
+    """Return a proposed current or retired decision for caller-owned acceptance."""
     from .services.publication_impact import resolve_publication_finding as resolve
 
     return resolve(
@@ -3584,6 +3585,7 @@ def resolve_publication_finding(
         reviewer=reviewer,
         reason=reason,
         reviews=reviews,
+        decision=decision,
     )
 
 
