@@ -9,9 +9,10 @@
 1. `change_selection.changes_from_args`
 2. `change_selection.changes_from_args`
 3. `token_counting.LocalTokenizerCounter`
-4. `context_service._emit_packet_error`
-5. `io.write_text_output`
-6. `io.write_utf8_stdout`
+4. `context_service._packet_helper_diagnostics`
+5. `context_service._emit_packet_error`
+6. `io.write_text_output`
+7. `io.write_utf8_stdout`
 
 ## Touches
 

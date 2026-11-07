@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 8 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 10 more
 
 **Complete modules touched:**
 
@@ -10,7 +10,9 @@
 - [config](../modules/config.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [helper_cache](../modules/helper_cache.md)
 - [helper_preparation](../modules/helper_preparation.md)
+- [helper_runtime](../modules/helper_runtime.md)
 - [io](../modules/io.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
@@ -89,9 +91,9 @@ sequenceDiagram
     p0-->>p30: results.append(result)
 ```
 
-> Call sequence diagram shows 30 of 1068 interactions; 1038 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1038 interactions; 1008 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 369 (368 omitted); unresolved 1 of 320 (319 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 355 (354 omitted); unresolved 1 of 303 (302 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -118,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 380; effect analysis evaluated: 239, partial: 12, unavailable: 129. Counts include steps omitted from the displayed trace.
+Source steps: 381; effect analysis evaluated: 240, partial: 9, unavailable: 132. Counts include steps omitted from the displayed trace.
 
-Collector observations for 251 source steps with known totals: observed: 1436, emitted: 1379, omitted: 57. Unavailable totals are excluded.
+Collector observations for 249 source steps with known totals: observed: 1363, emitted: 1332, omitted: 31. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

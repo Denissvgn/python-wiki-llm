@@ -25,13 +25,14 @@ flowchart LR
     n0["WorkspaceStateError (src/llm_wiki_cli/api.py)"]
     n1["LlmWikiApiError (src/llm_wiki_cli/api.py)"]
     n2["_raise_api_error (src/llm_wiki_cli/api.py)"]
-    n3["_raise_maintenance_api_error (src/llm_wiki_cli/api.py)"]
-    n4["_raise_required_knowledge_api_error (src/llm_wiki_cli/api.py)"]
-    n5["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
-    n6["build_context (src/llm_wiki_cli/api.py)"]
-    n7["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
-    n8["extract_source (src/llm_wiki_cli/api.py)"]
-    n9["list_wiki_pages (src/llm_wiki_cli/api.py)"]
+    n3["_raise_helper_preparation_api_error (src/llm_wiki_cli/api.py)"]
+    n4["_raise_maintenance_api_error (src/llm_wiki_cli/api.py)"]
+    n5["_raise_required_knowledge_api_error (src/llm_wiki_cli/api.py)"]
+    n6["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
+    n7["build_context (src/llm_wiki_cli/api.py)"]
+    n8["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
+    n9["extract_source (src/llm_wiki_cli/api.py)"]
+    n10["list_wiki_pages (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -41,6 +42,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/api.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
@@ -51,6 +53,7 @@ flowchart LR
     click n7 "../modules/api.md"
     click n8 "../modules/api.md"
     click n9 "../modules/api.md"
+    click n10 "../modules/api.md"
 ```
 
 ### Summary
@@ -70,6 +73,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_raise_api_error` | call | [api](../modules/api.md) | 5 |
+| `_raise_helper_preparation_api_error` | call | [api](../modules/api.md) | 1 |
 | `_raise_maintenance_api_error` | call | [api](../modules/api.md) | 1 |
 | `_raise_required_knowledge_api_error` | call | [api](../modules/api.md) | 1 |
 | `bootstrap_wiki` | call | [api](../modules/api.md) | 2 |

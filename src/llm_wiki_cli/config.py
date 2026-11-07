@@ -60,6 +60,7 @@ EXCLUDED_DIRS: set[str] = {
     "env",
     "htmlcov",
     "jspm_packages",
+    "llm-wiki-extractors",
     "node_modules",
     "out",
     "site-packages",

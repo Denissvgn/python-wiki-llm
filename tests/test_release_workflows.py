@@ -86,7 +86,7 @@ def test_newer_parser_control_skips_require_supported_parser_owner_cases():
 def test_maintenance_consumer_binds_identity_without_downloading_source():
     workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
     job = workflow["jobs"]["knowledge-maintenance"]
-    assert job["needs"] == ["freeze", "action"]
+    assert job["needs"] == ["freeze", "action", "admission"]
     assert "always()" in job["if"] and "needs.freeze.result == 'success'" in job["if"]
     identity = next(step for step in job["steps"] if step.get("name") == "Bind expected identity to the frozen candidate")
     assert identity["env"] == {
@@ -189,6 +189,7 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
         "src", "tests", "examples", "integrations/github-action/render_summary.py",
         "release/preflight.py", "release/preflight_contracts.py", "release/preflight_runner.py",
         "release/pr_ci.py", "release/pr_ci_pytest.py", "release/pr_ci_impact.py",
+        'release/manual_release.py', 'release/readiness.py', 'release/measurement_canary.py', 'release/core_coverage.py', 'release/core_shards.py', 'release/core_shard_runner.py', 'release/qualification.py', 'release/hosted_evidence.py', 'release/qualification_automation.py',
     ]
 
 
@@ -316,7 +317,7 @@ def test_ci_pins_the_package_build_tool() -> None:
 
 
 def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evidence():
-    job = _yaml("release-qualification.yml")["jobs"]["core-windows"]
+    job = _yaml("release-qualification.yml")["jobs"]["windows-native"]
     check = _named_step(job, "Verify installed provider artifacts on native Windows")
     assert check["id"] == "provider-artifacts"
     assert check["if"] == "${{ !inputs.discovery-mode }}"
@@ -333,7 +334,7 @@ def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evid
 
 
 def test_release_retains_native_windows_correction_evidence():
-    steps = _yaml("release-qualification.yml")["jobs"]["core-windows"]["steps"]
+    steps = _yaml("release-qualification.yml")["jobs"]["windows-native"]["steps"]
     early = _named_step({"steps": steps}, "Check release corrections on native Windows")
     assert "tests/test_real_caller_action_fixture.py" in early["run"]
     assert early["id"] == "native-corrections"
@@ -359,7 +360,7 @@ def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
     job = _yaml("release-qualification.yml")["jobs"]["core"]
     probe = _named_step(job, "Verify scoped evidence repair on native Windows and Linux")
     assert probe["if"] == "${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}"
-    windows = _named_step(_yaml("release-qualification.yml")["jobs"]["core-windows"], "Verify scoped evidence repair on native Windows and Linux")
+    windows = _named_step(_yaml("release-qualification.yml")["jobs"]["windows-native"], "Verify scoped evidence repair on native Windows and Linux")
     assert windows["if"] == "${{ !inputs.discovery-mode }}"
     assert windows["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
     assert "--minimum-collected 146 --minimum-passed 146" in windows["run"]
@@ -426,9 +427,8 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
     }
     owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
     assert "tests/test_ts_extract.py" in owner["run"]
-    for workflow, job_name in (("release-qualification.yml", "core-windows"),):
+    for workflow, job_name in (("release-qualification.yml", "windows-native"),):
         job = _yaml(workflow)["jobs"][job_name]
-        steps = job["steps"]
         probe = _named_step(job, "Verify JavaScript evidence on native Windows")
         assert probe["env"]["LLM_WIKI_CACHE_DIR"] == "${{ runner.temp }}/javascript-evidence-helpers"
         assert "LLM_WIKI_CACHE_DIR" not in job.get("env", {})
@@ -445,13 +445,14 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
         assert 'GITHUB_ENV' not in script
         assert probe["working-directory"] == "candidate"
         assert "if" not in probe
-        # Aggregation refuses an occupied output directory. The supplemental
-        # JUnit writer must run after either core producer creates evidence.
-        aggregate = _named_step(job, "Verify and aggregate the complete Windows core lane")
+        # Native checks run independently; the complete logical lane joins their
+        # successful, separately authenticated producer rather than rerunning it.
+        assert "core-windows-shards" not in job["needs"]
+        aggregate_job = _yaml(workflow)["jobs"]["core-windows"]
+        assert "windows-native" in aggregate_job["needs"]
+        aggregate = _named_step(aggregate_job, "Verify and aggregate the complete Windows core lane")
         assert "--output evidence" in aggregate["run"]
-        assert steps.index(aggregate) < steps.index(probe)
-        assert steps.index(_named_step(job, "Run strict core suite without coverage instrumentation")) < steps.index(probe)
-        assert steps.index(probe) < steps.index(_named_step(job, "Enforce exact skip tuples and minimum inventory"))
+        assert "needs.windows-native.result == 'success'" in aggregate_job["if"]
 
 
 def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
@@ -991,7 +992,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         "${{ runner.temp }}/frozen/SHA256SUMS",
     ]
 
-    harness_consumers = 0
+    harness_consumers = set()
     for job_name, job in jobs.items():
         if job_name == "freeze":
             continue
@@ -1003,7 +1004,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         ]
         if not downloads:
             continue
-        harness_consumers += 1
+        harness_consumers.add(job_name)
         verifiers = [
             index
             for index, step in enumerate(steps)
@@ -1024,7 +1025,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 22
+    assert harness_consumers == set(jobs) - {"freeze", "admission", "dependency-controls", "dependency-warm"}
 
     for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -1146,7 +1147,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     workflow = _yaml("release-qualification.yml")
     job = workflow["jobs"]["action"]
     assert job["name"] == "RD-10 hosted composite Action"
-    assert job["needs"] == "freeze"
+    assert job["needs"] == ["freeze", "admission"]
     assert job["timeout-minutes"] == 60
     assert "env" not in job
 
@@ -1451,7 +1452,7 @@ def test_javascript_migration_skips_have_executable_toolchain_ownership() -> Non
     lanes = {
         lane["lane"]
         for lane in workflow["jobs"]["core"]["strategy"]["matrix"]["include"]
-    } | {"core-windows-3.13"}
+    } | {"core-windows-3.13", "core-ubuntu-3.11"}
     assert actual == {
         (
             lane,
@@ -1488,12 +1489,6 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     core = qualification["jobs"]["core"]
     assert core["strategy"]["matrix"]["include"] == [
         {
-            "lane": "core-ubuntu-3.11",
-            "os": "ubuntu-24.04",
-            "python": "3.11",
-            "coverage": True,
-        },
-        {
             "lane": "core-macos-3.14",
             "os": "macos-15",
             "python": "3.14",
@@ -1509,7 +1504,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     assert "-o xfail_strict=true" in core_text
     assert "--junitxml=" in core_text
     assert "verify-junit" in core_text
-    assert "--cov-fail-under=87" in core_text
+    assert "--cov-fail-under=87" in str(qualification["jobs"]["core-ubuntu"])
 
     source_test_jobs = (
         "core",
@@ -1651,7 +1646,8 @@ def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
     for job_name, candidate_job in workflow["jobs"].items():
         if job_name not in {"freeze", "static", "decision"}:
             assert "!inputs.bandit-parity-verification" in candidate_job["if"], job_name
-    assert workflow["jobs"]["static"]["if"] == "${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}"
+    assert "!inputs.discovery-mode && !inputs.knowledge-policy-shadow" in workflow["jobs"]["static"]["if"]
+    assert "needs.admission.result == 'success'" in workflow["jobs"]["static"]["if"]
     assert "always()" in workflow["jobs"]["decision"]["if"]
     binding = _named_step(workflow["jobs"]["freeze"], "Bind the workflow definition to the candidate")
     assert "mutually exclusive" in binding["run"]
@@ -1659,13 +1655,12 @@ def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
 
 def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
-    assert workflow["concurrency"] == {
-        "group": (
-            "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}-${{ inputs.knowledge-policy-shadow }}"
-        ),
-        "cancel-in-progress": True,
-    }
+    concurrency = workflow["concurrency"]
+    assert "format('{0}-normal-{1}', github.workflow, github.repository)" in concurrency["group"]
+    assert "inputs.candidate-sha" in concurrency["group"]
+    assert concurrency["cancel-in-progress"] == "${{ inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow }}"
+    assert "windows-core-shards" not in concurrency["cancel-in-progress"]
+    assert "ubuntu-core-shards" not in concurrency["cancel-in-progress"]
     jobs = workflow["jobs"]
     for job_name in (
         "ubuntu-suites",
@@ -1685,7 +1680,12 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
             expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
         if job_name != "action":
             expected = expected.replace(" }}", " && !inputs.knowledge-policy-shadow }}")
-        assert jobs[job_name]["if"] == expected
+        actual = jobs[job_name]["if"]
+        if "admission" in jobs[job_name].get("needs", []):
+            assert expected.removeprefix("${{ ").removesuffix(" }}") in actual
+            assert "needs.admission.result == 'success'" in actual
+        else:
+            assert actual == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (
         "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}"
@@ -1900,9 +1900,9 @@ def test_packed_range_link_skips_match_their_parameterized_contract() -> None:
         }
         for link in sorted(parameters.args[1])
     ]
-    for workflow, job in (("release-qualification.yml", "core"),):
-        lanes = _yaml(workflow)["jobs"][job]["strategy"]["matrix"]["include"]
-        assert any(lane["lane"] == "core-ubuntu-3.11" for lane in lanes)
+    ubuntu = _yaml("release-qualification.yml")["jobs"]["core-ubuntu"]
+    assert ubuntu["runs-on"] == "ubuntu-24.04"
+    assert "core-ubuntu-3.11" in ubuntu["name"]
 
 
 def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:
@@ -2102,7 +2102,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
 
 
 def test_windows_release_covers_the_noneditable_venv_probe_topology() -> None:
-    job = _yaml("release-qualification.yml")["jobs"]["core-windows"]
+    job = _yaml("release-qualification.yml")["jobs"]["windows-native"]
     probe = _named_step(job, "Verify stdin harness inside a native Windows venv")
     assert probe["if"] == "${{ !inputs.discovery-mode }}"
     assert probe["working-directory"] == "candidate"
@@ -2274,7 +2274,7 @@ def test_policy_shadow_is_explicit_and_cannot_assemble_a_release():
     assert option["type"] == "boolean" and option["default"] is False
     jobs = workflow["jobs"]
     assert "!inputs.knowledge-policy-shadow" in jobs["bundle"]["if"]
-    assert "${{ inputs.knowledge-policy-shadow }}" in workflow["concurrency"]["group"]
+    assert "inputs.knowledge-policy-shadow" in workflow["concurrency"]["group"]
     freeze = _named_step(jobs["freeze"], "Check recorded producer before qualification")
     assert freeze["env"]["KNOWLEDGE_POLICY_SHADOW"] == "${{ inputs.knowledge-policy-shadow }}"
     assert "--policy-shadow" in freeze["run"] and "continue-on-error" not in freeze
@@ -2301,3 +2301,59 @@ def test_final_decision_cannot_report_success_after_candidate_freeze_failure():
     assert "exit 1" in step["run"] and "continue-on-error" not in step
     names = [candidate.get("name") for candidate in decision["steps"]]
     assert names.index(step["name"]) < names.index("Emit deterministic aggregate")
+
+
+def test_normal_admission_precedes_costly_producers_and_never_hides_native_owners():
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    assert set(jobs["admission"]["needs"]) == {"readiness", "windows-canary", "smoke-parity"}
+    for name in ("readiness", "windows-canary", "admission"):
+        for mode in ("discovery-mode", "bandit-parity-verification", "ubuntu-suite-shadow", "knowledge-policy-shadow"):
+            assert "!inputs." + mode in jobs[name]["if"]
+    for name in ("core", "core-ubuntu-plan", "core-windows-plan", "ubuntu-suites", "mcp", "toolchains", "oci"):
+        assert "admission" in jobs[name]["needs"]
+        assert "needs.admission.result == 'success'" in jobs[name]["if"]
+    assert "core-windows-shards" not in jobs["windows-native"]["needs"]
+    assert "windows-native" in jobs["core-windows"]["needs"]
+    assert "needs.windows-native.result == 'success'" in jobs["core-windows"]["if"]
+    assert "core-ubuntu" in jobs["owner-lanes"]["needs"]
+    assert "core-ubuntu" in jobs["bundle"]["needs"]
+    assert "needs.core-ubuntu.result == 'success'" in jobs["bundle"]["if"]
+    ubuntu = jobs["core-ubuntu"]
+    aggregate = _named_step(ubuntu, "Verify and aggregate the complete Ubuntu core lane")
+    native = _named_step(ubuntu, "Verify scoped evidence repair on native Windows and Linux")
+    assert ubuntu["steps"].index(aggregate) < ubuntu["steps"].index(native)
+    for name in ("core-ubuntu-plan", "core-ubuntu-shards", "core-ubuntu"):
+        assert jobs[name]["runs-on"] == "ubuntu-24.04"
+    assert "--purpose qualification" in str(jobs["core-ubuntu-shards"])
+    assert "--cov-fail-under=87" in str(ubuntu)
+    # Every needs edge is present and acyclic; admission cannot wait on a producer
+    # that itself waits for admission. This catches accidentally gating builds.
+    def visit(name, active, done):
+        assert name not in active
+        if name in done:
+            return
+        needs = jobs[name].get("needs", [])
+        if isinstance(needs, str):
+            needs = [needs]
+        for dependency in needs:
+            assert dependency in jobs
+            visit(dependency, active | {name}, done)
+        done.add(name)
+    done = set()
+    for name in jobs:
+        visit(name, set(), done)
+
+
+def test_native_provider_builder_cannot_mutate_the_collected_owner_environment():
+    native = _yaml("release-qualification.yml")["jobs"]["windows-native"]
+    builder = _named_step(native, "Verify installed provider artifacts on native Windows")
+    assert 'python -m venv "${RUNNER_TEMP}/provider-build-venv"' in builder["run"]
+    assert '"${builder}" -m pip install' in builder["run"]
+    assert 'python -m pip install' not in builder["run"]
+    assert 'GITHUB_ENV' not in builder["run"] and 'GITHUB_PATH' not in builder["run"]
+    after = _named_step(native, "Revalidate native owner source and environment after every owner")
+    assert '--reference evidence/context.json' in after["run"]
+    assert native["steps"].index(after) > native["steps"].index(_named_step(native, "Verify JavaScript evidence on native Windows"))
+    upload = _named_step(native, "Upload independently bound native Windows evidence")
+    assert 'evidence/context-final.json' in upload["with"]["path"]
+    assert native["steps"].index(after) < native["steps"].index(upload)

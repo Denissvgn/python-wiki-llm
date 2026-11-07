@@ -246,17 +246,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 800 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 801 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 802 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 803 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 804 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 805 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 806 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 807 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 808 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 809 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 810 | `isinstance(capture_implementation_observations, bool)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 809 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 810 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 811 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 812 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 813 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 814 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 815 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 816 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 817 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 818 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 819 | `isinstance(capture_implementation_observations, bool)` |
 
 ### Boundary effects
 
@@ -266,17 +266,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 800 |
-| external_call | `capture_context_read` | `TypeError` | 801 |
-| external_call | `capture_context_read` | `isinstance` | 802 |
-| external_call | `capture_context_read` | `TypeError` | 803 |
-| external_call | `capture_context_read` | `callable` | 804 |
-| external_call | `capture_context_read` | `TypeError` | 805 |
-| external_call | `capture_context_read` | `isinstance` | 806 |
-| external_call | `capture_context_read` | `TypeError` | 807 |
-| external_call | `capture_context_read` | `isinstance` | 808 |
-| external_call | `capture_context_read` | `TypeError` | 809 |
-| external_call | `capture_context_read` | `isinstance` | 810 |
+| external_call | `capture_context_read` | `isinstance` | 809 |
+| external_call | `capture_context_read` | `TypeError` | 810 |
+| external_call | `capture_context_read` | `isinstance` | 811 |
+| external_call | `capture_context_read` | `TypeError` | 812 |
+| external_call | `capture_context_read` | `callable` | 813 |
+| external_call | `capture_context_read` | `TypeError` | 814 |
+| external_call | `capture_context_read` | `isinstance` | 815 |
+| external_call | `capture_context_read` | `TypeError` | 816 |
+| external_call | `capture_context_read` | `isinstance` | 817 |
+| external_call | `capture_context_read` | `TypeError` | 818 |
+| external_call | `capture_context_read` | `isinstance` | 819 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 
 ## Behavior

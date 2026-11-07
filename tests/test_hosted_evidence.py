@@ -426,3 +426,12 @@ def test_analysis_pairs_require_a_successful_authenticated_producer(tmp_path, mo
     job["conclusion"] = conclusion
     with pytest.raises(h.EvidenceError, match="producer did not succeed"):
         h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("producer", ["Native Windows owner evidence", "Execute Ubuntu core shard (1)", "Require release admission"])
+def test_platform_layout_requires_every_new_authenticated_producer(tmp_path, monkeypatch, producer):
+    root, server = _hosted(tmp_path, monkeypatch, "platform-sharded")
+    assert h.verify(root, server.identity, server.context, server.run_id)["context"]["core_layout"] == "platform-sharded"
+    next(job for job in server.jobs if job["name"] == producer)["conclusion"] = "failure"
+    with pytest.raises(h.EvidenceError, match="producer did not succeed"):
+        h.verify(root, server.identity, server.context, server.run_id)

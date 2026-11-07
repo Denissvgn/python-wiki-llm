@@ -318,6 +318,15 @@ def describe_context_packet_error(error: BaseException) -> dict[str, Any]:
     Dynamic mapping keys and raw service messages belong to the chained local
     exception, not to the public diagnostic shared by API, CLI and MCP.
     """
+    from .helper_cache import HelperPreparationError
+    if isinstance(error, HelperPreparationError):
+        from .extractor_helpers import SUPPORTED_HELPERS
+        return {
+            "code": "helper-preparation-failed",
+            "message": "Could not prepare the required helper. Check the selected toolchain and helper cache.",
+            "details": {"field": "helper_preparation",
+                        "language": error.language if error.language in SUPPORTED_HELPERS else "unknown"},
+        }
     if isinstance(error, ContextPacketAuthorityError):
         return {"code": error.code, "message": str(error), "details": deepcopy(error.details)}
     field = getattr(error, "field", None)

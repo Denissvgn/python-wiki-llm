@@ -1,6 +1,6 @@
 # ContextPacketValidation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:515`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:524`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)

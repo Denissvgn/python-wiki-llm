@@ -185,17 +185,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_wiki_pages | _validate_wiki_dir | 1821 | `_validate_wiki_dir(wiki_dir)` |
-| _validate_wiki_dir | validate_path | 3314 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| list_wiki_pages | _validate_wiki_dir | 1921 | `_validate_wiki_dir(wiki_dir)` |
+| _validate_wiki_dir | validate_path | 3414 | `validate_path(wiki_dir, '--wiki-dir')` |
+| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| list_wiki_pages | _wiki_page_payload | 1823 | `_wiki_page_payload(page)` |
-| list_wiki_pages | collect_wiki_pages | 1824 | `wiki_surface.collect_wiki_pages(wiki_root)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
+| list_wiki_pages | _wiki_page_payload | 1923 | `_wiki_page_payload(page)` |
+| list_wiki_pages | collect_wiki_pages | 1924 | `wiki_surface.collect_wiki_pages(wiki_root)` |
 
 ### Boundary effects
 
@@ -208,11 +208,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
-| external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
 | external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
+| external_call | `validate_path` | `Path.cwd` | 137 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
 | step_limit | `list_wiki_pages` | `first 12 steps` | 0 |
 
 ## Behavior

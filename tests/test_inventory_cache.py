@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 
 from llm_wiki_cli.services import inventory_cache
 from llm_wiki_cli.services.inventory_cache import (
@@ -16,6 +17,36 @@ from llm_wiki_cli.services.inventory_cache import (
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.commands.extract_cmd import get_inventory_result
+
+
+def test_unobserved_helper_cannot_seed_a_hit_for_missing_helper(tmp_path, monkeypatch):
+    from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
+    from llm_wiki_cli.services import extractor_helpers as helpers
+    from llm_wiki_cli.services.helper_runtime import helper_operation
+    from tests.test_helper_preparation import _prepare_fixture
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "main.ts").write_text("export const a = 1;\n")
+    populated, empty = tmp_path / "helpers", tmp_path / "empty"
+    _prepare_fixture("typescript", populated / helpers.HELPER_CACHE_DIRNAME)
+    monkeypatch.setattr(helpers.shutil, "which", lambda name: "node" if name == "node" else None)
+    # Extraction can still work when a wrapper declines the version probe.
+    monkeypatch.setattr(helpers, "command_output", lambda *args, **kwargs: None)
+    raw = json.dumps({str(source / "main.ts"): {"classes": [], "functions": []}})
+    monkeypatch.setattr(TypeScriptExtractor, "_run_node_extractor", lambda self, cmd, root: subprocess.CompletedProcess(cmd, 0, raw, ""))
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "inventory-cache"))
+    with helper_operation("never", cache_dir=populated):
+        first = get_inventory_result(source, include_plugins=False, cache_options=options)
+    assert not first.failed and "main.ts" in first.inventory
+    assert first.cache_stats is not None and first.cache_stats.status == "unqualified-helper"
+    assert not (tmp_path / "inventory-cache" / CACHE_FILENAME).exists()
+    with helper_operation("never", cache_dir=empty):
+        second = get_inventory_result(source, include_plugins=False, cache_options=options)
+    assert [failure.language for failure in second.failed] == ["typescript"]
+    assert second.cache_stats is not None and second.cache_stats.hits == 0
+    assert "main.ts" not in second.inventory
 
 
 def test_resolves_normal_git_dir(tmp_path):
@@ -90,6 +121,7 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
         include_empty=False,
         extractor_registry={"python": "builtin"},
     )
+    assert cache_key is not None
     cache = InventoryCache(
         tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir))
     )
@@ -147,13 +179,15 @@ def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(
     snapshot = build_source_snapshot(src)
 
     def key():
-        return build_inventory_cache_key(
+        result = build_inventory_cache_key(
             src,
             snapshot,
             deep=True,
             include_empty=False,
             extractor_registry={"python": "builtin"},
         )
+        assert result is not None
+        return result
 
     base = key()
     (src / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
@@ -207,6 +241,7 @@ def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(
         extractor_registry={"python": "builtin"},
     )
 
+    assert cache_key is not None
     assert cache_key["gitignore_fingerprint"] == snapshot.gitignore_fingerprint
 
 
@@ -233,13 +268,15 @@ def test_cache_key_uses_semantic_source_selection_identity(tmp_path):
 
     def key() -> dict:
         snapshot = build_source_snapshot(tmp_path)
-        return build_inventory_cache_key(
+        result = build_inventory_cache_key(
             tmp_path,
             snapshot,
             deep=True,
             include_empty=False,
             extractor_registry={"python": "builtin"},
         )
+        assert result is not None
+        return result
 
     write_profile(["a", "b"])
     first = key()

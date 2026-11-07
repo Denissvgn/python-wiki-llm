@@ -286,6 +286,7 @@ def test_stale_binding_dispatches_bounded_shadow_independent_of_release_eligibil
     assert dispatch["inputs"]["knowledge-policy-shadow"] == "true"
     assert "qualification-profile" not in dispatch["inputs"]
     assert dispatch["inputs"]["windows-core-shards"] == "true"
+    assert dispatch["inputs"]["ubuntu-core-shards"] == "true"
     assert result["run_id"] in controller.client.runs
 
 

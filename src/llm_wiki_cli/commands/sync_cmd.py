@@ -4074,6 +4074,14 @@ def _prepare_sync_run(
         baseline_manifest,
         source_snapshot,
     )
+    from ..services.extraction_service import InventoryRequest, prepare_inventory_helpers
+    prepare_inventory_helpers(InventoryRequest(
+        src_dir=options.src_dir, source_snapshot=source_snapshot,
+        source_selection=options.source_selection,
+        helper_cache_dir=options.helper_cache_dir,
+        include_tests=options.include_tests,
+        include_plugins=options.include_plugins,
+    ))
     cached_analysis = sync_analysis_cache.load(
         options, source_snapshot, baseline_manifest, generation_inputs, committed_state,
     ) if manifest is not None and not _invalid_manifest_hash_paths(manifest) else None

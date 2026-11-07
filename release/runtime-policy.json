@@ -1,0 +1,20 @@
+{
+  "schema_version": "agent-wiki-runtime-contract/v1",
+  "profiles": {
+    "knowledge-linux": {"platform": "linux", "arch": "x64", "platform_version": "24.04", "python": ["3.13.18"]},
+    "windows-core": {"platform": "win32", "arch": "x64", "platform_version": null, "python": ["3.13.17"]}
+  },
+  "consumers": [
+    {"id": "capture", "profile": "knowledge-linux", "path": ".github/workflows/reviewed-wiki-capture.yml", "job": "capture", "selection": "setup-python"},
+    {"id": "integrity", "profile": "knowledge-linux", "path": "integrations/wiki-integrity/action.yml", "job": null, "selection": "setup-python"},
+    {"id": "rd10", "profile": "knowledge-linux", "path": ".github/workflows/release-qualification.yml", "job": "action", "selection": "setup-python"},
+    {"id": "artifact-smoke", "profile": "knowledge-linux", "path": ".github/workflows/release-qualification.yml", "job": "artifact-smoke", "selection": "setup-python"},
+    {"id": "readiness", "profile": "knowledge-linux", "path": ".github/workflows/release-qualification.yml", "job": "readiness", "selection": "setup-python"},
+    {"id": "windows-plan", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows-plan", "selection": "setup-python"},
+    {"id": "windows-shards", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows-shards", "selection": "plan-python"},
+    {"id": "windows-core", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows", "selection": "plan-python-fallback"},
+    {"id": "windows-canary", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "windows-canary", "selection": "setup-python"},
+    {"id": "windows-native", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "windows-native", "selection": "setup-python"},
+    {"id": "windows-probe", "profile": "windows-core", "path": ".github/workflows/windows-measurement.yml", "job": "measurement", "selection": "matrix-python"}
+  ]
+}

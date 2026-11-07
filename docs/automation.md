@@ -396,6 +396,66 @@ hashes. Create the release tag at the qualified SHA before requesting actual
 publication with the same bundle. Further release-source changes require a
 new full qualification.
 
+### Manual release sessions
+
+`release/manual_release.py` keeps a durable local session for an exact committed
+candidate. It uses the existing GitHub credentials and maintained release
+verifiers independently of the optional bot coordinator. It does not enable
+automation or change repository protection.
+
+Complete local preparation and obtain its verified receipt first. Use a fresh
+ignored directory for each candidate:
+
+```bash
+RELEASE_CANDIDATE_SHA="$(git rev-parse HEAD)"
+RELEASE_SESSION="reports/manual-release-${RELEASE_CANDIDATE_SHA}"
+.venv/bin/python -I release/manual_release.py init \
+  --root . --work "$RELEASE_SESSION" \
+  --repository Denissvgn/python-wiki-llm \
+  --candidate-sha "$RELEASE_CANDIDATE_SHA" \
+  --preflight-receipt RECEIPT_PATH \
+  --authorize qualify
+.venv/bin/python -I release/manual_release.py watch \
+  --root . --work "$RELEASE_SESSION"
+```
+
+Authorization scopes record the operation already authorized by the operator;
+they persist across resume and do not grant account permissions. The example
+authorizes qualification only. Its watcher stops with
+`authorized-scope-complete` after verified qualification, without tagging or
+publishing. `watch` can advance every scope already granted to the session; it
+is not a passive status command. For an authorized full publication, the
+additional scopes are `dry-run`, `tag`, `publish`, and `github-release`:
+
+```bash
+.venv/bin/python -I release/manual_release.py advance \
+  --root . --work "$RELEASE_SESSION" \
+  --authorize dry-run --authorize tag --authorize publish --authorize github-release
+.venv/bin/python -I release/manual_release.py watch \
+  --root . --work "$RELEASE_SESSION"
+```
+
+The controller retains the exact qualification run, attempt, manifest and
+distribution hashes through the promotion dry run, annotated tag, actual upload,
+and public download verification. It never rebuilds qualified distributions.
+Publication is serialized without cancelling an upload already in progress.
+
+Use `status` for local inspection, or `resume` to reconcile an interrupted
+operation. A missing response is not treated as a missing write; an ambiguous
+dispatch remains pending rather than being submitted again. Incomplete
+prerequisites are reported together before qualification. Each checkout family
+has one active session lease; `supersede --reason TEXT` records an explicit
+candidate replacement and refuses to abandon unresolved irreversible work.
+A session with a verified tag and no publication attempt can be superseded
+explicitly. Its tag and qualified evidence remain retained; prepare a new version
+instead of recycling that tag for another candidate. Unresolved publication
+attempts and published releases must be reconciled.
+
+The watcher defaults to a six-hour observation budget at thirty-second
+intervals. `--interval` accepts 5–60 seconds, and `--max-polls` accepts 1–2880.
+Budget exhaustion reports a pending operation; the same session can be resumed.
+Session records, recovery data and cleanup accounting belong in ignored storage.
+
 ## Git hook retirement
 
 Git hook installation has been removed. After updating the package, run the

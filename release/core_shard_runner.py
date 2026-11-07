@@ -27,12 +27,18 @@ s = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(s)
 q = s.q
 TIMEOUT = 5 * 60 * 60
-COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v1"
+COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v2"
 HARNESS_FILES = (
     "qualification.py",
     "core_shards.py",
     "core_shard_runner.py",
     "core-shard-timings.json",
+    "core_coverage.py",
+    "measurement_canary.py",
+)
+ISOLATED_ENVIRONMENT_KEYS = (
+    "PYTHONPATH", "PYTHONHOME", "PYTEST_ADDOPTS", "PYTEST_PLUGINS",
+    "COVERAGE_PROCESS_START", "COVERAGE_FORCE_CONFIG", "LLM_WIKI_CACHE_DIR",
 )
 
 
@@ -43,17 +49,26 @@ def freeze(args) -> int:
 
     def git(*words):
         return subprocess.check_output(
-            ["git", *words], cwd=root, stdin=subprocess.DEVNULL
+            ["git", "--no-replace-objects", *words], cwd=root, stdin=subprocess.DEVNULL
         )
 
-    s.require(
-        git("rev-parse", "HEAD").decode().strip() == args.candidate_sha,
-        "shadow checkout differs",
-    )
-    s.require(
-        not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
-        "shadow source must be clean",
-    )
+    inventory = _inventory_reader()
+
+    def verify_checkout():
+        s.require(
+            git("rev-parse", "HEAD").decode().strip() == args.candidate_sha,
+            "shadow checkout differs",
+        )
+        s.require(
+            not git("status", "--porcelain=v1", "--untracked-files=all").strip(),
+            "shadow source must be clean",
+        )
+        try:
+            inventory.verify_tracked_source(root, args.candidate_sha)
+        except ValueError as error:
+            raise q.QualificationError(str(error)) from error
+
+    verify_checkout()
     s.require(
         not output.exists() and root not in output.parents,
         "frozen shadow output must be new and outside source",
@@ -77,6 +92,7 @@ def freeze(args) -> int:
         *("release/" + name for name in HARNESS_FILES),
     )
     version = q._project_version(root)
+    verify_checkout()
     identity = {
         "schema_version": q.IDENTITY_SCHEMA,
         "repository": args.repository,
@@ -85,8 +101,8 @@ def freeze(args) -> int:
         "tag": "v" + version,
         "source": {
             "sha": args.candidate_sha,
-            "tree": git("rev-parse", "HEAD^{tree}").decode().strip(),
-            "commit_epoch": int(git("show", "-s", "--format=%ct", "HEAD")),
+            "tree": git("rev-parse", args.candidate_sha + "^{tree}").decode().strip(),
+            "commit_epoch": int(git("show", "-s", "--format=%ct", args.candidate_sha)),
             "archive_sha256": q.sha256_file(archive),
         },
     }
@@ -172,6 +188,7 @@ def environment(root: Path, lane: str) -> dict:
         in Path(str(provider.locate_file(""))).resolve().parents,
         "candidate installation is outside the isolated environment",
     )
+    verify_provider_namespace(root, provider)
     result = {
         "profile": expected,
         "python": platform.python_version(),
@@ -183,22 +200,64 @@ def environment(root: Path, lane: str) -> dict:
     return result
 
 
+def _inventory_reader():
+    """Load the transferred standard-library source and namespace reader."""
+    spec = importlib.util.spec_from_file_location(
+        "_core_provider_inventory", Path(__file__).with_name("measurement_canary.py")
+    )
+    assert spec is not None and spec.loader is not None
+    inventory = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(inventory)
+    return inventory
+
+
+def verify_provider_namespace(root: Path, provider) -> None:
+    """Check the complete installed payload without importing candidate code."""
+    inventory = _inventory_reader()
+    expected = inventory.provider_files(root)
+    package = inventory.safe(Path(str(provider.locate_file("llm_wiki_cli"))))
+    s.require(package.is_relative_to(Path(sys.prefix).resolve()),
+              "candidate namespace is outside the isolated environment")
+    observed = {}
+    total = 0
+    for path in sorted(package.rglob("*")):
+        inventory.safe(path)
+        name = path.relative_to(package)
+        if path.is_file() and "__pycache__" not in name.parts and path.suffix != ".pyc":
+            size = path.stat().st_size
+            total += size
+            s.require(size <= 64 * 1024 * 1024 and total <= 256 * 1024 * 1024
+                      and len(observed) < 10000, "installed candidate namespace exceeds bound")
+            observed[name.as_posix()] = q.sha256_file(path)
+    s.require(observed == expected["files"] and provider.version == expected["version"],
+              "installed candidate namespace differs from frozen source")
+
+
 def verify_source(root: Path, archive_path: Path, identity: dict) -> None:
     s.require(
         q.sha256_file(archive_path) == identity["source"]["archive_sha256"],
         "source archive digest differs",
     )
+    names = set()
+    inventory = _inventory_reader()
     with tarfile.open(archive_path, "r:") as archive:
         s.require(
             archive.pax_headers.get("comment") == identity["source"]["sha"],
             "source archive revision differs",
         )
         for member in archive:
+            names.add(member.name.rstrip("/"))
             path = root / member.name
+            for parent in path.relative_to(root).parents:
+                if parent == Path("."):
+                    continue
+                s.require(not inventory._source_redirected(root / parent),
+                          f"redirected source parent: {parent}")
             if member.isfile():
                 stream = archive.extractfile(member)
                 s.require(
-                    stream is not None and not path.is_symlink(),
+                    stream is not None and not inventory._source_redirected(path)
+                    and path.is_file() and path.stat().st_size == member.size,
                     "source member differs",
                 )
                 assert stream is not None
@@ -212,6 +271,10 @@ def verify_source(root: Path, archive_path: Path, identity: dict) -> None:
                     path.is_symlink() and os.readlink(path) == member.linkname,
                     "source symlink differs",
                 )
+    try:
+        inventory._verify_source_additions(root, names)
+    except ValueError as error:
+        raise q.QualificationError(str(error)) from error
 
 
 def context(args) -> dict:
@@ -254,16 +317,8 @@ def child_environment(
     directory: Path, temporary: Path, archive: Path
 ) -> dict[str, str]:
     result = os.environ.copy()
-    for name in (
-        "PYTHONPATH",
-        "PYTHONHOME",
-        "PYTEST_ADDOPTS",
-        "PYTEST_PLUGINS",
-        "COVERAGE_PROCESS_START",
-        # This product option overrides repository/worktree cache precedence.
-        # Isolation belongs to the job and temporary roots, not application flags.
-        "LLM_WIKI_CACHE_DIR",
-    ):
+    # Isolation belongs to the job and temporary roots, not application flags.
+    for name in ISOLATED_ENVIRONMENT_KEYS:
         result.pop(name, None)
     # The OS temporary root is retained so path-redaction assertions retain
     # their native meaning. Each worker receives its own private subdirectory.
@@ -408,6 +463,25 @@ def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> di
     return {name: sorted(lines) for name, lines in result.items()}
 
 
+
+def statement_map(package: Path, data_path: Path, root: Path) -> dict:
+    """Freeze complete native executable statements, including unexecuted files."""
+    from coverage import Coverage
+
+    previous = Path.cwd()
+    try:
+        os.chdir(root)
+        analyzer = Coverage(data_file=str(data_path))
+        analyzer.load()
+        result = {}
+        for name in source_manifest(package):
+            _, statements, excluded, _, _ = analyzer.analysis2(str(package / name))
+            result[name] = sorted(set(statements) - set(excluded))
+        return result
+    finally:
+        os.chdir(previous)
+
+
 def export_coverage(root: Path, output: Path) -> None:
     package = package_root(root)
     sources = source_manifest(package)
@@ -421,6 +495,7 @@ def export_coverage(root: Path, output: Path) -> None:
             "schema_version": COVERAGE_SCHEMA,
             "source_roots": roots,
             "sources": sources,
+            "statements": statement_map(package, output / "coverage.data", root),
             "lines": rows,
         },
     )
@@ -541,12 +616,155 @@ def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
         args.shards,
         s.read(Path(__file__).with_name("core-shard-timings.json")),
         purpose=purpose,
+        file_hashes={name: q.sha256_file(args.root / name) for name in {s.file_name(node) for node in s.read(args.output / "collected.json")}},
     )
     q.write_json(args.output / "plan.json", value)
+    print(json.dumps(s.timing_summary(value), sort_keys=True), flush=True)
     (args.output / "constraints.txt").write_text(
         constraints(current["environment"]), encoding="utf-8"
     )
     return value
+
+
+
+def _coverage_pytest_configuration(root: Path) -> dict:
+    """Read effective pytest addopts without applying them or importing project code."""
+    script = """import json,pytest
+config=pytest.Config.fromdictargs({}, ['tests', '--noconftest', '-o', 'required_plugins='])
+print(json.dumps({'addopts':config.getini('addopts'),'ini_path':str(config.inipath) if config.inipath else None}))
+"""
+    env = os.environ.copy()
+    for name in ISOLATED_ENVIRONMENT_KEYS:
+        env.pop(name, None)
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    with tempfile.TemporaryFile() as log:
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", script], cwd=root, env=env,
+            stdin=subprocess.DEVNULL, stdout=log, stderr=log, timeout=30, check=False,
+        )
+        log.seek(0)
+        raw = log.read(1024 * 1024 + 1)
+    s.require(result.returncode == 0 and len(raw) <= 1024 * 1024,
+              "candidate pytest configuration could not be inspected safely")
+    recorded = json.loads(raw)
+    s.require(isinstance(recorded, dict) and set(recorded) == {"addopts", "ini_path"}
+              and isinstance(recorded["addopts"], list)
+              and all(isinstance(option, str) for option in recorded["addopts"]),
+              "invalid candidate pytest coverage configuration")
+    ini = recorded["ini_path"]
+    s.require(ini is None or Path(ini).resolve().is_relative_to(root),
+              "pytest configuration is outside frozen candidate source")
+    s.require(not any(option.startswith(("--cov", "--no-cov"))
+                      or option in {"no:cov", "no:pytest_cov", "-pno:cov", "-pno:pytest_cov"}
+                      for option in recorded["addopts"]),
+              "candidate pytest addopts override frozen coverage flags")
+    return recorded
+
+
+def probe_coverage_transport(root: Path | None = None) -> None:
+    """Admit the actual line-only instrumentation policy before collection or execution."""
+    from coverage import Coverage, CoverageData
+
+    root = (root or Path.cwd()).resolve()
+    for name in ("COVERAGE_RCFILE", "COVERAGE_FORCE_CONFIG"):
+        s.require(not os.environ.get(name),
+                  f"alternate {name} is outside the frozen coverage profile")
+    for name in (".coveragerc", ".coveragerc.toml", "setup.cfg", "tox.ini", "pyproject.toml", "pytest.ini", ".pytest.ini", "pytest.toml", ".pytest.toml"):
+        path = root / name
+        if path.exists() or path.is_symlink():
+            s.require(not path.is_symlink() and path.is_file()
+                      and path.stat().st_size <= 1024 * 1024,
+                      "candidate coverage configuration is redirected or oversized")
+    previous = Path.cwd()
+    try:
+        os.chdir(root)
+        # These are the source and branch options passed by pytest-cov for the
+        # frozen worker flags. None retains the active candidate branch setting.
+        analyzer = Coverage(source=["llm_wiki_cli"], branch=None)
+        s.require(analyzer.get_option("run:branch") is False,
+                  "candidate coverage branch policy differs")
+        s.require(analyzer.get_option("run:relative_files") is False,
+                  "candidate coverage relative path policy differs")
+        s.require(analyzer.get_option("run:dynamic_context") in {None, ""}
+                  and analyzer.get_option("run:context") in {None, ""},
+                  "candidate coverage context policy differs")
+        s.require(not analyzer.get_option("run:plugins"),
+                  "candidate coverage plugins are outside the frozen coverage profile")
+        # Explicit source package/directory settings are additive to --cov.
+        # Older compatible coverage readers predate source_dirs/source_pkgs.
+        s.require(set(getattr(analyzer.config, "source_pkgs", ()) or ()) <= {"llm_wiki_cli"},
+                  "candidate coverage measures additional source packages")
+        directories = getattr(analyzer.config, "source_dirs", ()) or ()
+        if directories:
+            package = (root / "src/llm_wiki_cli").resolve()
+            allowed = {package, package_root(root)}
+            s.require(all(Path(name).resolve() in allowed for name in directories),
+                      "candidate coverage measures additional source directories")
+
+        # Replay the effective report settings against every frozen source file.
+        # Seed line data without importing or executing candidate code. This
+        # detects filters that would make the final XML disagree with the raw
+        # union, while retaining supported exclusions and presentation options.
+        package = root / "src/llm_wiki_cli"
+        if package.is_dir():
+            with tempfile.TemporaryDirectory(prefix="coverage-report-") as temporary:
+                output = Path(temporary)
+                analyzer.set_option("run:source", [str(package)])
+                analyzer.set_option("run:data_file", str(output / "coverage.data"))
+                # Coverage retains its debug stream process-wide. A null
+                # device avoids both configured outputs and a live handle into
+                # the temporary directory during native Windows cleanup.
+                analyzer.set_option("run:debug_file", os.devnull)
+                sources = source_manifest(package)
+                analyzer.get_data().add_lines({
+                    str(package / name): set(range(1, item["line_count"] + 1))
+                    if item["line_count"] else {0}
+                    for name, item in sources.items()
+                })
+                analyzer.save()
+                statements = {}
+                for name in sources:
+                    _, lines, excluded, _, _ = analyzer.analysis2(str(package / name))
+                    statements[name] = sorted(set(lines) - set(excluded))
+                try:
+                    analyzer.xml_report(outfile=str(output / "coverage-core-ubuntu-3.11.xml"))
+                    # Coverage's text reporter applies report:contexts even on
+                    # versions whose XML reporter does not. Aggregation uses
+                    # both reporters, so both must retain all seeded hits.
+                    s.require(analyzer.report(file=io.StringIO()) == 100,
+                              "coverage report filters synthetic executed statements")
+                    spec = importlib.util.spec_from_file_location(
+                        "_coverage_report_transport", Path(__file__).with_name("core_coverage.py")
+                    )
+                    assert spec is not None and spec.loader is not None
+                    report_transport = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(report_transport)
+                    receipt = {
+                        "schema_version": COVERAGE_SCHEMA, "sources": sources,
+                        "source_roots": [package.as_posix()], "statements": statements,
+                        "lines": coverage_rows(output / "coverage.data", [package.as_posix()], sources),
+                    }
+                    q.write_json(output / "coverage.json", receipt)
+                    report_transport.validate_combination(output, [output], package, s.read)
+                except Exception as error:
+                    raise q.QualificationError(
+                        f"candidate coverage report cannot preserve complete source inventory: {error}"
+                    ) from error
+    finally:
+        os.chdir(previous)
+    _coverage_pytest_configuration(root)
+
+    spec = importlib.util.spec_from_file_location("_coverage_transport", Path(__file__).with_name("core_coverage.py"))
+    assert spec is not None and spec.loader is not None
+    transport = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(transport)
+    with tempfile.TemporaryDirectory(prefix="coverage-format-") as temporary:
+        path = Path(temporary) / "coverage.data"
+        data = CoverageData(basename=str(path))
+        data.add_lines({"/owned/coverage-format/probe.py": {1}})
+        data.write()
+        observed = transport.raw_lines(path, ["/owned/coverage-format"], {"probe.py": {"line_count": 1}})
+        s.require(observed == {"probe.py": [1]}, "coverage transport probe differs")
 
 
 def prepare(args) -> int:
@@ -573,6 +791,8 @@ def prepare(args) -> int:
     try:
         current = context(args)
         s.validate_purpose("qualification", current, args.shards)
+        if current["environment"]["profile"]["coverage"]:
+            probe_coverage_transport(args.root)
         record["context"] = current
         with tempfile.TemporaryDirectory(prefix="core-plan-") as temporary:
             env = child_environment(
@@ -638,6 +858,8 @@ def execute(args) -> int:
     try:
         current = context(args)
         s.validate_purpose(purpose, current, args.shards)
+        if current["environment"]["profile"]["coverage"]:
+            probe_coverage_transport(args.root)
         if purpose == "qualification":
             s.require(
                 args.plan is not None,
@@ -742,6 +964,7 @@ def aggregate_qualification(args) -> int:
     q.write_json(args.output / "aggregation.json", record)
     try:
         current = context(args)
+        lane = current["environment"]["profile"]["lane"]
         value = s.validate_plan(
             s.read(args.preparation / "plan.json"), current, purpose="qualification"
         )
@@ -751,13 +974,13 @@ def aggregate_qualification(args) -> int:
             all(path.is_dir() and not path.is_symlink() for path in directories),
             "unexpected qualifying shard artifact",
         )
-        xml = args.output / (s.WINDOWS_LANE + ".xml")
+        xml = args.output / (lane + ".xml")
         merged = s.merge_junit(value, directories, xml, purpose="qualification")
-        result = args.output / ("result-" + s.WINDOWS_LANE + ".json")
+        result = args.output / ("result-" + lane + ".json")
         q.verify_junit(
             argparse.Namespace(
                 junit=xml,
-                lane=s.WINDOWS_LANE,
+                lane=lane,
                 allowlist=args.root / "release/skip-allowlist.json",
                 minimum_collected=5322,
                 minimum_passed=5070,
@@ -765,6 +988,11 @@ def aggregate_qualification(args) -> int:
                 output=result,
             )
         )
+        if current["environment"]["profile"]["coverage"]:
+            combine_coverage(value, directories, args.root, args.output)
+        files = [xml, result]
+        if current["environment"]["profile"]["coverage"]:
+            files += [args.output / name for name in ("coverage.data", "coverage.json", "coverage-" + lane + ".xml")]
         record.update(
             complete=True,
             context=current,
@@ -774,7 +1002,7 @@ def aggregate_qualification(args) -> int:
                 str(row["index"]): q.sha256_file(directory / "execution.json")
                 for directory, row in zip(directories, merged["receipts"])
             },
-            files={path.name: q.sha256_file(path) for path in (xml, result)},
+            files={path.name: q.sha256_file(path) for path in files},
         )
         q.write_json(args.output / "aggregation.json", record)
         s.validate_aggregation(
@@ -786,7 +1014,9 @@ def aggregate_qualification(args) -> int:
             current["run_id"],
             current["run_attempt"],
             args.root / "release/skip-allowlist.json",
+            source_root=args.root,
         )
+        print(json.dumps(s.timing_summary(value, merged["receipts"]), sort_keys=True), flush=True)
     except BaseException:
         record["complete"] = False
         raise
@@ -802,18 +1032,20 @@ def combine_coverage(
 
     package = package_root(root)
     sources = source_manifest(package)
-    combined: dict[str, set[int]] = {}
+    combined: dict[str, set[int]] = {name: set() for name in sources}
+    statements = statement_map(package, directories[0] / "coverage.data", root)
     for directory in directories:
         recorded = s.read(directory / "coverage.json")
         s.fields(
             recorded,
-            {"schema_version", "source_roots", "sources", "lines"},
+            {"schema_version", "source_roots", "sources", "statements", "lines"},
             "coverage receipt",
         )
         s.require(
             recorded["schema_version"] == COVERAGE_SCHEMA
-            and recorded["sources"] == sources,
-            "coverage source identity differs",
+            and recorded["sources"] == sources
+            and recorded["statements"] == statements,
+            "coverage source or statement identity differs",
         )
         lines = coverage_rows(
             directory / "coverage.data", recorded["source_roots"], sources
@@ -831,7 +1063,7 @@ def combine_coverage(
     previous = Path.cwd()
     try:
         os.chdir(root)
-        coverage = Coverage(data_file=str(output / "coverage.data"))
+        coverage = Coverage(data_file=str(output / "coverage.data"), source=[str(canonical)])
         coverage.get_data().add_lines(
             {str(canonical / name): lines for name, lines in combined.items()}
         )
@@ -845,6 +1077,7 @@ def combine_coverage(
         "schema_version": COVERAGE_SCHEMA,
         "source_roots": [canonical.as_posix()],
         "sources": sources,
+        "statements": statements,
         "lines": {name: sorted(lines) for name, lines in combined.items()},
     }
     q.write_json(output / "coverage.json", result)
@@ -981,6 +1214,14 @@ def compare(args) -> int:
     return 0
 
 
+def native_context(args) -> int:
+    current = context(args)
+    if getattr(args, "reference", None) is not None:
+        s.compatible_context(s.read(args.reference), current)
+    q.write_json(args.output.resolve(), current)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1013,6 +1254,7 @@ def main() -> int:
         ("compare", compare),
         ("prepare", prepare),
         ("aggregate", aggregate_qualification),
+        ("native-context", native_context),
     ):
         child = commands.add_parser(command)
         for name in ("root", "identity", "archive", "harness", "output"):
@@ -1035,6 +1277,8 @@ def main() -> int:
         elif command == "compare":
             child.add_argument("--reference", type=Path, required=True)
             child.add_argument("--shards-root", type=Path, required=True)
+        elif command == "native-context":
+            child.add_argument("--reference", type=Path)
         elif command == "aggregate":
             child.add_argument("--preparation", type=Path, required=True)
             child.add_argument("--shards-root", type=Path, required=True)

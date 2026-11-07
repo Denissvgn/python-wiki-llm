@@ -75,6 +75,9 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_core_shards.py",
         "tests/test_core_shard_workflow.py",
         "tests/test_core_shard_runner.py",
+        "tests/test_release_readiness.py",
+        "tests/test_measurement_canary.py",
+        "tests/test_manual_release.py",
     ),
     "portability": (
         "tests/test_readonly_subprocess_stdin.py",
@@ -467,6 +470,18 @@ def validate_workflow_contracts(repository_root: Path) -> list[str]:
                 errors.append(
                     f"qualification producer {name} has an unmapped dependency"
                 )
+        # Rebinding a declaration digest must not silently remove the cheap
+        # admission boundary or an independent native producer join.
+        for name in ("core", "core-ubuntu", "core-windows", "core-ubuntu-plan", "core-windows-plan", "ubuntu-suites", "mcp", "toolchains", "oci"):
+            row = expected.get(name, {})
+            if "admission" not in row.get("needs", []) or "needs.admission.result == 'success'" not in row.get("condition", ""):
+                errors.append(f"qualification producer {name} bypasses release admission")
+        if set(expected.get("admission", {}).get("needs", [])) != {"readiness", "windows-canary", "smoke-parity"}:
+            errors.append("release admission must join runtime, native consumer and literal artifact parity")
+        if "windows-native" not in expected.get("core-windows", {}).get("needs", []) or "core-windows-shards" in expected.get("windows-native", {}).get("needs", []):
+            errors.append("native Windows evidence must run independently and join the core gate")
+        if "core-ubuntu" not in expected.get("bundle", {}).get("needs", []):
+            errors.append("release bundle omitted the canonical Ubuntu core owner")
         gates = {
             gate for row in rows if row["normal_required"] for gate in row["gates"]
         }

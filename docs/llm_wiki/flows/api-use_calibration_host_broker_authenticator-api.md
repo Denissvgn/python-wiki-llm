@@ -72,9 +72,9 @@ sequenceDiagram
     p1-->>p28: _HOST_BROKER_AUTHENTICATOR.reset(token)
 ```
 
-> Call sequence diagram shows 30 of 142 interactions; 112 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 143 interactions; 113 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 85 (80 omitted); unresolved 5 of 19 (14 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 86 (81 omitted); unresolved 5 of 19 (14 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 39; effect analysis evaluated: 17, partial: 3, unavailable: 19. Counts include steps omitted from the displayed trace.
 
-Collector observations for 20 source steps with known totals: observed: 150, emitted: 102, omitted: 48. Unavailable totals are excluded.
+Collector observations for 20 source steps with known totals: observed: 151, emitted: 103, omitted: 48. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -176,7 +176,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 3571 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 3671 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | isinstance (src/llm_wiki_cli/services…host_broker_authenticator) | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |

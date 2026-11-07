@@ -355,11 +355,14 @@ def stage_commands(
         )
 
     if stage == "prepare":
+        from release.readiness import git_metadata_directory, helper_cache_base
+
         if platform.system() not in {"Darwin", "Linux"}:
             raise RunnerError(
                 "locked routine toolchain preparation requires its supported native setup host"
             )
-        toolchains = repo / ".git/llm-wiki-ci-toolchains"
+        toolchains = git_metadata_directory(repo) / "llm-wiki-ci-toolchains"
+        cache_base = helper_cache_base(repo)
         command(
             "locked-node-npm",
             (
@@ -375,7 +378,8 @@ def stage_commands(
         active = {
             "PATH": str(toolchains / "node/bin")
             + os.pathsep
-            + os.environ.get("PATH", "")
+            + os.environ.get("PATH", ""),
+            "LLM_WIKI_CACHE_DIR": str(cache_base),
         }
         command(
             "prepared-typescript-owner",
@@ -387,7 +391,7 @@ def stage_commands(
                 "--src-dir",
                 repo,
                 "--cache-dir",
-                repo / ".git",
+                cache_base,
                 "--language",
                 "typescript",
             ),
@@ -429,7 +433,7 @@ def stage_commands(
             "--wiki-dir",
             repo / "docs/llm_wiki",
             "--helper-cache-dir",
-            repo / ".git",
+            cache_base,
             "--jobs",
             "1",
         )
@@ -506,6 +510,7 @@ def stage_commands(
         return commands
     if stage in {"contracts", "rehearsal"}:
         from release.preflight_contracts import contract_groups
+        from release.readiness import helper_cache_base
 
         groups = [
             argument for group in contract_groups() for argument in ("--group", group)
@@ -526,6 +531,7 @@ def stage_commands(
                 py,
             ),
             timeout=18000,
+            environment={"LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo))},
         )
     if stage in {"static", "rehearsal"}:
         command(
@@ -617,7 +623,12 @@ def stage_commands(
             raise RunnerError(
                 "host OS/Python has no matching maintained native core lane"
             )
-        host_environment = {"LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive)}
+        from release.readiness import helper_cache_base
+
+        host_environment = {
+            "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive),
+            "LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo)),
+        }
         command(
             "collect-host-core",
             (env_python, "-I", repo / "release/core_shard_runner.py", "worker",
@@ -947,7 +958,7 @@ def execute_stage(
             "Complete the authorized owning sync, semantic review and re-anchor; preserve authority and authored bytes.",
             "If storage needs cleanup, review the maintained prune preview and byte recovery copies before explicitly authorized apply.",
             "Commit the final source/wiki changes and create a fresh plan; never retarget previous evidence.",
-            "Activate the locked .git/llm-wiki-ci-toolchains/node/bin runtime in the operator shell before replanning; preparation does not change that shell.",
+            "Activate the locked runtime path recorded by prepare-runtime in the operator shell before replanning; preparation does not change that shell.",
         ]
         if stage == "prepare"
         else [],
@@ -1279,9 +1290,12 @@ def prepare_runtime(repo: Path) -> dict:
     Versions and exact active executable bytes are recorded separately from the
     setup route's download checksums; a version string alone is no attestation.
     """
+    from release.readiness import git_metadata_directory
+
     repo = Path(os.path.abspath(repo))
     observed_launcher = launcher_probe(repo)
-    target = repo / ".git/llm-wiki-ci-toolchains"
+    metadata = git_metadata_directory(repo)
+    target = metadata / "llm-wiki-ci-toolchains"
     _safe(target)
     node = target / "node/bin/node"
     npm = target / "node/lib/node_modules/npm/bin/npm-cli.js"
@@ -1299,7 +1313,7 @@ def prepare_runtime(repo: Path) -> dict:
                 "--install-root",
                 str(target),
                 "--environment-file",
-                str(repo / ".git/llm-wiki-ci-toolchains.env"),
+                str(metadata / "llm-wiki-ci-toolchains.env"),
                 "--python",
                 observed_launcher["launcher"],
             ],

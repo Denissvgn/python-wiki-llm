@@ -17,6 +17,7 @@ from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryS
 
 
 _PUBLIC_FUNCTION_NAMES = (
+    "helper_preparation",
     "build_compact_task_context",
     "render_compact_task_context",
     "validate_compact_task_context",
@@ -83,6 +84,7 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "helper_preparation",
         "build_compact_task_context",
         "render_compact_task_context",
         "validate_compact_task_context",
@@ -250,6 +252,7 @@ def _failure_cases(tmp_path: Path):
     query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
+        "helper_preparation": lambda: _enter(api.helper_preparation(cast(Any, "invalid"))),
         "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
         "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
         "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),

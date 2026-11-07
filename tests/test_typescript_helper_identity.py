@@ -26,7 +26,8 @@ def prepared(tmp_path, monkeypatch):
                         "v24.18.0" if argv[0].endswith("node") else "11.16.0")
 
     def npm(argv, **kwargs):
-        assert argv[1:] == ["ci", "--ignore-scripts", "--no-audit", "--no-fund"]
+        assert argv[1:] == ["ci", "--ignore-scripts", "--no-audit", "--no-fund",
+                            "--prefix", str(Path(kwargs["cwd"]).resolve()), "--workspaces=false"]
         root = Path(kwargs["cwd"])
         builds.append(root)
         dependencies = root / "node_modules"
@@ -197,6 +198,8 @@ def test_unsafe_receipts_stay_unavailable_without_preparation(prepared, tmp_path
     cache_base, cache_root, _, builds = prepared
     path = cache_root / "typescript/current.json"
     if mutation == "oversized":
+        from llm_wiki_cli.services import helper_cache
+        monkeypatch.setattr(helper_cache, "MAX_RECEIPT_BYTES", path.stat().st_size - 1)
         monkeypatch.setattr(identity, "MAX_RECEIPT_BYTES", path.stat().st_size - 1)
     elif mutation == "redirected":
         other = tmp_path / "foreign.json"
@@ -263,7 +266,7 @@ def test_unqualified_helper_cannot_issue_ts_or_js_producer(prepared, monkeypatch
         manifest["artifact_scope"] = "legacy-path-only"
     else:
         manifest["artifact_fingerprint"] = "invalid"
-    monkeypatch.setattr(helpers, "_manifest_current", lambda *a: manifest)
+    (cache_root / "typescript/current.json").write_text(json.dumps(manifest))
     result = capture.capture_analysis(EXTRACTOR_REGISTRY, helper_cache_dir=str(cache_base),
                                      languages={"typescript", "javascript"})
     assert "llm-wiki/extractor/typescript" not in result

@@ -4983,9 +4983,8 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
 def _extract_bootstrap_inventory(state: _BootstrapRunState):
     options = state.options
     _emit_bootstrap(state, "Extracting source inventory...", flush=True)
-    state.source_snapshot = build_source_snapshot(
-        options.src_dir_for_scan,
-        include_tests=options.include_tests,
+    state.source_snapshot = state.source_snapshot or build_source_snapshot(
+        options.src_dir_for_scan, include_tests=options.include_tests,
         source_selection=options.source_selection,
     )
     inventory_result = get_inventory_result(
@@ -6681,15 +6680,24 @@ def _execute_bootstrap_options(
             raise
     if not _workspace_refresh_authorized and (not interrupted or options.overwrite):
         _preflight_public_bootstrap(options)
+    state = _BootstrapRunState(options)
+
+    def preflight() -> None:
+        _preflight_public_bootstrap(options)
+        _preflight_bootstrap_analysis(state)
+        # Helper setup may run for some time. Do not adopt content added to a
+        # first-use target during preparation as an authorized write preimage.
+        _preflight_public_bootstrap(options)
+
     operation = (
         maintenance_write_operation(options.wiki_dir) if _workspace_refresh_authorized
-        else bootstrap_write_operation(options.wiki_dir, preflight=lambda: _preflight_public_bootstrap(options))
+        else bootstrap_write_operation(options.wiki_dir, preflight=preflight)
     )
-    state = _BootstrapRunState(options)
     basis = None
     try:
         with operation as basis:
-            _preflight_bootstrap_source_selection(options)
+            if _workspace_refresh_authorized:
+                _preflight_bootstrap_analysis(state)
             result = _execute_bootstrap_options_locked(state, write_basis=basis)
     except BaseException:
         if not _workspace_refresh_authorized and basis is not None:
@@ -6704,16 +6712,37 @@ def _execute_bootstrap_options(
     return result
 
 
+def _preflight_bootstrap_analysis(state: _BootstrapRunState) -> None:
+    """Validate and ready selected helpers under locks, before journal creation."""
+    options = state.options
+    _preflight_bootstrap_source_selection(options)
+    try:
+        _preflight_bootstrap_governance(options.wiki_dir)
+    except (GovernanceError, InfrastructureSyncError) as exc:
+        raise BootstrapContractError(str(exc)) from exc
+    from .helper_runtime import current_helper_operation
+    if current_helper_operation() is not None:
+        from .extraction_service import InventoryRequest, prepare_inventory_helpers
+        state.source_snapshot = build_source_snapshot(
+            options.src_dir_for_scan, include_tests=options.include_tests,
+            source_selection=options.source_selection,
+        )
+        prepare_inventory_helpers(InventoryRequest(
+            src_dir=options.src_dir_for_scan, source_snapshot=state.source_snapshot,
+            helper_cache_dir=options.helper_cache_dir,
+            include_tests=options.include_tests,
+            include_plugins=options.trust_source_plugins,
+            source_plugins_only=options.trust_source_plugins and (
+                options.source_adapter or state.source_snapshot.source_selection_policy is not None
+            ),
+        ))
+
+
 def _execute_bootstrap_options_locked(
     state: _BootstrapRunState,
     *,
     write_basis=None,
 ) -> BootstrapResult:
-    options = state.options
-    try:
-        _preflight_bootstrap_governance(options.wiki_dir)
-    except (GovernanceError, InfrastructureSyncError) as exc:
-        raise BootstrapContractError(str(exc)) from exc
     _start_bootstrap(state)
 
     inventory_result = _extract_bootstrap_inventory(state)

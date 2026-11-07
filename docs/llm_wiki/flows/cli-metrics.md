@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 28 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 29 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
+- [helper_preparation](../modules/helper_preparation.md)
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
@@ -109,7 +110,7 @@ sequenceDiagram
     p3-->>p30: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('event')
 ```
 
-> Call sequence diagram shows 30 of 1060 interactions; 1030 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1061 interactions; 1031 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 395 (394 omitted); unresolved 1 of 271 (270 omitted). These counts cover the captured static trace.
 
@@ -125,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 27 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 277 groups; 269 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 278 groups; 270 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -138,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 395; effect analysis evaluated: 273, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
+Source steps: 396; effect analysis evaluated: 274, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
 
-Collector observations for 281 source steps with known totals: observed: 1577, emitted: 1557, omitted: 20. Unavailable totals are excluded.
+Collector observations for 282 source steps with known totals: observed: 1590, emitted: 1570, omitted: 20. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -227,10 +228,10 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 116 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_source_root | validate_path | 161 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -248,8 +249,8 @@ flowchart LR
 | external_call | `run` | `getattr` | 112 |
 | external_call | `run` | `getattr` | 113 |
 | external_call | `run` | `getattr` | 115 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
-| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

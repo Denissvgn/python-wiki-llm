@@ -14,6 +14,35 @@ import pytest
 from llm_wiki_cli.services import capability_diagnostics as capabilities
 
 
+@pytest.mark.parametrize("git", [False, True], ids=["no-git", "git"])
+@pytest.mark.parametrize("scope", ["default", "explicit", "environment", "explicit-over-environment"])
+def test_capability_cache_metadata_matches_automatic_destination_without_io(tmp_path, monkeypatch, git, scope):
+    from llm_wiki_cli.services import helper_cache
+
+    source = tmp_path / "project"
+    source.mkdir()
+    (source / "main.go").write_text("package sample\n")
+    if git:
+        (source / ".git").mkdir()
+    monkeypatch.chdir(source)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    shared = tmp_path / "managed-cache" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    explicit = tmp_path / "explicit-cache"
+    environment = tmp_path / "environment-cache"
+    if "environment" in scope:
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(environment))
+    argument = str(explicit) if scope.startswith("explicit") else None
+    expected = (explicit / capabilities.helpers.HELPER_CACHE_DIRNAME if argument is not None else
+                environment / capabilities.helpers.HELPER_CACHE_DIRNAME if scope == "environment" else shared)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("capabilities executed a process"))
+    before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.rglob("*") if p.is_file()}
+    report = capabilities.build_capability_diagnostics(".", helper_cache_dir=argument)
+    assert report["helper_cache"] == str(expected)
+    assert not expected.exists()
+    assert before == {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in tmp_path.rglob("*") if p.is_file()}
+
+
 @pytest.mark.parametrize(
     "language,suffix",
     [("typescript", ".ts"), ("go", ".go"), ("rust", ".rs"), ("haskell", ".hs")],
@@ -412,3 +441,45 @@ def test_windows_text_command_preserves_literal_arguments():
         timeout=30,
     )
     assert json.loads(result.stdout) == arguments
+
+
+def test_default_recheck_finds_helper_prewarmed_in_project_git_cache(tmp_path, monkeypatch):
+    from llm_wiki_cli import cli
+    from llm_wiki_cli.services import helper_cache
+    from tests.test_helper_preparation import _prepare_fixture
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "main.go").write_text("package main\n")
+    shared = tmp_path / "user" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    report = capabilities.build_capability_doctor()
+    args = cli._build_parser().parse_args(report["recheck"]["argv"][3:])
+    remedy = next(p for p in report["capabilities"]["providers"] if p["language"] == "go")["remedy"]["argv"]
+    preparation = cli._build_parser().parse_args(remedy[3:])
+    root = capabilities.helpers.resolve_helper_cache_root(preparation.src_dir, preparation.cache_dir)
+    assert root == tmp_path / ".git" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    _prepare_fixture("go", root)
+    rechecked = capabilities.build_capability_diagnostics(args.src_dir, helper_cache_dir=args.helper_cache_dir)
+    assert next(p for p in rechecked["providers"] if p["language"] == "go")["status"] == "ready"
+
+
+def test_doctor_distinguishes_a_damaged_shared_slot_from_first_use(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import helper_cache
+    from tests.test_helper_cache import _profile, _typescript_build
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    shared = tmp_path / "state" / capabilities.helpers.HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: shared)
+    monkeypatch.setattr(helper_cache, "_profile", _profile)
+    monkeypatch.setattr(helper_cache, "_build", _typescript_build)
+    (tmp_path / "main.ts").write_text("export const answer = 42;\n")
+    handle = helper_cache.ensure_helper("typescript", tmp_path)
+    dependency = handle.root / "node_modules/ts-morph/index.js"
+    dependency.write_text("damaged")
+    report = capabilities.build_capability_diagnostics()
+    ts = next(item for item in report["providers"] if item["language"] == "typescript")
+    assert ts["helper"]["status"] == "stale-or-invalid"
+    assert dependency.read_text() == "damaged"

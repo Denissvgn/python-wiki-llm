@@ -6,6 +6,7 @@ import copy
 import hashlib
 import json
 import sys
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
@@ -581,14 +582,17 @@ def run(args, request=None):
         else None
     )
     try:
-        result = build_budgeted_context(
-            args.src_dir,
-            args.wiki_dir,
-            request,
-            counter=counter,
-            allow_external_src=args.allow_external_src,
-            source_selection=args.source_selection,
-        )
+        diagnostic_scope = (context._packet_helper_diagnostics(CONTEXT_BUDGET_PROTOCOL_VERSION)
+                            if request.get("format") == "packet" else nullcontext())
+        with diagnostic_scope:
+            result = build_budgeted_context(
+                args.src_dir,
+                args.wiki_dir,
+                request,
+                counter=counter,
+                allow_external_src=args.allow_external_src,
+                source_selection=args.source_selection,
+            )
     except packets.ContextPacketAuthorityError as exc:
         context._emit_packet_error(exc, protocol=CONTEXT_BUDGET_PROTOCOL_VERSION)
         raise

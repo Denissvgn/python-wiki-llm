@@ -362,14 +362,15 @@ def test_public_impact_api_cli_mcp_preserve_native_failure_scope(
         "source_policy": "discovery",
         "limit": 4,
     }
-    result = api.query_documentation(request, src_dir="src", wiki_dir="wiki")
+    with api.helper_preparation("never"):
+        result = api.query_documentation(request, src_dir="src", wiki_dir="wiki")
     rows = {row["path"]: row for row in result["matches"]}
     assert rows[names[0]]["present"] is True
     assert rows[names[1]]["present"] is False
     assert rows[names[1]]["reason"] == "syntax-error"
     assert rows[names[1]]["failure_scope"] == "file"
     assert (
-        mcp_server.McpWikiService(src_dir="src", wiki_dir="wiki").query_documentation(
+        mcp_server.McpWikiService(src_dir="src", wiki_dir="wiki", helper_preparation="never").query_documentation(
             request
         )
         == result
@@ -380,6 +381,8 @@ def test_public_impact_api_cli_mcp_preserve_native_failure_scope(
             "-m",
             "llm_wiki_cli.cli",
             "query",
+            "--helper-preparation",
+            "never",
             "--request",
             "-",
             "--src-dir",
@@ -403,7 +406,8 @@ def test_partial_syntax_failure_blocks_retirement_and_cache_authority(
     Path("src").mkdir()
     path = Path("src", "model" + suffix)
     path.write_text(good)
-    api.bootstrap_wiki("src", "wiki", helper_cache_dir=HELPERS)
+    with api.helper_preparation("never"):
+        api.bootstrap_wiki("src", "wiki", helper_cache_dir=HELPERS)
     module = Path("wiki/modules/model.md")
     prefix, description = module.read_text().split("## Description\n", 1)
     _, tail = description.split("\n## ", 1)

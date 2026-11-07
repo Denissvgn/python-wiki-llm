@@ -152,7 +152,7 @@ def read_document(path: Path) -> dict:
 
 def _git(root: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args],
+        ["git", "--no-replace-objects", *args],
         cwd=root,
         stdin=subprocess.DEVNULL,
         capture_output=True,
@@ -276,17 +276,52 @@ def _environment(root: Path) -> dict:
                 "node": ["node", "--version"],
                 "npm": ["npm", "--version"],
                 "actionlint": ["actionlint", "--version"],
-                "go": ["go", "version"],
+                "go": [os.environ.get("LLM_WIKI_GO", "go"), "version"],
                 "rust": ["rustc", "--version"],
-                "haskell": ["ghc", "--numeric-version"],
+                "cargo": ["cargo", "--version"],
+                "haskell": [os.environ.get("LLM_WIKI_GHC", "ghc"), "--numeric-version"],
             }.items()
         },
     }
 
 
 def _helper(root: Path, environment: dict) -> dict:
+    """Retain failed helper observations without hiding other prerequisites."""
+    try:
+        return _inspect_helper(root, environment)
+    except (ImportError, OSError, ValueError, TypeError, KeyError, AttributeError) as error:
+        from release.readiness import helper_cache_base
+
+        # Bind readable rejected metadata as data. Never follow an alias or
+        # relax the input bounds merely to describe why preparation failed.
+        metadata = None
+        try:
+            path = (
+                helper_cache_base(root)
+                / "llm-wiki-extractors/typescript/current.json"
+            )
+            metadata = _hash(_read(path))
+        except (OSError, ValueError):
+            pass
+        return {
+            "status": "blocked",
+            "reason": str(error)[:2000],
+            "error_type": type(error).__name__,
+            "configured_cache_base": os.environ.get("LLM_WIKI_CACHE_DIR"),
+            "metadata": metadata,
+            "files": {},
+        }
+
+
+def _inspect_helper(root: Path, environment: dict) -> dict:
     """Inspect the configured prepared helper without setup or arbitrary paths."""
-    cache = root / ".git/llm-wiki-extractors/typescript"
+    from release.readiness import helper_cache_base
+    from llm_wiki_cli.services import extractor_helpers as helpers
+
+    cache_root = helpers.resolve_helper_cache_root(root, str(helper_cache_base(root)))
+    if cache_root is None:
+        return {"status": "unavailable", "reason": "Configured helper cache is unavailable", "files": {}}
+    cache = cache_root / "typescript"
     metadata = cache / "current.json"
     if not metadata.exists():
         return {
@@ -314,8 +349,6 @@ def _helper(root: Path, environment: dict) -> dict:
         name: _hash(_read(prepared / name))
         for name in ("extract.js", "package.json", "package-lock.json")
     }
-    from llm_wiki_cli.services import extractor_helpers as helpers
-
     active = (
         "node "
         + str(environment["tools"]["node"]["version"])
@@ -332,10 +365,20 @@ def _helper(root: Path, environment: dict) -> dict:
         "metadata": _hash(_read(metadata)),
         "files": files,
         "copies": copies,
+        "cache_base": str(helper_cache_base(root)),
     }
 
 
+def _admission(root: Path, binding: dict, stages=STAGES) -> dict:
+    from release import readiness
+
+    return readiness.inspect(
+        root, stages=stages, environment=binding["environment"], helper=binding["helper"]
+    )
+
+
 def _capture_binding(root: Path) -> dict:
+    from release.measurement_canary import verify_tracked_source
     from release.preflight_contracts import qualification_contract
 
     root = _safe(root)
@@ -343,6 +386,15 @@ def _capture_binding(root: Path) -> dict:
         _git(root, "rev-parse", "HEAD").strip(),
         _git(root, "rev-parse", "HEAD^{tree}").strip(),
     )
+    dirty = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
+    try:
+        verify_tracked_source(root, sha)
+    except (OSError, ValueError) as error:
+        # Ordinary dirty plans still support diagnostics and preparation.
+        # Hidden index/stat shortcuts must not turn changed bytes into a clean
+        # exact-candidate binding; retain this in the existing blocking field.
+        if not dirty.strip():
+            dirty = "Canonical tracked source mismatch: " + str(error)
     names = _git(
         root, "ls-files", "--cached", "--others", "--exclude-standard", "-z"
     ).split("\0")
@@ -376,7 +428,7 @@ def _capture_binding(root: Path) -> dict:
     return {
         "sha": sha,
         "tree": tree,
-        "dirty": _git(root, "status", "--porcelain=v1", "--untracked-files=all"),
+        "dirty": dirty,
         "files": files,
         "contract": contract,
         "environment": environment,
@@ -552,6 +604,13 @@ def create_plan(
     readiness["review"] = _review(
         root, review_file, candidate_sha.lower(), readiness["version"]
     )
+    readiness["admission"] = _admission(root, binding)
+    readiness["eligibility_status"] = readiness["status"]
+    if readiness["status"] == "eligible":
+        if binding["dirty"]:
+            readiness["status"] = "waiting_release_preparation"
+        elif readiness["admission"]["blockers"]:
+            readiness["status"] = "blocked_unavailable"
     return _sealed(
         {
             "schema_version": PLAN_SCHEMA,
@@ -620,6 +679,13 @@ def validate_plan(plan: dict, root: Path) -> None:
         )
     if plan["readiness"].get("target_runtime") != _target_readiness(plan["binding"]):
         raise PreflightError("Plan omitted or changed target-runtime prerequisites")
+    admission = _admission(root, plan["binding"])
+    if plan["readiness"].get("admission") != admission:
+        raise PreflightError("Plan omitted or changed local capability admission")
+    if admission["blockers"] and plan["readiness"].get("status") == "eligible":
+        raise PreflightError("Missing local capabilities cannot be eligible")
+    if plan["binding"]["dirty"] and plan["readiness"].get("status") == "eligible":
+        raise PreflightError("Changed source bytes cannot be eligible")
     if plan["gates"] != _gates(plan["binding"]["contract"]):
         raise PreflightError("Plan omitted or changed required native/hosted gates")
     local = _eligibility(root, False)
@@ -755,7 +821,10 @@ def _execute(
         raise PreflightError("Unknown or duplicate local stage")
     diagnostic = operation == "run" and stages == ("contracts",)
     attempts = []
-    if (
+    capability_blocked = operation == "run" and bool(
+        _admission(root, plan["binding"], stages)["blockers"]
+    )
+    preparation_blocked = (
         not diagnostic
         and operation == "run"
         and (
@@ -766,7 +835,8 @@ def _execute(
             or plan["binding"].get("maintenance", {}).get("status") == "blocked"
             or plan["readiness"].get("build_residue", [])
         )
-    ):
+    )
+    if capability_blocked or preparation_blocked:
         attempts = [
             {
                 "stage": "readiness",

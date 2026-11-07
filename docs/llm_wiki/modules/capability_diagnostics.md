@@ -25,6 +25,7 @@ overrides follow the same resolution rules as explicit preparation.
 | `..config` | `validate_source_root` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.doctor_service` | `build_doctor_report`, `_render_doctor_payload` |
+| `.helper_cache` | `_profile_slots`, `cache_roots`, `preparation_cache_root`, `cache_roots` |
 | `.paths` | `render_shell_command` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
@@ -44,9 +45,10 @@ flowchart LR
     n3["src/llm_wiki_cli/services/capability_diagnostics.py"]
     n4["src/llm_wiki_cli/services/doctor_service.py"]
     n5["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n6["src/llm_wiki_cli/services/paths.py"]
-    n7["src/llm_wiki_cli/services/plugins.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n6["src/llm_wiki_cli/services/helper_cache.py"]
+    n7["src/llm_wiki_cli/services/paths.py"]
+    n8["src/llm_wiki_cli/services/plugins.py"]
+    n9["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4
@@ -58,20 +60,24 @@ flowchart LR
     n3 --> n6
     n3 --> n7
     n3 --> n8
+    n3 --> n9
     n4 --> n1
     n5 --> n6
-    n7 --> n1
+    n5 --> n7
+    n6 --> n5
     n8 --> n1
-    n8 --> n2
+    n9 --> n1
+    n9 --> n2
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/config.md"
     click n2 "../modules/common.md"
     click n3 "../modules/capability_diagnostics.md"
     click n4 "../modules/doctor_service.md"
     click n5 "../modules/extractor_helpers.md"
-    click n6 "../modules/paths.md"
-    click n7 "../modules/plugins.md"
-    click n8 "../modules/source_snapshot.md"
+    click n6 "../modules/helper_cache.md"
+    click n7 "../modules/paths.md"
+    click n8 "../modules/plugins.md"
+    click n9 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -83,6 +89,7 @@ flowchart LR
 | Outbound | [common](../modules/common.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
+| Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [paths](../modules/paths.md) |
 | Outbound | [plugins](../modules/plugins.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |

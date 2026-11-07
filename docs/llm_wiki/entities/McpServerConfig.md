@@ -1,6 +1,6 @@
 # McpServerConfig
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:242`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:243`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -31,6 +31,8 @@ _Auto-generated from `McpServerConfig` in `src/llm_wiki_cli/services/mcp_server.
 | `enable_sessions` | `bool` | `True` | — |
 | `max_sessions` | `int` | `8` | — |
 | `comparison_policy` | `str` | `'auto'` | — |
+| `helper_preparation` | `str` | `'auto'` | — |
+| `helper_cache_dir` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -55,7 +57,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `comparison_policy`, `counter`, `enable_sessions`, `host`, `max_sessions`, `path`, `port`, `source_selection`, `src_dir`, `tokenizer` |
+| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `comparison_policy`, `counter`, `enable_sessions`, `helper_cache_dir`, `helper_preparation`, `host`, `max_sessions`, `path`, `port`, `source_selection` |
 
 ### References
 

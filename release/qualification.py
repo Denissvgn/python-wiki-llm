@@ -1686,6 +1686,7 @@ def _reject_shadow_value(value: object) -> None:
             "agent-wiki-ubuntu-shadow-orchestration/v1",
             "agent-wiki-core-shard-plan/v1",
             "agent-wiki-core-shard-plan/v2",
+            "agent-wiki-core-shard-plan/v4",
             "agent-wiki-core-shard-freeze/v1",
             "agent-wiki-core-shard-execution/v1",
             "agent-wiki-core-shard-execution/v2",
@@ -1699,6 +1700,7 @@ def _reject_shadow_value(value: object) -> None:
         or (
             value.get("schema_version") in {
                 "agent-wiki-core-shard-plan/v3",
+                "agent-wiki-core-shard-plan/v5",
                 "agent-wiki-core-shard-execution/v3",
                 "agent-wiki-core-shard-preparation/v1",
                 "agent-wiki-core-shard-aggregation/v1",
@@ -1791,8 +1793,12 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
                 "llm-wiki/extractor/python": digest({"python": portable_python, "helper": "", "dependencies": {}})}
     for language in ("typescript", "javascript"):
         runtimes["llm-wiki/extractor/" + language] = digest({"python": portable_python, "helper": helper, "dependencies": {}})
+    ubuntu_shards = list((root / "evidence/RD-01").glob("ubuntu-shard-*/junit-analysis.json"))
+    if len(ubuntu_shards) > 1:
+        raise QualificationError("duplicate Ubuntu analysis conformance evidence")
+    ubuntu = ubuntu_shards[0] if ubuntu_shards else root / "evidence/RD-01/ubuntu/core-ubuntu-3.11-analysis.json"
     paths = [
-        (root / "evidence/RD-01/ubuntu/core-ubuntu-3.11-analysis.json", "linux", [3, 11]),
+        (ubuntu, "linux", [3, 11]),
         (root / "evidence/RD-01/macos/core-macos-3.14-analysis.json", "darwin", [3, 14]),
         (root / "evidence/RD-07/toolchains/analysis-python.json", "linux", [3, 13]),
     ]
@@ -1986,9 +1992,12 @@ def _validate_qualifying_core_bundle(
     root: Path, identity: Mapping[str, Any], context: Mapping[str, Any], run_id: int
 ) -> None:
     core = root / "evidence/RD-01"
-    sharded = context.get("core_layout", "unsharded") == "windows-sharded"
+    sharded = context.get("core_layout", "unsharded") in {"windows-sharded", "platform-sharded"}
+    platforms = context.get("core_layout") == "platform-sharded"
     shard_names = {"windows-plan", "windows-shard-0", "windows-shard-1"}
     present = {p.name for p in core.iterdir() if p.name.startswith("windows-")}
+    if platforms:
+        shard_names.add("windows-native")
     if not sharded:
         if present or (core / "windows/aggregation.json").exists():
             raise QualificationError("unsharded qualification contains shard evidence")
@@ -2037,6 +2046,39 @@ def _validate_qualifying_core_bundle(
                 context["run_attempt"],
                 allowlist,
             )
+            if platforms:
+                expected_ubuntu = {"ubuntu-plan", "ubuntu-shard-0", "ubuntu-shard-1"}
+                actual_ubuntu = {p.name for p in core.iterdir() if p.name.startswith("ubuntu-")}
+                if actual_ubuntu != expected_ubuntu:
+                    raise QualificationError("qualifying Ubuntu shard evidence is incomplete")
+                source_root = temporary / "source"
+                extract_source(argparse.Namespace(
+                    archive=root / "evidence/RD-00/source/candidate-source.tar",
+                    sha256=identity["source"]["archive_sha256"], destination=source_root,
+                ))
+                core_shards.validate_aggregation(
+                    core / "ubuntu", core / "ubuntu-plan",
+                    [core / f"ubuntu-shard-{index}" for index in range(2)],
+                    dict(identity), context["harness_sha256"], run_id,
+                    context["run_attempt"], allowlist, source_root=source_root,
+                )
+                native = load_json(core / "windows-native/context.json")
+                core_shards.compatible_context(
+                    load_json(core / "windows-plan/plan.json")["context"], native,
+                )
+                core_shards.compatible_context(
+                    native, load_json(core / "windows-native/context-final.json"),
+                )
+                for filename, lane, floor in (
+                    ("javascript-evidence-windows.xml", "javascript-evidence-windows", 8),
+                    ("native-regressions/scoped-evidence-core-windows-3.13.xml", "scoped-evidence-core-windows-3.13", 146),
+                ):
+                    verify_junit(argparse.Namespace(
+                        junit=core / "windows-native" / filename, lane=lane,
+                        allowlist=allowlist, minimum_collected=floor,
+                        minimum_passed=floor, discovery=False,
+                        output=temporary / (lane + ".json"),
+                    ))
             registry_path = temporary / "registry.json"
             registry_path.write_bytes(registry_bytes)
             registry = load_json(registry_path)
@@ -2226,7 +2268,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
     _require_sha256(context["harness_sha256"], "qualification context harness")
     if context["suite_layout"] not in {"legacy", "union"}:
         raise QualificationError("qualification context suite layout is invalid")
-    if context.get("core_layout", "unsharded") not in {"unsharded", "windows-sharded"}:
+    if context.get("core_layout", "unsharded") not in {"unsharded", "windows-sharded", "platform-sharded"}:
         raise QualificationError("qualification context core layout is invalid")
     source = _require_object(
         manifest["source"],
@@ -3422,7 +3464,7 @@ def _parser() -> argparse.ArgumentParser:
     bundle.add_argument("--workflow-run-attempt", type=int, required=True)
     bundle.add_argument("--harness-sha256", required=True)
     bundle.add_argument("--suite-layout", choices=("legacy", "union"), required=True)
-    bundle.add_argument("--core-layout", choices=("unsharded", "windows-sharded"), default="unsharded")
+    bundle.add_argument("--core-layout", choices=("unsharded", "windows-sharded", "platform-sharded"), default="unsharded")
     bundle.add_argument("--output", type=Path, required=True)
     bundle.set_defaults(function=build_bundle)
 

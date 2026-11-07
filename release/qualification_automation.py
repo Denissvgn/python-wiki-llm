@@ -241,7 +241,7 @@ def qualification_inputs(candidate: str, profile: str, identifier: str) -> dict:
     return {"candidate-sha": candidate,
             "knowledge-policy-shadow": "true" if profile == "policy-shadow" else "false",
             "discovery-mode": "false", "bandit-parity-verification": "false", "ubuntu-suite-shadow": "false",
-            "windows-core-shards": "true", "third-party-download-cache": "false",
+            "windows-core-shards": "true", "ubuntu-core-shards": "true", "third-party-download-cache": "false",
             "dependency-setup-verification": "false", "automation-request-id": identifier}
 
 

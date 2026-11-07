@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,8 @@ HELPER_TOOLCHAIN_HINTS = {
     "rust": "Install the Rust toolchain with Cargo, or make cargo available on PATH",
     "haskell": "Install GHC 9.6.x or set LLM_WIKI_GHC to a supported GHC executable",
 }
+GO_BUILD_FLAGS = ("-trimpath", "-buildvcs=false")
+GO_BUILD_RECIPE = " ".join(GO_BUILD_FLAGS)
 SUPPORTED_GHC_MAJOR = 9
 SUPPORTED_GHC_MINOR = 6
 
@@ -109,6 +112,10 @@ def resolve_helper_cache_root(
     env: dict[str, str] | None = None,
 ) -> Path | None:
     """Resolve the helper cache root using CLI/env/git precedence."""
+    from .helper_runtime import current_helper_operation
+    operation = current_helper_operation()
+    if cache_dir is None and operation is not None:
+        cache_dir = operation.cache_dir
     env_map = env if env is not None else os.environ
     configured_dir = cache_dir or env_map.get(ENV_CACHE_DIR)
     if configured_dir:
@@ -310,6 +317,7 @@ def helper_cache_key(
     *,
     toolchain_version: str | None = None,
     platform_value: str | None = None,
+    build_recipe: str | None = None,
 ) -> str:
     payload = {
         "language": language,
@@ -317,6 +325,8 @@ def helper_cache_key(
         "source": helper_source_fingerprint(language),
         "toolchain": toolchain_version or "",
     }
+    if build_recipe is not None:
+        payload["build_recipe"] = build_recipe
     if language == "typescript":
         payload["artifact_scope"] = ts_identity.ARTIFACT_SCOPE
     data = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -325,16 +335,6 @@ def helper_cache_key(
 
 def _manifest_path(cache_root: Path, language: str) -> Path:
     return cache_root / language / HELPER_MANIFEST
-
-
-def _load_manifest(cache_root: Path, language: str) -> dict[str, Any] | None:
-    path = _manifest_path(cache_root, language)
-    try:
-        data = (ts_identity.read_receipt(path) if language == "typescript"
-                else json.loads(path.read_text(encoding="utf-8")))
-    except (OSError, ValueError):
-        return None
-    return data if isinstance(data, dict) else None
 
 
 def _write_manifest(cache_root: Path, language: str, data: dict[str, Any]) -> None:
@@ -359,48 +359,13 @@ def _typescript_receipt_root(cache_root: Path, manifest: dict[str, Any]) -> Path
 
 
 def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
-    manifest = _load_manifest(cache_root, language)
-    if not manifest:
-        return None
-    expected_version = TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else HELPER_MANIFEST_VERSION
-    if (manifest.get("version") != expected_version
-            or language == "typescript" and type(manifest.get("version")) is not int):
-        return None
-    if manifest.get("language") != language:
-        return None
-    if manifest.get("platform") != platform_id():
-        return None
-    if manifest.get("source_fingerprint") != helper_source_fingerprint(language):
-        return None
-    path_value = manifest.get("path")
-    if language in {"go", "rust", "haskell"}:
-        if not isinstance(path_value, str) or not Path(path_value).is_file():
-            return None
-    elif language == "typescript":
-        prepared_root = _typescript_receipt_root(cache_root, manifest)
-        if prepared_root is None or not (prepared_root / "node_modules/ts-morph").is_dir():
-            return None
-        key = manifest.get("key")
-        toolchain = manifest.get("toolchain")
-        if (manifest.get("artifact_scope") != ts_identity.ARTIFACT_SCOPE
-                or not isinstance(toolchain, str) or not toolchain
-                or key != helper_cache_key("typescript", toolchain_version=toolchain)):
-            return None
-        try:
-            if ts_identity.execution_source_fingerprint(prepared_root, _TS_FILES) != manifest["source_fingerprint"]:
-                return None
-            if manifest.get("artifact_fingerprint") != ts_identity.dependency_fingerprint(prepared_root / "node_modules"):
-                return None
-        except (OSError, ValueError):
-            return None
-        return manifest
-    else:
-        return None
-    if manifest.get("artifact_fingerprint") != helper_artifact_fingerprint(
-        Path(path_value)
-    ):
-        return None
-    return manifest
+    # Prewarming, release inspection, and extraction must agree about which
+    # legacy receipt is valid. In particular, a matching digest alone does
+    # not make a foreign native executable usable on this host.
+    from .helper_cache import _legacy_handle
+
+    handle = _legacy_handle(cache_root, language)
+    return None if handle is None else dict(handle.receipt)
 
 
 def helper_preparation_argv(
@@ -413,11 +378,15 @@ def helper_preparation_argv(
     """
     if language not in SUPPORTED_HELPERS:
         raise ValueError(f"Unsupported helper language: {language}")
+    from .helper_cache import cache_roots, user_helper_cache_root
+    from .helper_runtime import pinned_helper
+
     source_root = Path(src_dir).resolve()
     cache_root = resolve_helper_cache_root(source_root, cache_dir)
-    cache_base = (
-        cache_root.parent if cache_root is not None else source_root / ".llm-wiki"
-    )
+    pinned = pinned_helper(language, source_root=source_root)
+    if pinned is not None and pinned.cache_root in cache_roots(source_root, cache_dir):
+        cache_root = pinned.cache_root
+    cache_base = cache_root.parent if cache_root is not None else user_helper_cache_root().parent
     argv = [
         "llm-wiki",
         "prepare-extractors",
@@ -443,62 +412,39 @@ def helper_preparation_failure_hint(language: str) -> str:
 def get_prepared_binary(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    if cache_root is None:
+    from .helper_runtime import pinned_helper
+    from .helper_cache import cache_roots, lookup_helper, validate_handle
+    pinned = pinned_helper(language, source_root=src_dir)
+    if pinned is not None and pinned.cache_root not in cache_roots(src_dir, cache_dir):
         return None
-    manifest = _manifest_current(cache_root, language)
-    if not manifest:
-        return None
-    path_value = manifest.get("path")
-    if not isinstance(path_value, str):
-        return None
-    path = Path(path_value)
-    return path if path.is_file() else None
+    if pinned is not None:
+        return pinned.path if validate_handle(pinned) else None
+    selected = lookup_helper(language, src_dir, cache_dir)
+    return selected.path if selected is not None and selected.path.is_file() else None
 
 
 def get_prepared_typescript_root(
     src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> Path | None:
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    if cache_root is None:
+    from .helper_runtime import pinned_helper
+    from .helper_cache import cache_roots, lookup_helper, validate_handle
+    pinned = pinned_helper("typescript", source_root=src_dir)
+    if pinned is not None and pinned.cache_root not in cache_roots(src_dir, cache_dir):
         return None
-    manifest = _manifest_current(cache_root, "typescript")
-    if not manifest:
-        return None
-    root_value = manifest.get("root")
-    if not isinstance(root_value, str):
-        return None
-    root = Path(root_value)
-    expected_dependency = root / "node_modules" / "ts-morph"
-    if Path(str(manifest["path"])) != expected_dependency:
-        return None
-    if not (root / "extract.js").is_file():
-        return None
-    return root
+    if pinned is not None:
+        return pinned.root if validate_handle(pinned) else None
+    selected = lookup_helper("typescript", src_dir, cache_dir)
+    return None if selected is None else selected.root
 
 
 def missing_helper_message(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> str:
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     argv = helper_preparation_argv(language, src_dir, cache_dir)
     shell = "PowerShell" if os.name == "nt" else "POSIX shell"
     command = render_shell_command(argv, windows=os.name == "nt")
-    reason = (
-        f"{language} helper cache directory is unavailable."
-        if cache_root is None
-        else f"{language} helper is not prepared (missing, stale, or invalid)."
-    )
+    reason = f"{language} helper is not prepared (missing, stale, or invalid)."
     retry = "Then retry the original command with the same source selection and helper cache."
-    if cache_root is None:
-        cache_arg = render_shell_command([argv[-1]], windows=os.name == "nt")
-        if os.name == "nt":
-            cache_arg = cache_arg.removeprefix("& ")
-        retry = (
-            f"Then select that cache with --helper-cache-dir {cache_arg} on commands "
-            "that support it, or set LLM_WIKI_CACHE_DIR to that cache base, "
-            "and retry the original command with the same source selection."
-        )
     return (
         f"{reason} Recovery ({shell}): `{command}`. "
         "Preparation writes the helper cache and may download dependencies or "
@@ -518,11 +464,49 @@ def helper_identity(
     """
     if language not in SUPPORTED_HELPERS:
         raise ValueError(f"Unsupported helper language: {language}")
-    root = resolve_helper_cache_root(src_dir, cache_dir)
-    receipt = None if root is None else _load_manifest(root, language)
-    source = helper_source_fingerprint(language)
+    from . import helper_cache
+    from .helper_runtime import current_helper_operation, pinned_helper
+
+    operation = current_helper_operation()
+    selected_cache = cache_dir if cache_dir is not None else operation.cache_dir if operation is not None else None
+    root = resolve_helper_cache_root(src_dir, selected_cache)
+    handle = pinned_helper(language, source_root=src_dir)
     issues: list[str] = []
-    current = None
+    if handle is not None:
+        if handle.cache_root not in helper_cache.cache_roots(src_dir, selected_cache):
+            issues.append("helper-cache-scope-mismatch")
+            handle = None
+            receipt = None
+        else:
+            root = handle.cache_root
+            receipt = dict(handle.receipt)
+            if not helper_cache.validate_handle(handle):
+                issues.append("artifact-unavailable-or-mismatch")
+    elif operation is not None and (missing := operation.missing_scope(src_dir, language)) is not None:
+        root = root or helper_cache.preparation_cache_root(src_dir, selected_cache)
+        if missing != helper_cache.cache_roots(src_dir, selected_cache):
+            issues.append("helper-cache-scope-mismatch")
+        receipt = None
+    else:
+        try:
+            handle = helper_cache.lookup_helper(language, src_dir, selected_cache)
+        except (OSError, ValueError):
+            issues.append("helper-cache-unavailable")
+        if handle is not None:
+            root = handle.cache_root
+            receipt = dict(handle.receipt)
+        else:
+            if root is None:
+                root = helper_cache.preparation_cache_root(src_dir, selected_cache)
+            try:
+                receipt = (ts_identity.read_receipt(_manifest_path(root, language)) if language == "typescript"
+                           else helper_cache._json(_manifest_path(root, language)))
+            except (OSError, ValueError):
+                receipt = None
+    if not isinstance(receipt, dict):
+        receipt = None
+    source = helper_source_fingerprint(language)
+    current = receipt if handle is not None and not issues else None
     artifact = None
     execution_source = None
     if receipt is None:
@@ -540,16 +524,22 @@ def helper_identity(
                 or receipt.get("artifact_scope") != ts_identity.ARTIFACT_SCOPE):
             issues.append("typescript-dependency-identity-unavailable")
         try:
-            current = None if root is None else _manifest_current(root, language)
-            path = receipt.get("path")
             if current is not None:
                 artifact = current.get("artifact_fingerprint")
             elif language == "typescript" and receipt.get("artifact_scope") == ts_identity.ARTIFACT_SCOPE:
                 prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
                 if prepared_root is not None:
+                    helper_cache._safe(prepared_root)
                     artifact = ts_identity.dependency_fingerprint(prepared_root / "node_modules")
-            elif language != "typescript" and isinstance(path, str) and Path(path).exists():
-                artifact = helper_artifact_fingerprint(Path(path))
+            elif language != "typescript":
+                key, path = receipt.get("key"), receipt.get("path")
+                if (root is not None and isinstance(key, str) and re.fullmatch(r"[0-9a-f]{64}", key)
+                        and isinstance(path, str)):
+                    candidate = Path(os.path.abspath(path))
+                    if candidate.is_relative_to(root / language / key):
+                        helper_cache._safe(candidate)
+                        helper_cache._native_binary(candidate)
+                        artifact = helper_cache._native_fingerprint(candidate)
             if artifact != receipt.get("artifact_fingerprint") or artifact is None:
                 issues.append("artifact-unavailable-or-mismatch")
         except (OSError, ValueError):
@@ -559,6 +549,8 @@ def helper_identity(
         if language == "typescript":
             try:
                 prepared_root = None if root is None else _typescript_receipt_root(root, receipt)
+                if prepared_root is not None:
+                    helper_cache._safe(prepared_root)
                 if prepared_root is None or not (prepared_root / "extract.js").is_file():
                     issues.append("typescript-root-unavailable")
                 if prepared_root is not None:
@@ -569,7 +561,8 @@ def helper_identity(
                 issues.append("typescript-root-unavailable")
     runtime: dict[str, Any] = {"kind": "native-helper", "path": None if current is None else current.get("path")}
     if language == "typescript":
-        node = shutil.which("node")
+        node = (handle.runtime_executables.get("node") if handle is not None else
+                None if "helper-cache-scope-mismatch" in issues else shutil.which("node"))
         version = command_output([node, "--version"]) if node else None
         runtime = {"kind": "node", "path": node, "version": version}
         if not version:
@@ -585,7 +578,7 @@ def helper_identity(
             "Preparing an already-current helper does not change active PATH."
         )
     elif issues:
-        recovery = missing_helper_message(language, src_dir, cache_dir)
+        recovery = missing_helper_message(language, src_dir, None if root is None else str(root.parent))
     return {
         "language": language,
         "status": "ready" if not issues else "unavailable-or-mismatched",
@@ -602,7 +595,7 @@ def helper_identity(
         },
         "active_runtime": runtime,
         "recovery": recovery,
-        "preparation_argv": helper_preparation_argv(language, src_dir, cache_dir),
+        "preparation_argv": helper_preparation_argv(language, src_dir, None if root is None else str(root.parent)),
         "qualification": (
             "Observed receipt and local bytes; no dependencies installed, no release authenticity established."
             + (" TypeScript scope: complete prepared node_modules tree."
@@ -669,6 +662,10 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
                 "--ignore-scripts",
                 "--no-audit",
                 "--no-fund",
+                # An in-project cache can match its parent's npm workspaces.
+                # Pin the local package before npm decides which tree to clean.
+                "--prefix", str(build_root.resolve()),
+                "--workspaces=false",
             ],
             capture_output=True,
             check=True,
@@ -714,6 +711,41 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
     )
 
 
+def _unsafe_native_output(path: Path) -> bool:
+    if first_unsafe_path_component(path) is not None:
+        return True
+    return path.exists() and (not path.is_file() or path.stat().st_nlink != 1)
+
+
+def _publish_native_helper(
+    cache_root: Path, language: str, binary_path: Path, key: str,
+    toolchain: str, *, staged: Path | None = None, **metadata: str,
+) -> HelperPrepareResult:
+    from .helper_cache import _native_binary, _native_fingerprint
+
+    try:
+        output = staged if staged is not None else binary_path
+        _native_binary(output)
+        fingerprint = _native_fingerprint(output)
+        if staged is not None:
+            os.replace(staged, binary_path)
+    except (OSError, ValueError) as error:
+        return HelperPrepareResult(language, "failed", f"Unusable {language} build output: {error}")
+
+    _write_manifest(cache_root, language, {
+        "version": HELPER_MANIFEST_VERSION,
+        "language": language,
+        "platform": platform_id(),
+        "source_fingerprint": helper_source_fingerprint(language),
+        "artifact_fingerprint": fingerprint,
+        "toolchain": toolchain,
+        "key": key,
+        "path": str(binary_path),
+        **metadata,
+    })
+    return HelperPrepareResult(language, "prepared", f"{language.capitalize()} helper built", str(binary_path))
+
+
 def prepare_go(cache_root: Path) -> HelperPrepareResult:
     go_executable = _resolve_go_executable()
     if go_executable is None:
@@ -728,9 +760,11 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
             f"set {ENV_GO_BINARY}=/path/to/go or fix the Go installation",
         )
 
-    key = helper_cache_key("go", toolchain_version=toolchain)
+    key = helper_cache_key("go", toolchain_version=toolchain, build_recipe=GO_BUILD_RECIPE)
     out_dir = cache_root / "go" / key
     binary_path = out_dir / _binary_name("llm-wiki-go-extractor")
+    if _unsafe_native_output(binary_path):
+        return HelperPrepareResult("go", "failed", "Native helper output is not a safe cache file")
     current = _manifest_current(cache_root, "go")
     if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
         return HelperPrepareResult(
@@ -741,44 +775,39 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
     build_env = os.environ.copy()
     if not _env_has_value(build_env, "GOCACHE"):
         build_env["GOCACHE"] = str(cache_root / "go-build-cache")
-    try:
-        subprocess.run(
-            [go_executable, "build", "-o", str(binary_path), "."],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=120,
-            cwd=str(GO_SCRIPTS_DIR),
-            env=build_env,
-        )
-    except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult(
-            "go", "failed", f"go build failed: {exc.stderr.strip()}"
-        )
-    except subprocess.TimeoutExpired:
-        return HelperPrepareResult("go", "failed", "go build timed out after 120 s")
-    except FileNotFoundError:
-        return HelperPrepareResult(
-            "go", "failed", f"go build failed: executable not found at {go_executable}"
-        )
-    if not binary_path.is_file():
-        return HelperPrepareResult(
-            "go", "failed", "go build did not produce the expected helper binary"
-        )
+    # Go refuses to overwrite a damaged non-object file. Build beside the
+    # recorded output, then replace it only after checking the native binary.
+    with tempfile.TemporaryDirectory(prefix=".build-", dir=out_dir) as temporary:
+        output = Path(temporary) / binary_path.name
+        try:
+            subprocess.run(
+                [go_executable, "build", *GO_BUILD_FLAGS, "-o", str(output), "."],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=120,
+                cwd=str(GO_SCRIPTS_DIR),
+                env=build_env,
+            )
+        except subprocess.CalledProcessError as exc:
+            return HelperPrepareResult(
+                "go", "failed", f"go build failed: {exc.stderr.strip()}"
+            )
+        except subprocess.TimeoutExpired:
+            return HelperPrepareResult("go", "failed", "go build timed out after 120 s")
+        except FileNotFoundError:
+            return HelperPrepareResult(
+                "go", "failed", f"go build failed: executable not found at {go_executable}"
+            )
+        if not output.is_file():
+            return HelperPrepareResult(
+                "go", "failed", "go build did not produce the expected helper binary"
+            )
 
-    data = {
-        "version": HELPER_MANIFEST_VERSION,
-        "language": "go",
-        "platform": platform_id(),
-        "source_fingerprint": helper_source_fingerprint("go"),
-        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
-        "toolchain": toolchain,
-        "go_executable": go_executable,
-        "key": key,
-        "path": str(binary_path),
-    }
-    _write_manifest(cache_root, "go", data)
-    return HelperPrepareResult("go", "prepared", "Go helper built", str(binary_path))
+        return _publish_native_helper(
+            cache_root, "go", binary_path, key, toolchain, staged=output,
+            go_executable=go_executable, build_recipe=GO_BUILD_RECIPE,
+        )
 
 
 def prepare_rust(cache_root: Path) -> HelperPrepareResult:
@@ -788,58 +817,41 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
 
     key = helper_cache_key("rust", toolchain_version=toolchain)
     build_root = cache_root / "rust" / key
-    target_dir = build_root / "target"
-    binary_path = target_dir / "release" / _binary_name("llm-wiki-rust-extractor")
+    binary_path = build_root / _binary_name("llm-wiki-rust-extractor")
+    if _unsafe_native_output(binary_path):
+        return HelperPrepareResult("rust", "failed", "Native helper output is not a safe cache file")
     current = _manifest_current(cache_root, "rust")
-    if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
+    legacy_path = build_root / "target" / "release" / binary_path.name
+    if current and Path(current["path"]) in (binary_path, legacy_path):
         return HelperPrepareResult(
-            "rust", "already_current", "Rust helper already prepared", str(binary_path)
+            "rust", "already_current", "Rust helper already prepared", str(current["path"])
         )
 
     build_root.mkdir(parents=True, exist_ok=True)
-    try:
-        subprocess.run(
-            [
-                "cargo",
-                "build",
-                "--locked",
-                "--release",
-                "--target-dir",
-                str(target_dir),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=180,
-            cwd=str(RUST_SCRIPTS_DIR),
-        )
-    except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult(
-            "rust", "failed", f"cargo build failed: {exc.stderr.strip()}"
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return HelperPrepareResult(
-            "rust", "failed", "cargo build timed out or cargo was not found"
-        )
-    if not binary_path.is_file():
-        return HelperPrepareResult(
-            "rust", "failed", "cargo build did not produce the expected helper binary"
-        )
+    # Cargo may hardlink its executable to a file in target/release/deps.
+    # Keep Cargo's whole tree private, then publish an independently owned
+    # executable through the same native validation as the other helpers.
+    with tempfile.TemporaryDirectory(prefix=".build-", dir=build_root) as temporary:
+        stage = Path(temporary)
+        target_dir = stage / "target"
+        try:
+            subprocess.run(
+                ["cargo", "build", "--locked", "--release", "--target-dir", str(target_dir)],
+                capture_output=True, text=True, check=True, timeout=180,
+                cwd=str(RUST_SCRIPTS_DIR),
+            )
+        except subprocess.CalledProcessError as exc:
+            return HelperPrepareResult("rust", "failed", f"cargo build failed: {exc.stderr.strip()}")
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return HelperPrepareResult("rust", "failed", "cargo build timed out or cargo was not found")
 
-    data = {
-        "version": HELPER_MANIFEST_VERSION,
-        "language": "rust",
-        "platform": platform_id(),
-        "source_fingerprint": helper_source_fingerprint("rust"),
-        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
-        "toolchain": toolchain,
-        "key": key,
-        "path": str(binary_path),
-    }
-    _write_manifest(cache_root, "rust", data)
-    return HelperPrepareResult(
-        "rust", "prepared", "Rust helper built", str(binary_path)
-    )
+        built = target_dir / "release" / binary_path.name
+        if first_unsafe_path_component(built) is not None or not built.is_file():
+            return HelperPrepareResult("rust", "failed", "cargo build did not produce a regular helper binary")
+        staged = stage / binary_path.name
+        shutil.copy2(built, staged)
+        return _publish_native_helper(cache_root, "rust", binary_path, key, toolchain, staged=staged)
+
 
 
 def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
@@ -867,6 +879,8 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
     out_dir = cache_root / "haskell" / key
     build_dir = out_dir / "build"
     binary_path = out_dir / _binary_name("llm-wiki-haskell-extractor")
+    if _unsafe_native_output(binary_path):
+        return HelperPrepareResult("haskell", "failed", "Native helper output is not a safe cache file")
     current = _manifest_current(cache_root, "haskell")
     if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
         return HelperPrepareResult(
@@ -917,21 +931,7 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
             "haskell", "failed", "ghc build did not produce the expected helper binary"
         )
 
-    data = {
-        "version": HELPER_MANIFEST_VERSION,
-        "language": "haskell",
-        "platform": platform_id(),
-        "source_fingerprint": helper_source_fingerprint("haskell"),
-        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
-        "toolchain": toolchain,
-        "ghc_executable": ghc_executable,
-        "key": key,
-        "path": str(binary_path),
-    }
-    _write_manifest(cache_root, "haskell", data)
-    return HelperPrepareResult(
-        "haskell", "prepared", "Haskell helper built", str(binary_path)
-    )
+    return _publish_native_helper(cache_root, "haskell", binary_path, key, toolchain, ghc_executable=ghc_executable)
 
 
 def prepare_helper(language: str, cache_root: Path) -> HelperPrepareResult:

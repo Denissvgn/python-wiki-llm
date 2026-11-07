@@ -1,7 +1,7 @@
 # prepare_inventory_build_context
 
 **Entry point:** `extraction_service._prepare_inventory_build_context`
-**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [extraction_service](../modules/extraction_service.md), [inventory_cache](../modules/inventory_cache.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [plugins](../modules/plugins.md), [python_implementation](../modules/python_implementation.md)
+**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [extraction_service](../modules/extraction_service.md), [helper_preparation](../modules/helper_preparation.md), [inventory_cache](../modules/inventory_cache.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [plugins](../modules/plugins.md), [python_implementation](../modules/python_implementation.md)
 
 ## Sequence
 
@@ -12,14 +12,16 @@
 4. `plugins.parallel_safe_extractor_entry_points`
 5. `plugins.get_extractor_registry`
 6. `plugins.parallel_safe_extractor_entry_points`
-7. `analysis_capture.capture_analysis`
-8. `python_implementation.analysis_identity`
-9. `knowledge_artifacts.require_validated_artifacts`
+7. `helper_preparation.prepare_operation_helpers`
+8. `analysis_capture.capture_analysis`
+9. `python_implementation.analysis_identity`
+10. `knowledge_artifacts.require_validated_artifacts`
 
 ## Touches
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [extraction_service](../modules/extraction_service.md)
+- [helper_preparation](../modules/helper_preparation.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [plugins](../modules/plugins.md)

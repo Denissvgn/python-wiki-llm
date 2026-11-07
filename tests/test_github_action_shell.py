@@ -19,21 +19,25 @@ from tests.test_github_action import ACTION_PATH, ROOT, _yaml
 
 
 @pytest.mark.parametrize("shadow", [False, True])
-@pytest.mark.parametrize("core,windows,union", [
-    ("success", "success", "success"),
-    ("failure", "success", "success"),
-    ("cancelled", "success", "success"),
-    ("skipped", "success", "success"),
-    ("success", "failure", "success"),
-    ("success", "cancelled", "success"),
-    ("success", "skipped", "success"),
-    ("failure", "skipped", "success"),
-    ("success", "success", "failure"),
-    ("success", "success", "cancelled"),
-    ("success", "success", "skipped"),
+@pytest.mark.parametrize("core,ubuntu,windows,union", [
+    ("success", "success", "success", "success"),
+    ("failure", "success", "success", "success"),
+    ("cancelled", "success", "success", "success"),
+    ("skipped", "success", "success", "success"),
+    ("success", "failure", "success", "success"),
+    ("success", "cancelled", "success", "success"),
+    ("success", "skipped", "success", "success"),
+    ("success", "", "success", "success"),
+    ("success", "success", "failure", "success"),
+    ("success", "success", "cancelled", "success"),
+    ("success", "success", "skipped", "success"),
+    ("failure", "skipped", "skipped", "success"),
+    ("success", "success", "success", "failure"),
+    ("success", "success", "success", "cancelled"),
+    ("success", "success", "success", "skipped"),
 ])
 def test_owner_prerequisites_explain_failures_and_preserve_verifier_boundary(
-    tmp_path, shadow, core, windows, union
+    tmp_path, shadow, core, ubuntu, windows, union
 ):
     workflow = _yaml(ROOT / ".github/workflows/release-qualification.yml")
     name = (
@@ -48,7 +52,7 @@ def test_owner_prerequisites_explain_failures_and_preserve_verifier_boundary(
         "python -I incoming/tools/release/qualification.py verify-owner-lanes", 1
     )
     assert "--output owner-lane-verification.json" in invocation
-    for job, state in (("core", core), ("core-windows", windows), ("ubuntu-shadow", union)):
+    for job, state in (("core", core), ("core-ubuntu", ubuntu), ("core-windows", windows), ("ubuntu-shadow", union)):
         guard = guard.replace("${{ needs." + job + ".result }}", state)
     assert "${{" not in guard
     result = subprocess.run(
@@ -57,12 +61,13 @@ def test_owner_prerequisites_explain_failures_and_preserve_verifier_boundary(
         capture_output=True, text=True, timeout=10, check=False,
     )
     blocked = (
-        core != "success" or windows != "success" or (shadow and union != "success")
+        any(state != "success" for state in (core, ubuntu, windows))
+        or (shadow and union != "success")
     )
     assert (result.returncode != 0) is blocked
     assert ("VERIFIER_REACHED" in result.stdout) is not blocked
-    if core != "success" or windows != "success":
-        assert f"core producers ended with {core} / Windows {windows}" in result.stderr
+    if any(state != "success" for state in (core, ubuntu, windows)):
+        assert f"core producers ended with {core} / Ubuntu {ubuntu} / Windows {windows}" in result.stderr
     elif blocked:
         assert f"Ubuntu shadow ended with {union}" in result.stderr
     else:

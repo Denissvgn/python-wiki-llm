@@ -44,9 +44,10 @@ def build_capability_diagnostics(
     snapshot = build_source_snapshot(
         root, source_selection=source_selection, include_tests=include_tests
     )
-    cache = helpers.resolve_helper_cache_root(root, helper_cache_dir)
-    cache_base = cache.parent if cache is not None else root / ".llm-wiki"
-    effective_cache = cache or cache_base / helpers.HELPER_CACHE_DIRNAME
+    from .helper_cache import _profile_slots, cache_roots, preparation_cache_root
+
+    roots = cache_roots(root, helper_cache_dir)
+    effective_cache = preparation_cache_root(root, helper_cache_dir)
     providers = []
     for language, (provider, tool_names) in _PROVIDERS.items():
         label = _LANGUAGE_LABELS[language]
@@ -67,12 +68,14 @@ def build_capability_diagnostics(
                 if language == "typescript"
                 else helpers.get_prepared_binary(language, root, helper_cache_dir)
             )
-            exists = (
-                cache is not None and helpers._manifest_path(cache, language).exists()
-            )
-            helper_state = (
-                "current" if artifact else "stale-or-invalid" if exists else "missing"
-            )
+            if artifact:
+                helper_state = "current"
+            else:
+                previously_prepared = any(
+                    helpers._manifest_path(cache, language).exists() or _profile_slots(cache / language)
+                    for cache in roots
+                )
+                helper_state = "stale-or-invalid" if previously_prepared else "missing"
             runtime_missing = language == "typescript" and tools["node"] is None
             state = (
                 "missing-toolchain"
@@ -262,9 +265,13 @@ def build_capability_doctor(wiki_dir="docs/llm_wiki", src_dir=".", **kwargs):
             str(src_dir),
             "--wiki-dir",
             str(wiki_dir),
-            "--helper-cache-dir",
-            str(Path(capabilities["helper_cache"]).parent),
         ]
+        # A default search can reuse both project and shared caches. Pinning
+        # just its build destination would hide project helpers on the retry.
+        from .helper_cache import cache_roots
+        roots = cache_roots(src_dir, kwargs.get("helper_cache_dir"))
+        if len(roots) == 1:
+            argv.extend(["--helper-cache-dir", str(roots[0].parent)])
         for name in ("strict", "allow_external_src"):
             if kwargs.get(name):
                 argv.append("--" + name.replace("_", "-"))

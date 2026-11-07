@@ -25,26 +25,37 @@ authorized matching plugin or leave the limitation explicit.
 
 ## Prepared helpers and cache ownership
 
-During project setup, `llm-wiki init --prepare-extractors` detects the selected
-helper languages and prepares missing or stale helpers before scaffolding. It
-reuses current helpers and can be repeated after a package upgrade. Preparation
-may download dependencies or compile bundled helpers and requires the relevant
-toolchain. This is an explicit setup operation; read-only analysis never
-prepares helpers. For a custom cache, use
+Normal analysis detects only the bundled helpers required by the selected
+source and reuses or prepares missing/stale artifacts before extraction. No
+separate setup command is required. The default automatic cache is user-level
+and shared across projects; an existing valid project cache can be reused.
+Explicit helper-cache options and `LLM_WIKI_CACHE_DIR` remain authoritative.
+Helper preparation may download dependencies or compile bundled helpers. It
+uses the installed Node.js/npm, Go, Cargo, or supported GHC toolchain and does
+not install global tools, change project dependencies, or execute target code.
+Python needs no external helper.
+
+Explicit `--read-only`, preview/plan, capability inspection, and
+`--helper-preparation never` reuse existing validated helpers only. They do not
+prepare, download, or create helper cache state. A strict read needing setup
+uses the separate authorized recovery route below.
+
+`llm-wiki init --prepare-extractors` and `prepare-extractors` remain optional
+setup/prewarming routes. Their existing project/Git cache selection remains
+available; outside Git, select an explicit cache base. For a custom cache, use
 `init --prepare-extractors --helper-cache-dir PATH` and the same cache base for
 subsequent analysis, or set `LLM_WIKI_CACHE_DIR` consistently.
 
 TypeScript/JavaScript, Go, Rust, and Haskell extraction runs through prepared
-helper toolchains. If extraction or lint reports a missing prepared helper, an
-authorized caller may prepare the package-owned helper cache and then repeat
-the failed command:
+helper toolchains. To prewarm a project cache explicitly, or recover a strict
+read with existing setup authority, run:
 
 ```bash
 llm-wiki prepare-extractors --src-dir .
 ```
 
 Do not run npm, Go, Cargo, or GHC helper setup manually. The
-`prepare-extractors` command owns that cache. If the Go executable on `PATH`
+library and `prepare-extractors` command own that cache. If the Go executable on `PATH`
 cannot run, an authorized environment may select it with
 `LLM_WIKI_GO=/path/to/go`. If GHC must be selected explicitly, use
 `LLM_WIKI_GHC=/path/to/ghc` before preparation. These variables select an
@@ -71,7 +82,11 @@ does not expose it.
 
 ## Recover a failed context or extraction command
 
-A missing, stale, or invalid helper is a setup problem. It does not mean the
+If normal automatic setup fails, retain its actual cause and fix the missing
+toolchain, download, permission, or build problem before retrying. Repeatedly
+running the same preparation cannot repair an unchanged prerequisite.
+
+For an explicit strict read, a missing, stale, or invalid helper is a setup problem. It does not mean the
 repository has no architectural context or that analysis succeeded with an
 empty result. Keep the failed command and its error so the recovery and retry
 use the same inputs.
@@ -79,12 +94,12 @@ use the same inputs.
 1. Use the error's language-specific preparation command. For more diagnosis,
    run `llm-wiki doctor --capabilities` with the same `--src-dir`,
    `--source-selection`, and `--helper-cache-dir` where applicable. Doctor is
-   read-only and reports toolchain availability, helper state, and remedies.
+   inspection-only and reports toolchain availability, helper state, and remedies.
 2. Check existing user/repository authorization. If setup is already
    authorized, perform the preparation as a separate setup step without
    asking again. Preparation writes a cache and may download dependencies or
-   compile bundled helpers. A read-only analysis request alone does not
-   authorize those effects. If authority is missing, explain the concrete
+   compile bundled helpers. An explicit strict read-only request alone does
+   not authorize those effects. If authority is missing, explain the concrete
    preparation command and its effects when requesting it.
 3. Preserve the source root and any required `--allow-external-src`. Preparation
    takes `--cache-dir`; consumers take `--helper-cache-dir` where supported, or

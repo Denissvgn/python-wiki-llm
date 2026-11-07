@@ -35,6 +35,7 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 | `.request_json` | `_pairs`, `_constant` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
+| `contextlib` | `nullcontext` |
 | `copy` | `copy` |
 | `dataclasses` | `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
@@ -69,8 +70,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [BudgetedContext](../entities/BudgetedContext.md) | 26 | — | — |
-| [_JointSelection](../entities/JointSelection.md) | 137 | — | Spend one budget across whole native groups and source detail. |
+| [BudgetedContext](../entities/BudgetedContext.md) | 27 | — | — |
+| [_JointSelection](../entities/JointSelection.md) | 138 | — | Spend one budget across whole native groups and source detail. |
 
 ## Functions
 

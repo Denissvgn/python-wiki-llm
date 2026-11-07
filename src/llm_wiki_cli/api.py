@@ -687,6 +687,42 @@ def _raise_maintenance_api_error(exc: Exception) -> NoReturn:
     raise ArtifactIntegrityError(str(exc), code="maintenance-integrity", details=details) from exc
 
 
+def _bounded_helper_diagnostic(value: str) -> str:
+    if len(value) <= 500:
+        return value
+    # Command failures start with the tool and exit status, and often end
+    # with the compiler or package manager's actual diagnosis.
+    return value[:125] + " … " + value[-372:]
+
+
+def _raise_helper_preparation_api_error(exc: BaseException) -> None:
+    """Keep preparation failures operational even through service wrappers."""
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if _has_exception_origin(current, frozenset({
+            "llm_wiki_cli.services.helper_cache",
+        })):
+            from .services.helper_cache import HelperPreparationError
+            if isinstance(current, HelperPreparationError):
+                language = current.language if isinstance(current.language, str) and current.language in {
+                    "typescript", "go", "rust", "haskell",
+                } else "unknown"
+                reason = _bounded_helper_diagnostic(str(current.reason))
+                details = {"field": "helper_preparation", "language": language, "reason": reason}
+                message = f"{language} helper preparation failed: {reason}"
+                if current.cache_root is not None:
+                    details["cache_root"] = _bounded_helper_diagnostic(str(current.cache_root))
+                    message += f" (cache: {details['cache_root']})"
+                raise WorkspaceStateError(
+                    message,
+                    code="helper-preparation-failed",
+                    details=details,
+                ) from exc
+        current = current.__cause__ or current.__context__
+
+
 def _api_boundary(
     function: Callable[_P, _R],
     *,
@@ -700,18 +736,82 @@ def _api_boundary(
     def wrapped(*args: _P.args, **kwargs: _P.kwargs) -> _R:
         # Invocation-shape TypeError remains Python's normal call contract; only
         # failures raised after a valid call enters the API taxonomy.
-        signature.bind(*args, **kwargs)
+        supplied = signature.bind(*args, **kwargs)
         try:
-            return function(*args, **kwargs)
+            from .services.helper_runtime import (
+                current_helper_operation, helper_operation,
+            )
+            # Preserve the public bool defaults: omission means an ordinary
+            # workspace read, while explicit True at the operation boundary
+            # retains the strict no-preparation contract. Nested API calls
+            # inherit the caller's operation rather than interpreting internal
+            # forwarded defaults as a new user instruction.
+            active = current_helper_operation()
+            requested_read = supplied.arguments.get("read_only")
+            if "read_only" in supplied.arguments and type(requested_read) is not bool:
+                raise InvalidRequestError(
+                    "read_only must be a boolean", code="invalid-request",
+                    details={"field": "read_only"},
+                )
+            policy = "never" if active is None and requested_read is True else None
+            cache = supplied.arguments.get("helper_cache_dir")
+            if cache is not None and not isinstance(cache, (str, Path)):
+                raise InvalidRequestError(
+                    "helper_cache_dir must be a path", code="invalid-request",
+                    details={"field": "helper_cache_dir"},
+                )
+            cache_dir = str(cache) if isinstance(cache, (str, Path)) else None
+            with helper_operation(policy, fresh=active is None, cache_dir=cache_dir):
+                return function(*args, **kwargs)
         except LlmWikiApiError as exc:
+            _raise_helper_preparation_api_error(exc)
             if translate_error is _raise_api_error and type(exc) in _API_ERROR_LEAVES:
                 raise
             translate_error(exc)
         except Exception as exc:
+            _raise_helper_preparation_api_error(exc)
             translate_error(exc)
 
     setattr(wrapped, "__llm_wiki_api_boundary__", True)
     return wrapped
+
+
+@contextmanager
+def helper_preparation(
+    policy: Literal["auto", "never"], *, cache_dir: str | Path | None = None,
+    progress: Callable[[str], None] | None = None,
+) -> Iterator[None]:
+    """Configure managed helper setup for calls made inside this scope.
+
+    Each top-level API call still receives its own immutable helper bindings.
+    ``never`` also provides an explicit opt-out inside another operation.
+    Caller-block exceptions are preserved unchanged.
+    """
+    from .services.helper_runtime import helper_policy
+
+    if cache_dir is not None and not isinstance(cache_dir, (str, Path)):
+        raise InvalidRequestError(
+            "cache_dir must be a path", code="invalid-request",
+            details={"field": "cache_dir"},
+        )
+    if progress is not None and not callable(progress):
+        raise InvalidRequestError(
+            "progress must be a callback", code="invalid-request",
+            details={"field": "progress"},
+        )
+    manager = helper_policy(policy, cache_dir=None if cache_dir is None else str(cache_dir),
+                            progress=progress)
+    try:
+        manager.__enter__()
+    except Exception as exc:
+        _raise_api_error(exc)
+    try:
+        yield
+    finally:
+        manager.__exit__(None, None, None)
+
+
+setattr(helper_preparation, "__llm_wiki_api_boundary__", True)
 
 
 _NATIVE_QUERY_ERROR_FIELDS = frozenset(
@@ -3682,6 +3782,7 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "helper_preparation",
     "CompactSessionReply",
     "CanonicalReceipt",
     "CompactTaskContext",

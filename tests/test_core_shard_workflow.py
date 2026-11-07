@@ -113,11 +113,12 @@ def test_shadow_never_qualifies_and_ubuntu_macos_keep_the_full_core_contract():
         (ROOT / ".github/workflows/release-qualification.yml").read_text()
     )
     core = qualification["jobs"]["core"]
-    assert {row["lane"] for row in core["strategy"]["matrix"]["include"]} == {
-        "core-ubuntu-3.11",
-        "core-macos-3.14",
-    }
-    assert core["needs"] == "freeze"
+    assert {row["lane"] for row in core["strategy"]["matrix"]["include"]} == {"core-macos-3.14"}
+    ubuntu = qualification["jobs"]["core-ubuntu"]
+    assert ubuntu["runs-on"] == "ubuntu-24.04"
+    assert "--cov-fail-under=87" in str(ubuntu)
+    assert "core-ubuntu-shards" in ubuntu["needs"]
+    assert core["needs"] == ["freeze", "admission"]
     commands = [
         step["run"]
         for step in core["steps"]
@@ -189,10 +190,10 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
     layout = jobs["freeze"]["outputs"]["core-layout"]
     assert (
         layout
-        == "${{ inputs.windows-core-shards && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow && 'windows-sharded' || 'unsharded' }}"
+        == "${{ inputs.windows-core-shards && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow && (inputs.ubuntu-core-shards && 'platform-sharded' || 'windows-sharded') || 'unsharded' }}"
     )
-    assert jobs["core"]["needs"] == "freeze"
-    assert jobs["core-windows-plan"]["needs"] == "freeze"
+    assert jobs["core"]["needs"] == ["freeze", "admission"]
+    assert jobs["core-windows-plan"]["needs"] == ["freeze", "admission"]
     assert jobs["core-windows-plan"]["outputs"]["python-version"] == (
         "${{ steps.python.outputs.python-version }}"
     )
@@ -203,9 +204,9 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
     )
     assert planner_python["id"] == "python"
     python_versions = {
-        "core-windows-plan": "3.13",
+        "core-windows-plan": "3.13.17",
         "core-windows-shards": "${{ needs.core-windows-plan.outputs.python-version }}",
-        "core-windows": "${{ needs.core-windows-plan.outputs.python-version || '3.13' }}",
+        "core-windows": "${{ needs.core-windows-plan.outputs.python-version || '3.13.17' }}",
     }
     assert jobs["core-windows-shards"]["strategy"] == {
         "fail-fast": False,
@@ -217,12 +218,12 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
     assert set(logical["needs"]) == {
         "freeze",
         "core-windows-plan",
-        "core-windows-shards",
+        "core-windows-shards", "windows-native", "admission",
     }
     assert " ".join(logical["if"].split()) == (
         "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' "
         "&& (needs.freeze.outputs.core-layout == 'unsharded' "
-        "|| (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}"
+        "|| (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && (needs.freeze.outputs.core-layout != 'platform-sharded' || needs.windows-native.result == 'success') && !inputs.knowledge-policy-shadow && (inputs.discovery-mode || inputs.ubuntu-suite-shadow || needs.admission.result == 'success') }}"
     )
     for name in ("core-windows-plan", "core-windows-shards", "core-windows"):
         job = jobs[name]
@@ -272,9 +273,10 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
         assert "release/" + name in str(jobs["freeze"]["steps"])
 
 
+@pytest.mark.parametrize("producer", ["core-windows", "core-ubuntu"])
 @pytest.mark.parametrize("windows", ["success", "failure", "cancelled", "skipped"])
 def test_real_decision_mapping_requires_windows_for_core_security_and_product(
-    tmp_path, windows
+    tmp_path, windows, producer
 ):
     import re
     from release import qualification as q
@@ -288,7 +290,7 @@ def test_real_decision_mapping_requires_windows_for_core_security_and_product(
     script = script.replace("${{ needs.freeze.outputs.sha }}", "a" * 40).replace(
         "${{ needs.freeze.outputs.version }}", "1.0.0"
     )
-    script = script.replace("${{ needs.core-windows.result }}", windows)
+    script = script.replace("${{ needs." + producer + ".result }}", windows)
     script = re.sub(r"\$\{\{ needs\.[a-z-]+\.result \}\}", "success", script)
     argv = shlex.split(script)[3:]
     assert argv[0] == "aggregate"

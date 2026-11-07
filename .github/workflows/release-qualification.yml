@@ -28,6 +28,11 @@ on:
         required: true
         default: true
         type: boolean
+      ubuntu-core-shards:
+        description: Split canonical Ubuntu coverage into two verified shards; false retains the unsharded lane
+        required: true
+        default: true
+        type: boolean
       discovery-mode:
         description: Collect skip tuples only; never emit a qualified release
         required: true
@@ -53,9 +58,11 @@ permissions:
   contents: read
 
 concurrency:
+  # All potentially promoting profiles share one repository release slot.
+  # Diagnostic supersession cannot cancel an active normal qualification.
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}-${{ inputs.knowledge-policy-shadow }}
-  cancel-in-progress: true
+    ${{ (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow) && format('{0}-diagnostic-{1}-{2}-{3}-{4}-{5}-{6}-{7}-{8}-{9}', github.workflow, inputs.candidate-sha, inputs.discovery-mode, inputs.bandit-parity-verification, inputs.ubuntu-suite-shadow, inputs.windows-core-shards, inputs.ubuntu-core-shards, inputs.third-party-download-cache, inputs.dependency-setup-verification, inputs.knowledge-policy-shadow) || format('{0}-normal-{1}', github.workflow, github.repository) }}
+  cancel-in-progress: ${{ inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow }}
 
 env:
   CI: "1"
@@ -69,7 +76,7 @@ jobs:
     name: RD-00 freeze candidate source
     runs-on: ubuntu-24.04
     outputs:
-      core-layout: ${{ inputs.windows-core-shards && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow && 'windows-sharded' || 'unsharded' }}
+      core-layout: ${{ inputs.windows-core-shards && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow && (inputs.ubuntu-core-shards && 'platform-sharded' || 'windows-sharded') || 'unsharded' }}
       sha: ${{ steps.freeze.outputs.sha }}
       tree: ${{ steps.freeze.outputs.tree }}
       version: ${{ steps.freeze.outputs.version }}
@@ -243,6 +250,11 @@ jobs:
             release/hosted_evidence.py \
             release/core_shards.py \
             release/core_shard_runner.py \
+            release/core_coverage.py \
+            release/readiness.py \
+            release/runtime-policy.json \
+            release/measurement_canary.py \
+            release/pr_ci_pytest.py \
             release/core-shard-timings.json \
             release/ubuntu_suites.py \
             release/ubuntu_shadow.py \
@@ -475,19 +487,179 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  readiness:
+    name: Early qualification readiness
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up exact readiness Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Validate every declared runtime owner and platform build
+        run: >-
+          python -I incoming/tools/release/readiness.py inspect
+          --root candidate --runtime-only --check-availability
+          --output evidence/readiness.json
+      - name: Retain readiness admission result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-release-readiness
+          path: evidence/readiness.json
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-canary:
+    name: Native Windows release canary
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
+    needs: [freeze, readiness]
+    runs-on: windows-2025
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up exact Windows canary Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13.17"
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Exercise the complete native measurement consumer before full suites
+        env:
+          CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
+        run: >-
+          python -I incoming/tools/release/measurement_canary.py
+          --root candidate --output "${RUNNER_TEMP}/measurement-canary"
+          --expected-python 3.13.17 --source-sha "${CANDIDATE_SHA}"
+          --frozen-identity incoming/source/identity.json
+          --harness-root incoming/tools --expected-prefix "${RUNNER_TEMP}/qualification-venv"
+      - name: Retain complete or partial native canary evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-windows-canary
+          path: ${{ runner.temp }}/measurement-canary/
+          if-no-files-found: error
+          retention-days: 14
+
+  admission:
+    name: Require release admission
+    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
+    needs: [readiness, windows-canary, smoke-parity]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require platform, native consumer and literal artifact parity success
+        env:
+          READINESS: ${{ needs.readiness.result }}
+          NATIVE: ${{ needs.windows-canary.result }}
+          PARITY: ${{ needs.smoke-parity.result }}
+        run: |
+          test "${READINESS}" = success
+          test "${NATIVE}" = success
+          test "${PARITY}" = success
+
   core:
     name: RD-01/RD-02 core (${{ matrix.lane }})
-    if: ${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - lane: core-ubuntu-3.11
-            os: ubuntu-24.04
-            python: "3.11"
-            coverage: true
           - lane: core-macos-3.14
             os: macos-15
             python: "3.14"
@@ -713,11 +885,11 @@ jobs:
           echo "Discovery mode can generate evidence but cannot qualify a release." >&2
           exit 1
 
-  core-windows-plan:
-    name: Plan Windows core shards
-    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}
-    needs: freeze
-    runs-on: windows-2025
+  core-ubuntu-plan:
+    name: Plan Ubuntu core shards
+    if: ${{ !cancelled() && (!inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'platform-sharded' && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     outputs:
       python-version: ${{ steps.python.outputs.python-version }}
@@ -739,11 +911,11 @@ jobs:
           name: qualification-harnesses
           path: incoming/tools
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.11
         id: python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: "3.13"
+          python-version: "3.11"
 
       - name: Verify and extract qualification harnesses
         env:
@@ -779,25 +951,25 @@ jobs:
           python -I incoming/tools/release/core_shard_runner.py prepare
           --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
           --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
-          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --lane core-ubuntu-3.11 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
           --shards 2 --output evidence/plan
 
-      - name: Retain complete or partial Windows evidence
+      - name: Retain complete or partial Ubuntu evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           archive: true
-          name: evidence-core-windows-plan
+          name: evidence-core-ubuntu-plan
           path: evidence/plan/
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14
 
-  core-windows-shards:
-    name: Execute Windows core shard (${{ matrix.shard }})
-    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}
-    needs: [freeze, core-windows-plan]
-    runs-on: windows-2025
+  core-ubuntu-shards:
+    name: Execute Ubuntu core shard (${{ matrix.shard }})
+    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'platform-sharded' && !inputs.knowledge-policy-shadow }}
+    needs: [freeze, core-ubuntu-plan]
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
@@ -822,10 +994,10 @@ jobs:
           name: qualification-harnesses
           path: incoming/tools
 
-      - name: Set up the collected Windows Python
+      - name: Set up the collected Ubuntu Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: ${{ needs.core-windows-plan.outputs.python-version }}
+          python-version: ${{ needs.core-ubuntu-plan.outputs.python-version }}
 
       - name: Verify and extract qualification harnesses
         env:
@@ -851,16 +1023,16 @@ jobs:
           python -I incoming/tools/release/qualification.py create-venv
           --path "${RUNNER_TEMP}/qualification-venv"
 
-      - name: Download the collected Windows plan
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+      - name: Download the collected Ubuntu plan
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           digest-mismatch: error
-          name: evidence-core-windows-plan
+          name: evidence-core-ubuntu-plan
           path: incoming/plan
 
       - name: Verify the qualifying plan and dependency pins
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         env:
           HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
         run: >-
@@ -868,13 +1040,13 @@ jobs:
           --purpose qualification
           --plan incoming/plan/plan.json --constraints incoming/plan/constraints.txt
           --identity incoming/source/identity.json --harness-sha256 "${HARNESS_SHA256}"
-          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --lane core-ubuntu-3.11 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
-      - name: Install the identical resolved Windows dependency profile
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+      - name: Install the identical resolved Ubuntu dependency profile
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
 
-      - name: Execute one qualifying Windows shard
+      - name: Execute one qualifying Ubuntu shard
         env:
           HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
           SHARD_INDEX: ${{ matrix.shard }}
@@ -882,30 +1054,264 @@ jobs:
           python -I incoming/tools/release/core_shard_runner.py execute
           --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
           --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
-          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --lane core-ubuntu-3.11 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
           --purpose qualification --plan incoming/plan/plan.json --index "${SHARD_INDEX}"
           --output evidence/shard
 
-      - name: Retain complete or partial Windows evidence
+      - name: Retain complete or partial Ubuntu evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           archive: true
-          name: evidence-core-windows-shard-${{ matrix.shard }}
+          name: evidence-core-ubuntu-shard-${{ matrix.shard }}
           path: evidence/shard/
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14
 
-  core-windows:
-    name: RD-01/RD-02 core (core-windows-3.13)
-    # Explicit status handling keeps the unsharded rollback runnable when its
-    # optional planner and shard ancestors are skipped.
-    if: >-
-      ${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'
-          && (needs.freeze.outputs.core-layout == 'unsharded'
-              || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}
-    needs: [freeze, core-windows-plan, core-windows-shards]
+  core-ubuntu:
+    name: RD-01/RD-02 core (core-ubuntu-3.11)
+    if: ${{ !cancelled() && (!cancelled() && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' && (needs.freeze.outputs.core-layout != 'platform-sharded' || (needs.core-ubuntu-plan.result == 'success' && needs.core-ubuntu-shards.result == 'success')) ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, core-ubuntu-plan, core-ubuntu-shards, admission]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up Ubuntu Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ needs.core-ubuntu-plan.outputs.python-version || '3.11' }}
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Download the collected Ubuntu plan
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: evidence-core-ubuntu-plan
+          path: incoming/plan
+
+      - name: Verify the qualifying plan and dependency pins
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py verify-plan
+          --purpose qualification
+          --plan incoming/plan/plan.json --constraints incoming/plan/constraints.txt
+          --identity incoming/source/identity.json --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-ubuntu-3.11 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+      - name: Install the identical resolved Ubuntu dependency profile
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+
+      - name: Install the frozen source non-editably
+        if: ${{ needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Run shared early preparation contracts
+        if: ${{ !inputs.discovery-mode }}
+        working-directory: candidate
+        run: >-
+          python -I ../incoming/tools/release/preflight_contracts.py groups
+          --repo . --group inventory --group defaults
+          --output "${RUNNER_TEMP}/preflight-contracts-core-ubuntu-3.11"
+
+      - name: Download every Ubuntu shard separately
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          pattern: evidence-core-ubuntu-shard-*
+          path: incoming/shards
+
+      - name: Verify and aggregate the complete Ubuntu core lane
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py aggregate
+          --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
+          --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-ubuntu-3.11 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --preparation incoming/plan --shards-root incoming/shards --output evidence
+
+      - name: Run strict core suite with canonical coverage
+        if: ${{ needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        env:
+          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
+        working-directory: candidate
+        run: >-
+          python -m pytest tests -q
+          -p no:cacheprovider
+          --strict-config
+          --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="../evidence/core-ubuntu-3.11.xml"
+          --cov=llm_wiki_cli --cov-report="xml:../evidence/coverage-core-ubuntu-3.11.xml" --cov-fail-under=87
+
+      - name: Verify scoped evidence repair on native Windows and Linux
+        id: scoped-evidence
+        if: ${{ !inputs.discovery-mode }}
+        shell: bash
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
+            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/scoped-evidence-core-ubuntu-3.11.xml"
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit "../evidence/native-regressions/scoped-evidence-core-ubuntu-3.11.xml" \
+            --lane "scoped-evidence-core-ubuntu-3.11" --allowlist release/skip-allowlist.json \
+            --minimum-collected 146 --minimum-passed 146 \
+            --output "../evidence/native-regressions/scoped-evidence-core-ubuntu-3.11-result.json"
+        working-directory: candidate
+      - name: Retain native scoped evidence repair results
+        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-scoped-evidence-core-ubuntu-3.11-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/scoped-evidence-core-ubuntu-3.11.xml
+            evidence/native-regressions/scoped-evidence-core-ubuntu-3.11-result.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Check recursion coverage boundaries before the full Linux suite
+        id: coverage-boundary
+        if: ${{ !inputs.discovery-mode }}
+        env:
+          COVERAGE_FILE: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion/coverage.data
+          COVERAGE_BOUNDARY_OUTPUT: ${{ github.workspace }}/evidence/native-regressions/coverage-recursion
+        run: |
+          mkdir -p ../evidence/native-regressions
+          mkdir -p "${COVERAGE_BOUNDARY_OUTPUT}"
+          python -m pytest \
+            tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
+            -q -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            --cov-report= --cov-fail-under=0 \
+            --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
+          python -I - <<'PY'
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from release import core_shard_runner as runner
+          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
+          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          runner.q.write_json(output / "source-boundary.json", {
+              "scope": "focused source probe; full native and hosted gates remain required",
+              "measured_files": len(rows), "source_root": package.as_posix(),
+          })
+          PY
+        working-directory: candidate
+      - name: Retain native Linux coverage boundary evidence
+        if: ${{ always() && (steps.coverage-boundary.outcome == 'success' || steps.coverage-boundary.outcome
+          == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-linux-coverage-boundary-${{ github.run_attempt }}
+          path: evidence/native-regressions/coverage-recursion/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Enforce exact skip tuples and minimum inventory
+        env:
+          DISCOVERY_MODE: ${{ inputs.discovery-mode }}
+        run: |
+          discovery=()
+          if [[ "${DISCOVERY_MODE}" == "true" ]]; then
+            discovery=(--discovery)
+          fi
+          python -I incoming/tools/release/qualification.py verify-junit \
+            --junit "evidence/core-ubuntu-3.11.xml" \
+            --lane "core-ubuntu-3.11" \
+            --allowlist candidate/release/skip-allowlist.json \
+            --minimum-collected 5322 \
+            --minimum-passed 5070 \
+            --output "evidence/result-core-ubuntu-3.11.json" \
+            "${discovery[@]}"
+
+      - name: Upload lane evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-core-ubuntu-3.11
+          path: |
+            evidence/core-ubuntu-3.11.xml
+            evidence/core-ubuntu-3.11-analysis.json
+            evidence/result-core-ubuntu-3.11.json
+            evidence/aggregation.json
+            evidence/coverage.data
+            evidence/coverage.json
+            evidence/coverage-core-ubuntu-3.11.xml
+            evidence/native-regressions/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Prevent discovery evidence from qualifying
+        if: ${{ inputs.discovery-mode }}
+        run: |
+          echo "Discovery mode can generate evidence but cannot qualify a release." >&2
+          exit 1
+
+  windows-native:
+    name: Native Windows owner evidence
+    if: ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow && needs.freeze.outputs.core-layout == 'platform-sharded' && needs.core-windows-plan.result == 'success' }}
+    needs: [freeze, core-windows-plan]
     runs-on: windows-2025
     timeout-minutes: 360
     defaults:
@@ -929,7 +1335,7 @@ jobs:
       - name: Set up Windows Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: ${{ needs.core-windows-plan.outputs.python-version || '3.13' }}
+          python-version: "3.13.17"
 
       - name: Verify and extract qualification harnesses
         env:
@@ -956,7 +1362,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Download the collected Windows plan
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           digest-mismatch: error
@@ -964,7 +1370,7 @@ jobs:
           path: incoming/plan
 
       - name: Verify the qualifying plan and dependency pins
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         env:
           HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
         run: >-
@@ -975,45 +1381,22 @@ jobs:
           --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
       - name: Install the identical resolved Windows dependency profile
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+        if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
         run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
 
       - name: Install the frozen source non-editably
         if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
         run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
 
-      - name: Download every Windows shard separately
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          digest-mismatch: error
-          pattern: evidence-core-windows-shard-*
-          path: incoming/shards
-
-      - name: Verify and aggregate the complete Windows core lane
-        if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
+      - name: Bind native owner source, environment and attempt
         env:
           HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
         run: >-
-          python -I incoming/tools/release/core_shard_runner.py aggregate
+          python -I incoming/tools/release/core_shard_runner.py native-context
           --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
           --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
           --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
-          --preparation incoming/plan --shards-root incoming/shards --output evidence
-
-      - name: Run strict core suite without coverage instrumentation
-        if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
-        env:
-          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
-        working-directory: candidate
-        run: >-
-          python -m pytest tests -q
-          -p no:cacheprovider
-          --strict-config
-          --strict-markers
-          -W error
-          -o xfail_strict=true
-          --junitxml="../evidence/core-windows-3.13.xml"
+          --output evidence/context.json
 
       - name: Verify scoped evidence repair on native Windows and Linux
         id: scoped-evidence
@@ -1110,10 +1493,13 @@ jobs:
         run: |
           mkdir -p ../evidence/native-regressions
           set -euo pipefail
-          python -m pip install "build==1.5.0" "pyright==1.1.411"
-          python -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
-          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          python tests/run_provider_artifact_checks.py \
+          python -m venv "${RUNNER_TEMP}/provider-build-venv"
+          builder="${RUNNER_TEMP}/provider-build-venv/Scripts/python.exe"
+          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ".[dev,tokens]"
+          export PATH="${RUNNER_TEMP}/provider-build-venv/Scripts:${PATH}"
+          "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
+          version="$("${builder}" -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          "${builder}" tests/run_provider_artifact_checks.py \
             --artifacts "${RUNNER_TEMP}/provider-dist" \
             --work "${RUNNER_TEMP}/provider-consumers" \
             --output "../evidence/native-regressions/provider-evidence" \
@@ -1132,6 +1518,476 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Verify JavaScript evidence on native Windows
+        working-directory: candidate
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/javascript-evidence-helpers
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
+            tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
+            tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml=../evidence/javascript-evidence-windows.xml
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit ../evidence/javascript-evidence-windows.xml \
+            --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
+            --minimum-collected 8 --minimum-passed 8 \
+            --output ../evidence/javascript-evidence-windows-result.json
+
+      - name: Revalidate native owner source and environment after every owner
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py native-context
+          --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
+          --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --reference evidence/context.json --output evidence/context-final.json
+
+      - name: Upload independently bound native Windows evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-windows-native
+          path: |
+            evidence/context.json
+            evidence/context-final.json
+            evidence/javascript-evidence-windows.xml
+            evidence/javascript-evidence-windows-result.json
+            evidence/native-regressions/
+          if-no-files-found: error
+          retention-days: 14
+
+  core-windows-plan:
+    name: Plan Windows core shards
+    if: ${{ !cancelled() && (!inputs.bandit-parity-verification && needs.freeze.outputs.core-layout != 'unsharded' && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
+    runs-on: windows-2025
+    timeout-minutes: 360
+    outputs:
+      python-version: ${{ steps.python.outputs.python-version }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up Python 3.13
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13.17"
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Collect the complete inventory and bind the plan
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py prepare
+          --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
+          --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --shards 2 --output evidence/plan
+
+      - name: Retain complete or partial Windows evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-core-windows-plan
+          path: evidence/plan/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  core-windows-shards:
+    name: Execute Windows core shard (${{ matrix.shard }})
+    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout != 'unsharded' && !inputs.knowledge-policy-shadow }}
+    needs: [freeze, core-windows-plan]
+    runs-on: windows-2025
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        shard: [0, 1]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up the collected Windows Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ needs.core-windows-plan.outputs.python-version }}
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Download the collected Windows plan
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: evidence-core-windows-plan
+          path: incoming/plan
+
+      - name: Verify the qualifying plan and dependency pins
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py verify-plan
+          --purpose qualification
+          --plan incoming/plan/plan.json --constraints incoming/plan/constraints.txt
+          --identity incoming/source/identity.json --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+      - name: Install the identical resolved Windows dependency profile
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+
+      - name: Execute one qualifying Windows shard
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py execute
+          --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
+          --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --purpose qualification --plan incoming/plan/plan.json --index "${SHARD_INDEX}"
+          --output evidence/shard
+
+      - name: Retain complete or partial Windows evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-core-windows-shard-${{ matrix.shard }}
+          path: evidence/shard/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  core-windows:
+    name: RD-01/RD-02 core (core-windows-3.13)
+    # Explicit status handling keeps the unsharded rollback runnable when its
+    # optional planner and shard ancestors are skipped.
+    if: >-
+      ${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'
+          && (needs.freeze.outputs.core-layout == 'unsharded'
+              || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && (needs.freeze.outputs.core-layout != 'platform-sharded' || needs.windows-native.result == 'success') && !inputs.knowledge-policy-shadow
+          && (inputs.discovery-mode || inputs.ubuntu-suite-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, core-windows-plan, core-windows-shards, windows-native, admission]
+    runs-on: windows-2025
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up Windows Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ needs.core-windows-plan.outputs.python-version || '3.13.17' }}
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Download the collected Windows plan
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: evidence-core-windows-plan
+          path: incoming/plan
+
+      - name: Verify the qualifying plan and dependency pins
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py verify-plan
+          --purpose qualification
+          --plan incoming/plan/plan.json --constraints incoming/plan/constraints.txt
+          --identity incoming/source/identity.json --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+      - name: Install the identical resolved Windows dependency profile
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+
+      - name: Install the frozen source non-editably
+        if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Download every Windows shard separately
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          pattern: evidence-core-windows-shard-*
+          path: incoming/shards
+
+      - name: Verify and aggregate the complete Windows core lane
+        if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
+        env:
+          HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: >-
+          python -I incoming/tools/release/core_shard_runner.py aggregate
+          --root candidate --identity incoming/source/identity.json --archive incoming/source/candidate-source.tar
+          --harness incoming/tools/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}"
+          --lane core-windows-3.13 --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+          --preparation incoming/plan --shards-root incoming/shards --output evidence
+
+      - name: Run strict core suite without coverage instrumentation
+        if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
+        env:
+          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
+        working-directory: candidate
+        run: >-
+          python -m pytest tests -q
+          -p no:cacheprovider
+          --strict-config
+          --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="../evidence/core-windows-3.13.xml"
+
+      - name: Verify scoped evidence repair on native Windows and Linux
+        id: scoped-evidence
+        if: ${{ !inputs.discovery-mode && needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        shell: bash
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
+            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/scoped-evidence-core-windows-3.13.xml"
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit "../evidence/native-regressions/scoped-evidence-core-windows-3.13.xml" \
+            --lane "scoped-evidence-core-windows-3.13" --allowlist release/skip-allowlist.json \
+            --minimum-collected 146 --minimum-passed 146 \
+            --output "../evidence/native-regressions/scoped-evidence-core-windows-3.13-result.json"
+        working-directory: candidate
+      - name: Retain native scoped evidence repair results
+        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-scoped-evidence-core-windows-3.13-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/scoped-evidence-core-windows-3.13.xml
+            evidence/native-regressions/scoped-evidence-core-windows-3.13-result.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Verify stdin harness inside a native Windows venv
+        id: stdio-venv
+        if: ${{ !inputs.discovery-mode && needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        timeout-minutes: 10
+        shell: bash
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m venv "${RUNNER_TEMP}/stdio-venv"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ".[dev]"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pytest \
+            tests/test_readonly_subprocess_stdin.py -q \
+            -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true \
+            --junitxml="../evidence/native-regressions/stdio-venv.xml" \
+            | tee "../evidence/native-regressions/stdio-venv.log"
+        working-directory: candidate
+      - name: Upload native Windows venv probe evidence
+        if: ${{ always() && (steps.stdio-venv.outcome == 'success' || steps.stdio-venv.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-stdio-${{ github.run_attempt }}
+          path: |
+            evidence/native-regressions/stdio-venv.xml
+            evidence/native-regressions/stdio-venv.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Check release corrections on native Windows
+        id: native-corrections
+        if: ${{ !inputs.discovery-mode && needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+        run: |-
+          mkdir -p ../evidence/native-regressions
+          python -m pytest tests/test_wiki_review_snapshot.py tests/test_default_development_workflow.py tests/test_current_install_defaults.py tests/test_storage_lock_diagnostics.py tests/test_real_caller_action_fixture.py tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py tests/test_preflight_contracts.py tests/test_preflight_runner.py tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true --junitxml="../evidence/native-regressions/native-corrections.xml"
+        working-directory: candidate
+      - name: Retain native Windows correction evidence
+        if: ${{ always() && (steps.native-corrections.outcome == 'success' || steps.native-corrections.outcome == 'failure')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-corrections-${{ github.run_attempt }}
+          path: evidence/native-regressions/native-corrections.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify installed provider artifacts on native Windows
+        id: provider-artifacts
+        if: ${{ !inputs.discovery-mode && needs.freeze.outputs.core-layout != 'platform-sharded' }}
+        shell: bash
+        run: |
+          mkdir -p ../evidence/native-regressions
+          set -euo pipefail
+          python -m venv "${RUNNER_TEMP}/provider-build-venv"
+          builder="${RUNNER_TEMP}/provider-build-venv/Scripts/python.exe"
+          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ".[dev,tokens]"
+          export PATH="${RUNNER_TEMP}/provider-build-venv/Scripts:${PATH}"
+          "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
+          version="$("${builder}" -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          "${builder}" tests/run_provider_artifact_checks.py \
+            --artifacts "${RUNNER_TEMP}/provider-dist" \
+            --work "${RUNNER_TEMP}/provider-consumers" \
+            --output "../evidence/native-regressions/provider-evidence" \
+            --version "${version}"
+        working-directory: candidate
+      - name: Upload native Windows provider evidence
+        if: |-
+          ${{ always() &&
+              (steps.provider-artifacts.outcome == 'success' ||
+               steps.provider-artifacts.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: native-windows-provider-${{ github.run_attempt }}
+          path: evidence/native-regressions/provider-evidence
+          if-no-files-found: error
+          retention-days: 14
+      - name: Verify JavaScript evidence on native Windows
+        if: ${{ !inputs.discovery-mode && needs.freeze.outputs.core-layout != 'platform-sharded' }}
         working-directory: candidate
         env:
           LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/javascript-evidence-helpers
@@ -1264,8 +2120,8 @@ jobs:
     name: Reconcile core skip diagnostics
     if: >-
       ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&
-          (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}
-    needs: [freeze, core, core-windows]
+          (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-ubuntu.result == 'failure' || needs.core-ubuntu.result == 'skipped' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}
+    needs: [freeze, core, core-ubuntu, core-windows]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -1332,8 +2188,8 @@ jobs:
 
   ubuntu-suites:
     name: RD-03/RD-04/RD-05 Ubuntu suites
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -1527,8 +2383,8 @@ jobs:
 
   security-behavior:
     name: RD-04 security behavior (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -1606,8 +2462,8 @@ jobs:
 
   mcp:
     name: RD-06 MCP SDK (Python ${{ matrix.python }})
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -1684,8 +2540,8 @@ jobs:
 
   toolchains:
     name: RD-07 prepared extractor toolchains
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -1965,8 +2821,8 @@ jobs:
 
   oci:
     name: RD-08 real OCI isolation
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -2090,8 +2946,8 @@ jobs:
 
   static:
     name: RD-09 static and dependency security
-    if: ${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -2188,8 +3044,8 @@ jobs:
 
   action:
     name: RD-10 hosted composite Action
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -2562,8 +3418,8 @@ jobs:
 
   knowledge-maintenance:
     name: Repository knowledge maintenance
-    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
-    needs: [freeze, action]
+    if: ${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, action, admission]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -3008,6 +3864,7 @@ jobs:
       - freeze
       - ubuntu-shadow
       - core
+      - core-ubuntu
       - core-windows
       - ubuntu-suites
       - security-behavior
@@ -3057,8 +3914,8 @@ jobs:
       - name: Verify reviewed owners against hosted lane results
         if: ${{ !inputs.ubuntu-suite-shadow }}
         run: |
-          if [ "${{ needs.core.result }}" != "success" ] || [ "${{ needs.core-windows.result }}" != "success" ]; then
-            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }} / Windows ${{ needs.core-windows.result }}" >&2
+          if [ "${{ needs.core.result }}" != "success" ] || [ "${{ needs.core-ubuntu.result }}" != "success" ] || [ "${{ needs.core-windows.result }}" != "success" ]; then
+            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }} / Ubuntu ${{ needs.core-ubuntu.result }} / Windows ${{ needs.core-windows.result }}" >&2
             exit 1
           fi
           python -I incoming/tools/release/qualification.py verify-owner-lanes \
@@ -3068,7 +3925,7 @@ jobs:
             --ubuntu-purpose qualification \
             --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
             --allowlist candidate/release/skip-allowlist.json \
-            --owner-result "core-ubuntu-3.11=${{ needs.core.result }}" \
+            --owner-result "core-ubuntu-3.11=${{ needs.core-ubuntu.result }}" \
             --owner-junit "core-ubuntu-3.11=incoming/owner-evidence/evidence-core-ubuntu-3.11/core-ubuntu-3.11.xml" \
             --owner-result "core-windows-3.13=${{ needs.core-windows.result }}" \
             --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
@@ -3100,8 +3957,8 @@ jobs:
       - name: Verify shadow union owners against hosted lane results
         if: ${{ inputs.ubuntu-suite-shadow }}
         run: |
-          if [ "${{ needs.core.result }}" != "success" ] || [ "${{ needs.core-windows.result }}" != "success" ]; then
-            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }} / Windows ${{ needs.core-windows.result }}" >&2
+          if [ "${{ needs.core.result }}" != "success" ] || [ "${{ needs.core-ubuntu.result }}" != "success" ] || [ "${{ needs.core-windows.result }}" != "success" ]; then
+            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }} / Ubuntu ${{ needs.core-ubuntu.result }} / Windows ${{ needs.core-windows.result }}" >&2
             exit 1
           fi
           if [ "${{ needs.ubuntu-shadow.result }}" != "success" ]; then
@@ -3114,7 +3971,7 @@ jobs:
             --ubuntu-union-result "${{ needs.ubuntu-shadow.result }}" \
             --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
             --allowlist candidate/release/skip-allowlist.json \
-            --owner-result "core-ubuntu-3.11=${{ needs.core.result }}" \
+            --owner-result "core-ubuntu-3.11=${{ needs.core-ubuntu.result }}" \
             --owner-junit "core-ubuntu-3.11=incoming/owner-evidence/evidence-core-ubuntu-3.11/core-ubuntu-3.11.xml" \
             --owner-result "core-windows-3.13=${{ needs.core-windows.result }}" \
             --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
@@ -3154,8 +4011,8 @@ jobs:
 
   analysis-compatibility:
     name: Installed analysis compatibility
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
-    needs: freeze
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
+    needs: [freeze, admission]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -3210,7 +4067,7 @@ jobs:
     # success(), then require every direct qualifying producer explicitly.
     if: >-
       ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow
-          && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-windows.result == 'success'
+          && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-ubuntu.result == 'success' && needs.core-windows.result == 'success'
           && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'
           && needs.mcp.result == 'success' && needs.toolchains.result == 'success'
           && needs.oci.result == 'success' && needs.static.result == 'success'
@@ -3225,6 +4082,7 @@ jobs:
       - knowledge-maintenance
       - dependency-warm
       - core
+      - core-ubuntu
       - core-windows
       - ubuntu-suites
       - security-behavior
@@ -3301,15 +4159,18 @@ jobs:
           --candidate-version "${{ needs.freeze.outputs.version }}"
           --gate "RD-00=${{ needs.freeze.result }}"
           --gate "RD-01=${{ needs.core.result }}"
+          --gate-dependency "RD-01=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-01=${{ needs.core-windows.result }}"
           --gate "RD-02=${{ needs.owner-lanes.result }}"
           --gate "RD-03=${{ needs.ubuntu-suites.result }}"
           --gate "RD-04=${{ needs.security-behavior.result }}"
           --gate-dependency "RD-04=${{ needs.core.result }}"
+          --gate-dependency "RD-04=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-04=${{ needs.core-windows.result }}"
           --gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"
           --gate "RD-05=${{ needs.ubuntu-suites.result }}"
           --gate-dependency "RD-05=${{ needs.core.result }}"
+          --gate-dependency "RD-05=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-05=${{ needs.core-windows.result }}"
           --gate "RD-06=${{ needs.mcp.result }}"
           --gate "RD-07=${{ needs.toolchains.result }}"
@@ -3342,11 +4203,19 @@ jobs:
             maintenance_evidence=(--evidence "RD-10:maintenance=incoming/maintenance")
           fi
           core_evidence=()
-          if [[ "${{ needs.freeze.outputs.core-layout }}" == "windows-sharded" ]]; then
+          if [[ "${{ needs.freeze.outputs.core-layout }}" != "unsharded" ]]; then
             core_evidence=(
               --evidence "RD-01:windows-plan=incoming/gates/evidence-core-windows-plan"
               --evidence "RD-01:windows-shard-0=incoming/gates/evidence-core-windows-shard-0"
               --evidence "RD-01:windows-shard-1=incoming/gates/evidence-core-windows-shard-1"
+            )
+          fi
+          if [[ "${{ needs.freeze.outputs.core-layout }}" == "platform-sharded" ]]; then
+            core_evidence+=(
+              --evidence "RD-01:ubuntu-plan=incoming/gates/evidence-core-ubuntu-plan"
+              --evidence "RD-01:ubuntu-shard-0=incoming/gates/evidence-core-ubuntu-shard-0"
+              --evidence "RD-01:ubuntu-shard-1=incoming/gates/evidence-core-ubuntu-shard-1"
+              --evidence "RD-01:windows-native=incoming/gates/evidence-windows-native"
             )
           fi
           python -I incoming/tools/release/qualification.py build-bundle \
@@ -3428,6 +4297,7 @@ jobs:
       - freeze
       - knowledge-maintenance
       - core
+      - core-ubuntu
       - core-windows
       - ubuntu-suites
       - security-behavior
@@ -3476,15 +4346,18 @@ jobs:
           --candidate-version "${{ needs.freeze.outputs.version }}"
           --gate "RD-00=${{ needs.freeze.result }}"
           --gate "RD-01=${{ needs.core.result }}"
+          --gate-dependency "RD-01=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-01=${{ needs.core-windows.result }}"
           --gate "RD-02=${{ needs.owner-lanes.result }}"
           --gate "RD-03=${{ needs.ubuntu-suites.result }}"
           --gate "RD-04=${{ needs.security-behavior.result }}"
           --gate-dependency "RD-04=${{ needs.core.result }}"
+          --gate-dependency "RD-04=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-04=${{ needs.core-windows.result }}"
           --gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"
           --gate "RD-05=${{ needs.ubuntu-suites.result }}"
           --gate-dependency "RD-05=${{ needs.core.result }}"
+          --gate-dependency "RD-05=${{ needs.core-ubuntu.result }}"
           --gate-dependency "RD-05=${{ needs.core-windows.result }}"
           --gate "RD-06=${{ needs.mcp.result }}"
           --gate "RD-07=${{ needs.toolchains.result }}"

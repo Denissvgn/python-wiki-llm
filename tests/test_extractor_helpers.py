@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.test_helper_cache import _native_header
+
 from llm_wiki_cli.commands import prepare_extractors_cmd
 from llm_wiki_cli import cli
 from llm_wiki_cli.config import PathValidationError
@@ -40,6 +42,8 @@ from llm_wiki_cli.services.paths import render_shell_command
 def test_helper_recovery_plan_preserves_language_root_and_cache(
     tmp_path, monkeypatch, capsys, language, cache_mode
 ):
+    from llm_wiki_cli.services import helper_cache
+    monkeypatch.setattr(helper_cache, "user_helper_cache_root", lambda: tmp_path / "managed-user-cache" / HELPER_CACHE_DIRNAME)
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     # An external source and quoted paths must survive the printed remedy.
@@ -63,7 +67,8 @@ def test_helper_recovery_plan_preserves_language_root_and_cache(
         cache_dir = "explicit cache"
         monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "wrong cache"))
     else:
-        cache_base = source / ".llm-wiki"
+        from llm_wiki_cli.services.helper_cache import user_helper_cache_root
+        cache_base = user_helper_cache_root().parent
     before = {
         str(p.relative_to(tmp_path)): p.read_bytes()
         for p in tmp_path.rglob("*")
@@ -81,8 +86,7 @@ def test_helper_recovery_plan_preserves_language_root_and_cache(
     assert "only when setup is authorized" in message
     assert "retry the original command" in message
     assert "Read-only commands never prepare helpers" in message
-    if cache_mode == "no-git":
-        assert "set LLM_WIKI_CACHE_DIR to that cache base" in message
+    assert "retry the original command with the same source selection and helper cache" in message
     monkeypatch.setattr(
         prepare_extractors_cmd,
         "prepare_helper",
@@ -289,57 +293,50 @@ def test_helper_cache_root_resolves_git_env_explicit_and_worktree(tmp_path):
     assert resolve_helper_cache_root(worktree, env={}) == gitdir / HELPER_CACHE_DIRNAME
 
 
-def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
-    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
-    binary = cache_root / "go" / "key" / "llm-wiki-go-extractor.exe"
-    binary.parent.mkdir(parents=True)
-    binary.write_text("binary", encoding="utf-8")
-    (cache_root / "go").mkdir(exist_ok=True)
+def _windows_legacy_binary(tmp_path, monkeypatch, language):
+    from llm_wiki_cli.services import helper_cache
+
     monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "windows-amd64")
+    monkeypatch.setattr(helper_cache, "_system", lambda: "windows")
+    monkeypatch.setattr(helper_cache, "_machine", lambda: "x86_64")
     monkeypatch.setattr(
         extractor_helpers, "helper_source_fingerprint", lambda language: "src"
     )
-    (cache_root / "go" / "current.json").write_text(
+    toolchain = "test Windows native compiler"
+    key = helper_cache_key(language, toolchain_version=toolchain)
+    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    binary = cache_root / language / key / f"llm-wiki-{language}-extractor.exe"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(_native_header())
+    binary.chmod(0o755)
+    (cache_root / language / "current.json").write_text(
         json.dumps(
             {
                 "version": HELPER_MANIFEST_VERSION,
-                "language": "go",
+                "language": language,
                 "platform": "windows-amd64",
                 "source_fingerprint": "src",
                 "artifact_fingerprint": helper_artifact_fingerprint(binary),
                 "path": str(binary),
+                "root": str(binary.parent),
+                "key": key,
+                "toolchain": toolchain,
             }
         ),
         encoding="utf-8",
     )
+    return binary
+
+
+def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
+    binary = _windows_legacy_binary(tmp_path, monkeypatch, "go")
 
     assert get_prepared_binary("go", tmp_path, str(tmp_path / "cache")) == binary
     assert binary.name.endswith(".exe")
 
 
 def test_haskell_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
-    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
-    binary = cache_root / "haskell" / "key" / "llm-wiki-haskell-extractor.exe"
-    binary.parent.mkdir(parents=True)
-    binary.write_text("binary", encoding="utf-8")
-    (cache_root / "haskell").mkdir(exist_ok=True)
-    monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "windows-amd64")
-    monkeypatch.setattr(
-        extractor_helpers, "helper_source_fingerprint", lambda language: "src"
-    )
-    (cache_root / "haskell" / "current.json").write_text(
-        json.dumps(
-            {
-                "version": HELPER_MANIFEST_VERSION,
-                "language": "haskell",
-                "platform": "windows-amd64",
-                "source_fingerprint": "src",
-                "artifact_fingerprint": helper_artifact_fingerprint(binary),
-                "path": str(binary),
-            }
-        ),
-        encoding="utf-8",
-    )
+    binary = _windows_legacy_binary(tmp_path, monkeypatch, "haskell")
 
     assert get_prepared_binary("haskell", tmp_path, str(tmp_path / "cache")) == binary
     assert binary.name.endswith(".exe")
@@ -790,7 +787,8 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
         calls.append((cmd, kwargs.get("env", {})))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -801,7 +799,11 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     build_cmd, build_env = next(
         (cmd, env) for cmd, env in calls if len(cmd) >= 2 and cmd[1] == "build"
     )
-    assert build_cmd[:4] == ["/usr/bin/go", "build", "-o", result.path]
+    assert build_cmd[:5] == ["/usr/bin/go", "build", "-trimpath", "-buildvcs=false", "-o"]
+    assert result.path is not None
+    staged = Path(build_cmd[5])
+    assert staged.name == Path(result.path).name and staged.parent.parent == Path(result.path).parent
+    assert not staged.parent.exists()
     assert build_env["GOCACHE"] == str(cache_root / "go-build-cache")
     manifest = json.loads(
         (cache_root / "go" / "current.json").read_text(encoding="utf-8")
@@ -862,6 +864,8 @@ def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
         "--ignore-scripts",
         "--no-audit",
         "--no-fund",
+        "--prefix", str(Path(kwargs["cwd"]).resolve()),
+        "--workspaces=false",
     ]
     helper_root = Path(kwargs["cwd"])
     assert helper_root != extractor_helpers.TS_SCRIPTS_DIR
@@ -948,7 +952,8 @@ def test_prepare_go_uses_llm_wiki_go_override(tmp_path, monkeypatch):
         commands.append((cmd, kwargs.get("env", {})))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers, "_go_version", fake_version)
@@ -1003,7 +1008,7 @@ def test_resolve_ghc_executable_uses_override_and_path(tmp_path):
 
 
 def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
-    cache_root = tmp_path / "helpers"
+    cache_root = tmp_path / HELPER_CACHE_DIRNAME
     commands = []
 
     monkeypatch.setattr(
@@ -1021,7 +1026,12 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
             / extractor_helpers._binary_name("llm-wiki-rust-extractor")
         )
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
+        # Cargo exposes the final executable as another name for its deps output.
+        deps = output.parent / "deps"
+        deps.mkdir()
+        os.link(output, deps / (output.name + "-fixture"))
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -1034,7 +1044,12 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     manifest = json.loads(
         (cache_root / "rust" / "current.json").read_text(encoding="utf-8")
     )
-    assert manifest["path"] == result.path
+    assert result.path is not None and manifest["path"] == result.path
+    published = Path(result.path)
+    assert published.stat().st_nlink == 1
+    assert get_prepared_binary("rust", tmp_path, str(tmp_path)) == published
+    assert prepare_rust(cache_root).status == "already_current"
+    assert len(commands) == 1
 
 
 def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
@@ -1055,7 +1070,8 @@ def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch
         commands.append((cmd, kwargs))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -1094,7 +1110,8 @@ def test_prepare_haskell_accepts_supported_ghc_9_6_policy(tmp_path, monkeypatch)
         commands.append((cmd, kwargs))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -1162,7 +1179,8 @@ def test_prepare_haskell_reuses_current_manifest(tmp_path, monkeypatch):
         commands.append(cmd)
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text("binary", encoding="utf-8")
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
@@ -1222,3 +1240,96 @@ def test_prepare_haskell_reports_build_timeout(tmp_path, monkeypatch):
 
     assert result.status == "failed"
     assert result.message == "ghc build timed out after 180 s"
+
+
+def test_manual_go_recovery_rebuilds_invalid_native_artifact(tmp_path, monkeypatch):
+
+    base = tmp_path / "cache"
+    root = base / HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go fixture", ""))
+    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture", build_recipe=extractor_helpers.GO_BUILD_RECIPE)
+    binary = root / "go" / key / extractor_helpers._binary_name("llm-wiki-go-extractor")
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(b"foreign helper")
+    binary.chmod(0o755)
+    extractor_helpers._write_manifest(root, "go", {
+        "version": extractor_helpers.HELPER_MANIFEST_VERSION, "language": "go",
+        "platform": extractor_helpers.platform_id(), "key": key, "toolchain": "go fixture",
+        "build_recipe": extractor_helpers.GO_BUILD_RECIPE,
+        "source_fingerprint": extractor_helpers.helper_source_fingerprint("go"),
+        "artifact_fingerprint": helper_artifact_fingerprint(binary), "path": str(binary),
+    })
+    def rebuild(command, **kwargs):
+        output = Path(command[command.index("-o") + 1])
+        assert not output.exists()
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", rebuild)
+    assert get_prepared_binary("go", tmp_path, str(base)) is None
+    assert prepare_go(root).status == "prepared"
+    assert get_prepared_binary("go", tmp_path, str(base)) == binary
+
+
+
+def test_manual_go_repair_protects_an_external_hardlink(tmp_path, monkeypatch):
+    root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go fixture", ""))
+    key = extractor_helpers.helper_cache_key("go", toolchain_version="go fixture", build_recipe=extractor_helpers.GO_BUILD_RECIPE)
+    binary = root / "go" / key / extractor_helpers._binary_name("llm-wiki-go-extractor")
+    binary.parent.mkdir(parents=True)
+    external = tmp_path / "authored"
+    external.write_bytes(b"user bytes")
+    os.link(external, binary)
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", lambda *a, **k: pytest.fail("unsafe build target"))
+    assert prepare_go(root).status == "failed"
+    assert external.read_bytes() == b"user bytes"
+
+
+def test_manual_go_rejects_foreign_build_output_before_publishing(tmp_path, monkeypatch):
+    root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go fixture", ""))
+
+    def cross_compile(command, **kwargs):
+        binary = Path(command[command.index("-o") + 1])
+        binary.write_bytes(b"foreign target")
+        binary.chmod(0o755)
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", cross_compile)
+    result = prepare_go(root)
+    assert result.status == "failed" and "native" in result.message
+    assert not (root / "go/current.json").exists()
+
+
+def test_manual_go_upgrades_path_dependent_receipt_and_preserves_old_binary(tmp_path, monkeypatch):
+    from tests.test_helper_preparation import _prepare_fixture
+    from llm_wiki_cli.services import helper_cache
+
+    source = tmp_path / "project"
+    source.mkdir()
+    base = tmp_path / "cache"
+    root = base / HELPER_CACHE_DIRNAME
+    _prepare_fixture("go", root)
+    old = get_prepared_binary("go", source, str(base))
+    assert old is not None
+    original = old.read_bytes()
+    # A strict read and a caller without a compiler can still use old receipts.
+    with monkeypatch.context() as absent:
+        absent.setattr(extractor_helpers, "_resolve_go_executable", lambda env: None)
+        assert helper_cache.ensure_helper("go", source, str(base)).path == old
+
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/tools/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go version go1.26.3", ""))
+    def compile_helper(argv, **kwargs):
+        output = Path(argv[argv.index("-o") + 1])
+        output.write_bytes(_native_header())
+        output.chmod(0o755)
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", compile_helper)
+    fresh = prepare_go(root)
+    assert fresh.status == "prepared" and fresh.path is not None
+    assert Path(fresh.path).parent != old.parent
+    assert old.read_bytes() == original
+    assert get_prepared_binary("go", source, str(base)) == Path(fresh.path)
+    assert prepare_go(root).status == "already_current"

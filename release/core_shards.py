@@ -15,7 +15,6 @@ import json
 import math
 import re
 from pathlib import Path
-import statistics
 import tempfile
 from typing import Any
 import xml.etree.ElementTree as ET
@@ -27,15 +26,20 @@ assert _spec is not None and _spec.loader is not None
 q = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(q)
 
-PLAN_SCHEMA = "agent-wiki-core-shard-plan/v2"
+PREVIOUS_PLAN_SCHEMA = "agent-wiki-core-shard-plan/v2"
+PLAN_SCHEMA = "agent-wiki-core-shard-plan/v4"
 EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v2"
-QUALIFYING_PLAN_SCHEMA = "agent-wiki-core-shard-plan/v3"
+PREVIOUS_QUALIFYING_PLAN_SCHEMA = "agent-wiki-core-shard-plan/v3"
+QUALIFYING_PLAN_SCHEMA = "agent-wiki-core-shard-plan/v5"
 QUALIFYING_EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v3"
 PREPARATION_SCHEMA = "agent-wiki-core-shard-preparation/v1"
 AGGREGATION_SCHEMA = "agent-wiki-core-shard-aggregation/v1"
 WINDOWS_LANE = "core-windows-3.13"
 WINDOWS_SHARDS = 2
+UBUNTU_LANE = "core-ubuntu-3.11"
+QUALIFYING_LANES = {WINDOWS_LANE, UBUNTU_LANE}
 HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v1"
+HASHED_HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v2"
 PLANNER = "file-lpt-ms-v1"
 ENVIRONMENT_POLICY = "exact-profile-with-recorded-runner-image/v1"
 FLAGS = [
@@ -255,12 +259,14 @@ def plan(
     history: dict | None = None,
     *,
     purpose: str = "shadow",
+    file_hashes: dict[str, str] | None = None,
 ) -> dict:
     validate_context(context)
     validate_purpose(purpose, context, count)
     nodes = inventory(nodes)
     files = sorted({file_name(node) for node in nodes})
     timings = {}
+    fresh = set()
     if history is not None:
         fields(
             history,
@@ -268,7 +274,7 @@ def plan(
             "timing history",
         )
         require(
-            history["schema_version"] == HISTORY_SCHEMA, "unsupported timing history"
+            history["schema_version"] in {HISTORY_SCHEMA, HASHED_HISTORY_SCHEMA}, "unsupported timing history"
         )
         q._require_sha(history["source_sha"], "history source")
         positive(history["run_id"], "history run ID")
@@ -277,7 +283,13 @@ def plan(
         lane = context["environment"]["profile"]["lane"]
         previous = history["lanes"].get(lane)
         if previous is not None:
-            fields(previous, {"profile", "files_ms"}, "lane timings")
+            hashed = history["schema_version"] == HASHED_HISTORY_SCHEMA
+            names = {"profile", "files_ms", "files_sha256"} if hashed else {"profile", "files_ms"}
+            fields(previous, names, "lane timings")
+            if hashed:
+                require(isinstance(previous["files_sha256"], dict) and set(previous["files_sha256"]) == set(previous["files_ms"]), "timing source membership differs")
+                for source_hash in previous["files_sha256"].values():
+                    q._require_sha256(source_hash, "historical test source")
             require(isinstance(previous["files_ms"], dict), "invalid file timings")
             for name, weight in previous["files_ms"].items():
                 q._canonical_junit_selector(name)
@@ -294,7 +306,10 @@ def plan(
                     for name, weight in previous["files_ms"].items()
                     if name in files
                 }
-    fallback = max(1, int(statistics.median(timings.values()))) if timings else 1000
+                if hashed and file_hashes is not None:
+                    fresh = {name for name in timings if file_hashes.get(name) == previous["files_sha256"][name]}
+    ordered = sorted(timings.values())
+    fallback = max(60_000, ordered[(len(ordered) - 1) * 9 // 10] if ordered else 60_000)
     weights = {name: timings.get(name, fallback) for name in files}
     return {
         "schema_version": plan_schema(purpose),
@@ -307,6 +322,8 @@ def plan(
         "inventory_sha256": digest(nodes),
         "history_sha256": digest(history),
         "history_files_used": sorted(timings),
+        "fresh_history_files": sorted(fresh),
+        "stale_history_files": sorted(set(timings) - fresh),
         "fallback_ms": fallback,
         "weights_ms": weights,
         "shard_count": count,
@@ -330,38 +347,32 @@ def validate_purpose(purpose: str, context: dict, count: int) -> None:
     plan_schema(purpose)
     if purpose == "qualification":
         require(
-            context["environment"]["profile"]["lane"] == WINDOWS_LANE
+            context["environment"]["profile"]["lane"] in QUALIFYING_LANES
             and type(count) is int
             and count == WINDOWS_SHARDS,
-            "qualifying sharding is restricted to two Windows shards",
+            "qualifying sharding requires two native Windows or Ubuntu shards",
         )
 
 
 def validate_plan(
     value: Any, context: dict | None = None, *, purpose: str = "shadow"
 ) -> dict:
+    previous_schema = PREVIOUS_QUALIFYING_PLAN_SCHEMA if purpose == "qualification" else PREVIOUS_PLAN_SCHEMA
+    legacy = isinstance(value, dict) and value.get("schema_version") == previous_schema
+    names = {
+        "schema_version", "planner", "environment_policy", "purpose", "qualifying",
+        "context", "inventory", "inventory_sha256", "history_sha256", "history_files_used",
+        "fallback_ms", "weights_ms", "shard_count", "shards",
+    }
+    if not legacy:
+        names |= {"fresh_history_files", "stale_history_files"}
     fields(
         value,
-        {
-            "schema_version",
-            "planner",
-            "environment_policy",
-            "purpose",
-            "qualifying",
-            "context",
-            "inventory",
-            "inventory_sha256",
-            "history_sha256",
-            "history_files_used",
-            "fallback_ms",
-            "weights_ms",
-            "shard_count",
-            "shards",
-        },
+        names,
         "shard plan",
     )
     require(
-        value["schema_version"] == plan_schema(purpose)
+        value["schema_version"] in {plan_schema(purpose), previous_schema}
         and value["planner"] == PLANNER
         and value["environment_policy"] == ENVIRONMENT_POLICY
         and value["purpose"] == purpose
@@ -388,6 +399,12 @@ def validate_plan(
         and set(used) <= set(value["weights_ms"]),
         "invalid timing membership",
     )
+    if not legacy:
+        fresh, stale = value["fresh_history_files"], value["stale_history_files"]
+        require(all(isinstance(rows, list) and all(isinstance(name, str) for name in rows)
+                    and rows == sorted(set(rows)) for rows in (fresh, stale))
+                and not set(fresh).intersection(stale) and set(fresh) | set(stale) == set(used),
+                "invalid fresh/stale timing membership")
     require(isinstance(value["shards"], list), "invalid shard records")
     for index, shard in enumerate(value["shards"]):
         fields(shard, {"index", "files", "nodes", "estimated_ms"}, "shard record")
@@ -473,7 +490,7 @@ def validate_execution(
     validate_plan(value, purpose=purpose)
     if purpose == "qualification":
         require(
-            type(index) is int and 0 <= index < WINDOWS_SHARDS,
+            type(index) is int and 0 <= index < value["shard_count"],
             "qualification requires a planned shard index",
         )
     receipt = read(directory / "execution.json")
@@ -706,6 +723,7 @@ def validate_aggregation(
     run_id: int,
     run_attempt: int,
     allowlist: Path,
+    source_root: Path | None = None,
 ) -> dict:
     value = bound_qualification_plan(
         read(preparation / "plan.json"), identity, harness_sha256, run_id, run_attempt
@@ -741,7 +759,10 @@ def validate_aggregation(
         == q.sha256_file(preparation / "preparation.json"),
         "core aggregation preparation binding differs",
     )
-    names = {WINDOWS_LANE + ".xml", "result-" + WINDOWS_LANE + ".json"}
+    lane = value["context"]["environment"]["profile"]["lane"]
+    names = {lane + ".xml", "result-" + lane + ".json"}
+    if lane == UBUNTU_LANE:
+        names |= {"coverage.data", "coverage.json", "coverage-" + lane + ".xml"}
     require(
         isinstance(record["files"], dict) and set(record["files"]) == names,
         "core aggregation membership differs",
@@ -757,11 +778,11 @@ def validate_aggregation(
     with tempfile.TemporaryDirectory(prefix="core-replay-") as temporary:
         output = Path(temporary)
         merged = merge_junit(
-            value, shards, output / (WINDOWS_LANE + ".xml"), purpose="qualification"
+            value, shards, output / (lane + ".xml"), purpose="qualification"
         )
         require(
-            (output / (WINDOWS_LANE + ".xml")).read_bytes()
-            == (directory / (WINDOWS_LANE + ".xml")).read_bytes(),
+            (output / (lane + ".xml")).read_bytes()
+            == (directory / (lane + ".xml")).read_bytes(),
             "aggregated core JUnit differs from complete shard evidence",
         )
         expected_shards = {
@@ -774,8 +795,8 @@ def validate_aggregation(
         )
         q.verify_junit(
             argparse.Namespace(
-                junit=output / (WINDOWS_LANE + ".xml"),
-                lane=WINDOWS_LANE,
+                junit=output / (lane + ".xml"),
+                lane=lane,
                 allowlist=allowlist,
                 minimum_collected=5322,
                 minimum_passed=5070,
@@ -785,7 +806,53 @@ def validate_aggregation(
         )
         require(
             read(output / "result.json")
-            == read(directory / ("result-" + WINDOWS_LANE + ".json")),
+            == read(directory / ("result-" + lane + ".json")),
             "core aggregation gate result differs",
         )
+    if lane == UBUNTU_LANE:
+        if source_root is None:
+            raise q.QualificationError("Ubuntu coverage requires frozen source bytes")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_core_coverage", Path(__file__).with_name("core_coverage.py"))
+        assert spec is not None and spec.loader is not None
+        coverage = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(coverage)
+        coverage.validate_combination(directory, shards, source_root / "src/llm_wiki_cli", read)
     return record
+
+
+def timing_summary(value: dict, executions: list[dict] | None = None) -> dict:
+    """Report confidence and actual error separately from qualification authority."""
+    validate_plan(value, purpose=value["purpose"])
+    known = set(value["history_files_used"])
+    fresh = set(value.get("fresh_history_files", []))
+    stale = set(value.get("stale_history_files", known))
+    files = set(value["weights_ms"])
+    missing = files - known
+    confidence = "unknown" if not known else "low" if stale or missing else "matching-test-history"
+    result = {
+        "schema_version": "agent-wiki-core-timing-summary/v2", "scheduling_only": True,
+        "known_files": len(known), "current_files": len(files),
+        "fresh_files": sorted(fresh), "fresh_file_count": len(fresh),
+        "stale_files": sorted(stale), "stale_file_count": len(stale),
+        "fallback_files": sorted(missing), "fallback_file_count": len(missing),
+        "measured_file_fraction": len(fresh) / len(files), "confidence": confidence,
+        "estimated_shard_seconds": [row["estimated_ms"] / 1000 for row in value["shards"]],
+        "completion_range_seconds": None,
+        "estimate_scope": "Historical testcase scheduling weights only; stale weights retain prior cost. New files use a conservative90th-percentile/60second floor. Setup, collection, queueing and transfer are excluded; no measured current completion range is established.",
+        "warning": None if confidence == "matching-test-history" else "Stale or missing timing history; scheduling weights are not a reliable completion deadline.",
+    }
+    if executions is not None:
+        require(len(executions) == value["shard_count"], "timing requires every shard")
+        actual = []
+        ratios = []
+        for index, row in enumerate(executions):
+            require(row["index"] == index and row["plan_sha256"] == digest(value), "timing execution plan differs")
+            compatible_context(value["context"], row["context"])
+            duration(row["seconds"])
+            actual.append(row["seconds"])
+            ratios.append(row["seconds"] / result["estimated_shard_seconds"][index])
+        result["actual_shard_seconds"] = actual
+        result["actual_to_estimated_ratio"] = ratios
+        result["balance_ratio"] = max(actual) / max(min(actual), 0.001)
+    return result

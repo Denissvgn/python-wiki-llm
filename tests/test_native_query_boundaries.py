@@ -137,7 +137,10 @@ def test_mcp_native_semantic_errors_match_public_api(consumer):
     "operation",
     ["build_documentation_query_service", "get_knowledge_coverage", "inspect_concept"],
 )
-def test_unprepared_live_helper_has_the_same_unavailable_category(consumer, operation):
+def test_unprepared_live_helper_has_the_same_unavailable_category(consumer, operation, monkeypatch):
+    from llm_wiki_cli.services import helper_cache
+
+    monkeypatch.setattr(helper_cache, "ensure_helper", lambda *a, **k: pytest.fail("strict missing-helper read attempted preparation"))
     source = consumer / "src"
     source.mkdir()
     (source / "private-name.ts").write_text(
@@ -146,7 +149,7 @@ def test_unprepared_live_helper_has_the_same_unavailable_category(consumer, oper
     options: dict[str, object] = {"src_dir": "src", "wiki_dir": "wiki", "helper_cache_dir": "empty-cache"}
     if operation != "build_documentation_query_service":
         options["live"] = True
-    with pytest.raises(api.WorkspaceStateError) as failure:
+    with api.helper_preparation("never"), pytest.raises(api.WorkspaceStateError) as failure:
         getattr(api, operation)(
             *([LOCATOR] if operation == "inspect_concept" else []), **options
         )

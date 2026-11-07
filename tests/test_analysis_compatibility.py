@@ -80,8 +80,9 @@ def test_installed_package_has_complete_analysis_classification():
 
     rules = capture.registry()
     assert "services/helper_preparation.py" in rules["classified_python_files"]
-    # Setup code is classified without entering the observation commitments.
-    assert "services/helper_preparation.py" not in rules["shared"]
+    # Operation-owned preparation now determines the inputs used for both
+    # observation commitments and extraction, so its coordinator is shared.
+    assert "services/helper_preparation.py" in rules["shared"]
     assert all(
         "services/helper_preparation.py" not in paths
         for paths in rules["providers"].values()
@@ -258,23 +259,21 @@ def test_isolated_comparison_versions_match_public_protocol_registry():
 def test_active_node_runtime_is_not_inferred_from_helper_preparation(tmp_path, monkeypatch):
     from llm_wiki_cli.config import EXTRACTOR_REGISTRY
     from llm_wiki_cli.services import extractor_helpers
+    from tests.test_helper_preparation import _prepare_fixture
 
     prepared = capture.registry()["portable_helper_toolchains"]["typescript"]
     original_node = prepared.split(";", 1)[0].removeprefix("node ")
-    monkeypatch.setattr(extractor_helpers, "resolve_helper_cache_root", lambda *a, **kw: tmp_path)
-    monkeypatch.setattr(extractor_helpers, "_manifest_current", lambda *a: {
-        "toolchain": prepared, "artifact_scope": "typescript-node-modules/v1",
-        "artifact_fingerprint": "sha256:" + "1" * 64,
-    })
+    cache_base = tmp_path / "helper-cache"
+    _prepare_fixture("typescript", cache_base / extractor_helpers.HELPER_CACHE_DIRNAME)
     monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: original_node)
-    first = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+    first = capture.capture_analysis(EXTRACTOR_REGISTRY, helper_cache_dir=str(cache_base), languages={"typescript"})
     monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: "v99.0.0")
-    changed = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+    changed = capture.capture_analysis(EXTRACTOR_REGISTRY, helper_cache_dir=str(cache_base), languages={"typescript"})
     name = "llm-wiki/extractor/typescript"
     assert first[name]["runtime"] != changed[name]["runtime"]
     assert "active-node v99.0.0" in changed[name]["provenance"]["helper"]
     monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: None)
-    assert name not in capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+    assert name not in capture.capture_analysis(EXTRACTOR_REGISTRY, helper_cache_dir=str(cache_base), languages={"typescript"})
 
 
 def test_portable_python_identity_requires_qualified_architecture(monkeypatch):

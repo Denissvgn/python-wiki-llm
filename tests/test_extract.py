@@ -41,6 +41,28 @@ from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 PROJECT_ROOT = Path(__file__).parents[1]
 
 
+@pytest.fixture
+def qualified_typescript_cache(tmp_path, monkeypatch):
+    """Give fake TypeScript extractors the helper identity required for cache hits."""
+    from llm_wiki_cli.services import extractor_helpers as helpers
+    from tests.test_helper_preparation import _prepare_fixture
+
+    helper_base = tmp_path / "helper-cache"
+    _prepare_fixture("typescript", helper_base / helpers.HELPER_CACHE_DIRNAME)
+    node = tmp_path / "bin" / helpers._binary_name("node")
+    node.parent.mkdir()
+    node.write_bytes(b"fixture Node executable")
+    node.chmod(0o755)
+    monkeypatch.setenv("PATH", str(node.parent))
+
+    def node_version(argv):
+        assert argv == [str(node.resolve()), "--version"]
+        return "v24.18.0"
+
+    monkeypatch.setattr(helpers, "command_output", node_version)
+    return str(helper_base)
+
+
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
@@ -1303,7 +1325,9 @@ class TestGetInventory:
         )
         assert result.extraction_job_plan.sequential_plan_ids == ("alpha", "zeta")
 
-    def test_inventory_plan_records_fully_warm_cache(self, tmp_path, monkeypatch):
+    def test_inventory_plan_records_fully_warm_cache(
+        self, tmp_path, monkeypatch, qualified_typescript_cache
+    ):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
         registry = {
@@ -1343,8 +1367,12 @@ class TestGetInventory:
             cache_dir=str(tmp_path / "inventory-cache"),
         )
 
-        extract_cmd.get_inventory_result(str(tmp_path), cache_options=options)
-        result = extract_cmd.get_inventory_result(str(tmp_path), cache_options=options)
+        extract_cmd.get_inventory_result(
+            str(tmp_path), cache_options=options, helper_cache_dir=qualified_typescript_cache
+        )
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path), cache_options=options, helper_cache_dir=qualified_typescript_cache
+        )
 
         assert result.extraction_job_plan.effective_workers == 0
         assert result.extraction_job_plan.cache_elided_plan_ids == (
@@ -4557,7 +4585,9 @@ class TestInventoryCache:
         assert result.failed[0].message == "boom"
         assert save_calls == []
 
-    def test_warm_typescript_cache_skips_toolchain_startup(self, tmp_path, monkeypatch):
+    def test_warm_typescript_cache_skips_toolchain_startup(
+        self, tmp_path, monkeypatch, qualified_typescript_cache
+    ):
         (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
 
@@ -4586,7 +4616,7 @@ class TestInventoryCache:
             lambda _entry_point: FakeTypeScriptExtractor(),
         )
         extract_cmd.get_inventory_result(
-            str(tmp_path), deep=True, cache_options=options
+            str(tmp_path), deep=True, cache_options=options, helper_cache_dir=qualified_typescript_cache
         )
 
         def fail_load(_entry_point):
@@ -4605,6 +4635,7 @@ class TestInventoryCache:
             deep=True,
             cache_options=options,
             parallel_jobs=2,
+            helper_cache_dir=qualified_typescript_cache,
         )
 
         assert result.inventory["app.ts"]["classes"][0]["name"] == "App"

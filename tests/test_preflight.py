@@ -20,7 +20,7 @@ from release import preflight
 
 def _git(root: Path, *args: str) -> str:
     completed = subprocess.run(
-        ["git", "-C", str(root), *args],
+        ["git", "-C", str(root), "-c", "core.autocrlf=false", *args],
         check=True,
         capture_output=True,
         text=True,
@@ -263,6 +263,12 @@ def planned_project(project, monkeypatch):
     }
     monkeypatch.setattr(preflight_contracts, "qualification_contract", lambda root: contract)
     monkeypatch.setattr(preflight, "_version", lambda command, root: {"status": "unavailable", "path": None, "version": None})
+    # These controller fixtures isolate external preparation; capability
+    # admission itself is exercised with real negative observations separately.
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(project / "private" / "helper-cache"))
+    monkeypatch.setattr(preflight, "_admission", lambda *a, **kw: {
+        "status": "hosted-required", "blockers": [], "hosted_pending": []
+    })
     monkeypatch.setattr(preflight, "_eligibility", lambda root, check_registry: {
         "status": "eligible", "version": "9.0.0", "scope": "local-only",
         "external": "remote-tag-and-registry-not-inspected",
@@ -342,6 +348,53 @@ def test_new_untracked_transitive_input_invalidates_plan(planned_project):
     (root / "shadow.py").write_text("import os\n", encoding="utf-8")
     with pytest.raises(preflight.PreflightError, match="Stale plan"):
         preflight.validate_plan(plan, root)
+
+
+@pytest.mark.parametrize("flag", ["assume-unchanged", "skip-worktree"])
+def test_hidden_changed_source_is_not_an_eligible_exact_candidate(planned_project, monkeypatch, flag):
+    from release import preflight_runner
+
+    root, _, original = planned_project
+    sha = original["candidate_sha"]
+    review = root / "private" / "source-review.json"
+    preflight.write_document(review, _review_record(sha), root=root)
+    _git(root, "update-index", "--" + flag, "app.py")
+    (root / "app.py").write_bytes(b"VALUE = 2\n")
+    assert not _git(root, "status", "--porcelain")
+    plan = preflight.create_plan(root, sha, review_file=review)
+    assert plan["binding"]["dirty"].startswith("Canonical tracked source mismatch:")
+    assert plan["readiness"]["status"] == "waiting_release_preparation"
+    assert plan["readiness"]["eligibility_status"] == "eligible"
+    assert plan["readiness"]["review"]["status"] == "recorded"
+    assert plan["readiness"]["admission"]["blockers"] == []
+    preflight.validate_plan(plan, root)
+    path = root / "private" / "hidden-source-plan.json"
+    preflight.write_document(path, plan, root=root)
+    monkeypatch.setattr(preflight_runner, "execute_stage",
+                        lambda *a, **kw: pytest.fail("Changed canonical bytes reached full rehearsal"))
+    result = preflight.run_plan(path, root / "private" / "hidden-source-work")
+    assert result["status"] == "blocked"
+    assert result["attempts"][0]["stage"] == "readiness"
+    forged = dict(plan)
+    forged["readiness"] = {**plan["readiness"], "status": "eligible"}
+    forged = preflight._sealed({k: v for k, v in forged.items() if k != "plan_hash"}, "plan_hash")
+    with pytest.raises(preflight.PreflightError, match="Changed source bytes cannot be eligible"):
+        preflight.validate_plan(forged, root)
+
+
+def test_ordinary_dirty_plan_still_runs_nonpromoting_contract_diagnostics(local_receipt):
+    root, _, _, original = local_receipt
+    (root / "app.py").write_bytes(b"VALUE = 2\n")
+    plan = preflight.create_plan(root, original["plan"]["candidate_sha"])
+    assert plan["binding"]["dirty"] and not plan["binding"]["dirty"].startswith("Canonical")
+    assert plan["readiness"]["status"] == "waiting_release_preparation"
+    path = root / "private" / "ordinary-dirty-plan.json"
+    preflight.write_document(path, plan, root=root)
+    result = preflight.run_plan(path, root / "private" / "dirty-diagnostic-work", stages=("contracts",))
+    assert result["attempts"][0]["stage"] == "contracts"
+    assert result["attempts"][0]["status"] == "passed"
+    assert result["status"] == "blocked"
+    assert (root / "app.py").read_bytes() == b"VALUE = 2\n"
 
 
 def test_new_commit_cannot_retarget_previous_plan(planned_project):
@@ -704,6 +757,72 @@ def test_missing_or_blocking_review_prevents_full_driver_execution(planned_proje
     assert calls == []
     assert result["attempts"][0]["stage"] == "readiness"
     assert all(row["release_pending"] for row in result["plan"]["gates"])
+
+
+def test_incomplete_capabilities_block_before_any_expensive_contract(planned_project, monkeypatch):
+    from release import preflight_runner
+
+    root, _, original = planned_project
+    review = root / "private" / "release-review.json"
+    preflight.write_document(review, _review_record(original["candidate_sha"]), root=root)
+    blockers = [
+        {"id": "tool:actionlint", "reason": "missing"},
+        {"id": "helper:typescript", "reason": "wrong configured cache"},
+    ]
+    monkeypatch.setattr(preflight, "_admission", lambda *a, **kw: {
+        "status": "blocked", "blockers": blockers, "hosted_pending": []
+    })
+    plan = preflight.create_plan(root, original["candidate_sha"], review_file=review)
+    assert plan["readiness"]["status"] == "blocked_unavailable"
+    assert plan["readiness"]["eligibility_status"] == "eligible"
+    assert plan["readiness"]["review"]["status"] == "recorded"
+    assert plan["readiness"]["admission"]["blockers"] == blockers
+    path = root / "private" / "missing-capabilities.json"
+    preflight.write_document(path, plan, root=root)
+    monkeypatch.setattr(preflight_runner, "execute_stage", lambda *a, **kw: pytest.fail("expensive stage executed"))
+    result = preflight.run_plan(path, root / "private" / "missing-capabilities-work")
+    assert result["status"] == "blocked" and result["attempts"][0]["stage"] == "readiness"
+
+
+def test_actual_plan_retains_corrupt_helper_identity_and_aggregated_admission(
+    planned_project, monkeypatch
+):
+    from release import readiness
+
+    root, _, _ = planned_project
+    source = Path(__file__).parents[1]
+    names = {readiness.CONTRACT, "release/toolchain-lock.json"}
+    names.update(row[1] for row in readiness.REQUIRED_CONSUMERS.values())
+    for name in names:
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes((source / name).read_bytes())
+    _git(root, "add", ".")
+    _git(root, "commit", "--quiet", "-m", "Bind admission declarations")
+    candidate = _git(root, "rev-parse", "HEAD")
+    review = root / "private/release-review.json"
+    preflight.write_document(review, _review_record(candidate), root=root)
+    cache = root / "private/helper-cache"
+    metadata = cache / "llm-wiki-extractors/typescript/current.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_bytes(b'{"broken":')
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache))
+    monkeypatch.setattr(readiness.importlib.util, "find_spec", lambda name: None)
+    monkeypatch.setattr(preflight, "_admission", lambda root, binding, stages=preflight.STAGES: readiness.inspect(
+        root, stages=stages, environment=binding["environment"], helper=binding["helper"]
+    ))
+    plan = preflight.create_plan(root, candidate, review_file=review)
+    assert plan["readiness"]["status"] == "blocked_unavailable"
+    assert plan["binding"]["helper"]["status"] == "blocked"
+    assert plan["binding"]["helper"]["metadata"] == hashlib.sha256(metadata.read_bytes()).hexdigest()
+    ids = {row["id"] for row in plan["readiness"]["admission"]["blockers"]}
+    assert {"helper:typescript", "tool:node", "tool:actionlint", "module:mcp"} <= ids
+    metadata.write_bytes(b'{"different-broken":')
+    assert preflight._capture_binding(root)["helper"] != plan["binding"]["helper"]
+    path = root / "private/corrupt-helper-plan.json"
+    preflight.write_document(path, plan, root=root)
+    with pytest.raises(preflight.PreflightError, match="Stale plan"):
+        preflight.run_plan(path, root / "private/corrupt-helper-work")
 
 
 @pytest.mark.parametrize("relative", ["frozen/candidate-source.tar", "archive-budget/candidate-source.zip"])

@@ -43,7 +43,7 @@ dev = [
     "tomli>=2",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
-# Prepare the locked dependency cache with `llm-wiki prepare-extractors`.
+# Normal analysis prepares its managed dependency cache on first use.
 typescript = []
 # Go extraction requires the Go toolchain at runtime (no Python deps).
 go = []

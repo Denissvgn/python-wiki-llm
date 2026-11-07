@@ -176,6 +176,7 @@ jobs:
       shell: bash
       run: '"${{ steps.python.outputs.python-path }}" -m ruff check src tests examples integrations/github-action/render_summary.py
         release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py release/pr_ci_impact.py
+        release/manual_release.py release/readiness.py release/measurement_canary.py release/core_coverage.py release/core_shards.py release/core_shard_runner.py release/qualification.py release/hosted_evidence.py release/qualification_automation.py
         | tee ruff.log'
     - name: Upload typing diagnostics
       if: always()
@@ -300,7 +301,8 @@ jobs:
         BASE_POLICY_SHA256: ${{ needs.plan.outputs.policy-sha256 }}
         SELECTED_LANE: ${{ matrix.lane }}
       run: |
-        "${PR_CI_PYTHON}" -I - <<'PY'
+        set -euo pipefail
+        file_count=$("${PR_CI_PYTHON}" -I - <<'PY'
         import hashlib, json, os, pathlib
         root = pathlib.Path("incoming/pr-ci")
         names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json", "pr_ci_impact.py", "pr-ci-impact-requirements.txt")
@@ -308,10 +310,45 @@ jobs:
         identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
             raise SystemExit("Base-owned selection driver or plan digest differs")
+        plan = json.loads((root / "plan.json").read_bytes())
+        selectors = plan["lanes"][os.environ["SELECTED_LANE"]]["selectors"]
+        print(len({s.partition("::")[0] for s in selectors}))
         PY
+        )
+        workers=1
+        if [[ "${SELECTED_LANE}" == ubuntu && "${file_count}" -ge 100 ]]; then
+          # Temporary test workspaces make frequent durable writes. Keep
+          # those off the shared disk journal; evidence stays on RUNNER_TEMP.
+          scratch=/tmp/pr-ci-tests
+          if [[ ! -d "${scratch}" ]]; then
+            mkdir -m 700 "${scratch}"
+            sudo mount -t tmpfs -o "size=6G,nosuid,nodev,exec,mode=0700,uid=$(id -u),gid=$(id -g)" tmpfs "${scratch}"
+            trap 'sudo umount "${scratch}" && rmdir "${scratch}"' EXIT
+          fi
+          [[ ! -L "${scratch}" && -O "${scratch}" && "$(stat -f -c %T "${scratch}")" == tmpfs ]]
+          [[ -z "$(ls -A "${scratch}")" ]]
+          export TMPDIR="${scratch}"
+
+          workers=$(nproc)
+          if (( workers > 3 )); then workers=3; fi
+          if (( workers > 1 )); then
+            "${PR_CI_PYTHON}" -m pip install --require-hashes --only-binary=:all: --no-deps -r .github/pr-ci-workers-requirements.txt
+            "${PR_CI_PYTHON}" -m pip check
+            # One worker per file at a time. Each base-owned witness records
+            # every case, and nested pytest processes get no scheduling options.
+            export PYTEST_ADDOPTS="--dist=loadfile --max-worker-restart=0 --tx=popen//env:PYTEST_ADDOPTS="
+            for ((i=2; i<=workers; i++)); do
+              witness="${RUNNER_TEMP}/pr-ci-evidence/collection-worker-${i}.json"
+              PYTEST_ADDOPTS+=" --tx='popen//env:PYTEST_ADDOPTS=//env:PR_CI_COLLECTION=${witness}'"
+            done
+          fi
+        fi
         "${PR_CI_PYTHON}" -I incoming/pr-ci/pr_ci.py run --root . \
           --plan incoming/pr-ci/plan.json --expected-sha256 "${PLAN_SHA256}" \
           --lane "${SELECTED_LANE}" --output "${RUNNER_TEMP}/pr-ci-evidence"
+        for ((i=2; i<=workers; i++)); do
+          cmp "${RUNNER_TEMP}/pr-ci-evidence/collection.json" "${RUNNER_TEMP}/pr-ci-evidence/collection-worker-${i}.json"
+        done
     - name: Retain selected case evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

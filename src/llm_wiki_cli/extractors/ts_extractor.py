@@ -143,7 +143,16 @@ class TypeScriptExtractor:
     def _toolchain_root(
         self, src_dir: str, helper_cache_dir: str | None = None
     ) -> Path | None:
-        if not shutil.which("node"):
+        from ..services.helper_runtime import current_helper_operation, pinned_helper
+        handle = pinned_helper("typescript", source_root=src_dir)
+        if handle is not None and helper_cache_dir is not None:
+            from ..services.extractor_helpers import resolve_helper_cache_root
+            if resolve_helper_cache_root(src_dir, helper_cache_dir) != handle.cache_root:
+                self.last_error = "helper cache scope changed during analysis"
+                print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
+                return None
+        node = handle.runtime_executables.get("node") if handle is not None else shutil.which("node")
+        if not node:
             self.last_error = (
                 "node not found. Install Node.js (https://nodejs.org) "
                 "to enable TypeScript extraction."
@@ -152,7 +161,9 @@ class TypeScriptExtractor:
             return None
 
         helper_root = get_prepared_typescript_root(src_dir, helper_cache_dir)
-        if helper_root is None and helper_cache_dir is None:
+        if helper_root is None and helper_cache_dir is None and current_helper_operation() is None:
+            # Standalone extractor callers historically prewarm the CWD. An
+            # owned operation already selected its caches for the source root.
             helper_root = get_prepared_typescript_root()
         if helper_root is None:
             self.last_error = missing_helper_message(
@@ -170,8 +181,10 @@ class TypeScriptExtractor:
         deep: bool,
         helper_root: Path,
     ) -> list[str]:
+        from ..services.helper_runtime import pinned_helper
+        handle = pinned_helper("typescript", source_root=src_dir)
         cmd = [
-            "node",
+            handle.runtime_executables.get("node", "node") if handle is not None else "node",
             str(helper_root / "extract.js"),
             "--src-dir",
             str(Path(src_dir).resolve()),

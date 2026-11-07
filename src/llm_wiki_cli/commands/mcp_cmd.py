@@ -68,6 +68,8 @@ def run(args) -> None:
         source_selection=getattr(args, "source_selection", None),
         tokenizer=getattr(args, "tokenizer", None),
         enable_sessions=getattr(args, "enable_sessions", True),
+        helper_preparation=getattr(args, "helper_preparation", "auto"),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
     )
     try:
         runner(config)

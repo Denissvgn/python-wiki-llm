@@ -54,6 +54,8 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `build_flow_context`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
+| `.helper_preparation` | `prepare_operation_helpers` |
+| `.helper_runtime` | `current_helper_operation`, `current_helper_operation` |
 | `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
@@ -74,8 +76,9 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
+| `contextvars` | `copy_context` |
 | `copy` | `deepcopy` |
-| `dataclasses` | `dataclass`, `field` |
+| `dataclasses` | `dataclass`, `field`, `replace` |
 | `functools` | `lru_cache` |
 | `hashlib` | `hashlib` |
 | `importlib` | `importlib` |
@@ -106,23 +109,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (23) |
-| Outbound | `src` (34) |
+| Outbound | `src` (36) |
 
-> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 144 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 152 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 184 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 226 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 246 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 271 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 284 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 297 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 323 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 145 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 153 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 185 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 227 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 247 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 272 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 285 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 298 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 324 | — | — |
 
 ## Functions
 
@@ -148,6 +151,7 @@ flowchart LR
 | `_snapshot_with_plugin_inventory_paths` | `(snapshot: SourceSnapshot, inventory: dict, components: tuple[dict, ...]) -> SourceSnapshot` | — | — |
 | `_build_extraction_job_plan` | `(context: _InventoryBuildContext, planning: _InventoryPlanningResult) -> ExtractionJobPlan` | — | — |
 | `_prepare_inventory_build_context` | `(request: InventoryRequest) -> _InventoryBuildContext` | — | — |
+| `prepare_inventory_helpers` | `(request: InventoryRequest) -> None` | — | Apply the same validated source/plugin selection before an earlier capture. |
 | `_source_snapshot_for_inventory_request` | `(request: InventoryRequest) -> SourceSnapshot` | — | — |
 | `_filter_selected_inventory` | `(source_snapshot: SourceSnapshot, inventory: dict) -> dict` | — | — |
 | `_captured_plugin_lock` | `(source_root: str \| Path, *, plugin_root: str \| Path = '.') -> tuple[str \| None, str \| None]` | — | Capture the exact applicable project-local plugin lock without leaking it. |

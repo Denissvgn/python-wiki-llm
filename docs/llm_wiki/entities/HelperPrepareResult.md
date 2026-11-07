@@ -1,6 +1,6 @@
 # HelperPrepareResult
 
-**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:53`
+**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:56`
 **Kind:** Class
 **Bases:** —
 **Module:** [extractor_helpers](../modules/extractor_helpers.md)
@@ -32,11 +32,11 @@ flowchart LR
     n0["HelperPrepareResult (src/llm_wiki_cli/services/extractor_helpers.py)"]
     n1["_format_result (src/llm_wiki_cli/commands/prepare_extractors_cmd.py)"]
     n2["run (src/llm_wiki_cli/commands/prepare_extractors_cmd.py)"]
-    n3["prepare_go (src/llm_wiki_cli/services/extractor_helpers.py)"]
-    n4["prepare_haskell (src/llm_wiki_cli/services/extractor_helpers.py)"]
-    n5["prepare_helper (src/llm_wiki_cli/services/extractor_helpers.py)"]
-    n6["prepare_rust (src/llm_wiki_cli/services/extractor_helpers.py)"]
-    n7["prepare_typescript (src/llm_wiki_cli/services/extractor_helpers.py)"]
+    n3["_publish_native_helper (src/llm_wiki_cli/services/extractor_helpers.py)"]
+    n4["prepare_go (src/llm_wiki_cli/services/extractor_helpers.py)"]
+    n5["prepare_haskell (src/llm_wiki_cli/services/extractor_helpers.py)"]
+    n6["prepare_helper (src/llm_wiki_cli/services/extractor_helpers.py)"]
+    n7["prepare_rust (src/llm_wiki_cli/services/extractor_helpers.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -66,6 +66,8 @@ flowchart LR
 |---|---|---|---:|
 | `_format_result` | type_reference | [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md) | — |
 | `run` | call | [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md) | 1 |
+| `_publish_native_helper` | call | [extractor_helpers](../modules/extractor_helpers.md) | 2 |
+| `_publish_native_helper` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 | `prepare_go` | call | [extractor_helpers](../modules/extractor_helpers.md) | 8 |
 | `prepare_go` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 | `prepare_haskell` | call | [extractor_helpers](../modules/extractor_helpers.md) | 9 |
@@ -74,7 +76,5 @@ flowchart LR
 | `prepare_helper` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 | `prepare_rust` | call | [extractor_helpers](../modules/extractor_helpers.md) | 6 |
 | `prepare_rust` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
-| `prepare_typescript` | call | [extractor_helpers](../modules/extractor_helpers.md) | 11 |
-| `prepare_typescript` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

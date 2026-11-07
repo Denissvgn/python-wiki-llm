@@ -188,6 +188,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                      source_root: str | Path = ".", languages=None, package_root: Path | None = None) -> dict:
     """Capture immutable JSON inputs once; unavailable providers stay unknown."""
     from . import extractor_helpers
+    from .helper_runtime import current_helper_operation, pinned_helper
     root = package_root or Path(__file__).resolve().parents[1]
     cache = _CAPTURE.get()
     selected = set(registry_entries if languages is None else languages)
@@ -196,6 +197,26 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         selected.add("typescript")
     selected.add("infrastructure")
     cache_key = (str(root), str(source_root), str(helper_cache_dir), tuple(sorted(registry_entries.items())), tuple(sorted(selected)))
+    # The request may inherit its cache from an operation or the environment.
+    # An unbound observation from another scope cannot satisfy this capture.
+    from .helper_cache import cache_roots
+    try:
+        helper_scope = cache_roots(source_root, helper_cache_dir)
+    except (OSError, ValueError, TypeError):
+        helper_scope = ()
+    cache_key += (helper_scope,)
+    operation = current_helper_operation()
+    if operation is not None:
+        cache_key += (frozenset(language for language in selected
+                                if operation.missing_scope(source_root, language) is not None),)
+    # Preparation can complete after an earlier inspection in this operation.
+    # A capture made without a helper must not conceal the newly bound input.
+    cache_key += (tuple(
+        (language, handle.key, handle.receipt.get("artifact_fingerprint"),
+         tuple(sorted(handle.runtime_executables.items())))
+        for language in sorted(selected)
+        if (handle := pinned_helper(language, source_root=source_root)) is not None
+    ),)
     try:
         rules = registry(root)
         unclassified = _input_rows(root, rules)
@@ -238,11 +259,24 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
             dependencies = {}
             portable_helper = False
             if owner not in {"python", "infrastructure"}:
-                helper_root = extractor_helpers.resolve_helper_cache_root(source_root, helper_cache_dir)
-                prepared = None if helper_root is None else extractor_helpers._manifest_current(helper_root, owner)
-                if prepared is None or not prepared.get("toolchain"):
+                handle = pinned_helper(owner, source_root=source_root)
+                if handle is not None:
+                    from .helper_cache import validate_handle
+                    if handle.cache_root not in helper_scope or not validate_handle(handle):
+                        continue
+                else:
+                    # One owner validates legacy pointers and immutable slots
+                    # alike. A legacy receipt must not bypass native/containment
+                    # checks merely because this observation has no binding.
+                    from .helper_cache import lookup_helper
+                    handle = lookup_helper(owner, source_root, helper_cache_dir)
+                    if handle is None:
+                        continue
+                prepared = handle.receipt
+                toolchain = prepared.get("toolchain")
+                if not isinstance(toolchain, str) or not toolchain:
                     continue
-                helper = prepared["toolchain"]
+                helper = toolchain
                 if owner == "typescript":
                     artifact = prepared.get("artifact_fingerprint")
                     if (prepared.get("artifact_scope") != extractor_helpers.ts_identity.ARTIFACT_SCOPE
@@ -253,7 +287,10 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                         "scope": prepared["artifact_scope"],
                         "fingerprint": artifact,
                     }
-                    active_node = extractor_helpers.command_output(["node", "--version"])
+                    node = handle.runtime_executables.get("node")
+                    if node is None:
+                        continue
+                    active_node = extractor_helpers.command_output([node, "--version"])
                     if not active_node or re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+].+)?", active_node) is None:
                         continue
                     portable_helper = (
@@ -262,6 +299,12 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
                         and sys.platform in rules.get("portable_helper_platforms", {}).get(owner, [])
                     )
                     helper += "; active-node " + active_node
+                if not portable_helper:
+                    dependencies["prepared_helper"] = {
+                        "key": handle.key,
+                        "artifact": prepared.get("artifact_fingerprint"),
+                        "profile": prepared.get("preparation_profile"),
+                    }
             if owner == "infrastructure":
                 from importlib.metadata import version
                 dependencies["PyYAML"] = version("PyYAML")

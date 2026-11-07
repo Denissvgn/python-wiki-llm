@@ -4068,3 +4068,39 @@ Existing permissions, validation bounds and native authority remain separate.
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 0
+
+## 2026-11-06
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.0.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:6b64668f7fad1f8e364449095b937d279bc2f580a5e6d2eac80fc74309c6dd73`
+- Pages created: 14
+- Pages updated: 188
+- Pages metadata-only: 6
+- Pages skipped (unchanged): 1461
+- Pages deprecated: 0
+- Semantic fields preserved: 24
+- Moved entities: none
+- Flow pages initialized: 1 (api=1)
+- Workflow pages created: 5
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-11-06
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.0.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:901e9ccee0d655febeb0e51b4bdcd78d43e5efca3d5be6193da8be24d806aba9`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1663
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

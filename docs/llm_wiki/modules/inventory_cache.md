@@ -15,6 +15,7 @@ Persistent inventory cache used by lint and CI validation.
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.analysis_capture` | `capture_analysis` |
 | `.analysis_compatibility` | `digest` |
+| `.helper_runtime` | `required_helper_languages` |
 | `.io` | `write_json_atomic` |
 | `.knowledge_evidence` | `hash_json` |
 | `.plugins` | `lock_path`, `plugin_store` |
@@ -49,9 +50,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (11) |
+| Outbound | `src` (12) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -59,7 +60,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 42 | — | Runtime cache controls for inventory-producing commands. |
 | [InventoryCacheStats](../entities/InventoryCacheStats.md) | 56 | — | — |
-| [InventoryCache](../entities/InventoryCache.md) | 359 | — | JSON-backed cache for per-file built-in inventory entries. |
+| [InventoryCache](../entities/InventoryCache.md) | 368 | — | JSON-backed cache for per-file built-in inventory entries. |
 
 ## Functions
 
@@ -76,7 +77,7 @@ flowchart LR
 | `_implementation_fingerprint` | `() -> str` | — | — |
 | `_plugin_fingerprint` | `(root: Path) -> str` | — | — |
 | `_filter_fingerprint` | `() -> str` | — | — |
-| `build_inventory_cache_key` | `(src_dir: str \| Path, source_snapshot: SourceSnapshot, *, deep: bool, include_empty: bool, extractor_registry: dict[str, str], helper_cache_dir: str \| None = None) -> dict[str, Any]` | — | Build cache metadata that must match before entries are reused. |
+| `build_inventory_cache_key` | `(src_dir: str \| Path, source_snapshot: SourceSnapshot, *, deep: bool, include_empty: bool, extractor_registry: dict[str, str], helper_cache_dir: str \| None = None) -> dict[str, Any] \| None` | — | Return a cache key only if all selected bundled helpers were observed. |
 | `_resolve_gitdir_file` | `(git_file: Path) -> Path \| None` | — | — |
 | `_nearest_git_dir` | `(start: Path) -> Path \| None` | — | — |
 | `resolve_inventory_cache_path` | `(src_dir: str \| Path, cache_dir: str \| None = None, *, env: dict[str, str] \| None = None) -> Path \| None` | — | Resolve the cache file path for a source tree and optional override. |

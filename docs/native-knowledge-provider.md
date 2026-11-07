@@ -19,20 +19,20 @@ for how installed annotations are discovered.
 
 ## Choose a read operation
 
-| Public operation | Scope and result | Writes |
+| Public operation | Scope and result | Workspace and cache effects |
 |---|---|---|
-| `bootstrap_wiki(source_root, wiki_root)` | Creates initial deterministic Markdown and native projections; always uses source-adapter behavior | Explicit wiki creation; no agent setup |
+| `bootstrap_wiki(source_root, wiki_root)` | Creates initial deterministic Markdown and native projections; always uses source-adapter behavior | Explicit wiki creation; managed helper setup may occur; no agent setup |
 | `extract_source(..., deep=True, read_only=True)` | Source inventory with declared extraction scope | No implicit preparation or source edits |
 | `inspect_concept(..., live=False)` | One exact concept, typed edges, sections and coverage from a committed snapshot | None |
-| `inspect_concept(..., live=True)` | The same bounded result with one live full source capture and final input checks | None |
+| `inspect_concept(..., live=True)` | The same bounded result with one live full source capture and final input checks | Workspace unchanged; managed helper setup may occur |
 | `get_knowledge_coverage(..., live=False)` | Eligibility counts; freshness is unevaluated | None |
-| `get_knowledge_coverage(..., live=True)` | Eligibility, actual comparisons and modeled freshness | None |
-| `build_documentation_query_service(...)` | Captures a live full inventory for several queries within one operation | Read-only by default |
-| `get_concept`, `related_concepts`, `list_concept_sections`, `traverse_typed_graph`, `explain_evidence` | Reuse `service=` or construct a live service; preserve each result's qualifiers | Read-only by default |
-| `query_documentation(request)` | Exact snapshot queries, supplied-path impact, or explicitly authorized full inventory | None |
-| `build_context`, `build_qualified_context` | Bounded source context or a canonical qualified packet | Read-only by default |
+| `get_knowledge_coverage(..., live=True)` | Eligibility, actual comparisons and modeled freshness | Workspace unchanged; managed helper setup may occur |
+| `build_documentation_query_service(...)` | Captures a live full inventory for several queries within one operation | Workspace read-only by default; managed helper setup may occur |
+| `get_concept`, `related_concepts`, `list_concept_sections`, `traverse_typed_graph`, `explain_evidence` | Reuse `service=` or construct a live service; preserve each result's qualifiers | Workspace unchanged; constructing a live service may prepare helpers |
+| `query_documentation(request)` | Exact snapshot queries, supplied-path impact, or explicitly authorized full inventory | Snapshot queries have no writes; source reads may prepare managed helpers |
+| `build_context`, `build_qualified_context` | Bounded source context or a canonical qualified packet | Workspace unchanged; managed helper setup may occur |
 | `validate_context_packet`, `compare_context_packet_basis` | Offline structural validation or supplied-basis comparison | None; no live-currentness claim |
-| `reconcile_context_packet` | New read against caller-designated roots | None; does not refresh projections |
+| `reconcile_context_packet` | New read against caller-designated roots | Workspace unchanged; managed helper setup may occur |
 
 Only a new live read can evaluate currentness. Reusing a service retains its
 captured scope; rebuild it for later work. `required` knowledge mode requires
@@ -173,12 +173,66 @@ completed = subprocess.run(
 coverage = json.loads(completed.stdout)
 ```
 
-Use separate mutable inventory-cache directories for separate projects.
-Prepared language helpers may share an explicitly selected, trusted cache.
-`--cache-dir BASE` during preparation and `--helper-cache-dir BASE` during reads
-refer to the same **base**: helper storage is placed in `BASE/llm-wiki-extractors`.
-Prepare dependencies explicitly before a read; unavailable helpers produce an
-actionable failure instead of an empty successful inventory.
+## Automatic helper preparation
+
+Ordinary SDK analysis prepares required missing or stale bundled helpers before
+capturing analysis inputs, then continues the original operation. Omitted
+`read_only` keeps its existing workspace-read-only default while allowing setup
+in managed helper caches. Explicit `read_only=True` at a top-level API boundary
+retains strict behavior: no helper preparation or cache creation. Internal calls
+share the enclosing operation's policy and exact helper binding.
+
+```python
+from llm_wiki_cli import api
+
+# First use prepares the helper only if selected source needs it.
+inventory = api.extract_source("src", deep=True)
+
+# No automatic builds or downloads inside this scope.
+with api.helper_preparation("never"):
+    inventory = api.extract_source("src", deep=True)
+
+# Explicit strict read-only remains available for an individual call.
+inventory = api.extract_source("src", deep=True, read_only=True)
+```
+
+A configuration scope carries defaults without retaining helper handles across
+independent API calls. Use a nested `helper_preparation("never")` scope to disable
+setup inside an existing operation. You can select a helper cache and receive
+setup progress without mixing it into result output:
+
+```python
+import sys
+from llm_wiki_cli import api
+
+with api.helper_preparation(
+    "auto", cache_dir=".cache/helpers",
+    progress=lambda message: print(message, file=sys.stderr),
+):
+    context = api.build_context("src", focus="all")
+```
+
+Automatic helpers use a platform user cache shared by projects and work without
+Git. A valid existing project helper can be reused; explicit cache arguments and
+`LLM_WIKI_CACHE_DIR` remain authoritative. Keep mutable inventory caches separate
+for different projects. `--cache-dir BASE` during explicit preparation and
+`--helper-cache-dir BASE` during reads refer to the same **base**, with helper
+storage in `BASE/llm-wiki-extractors`.
+
+Preparation uses available Node.js/npm, Go, Cargo or supported GHC, without
+installing global toolchains or changing the target project's dependencies.
+Current native helpers can be reused without their compilers; TypeScript still
+needs Node to run. Pure snapshot reads and excluded or unselected languages do
+not trigger setup. Strict/read-only, preview and `never` modes only reuse
+validated artifacts. `prepare-extractors` remains an optional prewarming and
+repair route.
+
+A failed automatic preparation raises `WorkspaceStateError` with
+`code="helper-preparation-failed"`. Its details identify the language, the
+bounded failure reason and, when available, the selected `cache_root`.
+Fix the actual toolchain, dependency, permission or timeout
+cause; missing helpers do not produce an empty successful inventory. MCP uses
+the same error code and exposes its policy through `--helper-preparation`.
 
 ## Dependencies and optional adoption
 
@@ -187,7 +241,8 @@ It does not require an agent configuration, MCP, tokenizers, model-provider
 SDKs, or the provider repository's own wiki. Install `[mcp]` for the advertised
 stdio or local HTTP server, and `[tokens]` for exact token
 counting with a caller-supplied local tokenizer. Estimated counting is available without the optional tokenizer backend. External language helpers require their
-documented runtimes and explicit preparation.
+documented runtimes. Missing bundled helpers are prepared automatically when
+the operation permits setup.
 
 The [downstream tutorial](../examples/native-knowledge/README.md) demonstrates
 bootstrap, qualified reads, source drift, authored follow-up and sync without
