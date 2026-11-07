@@ -6,12 +6,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 683 | [Open section](#entities) |
-| Modules | 261 | [Open section](#modules) |
-| Workflows | 250 | [Open section](#workflows) |
+| Entities | 686 | [Open section](#entities) |
+| Modules | 266 | [Open section](#modules) |
+| Workflows | 256 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 467 | [Open section](#entry-point-flows) |
-| Infrastructure | 2 | [Open section](#infrastructure) |
+| Entry-point flows | 470 | [Open section](#entry-point-flows) |
+| Infrastructure | 3 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
 | Log | 1 | [Open log](log.md) |
@@ -492,6 +492,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ProtectedArtifactStore](entities/ProtectedArtifactStore.md)
 - [ProtocolEnrichmentSession](entities/ProtocolEnrichmentSession.md)
 - [ProtocolRequestError](entities/ProtocolRequestError.md)
+- [PublicationConfigError](entities/PublicationConfigError.md)
+- [PublicationProtocolError](entities/PublicationProtocolError.md)
+- [PublicationSnapshotError](entities/PublicationSnapshotError.md)
 - [PythonBindings](entities/PythonBindings.md)
 - [PythonCallContext](entities/PythonCallContext.md)
 - [PythonCallDecision](entities/PythonCallDecision.md)
@@ -871,6 +874,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
 - [progress](modules/progress.md) - Bounded command-local phase events; services are silent without a caller sink.
 - [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
+- [publication_cmd](modules/publication_cmd.md) - Read-only public wiki impact and explicit review record preparation.
+- [publication_config](modules/publication_config.md) - Portable consumer policy for read-only publication impact and review.
+- [publication_contracts](modules/publication_contracts.md) - Strict portable validators for captured publication evidence and decisions.
+- [publication_impact](modules/publication_impact.md) - Portable, deterministic architecture-to-public-topic impact and review.
+- [publication_snapshot](modules/publication_snapshot.md) - Complete, read-only native page commitments for documentation publication.
 - [python_bindings](modules/python_bindings.md) - Conservative syntax-only binding facts for captured Python calls.
 - [python_calls](modules/python_calls.md) - Shared Python call resolution using captured lexical binding evidence.
 - [python_contracts](modules/python_contracts.md) - Pure AST helpers for reconstructable Python declaration contracts.
@@ -1002,6 +1010,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [bootstrap_write_operation](workflows/bootstrap_write_operation.md) - entry: `bootstrap_recovery.bootstrap_write_operation`
 - [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
 - [build_artifact_verification_context](workflows/build_artifact_verification_context.md) - entry: `verification_contracts.build_artifact_verification_context`
+- [build_bootstrap_publication_snapshot](workflows/build_bootstrap_publication_snapshot.md) - entry: `publication_snapshot.build_bootstrap_publication_snapshot`
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
@@ -1027,6 +1036,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_runtime_knowledge_plan](workflows/build_runtime_knowledge_plan.md) - entry: `knowledge_orchestration.build_runtime_knowledge_plan`
 - [build_runtime_live_evaluation](workflows/build_runtime_live_evaluation.md) - entry: `knowledge_orchestration.build_runtime_live_evaluation`
 - [build_scoped_task_read](workflows/build_scoped_task_read.md) - entry: `task_context_v2.build_scoped_task_read`
+- [build_snapshot](workflows/build_snapshot.md) - entry: `publication_snapshot._build_snapshot`
 - [build_surface_index_pages](workflows/build_surface_index_pages.md) - entry: `review_service._build_surface_index_pages`
 - [build_sync_graph_observations](workflows/build_sync_graph_observations.md) - entry: `sync_cmd._build_sync_graph_observations`
 - [build_sync_prompt](workflows/build_sync_prompt.md) - entry: `trigger_cmd._build_sync_prompt`
@@ -1038,6 +1048,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [capture_health_details](workflows/capture_health_details.md) - entry: `health_details.capture_health_details`
 - [capture_maintenance_observations](workflows/capture_maintenance_observations.md) - entry: `maintenance_service.capture_maintenance_observations`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
+- [capture_publication_basis](workflows/capture_publication_basis.md) - entry: `publication_impact.capture_publication_basis`
 - [capture_slice](workflows/capture_slice.md) - entry: `knowledge_storage_access._capture_slice`
 - [captured_adoption_marker](workflows/captured_adoption_marker.md) - entry: `knowledge_storage_access._captured_adoption_marker`
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
@@ -1186,11 +1197,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`
 - [section_locator](workflows/section_locator.md) - entry: `knowledge_governance._section_locator`
+- [snapshot](workflows/snapshot.md) - entry: `publication_contracts._snapshot`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics._storage_report`
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`
+- [target_hash](workflows/target_hash.md) - entry: `publication_impact._target_hash`
 - [task_cmd_flow](workflows/task_cmd_flow.md) - entry: `task_cmd.run`
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
 - [unchanged_commit_result](workflows/unchanged_commit_result.md) - entry: `knowledge_reuse.unchanged_commit_result`
@@ -1215,6 +1228,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
+- [write](workflows/write.md) - entry: `publication_cmd._write`
 - [write_bootstrap_api_contract_page](workflows/write_bootstrap_api_contract_page.md) - entry: `bootstrap_runtime._write_bootstrap_api_contract_page`
 - [write_bootstrap_flow_pages](workflows/write_bootstrap_flow_pages.md) - entry: `bootstrap_runtime._write_bootstrap_flow_pages`
 - [write_bootstrap_infrastructure_pages](workflows/write_bootstrap_infrastructure_pages.md) - entry: `bootstrap_runtime._write_bootstrap_infrastructure_pages`
@@ -1303,6 +1317,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-canonical_json_text](flows/api-canonical_json_text.md) - entry: `canonical_json_text`
 - [api-capture_context_read](flows/api-capture_context_read.md) - entry: `capture_context_read`
 - [api-capture_generated_ownership](flows/api-capture_generated_ownership.md) - entry: `capture_generated_ownership`
+- [api-capture_publication_basis](flows/api-capture_publication_basis.md) - entry: `capture_publication_basis`
 - [api-capture_tree_baseline](flows/api-capture_tree_baseline.md) - entry: `capture_tree_baseline`
 - [api-checker_contract](flows/api-checker_contract.md) - entry: `checker_contract`
 - [api-checker_registry](flows/api-checker_registry.md) - entry: `checker_registry`
@@ -1319,6 +1334,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-compare_context_packet_basis-api](flows/api-compare_context_packet_basis-api.md) - entry: `compare_context_packet_basis`
 - [api-compare_context_packet_basis-context_packet](flows/api-compare_context_packet_basis-context_packet.md) - entry: `compare_context_packet_basis`
 - [api-compare_generated_ownership](flows/api-compare_generated_ownership.md) - entry: `compare_generated_ownership`
+- [api-compare_publication_impact](flows/api-compare_publication_impact.md) - entry: `compare_publication_impact`
 - [api-compare_source_plugin_tree_baseline](flows/api-compare_source_plugin_tree_baseline.md) - entry: `compare_source_plugin_tree_baseline`
 - [api-compare_source_snapshot_baseline](flows/api-compare_source_snapshot_baseline.md) - entry: `compare_source_snapshot_baseline`
 - [api-compare_tree_baseline](flows/api-compare_tree_baseline.md) - entry: `compare_tree_baseline`
@@ -1551,6 +1567,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-require_uuid](flows/api-require_uuid.md) - entry: `require_uuid`
 - [api-resolve_documentation_policy](flows/api-resolve_documentation_policy.md) - entry: `resolve_documentation_policy`
 - [api-resolve_portable_workspace_path](flows/api-resolve_portable_workspace_path.md) - entry: `resolve_portable_workspace_path`
+- [api-resolve_publication_finding](flows/api-resolve_publication_finding.md) - entry: `resolve_publication_finding`
 - [api-resolve_workspace_path](flows/api-resolve_workspace_path.md) - entry: `resolve_workspace_path`
 - [api-resolved_paths_equal](flows/api-resolved_paths_equal.md) - entry: `resolved_paths_equal`
 - [api-retained_concept_page_paths](flows/api-retained_concept_page_paths.md) - entry: `retained_concept_page_paths`
@@ -1719,6 +1736,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 ## Infrastructure
 
 - [github action: action.yml](infrastructure/integrations_github-action_action_yml.md) - yaml_format
+- [github action: action.yml](infrastructure/integrations_wiki-impact_action_yml.md) - yaml_format
 - [github action: action.yml](infrastructure/integrations_wiki-integrity_action_yml.md) - yaml_format
 
 ## Dependency Architecture

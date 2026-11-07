@@ -1934,6 +1934,13 @@ identity-disclosure, rollback, checker, and authority rules.
 
 ## `docs`
 
+Use `docs impact` for read-only architecture-to-sibling wiki review. Configure
+topics, owners and evidence dependencies in `.llm-wiki/publication.json`.
+Compare against an accepted basis with `--baseline`, inspect JSON or Markdown
+findings, and prepare exact-basis decisions with `docs impact resolve`.
+The [sibling wiki guide](sibling-wiki.md) covers source-only setup, manual and
+repository-authored topics, accepted review ledgers and the portable CI action.
+
 Prepare and supervise an isolated, agent-driven human-documentation workspace.
 This mode does not replace the managed repo-local wiki workflow.
 

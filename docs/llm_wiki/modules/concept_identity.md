@@ -40,80 +40,23 @@ control characters and credential-bearing authorities remain invalid.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/migrate_cmd.py"]
+    n0["src"]
     n1["src/llm_wiki_cli/services/concept_identity.py"]
-    n2["src/llm_wiki_cli/services/documentation_query_builder.py"]
-    n3["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n4["src/llm_wiki_cli/services/knowledge_index.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n8["src/llm_wiki_cli/services/mcp_server.py"]
-    n9["src/llm_wiki_cli/services/search_discovery.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
-    n11["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n1
-    n0 --> n3
-    n0 --> n6
-    n0 --> n10
-    n0 --> n11
-    n1 --> n10
-    n1 --> n11
-    n2 --> n1
-    n2 --> n10
-    n2 --> n11
-    n3 --> n1
-    n3 --> n10
-    n4 --> n1
-    n4 --> n3
-    n4 --> n10
-    n4 --> n11
-    n5 --> n1
-    n5 --> n3
-    n5 --> n10
-    n5 --> n11
-    n6 --> n1
-    n7 --> n1
-    n7 --> n3
-    n7 --> n6
-    n8 --> n1
-    n8 --> n2
-    n8 --> n9
-    n8 --> n10
-    n8 --> n11
-    n9 --> n1
-    n9 --> n10
-    n9 --> n11
-    n11 --> n10
-    click n0 "../modules/migrate_cmd.md"
+    n1 --> n0
     click n1 "../modules/concept_identity.md"
-    click n2 "../modules/documentation_query_builder.md"
-    click n3 "../modules/knowledge_governance.md"
-    click n4 "../modules/knowledge_index.md"
-    click n5 "../modules/knowledge_projection.md"
-    click n6 "../modules/knowledge_storage.md"
-    click n7 "../modules/knowledge_storage_access.md"
-    click n8 "../modules/mcp_server.md"
-    click n9 "../modules/search_discovery.md"
-    click n10 "../modules/validation.md"
-    click n11 "../modules/wiki_surface.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [migrate_cmd](../modules/migrate_cmd.md) |
-| Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
-| Inbound | [knowledge_governance](../modules/knowledge_governance.md) |
-| Inbound | [knowledge_index](../modules/knowledge_index.md) |
-| Inbound | [knowledge_projection](../modules/knowledge_projection.md) |
-| Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Inbound | [knowledge_storage_access](../modules/knowledge_storage_access.md) |
-| Inbound | [mcp_server](../modules/mcp_server.md) |
-| Inbound | [search_discovery](../modules/search_discovery.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (11) |
+| Outbound | `src` (2) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

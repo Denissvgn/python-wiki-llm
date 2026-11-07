@@ -36,15 +36,15 @@ flowchart LR
     n0["ManifestPageSource (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1["src/llm_wiki_cli/services/knowledge_index.py"]
     n2["_lint_retired_entity_mappings (src/llm_wiki_cli/services/lint_service.py)"]
-    n3["_check_duplicate_removal_custody (src/llm_wiki_cli/services/source_retirement.py)"]
-    n4["discover_retired_entities (src/llm_wiki_cli/services/source_retirement.py)"]
-    n5["entity_owner_present (src/llm_wiki_cli/services/source_retirement.py)"]
-    n6["historical_entity_semantics (src/llm_wiki_cli/services/source_retirement.py)"]
-    n7["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
-    n8["retired_entity_mappings (src/llm_wiki_cli/services/source_retirement.py)"]
-    n9["with_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
-    n10["src/llm_wiki_cli/services/sync_analysis.py"]
-    n11["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n3["src/llm_wiki_cli/services/publication_contracts.py"]
+    n4["_check_duplicate_removal_custody (src/llm_wiki_cli/services/source_retirement.py)"]
+    n5["discover_retired_entities (src/llm_wiki_cli/services/source_retirement.py)"]
+    n6["entity_owner_present (src/llm_wiki_cli/services/source_retirement.py)"]
+    n7["historical_entity_semantics (src/llm_wiki_cli/services/source_retirement.py)"]
+    n8["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
+    n9["retired_entity_mappings (src/llm_wiki_cli/services/source_retirement.py)"]
+    n10["with_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
+    n11["src/llm_wiki_cli/services/sync_analysis.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -59,15 +59,15 @@ flowchart LR
     click n0 "../modules/sync_manifest.md"
     click n1 "../modules/knowledge_index.md"
     click n2 "../modules/lint_service.md"
-    click n3 "../modules/source_retirement.md"
+    click n3 "../modules/publication_contracts.md"
     click n4 "../modules/source_retirement.md"
     click n5 "../modules/source_retirement.md"
     click n6 "../modules/source_retirement.md"
     click n7 "../modules/source_retirement.md"
     click n8 "../modules/source_retirement.md"
     click n9 "../modules/source_retirement.md"
-    click n10 "../modules/sync_analysis.md"
-    click n11 "../modules/sync_generated_sections.md"
+    click n10 "../modules/source_retirement.md"
+    click n11 "../modules/sync_analysis.md"
 ```
 
 ### Summary
@@ -82,6 +82,7 @@ flowchart LR
 |---|---|---|---:|
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_lint_retired_entity_mappings` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `publication_contracts` | import | [publication_contracts](../modules/publication_contracts.md) | — |
 | `_check_duplicate_removal_custody` | call | [source_retirement](../modules/source_retirement.md) | 1 |
 | `discover_retired_entities` | call | [source_retirement](../modules/source_retirement.md) | 1 |
 | `discover_retired_entities` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
@@ -91,6 +92,5 @@ flowchart LR
 | `retired_entity_mappings` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `with_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `sync_analysis` | import | [sync_analysis](../modules/sync_analysis.md) | — |
-| `plan_generated_source_repairs` | type_reference | [sync_generated_sections](../modules/sync_generated_sections.md) | — |
 
-> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.
+> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.

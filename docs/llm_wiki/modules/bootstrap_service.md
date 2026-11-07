@@ -24,14 +24,18 @@ flowchart LR
     n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n2["src/llm_wiki_cli/services/bootstrap_service.py"]
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n4["src/llm_wiki_cli/services/publication_snapshot.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n3 --> n2
+    n4 --> n1
+    n4 --> n2
     click n0 "../modules/api.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/bootstrap_service.md"
     click n3 "../modules/documentation_run_dependencies.md"
+    click n4 "../modules/publication_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -41,6 +45,7 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Inbound | [publication_snapshot](../modules/publication_snapshot.md) |
 
 ## Classes
 

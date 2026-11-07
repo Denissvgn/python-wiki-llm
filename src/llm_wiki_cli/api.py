@@ -3532,6 +3532,61 @@ def export_documentation_run(
     )
 
 
+@_api_boundary
+def capture_publication_basis(
+    consumer_root: str | Path = ".",
+    *,
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Capture complete local publication inputs without remote access or writes."""
+    from .services.publication_impact import capture_publication_basis as capture
+
+    return capture(
+        consumer_root,
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+    )
+
+
+@_api_boundary
+def compare_publication_impact(
+    candidate: Mapping[str, Any],
+    baseline: Mapping[str, Any] | None = None,
+    *,
+    reviews: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compare publication bases and exact-basis review decisions without writes."""
+    from .services.publication_impact import compare_publication_impact as compare
+
+    return compare(candidate, baseline, reviews=reviews)
+
+
+@_api_boundary
+def resolve_publication_finding(
+    report: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    finding_id: str,
+    reviewer: str,
+    reason: str,
+    reviews: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return a proposed still-current review ledger for caller-owned acceptance."""
+    from .services.publication_impact import resolve_publication_finding as resolve
+
+    return resolve(
+        report,
+        candidate,
+        finding_id=finding_id,
+        reviewer=reviewer,
+        reason=reason,
+        reviews=reviews,
+    )
+
+
 def _call_calibration_controller(
     name: str,
     *args: Any,
@@ -3919,7 +3974,9 @@ __all__ = [
     "build_documentation_query_service",
     "callees",
     "callers",
+    "capture_publication_basis",
     "compare_context_packet_basis",
+    "compare_publication_impact",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
     "dispatch_calibration_agent",
@@ -3948,6 +4005,7 @@ __all__ = [
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "resolve_publication_finding",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",

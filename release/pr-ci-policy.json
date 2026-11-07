@@ -481,6 +481,35 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "publication": {
+      "tests": [
+        "tests/test_publication_config.py",
+        "tests/test_publication_snapshot.py",
+        "tests/test_publication_contracts.py",
+        "tests/test_publication_impact.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "publication-action": {
+      "tests": [
+        "tests/test_wiki_impact_action.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -777,6 +806,27 @@
       ],
       "groups": [
         "release"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/publication_*.py",
+        "src/llm_wiki_cli/commands/publication_cmd.py",
+        "tests/test_publication_*.py",
+        "docs/sibling-wiki.md",
+        ".llm-wiki/publication.json"
+      ],
+      "groups": [
+        "publication"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/wiki-impact/**",
+        "tests/test_wiki_impact_action.py"
+      ],
+      "groups": [
+        "publication-action"
       ]
     }
   ],

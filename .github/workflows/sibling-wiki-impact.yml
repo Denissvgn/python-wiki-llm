@@ -1,0 +1,75 @@
+name: Sibling wiki impact report
+
+"on":
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Optional accepted snapshot path in this checkout; empty requests the initial assessment
+        type: string
+        default: ""
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sibling-wiki-impact-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  report:
+    name: Read-only sibling wiki impact (snapshot evidence)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the exact selected source revision without credentials
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify local inputs and read the public sibling wiki
+        shell: bash
+        env:
+          RUN_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+          ACCEPTED_BASELINE: ${{ inputs.baseline }}
+          GIT_TERMINAL_PROMPT: "0"
+        run: |
+          set -euo pipefail
+          [[ "${RUN_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "${RUN_SHA}" ]]
+          [[ "${REPOSITORY}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]
+          [[ "${SERVER_URL}" == https://github.com ]]
+          if [[ -n "${ACCEPTED_BASELINE}" ]]; then
+            case "${ACCEPTED_BASELINE}" in
+              /*|-*|*\\*|*$'\n'*|*$'\r'*)
+                printf 'The accepted baseline must be a repository-relative snapshot path.\n' >&2
+                exit 2
+                ;;
+            esac
+            IFS=/ read -r -a components <<< "${ACCEPTED_BASELINE}"
+            for component in "${components[@]}"; do
+              [[ -n "${component}" && "${component}" != . && "${component}" != .. ]]
+            done
+            [[ -f "${ACCEPTED_BASELINE}" && ! -L "${ACCEPTED_BASELINE}" ]]
+          fi
+          [[ ! -e sibling-wiki && ! -L sibling-wiki ]]
+          git -c credential.helper= -c core.askPass= clone \
+            --depth 1 --single-branch --no-tags \
+            "${SERVER_URL}/${REPOSITORY}.wiki.git" sibling-wiki
+          printf '%s\n' \
+            'This report uses validated native snapshot evidence only. Live source freshness requires the owning native integrity workflow.' \
+            >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Report affected public sections and coverage
+        uses: ./integrations/wiki-impact
+        with:
+          config: .llm-wiki/publication.json
+          baseline: ${{ inputs.baseline }}
+          target-dir: sibling-wiki
+          fail-on: error

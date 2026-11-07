@@ -40,7 +40,9 @@ _PUBLIC_FUNCTION_NAMES = (
     "build_p0_calibration_agent_packet",
     "callees",
     "callers",
+    "capture_publication_basis",
     "compare_context_packet_basis",
+    "compare_publication_impact",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
     "dispatch_calibration_agent",
@@ -71,6 +73,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "resolve_publication_finding",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
@@ -100,7 +103,9 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "build_documentation_query_service",
         "callees",
         "callers",
+        "capture_publication_basis",
         "compare_context_packet_basis",
+        "compare_publication_impact",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
         "doctor",
@@ -121,6 +126,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "record_calibration_agent_result",
         "record_p0_calibration_agent_result",
         "related_concepts",
+        "resolve_publication_finding",
         "select_documentation_model",
         "traverse_typed_graph",
         "use_calibration_host_broker_authenticator",
@@ -254,6 +260,13 @@ def _failure_cases(tmp_path: Path):
     return {
         "helper_preparation": lambda: _enter(api.helper_preparation(cast(Any, "invalid"))),
         "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
+        "capture_publication_basis": lambda: api.capture_publication_basis(
+            tmp_path, config_path="../publication.json"
+        ),
+        "compare_publication_impact": lambda: api.compare_publication_impact({}),
+        "resolve_publication_finding": lambda: api.resolve_publication_finding(
+            {}, {}, finding_id="missing", reviewer="reviewer", reason="reviewed"
+        ),
         "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
         "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),
         "validate_compact_task_context": lambda: api.validate_compact_task_context("", "", {}, view_options={}),
@@ -662,6 +675,9 @@ def test_public_dict_return_annotations_import_and_resolve():
         "inspect_concept": api_types.NativeInspectionResult,
         "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
+        "capture_publication_basis": dict[str, typing.Any],
+        "compare_publication_impact": dict[str, typing.Any],
+        "resolve_publication_finding": dict[str, typing.Any],
     }
 
     assert {

@@ -56,17 +56,20 @@ flowchart LR
     n3["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n4["execute_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n6["build_bootstrap_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/bootstrap_service.md"
     click n1 "../modules/api.md"
     click n2 "../modules/bootstrap_runtime.md"
     click n3 "../modules/bootstrap_runtime.md"
     click n4 "../modules/bootstrap_runtime.md"
     click n5 "../modules/documentation_run_dependencies.md"
+    click n6 "../modules/publication_snapshot.md"
 ```
 
 ### Summary
@@ -84,3 +87,4 @@ flowchart LR
 | `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `build_bootstrap_publication_snapshot` | call | [publication_snapshot](../modules/publication_snapshot.md) | 1 |

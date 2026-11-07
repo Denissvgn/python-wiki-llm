@@ -49,6 +49,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.maintenance_service` | `adopt_maintenance_authority`, `get_maintenance_status_authority`, `acknowledge_maintenance_authority`, `recover_maintenance_authority` |
 | `.services.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
+| `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
@@ -93,9 +94,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (52) |
+| Outbound | `src` (53) |
 
-> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -211,6 +212,9 @@ flowchart LR
 | `_query_service` | `(service: DocumentationGraphQueryService \| None, *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, read_only: bool, source_selection: str \| Path \| None) -> DocumentationGraphQueryService` | — | — |
 | `_run_query` | `(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]` | — | — |
 | `export_documentation_run` | `(workspace: str \| Path, *, build: bool = False, builder_command: Iterable[str] \| None = None, knowledge_mode: str \| None = None, knowledge_public_repository_identity: str \| None = None) -> DocumentationExportResult` | `@_api_boundary` | Export a documentation workspace through the stable API boundary. |
+| `capture_publication_basis` | `(consumer_root: str \| Path = '.', *, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Capture complete local publication inputs without remote access or writes. |
+| `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Compare publication bases and exact-basis review decisions without writes. |
+| `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Return a proposed still-current review ledger for caller-owned acceptance. |
 | `_call_calibration_controller` | `(name: str, *args: Any, **kwargs: Any) -> Any` | — | Call one isolated calibration operation after an explicit API request. |
 | `prepare_calibration_run` | `(root: str \| Path, *, control_workspaces: Sequence[str \| Path], execution_manifest: Mapping[str, Any]) -> P0CalibrationRun` | `@_api_boundary` | Freeze two matching documentation controls into a fresh cohort. |
 | `admit_calibration_run` | `(root: str \| Path, *, authority_grant: Mapping[str, Any], broker_attestation: Mapping[str, Any] \| None = None) -> P0CalibrationRun` | `@_api_boundary` | Authorize one frozen calibration cohort. |

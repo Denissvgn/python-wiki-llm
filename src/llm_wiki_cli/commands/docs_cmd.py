@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from . import publication_cmd
+
 from ..config import PathValidationError, validate_source_root
 from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
@@ -653,6 +655,7 @@ def run(args) -> None:
 
     action = getattr(args, "docs_action", None)
     handlers = {
+        "impact": publication_cmd.run,
         "prepare": _prepare,
         "status": _status,
         "packet": _packet,

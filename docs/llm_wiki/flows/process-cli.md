@@ -2,7 +2,7 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [cli](../modules/cli.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [helper_runtime](../modules/helper_runtime.md), [progress](../modules/progress.md), and 1 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [helper_runtime](../modules/helper_runtime.md), [progress](../modules/progress.md), and 2 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [cli](../modules/cli.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [progress](../modules/progress.md)
+- [publication_cmd](../modules/publication_cmd.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 
 **Related modules:** [analysis_compatibility](../modules/analysis_compatibility.md), [commands___init__](../modules/commands___init__.md), [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), and 7 more
@@ -98,9 +99,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 783 interactions; 753 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 807 interactions; 777 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 53 (52 omitted); unresolved 1 of 577 (576 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 53 (52 omitted); unresolved 1 of 597 (596 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/cli.py:_add_source_selection_argument` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | - | unresolved | 12 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 3 |
-> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 110 groups; 102 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -125,9 +126,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 154; effect analysis evaluated: 151, partial: 1, unavailable: 2. Counts include steps omitted from the displayed trace.
+Source steps: 158; effect analysis evaluated: 155, partial: 1, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 152 source steps with known totals: observed: 361, emitted: 357, omitted: 4. Unavailable totals are excluded.
+Collector observations for 156 source steps with known totals: observed: 381, emitted: 377, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -200,17 +201,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2740 | `_build_parser(data not statically known)` |
-| _build_parser | argparse.ArgumentParser | 267 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
-| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 268 | `parser.add_argument('--version', action='version', version=...)` |
-| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 271 | `parser.add_subparsers(dest='command', required=True)` |
-| _build_parser | _register_commands | 272 | `_register_commands(subparsers)` |
-| _register_commands | _add_init_command | 347 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 428 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 431 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 437 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 442 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 448 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| main | _build_parser | 2742 | `_build_parser(data not statically known)` |
+| _build_parser | argparse.ArgumentParser | 268 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
+| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 269 | `parser.add_argument('--version', action='version', version=...)` |
+| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 272 | `parser.add_subparsers(dest='command', required=True)` |
+| _build_parser | _register_commands | 273 | `_register_commands(subparsers)` |
+| _register_commands | _add_init_command | 348 | `_add_init_command(subparsers)` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 429 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 432 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 438 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 443 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 449 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
@@ -220,14 +221,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_parser` | `argparse.ArgumentParser` | 267 |
-| unresolved_call | `_build_parser` | `parser.add_argument` | 268 |
-| unresolved_call | `_build_parser` | `parser.add_subparsers` | 271 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 428 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 431 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 437 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 442 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 448 |
+| external_call | `_build_parser` | `argparse.ArgumentParser` | 268 |
+| unresolved_call | `_build_parser` | `parser.add_argument` | 269 |
+| unresolved_call | `_build_parser` | `parser.add_subparsers` | 272 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 429 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 432 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 438 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 443 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 449 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

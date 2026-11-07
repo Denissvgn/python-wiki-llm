@@ -1,0 +1,25 @@
+{
+  "schema_version": "llm-wiki-publication/v1",
+  "source_policy": "default-branch",
+  "architecture": {"baseline": "bootstrap-source", "root": "project"},
+  "target": {"kind": "github-wiki", "repository": "self"},
+  "enforcement": "advisory",
+  "publish": false,
+  "topics": [{
+    "id": "accounts.overview",
+    "owner": "account-maintainers",
+    "wiki_page": "Accounts.md",
+    "edit_at": "wiki",
+    "depends_on": [
+      {"architecture_page": "modules/app.md"},
+      {"source_file": "project/app.py"}
+    ]
+  }],
+  "exclusions": [
+    {"pattern": "index.md", "reason": "Native navigation stays local"},
+    {"pattern": "log.md", "reason": "Native operational history stays local"},
+    {"pattern": "dependencies.md", "reason": "This overview omits dependency implementation details"},
+    {"pattern": "load-order.md", "reason": "This overview omits load order implementation details"},
+    {"pattern": "entities/Account.md", "reason": "Account details are covered through the mapped app module"}
+  ]
+}

@@ -21,6 +21,7 @@ from .commands import (
     migrate_cmd,
     obsidian_cmd,
     plugins_cmd,
+    publication_cmd,
     prepare_extractors_cmd,
     queue_cmd,
     query_cmd,
@@ -2306,6 +2307,7 @@ def _add_docs_command(subparsers):
         help="Prepare and supervise a standalone documentation workspace",
     )
     docs_sub = docs_parser.add_subparsers(dest="docs_action", required=True)
+    publication_cmd.add_impact_command(docs_sub)
 
     prepare = docs_sub.add_parser(
         "prepare",

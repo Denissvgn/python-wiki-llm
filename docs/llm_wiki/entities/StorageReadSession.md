@@ -34,18 +34,18 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 ```mermaid
 flowchart LR
     n0["StorageReadSession (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
-    n1["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["inspect_targets (src/llm_wiki_cli/services/analysis_targets.py)"]
-    n3["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n4["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
-    n5["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
-    n6["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n7["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n8["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n9["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n10["capture_discovery (src/llm_wiki_cli/services/search_discovery_capture.py)"]
-    n11["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
-    n12["capture_source_index (src/llm_wiki_cli/services/search_source.py)"]
+    n1["_write (src/llm_wiki_cli/commands/publication_cmd.py)"]
+    n2["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n3["inspect_targets (src/llm_wiki_cli/services/analysis_targets.py)"]
+    n4["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n5["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n6["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
+    n7["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n8["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n9["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n10["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n11["_file_hash (src/llm_wiki_cli/services/publication_impact.py)"]
+    n12["_target_hash (src/llm_wiki_cli/services/publication_impact.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -59,18 +59,18 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     click n0 "../modules/knowledge_storage_io.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/analysis_targets.md"
-    click n3 "../modules/knowledge_artifacts.md"
-    click n4 "../modules/knowledge_maintenance.md"
-    click n5 "../modules/knowledge_reuse.md"
-    click n6 "../modules/knowledge_storage_access.md"
-    click n7 "../modules/knowledge_storage_lifecycle.md"
+    click n1 "../modules/publication_cmd.md"
+    click n2 "../modules/sync_cmd.md"
+    click n3 "../modules/analysis_targets.md"
+    click n4 "../modules/knowledge_artifacts.md"
+    click n5 "../modules/knowledge_maintenance.md"
+    click n6 "../modules/knowledge_reuse.md"
+    click n7 "../modules/knowledge_storage_access.md"
     click n8 "../modules/knowledge_storage_lifecycle.md"
     click n9 "../modules/knowledge_storage_lifecycle.md"
-    click n10 "../modules/search_discovery_capture.md"
-    click n11 "../modules/search_service.md"
-    click n12 "../modules/search_source.md"
+    click n10 "../modules/knowledge_storage_lifecycle.md"
+    click n11 "../modules/publication_impact.md"
+    click n12 "../modules/publication_impact.md"
 ```
 
 ### Summary
@@ -83,6 +83,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_write` | call | [publication_cmd](../modules/publication_cmd.md) | 1 |
 | `_plan_source_page_transitions` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `inspect_targets` | call | [analysis_targets](../modules/analysis_targets.md) | 1 |
 | `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
@@ -92,8 +93,7 @@ flowchart LR
 | `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `capture_discovery` | type_reference | [search_discovery_capture](../modules/search_discovery_capture.md) | — |
-| `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 2 |
-| `capture_source_index` | type_reference | [search_source](../modules/search_source.md) | — |
+| `_file_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
+| `_target_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
 
-> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

@@ -1,0 +1,92 @@
+{
+  "schema_version": "llm-wiki-publication/v1",
+  "source_policy": "default-branch",
+  "architecture": {
+    "baseline": "existing-wiki",
+    "root": "docs/llm_wiki"
+  },
+  "target": {
+    "kind": "github-wiki",
+    "repository": "self"
+  },
+  "enforcement": "advisory",
+  "publish": false,
+  "topics": [
+    {
+      "id": "command-reference.upgrade",
+      "owner": "maintainers",
+      "wiki_page": "Command-Reference.md",
+      "anchor": "upgrade",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-upgrade.md"},
+        {"architecture_page": "workflows/upgrade_current_knowledge.md"}
+      ]
+    },
+    {
+      "id": "migration.upgrade-framework-artifacts",
+      "owner": "maintainers",
+      "wiki_page": "Migration-and-Upgrades.md",
+      "anchor": "upgrade-framework-artifacts",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-upgrade.md"},
+        {"architecture_page": "workflows/upgrade_current_knowledge.md"}
+      ]
+    }
+  ],
+  "exclusions": [
+    {
+      "pattern": "entities/*.md",
+      "reason": "Declaration catalogs support local code navigation; public topics bind selected evidence explicitly."
+    },
+    {
+      "pattern": "modules/*.md",
+      "reason": "Internal module catalogs are outside the upgrade topic scope; public CLI entry points remain visible for mapping."
+    },
+    {
+      "pattern": "workflows/*.md",
+      "reason": "Internal workflow details stay local unless a public topic explicitly depends on them, as the upgrade topics do."
+    },
+    {
+      "pattern": "infrastructure/*.md",
+      "reason": "Internal infrastructure inventories are outside the public upgrade topic scope."
+    },
+    {
+      "pattern": "guides/*.md",
+      "reason": "Architecture reading guides remain local; user documentation dependencies are mapped deliberately."
+    },
+    {
+      "pattern": "flows/api-*.md",
+      "reason": "Internal Python API flow catalogs are outside the upgrade CLI topic scope."
+    },
+    {
+      "pattern": "flows/process-*.md",
+      "reason": "Internal process flow catalogs are outside the upgrade CLI topic scope."
+    },
+    {
+      "pattern": "flows/http-*.md",
+      "reason": "HTTP flow catalogs are outside the upgrade CLI topic scope."
+    },
+    {
+      "pattern": "index.md",
+      "reason": "Native navigation is maintained locally and is not a public topic claim."
+    },
+    {
+      "pattern": "load-order.md",
+      "reason": "Native reading order is local navigation rather than public upgrade guidance."
+    },
+    {
+      "pattern": "log.md",
+      "reason": "Native operational history remains local."
+    },
+    {
+      "pattern": "dependencies.md",
+      "reason": "Dependency inventory remains local; public installation requirements need separate explicit mappings."
+    },
+    {
+      "pattern": "api-contracts.md",
+      "reason": "The internal API contract catalog is outside the upgrade CLI topic scope."
+    }
+  ]
+}

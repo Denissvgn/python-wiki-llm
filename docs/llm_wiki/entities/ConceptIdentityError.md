@@ -99,4 +99,4 @@ flowchart LR
 | `validate_alias_type` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 | `validate_bundle_id` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 
-> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.
