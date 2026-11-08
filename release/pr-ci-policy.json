@@ -680,6 +680,14 @@
     },
     {
       "paths": [
+        "integrations/wiki-candidate/**"
+      ],
+      "groups": [
+        "hosted-action"
+      ]
+    },
+    {
+      "paths": [
         "release/*requirements*",
         "release/dependency_downloads.py",
         "release/dependency_setup_probe.py"
