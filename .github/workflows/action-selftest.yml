@@ -250,6 +250,7 @@ jobs:
         if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
         with:
           name: wiki-candidate-typescript-${{ github.run_id }}-${{ github.run_attempt }}
+          archive: true
           path: ${{ steps.provider.outputs.evidence-dir }}
           if-no-files-found: error
           retention-days: 14
