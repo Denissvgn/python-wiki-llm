@@ -749,16 +749,23 @@ def _add_ci_check_command(subparsers):
 def _add_install_ci_command(subparsers):
     install_ci_parser = subparsers.add_parser(
         "install-ci",
-        help="Install a portable LLM Wiki integrity workflow",
+        help="Install a portable integrity or documentation workflow",
     )
     install_ci_parser.add_argument(
         "--action-ref",
         required=True,
         metavar="SHA",
         help=(
-            "Immutable 40-hex commit for a v4-capable integrity action; "
+            "Immutable 40-hex commit containing the selected reusable action "
+            "(a v4-capable action for integrity); "
             "SHA spelling checked offline"
         ),
+    )
+    install_ci_parser.add_argument(
+        "--profile",
+        choices=("integrity", "documentation"),
+        default="integrity",
+        help="Select the managed workflow (default: integrity)",
     )
     install_ci_parser.add_argument(
         "--src-dir",
@@ -779,6 +786,31 @@ def _add_install_ci_command(subparsers):
         "--force",
         action="store_true",
         help="Replace a workflow not recognized as unmodified llm-wiki output",
+    )
+    docs_ci = install_ci_parser.add_argument_group("documentation profile")
+    docs_ci.add_argument(
+        "--working-directory",
+        help="Consumer directory within the repository (default: .)",
+    )
+    docs_ci.add_argument(
+        "--config",
+        help="Consumer publication configuration (default: .llm-wiki/publication.json)",
+    )
+    docs_ci.add_argument(
+        "--target-dir", help="Project-relative local public wiki snapshot"
+    )
+    docs_ci.add_argument("--baseline", help="Accepted publication basis JSON")
+    docs_ci.add_argument("--reviews", help="Accepted topic review ledger JSON")
+    docs_ci.add_argument(
+        "--previous-receipt", help="Previous accepted ownership receipt JSON"
+    )
+    docs_ci.add_argument(
+        "--candidate-review", help="Accepted exact-artifact approval JSON"
+    )
+    docs_ci.add_argument(
+        "--require-ready",
+        action="store_true",
+        help="Require exact candidate approval in CI",
     )
 
 

@@ -46,64 +46,70 @@ never a mutable language-wide current pointer.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/analysis_capture.py"]
-    n2["src/llm_wiki_cli/services/capability_diagnostics.py"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/context_service.py"]
-    n5["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n6["src/llm_wiki_cli/services/helper_cache.py"]
-    n7["src/llm_wiki_cli/services/helper_preparation.py"]
-    n8["src/llm_wiki_cli/services/helper_runtime.py"]
-    n9["src/llm_wiki_cli/services/io.py"]
-    n10["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n0 --> n1
-    n0 --> n3
-    n0 --> n4
-    n0 --> n6
+    n0["integrations/wiki-candidate/prepare.py"]
+    n1["src/llm_wiki_cli/api.py"]
+    n2["src/llm_wiki_cli/services/analysis_capture.py"]
+    n3["src/llm_wiki_cli/services/capability_diagnostics.py"]
+    n4["src/llm_wiki_cli/services/context_packet.py"]
+    n5["src/llm_wiki_cli/services/context_service.py"]
+    n6["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n7["src/llm_wiki_cli/services/helper_cache.py"]
+    n8["src/llm_wiki_cli/services/helper_preparation.py"]
+    n9["src/llm_wiki_cli/services/helper_runtime.py"]
+    n10["src/llm_wiki_cli/services/io.py"]
+    n11["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n0 --> n7
     n0 --> n8
+    n0 --> n9
+    n1 --> n2
+    n1 --> n4
     n1 --> n5
-    n1 --> n6
-    n1 --> n8
-    n2 --> n5
+    n1 --> n7
+    n1 --> n9
     n2 --> n6
-    n3 --> n4
-    n3 --> n5
+    n2 --> n7
+    n2 --> n9
     n3 --> n6
-    n3 --> n9
-    n3 --> n10
-    n4 --> n3
+    n3 --> n7
+    n4 --> n5
     n4 --> n6
-    n4 --> n9
-    n5 --> n6
-    n5 --> n8
-    n5 --> n9
-    n6 --> n5
-    n6 --> n8
+    n4 --> n7
+    n4 --> n10
+    n4 --> n11
+    n5 --> n4
+    n5 --> n7
+    n5 --> n10
+    n6 --> n7
     n6 --> n9
     n6 --> n10
-    n7 --> n5
     n7 --> n6
-    n7 --> n8
-    n8 --> n5
-    n10 --> n9
-    click n0 "../modules/api.md"
-    click n1 "../modules/analysis_capture.md"
-    click n2 "../modules/capability_diagnostics.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_service.md"
-    click n5 "../modules/extractor_helpers.md"
-    click n6 "../modules/helper_cache.md"
-    click n7 "../modules/helper_preparation.md"
-    click n8 "../modules/helper_runtime.md"
-    click n9 "../modules/io.md"
-    click n10 "../modules/knowledge_storage_io.md"
+    n7 --> n9
+    n7 --> n10
+    n7 --> n11
+    n8 --> n6
+    n8 --> n7
+    n8 --> n9
+    n9 --> n6
+    n11 --> n10
+    click n0 "../modules/wiki-candidate_prepare.md"
+    click n1 "../modules/api.md"
+    click n2 "../modules/analysis_capture.md"
+    click n3 "../modules/capability_diagnostics.md"
+    click n4 "../modules/context_packet.md"
+    click n5 "../modules/context_service.md"
+    click n6 "../modules/extractor_helpers.md"
+    click n7 "../modules/helper_cache.md"
+    click n8 "../modules/helper_preparation.md"
+    click n9 "../modules/helper_runtime.md"
+    click n10 "../modules/io.md"
+    click n11 "../modules/knowledge_storage_io.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md) |
 | Inbound | [api](../modules/api.md) |
 | Inbound | [analysis_capture](../modules/analysis_capture.md) |
 | Inbound | [capability_diagnostics](../modules/capability_diagnostics.md) |

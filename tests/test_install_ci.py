@@ -7,19 +7,22 @@ import re
 import subprocess
 import sys
 import types
+from functools import partial
 from pathlib import Path
 
 import pytest
 import yaml
 
-from llm_wiki_cli import cli
+from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import uninstall_cmd
-from llm_wiki_cli.services import ci_installer, io
+from llm_wiki_cli.services import ci_installer
 from llm_wiki_cli.services.ci_installer import (
     CHECKOUT_ACTION_REF,
+    DOCUMENTATION_WORKFLOW_PATH,
     InstallCiError,
     MANAGED_WORKFLOW_PATH,
     WIKI_INTEGRITY_ACTION,
+    WIKI_CANDIDATE_ACTION,
     install_ci_workflow,
     is_unmodified_managed_workflow,
     normalize_action_ref,
@@ -170,7 +173,7 @@ def test_create_is_atomic_and_rerun_is_an_exact_noop(tmp_path, monkeypatch):
     def unexpected_write(*args, **kwargs):
         raise AssertionError("an already-current workflow must not be rewritten")
 
-    monkeypatch.setattr(ci_installer, "write_bytes_atomic", unexpected_write)
+    monkeypatch.setattr(ci_installer, "atomic_write_guarded_bytes", unexpected_write)
     unchanged = install_ci_workflow(action_ref=ACTION_REF, project_root=root)
 
     assert unchanged.operation == "unchanged"
@@ -187,7 +190,7 @@ def test_crlf_checkout_of_current_workflow_is_also_a_noop(tmp_path, monkeypatch)
 
     monkeypatch.setattr(
         ci_installer,
-        "write_bytes_atomic",
+        "atomic_write_guarded_bytes",
         lambda *args, **kwargs: pytest.fail("CRLF normalization should be current"),
     )
 
@@ -649,10 +652,10 @@ def test_atomic_replace_failure_preserves_existing_workflow(tmp_path, monkeypatc
     original = b"name: Existing project workflow\n"
     target.write_bytes(original)
 
-    def fail_replace(source, destination):
+    def fail_replace(*args, **kwargs):
         raise OSError("injected replacement failure")
 
-    monkeypatch.setattr(io.os, "replace", fail_replace)
+    monkeypatch.setattr(ci_installer, "atomic_write_guarded_bytes", fail_replace)
 
     with pytest.raises(InstallCiError, match="injected replacement failure"):
         install_ci_workflow(
@@ -694,11 +697,20 @@ def test_cli_parses_install_ci_contract_and_requires_action_ref(monkeypatch):
 
     assert seen == {
         "command": "install-ci",
+        "profile": "integrity",
         "action_ref": ACTION_REF,
         "src_dir": "source",
         "wiki_dir": "wiki",
         "dry_run": True,
         "force": True,
+        "working_directory": None,
+        "config": None,
+        "target_dir": None,
+        "baseline": None,
+        "reviews": None,
+        "previous_receipt": None,
+        "candidate_review": None,
+        "require_ready": False,
     }
 
     monkeypatch.setattr(sys, "argv", ["llm-wiki", "install-ci"])
@@ -818,3 +830,197 @@ def test_uninstall_preserves_unmanaged_or_modified_workflow(
     )
 
     assert target.read_bytes() == content
+
+
+def _publication_project(root):
+    (root / ".llm-wiki").mkdir(parents=True)
+    (root / "docs").mkdir()
+    (root / "src").mkdir()
+    (root / "src/app.py").write_text("value = 1\n", encoding="utf-8")
+    (root / "docs/Home.md").write_text("# Home\n", encoding="utf-8")
+    config = {
+        "schema_version": "llm-wiki-publication/v1",
+        "architecture": {"baseline": "bootstrap-source", "root": "src"},
+        "target": {"kind": "github-wiki", "repository": "self"},
+        "content": {"root": "docs"},
+        "enforcement": "advisory",
+        "publish": False,
+        "topics": [
+            {
+                "id": "home",
+                "owner": "maintainers",
+                "wiki_page": "Home.md",
+                "edit_at": "repository",
+                "source_document": "docs/Home.md",
+                "depends_on": [{"source_file": "src/app.py"}],
+            }
+        ],
+        "exclusions": [],
+    }
+    (root / ".llm-wiki/publication.json").write_text(
+        json.dumps(config), encoding="utf-8"
+    )
+    return root
+
+
+def test_documentation_install_from_source_only_monorepo_is_read_only_and_repeatable(
+    tmp_path,
+):
+    consumer = _publication_project(tmp_path / "packages/my project")
+    (consumer / "wiki copy").mkdir()
+    (consumer / "state").mkdir()
+    for name in ("baseline", "topics", "prior", "approval"):
+        (consumer / "state" / (name + ".json")).write_text("{}", encoding="utf-8")
+    install = partial(
+        api.install_documentation_ci_workflow,
+        action_ref=ACTION_REF,
+        project_root=tmp_path,
+        working_directory="packages/my project",
+        src_dir="src",
+        target_dir="wiki copy",
+        baseline="state/baseline.json",
+        reviews="state/topics.json",
+        previous_receipt="state/prior.json",
+        candidate_review="state/approval.json",
+        require_ready=True,
+    )
+    preview = install(dry_run=True)
+    assert preview.operation == "create" and not preview.changed
+    assert not (tmp_path / ".github").exists()
+    assert install().changed
+    target = tmp_path / DOCUMENTATION_WORKFLOW_PATH
+    content = target.read_bytes()
+    assert is_unmodified_managed_workflow(
+        content, workflow_path=DOCUMENTATION_WORKFLOW_PATH
+    )
+    assert not is_unmodified_managed_workflow(
+        content, workflow_path=MANAGED_WORKFLOW_PATH
+    )
+    workflow = yaml.safe_load(content)
+    assert set(workflow[True]) == {"pull_request", "push", "workflow_dispatch"}
+    assert (
+        workflow[True]["workflow_dispatch"]["inputs"]["source-revision"]["required"]
+        is False
+    )
+    assert workflow["permissions"] == {"contents": "read"}
+    checkout, action = workflow["jobs"]["candidate"]["steps"]
+    assert checkout["uses"] == "actions/checkout@" + CHECKOUT_ACTION_REF
+    assert checkout["with"] == {
+        "persist-credentials": False,
+        "fetch-depth": 0,
+        "ref": "${{ inputs.source-revision || github.sha }}",
+    }
+    assert action["uses"] == WIKI_CANDIDATE_ACTION + "@" + CANONICAL_ACTION_REF
+    assert action["with"] == {
+        "config": ".llm-wiki/publication.json",
+        "src-dir": "src",
+        "working-directory": "packages/my project",
+        "target-dir": "wiki copy",
+        "baseline": "state/baseline.json",
+        "reviews": "state/topics.json",
+        "previous-receipt": "state/prior.json",
+        "candidate-review": "state/approval.json",
+        "fail-on": "review-required",
+        "source-revision": "${{ inputs.source-revision || github.sha }}",
+        "accepted-state-revision": "${{ github.event_name == 'workflow_dispatch' && github.sha || '' }}",
+    }
+    assert install().operation == "unchanged"
+    assert not (consumer / ".github").exists()
+    assert not (tmp_path / MANAGED_WORKFLOW_PATH).exists()
+
+
+@pytest.mark.parametrize(
+    "options,message",
+    [
+        ({"config": "../publication.json"}, "project-relative|normalized"),
+        ({"target_dir": "public-${{github.ref}}"}, "GitHub Actions expression"),
+        ({"reviews": "missing.json"}, "regular accepted artifact"),
+        (
+            {"target_dir": "docs", "baseline": "docs/Home.md"},
+            "outside the public target",
+        ),
+    ],
+)
+def test_documentation_profile_validates_inputs_before_writing(
+    tmp_path, options, message
+):
+    consumer = _publication_project(tmp_path)
+    with pytest.raises(InstallCiError, match=message):
+        ci_installer.install_documentation_ci_workflow(
+            action_ref=ACTION_REF, project_root=consumer, **options
+        )
+    assert not (consumer / ".github").exists()
+
+
+def test_documentation_profile_identifies_missing_authored_source(tmp_path):
+    consumer = _publication_project(tmp_path)
+    (consumer / "docs/Home.md").unlink()
+    with pytest.raises(InstallCiError, match="Mapped source"):
+        ci_installer.install_documentation_ci_workflow(
+            action_ref=ACTION_REF, project_root=consumer
+        )
+    assert not (consumer / ".github").exists()
+
+
+def test_documentation_cli_install_and_uninstall_preserve_consumer_ownership(
+    tmp_path, monkeypatch
+):
+    consumer = _publication_project(tmp_path)
+    config = consumer / ".llm-wiki/publication.json"
+    original = config.read_bytes()
+    monkeypatch.chdir(consumer)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "llm-wiki",
+            "install-ci",
+            "--profile",
+            "documentation",
+            "--action-ref",
+            ACTION_REF,
+        ],
+    )
+    cli.main()
+    workflow = consumer / DOCUMENTATION_WORKFLOW_PATH
+    generated = workflow.read_bytes()
+    workflow.write_bytes(generated + b"# Consumer adjustment\n")
+    with pytest.raises(InstallCiError, match="--force"):
+        ci_installer.install_documentation_ci_workflow(action_ref=ACTION_REF)
+    monkeypatch.setattr(
+        "builtins.input", lambda _: pytest.fail("no removable workflow")
+    )
+    args = types.SimpleNamespace(
+        wiki_dir="docs/llm_wiki", remove_wiki=False, dry_run=False
+    )
+    uninstall_cmd.run(args)
+    assert workflow.read_bytes() == generated + b"# Consumer adjustment\n"
+    ci_installer.install_documentation_ci_workflow(
+        action_ref=NEXT_ACTION_REF, force=True
+    )
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    uninstall_cmd.run(args)
+    assert not workflow.exists()
+    assert config.read_bytes() == original
+
+
+def test_changed_workflow_is_preserved_if_an_editor_writes_during_install(
+    tmp_path, monkeypatch
+):
+    consumer = _publication_project(tmp_path)
+    ci_installer.install_documentation_ci_workflow(
+        action_ref=ACTION_REF, project_root=consumer
+    )
+    target = consumer / DOCUMENTATION_WORKFLOW_PATH
+    original_write = ci_installer.atomic_write_guarded_bytes
+
+    def concurrent_edit(path, data, **kwargs):
+        target.write_bytes(b"# Concurrent edit\n")
+        return original_write(path, data, **kwargs)
+
+    monkeypatch.setattr(ci_installer, "atomic_write_guarded_bytes", concurrent_edit)
+    with pytest.raises(InstallCiError, match="cannot write"):
+        ci_installer.install_documentation_ci_workflow(
+            action_ref=NEXT_ACTION_REF, project_root=consumer
+        )
+    assert target.read_bytes() == b"# Concurrent edit\n"

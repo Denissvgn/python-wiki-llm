@@ -17,6 +17,7 @@ from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryS
 
 
 _PUBLIC_FUNCTION_NAMES = (
+    "install_documentation_ci_workflow",
     "helper_preparation",
     "build_compact_task_context",
     "render_compact_task_context",
@@ -95,6 +96,7 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "install_documentation_ci_workflow",
         "helper_preparation",
         "build_compact_task_context",
         "render_compact_task_context",
@@ -300,6 +302,9 @@ def _failure_cases(tmp_path: Path):
         ),
         "export_publication_candidate": lambda: api.export_publication_candidate(
             tmp_path, output_dir="candidate", config_path="../publication.json"
+        ),
+        "install_documentation_ci_workflow": lambda: api.install_documentation_ci_workflow(
+            action_ref="main", project_root=tmp_path
         ),
         "check_publication_candidate": lambda: api.check_publication_candidate(
             tmp_path, candidate_dir="candidate", receipt={}
@@ -723,6 +728,7 @@ def test_public_dict_return_annotations_import_and_resolve():
         "capture_publication_basis": dict[str, typing.Any],
         "export_publication_candidate": dict[str, typing.Any],
         "check_publication_candidate": dict[str, typing.Any],
+        "install_documentation_ci_workflow": api.InstallCiResult,
         "review_publication_candidate": dict[str, typing.Any],
         "validate_publication_receipt": type(None),
         "get_cli_contract": dict[str, typing.Any],

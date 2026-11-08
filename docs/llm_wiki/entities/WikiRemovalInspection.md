@@ -1,6 +1,6 @@
 # _WikiRemovalInspection
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:87`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:88`
 **Kind:** Class
 **Bases:** —
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

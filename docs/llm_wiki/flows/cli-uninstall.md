@@ -87,9 +87,9 @@ sequenceDiagram
     p5-->>p30: wiki_dir.exists
 ```
 
-> Call sequence diagram shows 30 of 1173 interactions; 1143 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1176 interactions; 1146 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 543 (542 omitted); unresolved 1 of 243 (242 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 545 (544 omitted); unresolved 1 of 245 (244 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -98,12 +98,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/commands/uninstall_cmd.py:run` | 1 | - | external | 40 |
+| `src/llm_wiki_cli/commands/uninstall_cmd.py:run` | 1 | - | external | 43 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:inspect_legacy_hooks` | 16 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 8 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | external | 7 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 6 |
-> Omission summary shows 8 of 252 groups; 244 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 251 groups; 243 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -116,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 388; effect analysis evaluated: 261, partial: 16, unavailable: 111. Counts include steps omitted from the displayed trace.
+Source steps: 387; effect analysis evaluated: 260, partial: 16, unavailable: 111. Counts include steps omitted from the displayed trace.
 
-Collector observations for 277 source steps with known totals: observed: 1664, emitted: 1579, omitted: 85. Unavailable totals are excluded.
+Collector observations for 276 source steps with known totals: observed: 1664, emitted: 1577, omitted: 87. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -126,7 +126,7 @@ Collector observations for 277 source steps with known totals: observed: 1664, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `partial` | `available` | `50` | `20` | `30` |
+| `run` | `available` | `partial` | `available` | `52` | `20` | `32` |
 | `getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -199,7 +199,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `ReferenceSkillState`, `BUNDLED_SKILLS_ROOT`, `REFERENCE_SKILL_ID`, `ManagedSchemaBlockError`, `ManagedSchemaPathError`, `UnsafeUninstallPathError`, `sys` | - | `none`, `none`, `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `ReferenceSkillState`, `BUNDLED_SKILLS_ROOT`, `REFERENCE_SKILL_ID`, `MANAGED_WORKFLOW_PATH`, `DOCUMENTATION_WORKFLOW_PATH`, `ManagedSchemaBlockError`, `ManagedSchemaPathError` | - | `none`, `none`, `none` |
 | `getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -232,14 +232,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 839 |
-| output | `print` | `run` | 843 |
+| output | `print` | `run` | 842 |
 | output | `print` | `run` | 846 |
-| output | `print` | `run` | 847 |
+| output | `print` | `run` | 849 |
 | output | `print` | `run` | 850 |
 | output | `print` | `run` | 853 |
 | output | `print` | `run` | 856 |
 | output | `print` | `run` | 859 |
+| output | `print` | `run` | 862 |
 
 ### Static analysis gaps
 

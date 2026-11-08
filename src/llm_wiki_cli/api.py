@@ -26,6 +26,10 @@ from typing import (
 )
 
 from .services import bootstrap_runtime as bootstrap_cmd
+from .services.ci_installer import (
+    InstallCiResult as InstallCiResult,
+    install_documentation_ci_workflow as _install_documentation_ci_workflow,
+)
 from .services import context_service as context_cmd
 from .services import extraction_service as extract_cmd
 from .api_types import (
@@ -3485,6 +3489,7 @@ def _run_query(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]:
 
 # Public service functions are adapted here rather than requiring callers to
 # understand each service's private exception family.
+install_documentation_ci_workflow = _api_boundary(_install_documentation_ci_workflow)
 _adopt_documentation_wiki_snapshot_impl = adopt_documentation_wiki_snapshot
 adopt_documentation_wiki_snapshot = _api_boundary(
     _adopt_documentation_wiki_snapshot_impl
@@ -3969,6 +3974,8 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "InstallCiResult",
+    "install_documentation_ci_workflow",
     "helper_preparation",
     "CompactSessionReply",
     "CanonicalReceipt",

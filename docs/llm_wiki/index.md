@@ -7,11 +7,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 688 | [Open section](#entities) |
-| Modules | 272 | [Open section](#modules) |
+| Modules | 276 | [Open section](#modules) |
 | Workflows | 263 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 479 | [Open section](#entry-point-flows) |
-| Infrastructure | 3 | [Open section](#infrastructure) |
+| Entry-point flows | 483 | [Open section](#entry-point-flows) |
+| Infrastructure | 4 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
 | Log | 1 | [Open log](log.md) |
@@ -728,8 +728,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [canonical_pages](modules/canonical_pages.md) - Canonical generated page names and explicitly retained removal history.
 - [capability_diagnostics](modules/capability_diagnostics.md) - Read-only provider preparation and plugin metadata diagnostics.
 - [change_selection](modules/change_selection.md) - Portable, explicit change selection and shared source-to-page mapping.
+- [checkout](modules/checkout.md) - Bind a local candidate action to the consumer checkout and accepted inputs.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
-- [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
+- [ci_installer](modules/ci_installer.md) - Portable installation of the managed integrity and documentation CI workflows.
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
@@ -763,6 +764,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [documentation_run___init__](modules/documentation_run___init__.md) - Deterministic lifecycle contract for agent-driven documentation workspaces.
 - [documentation_run_contracts](modules/documentation_run_contracts.md) - Persisted contracts for documentation runs.
 - [documentation_run_dependencies](modules/documentation_run_dependencies.md) - Imports shared by the mechanically split lifecycle modules.
+- [documentation_run_prepare](modules/documentation_run_prepare.md) - Documentation-run prepare services.
 - [documentation_run_schema](modules/documentation_run_schema.md) - Documentation-run schema services.
 - [documentation_wiki_input](modules/documentation_wiki_input.md) - Read-only adoption of an existing canonical LLM Wiki.
 - [documentation_worklist](modules/documentation_worklist.md) - Deterministic semantic worklists for standalone documentation runs.
@@ -801,7 +803,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Structured observations for recognized infrastructure YAML formats.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
 - [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
-- [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing the portable LLM Wiki integrity workflow.
+- [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing portable LLM Wiki workflows.
 - [install_cmd](modules/install_cmd.md) - `src/llm_wiki_cli/commands/install_cmd.py`
 - [instruction_ownership](modules/instruction_ownership.md) - Machine-checkable ownership and routing for generated agent instructions.
 - [integrity](modules/integrity.md) - Documentation-run integrity services.
@@ -873,10 +875,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [plugin_samples](modules/plugin_samples.md) - Bundled sample plugin export helpers.
 - [plugins](modules/plugins.md) - Local plugin marketplace support for llm-wiki.
 - [plugins_cmd](modules/plugins_cmd.md) - `src/llm_wiki_cli/commands/plugins_cmd.py`
-- [prepare](modules/prepare.md) - Documentation-run prepare services.
 - [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
 - [progress](modules/progress.md) - Bounded command-local phase events; services are silent without a caller sink.
 - [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
+- [provider](modules/provider.md) - Install the provider packaged with the pinned action and attest its bytes.
 - [publication_candidate](modules/publication_candidate.md) - Portable, review-bound GitHub wiki candidates without remote mutation.
 - [publication_candidate_cmd](modules/publication_candidate_cmd.md) - Local GitHub wiki candidates and exact-artifact review proposals.
 - [publication_cmd](modules/publication_cmd.md) - Read-only public wiki impact and explicit review record preparation.
@@ -908,6 +910,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resource_diagnostics](modules/resource_diagnostics.md) - `src/llm_wiki_cli/services/resource_diagnostics.py`
 - [review_cmd](modules/review_cmd.md) - `src/llm_wiki_cli/commands/review_cmd.py`
 - [review_service](modules/review_service.md) - Reusable source-to-wiki review analysis over one captured source basis.
+- [run](modules/run.md) - Verify consumer inputs and retain the exact public wiki candidate checked by CI.
 - [runtime_output](modules/runtime_output.md) - Best-effort implicit output and preflighted operator-selected destinations.
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
 - [scoped_sync_repair](modules/scoped_sync_repair.md) - Fail-closed boundaries for scoped evidence application after full analysis.
@@ -969,6 +972,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [verification_contracts](modules/verification_contracts.md) - Pure, application-owned machine-verification contracts.
 - [verify](modules/verify.md) - Documentation-run verify services.
 - [versioning](modules/versioning.md) - `src/llm_wiki_cli/services/versioning.py`
+- [wiki-candidate_prepare](modules/wiki-candidate_prepare.md) - Prepare the selected helpers and check a consumer's existing native evidence.
 - [wiki_git_delivery](modules/wiki_git_delivery.md) - Read-only completeness of an owned native snapshot under effective Git policy.
 - [wiki_git_policy](modules/wiki_git_policy.md) - Read-only Git policy for handing generated wiki files to version control.
 - [wiki_lifecycle](modules/wiki_lifecycle.md) - Read-only classification for wiki bootstrap, sync, and migration routing.
@@ -1434,6 +1438,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`
 - [api-inspect_concept](flows/api-inspect_concept.md) - entry: `inspect_concept`
 - [api-install_ci_workflow](flows/api-install_ci_workflow.md) - entry: `install_ci_workflow`
+- [api-install_documentation_ci_workflow](flows/api-install_documentation_ci_workflow.md) - entry: `install_documentation_ci_workflow`
 - [api-is_canonical_uuid](flows/api-is_canonical_uuid.md) - entry: `is_canonical_uuid`
 - [api-is_placeholder_description](flows/api-is_placeholder_description.md) - entry: `is_placeholder_description`
 - [api-is_portable_path_component](flows/api-is_portable_path_component.md) - entry: `is_portable_path_component`
@@ -1755,11 +1760,15 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [process-cli](flows/process-cli.md) - entry: `main`
 - [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
+- [process-prepare](flows/process-prepare.md) - entry: `__main__`
+- [process-provider](flows/process-provider.md) - entry: `__main__`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
+- [process-run](flows/process-run.md) - entry: `__main__`
 
 ## Infrastructure
 
 - [github action: action.yml](infrastructure/integrations_github-action_action_yml.md) - yaml_format
+- [github action: action.yml](infrastructure/integrations_wiki-candidate_action_yml.md) - yaml_format
 - [github action: action.yml](infrastructure/integrations_wiki-impact_action_yml.md) - yaml_format
 - [github action: action.yml](infrastructure/integrations_wiki-integrity_action_yml.md) - yaml_format
 

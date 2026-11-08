@@ -79,7 +79,7 @@ flowchart LR
     click n2 "../modules/documentation_run_contracts.md"
     click n3 "../modules/documentation_run_dependencies.md"
     click n4 "../modules/integrity.md"
-    click n5 "../modules/prepare.md"
+    click n5 "../modules/documentation_run_prepare.md"
     click n6 "../modules/refresh.md"
     click n7 "../modules/documentation_run_schema.md"
     click n8 "../modules/workspace.md"

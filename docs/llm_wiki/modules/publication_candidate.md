@@ -34,11 +34,13 @@ Portable, review-bound GitHub wiki candidates without remote mutation.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_cli/services/publication_candidate.py"]
-    n0 --> n1
-    n1 --> n0
-    click n1 "../modules/publication_candidate.md"
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_cli/services/publication_candidate.py"]
+    n0 --> n2
+    n1 --> n2
+    n2 --> n1
+    click n2 "../modules/publication_candidate.md"
 ```
 
 > Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
@@ -47,10 +49,11 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | `integrations` (1) |
 | Inbound | `src` (2) |
 | Outbound | `src` (10) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

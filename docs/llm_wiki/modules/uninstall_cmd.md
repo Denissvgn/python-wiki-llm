@@ -11,7 +11,7 @@ _Auto-generated from `src/llm_wiki_cli/commands/uninstall_cmd.py`._
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR`, `get_agent_config_path`, `validate_path` |
-| `..services.ci_installer` | `MANAGED_WORKFLOW_PATH`, `is_unmodified_managed_workflow` |
+| `..services.ci_installer` | `DOCUMENTATION_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH`, `is_unmodified_managed_workflow` |
 | `..services.filesystem_guard` | `GuardedTreeManifest`, `atomic_write_guarded_bytes`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
 | `..services.io` | `first_unsafe_path_component` |
 | `..services.legacy_hooks` | `HOOK_NAMES`, `LegacyHookError`, `LegacyHookInspection`, `inspect_legacy_hooks`, `remove_legacy_hooks` |
@@ -52,6 +52,7 @@ flowchart LR
     n1 --> n9
     n2 --> n4
     n2 --> n5
+    n3 --> n4
     n3 --> n5
     n6 --> n2
     n6 --> n4
@@ -91,12 +92,12 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [UnsafeUninstallPathError](../entities/UnsafeUninstallPathError.md) | 61 | `ValueError` | Raised when an uninstall-owned path could escape the project tree. |
-| [_SchemaCleanup](../entities/SchemaCleanup.md) | 66 | — | One verified managed-schema cleanup prepared before mutation. |
-| [_RuntimeArtifactInspection](../entities/RuntimeArtifactInspection.md) | 76 | — | One runtime path classified without following unsafe entries. |
-| [_WikiRemovalInspection](../entities/WikiRemovalInspection.md) | 87 | — | Safe root-level evidence for an optional wiki-tree removal. |
-| [_ReferenceSkillInspection](../entities/ReferenceSkillInspection.md) | 100 | — | One managed-reference tree classified for the uninstall preview. |
-| [_CiWorkflowInspection](../entities/CiWorkflowInspection.md) | 113 | — | Managed CI ownership evidence collected before confirmation. |
+| [UnsafeUninstallPathError](../entities/UnsafeUninstallPathError.md) | 62 | `ValueError` | Raised when an uninstall-owned path could escape the project tree. |
+| [_SchemaCleanup](../entities/SchemaCleanup.md) | 67 | — | One verified managed-schema cleanup prepared before mutation. |
+| [_RuntimeArtifactInspection](../entities/RuntimeArtifactInspection.md) | 77 | — | One runtime path classified without following unsafe entries. |
+| [_WikiRemovalInspection](../entities/WikiRemovalInspection.md) | 88 | — | Safe root-level evidence for an optional wiki-tree removal. |
+| [_ReferenceSkillInspection](../entities/ReferenceSkillInspection.md) | 101 | — | One managed-reference tree classified for the uninstall preview. |
+| [_CiWorkflowInspection](../entities/CiWorkflowInspection.md) | 114 | — | Managed CI ownership evidence collected before confirmation. |
 
 ## Functions
 
@@ -122,6 +123,6 @@ flowchart LR
 | `_preflight_runtime_artifacts` | `(wiki_dir: Path, *, wiki_removal: bool = False, preserved_reference_roots: tuple[Path, ...] = ()) -> tuple[_RuntimeArtifactInspection, ...]` | — | Classify present runtime paths before any uninstall mutation. |
 | `_validate_runtime_plan` | `(plan: tuple[_RuntimeArtifactInspection, ...], wiki_dir: Path, *, wiki_removal: bool = False, preserved_reference_roots: tuple[Path, ...] = ()) -> None` | — | Reject runtime path changes after the uninstall preview. |
 | `_remove_runtime_artifacts` | `(wiki_dir: Path, dry_run: bool = False, *, plan: tuple[_RuntimeArtifactInspection, ...] \| None = None, wiki_removal: bool = False, preserved_reference_roots: tuple[Path, ...] = ()) -> int` | — | Remove local runtime artifacts created by llm-wiki. |
-| `_preflight_ci_workflow` | `() -> _CiWorkflowInspection` | — | Capture dedicated CI workflow ownership for the uninstall preview. |
-| `_remove_ci_workflow` | `(dry_run: bool = False, *, plan: _CiWorkflowInspection \| None = None) -> int` | — | Remove the dedicated CI workflow only from its previewed checksum. |
+| `_preflight_ci_workflow` | `(path: Path) -> _CiWorkflowInspection` | — | Capture dedicated CI workflow ownership for the uninstall preview. |
+| `_remove_ci_workflow` | `(dry_run: bool = False, *, plan: _CiWorkflowInspection) -> int` | — | Remove the dedicated CI workflow only from its previewed checksum. |
 | `run` | `(args)` | — | — |

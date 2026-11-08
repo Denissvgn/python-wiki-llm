@@ -165,6 +165,13 @@ stale receipts and changed candidate files exit 2.
 
 ## Consumer automation
 
+Run `llm-wiki install-ci --profile documentation --action-ref "$ACTION_COMMIT_SHA"`
+to install the read-only candidate workflow in a configured consumer. For the
+included source-only example, also pass `--target-dir sibling-wiki` to supply
+the before-image used by its adoption. The [automation guide](automation.md#install-a-github-wiki-candidate-workflow)
+describes installation, and the [candidate action](../integrations/wiki-candidate/README.md)
+documents its inputs and review artifacts.
+
 Install the selected provider with its `publication` extra from a verified
 immutable distribution or exact source revision, in an isolated environment.
 Verify its installed code origin. Keep application-specific reference generation

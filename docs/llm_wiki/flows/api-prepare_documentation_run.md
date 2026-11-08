@@ -1,7 +1,7 @@
 # prepare_documentation_run
 
 **Entry point:** `prepare_documentation_run` (`api`)
-**Source:** [prepare](../modules/prepare.md)
+**Source:** [documentation_run_prepare](../modules/documentation_run_prepare.md)
 **Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 36 more
 
 **Complete modules touched:**
@@ -13,6 +13,7 @@
 - [common](../modules/common.md)
 - [current_contracts](../modules/current_contracts.md)
 - [documentation_native](../modules/documentation_native.md)
+- [documentation_run_prepare](../modules/documentation_run_prepare.md)
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -35,7 +36,6 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [module_maps](../modules/module_maps.md)
-- [prepare](../modules/prepare.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -209,8 +209,8 @@ flowchart LR
     s4 -. "mutation limitations.append" .-> b6
     b7["mutation limitations.append"]
     s4 -. "mutation limitations.append" .-> b7
-    click s1 "../modules/prepare.md"
-    click s4 "../modules/prepare.md"
+    click s1 "../modules/documentation_run_prepare.md"
+    click s4 "../modules/documentation_run_prepare.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary

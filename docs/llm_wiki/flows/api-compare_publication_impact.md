@@ -198,7 +198,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3694 | `compare(candidate, baseline, reviews=reviews)` |
+| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3699 | `compare(candidate, baseline, reviews=reviews)` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 469 | `deepcopy(dict(...))` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 469 | `dict(candidate)` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 470 | `deepcopy(dict(...))` |

@@ -177,7 +177,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3546 | `build(parser, package=package, program=program)` |
+| build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3551 | `build(parser, package=package, program=program)` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 257 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 258 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 261 | `_value(dict(...))` |

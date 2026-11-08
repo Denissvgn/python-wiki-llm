@@ -1,6 +1,6 @@
 # InstallCiResult
 
-**Location:** `src/llm_wiki_cli/services/ci_installer.py:47`
+**Location:** `src/llm_wiki_cli/services/ci_installer.py:58`
 **Kind:** Class
 **Bases:** —
 **Module:** [ci_installer](../modules/ci_installer.md)
@@ -32,10 +32,19 @@ Outcome of one workflow installation attempt.
 ```mermaid
 flowchart LR
     n0["InstallCiResult (src/llm_wiki_cli/services/ci_installer.py)"]
-    n1["install_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n1["src/llm_wiki_cli/api.py"]
+    n2["_install_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n3["install_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n4["install_documentation_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
     n1 --> n0
+    n2 --> n0
+    n3 --> n0
+    n4 --> n0
     click n0 "../modules/ci_installer.md"
-    click n1 "../modules/ci_installer.md"
+    click n1 "../modules/api.md"
+    click n2 "../modules/ci_installer.md"
+    click n3 "../modules/ci_installer.md"
+    click n4 "../modules/ci_installer.md"
 ```
 
 ### Summary
@@ -48,5 +57,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) | 2 |
+| `api` | import | [api](../modules/api.md) | — |
+| `_install_workflow` | call | [ci_installer](../modules/ci_installer.md) | 2 |
+| `_install_workflow` | type_reference | [ci_installer](../modules/ci_installer.md) | — |
 | `install_ci_workflow` | type_reference | [ci_installer](../modules/ci_installer.md) | — |
+| `install_documentation_ci_workflow` | type_reference | [ci_installer](../modules/ci_installer.md) | — |

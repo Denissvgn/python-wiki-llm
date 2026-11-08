@@ -517,6 +517,36 @@
       ],
       "helpers": []
     },
+    "wiki-candidate-action": {
+      "tests": [
+        "tests/test_wiki_candidate_action.py",
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_wiki_candidate_preparation.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
+    "ci-installer": {
+      "tests": [
+        "tests/test_install_ci.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
     "reference": {
       "tests": [
         "tests/test_cli_reference.py",
@@ -859,6 +889,27 @@
       ],
       "groups": [
         "publication-action"
+      ]
+    },
+    {
+      "paths": [
+        ".github/workflows/action-selftest.yml",
+        "integrations/wiki-candidate/**",
+        "examples/sibling-wiki/**",
+        "tests/test_wiki_candidate_*.py"
+      ],
+      "groups": [
+        "wiki-candidate-action"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/ci_installer.py",
+        "src/llm_wiki_cli/commands/install_ci_cmd.py",
+        "tests/test_install_ci.py"
+      ],
+      "groups": [
+        "ci-installer"
       ]
     },
     {

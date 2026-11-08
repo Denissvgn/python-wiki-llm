@@ -1348,6 +1348,7 @@ def test_committed_profile_freezes_intended_product_census():
             "integrations/wiki-integrity",
             "integrations/obsidian/llm-wiki",
             "integrations/wiki-impact",
+            "integrations/wiki-candidate",
         ],
         "exclude": [],
     }
@@ -1375,7 +1376,13 @@ def test_committed_profile_freezes_intended_product_census():
     )
     expected_python = {
         "src/llm_wiki_cli/" + path for path in registry["classified_python_files"]
-    } | {"integrations/github-action/render_summary.py"}
+    } | {
+        "integrations/github-action/render_summary.py",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/prepare.py",
+        "integrations/wiki-candidate/provider.py",
+        "integrations/wiki-candidate/run.py",
+    }
     assert set(snapshot.language_paths("python")) == expected_python
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
@@ -1429,6 +1436,7 @@ def test_committed_profile_freezes_intended_product_census():
     )
     assert [item.rel_path for item in snapshot.yaml_candidates] == [
         "integrations/github-action/action.yml",
+        "integrations/wiki-candidate/action.yml",
         "integrations/wiki-impact/action.yml",
         "integrations/wiki-integrity/action.yml",
     ]

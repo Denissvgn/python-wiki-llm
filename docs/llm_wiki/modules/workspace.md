@@ -93,7 +93,7 @@ flowchart LR
     click n3 "../modules/export.md"
     click n4 "../modules/integrity.md"
     click n5 "../modules/packet.md"
-    click n6 "../modules/prepare.md"
+    click n6 "../modules/documentation_run_prepare.md"
     click n7 "../modules/record.md"
     click n8 "../modules/refresh.md"
     click n9 "../modules/documentation_run_schema.md"
@@ -111,7 +111,7 @@ flowchart LR
 | Inbound | [export](../modules/export.md) |
 | Inbound | [integrity](../modules/integrity.md) |
 | Inbound | [packet](../modules/packet.md) |
-| Inbound | [prepare](../modules/prepare.md) |
+| Inbound | [documentation_run_prepare](../modules/documentation_run_prepare.md) |
 | Inbound | [record](../modules/record.md) |
 | Inbound | [refresh](../modules/refresh.md) |
 | Inbound | [verify](../modules/verify.md) |

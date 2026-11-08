@@ -545,6 +545,36 @@ def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
     )
 
 
+@pytest.mark.parametrize(
+    "path,expected,lanes",
+    [
+        (
+            "integrations/wiki-candidate/action.yml",
+            "tests/test_wiki_candidate_action.py",
+            {"ubuntu"},
+        ),
+        (
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "tests/test_install_ci.py",
+            {"ubuntu", "macos", "windows"},
+        ),
+    ],
+)
+def test_wiki_candidate_ci_selects_its_action_and_installer_owners(path, expected, lanes):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    assert "action" in result["jobs"]
+    assert set(result["lanes"]) == lanes
+    for lane in result["lanes"].values():
+        assert expected in lane["selectors"]
+
+
 def test_security_document_selects_public_documentation_checks():
     policy = ci.policy_load(ROOT / "release")
     before = {

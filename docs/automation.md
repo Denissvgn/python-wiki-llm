@@ -8,6 +8,43 @@ validation or the [doctor dashboard](#strict-doctor-dashboard) for knowledge
 health diagnostics. [Manual agent triggers](#manual-agent-triggers) and
 [cleanup of retired hooks](#git-hook-retirement) are described separately.
 
+## Install a GitHub wiki candidate workflow
+
+Start with a reviewed `.llm-wiki/publication.json` in the consumer repository.
+Use `architecture.baseline: bootstrap-source` for a new project, or
+`existing-wiki` for a managed native wiki. Map the repository's authored
+Markdown to public pages and give each topic an owner. The
+[source-only example](../examples/sibling-wiki/README.md) includes a complete
+configuration, authored pages and a local copy of a manual wiki.
+
+Set `ACTION_COMMIT_SHA` to the full 40-character commit that provides the
+candidate action. From the consumer repository, preview and install its
+read-only workflow.
+
+```bash
+llm-wiki install-ci --profile documentation --action-ref "$ACTION_COMMIT_SHA" --dry-run
+llm-wiki install-ci --profile documentation --action-ref "$ACTION_COMMIT_SHA"
+```
+
+Commit the generated `.github/workflows/llm-wiki-candidate.yml` with the
+publication configuration. For a checked-in copy of an existing public wiki,
+add `--target-dir path/to/wiki-copy` to the installer command. Omitting it
+requests an artifact-only candidate and requires mappings suitable for an
+empty target. Use `--src-dir` for a managed native wiki built from a source
+directory below the consumer root.
+
+The workflow uses a pinned provider and the checked-out consumer commit. It
+prepares the selected language helpers, checks existing native evidence
+against its sources, and retains the candidate, diff and receipt for review.
+On a pull request, the action reads accepted baselines and decisions from the
+base commit. To recheck a previously reviewed source after its approvals have
+landed, select the ref containing the accepted records in the manual workflow
+and supply the original source commit in `source-revision`. Follow the
+[candidate review guide](sibling-wiki-candidates.md) to resolve a finding at
+its declared edit location. See the
+[candidate action](../integrations/wiki-candidate/README.md) for direct use,
+policy inputs and artifact outputs.
+
 ## Install the full integrity gate
 
 After `bootstrap` has created a managed wiki, install its dedicated workflow:
