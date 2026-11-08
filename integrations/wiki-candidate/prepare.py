@@ -16,11 +16,13 @@ from llm_wiki_cli.services.helper_cache import ensure_helper
 from llm_wiki_cli.services.helper_preparation import selected_helper_languages
 from llm_wiki_cli.services.helper_runtime import helper_operation
 from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_cli.services.knowledge_freshness import REASON_CONCEPT_OBSERVATION_CHANGED
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.publication_config import (
     load_publication_config,
     publication_path,
 )
+from llm_wiki_cli.services.source_retirement import retired_entity_mappings
 
 
 _PROVIDER = Path(__file__).resolve().parents[2]
@@ -152,10 +154,28 @@ def prepare(
             trust_source_plugins=False,
             helper_cache_dir=cache,
         )
-    _write(
-        evidence / "native-freshness.json",
-        {"current": freshness.current, "reasons": freshness.reasons},
-    )
+    report = {"current": freshness.current, "reasons": freshness.reasons}
+    retained_only = False
+    if not freshness.current:
+        retired = retired_entity_mappings(state.manifest_basis)
+        retained = {
+            f"{concept.locator}:{REASON_CONCEPT_OBSERVATION_CHANGED}": concept.document.canonical_path
+            for concept in state.knowledge.concepts
+            if concept.document.canonical_path in retired
+        }
+        causes = set(freshness.reasons)
+        if causes.intersection(retained):
+            report["retained_source_pages"] = sorted(
+                retained[r] for r in causes.intersection(retained)
+            )
+            retained_only = causes <= retained.keys()
+    _write(evidence / "native-freshness.json", report)
+    if retained_only:
+        raise ValueError(
+            "Native wiki freshness is blocked by retained source history; see retained_source_pages "
+            "in native-freshness.json. Preserve the historical wiki. To document current source, "
+            "prepare a fresh baseline in a separate directory and review the publication bindings."
+        )
     if not freshness.current:
         raise ValueError(
             "Native wiki evidence is stale. Inspect native-freshness.json and refresh the source wiki."

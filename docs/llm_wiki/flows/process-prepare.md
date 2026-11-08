@@ -63,7 +63,7 @@
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
 
-**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 3 more
+**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 5 more
 
 **Complete related modules:**
 
@@ -72,8 +72,10 @@
 - [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [publication_config](../modules/publication_config.md)
+- [source_retirement](../modules/source_retirement.md)
 
 ## Call sequence
 
@@ -92,25 +94,25 @@ sequenceDiagram
     participant p7 as load_knowledge_state
     participant p8 as helper_operation
     participant p9 as evaluate_documentation_native_freshness
-    participant p10 as _consumer_root
-    participant p11 as build_source_snapshot
-    participant p12 as _relative_path
-    participant p13 as canonical_json_bytes
-    participant p14 as locate_exact_repository_path
-    participant p15 as _native_source_snapshot_preflight
-    participant p16 as _safe
-    participant p17 as _generation_input_paths
-    participant p18 as preparation_cache_root
-    participant p19 as _collect_runtime
-    participant p20 as lookup_helper
-    participant p21 as guard_maintenance_owner
-    participant p22 as _retained_empty_paths
-    participant p23 as read_publication_json
-    participant p24 as _runtime_generation_options
-    participant p25 as _source_mismatches
-    participant p26 as _profile
-    participant p27 as validate_publication_config
-    participant p28 as _load_once
+    participant p10 as retired_entity_mappings
+    participant p11 as _consumer_root
+    participant p12 as build_source_snapshot
+    participant p13 as read_entity_retirement_state
+    participant p14 as _relative_path
+    participant p15 as canonical_json_bytes
+    participant p16 as entity_owner_present
+    participant p17 as locate_exact_repository_path
+    participant p18 as _native_source_snapshot_preflight
+    participant p19 as _safe
+    participant p20 as _generation_input_paths
+    participant p21 as preparation_cache_root
+    participant p22 as _collect_runtime
+    participant p23 as lookup_helper
+    participant p24 as guard_maintenance_owner
+    participant p25 as _retained_empty_paths
+    participant p26 as read_publication_json
+    participant p27 as _runtime_generation_options
+    participant p28 as _source_mismatches
     participant p29 as argparse.ArgumentParser
     participant p30 as parser.add_argument
     p0->>p1: prepare
@@ -122,32 +124,32 @@ sequenceDiagram
     p1->>p7: load_knowledge_state
     p1->>p8: helper_operation
     p1->>p9: evaluate_documentation_native_freshness
-    p2->>p10: _consumer_root
-    p4->>p11: build_source_snapshot
-    p2->>p12: _relative_path
-    p6->>p13: canonical_json_bytes
-    p2->>p14: locate_exact_repository_path
-    p9->>p15: _native_source_snapshot_preflight
-    p5->>p16: _safe
-    p9->>p17: _generation_input_paths
-    p5->>p18: preparation_cache_root
-    p9->>p19: _collect_runtime
-    p5->>p20: lookup_helper
-    p7->>p21: guard_maintenance_owner
-    p9->>p22: _retained_empty_paths
-    p2->>p23: read_publication_json
-    p9->>p24: _runtime_generation_options
-    p9->>p25: _source_mismatches
-    p5->>p26: _profile
-    p2->>p27: validate_publication_config
-    p7->>p28: _load_once
+    p1->>p10: retired_entity_mappings
+    p2->>p11: _consumer_root
+    p4->>p12: build_source_snapshot
+    p10->>p13: read_entity_retirement_state
+    p2->>p14: _relative_path
+    p6->>p15: canonical_json_bytes
+    p10->>p16: entity_owner_present
+    p2->>p17: locate_exact_repository_path
+    p9->>p18: _native_source_snapshot_preflight
+    p5->>p19: _safe
+    p9->>p20: _generation_input_paths
+    p5->>p21: preparation_cache_root
+    p9->>p22: _collect_runtime
+    p5->>p23: lookup_helper
+    p7->>p24: guard_maintenance_owner
+    p9->>p25: _retained_empty_paths
+    p2->>p26: read_publication_json
+    p9->>p27: _runtime_generation_options
+    p9->>p28: _source_mismatches
     p0-->>p29: argparse.ArgumentParser(description=__doc__)
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2882 interactions; 2852 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2940 interactions; 2910 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 699 (698 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 941 (940 omitted); unresolved 1 of 712 (711 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +163,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
 | `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-> Omission summary shows 8 of 679 groups; 671 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 690 groups; 682 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +176,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1271; effect analysis evaluated: 823, partial: 50, unavailable: 398. Counts include steps omitted from the displayed trace.
+Source steps: 1288; effect analysis evaluated: 828, partial: 51, unavailable: 409. Counts include steps omitted from the displayed trace.
 
-Collector observations for 873 source steps with known totals: observed: 5237, emitted: 4967, omitted: 270. Unavailable totals are excluded.
+Collector observations for 879 source steps with known totals: observed: 5271, emitted: 4998, omitted: 273. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -193,7 +195,7 @@ Collector observations for 873 source steps with known totals: observed: 5237, e
 | `parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parser.parse_args` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `prepare` | `available` | `evaluated` | `available` | `17` | `17` | `0` |
+| `prepare` | `available` | `evaluated` | `available` | `19` | `19` | `0` |
 | `load_publication_config` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `_consumer_root` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
@@ -251,7 +253,7 @@ flowchart LR
 | `parser.add_argument` | - | - | - | - |
 | `parser.add_argument` | - | - | - | - |
 | `parser.parse_args` | - | - | - | - |
-| `prepare` | `mode: str`, `consumer: Path`, `config_path: str`, `source_dir: str`, `evidence: Path`, `cache: Path` | `_PROVIDER`, `_MODES`, `_LOCK`, `sys`, `sys` | `helpers[...]` | `none`, `none` |
+| `prepare` | `mode: str`, `consumer: Path`, `config_path: str`, `source_dir: str`, `evidence: Path`, `cache: Path` | `_PROVIDER`, `_MODES`, `_LOCK`, `sys`, `sys`, `REASON_CONCEPT_OBSERVATION_CHANGED` | `helpers[...]`, `report[...]` | `none`, `none` |
 | `load_publication_config` | `consumer_root: str \| Path`, `config_path: str \| Path` | `Path`, `SourceSelectionError` | - | `validate_publication_config(...)` |
 | `_consumer_root` | `value: str \| Path` | `PublicationConfigError` | - | `root` |
 
@@ -259,38 +261,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| __main__ | argparse.ArgumentParser | 166 | `argparse.ArgumentParser(description=__doc__)` |
-| __main__ | parser.add_argument | 167 | `parser.add_argument('mode', choices=(...))` |
-| __main__ | parser.add_argument | 168 | `parser.add_argument('consumer', type=Path)` |
-| __main__ | parser.add_argument | 169 | `parser.add_argument('config')` |
-| __main__ | parser.add_argument | 170 | `parser.add_argument('source_dir')` |
-| __main__ | parser.add_argument | 171 | `parser.add_argument('evidence', type=Path)` |
-| __main__ | parser.add_argument | 172 | `parser.add_argument('cache', type=Path)` |
-| __main__ | parser.parse_args | 173 | `parser.parse_args(data not statically known)` |
-| __main__ | prepare | 174 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
-| prepare | load_publication_config | 50 | `load_publication_config(consumer, config_path=config_path)` |
+| __main__ | argparse.ArgumentParser | 186 | `argparse.ArgumentParser(description=__doc__)` |
+| __main__ | parser.add_argument | 187 | `parser.add_argument('mode', choices=(...))` |
+| __main__ | parser.add_argument | 188 | `parser.add_argument('consumer', type=Path)` |
+| __main__ | parser.add_argument | 189 | `parser.add_argument('config')` |
+| __main__ | parser.add_argument | 190 | `parser.add_argument('source_dir')` |
+| __main__ | parser.add_argument | 191 | `parser.add_argument('evidence', type=Path)` |
+| __main__ | parser.add_argument | 192 | `parser.add_argument('cache', type=Path)` |
+| __main__ | parser.parse_args | 193 | `parser.parse_args(data not statically known)` |
+| __main__ | prepare | 194 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
+| prepare | load_publication_config | 52 | `load_publication_config(consumer, config_path=config_path)` |
 | load_publication_config | _consumer_root | 943 | `_consumer_root(consumer_root)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| process | `subprocess.run` | `prepare` | 72 |
-| filesystem_read | `plan_path.read_bytes` | `prepare` | 88 |
-| process | `subprocess.run` | `prepare` | 104 |
+| process | `subprocess.run` | `prepare` | 74 |
+| filesystem_read | `plan_path.read_bytes` | `prepare` | 90 |
+| process | `subprocess.run` | `prepare` | 106 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `__main__` | `argparse.ArgumentParser` | 166 |
-| unresolved_call | `__main__` | `parser.add_argument` | 167 |
-| unresolved_call | `__main__` | `parser.add_argument` | 168 |
-| unresolved_call | `__main__` | `parser.add_argument` | 169 |
-| unresolved_call | `__main__` | `parser.add_argument` | 170 |
-| unresolved_call | `__main__` | `parser.add_argument` | 171 |
-| unresolved_call | `__main__` | `parser.add_argument` | 172 |
-| unresolved_call | `__main__` | `parser.parse_args` | 173 |
+| external_call | `__main__` | `argparse.ArgumentParser` | 186 |
+| unresolved_call | `__main__` | `parser.add_argument` | 187 |
+| unresolved_call | `__main__` | `parser.add_argument` | 188 |
+| unresolved_call | `__main__` | `parser.add_argument` | 189 |
+| unresolved_call | `__main__` | `parser.add_argument` | 190 |
+| unresolved_call | `__main__` | `parser.add_argument` | 191 |
+| unresolved_call | `__main__` | `parser.add_argument` | 192 |
+| unresolved_call | `__main__` | `parser.parse_args` | 193 |
 | step_limit | `__main__` | `first 12 steps` | 0 |
 | truncated_flow | `__main__` | `depth limit` | 0 |
 

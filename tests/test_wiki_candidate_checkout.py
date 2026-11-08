@@ -1,6 +1,7 @@
 """Candidate CI binds the source tree, sibling target and PR review records."""
 
 import json
+import os
 from pathlib import Path
 import runpy
 import subprocess
@@ -24,6 +25,10 @@ def git(root, *args):
             "user.name=Fixture",
             "-c",
             "user.email=fixture@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            f"core.attributesFile={os.devnull}",
             *args,
         ],
         text=True,
@@ -57,6 +62,62 @@ def test_source_and_separate_target_have_independent_verified_revisions(tmp_path
     (target / "Home.md").write_text("uncommitted", encoding="utf-8")
     with pytest.raises(ValueError, match="checked-out commit"):
         target_revision(root, "wiki", pin)
+
+
+def test_pinned_target_compares_git_blobs_even_when_checkout_is_clean(tmp_path):
+    upstream = tmp_path / "upstream"
+    upstream.mkdir()
+    git(upstream, "init", "-q", "-b", "master")
+    git(upstream, "config", "core.autocrlf", "false")
+    markdown = b"# Home\n\nOriginal content.\n"
+    (upstream / "Home.md").write_bytes(markdown)
+    asset = "Résumé.bin"
+    payload = b"\x00\xff\r\n"
+    (upstream / asset).write_bytes(payload)
+    git(upstream, "add", "Home.md", asset)
+    git(upstream, "commit", "-qm", "Original wiki")
+    pin = git(upstream, "rev-parse", "HEAD")
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    for autocrlf, name in (("true", "Windows checkout"), ("false", "Exact copy")):
+        git(
+            consumer,
+            "clone",
+            "-q",
+            "--config",
+            f"core.autocrlf={autocrlf}",
+            str(upstream),
+            name,
+        )
+        target = consumer / name
+        assert git(target, "status", "--porcelain") == ""
+        assert (target / asset).read_bytes() == payload
+        if autocrlf == "true":
+            assert (target / "Home.md").read_bytes() == markdown.replace(b"\n", b"\r\n")
+            with pytest.raises(ValueError, match="pinned Git blob: Home.md"):
+                target_revision(consumer, name, pin)
+        else:
+            assert (target / "Home.md").read_bytes() == markdown
+            assert target_revision(consumer, name, pin) == pin
+            with pytest.raises(ValueError, match="since the candidate"):
+                target_revision(consumer, name, pin, receipt_files={})
+
+
+def test_pinned_target_rejects_materialized_git_symlink(tmp_path):
+    target = tmp_path / "public"
+    repository(target)
+    # core.symlinks=false represents a Git symlink as an ordinary file on disk.
+    git(target, "config", "core.symlinks", "false")
+    link = target / "Guide.md"
+    link.write_bytes(b"Home.md")
+    oid = git(target, "hash-object", "-w", str(link))
+    git(target, "update-index", "--add", "--cacheinfo", f"120000,{oid},Guide.md")
+    git(target, "commit", "-qm", "Manual wiki link")
+    assert git(target, "status", "--porcelain") == ""
+    head = git(target, "rev-parse", "HEAD")
+    with pytest.raises(ValueError, match="regular files: Guide.md"):
+        target_revision(tmp_path, "public", head)
+    assert git(target, "rev-parse", "HEAD") == head
 
 
 @pytest.mark.parametrize("kind", ["modified", "staged", "untracked", "ignored"])

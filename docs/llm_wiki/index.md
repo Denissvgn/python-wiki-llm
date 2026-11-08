@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 691 | [Open section](#entities) |
 | Modules | 281 | [Open section](#modules) |
-| Workflows | 276 | [Open section](#workflows) |
+| Workflows | 277 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 484 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1267,6 +1267,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_prompt_snapshot](workflows/validated_prompt_snapshot.md) - entry: `generate_prompt_cmd._validated_prompt_snapshot`
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
+- [verify_target_blobs](workflows/verify_target_blobs.md) - entry: `checkout._verify_target_blobs`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
 - [write](workflows/write.md) - entry: `publication_cmd._write`
 - [write_bootstrap_api_contract_page](workflows/write_bootstrap_api_contract_page.md) - entry: `bootstrap_runtime._write_bootstrap_api_contract_page`

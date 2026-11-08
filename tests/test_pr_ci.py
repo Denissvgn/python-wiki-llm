@@ -654,6 +654,34 @@ def test_security_document_selects_public_documentation_checks():
         )
 
 
+@pytest.mark.parametrize("path", [
+    "src/llm_wiki_cli/commands/prepare_extractors_cmd.py",
+    "src/llm_wiki_cli/commands/publication_cmd.py",
+    "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+    "src/llm_wiki_cli/services/publication_snapshot.py",
+    "integrations/wiki-candidate/checkout.py",
+    "tests/fixtures/sibling-wiki/verify_typescript_consumer.py",
+])
+def test_sibling_wiki_portability_keeps_consumer_case_and_helper_owners(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    expected = {
+        "tests/test_publication_portability_source.py",
+        "tests/test_publication_portability_adoption.py",
+        "tests/test_wiki_candidate_checkout.py",
+    }
+    assert "action" in selection["jobs"]
+    for lane in ("ubuntu", "windows", "macos"):
+        assert expected <= set(selection["lanes"][lane]["selectors"])
+        assert selection["lanes"][lane]["helpers"] == []
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):

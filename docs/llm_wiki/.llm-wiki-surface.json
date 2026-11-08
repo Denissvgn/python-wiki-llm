@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 281,
-      "workflows": 276
+      "workflows": 277
     },
     "dependency_architecture": 2,
-    "total": 1752
+    "total": 1753
   },
   "dependency_pages": {
     "count": 2,
@@ -36552,7 +36552,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 114,
+              "line": 117,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -40492,7 +40492,7 @@
             {
               "confidence": "unknown",
               "kind": "process",
-              "line": 72,
+              "line": 74,
               "step": "prepare",
               "step_index": 10,
               "target": "subprocess.run"
@@ -40500,7 +40500,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 88,
+              "line": 90,
               "step": "prepare",
               "step_index": 10,
               "target": "plan_path.read_bytes"
@@ -40508,7 +40508,7 @@
             {
               "confidence": "unknown",
               "kind": "process",
-              "line": 104,
+              "line": 106,
               "step": "prepare",
               "step_index": 10,
               "target": "subprocess.run"
@@ -40517,49 +40517,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 166,
+              "line": 186,
               "step": "__main__",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 167,
+              "line": 187,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 168,
+              "line": 188,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 169,
+              "line": 189,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 170,
+              "line": 190,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 171,
+              "line": 191,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 172,
+              "line": 192,
               "step": "__main__",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 173,
+              "line": 193,
               "step": "__main__",
               "target": "parser.parse_args"
             },
@@ -40640,7 +40640,7 @@
             "src/llm_wiki_cli/services/maintenance_projection.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py"
           ],
-          "step_count": 2883,
+          "step_count": 2941,
           "truncated": true
         }
       },
@@ -42945,6 +42945,7 @@
         "workflows/validated_prompt_snapshot.md",
         "workflows/validated_reserved_extensions.md",
         "workflows/validated_source.md",
+        "workflows/verify_target_blobs.md",
         "workflows/wiki_input_hashes.md",
         "workflows/WikiWriteBasis_before_write.md",
         "workflows/write.md",
@@ -52495,6 +52496,8 @@
       "outgoing_internal_links": [
         "modules/checkout.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/publication_candidate.md",
         "modules/publication_config.md",
         "modules/publication_impact.md"
       ],
@@ -56822,8 +56825,10 @@
         "modules/helper_preparation.md",
         "modules/helper_runtime.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_freshness.md",
         "modules/knowledge_loader.md",
         "modules/publication_config.md",
+        "modules/source_retirement.md",
         "modules/wiki-candidate_prepare.md"
       ],
       "role": "semantic",
@@ -61483,6 +61488,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/knowledge_projection.py",
       "title": "validated_source"
+    },
+    {
+      "canonical_path": "workflows/verify_target_blobs.md",
+      "id": "verify_target_blobs",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/verify_target_blobs",
+      "outgoing_internal_links": [
+        "modules/checkout.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/publication_candidate.md"
+      ],
+      "role": "mixed",
+      "source_path": "integrations/wiki-candidate/checkout.py",
+      "title": "verify_target_blobs"
     },
     {
       "canonical_path": "workflows/wiki_input_hashes.md",
@@ -72738,5 +72758,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:4e7994db3850650e812bd97eb1e3367a911522ad32b522a72b8ef6814d8e8324"
+  "source_hash": "sha256:da8f18d3046a3c2d45000c6c38122927627c6e4b776b94589580d5d6ec2772a9"
 }

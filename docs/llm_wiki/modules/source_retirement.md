@@ -46,11 +46,13 @@ the independent historical retirement policy.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_cli/services/source_retirement.py"]
-    n0 --> n1
-    n1 --> n0
-    click n1 "../modules/source_retirement.md"
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_cli/services/source_retirement.py"]
+    n0 --> n2
+    n1 --> n2
+    n2 --> n1
+    click n2 "../modules/source_retirement.md"
 ```
 
 > Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
@@ -59,10 +61,11 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | `integrations` (1) |
 | Inbound | `src` (11) |
 | Outbound | `src` (5) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

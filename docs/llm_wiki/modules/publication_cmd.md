@@ -21,6 +21,7 @@ Read-only public wiki impact and explicit review record preparation.
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `json` | `json` |
+| `os` | `sep` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 
@@ -105,6 +106,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_normalize_consumer_paths` | `(args)` | — | Translate native CLI separators without normalizing traversal or aliases. |
 | `_common` | `(parser, *, child = False)` | — | — |
 | `add_impact_command` | `(docs_sub)` | — | — |
 | `_artifact_path` | `(args, value)` | — | — |

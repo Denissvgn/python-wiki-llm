@@ -5,6 +5,65 @@ Its receipt binds the input basis, provider identity, target-copy hashes,
 owned paths, operations, structural checks and exact review state. Generation
 and checking perform no remote Git operations.
 
+## Choose the source and public target
+
+Install the provider with its `publication` extra in a separate environment.
+Choose the source of the architecture evidence, then decide whether to supply
+a local copy of an existing public wiki.
+
+| Starting point | Setup |
+| --- | --- |
+| New Python project | Set `architecture.baseline` to `bootstrap-source` and `architecture.root` to the Python source directory. Map an authored document to `Home.md`. Local export works before Git initialization and uses the built-in Python extractor. Omit `--target-dir` for the first artifact. |
+| New non-Python project | Use the same source-only configuration. Put the source selection under the configured source root, inspect the helper plan and prepare the helpers it lists. |
+| Existing managed native wiki | Set `architecture.baseline` to `existing-wiki` and `architecture.root` to its native wiki directory. For the candidate action, set `src-dir` to the source directory used to generate that wiki. The action checks integrity and current source evidence before export. |
+| Manually maintained public wiki | Use either source baseline. Map manual topics with `edit_at: wiki` and run `docs impact --target-dir "Snapshots/Public wiki"` against a local public copy. To move one page to repository ownership, import it with the reviewed before-hash. The other pages, navigation and attachments keep their original bytes. |
+
+For example, for TypeScript under `Application code/`, run the following
+from the consumer root. Set `LLM_WIKI_CACHE_DIR` to an absolute helper-cache
+directory outside the checkout. Keep it set for export and check.
+
+```sh
+llm-wiki prepare-extractors --src-dir "Application code" --plan --format json
+llm-wiki prepare-extractors --src-dir "Application code" --cache-dir "$LLM_WIKI_CACHE_DIR"
+llm-wiki docs wiki export --config "Review settings/Wiki policy.json" --output-dir reports/candidate --receipt reports/receipt.json
+llm-wiki docs wiki check --config "Review settings/Wiki policy.json" --candidate-dir reports/candidate --receipt reports/receipt.json
+```
+
+Prepare dependencies while the required tools and downloads are available.
+With the installed provider, matching runtime, prepared helpers and local
+inputs, candidate generation and checking can run offline. A missing helper
+diagnostic names the language to prepare. In PowerShell, set the cache with
+`$env:LLM_WIKI_CACHE_DIR` and pass that value to `--cache-dir`. Use `/` in
+paths stored in policy JSON on every platform. Quote CLI paths that contain
+spaces. `--config` and `--target-dir` resolve under `--consumer-root`.
+
+### Recover a blocked candidate
+
+- **Stale native evidence.** Inspect `native-integrity.json` and
+  `native-freshness.json` from the candidate action. Run the owning native
+  sync with the original source, selection and runtime, then export a fresh
+  candidate and review its new receipt. If the report lists retained
+  historical pages as the remaining cause, preserve the historical wiki.
+  A project that needs a current-only baseline can bootstrap a separate
+  native wiki and review the changed configuration and topic bindings.
+- **Pinned target bytes differ.** A Git checkout can be clean even when Git
+  has converted line endings or applied a checkout filter. The candidate
+  action compares each retained file to the blob at the pinned wiki commit.
+  For automatic line-ending conversion, use a fresh independent checkout,
+  for example `git clone --config core.autocrlf=false "$WIKI_CLONE_URL" "Snapshots/Public wiki"`.
+  Check the target's attributes if a filter still changes the bytes. When
+  using a plain snapshot, its inventory of file hashes identifies it.
+- **Approval is pending.** With `publish: false`, a valid candidate can
+  report `ready: false` while it awaits review. Use the receipt to review
+  the artifact or hand off mapped edits to an author. On a fork pull request,
+  the read-only workflow uses the proposed source and reads accepted records
+  at their paths in the PR base commit. Submit new decisions through the
+  consumer's review process.
+
+Source and wiki branches have independent names. The optional publisher
+discovers the wiki's default branch when no override is configured.
+[Delivery and branch selection](../integrations/wiki-candidate/delivery/README.md)
+
 ## Declare authored content
 
 Keep the complete configuration described in the [sibling wiki guide](sibling-wiki.md).

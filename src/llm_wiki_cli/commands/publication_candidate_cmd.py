@@ -237,6 +237,7 @@ def _write(args, destination, value):
 
 
 def run(args):
+    publication_cmd._normalize_consumer_paths(args)
     from ..services.publication_candidate import (
         check_publication_candidate,
         export_publication_candidate,

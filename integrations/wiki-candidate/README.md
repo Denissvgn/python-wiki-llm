@@ -48,7 +48,10 @@ existing native wiki must pass the provider’s integrity and freshness checks.
 | `evidence-id` | Unique artifact suffix within the job, using up to 40 lowercase letters, digits, dots, dashes or underscores. Defaults to `default`. |
 
 Supply a tracked target copy or a clean separate target checkout beneath the
-consumer when comparing with an existing public wiki. Manually maintained
+consumer when comparing with an existing public wiki. For a separate checkout,
+the action verifies the retained bytes against the pinned Git blobs. If Git
+converted them during checkout, follow the [checkout recovery instructions](../../docs/sibling-wiki-candidates.md#recover-a-blocked-candidate).
+Manually maintained
 pages are retained byte for byte. A changed proposal can pass an advisory run
 while awaiting human review. For a proposed edit to a baseline or review record,
 run against the accepted inputs and promote the proposal through the consumer’s

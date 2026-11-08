@@ -27,7 +27,8 @@ and set `architecture.root` to its source directory, or `.` for the consumer
 root. The command builds evidence in temporary storage using the existing
 source selection. Prepare any required language helpers before running it.
 The [runnable consumer example](../examples/sibling-wiki/README.md) includes a
-complete configuration and public page.
+complete configuration and public page. For source-only, managed-native and
+manual-wiki setup, see [choosing the source and public target](sibling-wiki-candidates.md#choose-the-source-and-public-target).
 
 ```json
 {

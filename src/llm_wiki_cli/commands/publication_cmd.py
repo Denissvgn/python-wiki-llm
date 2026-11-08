@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import argparse
+from os import sep
 from pathlib import Path
 import sys
 
@@ -30,6 +31,14 @@ from ..services.publication_impact import (
 )
 from ..services.knowledge_evidence import hash_json
 from ..services.source_snapshot import _is_package_marker
+
+
+def _normalize_consumer_paths(args):
+    """Translate native CLI separators without normalizing traversal or aliases."""
+    for name in ("config", "target_dir"):
+        value = getattr(args, name, None)
+        if isinstance(value, str):
+            setattr(args, name, value.replace(sep, "/"))
 
 
 def _common(parser, *, child=False):
@@ -270,6 +279,7 @@ def _error_report(message):
 
 
 def run(args):
+    _normalize_consumer_paths(args)
     candidate = None
     baseline = None
     try:

@@ -52,6 +52,119 @@ def test_action_uses_pinned_dependencies_and_installed_interpreter():
         assert "${{" not in step["run"]
 
 
+def test_fork_pr_prepares_merge_content_with_base_reviews_without_credentials(tmp_path):
+    upstream = tmp_path / "upstream"
+    package = Path("Applications") / "Member guide"
+    project = upstream / package
+    shutil.copytree(
+        ROOT / "examples/sibling-wiki",
+        project,
+        ignore=shutil.ignore_patterns("reports"),
+    )
+    config = Path("Policy files") / "wiki.json"
+    target = Path("Snapshots") / "Public wiki"
+    reviews = Path("Review records") / "accepted.json"
+    (project / config.parent).mkdir()
+    (project / target.parent).mkdir()
+    (project / reviews.parent).mkdir()
+    (project / ".llm-wiki/publication.json").rename(project / config)
+    (project / "sibling-wiki").rename(project / target)
+    ledger = {"schema_version": "llm-wiki-publication-reviews/v1", "records": []}
+    (project / reviews).write_bytes(json.dumps(ledger).encode("utf-8"))
+    # Keep authored text and before-hash adoptions portable even in a CRLF checkout.
+    (upstream / ".gitattributes").write_bytes(b"* text=auto eol=lf\n")
+    _git(upstream, "init", "-q", "-b", "main")
+    _git(upstream, "add", ".")
+    author = ["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false"]
+    _git(upstream, *author, "commit", "-qm", "Accepted consumer inputs")
+    base = _git(upstream, "rev-parse", "HEAD")
+
+    fork = tmp_path / "fork"
+    runner = tmp_path / "runner"
+    _git(tmp_path, "clone", "--no-local", "-q", str(upstream), str(fork))
+    _git(fork, "switch", "--detach", base)
+    (fork / package / reviews).write_bytes(b"proposed review data")
+    _git(fork / package, "mv", reviews.parent.as_posix(), "renaming")
+    _git(fork / package, "mv", "renaming", reviews.parent.as_posix().lower())
+    with (fork / package / "docs/Home.md").open("ab") as page:
+        page.write(b"\nFork-authored proposal.\n")
+    _git(fork, *author, "commit", "-qam", "Propose page and review changes")
+    fork_head = _git(fork, "rev-parse", "HEAD")
+    _git(tmp_path, "clone", "--no-local", "-q", str(upstream), str(runner))
+    _git(runner, "switch", "--detach", base)
+    _git(runner, "fetch", "--no-tags", str(fork), fork_head)
+    _git(runner, *author, "merge", "--no-ff", "-qm", "PR merge", "FETCH_HEAD")
+    merge = _git(runner, "rev-parse", "HEAD")
+    assert _git(runner, "show", "-s", "--format=%P", merge) == f"{base} {fork_head}"
+
+    runtime = tmp_path / "candidate runtime"
+    evidence = runtime / "evidence"
+    evidence.mkdir(parents=True)
+    event = tmp_path / "event.json"
+    event.write_text(
+        json.dumps(
+            {
+                "pull_request": {
+                    "base": {"sha": base, "repo": {"full_name": "owner/app"}},
+                    "head": {
+                        "sha": fork_head,
+                        "repo": {"full_name": "contributor/app", "fork": True},
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    env = {
+        **os.environ,
+        "GITHUB_OUTPUT": str(tmp_path / "outputs"),
+        "GITHUB_STEP_SUMMARY": str(tmp_path / "summary"),
+        "GITHUB_EVENT_NAME": "pull_request",
+        "GITHUB_WORKSPACE": str(runner),
+        "GITHUB_EVENT_PATH": str(event),
+        "GITHUB_SHA": merge,
+        "WIKI_CONSUMER": str(runner / package),
+        "WIKI_RUNTIME": str(runtime),
+        "INPUT_CONFIG": config.as_posix(),
+        "INPUT_TARGET_DIR": target.as_posix(),
+        "INPUT_SOURCE_REVISION": merge,
+        "INPUT_REVIEWS": reviews.as_posix(),
+        "GIT_TERMINAL_PROMPT": "0",
+        "GIT_ALLOW_PROTOCOL": "file",
+        "PIP_NO_INDEX": "1",
+    }
+    for name in (
+        "GITHUB_TOKEN",
+        "GH_TOKEN",
+        "SOURCE_TOKEN",
+        "WIKI_TOKEN",
+        "WIKI_GIT_TOKEN",
+    ):
+        env.pop(name, None)
+    _run_steps(runner, env, candidate_exit=0)
+
+    accepted = json.loads((evidence / "accepted-state.json").read_bytes())
+    assert accepted["revision"] == base
+    assert accepted["files"]["reviews"]["git_blob"] == _git(
+        upstream, "rev-parse", f"{base}:{(package / reviews).as_posix()}"
+    )
+    assert json.loads((runtime / "accepted-inputs/reviews.json").read_bytes()) == ledger
+    receipt = json.loads((evidence / "receipt.json").read_bytes())
+    assert receipt["context"]["source_revision"] == merge
+    assert (
+        receipt["checks"]["ok"]
+        and not receipt["ready"]
+        and not receipt["delivery_ready"]
+    )
+    assert not (evidence / "delivery-handoff.json").exists()
+    assert b"Fork-authored proposal." in (runtime / "candidate/Home.md").read_bytes()
+    assert (runtime / "candidate/Wiki-Tooling.md").read_bytes() == (
+        project / target / "Wiki-Tooling.md"
+    ).read_bytes()
+    assert _git(runner, "status", "--porcelain") == ""
+    assert _git(upstream, "rev-parse", "HEAD") == base
+
+
 @pytest.mark.parametrize("case", ["pending", "required", "broken"])
 def test_python_only_foreign_consumer_retains_exact_candidate_for_review(tmp_path, case):
     consumer = tmp_path / "foreign consumer"

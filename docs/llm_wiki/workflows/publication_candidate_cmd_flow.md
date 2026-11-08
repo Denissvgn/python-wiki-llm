@@ -6,20 +6,21 @@
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `publication_config.publication_control_overlap`
-2. `publication_candidate.validate_publication_receipt`
-3. `publication_candidate.validate_candidate_tree`
-4. `publication_candidate.validate_candidate_target`
-5. `publication_candidate.review_publication_candidate`
-6. `publication_cmd._document_bytes`
-7. `publication_contracts.validate_publication_basis`
-8. `publication_candidate.validate_publication_receipt`
-9. `knowledge_storage_io._absolute_path`
-10. `publication_config.publication_control_overlap`
-11. `publication_cmd._document_bytes`
-12. `publication_candidate.export_publication_candidate`
-13. `publication_candidate.check_publication_candidate`
-14. `publication_cmd._document_bytes`
+1. `publication_cmd._normalize_consumer_paths`
+2. `publication_config.publication_control_overlap`
+3. `publication_candidate.validate_publication_receipt`
+4. `publication_candidate.validate_candidate_tree`
+5. `publication_candidate.validate_candidate_target`
+6. `publication_candidate.review_publication_candidate`
+7. `publication_cmd._document_bytes`
+8. `publication_contracts.validate_publication_basis`
+9. `publication_candidate.validate_publication_receipt`
+10. `knowledge_storage_io._absolute_path`
+11. `publication_config.publication_control_overlap`
+12. `publication_cmd._document_bytes`
+13. `publication_candidate.export_publication_candidate`
+14. `publication_candidate.check_publication_candidate`
+15. `publication_cmd._document_bytes`
 
 ## Touches
 

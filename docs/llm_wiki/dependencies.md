@@ -34,8 +34,8 @@ flowchart TD
 | [io](modules/io.md) | 51 | 2 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 48 | 2 |
 | [knowledge_storage](modules/knowledge_storage.md) | 48 | 9 |
+| [knowledge_storage_io](modules/knowledge_storage_io.md) | 48 | 4 |
 | [services_contracts](modules/services_contracts.md) | 47 | 0 |
-| [knowledge_storage_io](modules/knowledge_storage_io.md) | 47 | 4 |
 | [sync_manifest](modules/sync_manifest.md) | 43 | 14 |
 | [wiki_surface](modules/wiki_surface.md) | 42 | 1 |
 | [filesystem_guard](modules/filesystem_guard.md) | 40 | 1 |
@@ -74,6 +74,7 @@ flowchart TD
 | [knowledge_loader](modules/knowledge_loader.md) | 12 | 10 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 12 | 26 |
 | [section_ownership](modules/section_ownership.md) | 12 | 5 |
+| [source_retirement](modules/source_retirement.md) | 12 | 5 |
 | [analysis_capture](modules/analysis_capture.md) | 11 | 6 |
 | [concept_identity](modules/concept_identity.md) | 11 | 2 |
 | [documentation_queries](modules/documentation_queries.md) | 11 | 16 |
@@ -81,9 +82,9 @@ flowchart TD
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 0 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 11 | 21 |
-| [source_retirement](modules/source_retirement.md) | 11 | 5 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [workspace](modules/workspace.md) | 10 | 3 |
+| [knowledge_freshness](modules/knowledge_freshness.md) | 10 | 9 |
 | [python_imports](modules/python_imports.md) | 10 | 1 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [wiki_write_basis](modules/wiki_write_basis.md) | 10 | 2 |
@@ -92,9 +93,9 @@ flowchart TD
 | [integrity](modules/integrity.md) | 9 | 8 |
 | [entrypoints](modules/entrypoints.md) | 9 | 5 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 12 |
-| [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 9 |
 | [maintenance_status](modules/maintenance_status.md) | 9 | 9 |
 | [manifest_storage](modules/manifest_storage.md) | 9 | 7 |
+| [publication_candidate](modules/publication_candidate.md) | 9 | 11 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 9 | 9 |
 | [workflow_profile](modules/workflow_profile.md) | 9 | 1 |
@@ -103,7 +104,6 @@ flowchart TD
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [lint_service](modules/lint_service.md) | 8 | 42 |
 | [maintenance_projection](modules/maintenance_projection.md) | 8 | 3 |
-| [publication_candidate](modules/publication_candidate.md) | 8 | 11 |
 | [api](modules/api.md) | 7 | 57 |
 | [data_flow](modules/data_flow.md) | 7 | 1 |
 | [publication](modules/publication.md) | 7 | 9 |
@@ -296,10 +296,10 @@ flowchart TD
 | [esbuild.config](modules/esbuild.config.md) | 0 | 0 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
-| [checkout](modules/checkout.md) | 0 | 3 |
+| [checkout](modules/checkout.md) | 0 | 5 |
 | [git_transport](modules/git_transport.md) | 0 | 5 |
 | [publish](modules/publish.md) | 0 | 7 |
-| [wiki-candidate_prepare](modules/wiki-candidate_prepare.md) | 0 | 7 |
+| [wiki-candidate_prepare](modules/wiki-candidate_prepare.md) | 0 | 9 |
 | [provider](modules/provider.md) | 0 | 1 |
 | [run](modules/run.md) | 0 | 3 |
 | [commands___init__](modules/commands___init__.md) | 0 | 10 |

@@ -507,6 +507,23 @@
       ],
       "helpers": []
     },
+    "wiki-portability": {
+      "tests": [
+        "tests/test_publication_portability_source.py",
+        "tests/test_publication_portability_adoption.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
     "publication-action": {
       "tests": [
         "tests/test_wiki_impact_action.py",
@@ -910,6 +927,25 @@
       ],
       "groups": [
         "publication-action"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/commands/prepare_extractors_cmd.py",
+        "src/llm_wiki_cli/commands/publication_cmd.py",
+        "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+        "src/llm_wiki_cli/services/publication_snapshot.py",
+        "src/llm_wiki_cli/services/publication_candidate.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+        "src/llm_wiki_cli/services/ci_installer.py",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/prepare.py",
+        "tests/fixtures/sibling-wiki/**",
+        "tests/test_publication_portability_*.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "groups": [
+        "wiki-portability"
       ]
     },
     {

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -9,7 +10,11 @@ import re
 import subprocess
 
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+from llm_wiki_cli.services.publication_candidate import MAX_FILE_BYTES, _read_tree
 from llm_wiki_cli.services.publication_config import (
+    DELIVERY_CHECKPOINT_PATH,
+    _relative_path,
     publication_control_overlap,
     publication_path,
 )
@@ -69,8 +74,52 @@ def _clean(directory: Path, separate_target: Path | None = None) -> None:
             )
 
 
+def _verify_target_blobs(
+    target: Path, pin: str, receipt_files: dict[str, str] | None
+) -> None:
+    """Bind the public bytes used by the exporter to the unfiltered Git tree."""
+    files = _read_tree(target, target_snapshot=True)
+    if (
+        receipt_files is not None
+        and {path: sha256_bytes(raw) for path, raw in files.items()} != receipt_files
+    ):
+        raise ValueError("Target bytes changed since the candidate was checked")
+    # The private checkpoint participates in the Git revision but is excluded
+    # from the public candidate and receipt inventory.
+    marker = target / DELIVERY_CHECKPOINT_PATH
+    if marker.exists():
+        files[DELIVERY_CHECKPOINT_PATH] = read_guarded(marker, MAX_FILE_BYTES).content
+    algorithm = "sha256" if len(pin) == 64 else "sha1"
+    for entry in _git(target, "ls-tree", "-rz", "--full-tree", pin).split(b"\0"):
+        if not entry:
+            continue
+        metadata, name = entry.split(b"\t", 1)
+        mode, kind, expected = metadata.split()
+        path = name.decode("utf-8")
+        if kind != b"blob" or mode not in {b"100644", b"100755"} or path not in files:
+            raise ValueError(
+                f"Pinned target requires a complete checkout of regular files: {path}"
+            )
+        raw = files.pop(path)
+        blob = hashlib.new(
+            algorithm, f"blob {len(raw)}\0".encode("ascii"), usedforsecurity=False
+        )
+        blob.update(raw)
+        if blob.hexdigest() != expected.decode("ascii"):
+            raise ValueError(
+                f"Target checkout bytes differ from the pinned Git blob: {path}. "
+                "Use a fresh checkout without line-ending conversion or checkout filters."
+            )
+    if files:
+        raise ValueError("Target contains files outside its pinned Git tree")
+
+
 def verified_target(
-    consumer: Path, target_dir: str, target_revision: str
+    consumer: Path,
+    target_dir: str,
+    target_revision: str,
+    *,
+    receipt_files: dict[str, str] | None = None,
 ) -> str | None:
     if not target_dir:
         if target_revision:
@@ -89,18 +138,28 @@ def verified_target(
     if target_revision and _revision(target_revision) != head:
         raise ValueError("Target checkout differs from target-revision")
     _clean(target)
+    _verify_target_blobs(target, head, receipt_files)
     return head
 
 
-def committed_blob(root: Path, pin: str, relative: str, maximum: int) -> tuple[str, bytes]:
+def committed_blob(
+    root: Path, pin: str, relative: str, maximum: int
+) -> tuple[str, bytes]:
     """Read one regular blob from a pinned commit, without checking out or filtering it."""
     entry = _git(root, "ls-tree", "-z", _revision(pin), "--", relative)
-    mode, _, rest = entry.partition(b" ")
-    if mode not in {b"100644", b"100755"} or not rest.startswith(b"blob "):
+    metadata, _, listed = entry.partition(b"\t")
+    mode, _, rest = metadata.partition(b" ")
+    if (
+        listed != relative.encode("utf-8") + b"\0"
+        or mode not in {b"100644", b"100755"}
+        or not rest.startswith(b"blob ")
+    ):
         raise ValueError(f"Accepted input must be a regular file at {pin}: {relative}")
-    oid = rest.partition(b"\t")[0].split()[1].decode("ascii")
+    oid = rest.split()[1].decode("ascii")
     if int(_git(root, "cat-file", "-s", oid)) > maximum:
-        raise ValueError(f"Accepted input exceeds the publication document limit: {relative}")
+        raise ValueError(
+            f"Accepted input exceeds the publication document limit: {relative}"
+        )
     return oid, _git(root, "cat-file", "blob", oid)
 
 
@@ -121,7 +180,9 @@ def verified_checkout(
     _clean(consumer, separate_target)
 
     for path in accepted.values():
-        configured = publication_path(consumer, path)
+        # This coordinate belongs to the accepted revision. A proposal can
+        # rename it even on a case-insensitive filesystem.
+        configured = consumer / _relative_path(path, "accepted input")
         if target_dir and publication_control_overlap(configured, target):
             raise ValueError(
                 "Accepted metadata must stay outside the public target copy"
@@ -158,7 +219,9 @@ def accepted_inputs(
             "candidate-review",
         }:
             raise ValueError("Unknown accepted artifact type")
-        relative = publication_path(consumer, path).relative_to(root).as_posix()
+        relative = (
+            consumer.relative_to(root) / _relative_path(path, "accepted input")
+        ).as_posix()
         oid, raw = committed_blob(root, pin, relative, MAX_JSON_BYTES)
         destination = directory / (option + ".json")
         destination.write_bytes(raw)

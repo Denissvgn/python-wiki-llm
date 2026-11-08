@@ -138,7 +138,7 @@ def run(mode: str) -> None:
     if receipt != read_publication_document(exported) or check_code != export_code:
         raise ValueError("Export and check disagree on the candidate")
     if verified_checkout(consumer, source_sha, target_dir, accepted) != source_sha or (
-        verified_target(consumer, target_dir, target_revision) != target_sha
+        verified_target(consumer, target_dir, target_revision, receipt_files=receipt["target"]["files"]) != target_sha
     ):
         raise ValueError("The source or target checkout changed during preparation")
     retain(receipt, candidate, consumer / target_dir if target_dir else None, evidence)

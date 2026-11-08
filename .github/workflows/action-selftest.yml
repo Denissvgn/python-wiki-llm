@@ -189,6 +189,71 @@ jobs:
           cmp consumer/sibling-wiki/Wiki-Tooling.md "${CANDIDATE_DIR}/Wiki-Tooling.md"
           test -z "$(git -C consumer status --porcelain=v1 --untracked-files=all)"
 
+  wiki-candidate-typescript:
+    name: Source-only TypeScript wiki candidate
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          path: .provider
+          persist-credentials: false
+      - id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13.18"
+      - name: Install and verify the provider outside the consumer
+        id: provider
+        shell: bash
+        env:
+          PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
+          INPUT_WORKING_DIRECTORY: .
+          INPUT_EVIDENCE_ID: typescript-consumer
+        run: '"${PROVIDER_PYTHON}" -B -I .provider/integrations/wiki-candidate/provider.py'
+      - name: Install the locked Node and npm for the selected TypeScript helper
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        run: >-
+          .provider/.github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode routine --install-root "${WIKI_RUNTIME}/toolchains"
+          --lock .provider/release/toolchain-lock.json --python "${WIKI_PYTHON}"
+      - name: Prepare the selected helper
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        run: |
+          set -euo pipefail
+          mkdir "${WIKI_RUNTIME}/seed"
+          cd "${WIKI_RUNTIME}/seed"
+          "${WIKI_PYTHON}" -I -m llm_wiki_cli.cli prepare-extractors \
+            --src-dir . --language typescript --cache-dir "${WIKI_RUNTIME}/helpers" \
+            > "${WIKI_RUNTIME}/evidence/preparation.log" 2>&1
+      - name: Verify the installed source-only consumer with existing dependencies
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+          PIP_NO_INDEX: "1"
+          npm_config_offline: "true"
+        run: >-
+          "${WIKI_PYTHON}" -B -I .provider/tests/fixtures/sibling-wiki/verify_typescript_consumer.py
+          --workspace "${WIKI_RUNTIME}/consumer"
+          --helper-cache "${WIKI_RUNTIME}/helpers"
+          --output "${WIKI_RUNTIME}/evidence/consumer.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
+        with:
+          name: wiki-candidate-typescript-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.provider.outputs.evidence-dir }}
+          if-no-files-found: error
+          retention-days: 14
+
   foreign-caller:
     if: ${{ github.event_name != 'workflow_dispatch' }}
     name: Foreign caller (${{ matrix.integration }}, ${{ matrix.state }})
