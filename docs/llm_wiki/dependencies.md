@@ -31,7 +31,7 @@ flowchart TD
 |--------|--------|---------|
 | [validation](modules/validation.md) | 79 | 0 |
 | [config](modules/config.md) | 62 | 3 |
-| [source_snapshot](modules/source_snapshot.md) | 57 | 7 |
+| [source_snapshot](modules/source_snapshot.md) | 58 | 7 |
 | [io](modules/io.md) | 51 | 2 |
 | [knowledge_storage](modules/knowledge_storage.md) | 48 | 9 |
 | [services_contracts](modules/services_contracts.md) | 47 | 0 |
@@ -134,6 +134,7 @@ flowchart TD
 | [knowledge_index](modules/knowledge_index.md) | 4 | 25 |
 | [maintenance_queue](modules/maintenance_queue.md) | 4 | 7 |
 | [maintenance_service](modules/maintenance_service.md) | 4 | 23 |
+| [publication_contracts](modules/publication_contracts.md) | 4 | 8 |
 | [publication_impact](modules/publication_impact.md) | 4 | 9 |
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [rendering_lifecycle](modules/rendering_lifecycle.md) | 4 | 2 |
@@ -143,7 +144,7 @@ flowchart TD
 | [yaml_syntax](modules/yaml_syntax.md) | 4 | 0 |
 | [api_types](modules/api_types.md) | 3 | 0 |
 | [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 3 | 13 |
-| [publication_cmd](modules/publication_cmd.md) | 3 | 6 |
+| [publication_cmd](modules/publication_cmd.md) | 3 | 8 |
 | [sync_cmd](modules/sync_cmd.md) | 3 | 45 |
 | [native_diagnostics](modules/native_diagnostics.md) | 3 | 1 |
 | [python_bindings](modules/python_bindings.md) | 3 | 0 |
@@ -165,7 +166,6 @@ flowchart TD
 | [knowledge_coverage](modules/knowledge_coverage.md) | 3 | 3 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 3 | 16 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 3 | 13 |
-| [publication_contracts](modules/publication_contracts.md) | 3 | 8 |
 | [search_discovery](modules/search_discovery.md) | 3 | 5 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
 | [search_service](modules/search_service.md) | 3 | 14 |

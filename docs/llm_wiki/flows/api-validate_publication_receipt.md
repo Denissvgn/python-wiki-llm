@@ -82,15 +82,15 @@ sequenceDiagram
     p1-->>p30: isinstance (src/llm_wiki_cli/services…idate_publication_receipt)(receipt, Mapping)
 ```
 
-> Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 253 interactions; 223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 136 (132 omitted); unresolved 1 of 51 (50 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 142 (138 omitted); unresolved 1 of 51 (50 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 4 | - | external | 85 |
+| `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 4 | - | external | 91 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 8 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 8 | - | external | 7 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 8 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
@@ -216,7 +216,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 446 |
+| mutation | `seen.add` | `validate_publication_receipt` | 456 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |

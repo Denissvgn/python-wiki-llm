@@ -110,7 +110,7 @@ def _parse(text: str):
         rule = parser.inline.ruler.getRules("")[
             parser.inline.ruler.get_active_rules().index(name)
         ]
-        parser.inline.ruler.at(name, _record_span(rule))
+        parser.inline.ruler.at(name, _record_span(rule, name))
     environment: dict[str, Any] = {}
     tokens = parser.parse(text, environment)
     if sum(1 + len(token.children or []) for token in tokens) > _MAX_TOKENS:
@@ -118,7 +118,7 @@ def _parse(text: str):
     return tokens, environment
 
 
-def _record_span(rule):
+def _record_span(rule, name):
     def record(state, silent):
         start, count = state.pos, len(state.tokens)
         matched = rule(state, silent)
@@ -128,6 +128,17 @@ def _record_span(rule):
                 token.meta["publication_source_span"] = (start, state.pos)
             elif token.type in {"link_close", "image"}:
                 token.meta["publication_link_span"] = (start, state.pos)
+                if name in {"link", "image"}:
+                    label_end = state.md.helpers.parseLinkLabel(
+                        state, start + (name == "image"), name == "link"
+                    )
+                    if (
+                        label_end >= 0
+                        and state.src[label_end + 1 : label_end + 2] == "("
+                    ):
+                        span = _destination(state.src, label_end + 2)
+                        if span and span[1] < state.pos:
+                            token.meta["publication_resource_span"] = span
         return matched
 
     return record
@@ -269,6 +280,22 @@ def _reference_resources(visible, environment):
             yield (*span, visible[slice(*span)], "reference")
 
 
+def _parsed_resources(text, tokens):
+    """Locate destinations accepted by the inline parser in original source."""
+    offsets, cursors = _line_offsets(text), {}
+    for token in tokens:
+        if token.map is None or not token.children:
+            continue
+        positions = _inline_offsets(text, token, offsets, cursors)
+        for child in token.children:
+            if "publication_resource_span" not in child.meta:
+                continue
+            first, last = child.meta["publication_resource_span"]
+            if first < last:
+                start, end = positions[first], positions[last - 1] + 1
+                yield start, end, text[start:end], "markdown"
+
+
 def _escaped(text: str, position: int) -> bool:
     count = 0
     while position > 0 and text[position - 1] == "\\":
@@ -307,23 +334,28 @@ def _destination(text: str, start: int) -> tuple[int, int] | None:
     return (start, end) if end > start else None
 
 
-def _resources(visible: str, *, wiki_visible=None, environment=None):
+def _resources(visible: str, *, wiki_visible=None, environment=None, parsed=()):
+    yield from parsed
+    # Parsed link wrappers and reference definitions are opaque here. Their
+    # exact destinations are supplied separately, so Markdown-shaped text in a
+    # URL or title cannot become a second resource.
+    lexical = visible if wiki_visible is None else wiki_visible
     stack = []
-    for index, char in enumerate(visible):
-        if _escaped(visible, index):
+    for index, char in enumerate(lexical):
+        if _escaped(lexical, index):
             continue
         if char == "[":
             stack.append(index)
         elif char == "]" and stack:
             stack.pop()
-            if visible[index : index + 2] == "](":
-                span = _destination(visible, index + 2)
+            if lexical[index : index + 2] == "](":
+                span = _destination(lexical, index + 2)
                 if span:
-                    yield (*span, visible[slice(*span)], "markdown")
-    for match in _REFERENCE.finditer(visible):
-        span = _destination(visible, match.end())
+                    yield (*span, lexical[slice(*span)], "unparsed-markdown")
+    for match in _REFERENCE.finditer(lexical):
+        span = _destination(lexical, match.end())
         if span:
-            yield (*span, visible[slice(*span)], "reference")
+            yield (*span, lexical[slice(*span)], "unparsed-reference")
     if environment is not None:
         yield from _reference_resources(visible, environment)
     wiki_source = visible if wiki_visible is None else wiki_visible
@@ -429,17 +461,6 @@ def _repository_link(
     )
 
 
-def _resource_identity(value: str):
-    parsed, path = _url(value)
-    return (
-        parsed.scheme,
-        parsed.netloc,
-        path,
-        unquote(parsed.query),
-        unquote(parsed.fragment),
-    )
-
-
 def prepare_wiki_markdown(
     text: str,
     *,
@@ -462,26 +483,19 @@ def prepare_wiki_markdown(
     page_destinations = {value: _route(value) for value in pages.values()}
     routes = set(page_destinations.values())
     tokens, environment = _parse(text)
-    recognized = {
-        _resource_identity(str(child.attrGet("href") or child.attrGet("src") or ""))
-        for token in tokens
-        for child in token.children or []
-        if child.type in {"link_open", "image"}
-    }
-    recognized.update(
-        _resource_identity(record["href"])
-        for record in environment.get("references", {}).values()
-    )
     visible = _visible(text, tokens)
     wiki_visible = _visible(text, tokens, mask_links=True, environment=environment)
     replacements = []
     for start, end, raw, kind in _resources(
-        visible, wiki_visible=wiki_visible, environment=environment
+        visible,
+        wiki_visible=wiki_visible,
+        environment=environment,
+        parsed=_parsed_resources(text, tokens),
     ):
         if kind == "unsupported-wiki":
             raise ValueError("Wiki links with additional attributes are unsupported")
         parsed, path = _url(raw)
-        if kind != "wiki" and _resource_identity(raw) not in recognized:
+        if kind.startswith("unparsed-"):
             continue
         if path is None or not path:
             continue
@@ -738,7 +752,10 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
             visible = ""
             wiki_visible, environment = "", {}
         for _start, _end, raw, kind in _resources(
-            visible, wiki_visible=wiki_visible, environment=environment
+            visible,
+            wiki_visible=wiki_visible,
+            environment=environment,
+            parsed=_parsed_resources(text, tokens) if visible else (),
         ):
             if kind == "unsupported-wiki":
                 issue(

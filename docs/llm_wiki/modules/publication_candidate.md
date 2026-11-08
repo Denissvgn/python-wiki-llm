@@ -16,7 +16,7 @@ Portable, review-bound GitHub wiki candidates without remote mutation.
 | `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
-| `.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `project_publication_targets`, `project_publication_targets` |
+| `.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `project_publication_targets`, `project_publication_targets`, `publication_target_observation` |
 | `.publication_links` | `check_github_wiki`, `prepare_wiki_markdown`, `check_github_wiki` |
 | `.publication_snapshot` | `assert_bootstrap_output_excluded` |
 | `.validation` | `portable_path_key`, `require_portable_relative_path` |

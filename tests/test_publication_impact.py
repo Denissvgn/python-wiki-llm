@@ -440,6 +440,32 @@ def test_consumer_cli_capture_review_and_rerun(consumer, monkeypatch, capsys):
     assert (
         invoke(
             monkeypatch,
+            "resolve",
+            "--target-dir",
+            "public",
+            "--report",
+            "report.json",
+            "--finding",
+            topic["id"],
+            "--decision",
+            "still-current",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Rechecked the public description",
+            "--reviews",
+            "reviews.json",
+            "--output",
+            "reviews.json",
+        )
+        == 0
+    )
+    records = json.loads((consumer / "reviews.json").read_text())["records"]
+    assert len(records) == 1
+    assert records[0]["reason"] == "Rechecked the public description"
+    assert (
+        invoke(
+            monkeypatch,
             "--target-dir",
             "public",
             "--reviews",
@@ -486,7 +512,7 @@ def test_output_cannot_replace_native_or_target_input(consumer, monkeypatch):
 
 @pytest.mark.parametrize("kind", ["reference", "source_file", "source_document"])
 @pytest.mark.parametrize("action", [[], ["snapshot"]])
-@pytest.mark.parametrize("overlap", ["exact", "descendant", "ancestor"])
+@pytest.mark.parametrize("overlap", ["exact", "descendant", "ancestor", "case-alias"])
 def test_publication_artifacts_do_not_create_declared_missing_inputs(
     consumer, monkeypatch, kind, action, overlap
 ):
@@ -495,9 +521,10 @@ def test_publication_artifacts_do_not_create_declared_missing_inputs(
     target = (
         "app-input.json/contract.json" if overlap == "ancestor" else "app-input.json"
     )
-    output = (
-        "app-input.json/report.json" if overlap == "descendant" else "app-input.json"
-    )
+    output = {
+        "descendant": "app-input.json/report.json",
+        "case-alias": "APP-INPUT.json",
+    }.get(overlap, "app-input.json")
     if kind == "reference":
         policy["reference_providers"] = {
             "app": {"kind": "contract-file", "path": target}
@@ -544,8 +571,9 @@ def test_former_reference_coordinate_stays_protected_during_rebinding(
     assert not (consumer / "former.json").exists()
 
 
+@pytest.mark.parametrize("output", ["accepted-reviews.json", "ACCEPTED-REVIEWS.json"])
 def test_missing_accepted_ledger_is_not_replaced_by_an_error_report(
-    consumer, monkeypatch
+    consumer, monkeypatch, output
 ):
     assert (
         invoke(
@@ -555,27 +583,171 @@ def test_missing_accepted_ledger_is_not_replaced_by_an_error_report(
             "--reviews",
             "accepted-reviews.json",
             "--output",
-            "accepted-reviews.json",
+            output,
         )
         == 2
     )
     assert not (consumer / "accepted-reviews.json").exists()
+    assert not (consumer / output).exists()
 
 
-def test_publication_tree_protection_follows_filesystem_case_aliases(
+@pytest.mark.parametrize("tree", ["PUBLIC", "WIKI", "PUBLIC-SOURCE"])
+def test_publication_tree_protection_reserves_portable_case_aliases(
+    consumer, monkeypatch, tree
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["content"] = {"root": "public-source"}
+    (consumer / "public-source").mkdir()
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(
+            monkeypatch,
+            "--target-dir",
+            "public",
+            "--output",
+            f"{tree}/report.json",
+        )
+        == 2
+    )
+    assert not (consumer / tree / "report.json").exists()
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        ".llm-wiki/source-selection.json",
+        "src/.llm-wiki/source-selection.json",
+        "src/.LLM-WIKI/SOURCE-SELECTION.JSON",
+        "src/.gitignore/report.json",
+        ".GITIGNORE/report.json",
+        ".git/report.json",
+        "package.json",
+    ],
+)
+def test_source_only_snapshot_cannot_create_implicit_input_controls(
+    consumer, monkeypatch, output
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["architecture"] = {"baseline": "bootstrap-source", "root": "src"}
+    policy_path.write_text(json.dumps(policy))
+    assert not (consumer / output).exists()
+    assert (
+        invoke(monkeypatch, "snapshot", "--target-dir", "public", "--output", output)
+        == 2
+    )
+    assert not (consumer / output).exists()
+    assert not (consumer / "src/.llm-wiki").exists()
+
+
+def test_source_only_topic_review_cannot_create_implicit_input_control(
     consumer, monkeypatch
 ):
-    alias = consumer / "PUBLIC"
-    same_directory = alias.exists()
-    result = invoke(
-        monkeypatch, "--target-dir", "public", "--output", "PUBLIC/report.json"
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["architecture"] = {"baseline": "bootstrap-source", "root": "src"}
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(monkeypatch, "--target-dir", "public", "--output", "reports/impact.json")
+        == 0
     )
-    if same_directory:
-        assert result == 2
-        assert not (consumer / "public/report.json").exists()
-    else:
-        assert result == 0
-        assert (alias / "report.json").exists()
+    report = json.loads((consumer / "reports/impact.json").read_text())
+    topic = next(f for f in report["findings"] if f["kind"] == "topic")
+    assert (
+        invoke(
+            monkeypatch,
+            "resolve",
+            "--target-dir",
+            "public",
+            "--report",
+            "reports/impact.json",
+            "--finding",
+            topic["id"],
+            "--decision",
+            "still-current",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed the public description",
+            "--output",
+            "src/.llm-wiki/source-selection.json",
+        )
+        == 2
+    )
+    assert not (consumer / "src/.llm-wiki").exists()
+
+
+def test_baseline_source_controls_remain_protected_after_root_rebinding(
+    consumer, monkeypatch
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["architecture"] = {"baseline": "bootstrap-source", "root": "src"}
+    policy_path.write_text(json.dumps(policy))
+    before = impact.capture_publication_basis(consumer, target_dir="public")
+    (consumer / "accepted.json").write_text(json.dumps(before))
+    (consumer / "new-src").mkdir()
+    (consumer / "new-src/accounts.py").write_bytes(
+        (consumer / "src/accounts.py").read_bytes()
+    )
+    policy["architecture"]["root"] = "new-src"
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(
+            monkeypatch,
+            "snapshot",
+            "--target-dir",
+            "public",
+            "--baseline",
+            "accepted.json",
+            "--output",
+            "src/.LLM-WIKI/SOURCE-SELECTION.JSON",
+        )
+        == 2
+    )
+    assert not (consumer / "src/.LLM-WIKI").exists()
+
+
+@pytest.mark.parametrize("baseline", [{}, {"config": None}])
+def test_malformed_baseline_is_rejected_before_output_guard(
+    consumer, monkeypatch, baseline, capsys
+):
+    (consumer / "malformed.json").write_text(json.dumps(baseline))
+    assert (
+        invoke(
+            monkeypatch,
+            "snapshot",
+            "--baseline",
+            "malformed.json",
+            "--output",
+            "reports/basis.json",
+        )
+        == 2
+    )
+    assert "Error:" in capsys.readouterr().err
+    assert not (consumer / "reports/basis.json").exists()
+
+
+def test_consumer_root_content_still_allows_separate_report_output(
+    consumer, monkeypatch
+):
+    policy_path = consumer / ".llm-wiki/publication.json"
+    policy = json.loads(policy_path.read_text())
+    policy["content"] = {"root": "."}
+    policy_path.write_text(json.dumps(policy))
+    assert (
+        invoke(
+            monkeypatch,
+            "snapshot",
+            "--target-dir",
+            "public",
+            "--output",
+            "reports/basis.json",
+        )
+        == 0
+    )
+    assert (consumer / "reports/basis.json").is_file()
 
 
 def test_snapshot_output_stays_within_its_read_budget(consumer, monkeypatch):

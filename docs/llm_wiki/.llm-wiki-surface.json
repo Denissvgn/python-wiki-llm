@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 272,
-      "workflows": 262
+      "workflows": 263
     },
     "dependency_architecture": 2,
-    "total": 1719
+    "total": 1720
   },
   "dependency_pages": {
     "count": 2,
@@ -6254,7 +6254,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 446,
+              "line": 456,
               "step": "validate_publication_receipt",
               "step_index": 5,
               "target": "seen.add"
@@ -6347,7 +6347,7 @@
             "src/llm_wiki_cli/services/instruction_ownership.py",
             "src/llm_wiki_cli/services/publication_links.py"
           ],
-          "step_count": 1327,
+          "step_count": 1326,
           "truncated": true
         }
       },
@@ -10736,7 +10736,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 748,
+              "line": 777,
               "step": "_prepare",
               "step_index": 3,
               "target": "operations.append"
@@ -10744,7 +10744,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 767,
+              "line": 796,
               "step": "_prepare",
               "step_index": 3,
               "target": "output.pop"
@@ -10752,7 +10752,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 768,
+              "line": 797,
               "step": "_prepare",
               "step_index": 3,
               "target": "operations.append"
@@ -10834,7 +10834,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 2065,
+          "step_count": 2064,
           "truncated": true
         }
       },
@@ -25830,7 +25830,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 446,
+              "line": 456,
               "step": "validate_publication_receipt",
               "step_index": 5,
               "target": "seen.add"
@@ -25911,7 +25911,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 225,
+          "step_count": 231,
           "truncated": true
         }
       },
@@ -31531,7 +31531,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 446,
+              "line": 456,
               "step": "validate_publication_receipt",
               "step_index": 4,
               "target": "seen.add"
@@ -31618,7 +31618,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 248,
+          "step_count": 254,
           "truncated": true
         }
       },
@@ -42051,6 +42051,7 @@
         "workflows/valid_cached_implementation.md",
         "workflows/validate_artifact_parity.md",
         "workflows/validate_builder_link.md",
+        "workflows/validate_candidate_tree.md",
         "workflows/validate_default_selection_contract.md",
         "workflows/validate_knowledge_artifacts.md",
         "workflows/validate_live_query_source_selection.md",
@@ -54201,7 +54202,9 @@
         "modules/publication_candidate_cmd.md",
         "modules/publication_cmd.md",
         "modules/publication_config.md",
-        "modules/publication_impact.md"
+        "modules/publication_contracts.md",
+        "modules/publication_impact.md",
+        "modules/source_snapshot.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/commands/publication_cmd.py",
@@ -54237,18 +54240,7 @@
       "mcp_uri": "llm-wiki://modules/publication_contracts",
       "outgoing_internal_links": [
         "entities/PublicationProtocolError.md",
-        "modules/cli_reference.md",
-        "modules/concept_identity.md",
-        "modules/knowledge_evidence.md",
-        "modules/markdown_sections.md",
-        "modules/publication_candidate.md",
-        "modules/publication_candidate_cmd.md",
-        "modules/publication_config.md",
-        "modules/publication_contracts.md",
-        "modules/publication_impact.md",
-        "modules/sync_manifest.md",
-        "modules/validation.md",
-        "modules/wiki_surface.md"
+        "modules/publication_contracts.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/publication_contracts.py",
@@ -59982,6 +59974,21 @@
       "title": "validate_builder_link"
     },
     {
+      "canonical_path": "workflows/validate_candidate_tree.md",
+      "id": "validate_candidate_tree",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/validate_candidate_tree",
+      "outgoing_internal_links": [
+        "modules/knowledge_storage_io.md",
+        "modules/publication_candidate.md",
+        "modules/publication_impact.md",
+        "modules/publication_links.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/publication_candidate.py",
+      "title": "validate_candidate_tree"
+    },
+    {
       "canonical_path": "workflows/validate_default_selection_contract.md",
       "id": "validate_default_selection_contract",
       "kind": "workflows",
@@ -60266,7 +60273,8 @@
         "modules/knowledge_storage_io.md",
         "modules/publication_cmd.md",
         "modules/publication_config.md",
-        "modules/publication_impact.md"
+        "modules/publication_impact.md",
+        "modules/source_snapshot.md"
       ],
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/publication_cmd.py",
@@ -71234,5 +71242,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:fb602542d31dd4826984fca4a8e915126b2f6acd0c9df7b1b499cbcd29fffa00"
+  "source_hash": "sha256:90ce37219a2b5a6d59fcfbff7fc2764263b5bbc239bbb15d290534428bf1812f"
 }

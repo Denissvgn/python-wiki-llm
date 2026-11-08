@@ -54,7 +54,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_HTML](../entities/HTML.md) | 516 | `HTMLParser` | — |
+| [_HTML](../entities/HTML.md) | 530 | `HTMLParser` | — |
 
 ## Functions
 
@@ -65,7 +65,7 @@ flowchart LR
 | `_page_path` | `(value: object) -> str` | — | — |
 | `_route` | `(path: str) -> str` | — | — |
 | `_parse` | `(text: str)` | — | — |
-| `_record_span` | `(rule)` | — | — |
+| `_record_span` | `(rule, name)` | — | — |
 | `_blank` | `(text: str) -> str` | — | — |
 | `_line_match` | `(text, part, start, end)` | — | — |
 | `_inline_offsets` | `(text, token, offsets, cursors)` | — | — |
@@ -73,14 +73,14 @@ flowchart LR
 | `_visible` | `(text: str, tokens, *, mask_links = False, environment = None) -> str` | — | — |
 | `_reference_records` | `(environment)` | — | — |
 | `_reference_resources` | `(visible, environment)` | — | Locate parsed definitions across list/blockquote continuation prefixes. |
+| `_parsed_resources` | `(text, tokens)` | — | Locate destinations accepted by the inline parser in original source. |
 | `_escaped` | `(text: str, position: int) -> bool` | — | — |
 | `_destination` | `(text: str, start: int) -> tuple[int, int] \| None` | — | — |
-| `_resources` | `(visible: str, *, wiki_visible = None, environment = None)` | — | — |
+| `_resources` | `(visible: str, *, wiki_visible = None, environment = None, parsed = ())` | — | — |
 | `_url` | `(value: str)` | — | — |
 | `_relative` | `(path: str, parent: str = '') -> str` | — | — |
 | `_append_url` | `(path: str, parsed) -> str` | — | — |
 | `_repository_link` | `(path: str, parsed, repository_url: str \| None, source_revision: str \| None) -> str` | — | — |
-| `_resource_identity` | `(value: str)` | — | — |
 | `prepare_wiki_markdown` | `(text: str, *, source_path: str, source_pages: Mapping[str, str], source_assets: Mapping[str, str], repository_url: str \| None = None, source_revision: str \| None = None) -> str` | — | Rewrite declared source links without loading application code or files. |
 | `_plain` | `(children) -> str` | — | — |
 | `_slug` | `(text: str) -> str` | — | — |

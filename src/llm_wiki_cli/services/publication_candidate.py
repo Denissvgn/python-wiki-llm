@@ -343,6 +343,8 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
             "Candidate target must be an unverified local snapshot or artifact-only basis"
         )
     _hash_map(target["files"])
+    if target["mode"] == "artifact-only" and target["files"]:
+        raise ValueError("Artifact-only candidates cannot bind existing target files")
     if target["tree_hash"] != hash_json(target["files"]) or receipt[
         "tree_hash"
     ] != hash_json(receipt["files"]):
@@ -426,6 +428,14 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         }
     if receipt["ownership"] != declared:
         raise ValueError("Candidate ownership does not match its configured sources")
+    adoptions = {
+        item["path"]: item for item in config["content"].get("adoptions", [])
+    }
+    removals = {
+        item["path"]: item for item in config["content"].get("removals", [])
+    }
+    if set(adoptions) - set(receipt["ownership"]):
+        raise ValueError("Candidate adoptions must name a current owned output")
     if (
         type(receipt["operations"]) is not list
         or len(receipt["operations"]) > MAX_FILES
@@ -456,15 +466,29 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         if item["kind"] == "remove":
             if (
                 inputs["previous_receipt_id"] is None
+                or inputs["baseline_id"] is None
                 or item["path"] in receipt["ownership"]
-                or type(item["reason"]) is not str
-                or not item["reason"].strip()
+                or item["path"] not in removals
+                or item["before"] != removals[item["path"]]["expected_hash"]
+                or item["reason"] != removals[item["path"]]["reason"]
             ):
                 raise ValueError(
-                    "Candidate removals need prior ownership and a rationale"
+                    "Candidate removals need prior ownership, a baseline and their configured disposition"
                 )
         elif item["path"] not in receipt["ownership"] or item["after"] is None:
             raise ValueError("Candidate changed an unmanaged path")
+        elif item["path"] in adoptions:
+            adoption = adoptions[item["path"]]
+            if (
+                item["kind"] != "adopt"
+                or item["before"] != adoption["expected_hash"]
+                or item["reason"] != adoption["reason"]
+            ):
+                raise ValueError(
+                    "Candidate adoption does not match its configured disposition"
+                )
+        elif item["kind"] == "adopt" or item["reason"] is not None:
+            raise ValueError("Candidate operation has an unconfigured disposition")
         if item["kind"] == "add" and item["before"] is not None:
             raise ValueError("Candidate addition already exists in its target")
         if item["kind"] == "unchanged" and item["before"] != item["after"]:
@@ -473,15 +497,20 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
             item["before"] is None or item["before"] == item["after"]
         ):
             raise ValueError("Candidate update requires changed existing content")
-        if item["kind"] == "adopt" and (
-            type(item["reason"]) is not str or not item["reason"].strip()
+        if (
+            item["kind"] in {"update", "unchanged"}
+            and inputs["previous_receipt_id"] is None
         ):
-            raise ValueError("Candidate adoptions require a rationale")
+            raise ValueError(
+                "Candidate existing outputs require prior ownership or an adoption disposition"
+            )
     if set(receipt["ownership"]) - seen:
         raise ValueError("Candidate operations omit an owned output")
     removed = {
         item["path"] for item in receipt["operations"] if item["kind"] == "remove"
     }
+    if removed != set(removals):
+        raise ValueError("Candidate removals do not match their configured dispositions")
     if set(target["files"]) - set(receipt["files"]) != removed & set(target["files"]):
         raise ValueError("Candidate removed paths without an explicit disposition")
     for path, digest in receipt["files"].items():
@@ -976,6 +1005,25 @@ def validate_candidate_tree(
 
     if check_github_wiki(files) != receipt["checks"]:
         raise ValueError("Candidate checks differ from its actual public content")
+    from .publication_impact import publication_target_observation
+
+    targets = receipt["basis"]["targets"]
+    for topic in receipt["basis"]["config"]["topics"]:
+        if targets.get(topic["id"]) != publication_target_observation(
+            topic, files.get(topic["wiki_page"])
+        ):
+            raise ValueError("Candidate target observations differ from its content")
+    for finding in receipt["impact"]["findings"]:
+        if finding["kind"] != "topic":
+            continue
+        observed = publication_target_observation(
+            finding, files.get(finding["wiki_page"])
+        )
+        if (
+            finding["target"] != observed
+            or targets.get(finding["subject"]) != observed
+        ):
+            raise ValueError("Candidate target observations differ from its content")
 
 
 def validate_candidate_target(

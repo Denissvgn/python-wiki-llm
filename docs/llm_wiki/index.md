@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 688 | [Open section](#entities) |
 | Modules | 272 | [Open section](#modules) |
-| Workflows | 262 | [Open section](#workflows) |
+| Workflows | 263 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 479 | [Open section](#entry-point-flows) |
 | Infrastructure | 3 | [Open section](#infrastructure) |
@@ -1226,6 +1226,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [valid_cached_implementation](workflows/valid_cached_implementation.md) - entry: `extraction_service._valid_cached_implementation`
 - [validate_artifact_parity](workflows/validate_artifact_parity.md) - entry: `knowledge_artifacts._validate_artifact_parity`
 - [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
+- [validate_candidate_tree](workflows/validate_candidate_tree.md) - entry: `publication_candidate.validate_candidate_tree`
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
 - [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`
 - [validate_live_query_source_selection](workflows/validate_live_query_source_selection.md) - entry: `documentation_query_builder.validate_live_query_source_selection`

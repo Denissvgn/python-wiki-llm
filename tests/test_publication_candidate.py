@@ -105,6 +105,27 @@ def accept_topics(receipt):
     return ledger
 
 
+def reseal_candidate(receipt):
+    basis = receipt["basis"]
+    receipt["config_hash"] = hash_json(basis["config"])
+    basis["basis_id"] = hash_json(
+        {key: value for key, value in basis.items() if key != "basis_id"}
+    )
+    report = receipt["impact"]
+    report["config_hash"] = receipt["config_hash"]
+    report["basis"] = {
+        "baseline": receipt["inputs"]["baseline_id"],
+        "candidate": basis["basis_id"],
+    }
+    report["report_id"] = hash_json(
+        {key: value for key, value in report.items() if key != "report_id"}
+    )
+    receipt["candidate_id"] = candidate._proposal(receipt)
+    receipt["receipt_id"] = hash_json(
+        {key: value for key, value in receipt.items() if key != "receipt_id"}
+    )
+
+
 def test_candidate_is_deterministic_and_preserves_manual_content(consumer):
     configure(consumer, manual=True)
     before = {p.name: p.read_bytes() for p in (consumer / "public").iterdir()}
@@ -261,7 +282,8 @@ def test_unowned_deletion_and_implicit_retirement_are_blocked(consumer):
         )
 
 
-def test_owned_retirement_requires_and_retains_exact_review(consumer):
+@pytest.mark.parametrize("target_missing", [False, True])
+def test_owned_retirement_requires_and_retains_exact_review(consumer, target_missing):
     policy = configure(consumer)
     original = export(consumer)
     accepted = candidate.check_publication_candidate(
@@ -278,11 +300,15 @@ def test_owned_retirement_requires_and_retains_exact_review(consumer):
         destination = consumer / "public" / path
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes((consumer / "reports/candidate" / path).read_bytes())
+    if target_missing:
+        (consumer / "public/Accounts.md").unlink()
     policy["content"].pop("adoptions")
     policy["content"]["removals"] = [
         {
             "path": "Accounts.md",
-            "expected_hash": accepted["files"]["Accounts.md"],
+            "expected_hash": None
+            if target_missing
+            else accepted["files"]["Accounts.md"],
             "reason": "Retire the account guide",
         }
     ]
@@ -299,7 +325,7 @@ def test_owned_retirement_requires_and_retains_exact_review(consumer):
         baseline=accepted["basis"],
     )
     assert not (consumer / "reports/retired/Accounts.md").exists()
-    assert (consumer / "public/Accounts.md").exists()
+    assert (consumer / "public/Accounts.md").exists() is not target_missing
     assert any(
         op["kind"] == "remove" and op["path"] == "Accounts.md"
         for op in proposed["operations"]
@@ -317,6 +343,7 @@ def test_owned_retirement_requires_and_retains_exact_review(consumer):
         ),
     )
     assert checked["ready"] and not checked["delivery_ready"]
+    candidate.validate_candidate_tree(consumer, "reports/retired", checked)
 
 
 def test_unreviewed_receipt_does_not_grant_ownership(consumer):
@@ -542,6 +569,199 @@ def test_artifact_only_review_does_not_invent_a_local_target(consumer):
     candidate.validate_candidate_target(consumer, None, receipt)
     with pytest.raises(ValueError, match="Artifact-only"):
         candidate.validate_candidate_target(consumer, "public", receipt)
+
+
+def test_resealed_local_receipt_cannot_bypass_original_target_review(
+    consumer, monkeypatch
+):
+    from tests.test_publication_candidate_cli import invoke
+
+    configure(consumer)
+    receipt = export(consumer)
+    receipt["target"]["mode"] = "artifact-only"
+    reseal_candidate(receipt)
+    for validate in (
+        lambda: candidate.validate_publication_receipt(receipt),
+        lambda: candidate.validate_candidate_tree(
+            consumer, "reports/candidate", receipt
+        ),
+        lambda: candidate.validate_candidate_target(consumer, None, receipt),
+        lambda: candidate.review_publication_candidate(
+            receipt, reviewer="alice", reason="Reviewed artifact"
+        ),
+    ):
+        with pytest.raises(ValueError, match="Artifact-only"):
+            validate()
+    (consumer / "reports/forged.json").write_text(json.dumps(receipt))
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--candidate-dir",
+            "reports/candidate",
+            "--receipt",
+            "reports/forged.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed artifact",
+            "--output",
+            "reports/approval.json",
+        )
+        == 2
+    )
+    assert not (consumer / "reports/approval.json").exists()
+
+
+@pytest.mark.parametrize("change", ["basis", "finding", "both"])
+def test_review_tree_recomputes_projected_target_observations(
+    consumer, monkeypatch, change
+):
+    from tests.test_publication_candidate_cli import invoke
+
+    configure(consumer)
+    receipt = export(consumer)
+    finding = next(
+        item for item in receipt["impact"]["findings"] if item["subject"] == "home"
+    )
+    if change in {"basis", "both"}:
+        receipt["basis"]["targets"]["home"]["hash"] = hash_json("different")
+    if change in {"finding", "both"}:
+        finding["target"]["hash"] = hash_json("different")
+        finding["id"] = hash_json(
+            {key: value for key, value in finding.items() if key != "id"}
+        )
+    reseal_candidate(receipt)
+    candidate.validate_publication_receipt(receipt)
+    with pytest.raises(ValueError, match="target observations"):
+        candidate.validate_candidate_tree(consumer, "reports/candidate", receipt)
+    (consumer / "reports/forged.json").write_text(json.dumps(receipt))
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--candidate-dir",
+            "reports/candidate",
+            "--target-dir",
+            "public",
+            "--receipt",
+            "reports/forged.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed artifact",
+            "--output",
+            "reports/approval.json",
+        )
+        == 2
+    )
+    assert not (consumer / "reports/approval.json").exists()
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "kind",
+        "reason",
+        "expected-hash",
+        "unconfigured",
+        "unowned-update",
+        "extra-reason",
+        "unused",
+    ],
+)
+def test_resealed_adoptions_require_the_exact_configured_disposition(consumer, change):
+    configure(consumer)
+    receipt = export(consumer)
+    config = receipt["basis"]["config"]
+    operation = next(
+        item for item in receipt["operations"] if item["path"] == "Accounts.md"
+    )
+    if change == "kind":
+        operation.update(kind="update", reason=None)
+    elif change == "reason":
+        operation["reason"] = "Different adoption rationale"
+    elif change == "expected-hash":
+        config["content"]["adoptions"][0]["expected_hash"] = hash_json("different")
+    elif change == "unconfigured":
+        config["content"].pop("adoptions")
+    elif change == "unowned-update":
+        config["content"].pop("adoptions")
+        operation.update(kind="update", reason=None)
+    elif change == "extra-reason":
+        next(item for item in receipt["operations"] if item["kind"] == "add")[
+            "reason"
+        ] = "Unconfigured rationale"
+    else:
+        config["content"]["adoptions"].append(
+            {"path": "Ghost.md", "expected_hash": None, "reason": "Unused adoption"}
+        )
+    reseal_candidate(receipt)
+    with pytest.raises(ValueError, match="adoption|disposition"):
+        candidate.validate_publication_receipt(receipt)
+    with pytest.raises(ValueError, match="adoption|disposition"):
+        candidate.review_publication_candidate(
+            receipt, reviewer="alice", reason="Reviewed artifact"
+        )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "unconfigured",
+        "missing-baseline",
+        "missing-previous",
+        "expected-hash",
+        "reason",
+        "missing-operation",
+        "extra-operation",
+    ],
+)
+def test_resealed_removals_require_committed_inputs_and_exact_dispositions(
+    consumer, change
+):
+    configure(consumer)
+    receipt = export(consumer)
+    config = receipt["basis"]["config"]
+    disposition = {
+        "path": "Ghost.md",
+        "expected_hash": None,
+        "reason": "Retire the already absent guide",
+    }
+    config["content"]["removals"] = [disposition]
+    receipt["inputs"]["baseline_id"] = hash_json("accepted baseline")
+    receipt["inputs"]["previous_receipt_id"] = hash_json("previous ownership")
+    operation = {
+        "path": "Ghost.md",
+        "kind": "remove",
+        "before": None,
+        "after": None,
+        "reason": disposition["reason"],
+    }
+    receipt["operations"].append(operation)
+    reseal_candidate(receipt)
+    candidate.validate_publication_receipt(receipt)
+    if change == "unconfigured":
+        config["content"].pop("removals")
+    elif change == "missing-baseline":
+        receipt["inputs"]["baseline_id"] = None
+    elif change == "missing-previous":
+        receipt["inputs"]["previous_receipt_id"] = None
+    elif change == "expected-hash":
+        disposition["expected_hash"] = hash_json("different")
+    elif change == "reason":
+        operation["reason"] = "Different retirement rationale"
+    elif change == "missing-operation":
+        receipt["operations"].pop()
+    else:
+        receipt["operations"].append({**operation, "path": "Another.md"})
+    reseal_candidate(receipt)
+    with pytest.raises(ValueError, match="removal"):
+        candidate.validate_publication_receipt(receipt)
+    with pytest.raises(ValueError, match="removal"):
+        candidate.review_publication_candidate(
+            receipt, reviewer="alice", reason="Reviewed artifact"
+        )
 
 
 @pytest.mark.parametrize(

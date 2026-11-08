@@ -13,7 +13,12 @@ from ..services.filesystem_guard import (
 )
 from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
 from ..services.knowledge_storage import KnowledgeStorageError
-from ..services.publication_config import load_publication_config
+from ..services.publication_config import (
+    load_publication_config,
+    publication_control_overlap,
+    publication_input_controls,
+)
+from ..services.publication_contracts import validate_publication_basis
 from ..services.publication_impact import (
     IMPACT_SCHEMA,
     MAX_JSON_BYTES,
@@ -24,6 +29,7 @@ from ..services.publication_impact import (
     resolve_publication_finding,
 )
 from ..services.knowledge_evidence import hash_json
+from ..services.source_snapshot import _is_package_marker
 
 
 def _common(parser, *, child=False):
@@ -136,7 +142,9 @@ def _document_bytes(value):
     return content
 
 
-def _write(args, value, *, expected_document=None, input_basis=None):
+def _write(
+    args, value, *, expected_document=None, input_basis=None, baseline_basis=None
+):
     if not args.output:
         return
     destination = _artifact_path(args, args.output)
@@ -144,41 +152,67 @@ def _write(args, value, *, expected_document=None, input_basis=None):
         raise ValueError(
             "Machine-readable publication output must use a .json filename"
         )
+    if any(
+        part.casefold() in {".git", ".hg", ".svn"} for part in destination.parts
+    ) or _is_package_marker(Path(destination.name.lower())):
+        raise ValueError(
+            "Publication output cannot replace version-control or package inputs"
+        )
     root = _absolute_path(Path(args.consumer_root))
     config = load_publication_config(root, config_path=args.config)
+    configurations = [config]
+    for basis in (input_basis, baseline_basis):
+        if basis is not None:
+            configurations.append(basis["config"])
+    reserved = set()
+    for policy in configurations:
+        reserved.update(publication_input_controls(root, policy, args.config))
+    if any(publication_control_overlap(destination, source) for source in reserved):
+        raise ValueError(
+            "Publication output cannot occupy source discovery or selection controls"
+        )
     protected = []
-    if config["architecture"]["baseline"] == "existing-wiki":
-        protected.append(root / config["architecture"]["root"])
+    for policy in configurations:
+        if policy["architecture"]["baseline"] == "existing-wiki":
+            protected.append(root / policy["architecture"]["root"])
+        content = policy.get("content")
+        if content and content["root"] != ".":
+            protected.append(root / content["root"])
     if args.target_dir:
         protected.append(root / args.target_dir)
     for path in protected:
-        if _inside_input_tree(destination, path):
+        if publication_control_overlap(destination, path):
             raise ValueError(
-                "Publication output cannot overwrite native or sibling wiki inputs"
+                "Publication output cannot overwrite content, native or sibling wiki inputs"
             )
     for name in ("config", "baseline", "report", "reviews"):
         source = getattr(args, name, None)
-        if source and _same_file(destination, _artifact_path(args, source)):
+        if source and publication_control_overlap(
+            destination, _artifact_path(args, source)
+        ):
             if (
                 name == "reviews"
                 and args.impact_action == "resolve"
                 and expected_document is not None
+                and _same_file(destination, _artifact_path(args, source))
             ):
                 continue
             raise ValueError(
                 "Publication output cannot overwrite configuration, baseline, report or accepted review inputs"
             )
-    file_inputs = set(_declared_files(config))
-    if input_basis is not None:
-        file_inputs.update(input_basis["files"])
-        file_inputs.update(
-            reference["configuration"]["path"]
-            for reference in input_basis.get("references", {}).values()
-            if reference["configuration"]["kind"] == "contract-file"
-        )
+    file_inputs = set()
+    for policy in configurations:
+        file_inputs.update(_declared_files(policy))
+    for basis in (input_basis, baseline_basis):
+        if basis is not None:
+            file_inputs.update(basis["files"])
+            file_inputs.update(
+                reference["configuration"]["path"]
+                for reference in basis.get("references", {}).values()
+                if reference["configuration"]["kind"] == "contract-file"
+            )
     if any(
-        _inside_input_tree(destination, root / source)
-        or destination in (root / source).parents
+        publication_control_overlap(destination, root / source)
         for source in file_inputs
     ):
         raise ValueError(
@@ -237,12 +271,16 @@ def _error_report(message):
 
 def run(args):
     candidate = None
+    baseline = None
     try:
-        baseline = (
+        loaded_baseline = (
             read_publication_document(_artifact_path(args, args.baseline))
             if args.baseline
             else None
         )
+        if loaded_baseline is not None:
+            validate_publication_basis(loaded_baseline)
+            baseline = loaded_baseline
         candidate = capture_publication_basis(
             args.consumer_root,
             config_path=args.config,
@@ -251,7 +289,7 @@ def run(args):
         )
         action = args.impact_action
         if action == "snapshot":
-            _write(args, candidate, input_basis=candidate)
+            _write(args, candidate, input_basis=candidate, baseline_basis=baseline)
             print(
                 json.dumps({"basis_id": candidate["basis_id"], "output": args.output})
             )
@@ -281,7 +319,13 @@ def run(args):
                 )
                 else None
             )
-            _write(args, proposal, expected_document=expected, input_basis=candidate)
+            _write(
+                args,
+                proposal,
+                expected_document=expected,
+                input_basis=candidate,
+                baseline_basis=baseline,
+            )
             print(
                 json.dumps(
                     {
@@ -293,7 +337,7 @@ def run(args):
             )
             return
         report = compare_publication_impact(candidate, baseline, reviews=reviews)
-        _write(args, report, input_basis=candidate)
+        _write(args, report, input_basis=candidate, baseline_basis=baseline)
     except (OSError, ValueError, KnowledgeStorageError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         if args.impact_action:
@@ -302,7 +346,7 @@ def run(args):
         # Even configuration failures produce stdout JSON. A usable explicit
         # report destination is handled by the same guarded writer when possible.
         try:
-            _write(args, report, input_basis=candidate)
+            _write(args, report, input_basis=candidate, baseline_basis=baseline)
         except (OSError, ValueError, KnowledgeStorageError):
             pass
     print(

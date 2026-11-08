@@ -94,6 +94,49 @@ def test_wiki_like_text_in_markdown_link_attributes_stays_literal(value):
     assert links.check_github_wiki({"Home.md": source.encode()})["ok"]
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        '[Search](https://example.invalid "A [literal](accounts.md) title")',
+        "[Search](https://example.invalid/?q=[literal](accounts.md))",
+        '[Search][ref]\n\n[ref]: https://example.invalid "[literal](accounts.md)"',
+    ],
+)
+def test_parsed_destinations_do_not_rewrite_markdown_shaped_attributes(value):
+    source = "# Home\n\n[Account](accounts.md)\n\n" + value + "\n"
+    result = prepare(source)
+    assert result == source.replace("[Account](accounts.md)", "[Account](Accounts)")
+    assert links.check_github_wiki(
+        {"Home.md": result.encode(), "Accounts.md": b"# Accounts\n"}
+    )["ok"]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "[Search](https://example.invalid/?q=[literal](file:///tmp/x))",
+        '[Search](https://example.invalid "[literal](file:///tmp/x)")',
+        '[Search][ref]\n\n[ref]: https://example.invalid "[literal](file:///tmp/x)"',
+    ],
+)
+def test_markdown_shaped_external_attributes_do_not_create_unsafe_links(value):
+    source = "# Home\n\n" + value + "\n"
+    assert prepare(source) == source
+    assert links.check_github_wiki({"Home.md": source.encode()})["ok"]
+
+
+def test_linked_image_and_outer_link_destinations_are_both_rewritten():
+    source = "# Home\n\n[![Account](assets/account.txt)](accounts.md)\n"
+    assert links.prepare_wiki_markdown(
+        source,
+        source_path="docs/start.md",
+        source_pages=PAGES,
+        source_assets={"docs/assets/account.txt": "assets/renamed.txt"},
+    ) == (
+        "# Home\n\n[![Account](assets/renamed.txt)](Accounts)\n"
+    )
+
+
 def test_invalid_reference_container_is_not_rewritten_as_a_definition():
     source = "# Home\n\n[Actual](accounts.md)\n\n[not-a-definition]:\n> accounts.md\n"
     result = prepare(source)

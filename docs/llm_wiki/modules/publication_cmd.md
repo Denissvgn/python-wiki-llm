@@ -14,8 +14,10 @@ Read-only public wiki impact and explicit review record preparation.
 | `..services.knowledge_evidence` | `hash_json` |
 | `..services.knowledge_storage` | `KnowledgeStorageError` |
 | `..services.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
-| `..services.publication_config` | `load_publication_config` |
+| `..services.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls` |
+| `..services.publication_contracts` | `validate_publication_basis` |
 | `..services.publication_impact` | `IMPACT_SCHEMA`, `MAX_JSON_BYTES`, `capture_publication_basis`, `compare_publication_impact`, `read_publication_document`, `render_publication_impact`, `resolve_publication_finding` |
+| `..services.source_snapshot` | `_is_package_marker` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `json` | `json` |
@@ -36,7 +38,9 @@ flowchart LR
     n6["src/llm_wiki_cli/services/knowledge_storage.py"]
     n7["src/llm_wiki_cli/services/knowledge_storage_io.py"]
     n8["src/llm_wiki_cli/services/publication_config.py"]
-    n9["src/llm_wiki_cli/services/publication_impact.py"]
+    n9["src/llm_wiki_cli/services/publication_contracts.py"]
+    n10["src/llm_wiki_cli/services/publication_impact.py"]
+    n11["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n3
     n1 --> n2
@@ -48,17 +52,25 @@ flowchart LR
     n2 --> n7
     n2 --> n8
     n2 --> n9
+    n2 --> n10
+    n2 --> n11
     n3 --> n4
     n3 --> n5
     n3 --> n6
     n3 --> n7
     n3 --> n8
     n3 --> n9
+    n3 --> n10
+    n3 --> n11
     n7 --> n4
     n7 --> n6
     n9 --> n5
-    n9 --> n7
     n9 --> n8
+    n10 --> n5
+    n10 --> n7
+    n10 --> n8
+    n10 --> n9
+    n11 --> n4
     click n0 "../modules/cli.md"
     click n1 "../modules/docs_cmd.md"
     click n2 "../modules/publication_candidate_cmd.md"
@@ -68,7 +80,9 @@ flowchart LR
     click n6 "../modules/knowledge_storage.md"
     click n7 "../modules/knowledge_storage_io.md"
     click n8 "../modules/publication_config.md"
-    click n9 "../modules/publication_impact.md"
+    click n9 "../modules/publication_contracts.md"
+    click n10 "../modules/publication_impact.md"
+    click n11 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -83,7 +97,9 @@ flowchart LR
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
+| Outbound | [publication_contracts](../modules/publication_contracts.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
+| Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Functions
 
@@ -96,6 +112,6 @@ flowchart LR
 | `_inside_input_tree` | `(destination: Path, source: Path) -> bool` | — | — |
 | `_declared_files` | `(config)` | — | — |
 | `_document_bytes` | `(value)` | — | — |
-| `_write` | `(args, value, *, expected_document = None, input_basis = None)` | — | — |
+| `_write` | `(args, value, *, expected_document = None, input_basis = None, baseline_basis = None)` | — | — |
 | `_error_report` | `(message)` | — | — |
 | `run` | `(args)` | — | — |

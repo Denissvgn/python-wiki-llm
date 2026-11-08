@@ -82,15 +82,15 @@ sequenceDiagram
     p0-->>p30: dict (src/llm_wiki_cli/api.py:r…iew_publication_candidate)(receipt)
 ```
 
-> Call sequence diagram shows 30 of 224 interactions; 194 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 230 interactions; 200 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 126 (123 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 132 (129 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 5 | - | external | 86 |
+| `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 5 | - | external | 92 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | - | external | 7 |
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
@@ -204,7 +204,7 @@ flowchart LR
 | review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3650 | `isinstance(receipt, Mapping)` |
 | review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3651 | `ValueError('Publication receipt must be a mapping')` |
 | review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3652 | `review(dict(...), reviewer=reviewer, reason=reason)` |
-| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 538 | `validate_publication_receipt(receipt)` |
+| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 567 | `validate_publication_receipt(receipt)` |
 | validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 301 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 302 | `ValueError('Candidate receipt must be a mapping')` |
 | validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 303 | `dict(receipt)` |
@@ -217,7 +217,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 446 |
+| mutation | `seen.add` | `validate_publication_receipt` | 456 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |

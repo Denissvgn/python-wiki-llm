@@ -31,79 +31,23 @@ Strict portable validators for captured publication evidence and decisions.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/publication_candidate_cmd.py"]
-    n1["src/llm_wiki_cli/services/cli_reference.py"]
-    n2["src/llm_wiki_cli/services/concept_identity.py"]
-    n3["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n4["src/llm_wiki_cli/services/markdown_sections.py"]
-    n5["src/llm_wiki_cli/services/publication_candidate.py"]
-    n6["src/llm_wiki_cli/services/publication_config.py"]
-    n7["src/llm_wiki_cli/services/publication_contracts.py"]
-    n8["src/llm_wiki_cli/services/publication_impact.py"]
-    n9["src/llm_wiki_cli/services/sync_manifest.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
-    n11["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n0 --> n8
-    n1 --> n3
-    n2 --> n10
-    n2 --> n11
-    n3 --> n10
-    n4 --> n3
-    n5 --> n3
-    n5 --> n6
-    n5 --> n7
-    n5 --> n8
-    n5 --> n10
-    n6 --> n2
-    n6 --> n10
-    n7 --> n1
-    n7 --> n2
-    n7 --> n3
-    n7 --> n4
-    n7 --> n6
-    n7 --> n9
-    n7 --> n10
-    n7 --> n11
-    n8 --> n3
-    n8 --> n4
-    n8 --> n6
-    n8 --> n7
-    n8 --> n10
-    n9 --> n3
-    n9 --> n10
-    n11 --> n10
-    click n0 "../modules/publication_candidate_cmd.md"
-    click n1 "../modules/cli_reference.md"
-    click n2 "../modules/concept_identity.md"
-    click n3 "../modules/knowledge_evidence.md"
-    click n4 "../modules/markdown_sections.md"
-    click n5 "../modules/publication_candidate.md"
-    click n6 "../modules/publication_config.md"
-    click n7 "../modules/publication_contracts.md"
-    click n8 "../modules/publication_impact.md"
-    click n9 "../modules/sync_manifest.md"
-    click n10 "../modules/validation.md"
-    click n11 "../modules/wiki_surface.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/publication_contracts.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/publication_contracts.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [publication_candidate_cmd](../modules/publication_candidate_cmd.md) |
-| Inbound | [publication_candidate](../modules/publication_candidate.md) |
-| Inbound | [publication_impact](../modules/publication_impact.md) |
-| Outbound | [cli_reference](../modules/cli_reference.md) |
-| Outbound | [concept_identity](../modules/concept_identity.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| Outbound | [markdown_sections](../modules/markdown_sections.md) |
-| Outbound | [publication_config](../modules/publication_config.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (4) |
+| Outbound | `src` (8) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
