@@ -511,17 +511,20 @@ def _publish(
     checkpoint,
     *,
     action,
+    reviewed_base,
     restore_modes=None,
     replay=False,
 ):
     tree = _tree(
-        session.repo, session.head, before, entries, desired, restore_modes or {}
+        session.repo, reviewed_base, before, entries, desired, restore_modes or {}
     )
     current_tree = _text(session.repo, "rev-parse", session.head + "^{tree}")
     revision = session.head
     status = "already-delivered" if replay else "unchanged"
     push_uncertain = False
     if tree != current_tree:
+        if replay:
+            raise DeliveryError("Remote commit differs from the reviewed Git tree; reconcile before retrying")
         revision = _oid(
             _git(
                 session.repo,
@@ -592,6 +595,11 @@ def deliver(
         before, entries = _read(session.repo, session.head)
         prior = _checkpoint(session.repo, session.head, before)
         session.check_high_water(prior)
+        base = receipt["context"]["target_revision"]
+        replay = prior is not None and prior["receipt_id"] == receipt["receipt_id"] and not prior["rollback_id"]
+        if replay:
+            _verify_replay(session, base)
+            before, entries = _read(session.repo, base)
         desired, checkpoint = plan_delivery(
             receipt,
             files,
@@ -600,11 +608,8 @@ def deliver(
             source_repository=source_repository,
             target_repository=target_repository,
             target_branch=session.branch.removeprefix("refs/heads/"),
-            target_revision=session.head,
+            target_revision=base if replay else session.head,
         )
-        replay = prior is not None and prior["receipt_id"] == receipt["receipt_id"]
-        if replay:
-            _verify_replay(session, receipt["context"]["target_revision"])
         return _publish(
             session,
             before,
@@ -612,6 +617,7 @@ def deliver(
             desired,
             checkpoint,
             action="delivered",
+            reviewed_base=base,
             replay=replay,
         )
 
@@ -717,7 +723,7 @@ def _roll(
             ):
                 raise DeliveryError("Rollback target revision is stale")
             _verify_replay(s, base)
-            before, _ = _read(s.repo, base)
+            before, entries = _read(s.repo, base)
         if (
             restore == base
             or _git(
@@ -770,11 +776,12 @@ def _roll(
         }
         return _publish(
             s,
-            live,
+            before,
             entries,
             desired,
             next_checkpoint,
             action="rolled-back",
+            reviewed_base=base,
             restore_modes=modes,
             replay=replay,
         )

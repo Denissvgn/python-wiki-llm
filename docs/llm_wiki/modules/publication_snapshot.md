@@ -14,7 +14,8 @@ Complete, read-only native page commitments for documentation publication.
 | `.bootstrap_runtime` | `execute_bootstrap` |
 | `.bootstrap_service` | `BootstrapRequest`, `BootstrapServiceError` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
-| `.helper_runtime` | `helper_operation` |
+| `.documentation_native` | `DocumentationNativeError`, `evaluate_documentation_native_freshness` |
+| `.helper_runtime` | `helper_operation`, `helper_operation` |
 | `.io` | `decode_markdown_bytes` |
 | `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
@@ -55,9 +56,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (18) |
+| Outbound | `src` (19) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -71,6 +72,6 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_output_payload_path` | `(value: object) -> str` | — | — |
 | `assert_bootstrap_output_excluded` | `(source_root: Path, destination: Path, files: Mapping[str, bytes]) -> None` | — | Reject future output files that would become bootstrap producer inputs. |
-| `build_publication_snapshot` | `(wiki_dir: str \| Path) -> dict[str, Any]` | — | Commit every canonical native page without extracting source or writing. |
+| `build_publication_snapshot` | `(wiki_dir: str \| Path, *, source_root: Path \| None = None) -> dict[str, Any]` | — | Commit every canonical native page and optionally verify its live source. |
 | `build_bootstrap_publication_snapshot` | `(source_root: Path) -> dict[str, Any]` | — | Build an isolated source-adapter wiki and return its native commitments. |
-| `_build_snapshot` | `(root: Path) -> dict[str, Any]` | — | — |
+| `_build_snapshot` | `(root: Path, source_root: Path \| None = None) -> dict[str, Any]` | — | — |

@@ -123,6 +123,15 @@ def basis(policy=None, text="old", extra=()):
     )
 
 
+def test_markdown_summary_names_the_evidence_and_displays_owner_as_text():
+    policy = config()
+    policy["topics"][0]["owner"] = "[accounts](https://example.org)"
+    report = impact.compare_publication_impact(basis(policy, text="updated"))
+    markdown = impact.render_publication_impact(report)
+    assert "modules/accounts.md (accounts.py)" in markdown
+    assert "&#91;accounts&#93;" in markdown and "[accounts](" not in markdown
+
+
 def test_many_to_many_union_keeps_all_dependency_reasons():
     before = basis()
     policy = config()
@@ -134,6 +143,70 @@ def test_many_to_many_union_keeps_all_dependency_reasons():
     assert report["complete"] and report["review_required"]
     assert {f["subject"] for f in report["findings"]} == {"accounts", "troubleshooting"}
     assert report == impact.compare_publication_impact(after, before)
+
+
+def test_governed_native_move_identifies_the_destination_even_when_the_path_is_reused():
+    before = basis()
+    page = before["architecture"]["pages"][0]
+    uid = "lw:module:" + "1" * 32
+    page["uid"] = uid
+    before["architecture"] = seal(before["architecture"], "snapshot_id")
+    before = seal(before, "basis_id")
+    after = deepcopy(before)
+    relocated = deepcopy(page)
+    locator = "llm-wiki://modules/relocated"
+    relocated.update(
+        canonical_path="modules/relocated.md",
+        id="relocated",
+        locator=locator,
+        mcp_uri=locator,
+        section_ordering_hash=parse_markdown_document("old", locator).ordering_hash,
+    )
+    after["architecture"]["pages"][0]["uid"] = "lw:module:" + "2" * 32
+    after["architecture"]["pages"].append(relocated)
+    after["architecture"]["coverage"]["page_count"] = 2
+    after["architecture"] = seal(after["architecture"], "snapshot_id")
+    report = impact.compare_publication_impact(seal(after, "basis_id"), before)
+    finding = next(item for item in report["findings"] if item["subject"] == "accounts")
+    assert finding["status"] == "incomplete"
+    move = {
+        "kind": "architecture-page-moved",
+        "uid": uid,
+        "before": "modules/accounts.md",
+        "after": "modules/relocated.md",
+    }
+    assert move in finding["reasons"]
+    after["config"]["topics"][0]["depends_on"][0]["architecture_page"] = (
+        "modules/relocated.md"
+    )
+    rebound = impact.compare_publication_impact(seal(after, "basis_id"), before)
+    finding = next(
+        item for item in rebound["findings"] if item["subject"] == "accounts"
+    )
+    assert finding["status"] == "needs-review" and move in finding["reasons"]
+
+
+def test_changing_the_exact_release_tag_requires_a_fresh_topic_decision():
+    policy = config()
+    policy.update(
+        schema_version="llm-wiki-publication/v2",
+        source_policy="release",
+        release_tag="v1",
+    )
+    before = basis(policy)
+    first = impact.compare_publication_impact(before)
+    reviews = impact.resolve_publication_finding(
+        first,
+        before,
+        finding_id=first["findings"][0]["id"],
+        reviewer="alice",
+        reason="Reviewed for v1",
+    )
+    policy = {**policy, "release_tag": "v2"}
+    report = impact.compare_publication_impact(basis(policy), before, reviews=reviews)
+    assert report["complete"] and not report["ready"]
+    assert report["findings"][0]["reasons"] == [{"kind": "release-tag-changed"}]
+    assert report["findings"][0]["review_basis"] != first["findings"][0]["review_basis"]
 
 
 def test_review_clears_and_reopens_on_covered_source_or_target_change():
@@ -410,6 +483,53 @@ def test_target_observation_handles_plain_anchors_and_missing_bytes():
         )["state"]
         == "unresolved-anchor"
     )
+
+
+@pytest.mark.parametrize(
+    "markdown,anchor,available",
+    [
+        ("<!--\n## Ghost\n-->\n", "ghost", False),
+        ("## One  Two\n", "one-two", False),
+        ("## One  Two\n", "one--two", True),
+        ("## *Scope*\n\n## Scope\n", "scope", False),
+        ("> # Scope\n\n## Scope\n", "scope", False),
+        ("# A\n# A\n# A-1\n", "a-1", False),
+        ('<a id="scope"></a>\n\n# Scope\n', "scope", False),
+    ],
+)
+def test_public_target_review_resolves_only_unique_rendered_atx_headings(
+    markdown, anchor, available
+):
+    observed = impact.publication_target_observation(
+        {"wiki_page": "Page.md", "anchor": anchor}, markdown.encode()
+    )
+    assert observed["state"] == ("available" if available else "unresolved-anchor")
+
+
+def test_public_target_review_hashes_the_rendered_section_extent():
+    section = "## Scope\n\n<!--\n# Hidden\n-->\n\n> # Quoted example\n\nPublic paragraph.\n\n"
+    following = "Next section\n------------\n\nOther paragraph.\n"
+    observation = impact.publication_target_observation(
+        {"wiki_page": "Page.md", "anchor": "scope"},
+        (section + following).replace("\n", "\r\n").encode(),
+    )
+    assert observation == {"state": "available", "hash": sha256_bytes(section.encode())}
+
+
+def test_minimal_impact_install_conservatively_resolves_simple_headings(monkeypatch):
+    import sys
+
+    monkeypatch.setitem(sys.modules, "markdown_it", None)
+    topic = {"wiki_page": "Page.md", "anchor": "a-1"}
+    assert (
+        impact.publication_target_observation(topic, b"## A-1\n")["state"]
+        == "available"
+    )
+    for raw in (b"<!--\n## A-1\n-->\n", b"# A\n# A\n# A-1\n"):
+        assert (
+            impact.publication_target_observation(topic, raw)["state"]
+            == "unresolved-anchor"
+        )
 
 
 def test_consumer_cli_capture_review_and_rerun(consumer, monkeypatch, capsys):

@@ -166,6 +166,33 @@ def test_exact_candidate_and_topic_review_enable_local_readiness(consumer):
     assert checked["target"]["remote_verified"] is False
 
 
+def test_existing_wiki_live_source_rejects_stale_native_only_dependencies(consumer):
+    policy = configure(consumer)
+    policy["architecture"]["source_root"] = "src"
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    receipt = export(consumer)
+    assert receipt["basis"]["architecture"]["freshness"] == {
+        "scope": "live-source",
+        "state": "verified-current",
+    }
+    options = {
+        "candidate_dir": "reports/candidate",
+        "receipt": receipt,
+        "target_dir": "public",
+        "reviews": accept_topics(receipt),
+        "candidate_review": candidate.review_publication_candidate(
+            receipt, reviewer="bob", reason="Checked the exact public artifact"
+        ),
+    }
+    assert candidate.check_publication_candidate(consumer, **options)["ready"]
+    (consumer / "src/accounts.py").write_text("class Person: pass\n")
+    with pytest.raises(ValueError, match="Native wiki evidence is stale"):
+        candidate.check_publication_candidate(consumer, **options)
+    with pytest.raises(ValueError, match="Native wiki evidence is stale"):
+        export(consumer, output="reports/second")
+    assert not (consumer / "reports/second").exists()
+
+
 @pytest.mark.parametrize("change", ["candidate", "source", "asset", "manual", "config"])
 def test_check_rejects_changed_inputs_or_candidate(consumer, change):
     configure(consumer, manual=True)

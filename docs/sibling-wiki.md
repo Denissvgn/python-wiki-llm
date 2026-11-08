@@ -61,8 +61,11 @@ locator have separate formats. Without a section selection, the dependency
 covers the whole native page and its captured source basis.
 
 Native `#section/@preamble` dependencies cover text before the first heading.
-Public section anchors support unique plain headings and inline code labels.
-For headings containing links, emphasis or HTML, map the whole public page.
+For a public section, use the rendered anchor of a unique, top-level ATX
+heading. Inline code labels are supported. For duplicate or formatted
+headings, map the whole public page. A governed native page that moves
+retains its UID in the impact report. Update its binding to the reported
+destination even if another page now occupies the old path.
 
 Use `{"source_file": "config/accounts.toml"}` for a value owned by configuration
 or another input outside native page coverage. For repository-authored public
@@ -80,9 +83,11 @@ mapping and exclusion changes alongside the source change.
 Keep a local checkout or pinned copy of the public wiki under the consumer
 project, such as `sibling-wiki/`. It can be excluded from the consumer's Git
 tracking. Populate or refresh the native wiki through its owning workflow
-before reading impact. Native capture validates committed page and storage
-consistency and discloses that live source freshness requires native integrity
-validation.
+before reading impact. Native capture validates page and storage consistency.
+For live validation in the CLI and Python API, set `architecture.source_root`
+to the consumer-relative source directory used to generate the existing wiki.
+Use the matching producer environment. With this setting, stale source blocks
+capture and export. Omitting it keeps snapshot-only comparisons available.
 
 ```bash
 .venv/bin/llm-wiki docs impact --target-dir sibling-wiki --output reports/wiki-impact.json --format markdown
@@ -162,6 +167,11 @@ advisory findings with `fail-on: review-required`.
 This workflow records edit responsibility with `publish: false`. The action
 saves reports and verified provider identity as artifacts. Keep accepted review
 state in durable consumer storage so it remains available after artifact expiry.
+
+After a delivery, enable `observe-drift` on a full checkout of the public wiki
+to see which owned pages or unmanaged files changed since the last checkpoint.
+The report records the source and target commits observed locally. A wiki with
+no delivery checkpoint can continue through manual review.
 
 ## Python integration
 

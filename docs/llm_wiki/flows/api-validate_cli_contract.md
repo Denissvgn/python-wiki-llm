@@ -176,14 +176,14 @@ flowchart LR
 | validate_cli_contract (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_cli_contract) | 3583 | `isinstance(contract, Mapping)` |
 | validate_cli_contract (src/llm_wiki_cli/api.py) | ValueError | 3584 | `ValueError('CLI contract must be a mapping')` |
 | validate_cli_contract (src/llm_wiki_cli/api.py) | validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3585 | `validate(dict(...))` |
-| validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _json_tree | 486 | `_json_tree(contract)` |
-| _json_tree | CLIReferenceError | 321 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 322 | `type(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 324 | `type(value)` |
-| _json_tree | math.isfinite | 324 | `math.isfinite(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 326 | `type(value)` |
-| _json_tree | _json_tree | 328 | `_json_tree(item, ..., budget)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 330 | `type(value)` |
+| validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _json_tree | 456 | `_json_tree(contract)` |
+| _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 292 | `type(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 294 | `type(value)` |
+| _json_tree | math.isfinite | 294 | `math.isfinite(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 296 | `type(value)` |
+| _json_tree | _json_tree | 298 | `_json_tree(item, ..., budget)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 300 | `type(value)` |
 
 ### Boundary effects
 
@@ -195,11 +195,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_cli_contract` | `isinstance` | 3583 |
 | external_call | `validate_cli_contract` | `ValueError` | 3584 |
-| external_call | `_json_tree` | `type` | 322 |
-| external_call | `_json_tree` | `type` | 324 |
-| external_call | `_json_tree` | `math.isfinite` | 324 |
-| external_call | `_json_tree` | `type` | 326 |
-| external_call | `_json_tree` | `type` | 330 |
+| external_call | `_json_tree` | `type` | 292 |
+| external_call | `_json_tree` | `type` | 294 |
+| external_call | `_json_tree` | `math.isfinite` | 294 |
+| external_call | `_json_tree` | `type` | 296 |
+| external_call | `_json_tree` | `type` | 300 |
 | step_limit | `validate_cli_contract` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -9,8 +9,8 @@ inputs:
     description: Publication configuration relative to the consumer.
     default: ".llm-wiki/publication.json"
   src-dir:
-    description: Consumer-relative source directory for an existing native wiki.
-    default: "."
+    description: Consumer-relative source for an existing wiki. Defaults to its configured architecture.source_root, or the consumer root.
+    default: ""
   source-revision:
     description: Expected full Git revision of the consumer checkout. Defaults to its HEAD.
   target-dir:

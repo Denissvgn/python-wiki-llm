@@ -48,7 +48,15 @@ def test_sibling_wiki_accepted_state_paths_are_confined(tmp_path, field, kind):
         (tmp_path / "alias.json").symlink_to(state / "accepted.json")
     elif kind == "symlink-parent":
         (tmp_path / "alias").symlink_to(state, target_is_directory=True)
-    environment = {"ACCEPTED_BASELINE": "", "ACCEPTED_REVIEWS": "", field: selected}
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+         "-c", "commit.gpgsign=false", "commit", "-qm", "Accepted state"],
+        cwd=tmp_path, check=True,
+    )
+    pin = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
+    environment = {"ACCEPTED_SHA": pin, "ACCEPTED_BASELINE": "", "ACCEPTED_REVIEWS": "", field: selected}
     result = subprocess.run(
         ["bash", "--noprofile", "--norc", "-e", "-o", "pipefail"],
         input="set -u\n" + guard + "printf 'STATE_ACCEPTED\\n'\n",

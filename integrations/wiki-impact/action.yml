@@ -22,6 +22,12 @@ inputs:
     description: Consumer project directory within GITHUB_WORKSPACE.
     required: false
     default: .
+  accepted-state-revision:
+    description: Commit holding accepted baseline and review files. Pull requests always use their base commit.
+    default: ""
+  observe-drift:
+    description: Compare an independent full target checkout with its last delivered checkpoint.
+    default: "false"
   fail-on:
     description: error preserves the configured CLI policy; review-required additionally requires a ready impact review.
     required: false
@@ -32,6 +38,12 @@ inputs:
     default: default
 
 outputs:
+  drift-path:
+    description: Optional local Git drift report.
+    value: ${{ steps.drift.outputs.path }}
+  drift-status:
+    description: Unmanaged, unchanged, unmanaged-edits, owned-conflict or indeterminate when observation runs.
+    value: ${{ steps.drift.outputs.status }}
   report-path:
     description: Absolute path to the JSON impact report when produced.
     value: ${{ steps.provider.outputs.report-path }}
@@ -52,7 +64,7 @@ outputs:
     value: ${{ steps.result.outputs.changed || 'false' }}
   ready:
     description: Whether the impact review gate is satisfied; this is not a publication receipt.
-    value: ${{ steps.result.outputs.ready || 'false' }}
+    value: ${{ (inputs.observe-drift != 'true' || steps.drift.outcome == 'success') && steps.result.outputs.ready || 'false' }}
 
 runs:
   using: composite
@@ -69,111 +81,10 @@ runs:
       env:
         PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
         PROVIDER_ACTION_REF: ${{ github.action_ref }}
-        INPUT_CONFIG: ${{ inputs.config }}
-        INPUT_BASELINE: ${{ inputs.baseline }}
-        INPUT_REVIEWS: ${{ inputs.reviews }}
-        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+        PROVIDER_REPOSITORY: ${{ github.action_repository }}
         INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
-        INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
-        PIP_NO_INPUT: "1"
-        PIP_DISABLE_PIP_VERSION_CHECK: "1"
-        PYTHONUTF8: "1"
-        PYTHONIOENCODING: utf-8
-      run: |
-        set -euo pipefail
-        "${PROVIDER_PYTHON}" -I - <<'PY'
-        import os
-        from pathlib import Path
-        import re
-        import subprocess
-        import tempfile
-        import venv
-
-        for name in ("INPUT_CONFIG", "INPUT_BASELINE", "INPUT_REVIEWS", "INPUT_TARGET_DIR",
-                     "INPUT_WORKING_DIRECTORY", "INPUT_FAIL_ON", "INPUT_EVIDENCE_ID",
-                     "GITHUB_WORKSPACE", "GITHUB_ACTION_PATH", "RUNNER_TEMP"):
-            if any(character in os.environ.get(name, "") for character in ("\n", "\r")):
-                raise SystemExit(f"{name} must be one line")
-        evidence_id = os.environ["INPUT_EVIDENCE_ID"]
-        if re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,39}", evidence_id) is None:
-            raise SystemExit("evidence-id must match ^[a-z0-9][a-z0-9._-]{0,39}$")
-        if os.environ["INPUT_FAIL_ON"] not in {"error", "review-required"}:
-            raise SystemExit("fail-on must be error or review-required")
-        if not os.environ["INPUT_CONFIG"]:
-            raise SystemExit("config must not be empty")
-        workspace = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
-        consumer = (workspace / os.environ["INPUT_WORKING_DIRECTORY"]).resolve(strict=True)
-        if not consumer.is_dir() or not consumer.is_relative_to(workspace):
-            raise SystemExit("working-directory must be a directory inside GITHUB_WORKSPACE")
-        provider = Path(os.environ["GITHUB_ACTION_PATH"]).resolve(strict=True).parents[1]
-        runtime = Path(tempfile.mkdtemp(prefix=f"llm-wiki-impact-{evidence_id}.",
-                                        dir=os.environ["RUNNER_TEMP"]))
-        evidence = runtime / "evidence"
-        evidence.mkdir()
-        environment = runtime / ".venv"
-        executable = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-        values = {"consumer": consumer, "python": executable, "evidence-dir": evidence,
-                  "report-path": evidence / "impact.json", "summary-path": evidence / "impact.md",
-                  "provider-receipt": evidence / "provider.json"}
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-            for name, value in values.items():
-                if any(character in value.as_posix() for character in ("\n", "\r")):
-                    raise SystemExit("Resolved action paths must be one line")
-                output.write(f"{name}={value.as_posix()}\n")
-        venv.create(environment, with_pip=True)
-        with (evidence / "provider-install.log").open("wb") as log:
-            installed = subprocess.run([str(executable), "-I", "-m", "pip", "--isolated",
-                                        "--disable-pip-version-check", "install", "--no-input",
-                                        "--no-cache-dir", str(provider)], cwd=runtime,
-                                       stdout=log, stderr=subprocess.STDOUT, check=False)
-        if installed.returncode:
-            raise SystemExit("Provider installation failed; see provider-install.log")
-        verify = r'''
-        import hashlib
-        import importlib.metadata
-        import json
-        from pathlib import Path
-        import os
-        import sys
-        import tomllib
-        import llm_wiki_cli
-
-        provider, receipt = map(Path, sys.argv[1:])
-        package = Path(llm_wiki_cli.__file__).resolve().parent
-        if not package.is_relative_to(Path(sys.prefix).resolve()):
-            raise SystemExit("Provider import is not from the isolated environment")
-        version = importlib.metadata.version("agent-wiki-cli")
-        if version != tomllib.loads((provider / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]:
-            raise SystemExit("Installed provider version differs from the action source")
-        source = provider / "src/llm_wiki_cli"
-        files = {}
-        for path in sorted(package.rglob("*")):
-            if "__pycache__" in path.parts or not path.is_file():
-                continue
-            if path.is_symlink():
-                raise SystemExit("Installed provider contains a symlink")
-            relative = path.relative_to(package)
-            content = path.read_bytes()
-            if content != (source / relative).read_bytes():
-                raise SystemExit(f"Installed provider differs from action source: {relative}")
-            files[relative.as_posix()] = hashlib.sha256(content).hexdigest()
-        expected_python = {path.relative_to(source).as_posix() for path in source.rglob("*.py")}
-        if not files or {name for name in files if name.endswith(".py")} != expected_python:
-            raise SystemExit("Installed provider Python file inventory differs from action source")
-        fingerprint = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        receipt.write_text(json.dumps({"schema_version": "llm-wiki-action-provider/v1",
-                                      "version": version, "action_ref": os.environ.get("PROVIDER_ACTION_REF", ""),
-                                      "package_sha256": fingerprint, "installed": True,
-                                      "package_origin": str(package), "python": sys.version,
-                                      "python_implementation": sys.implementation.name,
-                                      "platform": sys.platform}, indent=2, sort_keys=True) + "\n",
-                           encoding="utf-8")
-        '''
-        # -I prevents a consumer's source tree or PYTHONPATH from selecting the provider.
-        subprocess.run([str(executable), "-I", "-c", __import__("textwrap").dedent(verify),
-                        str(provider), str(values["provider-receipt"])], cwd=consumer, check=True)
-        PY
+      run: '"${PROVIDER_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/../wiki-candidate/provider.py" impact'
 
     - name: Evaluate local publication impact
       id: impact
@@ -186,24 +97,42 @@ runs:
         INPUT_BASELINE: ${{ inputs.baseline }}
         INPUT_REVIEWS: ${{ inputs.reviews }}
         INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_ACCEPTED_STATE_REVISION: ${{ inputs.accepted-state-revision }}
+        INPUT_OBSERVE_DRIFT: ${{ inputs.observe-drift }}
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
       run: |
         set -euo pipefail
-        "${IMPACT_PYTHON}" -I - <<'PY'
+        "${IMPACT_PYTHON}" -B -I - <<'PY'
         import os
         from pathlib import Path
         import subprocess
         import sys
 
+        for key in ("INPUT_CONFIG", "INPUT_BASELINE", "INPUT_REVIEWS", "INPUT_TARGET_DIR"):
+            if any(c in os.environ[key] for c in ("\n", "\r")):
+                raise SystemExit(f"{key} must be a single line")
+        if not os.environ["INPUT_CONFIG"] or os.environ.get("INPUT_FAIL_ON", "error") not in {"error", "review-required"}:
+            raise SystemExit("Supply a config path and a supported fail-on policy")
         evidence = Path(os.environ["IMPACT_EVIDENCE"])
+        if os.environ.get("INPUT_OBSERVE_DRIFT", "false") not in {"true", "false"}:
+            raise SystemExit("observe-drift must be true or false")
+        selected = {name: os.environ["INPUT_" + name.upper()] for name in ("baseline", "reviews")
+                    if os.environ.get("INPUT_" + name.upper())}
+        pin = os.environ.get("INPUT_ACCEPTED_STATE_REVISION", "")
+        if selected and (pin or os.environ.get("GITHUB_EVENT_NAME") in {"pull_request", "pull_request_target"}):
+            sys.path.insert(0, str(Path(os.environ["GITHUB_ACTION_PATH"]).resolve().parent / "wiki-candidate"))
+            from checkout import accepted_inputs
+            selected, _ = accepted_inputs(Path(os.environ["IMPACT_CONSUMER"]), selected, pin, evidence.parent,
+                                          workspace=Path(os.environ["GITHUB_WORKSPACE"]))
         command = [sys.executable, "-I", "-m", "llm_wiki_cli.cli", "docs", "impact",
                    "--config", os.environ["INPUT_CONFIG"], "--output", str(evidence / "impact.json"),
                    "--format", "markdown"]
-        for option, variable in (("--baseline", "INPUT_BASELINE"), ("--reviews", "INPUT_REVIEWS"),
-                                 ("--target-dir", "INPUT_TARGET_DIR")):
-            if os.environ[variable]:
-                command.extend((option, os.environ[variable]))
+        for name, path in selected.items():
+            command.extend(("--" + name, path))
+        if os.environ["INPUT_TARGET_DIR"]:
+            command.extend(("--target-dir", os.environ["INPUT_TARGET_DIR"]))
         with (evidence / "impact.md").open("wb") as summary, (evidence / "impact.stderr").open("wb") as errors:
             try:
                 result = subprocess.run(command, cwd=os.environ["IMPACT_CONSUMER"], stdout=summary,
@@ -216,6 +145,17 @@ runs:
             output.write(f"exit-code={code}\n")
         PY
 
+    - name: Observe the delivered wiki checkpoint
+      id: drift
+      if: ${{ !cancelled() && steps.provider.outcome == 'success' && inputs.observe-drift == 'true' }}
+      shell: bash
+      env:
+        IMPACT_PYTHON: ${{ steps.provider.outputs.python }}
+        IMPACT_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        IMPACT_EVIDENCE: ${{ steps.provider.outputs.evidence-dir }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+      run: '"${IMPACT_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/observe.py"'
     - name: Retain publication impact evidence
       if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -228,6 +168,8 @@ runs:
           ${{ steps.provider.outputs.evidence-dir }}/impact.stderr
           ${{ steps.provider.outputs.evidence-dir }}/provider.json
           ${{ steps.provider.outputs.evidence-dir }}/provider-install.log
+          ${{ steps.provider.outputs.evidence-dir }}/accepted-state.json
+          ${{ steps.provider.outputs.evidence-dir }}/drift.json
         if-no-files-found: error
         retention-days: 14
 

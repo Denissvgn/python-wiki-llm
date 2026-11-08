@@ -7,10 +7,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 691 | [Open section](#entities) |
-| Modules | 282 | [Open section](#modules) |
+| Modules | 283 | [Open section](#modules) |
 | Workflows | 278 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 487 | [Open section](#entry-point-flows) |
+| Entry-point flows | 488 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -870,6 +870,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [native_diagnostics](modules/native_diagnostics.md) - Owned per-file diagnostics for the bundled Go, Rust and Haskell helpers.
 - [native_inspection](modules/native_inspection.md) - One bounded concept inspection over one captured native read view.
 - [normalization_diagnostics](modules/normalization_diagnostics.md) - Bounded fresh-normalization diagnostics, separate from evidence/hash contracts.
+- [observe](modules/observe.md) - Observe committed sibling-wiki changes against the last delivered checkpoint.
 - [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
 - [packages](modules/packages.md) - Discover Python packages within a source tree.
@@ -1787,6 +1788,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [process-cli](flows/process-cli.md) - entry: `main`
 - [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
+- [process-observe](flows/process-observe.md) - entry: `main`
 - [process-prepare](flows/process-prepare.md) - entry: `__main__`
 - [process-provider](flows/process-provider.md) - entry: `__main__`
 - [process-publish](flows/process-publish.md) - entry: `__main__`

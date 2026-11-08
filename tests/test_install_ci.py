@@ -962,6 +962,31 @@ def test_documentation_profile_identifies_missing_authored_source(tmp_path):
     assert not (consumer / ".github").exists()
 
 
+def test_documentation_install_honors_the_declared_native_source(tmp_path):
+    consumer = _publication_project(tmp_path)
+    (consumer / "wiki").mkdir()
+    SyncManifest().save(consumer / "wiki")
+    path = consumer / ".llm-wiki/publication.json"
+    config = json.loads(path.read_text())
+    config["architecture"] = {
+        "baseline": "existing-wiki",
+        "root": "wiki",
+        "source_root": "src",
+    }
+    path.write_text(json.dumps(config))
+    install = partial(
+        ci_installer.install_documentation_ci_workflow,
+        action_ref=ACTION_REF,
+        project_root=consumer,
+    )
+    with pytest.raises(InstallCiError, match="architecture.source_root"):
+        install(src_dir=".")
+    assert not (consumer / ".github").exists()
+    assert install().changed
+    workflow = yaml.safe_load((consumer / DOCUMENTATION_WORKFLOW_PATH).read_text())
+    assert workflow["jobs"]["candidate"]["steps"][-1]["with"]["src-dir"] == "src"
+
+
 def test_documentation_cli_install_and_uninstall_preserve_consumer_ownership(
     tmp_path, monkeypatch
 ):

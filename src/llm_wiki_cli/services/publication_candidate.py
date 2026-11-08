@@ -676,7 +676,11 @@ def _prepare(
             raise ValueError(
                 "Target snapshot includes configuration or source-selection inputs"
             )
-        for protected in (config["content"]["root"], config["architecture"]["root"]):
+        for protected in (
+            config["content"]["root"],
+            config["architecture"]["root"],
+            config["architecture"].get("source_root", "."),
+        ):
             if protected != "." and _within(publication_path(root, protected), target):
                 raise ValueError(
                     "Target snapshot includes source or architecture inputs"
@@ -920,11 +924,17 @@ def export_publication_candidate(
     destination = _output_path(
         root, output_dir, config, target, receipt["basis"], config_path
     )
-    if config["architecture"]["baseline"] == "bootstrap-source":
+    architecture = config["architecture"]
+    source = (
+        architecture["root"]
+        if architecture["baseline"] == "bootstrap-source"
+        else architecture.get("source_root")
+    )
+    if source is not None:
         from .publication_snapshot import assert_bootstrap_output_excluded
 
         assert_bootstrap_output_excluded(
-            publication_path(root, config["architecture"]["root"]), destination, files
+            publication_path(root, source), destination, files
         )
     ensure_guarded_directory(destination, mode=0o700)
     for path, raw in sorted(files.items()):

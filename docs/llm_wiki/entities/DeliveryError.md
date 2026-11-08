@@ -84,7 +84,7 @@ flowchart LR
 | `_fetch` | call | [git_transport](../modules/git_transport.md) | 1 |
 | `_git` | call | [git_transport](../modules/git_transport.md) | 3 |
 | `_oid` | call | [git_transport](../modules/git_transport.md) | 1 |
-| `_publish` | call | [git_transport](../modules/git_transport.md) | 1 |
+| `_publish` | call | [git_transport](../modules/git_transport.md) | 2 |
 | `_read` | call | [git_transport](../modules/git_transport.md) | 5 |
 | `_remote` | call | [git_transport](../modules/git_transport.md) | 3 |
 | `_resolve` | call | [git_transport](../modules/git_transport.md) | 4 |

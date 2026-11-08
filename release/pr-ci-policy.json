@@ -527,6 +527,7 @@
     "publication-action": {
       "tests": [
         "tests/test_wiki_impact_action.py",
+        "tests/test_wiki_impact_observation.py",
         "tests/test_github_action_shell.py::test_sibling_wiki_accepted_state_paths_are_confined"
       ],
       "lanes": [
@@ -700,6 +701,15 @@
         "inventory",
         "defaults",
         "storage"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/__init__.py"
+      ],
+      "groups": [
+        "packaging",
+        "reference"
       ]
     },
     {
@@ -924,8 +934,13 @@
     {
       "paths": [
         "integrations/wiki-impact/**",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/provider.py",
+        "integrations/wiki-candidate/delivery/git_transport.py",
+        "src/llm_wiki_cli/services/publication_config.py",
         ".github/workflows/sibling-wiki-impact.yml",
-        "tests/test_wiki_impact_action.py"
+        "tests/test_wiki_impact_action.py",
+        "tests/test_wiki_impact_observation.py"
       ],
       "groups": [
         "publication-action"

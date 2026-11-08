@@ -29,7 +29,7 @@ _Auto-generated from `_HTML` in `src/llm_wiki_cli/services/publication_links.py`
 flowchart LR
     n0["_HTML (src/llm_wiki_cli/services/publication_links.py)"]
     n1["HTMLParser"]
-    n2["check_github_wiki (src/llm_wiki_cli/services/publication_links.py)"]
+    n2["_page_html (src/llm_wiki_cli/services/publication_links.py)"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/publication_links.md"
@@ -52,4 +52,4 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `check_github_wiki` | call | [publication_links](../modules/publication_links.md) | 1 |
+| `_page_html` | call | [publication_links](../modules/publication_links.md) | 1 |

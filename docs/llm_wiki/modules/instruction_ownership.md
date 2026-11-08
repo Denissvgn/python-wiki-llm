@@ -40,24 +40,20 @@ route requires its matching existing heading rather than an inferred file root.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/instruction_ownership.py"]
-    n1["src/llm_wiki_cli/services/publication_impact.py"]
-    n2["src/llm_wiki_cli/services/schema.py"]
-    n3["src/llm_wiki_cli/services/skills.py"]
+    n1["src/llm_wiki_cli/services/schema.py"]
+    n2["src/llm_wiki_cli/services/skills.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n3
-    n1 --> n0
-    n2 --> n3
+    n1 --> n2
     click n0 "../modules/instruction_ownership.md"
-    click n1 "../modules/publication_impact.md"
-    click n2 "../modules/services_schema.md"
-    click n3 "../modules/skills.md"
+    click n1 "../modules/services_schema.md"
+    click n2 "../modules/skills.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [publication_impact](../modules/publication_impact.md) |
 | Outbound | [services_schema](../modules/services_schema.md) |
 | Outbound | [skills](../modules/skills.md) |
 

@@ -517,10 +517,21 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
     assert "tests/test_pr_ci_workflow.py" not in policy["groups"]["ci-policy"]["tests"]
 
 
-def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".github/workflows/sibling-wiki-impact.yml",
+        "integrations/wiki-impact/observe.py",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/provider.py",
+        "integrations/wiki-candidate/delivery/git_transport.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+    ],
+)
+def test_sibling_wiki_impact_changes_select_accepted_state_and_observation_guards(path):
     policy = ci.policy_load(ROOT / "release")
-    # A workflow has no Python import edges. Keep the actual test inventory
-    # while exercising the declared ownership rules without unrelated edits.
+    # Exercise explicit ownership with the actual inventory even when imports
+    # cannot expose dependencies between actions and their shared scripts.
     tests = {
         path.relative_to(ROOT).as_posix(): b""
         for path in (ROOT / "tests").rglob("test_*.py")
@@ -529,7 +540,7 @@ def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
         policy,
         tests,
         tests,
-        [changed(".github/workflows/sibling-wiki-impact.yml")],
+        [changed(path)],
         None,
         {"entries": []},
         imports_index={},
@@ -538,7 +549,11 @@ def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
         "tests/test_github_action_shell.py::"
         "test_sibling_wiki_accepted_state_paths_are_confined"
     )
-    assert set(result["lanes"]) == {"ubuntu"}
+    if path.endswith(("checkout.py", "git_transport.py", "publication_config.py")):
+        assert set(result["lanes"]) == {"ubuntu", "macos", "windows"}
+    else:
+        assert set(result["lanes"]) == {"ubuntu"}
+    assert "tests/test_wiki_impact_observation.py" in result["lanes"]["ubuntu"]["selectors"]
     assert any(
         ci.matches(selected, guard)
         for selected in result["lanes"]["ubuntu"]["selectors"]
@@ -683,6 +698,7 @@ def test_sibling_wiki_portability_keeps_consumer_case_and_helper_owners(path):
 
 
 @pytest.mark.parametrize("path", [
+    "src/llm_wiki_cli/__init__.py",
     "src/llm_wiki_cli/services/behavior_reference.py",
     "src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
     "src/llm_wiki_cli/skills/new-skill/SKILL.md",
@@ -699,10 +715,14 @@ def test_public_behavior_contract_owners_include_installed_and_review_consumers(
     )
     for platform in ("ubuntu", "macos", "windows"):
         assert {
+            "tests/test_cli_reference.py",
             "tests/test_behavior_reference.py",
             "tests/test_behavior_reference_cli.py",
             "tests/test_publication_references.py",
         } <= set(selection["lanes"][platform]["selectors"])
+    if path == "src/llm_wiki_cli/__init__.py":
+        assert {"package", "mcp-sdk"} <= set(selection["jobs"])
+        assert "tests/test_package_metadata.py" in selection["lanes"]["minimum-python"]["selectors"]
 
 
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(

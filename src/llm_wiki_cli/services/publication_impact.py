@@ -5,15 +5,14 @@ from __future__ import annotations
 from collections import Counter
 from copy import deepcopy
 from fnmatch import fnmatchcase
+from functools import partial
 import json
-import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from .instruction_ownership import markdown_anchor
 from .knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession
-from .markdown_sections import parse_markdown_document
+from .publication_links import public_atx_section
 from .publication_config import load_publication_config, publication_path
 from .publication_contracts import (
     PublicationProtocolError,
@@ -113,22 +112,14 @@ def publication_target_observation(
     if not topic.get("anchor"):
         return {"state": "available", "hash": sha256_bytes(raw)}
     try:
-        document = parse_markdown_document(raw.decode("utf-8"), "publication://target")
+        section = public_atx_section(raw.decode("utf-8"), topic["anchor"])
     except UnicodeError as exc:
         raise PublicationImpactError(
             f"Target is not UTF-8 Markdown: {topic['wiki_page']}"
         ) from exc
-    # Native locators and public anchors remain separate. Resolve only unique
-    # ATX anchors supported by this profile; ambiguous legacy pages use page scope.
-    matches = [
-        section
-        for section in document.sections
-        if not re.search(r"[\[\]<>\\*_&~]", section.title.replace("`", ""))
-        if markdown_anchor(section.title) == topic["anchor"]
-    ]
-    if len(matches) != 1:
+    if section is None:
         return {"state": "unresolved-anchor", "hash": sha256_bytes(raw)}
-    return {"state": "available", "hash": matches[0].exact_hash}
+    return {"state": "available", "hash": sha256_bytes(section)}
 
 
 def _target_hash(
@@ -235,11 +226,14 @@ def capture_publication_basis(
     old_topics, new_topics = _topic_versions(config, baseline)
     topics = {**old_topics, **new_topics}
     architecture_root = publication_path(root, config["architecture"]["root"])
-    snapshot_builder = (
-        build_bootstrap_publication_snapshot
-        if config["architecture"]["baseline"] == "bootstrap-source"
-        else build_publication_snapshot
-    )
+    snapshot_builder = build_publication_snapshot
+    if config["architecture"]["baseline"] == "bootstrap-source":
+        snapshot_builder = build_bootstrap_publication_snapshot
+    elif "source_root" in config["architecture"]:
+        snapshot_builder = partial(
+            build_publication_snapshot,
+            source_root=publication_path(root, config["architecture"]["source_root"]),
+        )
     native = snapshot_builder(architecture_root)
     files = {}
     targets = {}
@@ -328,6 +322,7 @@ def _dependency_basis(
     )
     if page is None:
         return None
+    uid = page["uid"]
     source_basis = page.get("source_basis")
     if dep.get("section"):
         sections = [
@@ -345,6 +340,12 @@ def _dependency_basis(
         if not all(hashes.values()):
             return None
     return {
+        **({"uid": uid} if uid is not None else {}),
+        **(
+            {"source_root": basis["config"]["architecture"]["source_root"]}
+            if "source_root" in basis["config"]["architecture"]
+            else {}
+        ),
         "content": hashes,
         "source_basis": source_basis,
         "generation_options": basis["architecture"]["commitments"][
@@ -380,6 +381,20 @@ def _finding(kind: str, subject: str, details: Mapping[str, Any]) -> dict[str, A
 
 def _topic_findings(before, after) -> list[dict[str, Any]]:
     old_topics, new_topics = _topic_versions(after["config"], before)
+    previous_uids = (
+        {}
+        if before is None
+        else {
+            page["canonical_path"]: page["uid"]
+            for page in before["architecture"]["pages"]
+            if page["uid"]
+        }
+    )
+    current_paths = {
+        page["uid"]: page["canonical_path"]
+        for page in after["architecture"]["pages"]
+        if page["uid"]
+    }
     findings = []
     for key in sorted(old_topics.keys() | new_topics.keys()):
         old, new = old_topics.get(key), new_topics.get(key)
@@ -390,11 +405,39 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
             assert before is not None
             previous = _topic_inputs(old, before)
         retired = new is None
-        providers = (before if retired else after)["config"].get(
-            "reference_providers", {}
-        )
+        provider_basis = before if retired else after
+        assert provider_basis is not None
+        providers = provider_basis["config"].get("reference_providers", {})
         current = _topic_inputs(topic, after, providers)
         reasons = []
+        outdated_binding = False
+        old_paths = {
+            dep["architecture_page"]
+            for dep in (old or {}).get("depends_on", [])
+            if "architecture_page" in dep
+        }
+        new_paths = {
+            dep["architecture_page"]
+            for dep in (new or {}).get("depends_on", [])
+            if "architecture_page" in dep
+        }
+        for path in sorted(old_paths):
+            uid = previous_uids.get(path)
+            moved_to = current_paths.get(uid)
+            if moved_to and moved_to != path:
+                reasons.append(
+                    {
+                        "kind": "architecture-page-moved",
+                        "uid": uid,
+                        "before": path,
+                        "after": moved_to,
+                    }
+                )
+                outdated_binding |= path in new_paths
+        if before and before["config"].get("release_tag") != after["config"].get(
+            "release_tag"
+        ):
+            reasons.append({"kind": "release-tag-changed"})
         if old != new:
             reasons.append(
                 {
@@ -429,7 +472,11 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
                     {
                         "status": "incomplete"
                         if not retired
-                        and (missing or target["state"] == "unresolved-anchor")
+                        and (
+                            outdated_binding
+                            or missing
+                            or target["state"] == "unresolved-anchor"
+                        )
                         else "needs-review",
                         "owner": topic["owner"],
                         "wiki_page": topic["wiki_page"],
@@ -445,6 +492,11 @@ def _topic_findings(before, after) -> list[dict[str, Any]]:
                                 "inputs": current,
                                 "target": target,
                                 "source_policy": after["config"]["source_policy"],
+                                **(
+                                    {"release_tag": after["config"]["release_tag"]}
+                                    if "release_tag" in after["config"]
+                                    else {}
+                                ),
                                 "destination": after["config"]["target"],
                             }
                         ),
@@ -552,7 +604,11 @@ def compare_publication_impact(
         },
         "findings": findings,
         "limitations": [
-            "Native source freshness is snapshot-only; run the owning native integrity workflow.",
+            (
+                "Native source freshness was verified against the declared source root."
+                if after["architecture"]["freshness"]["state"] == "verified-current"
+                else "Native source freshness is snapshot-only; run the owning native integrity workflow."
+            ),
             "Target anchors use unique ATX headings; map legacy pages as whole pages.",
             "Review ledger acceptance is controlled by the calling repository.",
         ],
@@ -637,19 +693,40 @@ def _reviewable_target(target, *, retired):
     )
 
 
+def _reason_label(reason):
+    kind = reason["kind"]
+    if kind == "architecture-page-moved":
+        return f"{reason['before']} → {reason['after']} ({reason['uid']})"
+    if kind != "dependency-changed":
+        return kind
+    record = reason["after"] or reason["before"]
+    dep = record["dependency"]
+    if "reference" in dep:
+        scope = dep.get("fact") or " ".join(dep.get("command", []))
+        return " ".join(part for part in (dep["reference"], scope) if part)
+    if "source_file" in dep:
+        return dep["source_file"]
+    locator = dep["architecture_page"]
+    if dep.get("section"):
+        locator += " " + dep["section"]
+    source = record["hash"]
+    if source and (
+        source_path := (source.get("source_basis") or {}).get("source_path")
+    ):
+        locator += f" ({source_path})"
+    return locator
+
+
 def render_publication_impact(report: Mapping[str, Any]) -> str:
     """Render inert Markdown for CI summaries, including unresolved coverage."""
 
     def safe(value):
-        return (
-            str(value)
-            .replace("|", "\\|")
-            .replace("\n", " ")
-            .replace("\r", " ")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-        )
+        # Labels can contain literal Markdown, HTML or mention syntax. Keep
+        # them visible as text in the hosted summary and the portable artifact.
+        return str(value).translate(escapes)
 
+    escapes = {ord(c): f"&#{ord(c)};" for c in "\\|`*_~[]!<>&@:#"}
+    escapes.update({ord("\n"): " ", ord("\r"): " "})
     counts = Counter(f["status"] for f in report["findings"])
     lines = [
         "# Sibling wiki impact",
@@ -657,19 +734,29 @@ def render_publication_impact(report: Mapping[str, Any]) -> str:
         f"Complete: {str(report['complete']).lower()}",
         f"Review required: {str(report['review_required']).lower()}",
         "",
-        "| Status | Topic or architecture page | Public target | Reasons |",
-        "| --- | --- | --- | --- |",
+        "| Status | Topic or architecture page | Public target | Evidence or reason | Review |",
+        "| --- | --- | --- | --- | --- |",
     ]
     for finding in report["findings"]:
         target = finding.get("wiki_page", "") + (
             "#" + finding["anchor"] if finding.get("anchor") else ""
         )
-        reasons = ", ".join(r["kind"] for r in finding["reasons"])
+        reasons = ", ".join(_reason_label(r) for r in finding["reasons"])
+        if finding["kind"] == "coverage":
+            action = "Map a public topic or record a scoped exclusion"
+        else:
+            action = f"{finding['owner']} · {finding['edit_at']}"
         lines.append(
             "| "
             + " | ".join(
                 safe(v)
-                for v in (finding["status"], finding["subject"], target, reasons)
+                for v in (
+                    finding["status"],
+                    finding["subject"],
+                    target,
+                    reasons,
+                    action,
+                )
             )
             + " |"
         )

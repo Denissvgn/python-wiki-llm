@@ -10,12 +10,11 @@ Portable, deterministic architecture-to-public-topic impact and review.
 
 | Source | Symbols |
 |--------|---------|
-| `.instruction_ownership` | `markdown_anchor` |
 | `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_storage_io` | `StorageReadSession` |
-| `.markdown_sections` | `parse_markdown_document` |
 | `.publication_config` | `load_publication_config`, `publication_path` |
 | `.publication_contracts` | `PublicationProtocolError`, `validate_publication_basis`, `validate_publication_report`, `validate_publication_reviews` |
+| `.publication_links` | `public_atx_section` |
 | `.publication_references` | `capture_reference_inputs`, `recheck_reference_inputs`, `reference_dependency_basis` |
 | `.publication_snapshot` | `build_publication_snapshot`, `build_bootstrap_publication_snapshot` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
@@ -23,9 +22,9 @@ Portable, deterministic architecture-to-public-topic impact and review.
 | `collections` | `Counter` |
 | `copy` | `deepcopy` |
 | `fnmatch` | `fnmatchcase` |
+| `functools` | `partial` |
 | `json` | `json` |
 | `pathlib` | `Path` |
-| `re` | `re` |
 | `typing` | `Any`, `Mapping` |
 
 ## Local dependency map
@@ -50,9 +49,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (3) |
 | Inbound | `src` (4) |
-| Outbound | `src` (9) |
+| Outbound | `src` (8) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -76,4 +75,5 @@ flowchart LR
 | `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | — | Compare complete bases through the union of previous/current bindings. |
 | `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None, decision: str = 'still-current') -> dict[str, Any]` | — | Prepare an exact-basis no-edit decision for normal repository review. |
 | `_reviewable_target` | `(target, *, retired)` | — | — |
+| `_reason_label` | `(reason)` | — | — |
 | `render_publication_impact` | `(report: Mapping[str, Any]) -> str` | — | Render inert Markdown for CI summaries, including unresolved coverage. |

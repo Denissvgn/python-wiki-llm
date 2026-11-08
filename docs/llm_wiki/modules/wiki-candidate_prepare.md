@@ -21,7 +21,7 @@ Prepare the selected helpers and check a consumer's existing native evidence.
 | `llm_wiki_cli.services.knowledge_evidence` | `hash_json` |
 | `llm_wiki_cli.services.knowledge_freshness` | `REASON_CONCEPT_OBSERVATION_CHANGED` |
 | `llm_wiki_cli.services.knowledge_loader` | `load_knowledge_state` |
-| `llm_wiki_cli.services.publication_config` | `load_publication_config`, `publication_path` |
+| `llm_wiki_cli.services.publication_config` | `load_publication_config`, `publication_path`, `publication_source_root` |
 | `llm_wiki_cli.services.source_retirement` | `retired_entity_mappings` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |

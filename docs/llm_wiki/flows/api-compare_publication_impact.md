@@ -79,9 +79,9 @@ sequenceDiagram
     p1-->>p25: any (src/llm_wiki_cli/services…ompare_publication_impact)(...)
 ```
 
-> Call sequence diagram shows 30 of 123 interactions; 93 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 132 interactions; 102 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 32 (24 omitted); unresolved 1 of 52 (51 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 33 (25 omitted); unresolved 1 of 60 (59 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 40; effect analysis evaluated: 35, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
-Collector observations for 35 source steps with known totals: observed: 124, emitted: 124, omitted: 0. Unavailable totals are excluded.
+Collector observations for 35 source steps with known totals: observed: 126, emitted: 126, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -199,13 +199,13 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3733 | `compare(candidate, baseline, reviews=reviews)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 469 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 469 | `dict(candidate)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 470 | `deepcopy(dict(...))` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 470 | `dict(baseline)` |
-| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 471 | `validate_publication_basis(after)` |
-| validate_publication_basis | _guard | 899 | `_guard(_basis, value)` |
-| _guard | _json_tree | 889 | `_json_tree(value)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 521 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 521 | `dict(candidate)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 522 | `deepcopy(dict(...))` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 522 | `dict(baseline)` |
+| compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 523 | `validate_publication_basis(after)` |
+| validate_publication_basis | _guard | 923 | `_guard(_basis, value)` |
+| _guard | _json_tree | 913 | `_json_tree(value)` |
 | _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
@@ -214,7 +214,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `findings.append` | `compare_publication_impact` | 495 |
+| mutation | `findings.append` | `compare_publication_impact` | 547 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |
@@ -223,8 +223,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `compare_publication_impact` | `deepcopy` | 469 |
-| external_call | `compare_publication_impact` | `deepcopy` | 470 |
+| external_call | `compare_publication_impact` | `deepcopy` | 521 |
+| external_call | `compare_publication_impact` | `deepcopy` | 522 |
 | step_limit | `compare_publication_impact` | `first 12 steps` | 0 |
 | truncated_flow | `compare_publication_impact` | `depth limit` | 0 |
 

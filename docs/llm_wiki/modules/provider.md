@@ -49,4 +49,4 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `verify` | `(source: Path, receipt: Path, revision: str, repository: str) -> None` | — | — |
 | `build_input` | `(provider: Path, runtime: Path) -> tuple[Path, str, str]` | — | — |
-| `setup` | `() -> None` | — | — |
+| `setup` | `(*, impact_only: bool = False) -> None` | — | — |

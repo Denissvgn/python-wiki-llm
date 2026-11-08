@@ -57,6 +57,28 @@ def test_implicit_publication_inputs_are_reserved_even_when_absent(tmp_path):
     assert not any(path.exists() for path in controls)
 
 
+def test_live_source_root_is_optional_and_reserves_discovery_controls(tmp_path):
+    value = policy()
+    assert (
+        "source_root"
+        not in validate_publication_config(value, consumer_root=tmp_path)[
+            "architecture"
+        ]
+    )
+    value["architecture"]["source_root"] = "src"
+    checked = validate_publication_config(value, consumer_root=tmp_path)
+    assert checked["architecture"]["source_root"] == "src"
+    assert tmp_path / "src/.gitignore" in publication_input_controls(
+        tmp_path, checked, "policy.json"
+    )
+    value["architecture"]["source_root"] = "../outside"
+    with pytest.raises(PublicationConfigError, match="source_root"):
+        validate_publication_config(value, consumer_root=tmp_path)
+    value["architecture"].update(baseline="bootstrap-source", source_root=".")
+    with pytest.raises(PublicationConfigError, match="source_root"):
+        validate_publication_config(value, consumer_root=tmp_path)
+
+
 @pytest.mark.parametrize(
     "output",
     [

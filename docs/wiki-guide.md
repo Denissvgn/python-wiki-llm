@@ -76,8 +76,8 @@ dependency-page presence, and internal wiki links; and the experimental
 canonical pages. The manifest commits both projections as one CLI-owned
 snapshot. Update these generated files through the CLI. Current setup selects
 indexed-v8 manifest storage and packed-v4-deflate knowledge when the native
-wiki is created. Older unadopted
-wikis can have a v5 manifest. [Ordinary review adoption](maintenance.md)
+wiki is created. Older unadopted wikis can have a v5 manifest.
+[Ordinary review adoption](maintenance.md)
 adds durable pending and acknowledged section records and an immutable marker
 using flat v7 or indexed v8 storage. Use `llm-wiki reference behavior` for
 the [installed provider's defaults](cli-reference-data.md#export-installed-behavior-facts).
@@ -159,11 +159,10 @@ details; see [native query failures](native-knowledge.md#native-query-failures).
 The [native knowledge tutorial](../examples/native-knowledge/README.md) shows
 a library consumer using shared inspection, coverage and qualified packets.
 
-The package has a small required Python runtime footprint. `PyYAML>=6` parses
-OpenAPI and infrastructure YAML, and Python versions older than 3.11 use `tomli` for
-TOML. FastAPI, Pydantic, and the target application are not runtime
-dependencies and are never imported for contract extraction. Optional language
-features use external tools when they are available on `PATH`.
+The package requires Python 3.11 or later. It reads TOML with the standard
+library’s `tomllib` and parses OpenAPI and infrastructure YAML with
+`PyYAML>=6`. Contract extraction reads FastAPI and Pydantic declarations
+directly from source. Optional language features use external tools on `PATH`.
 
 ## Supported Inputs
 

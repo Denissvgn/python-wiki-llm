@@ -206,7 +206,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2790 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2789 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 270 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 271 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 274 | `parser.add_subparsers(dest='command', required=True)` |

@@ -72,6 +72,23 @@ def _clean(directory: Path, separate_target: Path | None = None) -> None:
             raise ValueError(
                 "Untracked or ignored files are present in the consumer checkout"
             )
+    # Git does not enumerate ignored files inside tracked gitlinks from their
+    # parent. A mapped source may live there, so bind populated submodules to
+    # the recorded commit and check their worktrees under the same policy.
+    for row in _git(directory, "ls-files", "--stage", "-z", "--", ".").split(b"\0"):
+        if not row.startswith(b"160000 "):
+            continue
+        metadata, name = row.split(b"\t", 1)
+        path = publication_path(directory, os.fsdecode(name))
+        if not path.exists() or (path.is_dir() and not any(path.iterdir())):
+            continue
+        if (
+            not path.is_dir()
+            or _repository(path) != path
+            or _git(path, "rev-parse", "HEAD").strip() != metadata.split()[1]
+        ):
+            raise ValueError("Populated submodule differs from its recorded Git revision")
+        _clean(path, separate_target)
 
 
 def _verify_target_blobs(
@@ -146,7 +163,9 @@ def committed_blob(
     root: Path, pin: str, relative: str, maximum: int
 ) -> tuple[str, bytes]:
     """Read one regular blob from a pinned commit, without checking out or filtering it."""
-    entry = _git(root, "ls-tree", "-z", _revision(pin), "--", relative)
+    if _git(root, "cat-file", "-t", _revision(pin)).strip() != b"commit":
+        raise ValueError("Accepted state requires an available Git commit")
+    entry = _git(root, "ls-tree", "-z", pin, "--", relative)
     metadata, _, listed = entry.partition(b"\t")
     mode, _, rest = metadata.partition(b" ")
     if (
@@ -191,7 +210,8 @@ def verified_checkout(
 
 
 def accepted_inputs(
-    consumer: Path, accepted: dict[str, str], revision: str, runtime: Path
+    consumer: Path, accepted: dict[str, str], revision: str, runtime: Path,
+    *, workspace: Path | None = None,
 ) -> tuple[dict[str, str], str | None]:
     """Read explicitly accepted metadata from Git, independently of the source commit."""
     if not accepted:
@@ -204,9 +224,6 @@ def accepted_inputs(
             raise ValueError("Pull request review state must come from its base commit")
         revision = base
     pin = _revision(revision or _git(root, "rev-parse", "HEAD").decode().strip())
-    if _git(root, "cat-file", "-t", pin).strip() != b"commit":
-        raise ValueError("Accepted state requires an available Git commit")
-
     directory = runtime / "accepted-inputs"
     directory.mkdir(mode=0o700)
     paths = {}
@@ -219,10 +236,24 @@ def accepted_inputs(
             "candidate-review",
         }:
             raise ValueError("Unknown accepted artifact type")
-        relative = (
-            consumer.relative_to(root) / _relative_path(path, "accepted input")
-        ).as_posix()
-        oid, raw = committed_blob(root, pin, relative, MAX_JSON_BYTES)
+        input_root = root
+        if workspace is not None and Path(path).is_absolute():
+            # The impact action also accepts an independent base checkout.
+            # Read the committed blob there, regardless of its working bytes.
+            supplied = Path(path)
+            boundary = workspace.resolve(strict=True)
+            if ".." in supplied.parts or not supplied.is_relative_to(boundary):
+                raise ValueError("Accepted Git input must stay inside the Actions workspace")
+            if not supplied.is_relative_to(root):
+                input_root = _repository(supplied.parent)
+                if not input_root.is_relative_to(boundary):
+                    raise ValueError("Accepted checkout must stay inside the Actions workspace")
+            relative = _relative_path(supplied.relative_to(input_root).as_posix(), "accepted input")
+        else:
+            relative = (
+                consumer.relative_to(root) / _relative_path(path, "accepted input")
+            ).as_posix()
+        oid, raw = committed_blob(input_root, pin, relative, MAX_JSON_BYTES)
         destination = directory / (option + ".json")
         destination.write_bytes(raw)
         paths[option] = str(destination)

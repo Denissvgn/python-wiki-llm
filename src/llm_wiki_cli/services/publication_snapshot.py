@@ -121,17 +121,19 @@ def assert_bootstrap_output_excluded(
             )
 
 
-def build_publication_snapshot(wiki_dir: str | Path) -> dict[str, Any]:
-    """Commit every canonical native page without extracting source or writing.
+def build_publication_snapshot(
+    wiki_dir: str | Path, *, source_root: Path | None = None
+) -> dict[str, Any]:
+    """Commit every canonical native page and optionally verify its live source.
 
     Current packed knowledge and indexed manifests use their validated readers.
     The result is complete for the canonical native page registry, including
     every ATX section, rather than a bounded search/query projection. Unmapped
     source evidence remains explicit: this is not a complete claim dependency
-    graph and makes no live source freshness or semantic review assertion.
+    graph. Without an explicit source root, freshness remains snapshot-only.
     """
     try:
-        return _build_snapshot(_absolute_path(Path(wiki_dir)))
+        return _build_snapshot(_absolute_path(Path(wiki_dir)), source_root)
     except PublicationSnapshotError:
         raise
     except (OSError, ValueError, TypeError) as exc:
@@ -186,7 +188,7 @@ def build_bootstrap_publication_snapshot(source_root: Path) -> dict[str, Any]:
         ) from exc
 
 
-def _build_snapshot(root: Path) -> dict[str, Any]:
+def _build_snapshot(root: Path, source_root: Path | None = None) -> dict[str, Any]:
     state, session, captured = _committed_inputs(root)
     assert state.knowledge is not None
     assert state.manifest_basis is not None
@@ -194,6 +196,33 @@ def _build_snapshot(root: Path) -> dict[str, Any]:
     knowledge = state.knowledge
     manifest = state.manifest_basis
     artifacts = state.validated_artifacts
+    freshness = {"scope": "snapshot-only", "state": "not-evaluated"}
+    if source_root is not None:
+        from .documentation_native import (
+            DocumentationNativeError,
+            evaluate_documentation_native_freshness,
+        )
+        from .helper_runtime import helper_operation
+
+        try:
+            with helper_operation("never"):
+                live = evaluate_documentation_native_freshness(
+                    knowledge=knowledge,
+                    manifest=manifest,
+                    source_root=source_root,
+                    trust_source_plugins=False,
+                )
+        except DocumentationNativeError as exc:
+            raise PublicationSnapshotError(
+                "publication-native-freshness", str(exc)
+            ) from exc
+        if not live.current:
+            raise PublicationSnapshotError(
+                "publication-native-stale",
+                "Native wiki evidence is stale for architecture.source_root: "
+                + ", ".join(live.reasons[:5]),
+            )
+        freshness = {"scope": "live-source", "state": "verified-current"}
     extension = knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
     ownership_by_page = (
         {
@@ -319,7 +348,7 @@ def _build_snapshot(root: Path) -> dict[str, Any]:
             "section_model": "native-atx/v1",
             "source_mapping": "non-exhaustive",
         },
-        "freshness": {"scope": "snapshot-only", "state": "not-evaluated"},
+        "freshness": freshness,
         "commitments": {
             "source_snapshot_hash": snapshot.source_snapshot_hash,
             "markdown_snapshot_hash": snapshot.markdown_snapshot_hash,

@@ -93,4 +93,4 @@ flowchart LR
 | `_validated_directory` | call | [documentation_native](../modules/documentation_native.md) | 2 |
 | `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

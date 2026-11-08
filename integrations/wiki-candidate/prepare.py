@@ -21,6 +21,7 @@ from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.publication_config import (
     load_publication_config,
     publication_path,
+    publication_source_root,
 )
 from llm_wiki_cli.services.source_retirement import retired_entity_mappings
 
@@ -56,7 +57,7 @@ def prepare(
         )
     architecture = policy["architecture"]
     existing = architecture["baseline"] == "existing-wiki"
-    relative_source = source_dir if existing else architecture["root"]
+    relative_source = publication_source_root(architecture, source_dir)
     source = publication_path(consumer, relative_source)
     if not source.is_dir():
         raise ValueError(f"Source directory is missing: {relative_source}")

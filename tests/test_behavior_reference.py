@@ -4,14 +4,22 @@ from copy import deepcopy
 from importlib import metadata, resources
 import json
 from pathlib import Path
+import subprocess
+import sys
 from types import MappingProxyType
 
 import pytest
 from jsonschema import Draft202012Validator
 
+import llm_wiki_cli
 from llm_wiki_cli import config
 from llm_wiki_cli.services import behavior_reference as reference
-from llm_wiki_cli.services import current_contracts, skills, task_contract
+from llm_wiki_cli.services import (
+    cli_reference,
+    current_contracts,
+    skills,
+    task_contract,
+)
 from llm_wiki_cli.services.knowledge_evidence import hash_json
 
 
@@ -27,9 +35,7 @@ def test_packaged_metadata_must_belong_to_loaded_provider(tmp_path, monkeypatch)
     installed = location / "agent_wiki_cli-2.0.dist-info"
     installed.mkdir(parents=True)
     monkeypatch.setattr(
-        reference,
-        "__file__",
-        str(location / "llm_wiki_cli/services/behavior_reference.py"),
+        llm_wiki_cli, "__file__", str(location / "llm_wiki_cli/__init__.py")
     )
     (installed / "METADATA").write_text(
         "Name: agent-wiki-cli\nVersion: 2.0\n", encoding="utf-8"
@@ -40,11 +46,15 @@ def test_packaged_metadata_must_belong_to_loaded_provider(tmp_path, monkeypatch)
         "Name: agent-wiki-cli\nVersion: 2.0\nRequires-Python: >=3.12\n",
         encoding="utf-8",
     )
-    assert reference.get_behavior_facts()["facts"]["package"] == {
-        "name": "agent-wiki-cli",
-        "version": "2.0",
-        "requires_python": ">=3.12",
-    }
+    assert (
+        cli_reference.get_cli_contract()["package"]
+        == reference.get_behavior_facts()["facts"]["package"]
+        == {
+            "name": "agent-wiki-cli",
+            "version": "2.0",
+            "requires_python": ">=3.12",
+        }
+    )
 
 
 def test_provider_checkout_prefers_owned_project_metadata_over_old_egg_info(
@@ -57,19 +67,21 @@ def test_provider_checkout_prefers_owned_project_metadata_over_old_egg_info(
         "Name: agent-wiki-cli\nVersion: 1\nRequires-Python: >=3.10\n", encoding="utf-8"
     )
     monkeypatch.setattr(
-        reference,
-        "__file__",
-        str(source / "llm_wiki_cli/services/behavior_reference.py"),
+        llm_wiki_cli, "__file__", str(source / "llm_wiki_cli/__init__.py")
     )
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname="agent-wiki-cli"\nversion="2"\nrequires-python=">=3.11"\n',
         encoding="utf-8",
     )
-    assert reference.get_behavior_facts()["facts"]["package"] == {
-        "name": "agent-wiki-cli",
-        "version": "2",
-        "requires_python": ">=3.11",
-    }
+    assert (
+        cli_reference.get_cli_contract()["package"]
+        == reference.get_behavior_facts()["facts"]["package"]
+        == {
+            "name": "agent-wiki-cli",
+            "version": "2",
+            "requires_python": ">=3.11",
+        }
+    )
 
 
 def test_wheel_installed_under_foreign_src_reads_its_own_metadata(
@@ -84,16 +96,21 @@ def test_wheel_installed_under_foreign_src_reads_its_own_metadata(
     )
     (dist_info / "WHEEL").write_text("Wheel-Version: 1.0\n", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "consumer"\nversion = "0.1"\n', encoding="utf-8"
+        '[project]\nname = "agent-wiki-cli"\nversion = "2.0"\nrequires-python = "==0"\n',
+        encoding="utf-8",
     )
     monkeypatch.setattr(
-        reference, "__file__", str(site / "llm_wiki_cli/services/behavior_reference.py")
+        llm_wiki_cli, "__file__", str(site / "llm_wiki_cli/__init__.py")
     )
-    assert reference.get_behavior_facts()["facts"]["package"] == {
-        "name": "agent-wiki-cli",
-        "version": "2.0",
-        "requires_python": ">=3.12",
-    }
+    assert (
+        cli_reference.get_cli_contract()["package"]
+        == reference.get_behavior_facts()["facts"]["package"]
+        == {
+            "name": "agent-wiki-cli",
+            "version": "2.0",
+            "requires_python": ">=3.12",
+        }
+    )
 
 
 @pytest.fixture
@@ -178,6 +195,36 @@ def test_unrelated_cwd_and_shadow_distribution_cannot_supply_behavior(
     monkeypatch.chdir(tmp_path)
     monkeypatch.syspath_prepend(str(tmp_path))
     assert reference.get_behavior_facts() == declared
+    # Start a fresh interpreter so the shadow metadata exists before the
+    # provider initializes its version and declares the CLI's version action.
+    script = """
+import json
+import sys
+sys.path[:0] = sys.argv[1:]
+from llm_wiki_cli.services import cli_reference, behavior_reference
+cli = cli_reference.get_cli_contract()
+version = next(arg["version"] for arg in cli["root"]["arguments"] if arg["action"] == "version")
+print(json.dumps([cli["package"], behavior_reference.get_behavior_facts()["facts"]["package"], version]))
+"""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            script,
+            str(tmp_path),
+            str(Path(cli_reference.__file__).resolve().parents[2]),
+        ],
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    package = declared["facts"]["package"]
+    assert json.loads(result.stdout) == [
+        package,
+        package,
+        f"llm-wiki {package['version']}",
+    ]
 
 
 def test_owner_changes_flow_to_new_detached_snapshots(monkeypatch, declared):

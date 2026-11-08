@@ -58,9 +58,9 @@ sequenceDiagram
     participant p14 as _relative_path
     participant p15 as _check_path
     participant p16 as _reference_providers
-    participant p17 as publication_repository
-    participant p18 as _provider
-    participant p19 as artifact_files
+    participant p17 as _provider
+    participant p18 as artifact_files
+    participant p19 as publication_repository
     participant p20 as _array
     participant p21 as _dependency
     participant p22 as publication_ref_name
@@ -88,14 +88,14 @@ sequenceDiagram
     p2->>p14: _relative_path
     p2->>p15: _check_path
     p2->>p16: _reference_providers
-    p2->>p17: publication_repository
-    p4->>p18: _provider
-    p4->>p19: artifact_files
+    p4->>p17: _provider
+    p4->>p18: artifact_files
+    p2->>p19: publication_repository
     p2->>p20: _array
     p2->>p21: _dependency
     p2->>p22: publication_ref_name
     p2->>p23: _content_profile
-    p19->>p24: read_guarded
+    p18->>p24: read_guarded
     p14->>p25: _text
     p7->>p26: path_is_link_or_reparse
     p14->>p27: require_repository_relative_path
@@ -104,9 +104,9 @@ sequenceDiagram
     p0-->>p30: path.write_text (integrations/wiki-candida…ivery/publish.py:__main__)(..., encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 964 interactions; 934 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 976 interactions; 946 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 374 (373 omitted); unresolved 1 of 258 (257 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 375 (374 omitted); unresolved 1 of 266 (265 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -133,9 +133,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 333; effect analysis evaluated: 223, partial: 10, unavailable: 100. Counts include steps omitted from the displayed trace.
+Source steps: 336; effect analysis evaluated: 225, partial: 10, unavailable: 101. Counts include steps omitted from the displayed trace.
 
-Collector observations for 233 source steps with known totals: observed: 1203, emitted: 1150, omitted: 53. Unavailable totals are excluded.
+Collector observations for 235 source steps with known totals: observed: 1217, emitted: 1164, omitted: 53. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

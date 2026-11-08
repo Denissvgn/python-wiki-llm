@@ -1378,6 +1378,7 @@ def test_committed_profile_freezes_intended_product_census():
         "src/llm_wiki_cli/" + path for path in registry["classified_python_files"]
     } | {
         "integrations/github-action/render_summary.py",
+        "integrations/wiki-impact/observe.py",
         "integrations/wiki-candidate/checkout.py",
         "integrations/wiki-candidate/delivery/git_transport.py",
         "integrations/wiki-candidate/delivery/publish.py",

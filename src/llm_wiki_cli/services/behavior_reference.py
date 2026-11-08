@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from functools import lru_cache
-from importlib import metadata, resources
+from importlib import resources
 import json
 from pathlib import Path
-import tomllib
 from typing import Any
 
 from .. import config
@@ -22,62 +21,6 @@ BEHAVIOR_FACTS_SCHEMA_VERSION = "llm-wiki-behavior-facts/v1"
 BEHAVIOR_FACT_GROUPS = ("package", "setup", "storage", "task", "skills")
 MAX_BEHAVIOR_FACTS_BYTES = 1024 * 1024
 _SCHEMA_NAME = "llm-wiki-behavior-facts-v1.schema.json"
-_DISTRIBUTION = "agent-wiki-cli"
-
-
-def _package_facts() -> dict[str, str]:
-    # Scope discovery to the loaded provider. An unrelated project in cwd or
-    # on sys.path can have its own pyproject and distribution metadata.
-    location = Path(__file__).resolve().parents[2]
-    distributions = list(
-        metadata.Distribution.discover(name=_DISTRIBUTION, path=[str(location)])
-    )
-    wheels = [dist for dist in distributions if dist.read_text("WHEEL") is not None]
-    if len(wheels) == 1:
-        return _installed_identity(wheels[0])
-    if wheels:
-        raise ValueError("Multiple installed wheels claim the loaded llm-wiki provider")
-    source_metadata = location.parent / "pyproject.toml"
-    if location.name == "src" and source_metadata.is_file():
-        # Generated egg-info can predate an edit to this provider checkout.
-        try:
-            project = tomllib.loads(source_metadata.read_text(encoding="utf-8"))[
-                "project"
-            ]
-            return _identity(
-                project["name"], project["version"], project["requires-python"]
-            )
-        except (KeyError, TypeError) as exc:
-            raise ValueError("Incomplete provider project metadata") from exc
-    if len(distributions) == 1:
-        return _installed_identity(distributions[0])
-    raise ValueError(
-        "Cannot identify a unique distribution for the loaded llm-wiki provider"
-    )
-
-
-def _installed_identity(distribution: metadata.Distribution) -> dict[str, str]:
-    record = distribution.metadata
-    if any(
-        len(record.get_all(field) or []) != 1
-        for field in ("Name", "Version", "Requires-Python")
-    ):
-        raise ValueError("Incomplete or ambiguous installed provider metadata")
-    return _identity(record["Name"], record["Version"], record["Requires-Python"])
-
-
-def _identity(name: str, version: str, requires_python: str) -> dict[str, str]:
-    if (
-        name != _DISTRIBUTION
-        or not isinstance(version, str)
-        or not version.strip()
-        or not isinstance(requires_python, str)
-        or not requires_python.strip()
-    ):
-        raise ValueError(
-            "The provider must declare its name, version and Python requirement"
-        )
-    return {"name": name, "version": version, "requires_python": requires_python}
 
 
 def _argument(root, commands, dest):
@@ -143,15 +86,11 @@ def _task_facts(root, current) -> dict[str, Any]:
 
 def get_behavior_facts() -> dict[str, Any]:
     """Return detached declarations for the loaded provider without inspecting a consumer wiki."""
-    from ..cli import build_cli_parser
-
-    package = _package_facts()
-    root = cli_reference.build_cli_contract(
-        build_cli_parser(), package=package, program="llm-wiki"
-    )["root"]
+    contract = cli_reference.get_cli_contract()
+    root = contract["root"]
     current = current_contracts.current_contract_defaults()
     facts = {
-        "package": package,
+        "package": contract["package"],
         "setup": {
             "policy": current["policy"],
             "wiki_directory": config.DEFAULT_WIKI_DIR,

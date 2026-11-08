@@ -141,6 +141,25 @@ def test_dirty_consumer_cannot_be_labelled_with_a_commit_id(tmp_path, kind):
         verify(root, head, "", {})
 
 
+@pytest.mark.parametrize("initialized", [True, False])
+def test_submodule_contents_must_match_the_recorded_gitlink(tmp_path, initialized):
+    dependency = tmp_path / "dependency"
+    repository(dependency)
+    root = tmp_path / "consumer"
+    repository(root)
+    git(root, "-c", "protocol.file.allow=always", "submodule", "add", "-q", str(dependency), "vendor/guide")
+    git(root, "commit", "-qm", "Pin documentation dependency")
+    head = git(root, "rev-parse", "HEAD")
+    if not initialized:
+        git(root, "submodule", "deinit", "-q", "-f", "--", "vendor/guide")
+    assert verify(root, head, "", {}) == head
+    local = root / "vendor/guide/ignored/local.md"
+    local.parent.mkdir(parents=True)
+    local.write_bytes(b"Local draft\n")
+    with pytest.raises(ValueError, match="Untracked or ignored|recorded Git revision"):
+        verify(root, head, "", {})
+
+
 def test_pr_uses_the_accepted_blob_from_the_base_in_a_monorepo(tmp_path, monkeypatch):
     root = tmp_path / "project"
     repository(root)

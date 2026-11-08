@@ -202,16 +202,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_ci_workflow | normalize_action_ref | 319 | `normalize_action_ref(action_ref)` |
-| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 74 | `isinstance(value, str)` |
-| normalize_action_ref | _ACTION_REF_RE.fullmatch | 74 | `_ACTION_REF_RE.fullmatch(value)` |
-| normalize_action_ref | InstallCiError | 75 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
-| normalize_action_ref | value.lower | 76 | `value.lower(data not statically known)` |
-| install_ci_workflow | _portable_project_path | 320 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
-| _portable_project_path | _without_github_expression | 111 | `_without_github_expression(_validated_project_path(...), label=label)` |
-| _without_github_expression | InstallCiError | 104 | `InstallCiError(...)` |
-| _portable_project_path | _validated_project_path | 112 | `_validated_project_path(value, label=label)` |
-| _validated_project_path | require_repository_relative_path | 80 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
+| install_ci_workflow | normalize_action_ref | 320 | `normalize_action_ref(action_ref)` |
+| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 75 | `isinstance(value, str)` |
+| normalize_action_ref | _ACTION_REF_RE.fullmatch | 75 | `_ACTION_REF_RE.fullmatch(value)` |
+| normalize_action_ref | InstallCiError | 76 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
+| normalize_action_ref | value.lower | 77 | `value.lower(data not statically known)` |
+| install_ci_workflow | _portable_project_path | 321 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
+| _portable_project_path | _without_github_expression | 112 | `_without_github_expression(_validated_project_path(...), label=label)` |
+| _without_github_expression | InstallCiError | 105 | `InstallCiError(...)` |
+| _portable_project_path | _validated_project_path | 113 | `_validated_project_path(value, label=label)` |
+| _validated_project_path | require_repository_relative_path | 81 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
@@ -222,9 +222,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_action_ref` | `isinstance` | 74 |
-| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 74 |
-| unresolved_call | `normalize_action_ref` | `value.lower` | 76 |
+| external_call | `normalize_action_ref` | `isinstance` | 75 |
+| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 75 |
+| unresolved_call | `normalize_action_ref` | `value.lower` | 77 |
 | external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | step_limit | `install_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_ci_workflow` | `depth limit` | 0 |

@@ -38,7 +38,7 @@ existing native wiki must pass the provider’s integrity and freshness checks.
 | --- | --- |
 | `working-directory` | Consumer project inside the checkout. Defaults to `.`. |
 | `config` | Consumer-relative publication configuration. Defaults to `.llm-wiki/publication.json`. |
-| `src-dir` | Consumer-relative source for an existing native wiki. Defaults to `.`. Source-only projects declare their source in `architecture.root`. |
+| `src-dir` | Consumer-relative source for an existing native wiki. Defaults to `architecture.source_root` when declared and to `.` otherwise. An explicit input must match the declared source root. Source-only projects declare their source in `architecture.root`. |
 | `source-revision` | Expected full commit SHA. The default is the consumer checkout’s HEAD. |
 | `target-dir` | Optional consumer-relative target copy. Omit to render an artifact-only candidate. |
 | `target-revision` | Optional expected full commit SHA of a separate local target Git checkout. A plain tracked copy is identified by its file hashes. |

@@ -51,11 +51,11 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `integrations` (4) |
+| Inbound | `integrations` (5) |
 | Inbound | `src` (10) |
 | Outbound | `src` (5) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -78,6 +78,7 @@ flowchart LR
 | `_check_path` | `(root: Path \| None, path: str, field: str, spellings: dict[tuple[str, ...], tuple[str, ...]]) -> None` | — | — |
 | `publication_path` | `(root: Path, relative: str \| Path) -> Path` | — | Return a confined exact-case path, including a safely absent leaf. |
 | `publication_input_controls` | `(root: Path, config, config_path) -> set[Path]` | — | Reserve implicit discovery inputs, including safely absent coordinates. |
+| `publication_source_root` | `(architecture, source_dir: str \| None = None) -> str` | — | Select the source directory that owns a native or bootstrap publication. |
 | `publication_control_overlap` | `(left: Path, right: Path) -> bool` | — | Compare protected input namespaces across portable filesystem names. |
 | `_section` | `(value: object, field: str) -> str` | — | — |
 | `_dependency` | `(value: object, field: str, root: Path \| None, architecture_root: str, spellings: dict[tuple[str, ...], tuple[str, ...]], reference_providers: Mapping[str, Any]) -> dict[str, Any]` | — | — |

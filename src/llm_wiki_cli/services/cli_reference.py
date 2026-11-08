@@ -6,15 +6,14 @@ import argparse
 from collections.abc import Mapping
 from functools import lru_cache
 import html
-from importlib import metadata, resources
+from importlib import resources
 import json
 import math
 from pathlib import Path
 import re
-import tomllib
 from typing import Any
 
-from .. import __version__
+from .. import _provider_package_identity
 from .knowledge_evidence import hash_json
 from .knowledge_storage_io import read_guarded
 
@@ -267,41 +266,12 @@ def build_cli_contract(
     return result
 
 
-def _package_identity() -> dict[str, Any]:
-    identity = {
-        "name": "agent-wiki-cli",
-        "version": __version__,
-        "requires_python": None,
-    }
-    source_metadata = Path(__file__).parents[3] / "pyproject.toml"
-    try:
-        project = tomllib.loads(source_metadata.read_text(encoding="utf-8"))["project"]
-        if (
-            project.get("name") == identity["name"]
-            and project.get("version") == __version__
-        ):
-            identity["requires_python"] = project.get("requires-python")
-    except (OSError, ValueError, KeyError, TypeError):
-        pass
-    if identity["requires_python"] is None:
-        try:
-            package = metadata.metadata("agent-wiki-cli")
-            if (
-                package["Name"] == identity["name"]
-                and package["Version"] == __version__
-            ):
-                identity["requires_python"] = package["Requires-Python"]
-        except (metadata.PackageNotFoundError, KeyError):
-            pass
-    return identity
-
-
 def get_cli_contract() -> dict[str, Any]:
     """Describe the installed llm-wiki CLI through its public parser owner."""
     from ..cli import build_cli_parser
 
     return build_cli_contract(
-        build_cli_parser(), package=_package_identity(), program="llm-wiki"
+        build_cli_parser(), package=_provider_package_identity(), program="llm-wiki"
     )
 
 

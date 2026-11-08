@@ -448,8 +448,7 @@ llm-wiki docs prepare \
 
 At import time the snapshot service:
 
-- requires `index.md` and recognizes legacy, manifest v4, and current manifest
-  v5 metadata forms;
+- requires `index.md` and recognizes legacy inputs and manifest versions 4–8;
 - copies eligible regular files byte-for-byte before any workspace refresh;
 - records input-tree, per-file, initial-snapshot, schema, generated-owner, and
   semantic-page evidence;
@@ -471,7 +470,7 @@ The accepted metadata forms are deliberately distinct:
 | No metadata and a canonical `index.md` | Preserve the legacy index-only behavior. |
 | Manifest v4 plus its surface index, with no knowledge index | Validate and preserve the pre-native pair. |
 | Markerless manifest v5 plus its surface index, with no knowledge index | Validate the v5 surface-only state without claiming native knowledge. |
-| Marked manifest v5 plus matching surface and knowledge indexes | Validate the complete native projection as one committed trio. |
+| Native manifest v5–v8 with matching surface and knowledge indexes | Validate the complete native projection, including referenced storage objects. Adopted v7 and v8 manifests also require the matching maintenance adoption marker. |
 
 An orphan artifact, partial or mixed trio, unexpected knowledge index, corrupt
 JSON, unsupported future version, marker mismatch, cross-artifact mismatch, or
@@ -480,8 +479,9 @@ guarded bytes collected during the bounded snapshot; it does not reopen an
 untrusted artifact by pathname. Artifact metadata is inert and cannot select or
 execute a source plugin.
 
-Manifest v5 is the current writer format. The manifest, surface index, and
-knowledge index are controller-owned generated artifacts in the workspace.
+Current project setup selects an indexed-v8 manifest and packed-v4-deflate
+knowledge. The manifest, surface index, and knowledge index are
+controller-owned generated artifacts in the workspace.
 Their fingerprints are part of generated ownership, and workers must never
 edit, remove, add, or regenerate them. A v4 or markerless v5 input remains
 representable without fabricating a knowledge fingerprint.
@@ -498,7 +498,7 @@ Choose the policy explicitly:
 - `require-current` fails closed unless the source is available and compatible.
   For manifest v4, the current supported-source inventory must have the same
   paths and hashes as the imported manifest, and recorded generation inputs
-  such as OpenAPI must still match. For a manifest v5 native trio, the same
+  such as OpenAPI must still match. For a native snapshot, the same
   source comparison is combined with independent live evaluation of the
   effective generation options, deep-inventory policy, semantic-preservation
   default, extractor registry, and explicitly trusted producer commitments.
@@ -643,7 +643,7 @@ sampled canonical Markdown page; partial or blocked reviews may return without
 one and remain resumable. A false claim or forbidden write blocks the run.
 
 After accepting a worker result that changes canonical Markdown, the supervisor
-refreshes the manifest v5 surface/knowledge projection from the verified source,
+refreshes the native surface and knowledge projections from the verified source,
 records the native commit, and re-anchors generated ownership before running
 later validation or dispatching another packet. This applies to both semantic
 wiki enrichment and user-documentation edits. Workers report only their

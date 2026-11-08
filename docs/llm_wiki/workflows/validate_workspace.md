@@ -12,7 +12,8 @@
 4. `workspace._load_bound_runtime_policy`
 5. `publication_config.publication_path`
 6. `source_selection.resolve_source_selection`
-7. `integrity._verify_read_only_inputs`
+7. `publication_config.publication_path`
+8. `integrity._verify_read_only_inputs`
 
 ## Touches
 

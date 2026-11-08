@@ -575,6 +575,100 @@ def _slug(text: str) -> str:
     )
 
 
+def _heading_coordinates(tokens):
+    used = set()
+    for index, token in enumerate(tokens):
+        if token.type != "heading_open":
+            continue
+        children = tokens[index + 1].children or []
+        base = _slug(_plain(children))
+        anchor, suffix = base, 0
+        while anchor in used:
+            suffix += 1
+            anchor = f"{base}-{suffix}"
+        used.add(anchor)
+        yield token, children, base, anchor
+
+
+def _page_html(tokens):
+    html = _HTML()
+    for token in tokens:
+        if token.type == "html_block":
+            html.feed(token.content)
+        for child in token.children or []:
+            if child.type == "html_inline":
+                html.feed(child.content)
+    html.close()
+    return html
+
+
+def _simple_atx_section(text, anchor):
+    """Resolve only unambiguous top-level ATX documents without the optional parser."""
+    from .markdown_sections import parse_markdown_document
+
+    for line in text.split("\n"):
+        if not line.strip() or re.match(r"^#{1,6}(?:[ \t]|$)", line):
+            continue
+        if not re.fullmatch(r"[^\W_](?:[^\W_]|[ .,!?:;()/+-])*", line) or re.match(
+            r"[0-9]{1,9}[.)][ \t]", line
+        ):
+            return None
+    sections = parse_markdown_document(text, "publication://target").sections
+    if any(
+        not re.fullmatch(r"(?:[^\W_]|[ .()/+-]|`[\w./+-]+`)+", section.title)
+        for section in sections
+    ):
+        return None
+    if len({_slug(section.title) for section in sections}) != len(sections):
+        return None
+    matches = [section for section in sections if _slug(section.title) == anchor]
+    return matches[0].exact_bytes if len(matches) == 1 else None
+
+
+def public_atx_section(markdown: str, anchor: str) -> bytes | None:
+    """Return the rendered, unique plain ATX section, preserving its normalized bytes."""
+    from .markdown_sections import normalize_markdown
+
+    text = normalize_markdown(markdown)
+    if re.match(r"\A\ufeff?---[ \t]*\n", text):
+        return None
+    try:
+        tokens, _ = _parse(text)
+    except ValueError as exc:
+        if isinstance(exc.__cause__, ImportError):
+            return _simple_atx_section(text, anchor)
+        raise
+    headings = list(_heading_coordinates(tokens))
+    matches = [
+        index for index, (_, _, base, _) in enumerate(headings) if base == anchor
+    ]
+    if len(matches) != 1 or anchor in _page_html(tokens).anchors:
+        return None
+    index = matches[0]
+    heading, children, _, actual = headings[index]
+    if (
+        actual != anchor
+        or heading.map is None
+        or not heading.markup.startswith("#")
+        or heading.level != 0
+        or any(child.type not in {"text", "code_inline"} for child in children)
+    ):
+        return None
+    offsets = _line_offsets(text)
+    start = offsets[heading.map[0]]
+    end = next(
+        (
+            offsets[token.map[0]]
+            for token, _, _, _ in headings[index + 1 :]
+            if token.map is not None
+            and token.level == 0
+            and int(token.tag[1]) <= int(heading.tag[1])
+        ),
+        len(text),
+    )
+    return text[start:end].encode("utf-8")
+
+
 def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
     """Check a complete candidate without filesystem or network access."""
     findings: set[tuple[str, str, str]] = set()
@@ -687,9 +781,9 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
             issue(path, "page-collision", "Wiki page routes collide")
         routes[folded] = path
         pages[path] = (text, tokens, environment)
-        used = set()
-        html = _HTML()
-        for index, token in enumerate(tokens):
+        used = {anchor for _, _, _, anchor in _heading_coordinates(tokens)}
+        html = _page_html(tokens)
+        for token in tokens:
             if (
                 token.type == "fence"
                 and token.info.strip().casefold() == "mermaid"
@@ -700,19 +794,6 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
                     "unsupported-diagram-link",
                     "Interactive diagram links require explicit supported Markdown navigation",
                 )
-            if token.type == "heading_open":
-                base = _slug(_plain(tokens[index + 1].children))
-                anchor, number = base, 0
-                while anchor in used:
-                    number += 1
-                    anchor = f"{base}-{number}"
-                used.add(anchor)
-            if token.type == "html_block":
-                html.feed(token.content)
-            for child in token.children or []:
-                if child.type == "html_inline":
-                    html.feed(child.content)
-        html.close()
         for anchor in html.anchors:
             if anchor in used:
                 issue(

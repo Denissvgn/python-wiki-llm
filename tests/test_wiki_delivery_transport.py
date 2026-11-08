@@ -341,6 +341,41 @@ def test_failed_readback_requires_reconciliation_and_never_repushes(
     assert transport.deliver(**options, **candidate)["target_revision"] == landed
 
 
+@pytest.mark.parametrize("operation", ["deliver", "rollback"])
+def test_replay_reconstructs_the_reviewed_git_tree_including_file_modes(
+    repos, tmp_path, monkeypatch, operation
+):
+    source, options = repos
+    candidate = prepare(source, tmp_path)
+    target = options["target_remote"]
+    base = head(target)
+    delivered = transport.deliver(**options, **candidate)
+    retry_options = {**options, **candidate}
+    if operation == "rollback":
+        restore = {
+            **options, "source_revision": head(source),
+            "target_revision": delivered["target_revision"], "restore_revision": base,
+        }
+        plan = transport.preview_rollback(**restore)
+        transport.rollback(**restore, accepted_rollback_id=plan["rollback_id"])
+        retry_options = {**restore, "accepted_rollback_id": plan["rollback_id"]}
+
+    landed = head(target)
+    parent = git(target, "rev-parse", f"{landed}^").decode().strip()
+    # Rebuild the same direct child of the reviewed base with identical blobs
+    # and checkpoint, but a different mode for an owned/restored page.
+    listing = git(target, "ls-tree", "-z", landed).split(b"\0")
+    changed = [row.replace(b"100644 ", b"100755 ", 1) if row.endswith(b"\tHome.md") else row for row in listing]
+    assert listing != changed
+    tree = git(target, "mktree", "-z", raw=b"\0".join(changed)).decode().strip()
+    replacement = git(target, "commit-tree", tree, "-p", parent, raw=b"Mode correction\n").decode().strip()
+    git(target, "update-ref", "refs/heads/pages", replacement, landed)
+    monkeypatch.setattr(transport, "_push", lambda *args: pytest.fail("A replay wrote to the wiki"))
+    with pytest.raises(transport.DeliveryError, match="reviewed Git tree"):
+        getattr(transport, operation)(**retry_options)
+    assert head(target) == replacement
+
+
 def test_read_only_qualification_default_branches_and_exact_release_tag(repos):
     source, options = repos
     target = options["target_remote"]

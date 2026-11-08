@@ -100,7 +100,7 @@ def run(mode: str) -> None:
     helpers = runtime / "helpers"
     os.environ["LLM_WIKI_CACHE_DIR"] = str(helpers)
     config = action_input("config", ".llm-wiki/publication.json")
-    source_dir = action_input("src-dir", ".")
+    source_dir = action_input("src-dir")
     source_revision = action_input("source-revision")
     target_dir, target_revision = action_input("target-dir"), action_input("target-revision")
     accepted = {name: action_input(name) for name in ACCEPTED if action_input(name)}

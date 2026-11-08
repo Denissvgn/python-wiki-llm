@@ -12,7 +12,7 @@ Portable installation of the managed integrity and documentation CI workflows.
 |--------|---------|
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.io` | `first_unsafe_path_component` |
-| `.publication_config` | `PUBLICATION_CONFIG_PATH`, `PublicationConfigError`, `load_publication_config`, `publication_control_overlap`, `publication_path` |
+| `.publication_config` | `PUBLICATION_CONFIG_PATH`, `PublicationConfigError`, `load_publication_config`, `publication_control_overlap`, `publication_path`, `publication_source_root` |
 | `.source_selection` | `SourceSelectionError`, `locate_exact_repository_path`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.validation` | `require_repository_relative_path` |
@@ -98,8 +98,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [InstallCiError](../entities/InstallCiError.md) | 53 | `ValueError` | Raised when a portable CI workflow cannot be installed safely. |
-| [InstallCiResult](../entities/InstallCiResult.md) | 58 | — | Outcome of one workflow installation attempt. |
+| [InstallCiError](../entities/InstallCiError.md) | 54 | `ValueError` | Raised when a portable CI workflow cannot be installed safely. |
+| [InstallCiResult](../entities/InstallCiResult.md) | 59 | — | Outcome of one workflow installation attempt. |
 
 ## Functions
 
@@ -118,7 +118,7 @@ flowchart LR
 | `is_unmodified_managed_workflow` | `(content: bytes, *, workflow_path: Path \| None = None) -> bool` | — | Return whether bytes carry a valid installer ownership checksum. |
 | `_validate_workflow_target` | `(project_root: Path, workflow_path: Path) -> Path` | — | — |
 | `install_ci_workflow` | `(*, action_ref: str, src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Create or safely update the repository's managed integrity workflow. |
-| `install_documentation_ci_workflow` | `(*, action_ref: str, config: str = PUBLICATION_CONFIG_PATH, working_directory: str = '.', src_dir: str = '.', target_dir: str \| None = None, baseline: str \| None = None, reviews: str \| None = None, previous_receipt: str \| None = None, candidate_review: str \| None = None, require_ready: bool = False, dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Install a read-only candidate workflow for a configured consumer project. |
+| `install_documentation_ci_workflow` | `(*, action_ref: str, config: str = PUBLICATION_CONFIG_PATH, working_directory: str = '.', src_dir: str \| None = None, target_dir: str \| None = None, baseline: str \| None = None, reviews: str \| None = None, previous_receipt: str \| None = None, candidate_review: str \| None = None, require_ready: bool = False, dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Install a read-only candidate workflow for a configured consumer project. |
 | `_documentation_workflow` | `(action_ref: str, inputs: dict[str, str]) -> bytes` | — | — |
 | `_project_root` | `(project_root: str \| Path \| None) -> Path` | — | — |
 | `_install_workflow` | `(root: Path, workflow_path: Path, desired: bytes, canonical_ref: str, *, dry_run: bool, force: bool) -> InstallCiResult` | — | — |

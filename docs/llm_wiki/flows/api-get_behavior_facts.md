@@ -2,7 +2,7 @@
 
 **Entry point:** `get_behavior_facts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [change_selection](../modules/change_selection.md), [cli](../modules/cli.md), and 16 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [change_selection](../modules/change_selection.md), [cli](../modules/cli.md), and 15 more
 
 **Complete modules touched:**
 
@@ -12,13 +12,12 @@
 - [cli](../modules/cli.md)
 - [cli_reference](../modules/cli_reference.md)
 - [current_contracts](../modules/current_contracts.md)
-- [docs_cmd](../modules/docs_cmd.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [publication_cmd](../modules/publication_cmd.md)
+- [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
 - [reference_cmd](../modules/reference_cmd.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
@@ -36,84 +35,84 @@
 sequenceDiagram
     participant p0 as get_behavior_facts (src/llm_wiki_cli/api.py)
     participant p1 as get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)
-    participant p2 as _package_facts
-    participant p3 as build_cli_contract
-    participant p4 as build_cli_parser
-    participant p5 as _task_facts
-    participant p6 as list_bundled_skills
-    participant p7 as validate_behavior_facts
-    participant p8 as _build_parser
-    participant p9 as normalize_task_request
-    participant p10 as _value
-    participant p11 as normalize_view_options
-    participant p12 as _request_defaults
-    participant p13 as _command
-    participant p14 as hash_json
-    participant p15 as validate_cli_contract
-    participant p16 as read_md
-    participant p17 as _installed_identity
-    participant p18 as _validate_paths
-    participant p19 as _json_tree
-    participant p20 as exact_fields
-    participant p21 as require_portable_relative_path
-    participant p22 as canonical_json_bytes
-    participant p23 as _register_commands
-    participant p24 as _add_helper_preparation_arguments
-    participant p25 as bounded_text
-    participant p26 as _validate_schema
-    participant p27 as _validate_command
-    participant p28 as _text
+    participant p2 as get_cli_contract
+    participant p3 as _task_facts
+    participant p4 as list_bundled_skills
+    participant p5 as validate_behavior_facts
+    participant p6 as build_cli_contract
+    participant p7 as normalize_task_request
+    participant p8 as build_cli_parser
+    participant p9 as _provider_package_identity
+    participant p10 as normalize_view_options
+    participant p11 as _request_defaults
+    participant p12 as read_md
+    participant p13 as _validate_paths
+    participant p14 as _build_parser
+    participant p15 as exact_fields
+    participant p16 as require_portable_relative_path
+    participant p17 as _value
+    participant p18 as _command
+    participant p19 as bounded_text
+    participant p20 as hash_json
+    participant p21 as validate_cli_contract
+    participant p22 as _installed_identity
+    participant p23 as _array
+    participant p24 as coordinate
+    participant p25 as validate_changes
+    participant p26 as normalize_profile
+    participant p27 as content_id
+    participant p28 as _json_tree
     participant p29 as dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)
     participant p30 as skill.to_dict
     p0->>p1: get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)
-    p1->>p2: _package_facts
-    p1->>p3: build_cli_contract
-    p1->>p4: build_cli_parser
-    p1->>p5: _task_facts
-    p1->>p6: list_bundled_skills
-    p1->>p7: validate_behavior_facts
-    p4->>p8: _build_parser
-    p5->>p9: normalize_task_request
-    p3->>p10: _value
-    p5->>p11: normalize_view_options
-    p5->>p12: _request_defaults
-    p3->>p13: _command
-    p3->>p14: hash_json
-    p3->>p15: validate_cli_contract
-    p6->>p16: read_md
-    p2->>p17: _installed_identity
-    p7->>p18: _validate_paths
-    p15->>p19: _json_tree
-    p9->>p20: exact_fields
-    p18->>p21: require_portable_relative_path
-    p14->>p22: canonical_json_bytes
-    p8->>p23: _register_commands
-    p8->>p24: _add_helper_preparation_arguments
-    p9->>p25: bounded_text
-    p15->>p26: _validate_schema
-    p15->>p27: _validate_command
-    p13->>p28: _text
+    p1->>p2: get_cli_contract
+    p1->>p3: _task_facts
+    p1->>p4: list_bundled_skills
+    p1->>p5: validate_behavior_facts
+    p2->>p6: build_cli_contract
+    p3->>p7: normalize_task_request
+    p2->>p8: build_cli_parser
+    p2->>p9: _provider_package_identity
+    p3->>p10: normalize_view_options
+    p3->>p11: _request_defaults
+    p4->>p12: read_md
+    p5->>p13: _validate_paths
+    p8->>p14: _build_parser
+    p7->>p15: exact_fields
+    p13->>p16: require_portable_relative_path
+    p6->>p17: _value
+    p6->>p18: _command
+    p7->>p19: bounded_text
+    p6->>p20: hash_json
+    p6->>p21: validate_cli_contract
+    p9->>p22: _installed_identity
+    p7->>p23: _array
+    p7->>p24: coordinate
+    p7->>p25: validate_changes
+    p7->>p26: normalize_profile
+    p7->>p27: content_id
+    p21->>p28: _json_tree
     p1-->>p29: dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)(config._DEFAULT_CONFIG)
     p1-->>p30: skill.to_dict
 ```
 
-> Call sequence diagram shows 30 of 1269 interactions; 1239 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 600 interactions; 570 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 230 (229 omitted); unresolved 1 of 709 (708 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 211 (210 omitted); unresolved 1 of 154 (153 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/behavior_reference.py:_package_facts` | 3 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_package_facts` | 3 | - | external | 10 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_installed_identity` | 11 | - | external | 3 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_installed_identity` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_installed_identity` | 11 | [src/llm_wiki_cli/services/behavior_reference.py](../modules/behavior_reference.md) | internal | 1 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_identity` | 16 | - | external | 3 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_identity` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/behavior_reference.py:_package_facts` | 3 | [src/llm_wiki_cli/services/behavior_reference.py](../modules/behavior_reference.md) | internal | 2 |
-> Omission summary shows 8 of 210 groups; 202 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/cli_reference.py:build_cli_contract` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/services/cli_reference.py:build_cli_contract` | 4 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 1 |
+| `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 5 |
+| `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | external | 9 |
+| `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | external | 24 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | unresolved | 14 |
+> Omission summary shows 8 of 132 groups; 124 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 331; effect analysis evaluated: 258, partial: 5, unavailable: 68. Counts include steps omitted from the displayed trace.
+Source steps: 236; effect analysis evaluated: 165, partial: 5, unavailable: 66. Counts include steps omitted from the displayed trace.
 
-Collector observations for 263 source steps with known totals: observed: 970, emitted: 953, omitted: 17. Unavailable totals are excluded.
+Collector observations for 170 source steps with known totals: observed: 805, emitted: 788, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -138,53 +137,50 @@ Collector observations for 263 source steps with known totals: observed: 970, em
 |---|---|---|---|---:|---:|---:|
 | `get_behavior_facts (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
 | `get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `_package_facts` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `Path(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `list (src/llm_wiki_cli/services…ference.py:_package_facts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `metadata.Distribution.discover` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dist.read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services…ference.py:_package_facts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_installed_identity` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `any (src/llm_wiki_cli/services…ce.py:_installed_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `get_cli_contract` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `build_cli_contract` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_value` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. get_behavior_facts (src/llm_wiki_cli/api.py)"]
     s2["2. get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)"]
-    s3["3. _package_facts"]
-    s4["4. Path(…).resolve"]
-    s5["5. Path"]
-    s6["6. list (src/llm_wiki_cli/services…ference.py:_package_facts)"]
-    s7["7. metadata.Distribution.discover"]
-    s8["8. str"]
-    s9["9. dist.read_text"]
-    s10["10. len (src/llm_wiki_cli/services…ference.py:_package_facts)"]
-    s11["11. _installed_identity"]
-    s12["12. any (src/llm_wiki_cli/services…ce.py:_installed_identity)"]
+    s3["3. get_cli_contract"]
+    s4["4. build_cli_contract"]
+    s5["5. isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)"]
+    s6["6. CLIReferenceError"]
+    s7["7. _value"]
+    s8["8. CLIReferenceError"]
+    s9["9. isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)"]
+    s10["10. value.is_absolute"]
+    s11["11. CLIReferenceError"]
+    s12["12. value.as_posix"]
     s1 -->|"get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)(data not statically known)"| s2
-    s2 -->|"_package_facts(data not statically known)"| s3
-    s3 -. "Path(…).resolve(data not statically known)" .-> s4
-    s3 -. "Path(__file__)" .-> s5
-    s3 -. "list (src/llm_wiki_cli/services…ference.py:_package_facts)(metadata.Distribution.discover(...))" .-> s6
-    s3 -. "metadata.Distribution.discover(name=_DISTRIBUTION, path=[...])" .-> s7
-    s3 -. "str(location)" .-> s8
-    s3 -. "dist.read_text('WHEEL')" .-> s9
-    s3 -. "len (src/llm_wiki_cli/services…ference.py:_package_facts)(wheels)" .-> s10
-    s3 -->|"_installed_identity(wheels[...])"| s11
-    s11 -. "any (src/llm_wiki_cli/services…ce.py:_installed_identity)(...)" .-> s12
-    b0["filesystem_read dist.read_text"]
-    s3 -. "filesystem_read dist.read_text" .-> b0
-    b1["filesystem_read source_metadata.read_text"]
-    s3 -. "filesystem_read source_metadata.read_text" .-> b1
+    s2 -->|"get_cli_contract(data not statically known)"| s3
+    s3 -->|"build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')"| s4
+    s4 -. "isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)(parser, argparse.ArgumentParser)" .-> s5
+    s4 -->|"CLIReferenceError('Reference generation requires an ArgumentParser')"| s6
+    s4 -->|"_value(dict(...))"| s7
+    s7 -->|"CLIReferenceError('Reference values exceed the supported nesting depth')"| s8
+    s7 -. "isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)(value, Path)" .-> s9
+    s7 -. "value.is_absolute(data not statically known)" .-> s10
+    s7 -->|"CLIReferenceError('Reference defaults cannot contain live absolute Path objects')"| s11
+    s7 -. "value.as_posix(data not statically known)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/behavior_reference.md"
-    click s3 "../modules/behavior_reference.md"
-    click s11 "../modules/behavior_reference.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
-    class b1 boundary
+    click s3 "../modules/cli_reference.md"
+    click s4 "../modules/cli_reference.md"
+    click s6 "../modules/cli_reference.md"
+    click s7 "../modules/cli_reference.md"
+    click s8 "../modules/cli_reference.md"
+    click s11 "../modules/cli_reference.md"
 ```
 
 ### Step data
@@ -193,47 +189,45 @@ flowchart LR
 |---|---|---|---|---|
 | `get_behavior_facts (src/llm_wiki_cli/api.py)` | - | - | - | `get_facts(...)` |
 | `get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)` | - | `config`, `config`, `config`, `skills`, `BEHAVIOR_FACTS_SCHEMA_VERSION` | - | `result` |
-| `_package_facts` | - | `_DISTRIBUTION` | - | `_installed_identity(...)`, `_identity(...)`, `_installed_identity(...)` |
-| `Path(…).resolve` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `list (src/llm_wiki_cli/services…ference.py:_package_facts)` | - | - | - | - |
-| `metadata.Distribution.discover` | - | - | - | - |
-| `str` | - | - | - | - |
-| `dist.read_text` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…ference.py:_package_facts)` | - | - | - | - |
-| `_installed_identity` | `distribution: metadata.Distribution` | - | - | `_identity(...)` |
-| `any (src/llm_wiki_cli/services…ce.py:_installed_identity)` | - | - | - | - |
+| `get_cli_contract` | - | - | - | `build_cli_contract(...)` |
+| `build_cli_contract` | `parser: argparse.ArgumentParser`, `package: Mapping[str, Any]`, `program: str` | `argparse`, `CLI_CONTRACT_SCHEMA_VERSION` | - | `result` |
+| `isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)` | - | - | - | - |
+| `CLIReferenceError` | - | - | - | - |
+| `_value` | `value: object`, `depth: int` | `_MAX_DEPTH`, `Path`, `Mapping` | - | `value`, `value`, `value`, `...`, `...` |
+| `CLIReferenceError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | - | - | - | - |
+| `value.is_absolute` | - | - | - | - |
+| `CLIReferenceError` | - | - | - | - |
+| `value.as_posix` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | get_behavior_facts (src/llm_wiki_cli/api.py) | get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3593 | `get_facts(data not statically known)` |
-| get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _package_facts | 148 | `_package_facts(data not statically known)` |
-| _package_facts | Path(…).resolve | 31 | `Path(__file__).resolve(data not statically known)` |
-| _package_facts | Path | 31 | `Path(__file__)` |
-| _package_facts | list (src/llm_wiki_cli/services…ference.py:_package_facts) | 32 | `list(metadata.Distribution.discover(...))` |
-| _package_facts | metadata.Distribution.discover | 33 | `metadata.Distribution.discover(name=_DISTRIBUTION, path=[...])` |
-| _package_facts | str | 33 | `str(location)` |
-| _package_facts | dist.read_text | 35 | `dist.read_text('WHEEL')` |
-| _package_facts | len (src/llm_wiki_cli/services…ference.py:_package_facts) | 36 | `len(wheels)` |
-| _package_facts | _installed_identity | 37 | `_installed_identity(wheels[...])` |
-| _installed_identity | any (src/llm_wiki_cli/services…ce.py:_installed_identity) | 61 | `any(...)` |
+| get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | get_cli_contract | 89 | `cli_reference.get_cli_contract(data not statically known)` |
+| get_cli_contract | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
+| build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
+| build_cli_contract | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
+| build_cli_contract | _value | 260 | `_value(dict(...))` |
+| _value | CLIReferenceError | 70 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
+| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 71 | `isinstance(value, Path)` |
+| _value | value.is_absolute | 72 | `value.is_absolute(data not statically known)` |
+| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | value.as_posix | 76 | `value.as_posix(data not statically known)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| filesystem_read | `dist.read_text` | `_package_facts` | 35 |
-| filesystem_read | `source_metadata.read_text` | `_package_facts` | 44 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_package_facts` | `Path(__file__).resolve` | 31 |
-| external_call | `_package_facts` | `metadata.Distribution.discover` | 33 |
-| external_call | `_installed_identity` | `any` | 61 |
+| external_call | `build_cli_contract` | `isinstance` | 256 |
+| external_call | `_value` | `isinstance` | 71 |
+| unresolved_call | `_value` | `value.is_absolute` | 72 |
+| unresolved_call | `_value` | `value.as_posix` | 76 |
 | step_limit | `get_behavior_facts` | `first 12 steps` | 0 |
 | truncated_flow | `get_behavior_facts` | `depth limit` | 0 |
 

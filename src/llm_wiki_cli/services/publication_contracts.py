@@ -340,7 +340,7 @@ def _sections(value: object, page: Mapping[str, Any], field: str) -> None:
         _fail(field, "section ordering commitment does not match")
 
 
-def _snapshot(value: object) -> None:
+def _snapshot(value: object, *, live_source: bool) -> None:
     data = _record(
         value,
         "architecture",
@@ -368,8 +368,13 @@ def _snapshot(value: object) -> None:
         or coverage["source_mapping"] != "non-exhaustive"
     ):
         _fail("architecture.coverage", "has unsupported scope qualifications")
-    if data["freshness"] != {"scope": "snapshot-only", "state": "not-evaluated"}:
-        _fail("architecture.freshness", "must retain snapshot-only qualification")
+    freshness = (
+        {"scope": "live-source", "state": "verified-current"}
+        if live_source
+        else {"scope": "snapshot-only", "state": "not-evaluated"}
+    )
+    if data["freshness"] != freshness:
+        _fail("architecture.freshness", "must match the declared source policy")
     commitments = _record(
         data["commitments"],
         "architecture.commitments",
@@ -571,7 +576,10 @@ def _basis(value: object) -> None:
         != data["config"]
     ):
         _fail("config", "must be normalized publication policy")
-    _snapshot(data["architecture"])
+    _snapshot(
+        data["architecture"],
+        live_source="source_root" in data["config"]["architecture"],
+    )
     files = _record(
         data["files"],
         "files",
@@ -686,7 +694,12 @@ def _input(value: object, field: str) -> None:
         data["hash"],
         field + ".hash",
         {"content", "source_basis", "generation_options", "producer"},
+        {"uid", "source_root"},
     )
+    if "uid" in evidence:
+        validate_concept_uid(evidence["uid"])
+    if "source_root" in evidence and evidence["source_root"] != ".":
+        _path(evidence["source_root"], field + ".hash.source_root")
     facets = dependency.get("facets", ["whole"])
     if facets == ["whole"]:
         _hash(evidence["content"], field + ".hash.content")
@@ -705,7 +718,10 @@ def _reasons(value: object, field: str, *, coverage: bool) -> None:
         _fail(field, "must identify at least one reason")
     for reason in reasons:
         data = _record(
-            reason, field, {"kind"}, {"before", "after", "dependencies", "action"}
+            reason,
+            field,
+            {"kind"},
+            {"before", "after", "dependencies", "action", "uid"},
         )
         kind = data["kind"]
         if coverage:
@@ -713,6 +729,13 @@ def _reasons(value: object, field: str, *, coverage: bool) -> None:
             if kind != "architecture-page-unmapped":
                 _fail(field, "coverage finding has an invalid reason")
             _text(data["action"], field + ".action")
+        elif kind == "architecture-page-moved":
+            _record(data, field, {"kind", "before", "after", "uid"})
+            validate_concept_uid(data["uid"])
+            for key in ("before", "after"):
+                _path(data[key], field + "." + key)
+            if data["before"] == data["after"]:
+                _fail(field, "native move must identify distinct paths")
         elif kind == "dependency-changed":
             _record(data, field, {"kind", "before", "after"})
             _input(data["before"], field + ".before")
@@ -725,6 +748,7 @@ def _reasons(value: object, field: str, *, coverage: bool) -> None:
             "initial-review",
             "mapping-changed",
             "mapping-retired",
+            "release-tag-changed",
             "target-missing",
             "target-unresolved-anchor",
             "target-changed",

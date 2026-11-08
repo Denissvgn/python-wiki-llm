@@ -93,7 +93,7 @@ flowchart LR
 | `_tree` | `(repo, parent, before, entries, desired, restore_modes)` | — | — |
 | `_session` | `(*, policy, source_repository, target_repository, source_remote, target_remote, source_revision, source_ref = None, source_token = None, target_token = None)` | `@contextmanager` | — |
 | `_push` | `(session, commit)` | — | — |
-| `_publish` | `(session, before, entries, desired, checkpoint, *, action, restore_modes = None, replay = False)` | — | — |
+| `_publish` | `(session, before, entries, desired, checkpoint, *, action, reviewed_base, restore_modes = None, replay = False)` | — | — |
 | `deliver` | `(*, receipt, files, policy, source_repository, target_repository, source_remote, target_remote, source_ref = None, source_token = None, target_token = None)` | — | Publish one already checked and accepted artifact, with a fresh remote proof. |
 | `_verify_replay` | `(session, base)` | — | — |
 | `qualify` | `(*, policy, source_repository, target_repository, source_remote, target_remote, source_revision, source_ref = None, source_token = None, target_token = None)` | — | Probe reachability of receive-pack without modifying the wiki or treating that as a write proof. |

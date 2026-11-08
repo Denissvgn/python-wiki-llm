@@ -147,6 +147,10 @@ def _validate_workspace(workspace, root, candidate_dir, config):
     elif (
         run.baseline_strategy != "adopt_existing_wiki"
         or runtime["input_wiki_root"] != architecture_root
+        or (
+            "source_root" in arch
+            and source != publication_path(root, arch["source_root"])
+        )
     ):
         raise ValueError(
             "The workspace must adopt the configured native wiki and verify its source"

@@ -10,7 +10,9 @@ LLM Wiki CLI.
 
 | Source | Symbols |
 |--------|---------|
-| `importlib.metadata` | `version`, `PackageNotFoundError` |
+| `importlib` | `metadata` |
+| `pathlib` | `Path` |
+| `tomllib` | `tomllib` |
 
 ## Local dependency map
 
@@ -35,3 +37,11 @@ flowchart LR
 | Inbound | `src` (15) |
 
 > All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+
+## Functions
+
+| Function | Signature | Decorators | Description |
+|----------|-----------|------------|-------------|
+| `_provider_package_identity` | `() -> dict[str, str]` | — | — |
+| `_installed_identity` | `(distribution: metadata.Distribution) -> dict[str, str]` | — | — |
+| `_identity` | `(name: str, version: str, requires_python: str) -> dict[str, str]` | — | — |

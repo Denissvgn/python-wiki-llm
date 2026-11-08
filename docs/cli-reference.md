@@ -468,7 +468,7 @@ uses a cross-platform test-path classifier for the selected flow/dependency
 analysis. `--dry-run` previews ordinary source changes or optional-surface
 initialization, including the surface/knowledge/manifest artifact actions,
 without writing the wiki, manifest, log, index, projections, or cache.
-Selected flow categories and test filtering are persisted in manifest v5 so a
+Selected flow categories and test filtering are persisted in the sync manifest so a
 later ordinary sync cannot silently expand an HTTP-only backfill to every flow.
 Pass `--include-tests go` to include Go `_test.go` files in the synced
 inventory and generated module pages; the default remains production Go source
@@ -2017,10 +2017,12 @@ imported semantic prose; `allow-unverified` permits source-unavailable local
 artifacts but cannot claim source-verified publication readiness.
 
 Existing-wiki adoption preserves legacy index-only inputs and pre-native
-manifest v4/surface pairs. A markerless manifest v5/surface pair remains
-surface-only, while a marked v5 input must contain a matching manifest,
-surface index, and knowledge index whose exact hashes and canonical Markdown
-commitment validate together. Orphan, partial, mixed, corrupt, and future
+manifest v4/surface pairs. A markerless v5 manifest with its surface index
+remains surface-only. Native snapshots in supported manifest formats (v5–v8)
+must include the matching surface and knowledge indexes and all referenced
+storage objects. Their hashes and canonical Markdown commitment must validate
+together. Adopted v7 and v8 manifests also require the matching maintenance
+adoption marker. Orphan, partial, mixed, corrupt, and future
 artifact combinations fail closed. The three native JSON artifacts remain
 controller-owned in the workspace. After an accepted semantic Markdown edit,
 the controller refreshes the native projection and re-anchors generated
@@ -2114,7 +2116,7 @@ contracts that contain no labels, weights, scores, or candidate policy.
 For an adopted manifest v4 wiki, `require-current` builds the current
 supported-source inventory and compares its path set and hashes with the
 imported manifest, along with recorded generation inputs such as OpenAPI. For a
-manifest v5 native trio, it additionally evaluates the current source,
+native snapshot, it additionally evaluates the current source,
 generation options, inventory policy, and trusted producer commitments
 independently of the recorded generation-options hash. An unavailable or failed
 live evaluation remains unverified, while a computed source or generation-basis

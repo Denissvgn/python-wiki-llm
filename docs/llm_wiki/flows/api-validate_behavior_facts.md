@@ -186,14 +186,14 @@ flowchart LR
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3601 | `isinstance(contract, Mapping)` |
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3602 | `ValueError('Behavior facts must be a mapping')` |
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3603 | `validate(dict(...))` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 211 | `isinstance(contract, Mapping)` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 212 | `dict(contract)` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 213 | `cli_reference._json_tree(contract)` |
-| _json_tree | CLIReferenceError | 321 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 322 | `type(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 324 | `type(value)` |
-| _json_tree | math.isfinite | 324 | `math.isfinite(value)` |
-| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 326 | `type(value)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 150 | `isinstance(contract, Mapping)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `dict(contract)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 152 | `cli_reference._json_tree(contract)` |
+| _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 292 | `type(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 294 | `type(value)` |
+| _json_tree | math.isfinite | 294 | `math.isfinite(value)` |
+| _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 296 | `type(value)` |
 
 ### Boundary effects
 
@@ -205,11 +205,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_behavior_facts` | `isinstance` | 3601 |
 | external_call | `validate_behavior_facts` | `ValueError` | 3602 |
-| external_call | `validate_behavior_facts` | `isinstance` | 211 |
-| external_call | `_json_tree` | `type` | 322 |
-| external_call | `_json_tree` | `type` | 324 |
-| external_call | `_json_tree` | `math.isfinite` | 324 |
-| external_call | `_json_tree` | `type` | 326 |
+| external_call | `validate_behavior_facts` | `isinstance` | 150 |
+| external_call | `_json_tree` | `type` | 292 |
+| external_call | `_json_tree` | `type` | 294 |
+| external_call | `_json_tree` | `math.isfinite` | 294 |
+| external_call | `_json_tree` | `type` | 296 |
 | step_limit | `validate_behavior_facts` | `first 12 steps` | 0 |
 
 ## Behavior

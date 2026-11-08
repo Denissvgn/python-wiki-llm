@@ -10,7 +10,7 @@ Deterministic CLI reference data and inert Markdown from parser declarations.
 
 | Source | Symbols |
 |--------|---------|
-| `..` | `__version__` |
+| `..` | `_provider_package_identity` |
 | `..cli` | `build_cli_parser` |
 | `.knowledge_evidence` | `hash_json` |
 | `.knowledge_storage_io` | `read_guarded` |
@@ -19,12 +19,11 @@ Deterministic CLI reference data and inert Markdown from parser declarations.
 | `collections.abc` | `Mapping` |
 | `functools` | `lru_cache` |
 | `html` | `html` |
-| `importlib` | `metadata`, `resources` |
+| `importlib` | `resources` |
 | `json` | `json` |
 | `math` | `math` |
 | `pathlib` | `Path` |
 | `re` | `re` |
-| `tomllib` | `tomllib` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -49,7 +48,6 @@ flowchart LR
     n3 --> n4
     n3 --> n5
     n3 --> n7
-    n4 --> n2
     n4 --> n5
     n4 --> n6
     n4 --> n7
@@ -93,7 +91,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CLIReferenceError](../entities/CLIReferenceError.md) | 46 | `ValueError` | CLI declarations or supplied reference data violate the portable contract. |
+| [CLIReferenceError](../entities/CLIReferenceError.md) | 45 | `ValueError` | CLI declarations or supplied reference data violate the portable contract. |
 
 ## Functions
 
@@ -107,7 +105,6 @@ flowchart LR
 | `_argument` | `(action, identity, group, exclusive)` | — | — |
 | `_command` | `(parser, name, path, *, help_text = None, deprecated = False, seen = None)` | — | — |
 | `build_cli_contract` | `(parser: argparse.ArgumentParser, *, package: Mapping[str, Any], program: str) -> dict[str, Any]` | — | Capture declarations without parsing arguments or executing application code. |
-| `_package_identity` | `() -> dict[str, Any]` | — | — |
 | `get_cli_contract` | `() -> dict[str, Any]` | — | Describe the installed llm-wiki CLI through its public parser owner. |
 | `_schema` | `() -> dict[str, Any]` | `@lru_cache(maxsize=1)` | — |
 | `_json_tree` | `(value: object, depth: int = 0, budget = None) -> None` | — | — |

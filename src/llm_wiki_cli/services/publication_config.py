@@ -221,11 +221,25 @@ def publication_input_controls(root: Path, config, config_path) -> set[Path]:
     """Reserve implicit discovery inputs, including safely absent coordinates."""
     root = Path(root)
     roots = {root, root / config["architecture"]["root"]}
+    if "source_root" in config["architecture"]:
+        roots.add(root / config["architecture"]["source_root"])
     return {root / config_path} | {
         directory / relative
         for directory in roots
         for relative in (".gitignore", SOURCE_SELECTION_PATH)
     }
+
+
+def publication_source_root(architecture, source_dir: str | None = None) -> str:
+    """Select the source directory that owns a native or bootstrap publication."""
+    if architecture["baseline"] == "bootstrap-source":
+        return architecture["root"]
+    declared = architecture.get("source_root")
+    if declared is not None and source_dir and source_dir != declared:
+        raise PublicationConfigError(
+            "architecture.source_root", "differs from the explicit src-dir"
+        )
+    return declared or source_dir or "."
 
 
 def publication_control_overlap(left: Path, right: Path) -> bool:
@@ -692,7 +706,9 @@ def validate_publication_config(
         raise PublicationConfigError(
             "publish", "must be a boolean; enabling delivery requires publication/v2"
         )
-    architecture = _object(data["architecture"], "architecture", {"baseline", "root"})
+    architecture = _object(
+        data["architecture"], "architecture", {"baseline", "root"}, {"source_root"}
+    )
     baseline = _choice(
         architecture["baseline"],
         "architecture.baseline",
@@ -706,6 +722,18 @@ def validate_publication_config(
     spellings: dict[tuple[str, ...], tuple[str, ...]] = {}
     if architecture_root != ".":
         _check_path(root, architecture_root, "architecture.root", spellings)
+    normalized_architecture = {"baseline": baseline, "root": architecture_root}
+    if "source_root" in architecture:
+        if baseline != "existing-wiki":
+            raise PublicationConfigError(
+                "architecture.source_root",
+                "bootstrap-source already declares its source in root",
+            )
+        source = architecture["source_root"]
+        if source != ".":
+            source = _relative_path(source, "architecture.source_root")
+            _check_path(root, source, "architecture.source_root", spellings)
+        normalized_architecture["source_root"] = source
     reference_providers = (
         _reference_providers(data["reference_providers"], root, spellings)
         if "reference_providers" in data
@@ -869,7 +897,7 @@ def validate_publication_config(
     result = {
         "schema_version": schema,
         "source_policy": source_policy,
-        "architecture": {"baseline": baseline, "root": architecture_root},
+        "architecture": normalized_architecture,
         "target": {"kind": kind, "repository": repository},
         "enforcement": enforcement,
         "publish": data["publish"],

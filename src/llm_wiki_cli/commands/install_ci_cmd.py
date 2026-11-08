@@ -15,7 +15,7 @@ from ..services.publication_config import PUBLICATION_CONFIG_PATH
 
 def run(args) -> None:
     profile = getattr(args, "profile", "integrity")
-    src_dir = getattr(args, "src_dir", ".")
+    src_dir = getattr(args, "src_dir", None)
     dry_run = getattr(args, "dry_run", False)
     force = getattr(args, "force", False)
     require_ready = getattr(args, "require_ready", False)
@@ -59,7 +59,7 @@ def run(args) -> None:
                 )
             result = install_ci_workflow(
                 action_ref=args.action_ref,
-                src_dir=src_dir,
+                src_dir="." if src_dir is None else src_dir,
                 dry_run=dry_run,
                 force=force,
                 wiki_dir=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),

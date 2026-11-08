@@ -53,7 +53,7 @@ def verify(source: Path, receipt: Path, revision: str, repository: str) -> None:
             "action_ref": revision, "action_repository": repository, "provider_revision": revision,
             "package_origin": str(package), "package_sha256": fingerprint,
             "version": version, "parser_version": metadata.version("markdown-it-py"),
-            "python": sys.version, "platform": sys.platform,
+            "python": sys.version, "python_implementation": sys.implementation.name, "platform": sys.platform,
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8",
     )
 
@@ -71,7 +71,7 @@ def build_input(provider: Path, runtime: Path) -> tuple[Path, str, str]:
     )
     if ref:
         if not FULL_SHA.fullmatch(ref) or not repository:
-            raise ValueError("Pin the remote candidate action to a full immutable Git SHA")
+            raise ValueError("Pin the remote wiki action to a full immutable Git SHA")
         for name in build_paths:
             path = provider / name
             destination = source / name
@@ -98,7 +98,7 @@ def build_input(provider: Path, runtime: Path) -> tuple[Path, str, str]:
     return source, ref, repository
 
 
-def setup() -> None:
+def setup(*, impact_only: bool = False) -> None:
     workspace = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
     consumer = (workspace / os.environ["INPUT_WORKING_DIRECTORY"]).resolve(strict=True)
     if not consumer.is_dir() or not consumer.is_relative_to(workspace):
@@ -109,15 +109,19 @@ def setup() -> None:
     temporary = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
     if temporary.is_relative_to(workspace):
         raise ValueError("RUNNER_TEMP must be separate from the workspace")
-    runtime = Path(tempfile.mkdtemp(prefix=f"llm-wiki-candidate-{suffix}.", dir=temporary))
+    role = "impact" if impact_only else "candidate"
+    runtime = Path(tempfile.mkdtemp(prefix=f"llm-wiki-{role}-{suffix}.", dir=temporary))
     evidence = runtime / "evidence"
     evidence.mkdir()
     environment = runtime / ".venv"
     python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     receipt = evidence / "provider.json"
+    paths = {"runtime": runtime, "consumer": consumer, "python": python,
+             "evidence-dir": evidence, "provider-receipt": receipt}
+    if impact_only:
+        paths.update({"report-path": evidence / "impact.json", "summary-path": evidence / "impact.md"})
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-        for key, path in {"runtime": runtime, "consumer": consumer, "python": python,
-                          "evidence-dir": evidence, "provider-receipt": receipt}.items():
+        for key, path in paths.items():
             if "\n" in path.as_posix() or "\r" in path.as_posix():
                 raise ValueError("Action paths must be one line")
             output.write(f"{key}={path.as_posix()}\n")
@@ -139,4 +143,4 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["verify"]:
         verify(Path(sys.argv[2]), Path(sys.argv[3]), sys.argv[4], sys.argv[5])
     else:
-        setup()
+        setup(impact_only=sys.argv[1:] == ["impact"])

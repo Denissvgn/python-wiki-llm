@@ -26,14 +26,17 @@ A complete, coherent publication input could not be established.
 flowchart LR
     n0["PublicationSnapshotError (src/llm_wiki_cli/services/publication_snapshot.py)"]
     n1["ValueError"]
-    n2["build_bootstrap_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
-    n3["build_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
+    n2["_build_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
+    n3["build_bootstrap_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
+    n4["build_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/publication_snapshot.md"
     click n2 "../modules/publication_snapshot.md"
     click n3 "../modules/publication_snapshot.md"
+    click n4 "../modules/publication_snapshot.md"
 ```
 
 ### Summary
@@ -52,5 +55,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_build_snapshot` | call | [publication_snapshot](../modules/publication_snapshot.md) | 2 |
 | `build_bootstrap_publication_snapshot` | call | [publication_snapshot](../modules/publication_snapshot.md) | 2 |
 | `build_publication_snapshot` | call | [publication_snapshot](../modules/publication_snapshot.md) | 1 |

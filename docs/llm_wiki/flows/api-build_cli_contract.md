@@ -178,16 +178,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3557 | `build(parser, package=package, program=program)` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 257 | `isinstance(parser, argparse.ArgumentParser)` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 258 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
-| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 261 | `_value(dict(...))` |
-| _value | CLIReferenceError | 71 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
-| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 72 | `isinstance(value, Path)` |
-| _value | value.is_absolute | 73 | `value.is_absolute(data not statically known)` |
-| _value | CLIReferenceError | 74 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
-| _value | value.as_posix | 77 | `value.as_posix(data not statically known)` |
-| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 78 | `type(value)` |
-| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 80 | `type(value)` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
+| build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 260 | `_value(dict(...))` |
+| _value | CLIReferenceError | 70 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
+| _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 71 | `isinstance(value, Path)` |
+| _value | value.is_absolute | 72 | `value.is_absolute(data not statically known)` |
+| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | value.as_posix | 76 | `value.as_posix(data not statically known)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 77 | `type(value)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 79 | `type(value)` |
 
 ### Boundary effects
 
@@ -197,12 +197,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_cli_contract` | `isinstance` | 257 |
-| external_call | `_value` | `isinstance` | 72 |
-| unresolved_call | `_value` | `value.is_absolute` | 73 |
-| unresolved_call | `_value` | `value.as_posix` | 77 |
-| external_call | `_value` | `type` | 78 |
-| external_call | `_value` | `type` | 80 |
+| external_call | `build_cli_contract` | `isinstance` | 256 |
+| external_call | `_value` | `isinstance` | 71 |
+| unresolved_call | `_value` | `value.is_absolute` | 72 |
+| unresolved_call | `_value` | `value.as_posix` | 76 |
+| external_call | `_value` | `type` | 77 |
+| external_call | `_value` | `type` | 79 |
 | step_limit | `build_cli_contract` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -12,11 +12,15 @@ Structural summary only; templates, expressions and referenced files are not eva
 - `reviews`
 - `target-dir`
 - `working-directory`
+- `accepted-state-revision`
+- `observe-drift`
 - `fail-on`
 - `evidence-id`
 
 ## Outputs
 
+- `drift-path`
+- `drift-status`
 - `report-path`
 - `summary-path`
 - `provider-receipt`
@@ -34,6 +38,7 @@ Structural summary only; templates, expressions and referenced files are not eva
 - `Set up the provider Python`
 - `Install and verify the action provider in an isolated environment`
 - `Evaluate local publication impact`
+- `Observe the delivered wiki checkpoint`
 - `Retain publication impact evidence`
 - `Validate the impact report and enforce its policy`
 

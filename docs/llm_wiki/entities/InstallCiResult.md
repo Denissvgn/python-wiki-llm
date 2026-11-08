@@ -1,6 +1,6 @@
 # InstallCiResult
 
-**Location:** `src/llm_wiki_cli/services/ci_installer.py:58`
+**Location:** `src/llm_wiki_cli/services/ci_installer.py:59`
 **Kind:** Class
 **Bases:** —
 **Module:** [ci_installer](../modules/ci_installer.md)

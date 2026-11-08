@@ -75,7 +75,7 @@ flowchart LR
 | `_owned_hashes` | `(data: Mapping[str, Any], field: str) -> None` | — | — |
 | `_preamble` | `(value: object, page: Mapping[str, Any], field: str) -> None` | — | — |
 | `_sections` | `(value: object, page: Mapping[str, Any], field: str) -> None` | — | — |
-| `_snapshot` | `(value: object) -> None` | — | — |
+| `_snapshot` | `(value: object, *, live_source: bool) -> None` | — | — |
 | `_target` | `(value: object, field: str, *, unevaluated: bool = False) -> None` | — | — |
 | `_provider_configuration` | `(value: object, provider: str, field: str) -> Mapping[str, Any]` | — | — |
 | `_references` | `(value: object, config: Mapping[str, Any]) -> None` | — | — |

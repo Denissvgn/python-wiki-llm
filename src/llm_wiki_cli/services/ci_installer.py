@@ -17,6 +17,7 @@ from .publication_config import (
     load_publication_config,
     publication_control_overlap,
     publication_path,
+    publication_source_root,
 )
 from .source_selection import (
     SourceSelectionError,
@@ -350,7 +351,7 @@ def install_documentation_ci_workflow(
     action_ref: str,
     config: str = PUBLICATION_CONFIG_PATH,
     working_directory: str = ".",
-    src_dir: str = ".",
+    src_dir: str | None = None,
     target_dir: str | None = None,
     baseline: str | None = None,
     reviews: str | None = None,
@@ -366,19 +367,30 @@ def install_documentation_ci_workflow(
         raise InstallCiError("require_ready, force and dry_run must be booleans")
     root = _project_root(project_root)
     canonical_ref = normalize_action_ref(action_ref)
+    selected = (
+        _portable_project_path(src_dir, label="--src-dir", allow_root=True)
+        if src_dir is not None
+        else None
+    )
     inputs = {
         "working-directory": _portable_project_path(
             working_directory, label="--working-directory", allow_root=True
         ),
-        "src-dir": _portable_project_path(src_dir, label="--src-dir", allow_root=True),
+        "src-dir": selected or ".",
         "config": _portable_project_path(config, label="--config", allow_root=False),
     }
     consumer = _project_directory(
         root, inputs["working-directory"], label="--working-directory"
     )
-    source_root = _project_directory(consumer, inputs["src-dir"], label="--src-dir")
     try:
         policy = load_publication_config(consumer, config_path=inputs["config"])
+        if policy["architecture"]["baseline"] == "existing-wiki":
+            inputs["src-dir"] = _portable_project_path(
+                publication_source_root(policy["architecture"], selected),
+                label="--src-dir",
+                allow_root=True,
+            )
+        source_root = _project_directory(consumer, inputs["src-dir"], label="--src-dir")
         if "content" not in policy:
             raise InstallCiError(
                 "Documentation CI requires a publication content mapping"

@@ -15,7 +15,7 @@ a local copy of an existing public wiki.
 | --- | --- |
 | New Python project | Set `architecture.baseline` to `bootstrap-source` and `architecture.root` to the Python source directory. Map an authored document to `Home.md`. Local export works before Git initialization and uses the built-in Python extractor. Omit `--target-dir` for the first artifact. |
 | New non-Python project | Use the same source-only configuration. Put the source selection under the configured source root, inspect the helper plan and prepare the helpers it lists. |
-| Existing managed native wiki | Set `architecture.baseline` to `existing-wiki` and `architecture.root` to its native wiki directory. For the candidate action, set `src-dir` to the source directory used to generate that wiki. The action checks integrity and current source evidence before export. |
+| Existing managed native wiki | Set `architecture.baseline` to `existing-wiki`, `architecture.root` to the native wiki directory and `architecture.source_root` to the source used to generate it. Export and check then validate current native evidence locally and in the action. An explicit action `src-dir` must agree with the declared source root. |
 | Manually maintained public wiki | Use either source baseline. Map manual topics with `edit_at: wiki` and run `docs impact --target-dir "Snapshots/Public wiki"` against a local public copy. To move one page to repository ownership, import it with the reviewed before-hash. The other pages, navigation and attachments keep their original bytes. |
 
 For example, for TypeScript under `Application code/`, run the following

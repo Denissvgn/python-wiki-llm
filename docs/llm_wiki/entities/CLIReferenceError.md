@@ -1,6 +1,6 @@
 # CLIReferenceError
 
-**Location:** `src/llm_wiki_cli/services/cli_reference.py:46`
+**Location:** `src/llm_wiki_cli/services/cli_reference.py:45`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [cli_reference](../modules/cli_reference.md)

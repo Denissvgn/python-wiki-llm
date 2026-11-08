@@ -37,29 +37,29 @@ sequenceDiagram
     participant p3 as _portable_project_path
     participant p4 as _project_directory
     participant p5 as load_publication_config
-    participant p6 as _validate_default_selection_contract
-    participant p7 as publication_path
-    participant p8 as publication_control_overlap
-    participant p9 as _install_workflow
-    participant p10 as _documentation_workflow
-    participant p11 as InstallCiError
-    participant p12 as _without_github_expression
-    participant p13 as locate_exact_repository_path
-    participant p14 as _consumer_root
-    participant p15 as _validate_workflow_target
-    participant p16 as _validated_project_path
-    participant p17 as _relative_path
-    participant p18 as SyncManifest.load
-    participant p19 as resolve_source_selection
-    participant p20 as validate_persisted_source_selection_identity
-    participant p21 as is_unmodified_managed_workflow
-    participant p22 as read_publication_json
-    participant p23 as ensure_guarded_directory
-    participant p24 as atomic_write_guarded_bytes
-    participant p25 as validate_publication_config
-    participant p26 as require_repository_relative_path
-    participant p27 as _locate_exact_path
-    participant p28 as source_selection_identity_from_generation_inputs
+    participant p6 as publication_source_root
+    participant p7 as _validate_default_selection_contract
+    participant p8 as publication_path
+    participant p9 as publication_control_overlap
+    participant p10 as _install_workflow
+    participant p11 as _documentation_workflow
+    participant p12 as InstallCiError
+    participant p13 as _without_github_expression
+    participant p14 as locate_exact_repository_path
+    participant p15 as _consumer_root
+    participant p16 as _validate_workflow_target
+    participant p17 as _validated_project_path
+    participant p18 as _relative_path
+    participant p19 as SyncManifest.load
+    participant p20 as resolve_source_selection
+    participant p21 as validate_persisted_source_selection_identity
+    participant p22 as is_unmodified_managed_workflow
+    participant p23 as read_publication_json
+    participant p24 as ensure_guarded_directory
+    participant p25 as atomic_write_guarded_bytes
+    participant p26 as validate_publication_config
+    participant p27 as require_repository_relative_path
+    participant p28 as _locate_exact_path
     participant p29 as any (src/llm_wiki_cli/services…documentation_ci_workflow)
     participant p30 as authored.extend
     p0->>p1: _project_root
@@ -67,36 +67,36 @@ sequenceDiagram
     p0->>p3: _portable_project_path
     p0->>p4: _project_directory
     p0->>p5: load_publication_config
-    p0->>p6: _validate_default_selection_contract
-    p0->>p7: publication_path
-    p0->>p8: publication_control_overlap
-    p0->>p9: _install_workflow
-    p0->>p10: _documentation_workflow
-    p0->>p11: InstallCiError
-    p3->>p12: _without_github_expression
-    p4->>p13: locate_exact_repository_path
-    p5->>p14: _consumer_root
-    p9->>p15: _validate_workflow_target
-    p3->>p16: _validated_project_path
-    p5->>p17: _relative_path
-    p6->>p18: SyncManifest.load
-    p6->>p19: resolve_source_selection
-    p6->>p20: validate_persisted_source_selection_identity
-    p9->>p21: is_unmodified_managed_workflow
-    p5->>p22: read_publication_json
-    p9->>p23: ensure_guarded_directory
-    p9->>p24: atomic_write_guarded_bytes
-    p5->>p25: validate_publication_config
-    p16->>p26: require_repository_relative_path
-    p13->>p27: _locate_exact_path
-    p20->>p28: source_selection_identity_from_generation_inputs
+    p0->>p6: publication_source_root
+    p0->>p7: _validate_default_selection_contract
+    p0->>p8: publication_path
+    p0->>p9: publication_control_overlap
+    p0->>p10: _install_workflow
+    p0->>p11: _documentation_workflow
+    p0->>p12: InstallCiError
+    p3->>p13: _without_github_expression
+    p4->>p14: locate_exact_repository_path
+    p5->>p15: _consumer_root
+    p10->>p16: _validate_workflow_target
+    p3->>p17: _validated_project_path
+    p5->>p18: _relative_path
+    p7->>p19: SyncManifest.load
+    p7->>p20: resolve_source_selection
+    p7->>p21: validate_persisted_source_selection_identity
+    p10->>p22: is_unmodified_managed_workflow
+    p5->>p23: read_publication_json
+    p10->>p24: ensure_guarded_directory
+    p10->>p25: atomic_write_guarded_bytes
+    p5->>p26: validate_publication_config
+    p17->>p27: require_repository_relative_path
+    p14->>p28: _locate_exact_path
     p0-->>p29: any (src/llm_wiki_cli/services…documentation_ci_workflow)(...)
     p0-->>p30: authored.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 1466 interactions; 1436 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1473 interactions; 1443 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 530 (529 omitted); unresolved 1 of 314 (313 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 530 (529 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 18 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-> Omission summary shows 8 of 324 groups; 316 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 326 groups; 318 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 623; effect analysis evaluated: 325, partial: 21, unavailable: 277. Counts include steps omitted from the displayed trace.
+Source steps: 629; effect analysis evaluated: 329, partial: 21, unavailable: 279. Counts include steps omitted from the displayed trace.
 
-Collector observations for 346 source steps with known totals: observed: 1958, emitted: 1891, omitted: 67. Unavailable totals are excluded.
+Collector observations for 350 source steps with known totals: observed: 1980, emitted: 1913, omitted: 67. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -133,7 +133,7 @@ Collector observations for 346 source steps with known totals: observed: 1958, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `install_documentation_ci_workflow` | `available` | `partial` | `available` | `24` | `19` | `5` |
+| `install_documentation_ci_workflow` | `available` | `partial` | `available` | `25` | `20` | `5` |
 | `any (src/llm_wiki_cli/services…documentation_ci_workflow)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `type (src/llm_wiki_cli/services…documentation_ci_workflow)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -196,7 +196,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `install_documentation_ci_workflow` | `action_ref: str`, `config: str`, `working_directory: str`, `src_dir: str`, `target_dir: str \| None`, `baseline: str \| None`, `reviews: str \| None`, `previous_receipt: str \| None` | `DOCUMENTATION_WORKFLOW_PATH`, `PublicationConfigError`, `DOCUMENTATION_WORKFLOW_PATH` | `inputs[...]`, `inputs[...]`, `inputs[...]` | `_install_workflow(...)` |
+| `install_documentation_ci_workflow` | `action_ref: str`, `config: str`, `working_directory: str`, `src_dir: str \| None`, `target_dir: str \| None`, `baseline: str \| None`, `reviews: str \| None`, `previous_receipt: str \| None` | `DOCUMENTATION_WORKFLOW_PATH`, `PublicationConfigError`, `DOCUMENTATION_WORKFLOW_PATH` | `inputs[...]`, `inputs[...]`, `inputs[...]`, `inputs[...]` | `_install_workflow(...)` |
 | `any (src/llm_wiki_cli/services…documentation_ci_workflow)` | - | - | - | - |
 | `type (src/llm_wiki_cli/services…documentation_ci_workflow)` | - | - | - | - |
 | `InstallCiError` | - | - | - | - |
@@ -213,36 +213,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 365 | `any(...)` |
-| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 365 | `type(value)` |
-| install_documentation_ci_workflow | InstallCiError | 366 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
-| install_documentation_ci_workflow | _project_root | 367 | `_project_root(project_root)` |
-| _project_root | (…).resolve | 497 | `(Path.cwd() if project_root is None else Path(project_root)).resolve(data not statically known)` |
-| _project_root | Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root) | 497 | `Path.cwd(data not statically known)` |
-| _project_root | Path (src/llm_wiki_cli/services…nstaller.py:_project_root) | 497 | `Path(project_root)` |
-| _project_root | InstallCiError | 499 | `InstallCiError('project root cannot be resolved')` |
-| _project_root | root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root) | 500 | `root.is_dir(data not statically known)` |
-| _project_root | InstallCiError | 501 | `InstallCiError('project root must be an existing directory')` |
-| install_documentation_ci_workflow | normalize_action_ref | 368 | `normalize_action_ref(action_ref)` |
+| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `any(...)` |
+| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `type(value)` |
+| install_documentation_ci_workflow | InstallCiError | 367 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
+| install_documentation_ci_workflow | _project_root | 368 | `_project_root(project_root)` |
+| _project_root | (…).resolve | 509 | `(Path.cwd() if project_root is None else Path(project_root)).resolve(data not statically known)` |
+| _project_root | Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root) | 509 | `Path.cwd(data not statically known)` |
+| _project_root | Path (src/llm_wiki_cli/services…nstaller.py:_project_root) | 509 | `Path(project_root)` |
+| _project_root | InstallCiError | 511 | `InstallCiError('project root cannot be resolved')` |
+| _project_root | root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root) | 512 | `root.is_dir(data not statically known)` |
+| _project_root | InstallCiError | 513 | `InstallCiError('project root must be an existing directory')` |
+| install_documentation_ci_workflow | normalize_action_ref | 369 | `normalize_action_ref(action_ref)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `authored.extend` | `install_documentation_ci_workflow` | 397 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 405 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 415 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 432 |
+| mutation | `authored.extend` | `install_documentation_ci_workflow` | 409 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 417 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 427 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 444 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `install_documentation_ci_workflow` | `any` | 365 |
-| external_call | `install_documentation_ci_workflow` | `type` | 365 |
-| unresolved_call | `_project_root` | `(Path.cwd() if project_root is None else Path(project_root)).resolve` | 497 |
-| external_call | `_project_root` | `Path.cwd` | 497 |
-| unresolved_call | `_project_root` | `root.is_dir` | 500 |
+| external_call | `install_documentation_ci_workflow` | `any` | 366 |
+| external_call | `install_documentation_ci_workflow` | `type` | 366 |
+| unresolved_call | `_project_root` | `(Path.cwd() if project_root is None else Path(project_root)).resolve` | 509 |
+| external_call | `_project_root` | `Path.cwd` | 509 |
+| unresolved_call | `_project_root` | `root.is_dir` | 512 |
 | step_limit | `install_documentation_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_documentation_ci_workflow` | `depth limit` | 0 |
 

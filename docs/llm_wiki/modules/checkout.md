@@ -76,4 +76,4 @@ flowchart LR
 | `verified_target` | `(consumer: Path, target_dir: str, target_revision: str, *, receipt_files: dict[str, str] \| None = None) -> str \| None` | — | — |
 | `committed_blob` | `(root: Path, pin: str, relative: str, maximum: int) -> tuple[str, bytes]` | — | Read one regular blob from a pinned commit, without checking out or filtering it. |
 | `verified_checkout` | `(consumer: Path, source_revision: str, target_dir: str, accepted: dict[str, str]) -> str` | — | — |
-| `accepted_inputs` | `(consumer: Path, accepted: dict[str, str], revision: str, runtime: Path) -> tuple[dict[str, str], str \| None]` | — | Read explicitly accepted metadata from Git, independently of the source commit. |
+| `accepted_inputs` | `(consumer: Path, accepted: dict[str, str], revision: str, runtime: Path, *, workspace: Path \| None = None) -> tuple[dict[str, str], str \| None]` | — | Read explicitly accepted metadata from Git, independently of the source commit. |

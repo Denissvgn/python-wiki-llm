@@ -13,6 +13,167 @@
   "publish": false,
   "topics": [
     {
+      "id": "home.project-facts",
+      "owner": "maintainers",
+      "wiki_page": "Home.md",
+      "anchor": "project-facts",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "CHANGELOG.md"},
+        {"source_file": ".github/workflows/ci.yml"}
+      ]
+    },
+    {
+      "id": "getting-started.initialize",
+      "owner": "maintainers",
+      "wiki_page": "Getting-Started.md",
+      "anchor": "2-initialize-agent-rules",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-init.md"},
+        {"reference": "llm-wiki", "command": ["init"]},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "README.md"}
+      ]
+    },
+    {
+      "id": "getting-started.bootstrap",
+      "owner": "maintainers",
+      "wiki_page": "Getting-Started.md",
+      "anchor": "3-bootstrap-the-wiki",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-bootstrap.md"},
+        {"reference": "llm-wiki", "command": ["bootstrap"]},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "provider-policy", "fact": "storage"}
+      ]
+    },
+    {
+      "id": "installation.runtime",
+      "owner": "maintainers",
+      "wiki_page": "Installation-and-Requirements.md",
+      "anchor": "runtime-dependencies",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"source_file": "pyproject.toml"},
+        {"source_file": "docs/wiki-guide.md"}
+      ]
+    },
+    {
+      "id": "installation.toolchains",
+      "owner": "maintainers",
+      "wiki_page": "Installation-and-Requirements.md",
+      "anchor": "optional-language-toolchains",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "docs/wiki-guide.md"}
+      ]
+    },
+    {
+      "id": "faq.publication-source",
+      "owner": "maintainers",
+      "wiki_page": "FAQ.md",
+      "anchor": "is-this-repositorys-wiki-folder-the-same-as-docsllm_wiki",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"source_file": "docs/sibling-wiki.md"},
+        {"source_file": "docs/sibling-wiki-candidates.md"}
+      ]
+    },
+    {
+      "id": "faq.sync-freshness",
+      "owner": "maintainers",
+      "wiki_page": "FAQ.md",
+      "anchor": "why-did-sync-say-the-wiki-is-up-to-date",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-sync.md"},
+        {"source_file": "docs/native-knowledge.md"},
+        {"source_file": "docs/maintenance.md"}
+      ]
+    },
+    {
+      "id": "sync.manual",
+      "owner": "maintainers",
+      "wiki_page": "Keeping-the-Wiki-in-Sync.md",
+      "anchor": "manual-sync",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-sync.md"},
+        {"reference": "llm-wiki", "command": ["sync"]},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"source_file": "docs/cli-reference.md"}
+      ]
+    },
+    {
+      "id": "core-concepts.sync",
+      "owner": "maintainers",
+      "wiki_page": "Core-Concepts.md",
+      "anchor": "sync",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-sync.md"},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"source_file": "docs/knowledge-storage.md"}
+      ]
+    },
+    {
+      "id": "context.protocol",
+      "owner": "maintainers",
+      "wiki_page": "Wiki-as-Context-Protocol.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-context.md"},
+        {"architecture_page": "flows/cli-task-context.md"},
+        {"reference": "llm-wiki", "command": ["context"]},
+        {"reference": "provider-policy", "fact": "task"},
+        {"source_file": "docs/qualified-context-packets.md"}
+      ]
+    },
+    {
+      "id": "mcp.server",
+      "owner": "maintainers",
+      "wiki_page": "MCP-Server.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-mcp.md"},
+        {"reference": "llm-wiki", "command": ["mcp"]},
+        {"reference": "provider-policy", "fact": "package"},
+        {"source_file": "src/llm_wiki_cli/services/mcp_server.py"},
+        {"source_file": "docs/native-knowledge-provider.md"}
+      ]
+    },
+    {
+      "id": "command-reference.ci-check",
+      "owner": "maintainers",
+      "wiki_page": "Command-Reference.md",
+      "anchor": "ci-check",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"architecture_page": "flows/cli-ci-check.md"},
+        {"reference": "llm-wiki", "command": ["ci-check"]},
+        {"source_file": "src/llm_wiki_cli/services/analysis_compatibility.py"}
+      ]
+    },
+    {
+      "id": "standalone.wiki-baseline",
+      "owner": "maintainers",
+      "wiki_page": "Standalone-Documentation-Workspaces.md",
+      "anchor": "choose-a-baseline",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["docs", "prepare"]},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"source_file": "docs/standalone-documentation.md"}
+      ]
+    },
+    {
       "id": "command-reference.upgrade",
       "owner": "maintainers",
       "wiki_page": "Command-Reference.md",
@@ -126,15 +287,15 @@
     },
     {
       "pattern": "modules/*.md",
-      "reason": "Internal module catalogs are outside the upgrade topic scope; public CLI entry points remain visible for mapping."
+      "reason": "Internal module catalogs support code navigation. Public topics bind their owning contracts and implementation files directly."
     },
     {
       "pattern": "workflows/*.md",
-      "reason": "Internal workflow details stay local unless a public topic explicitly depends on them, as the upgrade topics do."
+      "reason": "Internal workflow details stay local unless a public topic explicitly depends on them."
     },
     {
       "pattern": "infrastructure/*.md",
-      "reason": "Internal infrastructure inventories are outside the public upgrade topic scope."
+      "reason": "Internal infrastructure inventories stay local."
     },
     {
       "pattern": "guides/*.md",
@@ -142,15 +303,15 @@
     },
     {
       "pattern": "flows/api-*.md",
-      "reason": "Internal Python API flow catalogs are outside the upgrade CLI topic scope."
+      "reason": "Public API and protocol topics bind their documented interfaces directly."
     },
     {
       "pattern": "flows/process-*.md",
-      "reason": "Internal process flow catalogs are outside the upgrade CLI topic scope."
+      "reason": "Internal process catalogs stay local."
     },
     {
       "pattern": "flows/http-*.md",
-      "reason": "HTTP flow catalogs are outside the upgrade CLI topic scope."
+      "reason": "Internal HTTP flow catalogs stay local."
     },
     {
       "pattern": "index.md",
@@ -158,7 +319,7 @@
     },
     {
       "pattern": "load-order.md",
-      "reason": "Native reading order is local navigation rather than public upgrade guidance."
+      "reason": "Native reading order supports local navigation."
     },
     {
       "pattern": "log.md",
@@ -166,11 +327,11 @@
     },
     {
       "pattern": "dependencies.md",
-      "reason": "Dependency inventory remains local; public installation requirements need separate explicit mappings."
+      "reason": "Public installation requirements bind package and toolchain declarations directly."
     },
     {
       "pattern": "api-contracts.md",
-      "reason": "The internal API contract catalog is outside the upgrade CLI topic scope."
+      "reason": "The internal API catalog supports local implementation discovery."
     }
   ],
   "reference_providers": {

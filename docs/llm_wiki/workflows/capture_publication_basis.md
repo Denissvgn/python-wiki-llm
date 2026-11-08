@@ -14,20 +14,21 @@ consumer may point architecture.root at an isolated bootstrap output.
 1. `publication_config.load_publication_config`
 2. `publication_contracts.validate_publication_basis`
 3. `publication_config.publication_path`
-4. `knowledge_storage_io.StorageReadSession`
-5. `publication_references.capture_reference_inputs`
-6. `publication_config.publication_path`
-7. `publication_contracts.PublicationProtocolError`
-8. `knowledge_storage_io.StorageReadSession`
-9. `publication_contracts.PublicationProtocolError`
-10. `publication_references.recheck_reference_inputs`
-11. `publication_config.publication_path`
-12. `publication_contracts.PublicationProtocolError`
-13. `publication_config.publication_path`
-14. `publication_contracts.PublicationProtocolError`
-15. `publication_config.load_publication_config`
-16. `publication_contracts.PublicationProtocolError`
-17. `publication_contracts.validate_publication_basis`
+4. `publication_config.publication_path`
+5. `knowledge_storage_io.StorageReadSession`
+6. `publication_references.capture_reference_inputs`
+7. `publication_config.publication_path`
+8. `publication_contracts.PublicationProtocolError`
+9. `knowledge_storage_io.StorageReadSession`
+10. `publication_contracts.PublicationProtocolError`
+11. `publication_references.recheck_reference_inputs`
+12. `publication_config.publication_path`
+13. `publication_contracts.PublicationProtocolError`
+14. `publication_config.publication_path`
+15. `publication_contracts.PublicationProtocolError`
+16. `publication_config.load_publication_config`
+17. `publication_contracts.PublicationProtocolError`
+18. `publication_contracts.validate_publication_basis`
 
 ## Touches
 

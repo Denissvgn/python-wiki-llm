@@ -70,9 +70,9 @@ sequenceDiagram
     p2-->>p24: path.is_file
 ```
 
-> Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 100 interactions; 70 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 52 (37 omitted); unresolved 12 of 44 (32 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 15 of 52 (37 omitted); unresolved 12 of 45 (33 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -81,9 +81,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/wiki-candidate/provider.py:verify` | 2 | - | unresolved | 15 |
 | `integrations/wiki-candidate/provider.py:verify` | 2 | - | external | 10 |
 | `integrations/wiki-candidate/provider.py:setup` | 43 | - | external | 12 |
-| `integrations/wiki-candidate/provider.py:setup` | 43 | - | unresolved | 7 |
-| `integrations/wiki-candidate/provider.py:build_input` | 66 | - | unresolved | 10 |
-| `integrations/wiki-candidate/provider.py:build_input` | 66 | - | external | 15 |
+| `integrations/wiki-candidate/provider.py:setup` | 43 | - | unresolved | 8 |
+| `integrations/wiki-candidate/provider.py:build_input` | 67 | - | unresolved | 10 |
+| `integrations/wiki-candidate/provider.py:build_input` | 67 | - | external | 15 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -96,7 +96,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 4; effect analysis evaluated: 3, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 3 source steps with known totals: observed: 32, emitted: 32, omitted: 0. Unavailable totals are excluded.
+Collector observations for 3 source steps with known totals: observed: 34, emitted: 34, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -176,7 +176,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| __main__ | verify | 140 | `verify(Path(...), Path(...), sys.argv[...], sys.argv[...])` |
+| __main__ | verify | 144 | `verify(Path(...), Path(...), sys.argv[...], sys.argv[...])` |
 | verify | Path(…).resolve (integrations/wiki-candidate/provider.py:verify) | 25 | `Path(llm_wiki_cli.__file__).resolve(data not statically known)` |
 | verify | Path (integrations/wiki-candidate/provider.py:verify) | 25 | `Path(llm_wiki_cli.__file__)` |
 | verify | package.is_relative_to | 26 | `package.is_relative_to(...)` |

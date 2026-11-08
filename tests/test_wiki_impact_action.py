@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ast
 from fnmatch import fnmatchcase
 import json
 import os
@@ -21,7 +20,7 @@ ROOT = Path(__file__).parents[1]
 ACTION_PATH = ROOT / "integrations/wiki-impact/action.yml"
 
 
-def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
+def test_root_pilot_binds_manual_claims_and_leaves_cli_discovery_open():
     from llm_wiki_cli.services.publication_config import load_publication_config
 
     config = load_publication_config(ROOT)
@@ -31,48 +30,67 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
     }
     assert config["target"] == {"kind": "github-wiki", "repository": "self"}
     assert config["enforcement"] == "advisory" and config["publish"] is False
+    assert config["reference_providers"]["provider-policy"] == {
+        "kind": "llm-wiki-behavior"
+    }
+    topics = {topic["id"]: topic for topic in config["topics"]}
     assert {
-        (topic["wiki_page"], topic.get("anchor")) for topic in config["topics"]
-    } == {
-        ("Command-Reference.md", "upgrade"),
-        ("Migration-and-Upgrades.md", "upgrade-framework-artifacts"),
-        ("Command-Reference.md", "command-reference"),
-        ("Installation-and-Requirements.md", "python-version"),
-        ("Plugins-and-Skills.md", "bundled-skills"),
-        ("Maintaining-a-Sibling-Wiki.md", None),
-    }
-    expected = {"flows/cli-upgrade.md", "workflows/upgrade_current_knowledge.md"}
-    assert config["reference_providers"]["provider-policy"] == {"kind": "llm-wiki-behavior"}
-    groups = {
-        "command-reference.upgrade": {"setup"},
-        "migration.upgrade-framework-artifacts": {"storage", "task"},
-        "installation.python-version": {"package"},
-        "plugins.bundled-skills": {"skills"},
-    }
-    for topic in config["topics"]:
+        key for key, topic in topics.items() if topic["edit_at"] == "repository"
+    } == {"sibling-wiki.maintenance"}
+    guide = topics["sibling-wiki.maintenance"]
+    assert guide["source_document"] == "docs/sibling-wiki.md"
+    assert {"reference": "llm-wiki", "command": ["docs", "wiki"]} in guide["depends_on"]
+    for key, group in (
+        ("home.project-facts", "package"),
+        ("getting-started.initialize", "setup"),
+        ("getting-started.bootstrap", "storage"),
+        ("installation.python-version", "package"),
+        ("installation.runtime", "package"),
+        ("installation.toolchains", "setup"),
+        ("plugins.bundled-skills", "skills"),
+        ("core-concepts.sync", "storage"),
+        ("sync.manual", "storage"),
+        ("context.protocol", "task"),
+        ("mcp.server", "package"),
+        ("standalone.wiki-baseline", "storage"),
+        ("command-reference.upgrade", "setup"),
+        ("migration.upgrade-framework-artifacts", "storage"),
+        ("migration.upgrade-framework-artifacts", "task"),
+    ):
+        assert {"reference": "provider-policy", "fact": group} in topics[key][
+            "depends_on"
+        ]
+    assert {"source_file": "docs/sibling-wiki.md"} in topics["faq.publication-source"][
+        "depends_on"
+    ]
+    assert {"source_file": "docs/maintenance.md"} in topics["faq.sync-freshness"][
+        "depends_on"
+    ]
+    assert {"reference": "llm-wiki", "command": ["ci-check"]} in topics[
+        "command-reference.ci-check"
+    ]["depends_on"]
+    assert topics["command-reference.commands"]["depends_on"] == [
+        {"reference": "llm-wiki", "command": []}
+    ]
+    for key in ("command-reference.upgrade", "migration.upgrade-framework-artifacts"):
+        assert {"reference": "llm-wiki", "command": ["upgrade"]} in topics[key][
+            "depends_on"
+        ]
         assert {
-            dep["fact"] for dep in topic["depends_on"] if dep.get("reference") == "provider-policy"
-        } == groups.get(topic["id"], set())
-        if topic["id"] == "sibling-wiki.maintenance":
-            assert topic["edit_at"] == "repository"
-            assert topic["source_document"] == "docs/sibling-wiki.md"
-            assert {"reference": "llm-wiki", "command": ["docs", "wiki"]} in topic[
-                "depends_on"
-            ]
-            continue
-        if topic["id"] == "command-reference.commands":
-            assert topic["depends_on"] == [{"reference": "llm-wiki", "command": []}]
-            continue
-        assert topic["owner"] == "maintainers" and topic["edit_at"] == "wiki"
-        if topic["id"] in {"installation.python-version", "plugins.bundled-skills"}:
-            continue
-        assert {
-            dependency["architecture_page"]
-            for dependency in topic["depends_on"]
-            if "architecture_page" in dependency
-        } == expected
-        assert {"reference": "llm-wiki", "command": ["upgrade"]} in topic["depends_on"]
-        assert all((ROOT / "docs/llm_wiki" / path).is_file() for path in expected)
+            "architecture_page": "workflows/upgrade_current_knowledge.md",
+            "facets": ["whole"],
+        } in topics[key]["depends_on"]
+    for topic in topics.values():
+        assert topic["owner"] == "maintainers"
+        for dependency in topic["depends_on"]:
+            if "architecture_page" in dependency:
+                assert (
+                    ROOT
+                    / config["architecture"]["root"]
+                    / dependency["architecture_page"]
+                ).is_file()
+            if "source_file" in dependency:
+                assert (ROOT / dependency["source_file"]).is_file()
     patterns = [exclusion["pattern"] for exclusion in config["exclusions"]]
     assert all(exclusion["reason"] for exclusion in config["exclusions"])
     assert any(
@@ -84,36 +102,43 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
     )
 
 
-def test_root_workflow_is_manual_read_only_and_uses_the_local_provider():
+def test_root_workflow_reports_eligible_changes_and_observes_drift_read_only():
     path = ROOT / ".github/workflows/sibling-wiki-impact.yml"
     workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
-    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert set(workflow["on"]) == {"workflow_dispatch", "push", "pull_request", "schedule", "gollum"}
+    assert workflow["on"]["schedule"] and "github.event.repository.default_branch" in workflow["jobs"]["report"]["if"]
     assert workflow["permissions"] == {"contents": "read"}
     job = workflow["jobs"]["report"]
     assert job["permissions"] == {"contents": "read"}
-    checkout = next(
+    checkouts = [
         step
         for step in job["steps"]
         if step.get("uses", "").startswith("actions/checkout@")
-    )
-    assert checkout["with"]["ref"] == "${{ github.sha }}"
-    assert checkout["with"]["persist-credentials"] is False
+    ]
+    assert {s["with"]["path"] for s in checkouts} == {"consumer", ".provider"}
+    assert all(s["with"]["ref"] == "${{ github.sha }}" for s in checkouts)
+    assert all(s["with"]["persist-credentials"] is False for s in checkouts)
     action = next(
         step
         for step in job["steps"]
-        if step.get("uses") == "./integrations/wiki-impact"
+        if step.get("uses") == "./.provider/integrations/wiki-impact"
     )
     assert action["with"] == {
         "config": ".llm-wiki/publication.json",
-        "baseline": "${{ inputs.baseline }}",
-        "reviews": "${{ inputs.reviews }}",
+        "working-directory": "consumer",
+        "baseline": "${{ inputs.baseline || vars.SIBLING_WIKI_BASELINE }}",
+        "reviews": "${{ inputs.reviews || vars.SIBLING_WIKI_REVIEWS }}",
+        "accepted-state-revision": "${{ github.event.pull_request.base.sha || github.sha }}",
+        "observe-drift": "${{ github.event_name != 'pull_request' }}",
         "target-dir": "sibling-wiki",
         "fail-on": "error",
     }
     clone = next(step for step in job["steps"] if "run" in step)
     assert clone["env"]["REPOSITORY"] == "${{ github.repository }}"
-    assert clone["env"]["ACCEPTED_BASELINE"] == "${{ inputs.baseline }}"
-    assert clone["env"]["ACCEPTED_REVIEWS"] == "${{ inputs.reviews }}"
+    assert clone["env"]["ACCEPTED_BASELINE"] == action["with"]["baseline"]
+    assert clone["env"]["ACCEPTED_REVIEWS"] == action["with"]["reviews"]
+    assert clone["env"]["ACCEPTED_SHA"] == action["with"]["accepted-state-revision"]
+    assert "--depth" not in clone["run"] and clone["working-directory"] == "consumer"
     assert "${{" not in clone["run"]
     assert '"${SERVER_URL}/${REPOSITORY}.wiki.git" sibling-wiki' in clone["run"]
     assert "snapshot evidence" in job["name"]
@@ -425,6 +450,7 @@ def test_impact_invocation_uses_installed_provider_and_consumer_paths_without_sh
             "INPUT_CONFIG": config,
             "INPUT_BASELINE": "accepted baseline.json",
             "INPUT_REVIEWS": "reviews.json",
+            "GITHUB_EVENT_NAME": "workflow_dispatch",
             "INPUT_TARGET_DIR": "public wiki",
             "GITHUB_OUTPUT": str(outputs),
             "PYTHONPATH": str(consumer),
@@ -458,7 +484,7 @@ def test_impact_invocation_uses_installed_provider_and_consumer_paths_without_sh
 
 
 @pytest.mark.parametrize(
-    "mutation", ["none", "installed-bytes", "omitted-module", "version"]
+    "mutation", ["none", "installed-bytes", "omitted-module", "omitted-data", "version"]
 )
 def test_provider_verification_ignores_consumer_shadow_and_rejects_wrong_installation(
     tmp_path, mutation
@@ -471,6 +497,19 @@ def test_provider_verification_ignores_consumer_shadow_and_rejects_wrong_install
     (shadow / "__init__.py").write_text(
         'raise RuntimeError("consumer shadow selected")\n', encoding="utf-8"
     )
+    data = Path("schemas/llm-wiki-behavior-facts-v1.schema.json")
+    parser_metadata = metadata.parent / "markdown_it_py-4.0.0.dist-info"
+    parser_metadata.mkdir()
+    (parser_metadata / "METADATA").write_text("Metadata-Version: 2.1\nName: markdown-it-py\nVersion: 4.0.0\n", encoding="utf-8")
+    (provider / "pyproject.toml").write_text(
+        '[project]\nversion="1.0.0"\n[tool.setuptools.package-data]\n'
+        f'llm_wiki_cli=["{data.as_posix()}"]\n', encoding="utf-8"
+    )
+    (source / data.parent).mkdir()
+    (source / data).write_text("{}\n", encoding="utf-8")
+    if mutation != "omitted-data":
+        (package / data.parent).mkdir()
+        shutil.copyfile(source / data, package / data)
     if mutation == "installed-bytes":
         (package / "cli.py").write_text(
             "# Another installed revision.\n", encoding="utf-8"
@@ -484,27 +523,25 @@ def test_provider_verification_ignores_consumer_shadow_and_rejects_wrong_install
             "Metadata-Version: 2.1\nName: agent-wiki-cli\nVersion: 0.1.0\n",
             encoding="utf-8",
         )
-    tree = ast.parse(_script("provider"))
-    script = next(
-        node.value.value
-        for node in tree.body
-        if isinstance(node, ast.Assign)
-        and isinstance(node.value, ast.Constant)
-        and any(
-            isinstance(target, ast.Name) and target.id == "verify"
-            for target in node.targets
-        )
+    step = next(
+        s for s in yaml.safe_load(ACTION_PATH.read_text())["runs"]["steps"]
+        if s.get("id") == "provider"
     )
+    assert '"${GITHUB_ACTION_PATH}/../wiki-candidate/provider.py" impact' in step["run"]
+    assert step["env"]["PROVIDER_ACTION_REF"] == "${{ github.action_ref }}"
+    assert step["env"]["PROVIDER_REPOSITORY"] == "${{ github.action_repository }}"
     receipt = tmp_path / "provider.json"
-    assert isinstance(script, str)
+    revision = "a" * 40
     result = subprocess.run(
         [
             str(executable),
             "-I",
-            "-c",
-            textwrap.dedent(script),
+            str(ROOT / "integrations/wiki-candidate/provider.py"),
+            "verify",
             str(provider),
             str(receipt),
+            revision,
+            "fixture/provider",
         ],
         cwd=consumer,
         env={**os.environ, "PYTHONPATH": str(consumer)},
@@ -519,6 +556,9 @@ def test_provider_verification_ignores_consumer_shadow_and_rejects_wrong_install
         assert observed["installed"] is True
         assert observed["version"] == "1.0.0"
         assert Path(observed["package_origin"]) == package
+        assert observed["provider_revision"] == revision
+        assert observed["action_repository"] == "fixture/provider"
+        assert observed["parser_version"] == "4.0.0"
     else:
         assert result.returncode != 0
         assert not receipt.exists()

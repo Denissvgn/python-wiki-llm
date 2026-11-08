@@ -769,8 +769,7 @@ def _add_install_ci_command(subparsers):
     )
     install_ci_parser.add_argument(
         "--src-dir",
-        default=".",
-        help="Project-relative source directory evaluated by the wiki (default: .)",
+        help="Project-relative source directory (defaults to the configured documentation source or .)",
     )
     install_ci_parser.add_argument(
         "--wiki-dir",

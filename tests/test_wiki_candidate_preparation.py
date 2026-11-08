@@ -69,10 +69,17 @@ def test_plan_installs_only_the_selected_locked_toolchain(tmp_path, monkeypatch)
 
 def test_existing_wiki_requires_current_sources_before_export(consumer, tmp_path):
     configure(consumer)
+    config = consumer / CONFIG
+    policy = json.loads(config.read_bytes())
+    policy["architecture"]["source_root"] = "src"
+    config.write_text(json.dumps(policy), encoding="utf-8")
     evidence = tmp_path / "evidence"
     evidence.mkdir()
     cache = tmp_path / "helpers"
-    prepare("toolchains", consumer, CONFIG, "src", evidence, cache)
+    with pytest.raises(ValueError, match="architecture.source_root"):
+        prepare("toolchains", consumer, CONFIG, ".", evidence, cache)
+    prepare("toolchains", consumer, CONFIG, "", evidence, cache)
+    assert json.loads((evidence / "helper-plan.json").read_bytes())["source"] == "src"
     prepare("check", consumer, CONFIG, "src", evidence, cache)
     assert json.loads((evidence / "native-integrity.json").read_bytes())["ok"]
     assert json.loads((evidence / "native-freshness.json").read_bytes())["current"]

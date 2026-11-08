@@ -12,7 +12,6 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 |--------|---------|
 | `.` | `cli_reference`, `current_contracts`, `skills`, `task_compact`, `task_contract` |
 | `..` | `config` |
-| `..cli` | `build_cli_parser` |
 | `.helper_runtime` | `resolve_helper_policy` |
 | `.knowledge_evidence` | `hash_json` |
 | `.knowledge_storage_io` | `read_guarded` |
@@ -20,10 +19,9 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `functools` | `lru_cache` |
-| `importlib` | `metadata`, `resources` |
+| `importlib` | `resources` |
 | `json` | `json` |
 | `pathlib` | `Path` |
-| `tomllib` | `tomllib` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -45,17 +43,14 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (11) |
+| Outbound | `src` (10) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_package_facts` | `() -> dict[str, str]` | — | — |
-| `_installed_identity` | `(distribution: metadata.Distribution) -> dict[str, str]` | — | — |
-| `_identity` | `(name: str, version: str, requires_python: str) -> dict[str, str]` | — | — |
 | `_argument` | `(root, commands, dest)` | — | — |
 | `_request_defaults` | `(schema: str) -> dict[str, Any]` | — | — |
 | `_task_facts` | `(root, current) -> dict[str, Any]` | — | — |

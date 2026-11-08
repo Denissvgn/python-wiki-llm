@@ -2,9 +2,9 @@
 
 Find public wiki sections that need review when their architecture evidence changes. The action reads a consumer's publication configuration, native wiki and accepted snapshot, then saves a JSON report and Markdown summary. It supports a local wiki checkout or pinned local copy and requires no wiki publishing credential.
 
-The provider comes from this action's checkout. Pin the action to a reviewed full commit SHA. The action creates a separate virtual environment, installs that provider noneditably, and verifies its installed code against the action source. Your application's package and virtual environment are not installed or changed.
+Pin the action to a reviewed full commit SHA. The action builds its provider in a private temporary directory, installs it with the `publication` extra in a separate virtual environment, and verifies the Python modules and declared package data against the pinned source. The provider receipt records the repository, revision, Markdown parser version and installed package fingerprint. When using a local action checkout, keep the provider checkout clean and the consumer project separate.
 
-An opted-in `llm-wiki-cli` reference describes this isolated action provider.
+An opted-in `llm-wiki-cli` or `llm-wiki-behavior` reference describes this isolated action provider.
 For an application's own command definitions, use a `contract-file` provider
 and verify its saved data against the exact application candidate before this
 action runs. The [CLI reference guide](../../docs/cli-reference-data.md#keep-an-applications-saved-contract-current)
@@ -45,10 +45,11 @@ jobs:
           config: .llm-wiki/publication.json
           baseline: ${{ github.workspace }}/accepted-state/.llm-wiki/publication-baseline.json
           reviews: ${{ github.workspace }}/accepted-state/.llm-wiki/publication-reviews.json
+          accepted-state-revision: ${{ github.event.pull_request.base.sha || github.sha }}
           target-dir: sibling-wiki
 ```
 
-Replace `<full-commit-sha>` with the immutable provider revision you selected. The first checkout contains the proposed consumer changes. The separate checkout pins accepted state to the PR's exact base commit, or the accepted push revision. Its absolute baseline and ledger paths keep proposed changes from substituting their own accepted state. The example expects the local public copy beneath `consumer/sibling-wiki/`.
+Replace `<full-commit-sha>` with the immutable provider revision you selected. The first checkout contains the proposed consumer changes. The action reads the committed baseline and ledger blobs at the supplied revision and records their Git and content hashes. On pull requests it requires the event's exact base SHA. The example expects the local public copy beneath `consumer/sibling-wiki/`.
 
 Configure `architecture.root` and topic dependencies in the consumer's publication configuration. Supply the local public wiki copy explicitly through `target-dir`; its path is not stored in the configuration. Relative inputs resolve from `working-directory`, which defaults to the checked-out project root. Baseline and review artifacts can also use absolute paths to separately materialized trusted state. The local target must stay within the consumer directory. The action does not clone a wiki or contact its Git remote during impact evaluation.
 
@@ -59,7 +60,9 @@ Omit `baseline` for the CLI's initial assessment. Before accepting the first bas
 | `config` | `.llm-wiki/publication.json` | Consumer publication configuration. |
 | `baseline` | Empty | Accepted local snapshot; empty selects initial assessment. |
 | `reviews` | Empty | Optional accepted review ledger. |
+| `accepted-state-revision` | PR base on pull requests | Full commit SHA containing the accepted files. On other events, omit it to supply local artifacts directly. |
 | `target-dir` | Empty | Consumer-relative local public wiki directory. |
+| `observe-drift` | `false` | Compare the checked-out wiki branch with its previous delivery checkpoint. Requires an independent, full-history Git checkout. |
 | `working-directory` | `.` | Consumer directory inside `GITHUB_WORKSPACE`. |
 | `fail-on` | `error` | Preserve CLI policy, or require `ready=true` with `review-required`. |
 | `evidence-id` | `default` | Unique suffix for multiple invocations in one job; lowercase letters, digits, `.`, `_` and `-`, up to 40 characters. |
@@ -74,6 +77,7 @@ Source-only projects use `architecture.baseline: bootstrap-source`. Prepare only
 | --- | --- |
 | `report-path` | JSON report location, when produced. |
 | `summary-path` | Markdown report location, when produced. |
+| `drift-path`, `drift-status` | Local observation report and status, when requested. |
 | `provider-receipt` | Verified installed provider identity and fingerprint. |
 | `complete` | All evidence required for this evaluation was available. |
 | `review_required` | Public content or coverage needs attention. |
@@ -81,3 +85,18 @@ Source-only projects use `architecture.baseline: bootstrap-source`. Prepare only
 | `ready` | The impact review gate is satisfied. Delivery needs its own checked candidate and verified remote base. |
 
 Boolean outputs are the strings `true` and `false`. An unavailable report defaults to `complete=false`, `review_required=true`, `changed=false` and `ready=false`. Reports, provider identity and diagnostics are retained in a job artifact for 14 days. Store accepted checkpoints and review state in the consumer's durable configuration or state backend; artifact retention does not replace that state.
+
+For read-only reconciliation, enable `observe-drift: 'true'` after refreshing
+the public checkout. The observer compares tree entries, including their file
+modes, with the last delivery on that branch. It reports `unmanaged` before
+the first delivery, `unchanged` for the delivered tree, or `unmanaged-edits`
+when only files outside delivery ownership changed. An `owned-conflict` or
+`indeterminate` history fails the action and leaves the report for review.
+The observer also records whether the source commit differs from the last
+delivery. A new source commit can still render identical public pages.
+
+This repository runs impact on pull requests and default-branch pushes. It
+also refreshes the wiki checkout for wiki edits, a weekly schedule and manual
+dispatch. Set `SIBLING_WIKI_BASELINE` and `SIBLING_WIKI_REVIEWS` as repository
+variables to use accepted repository-relative records for recurring runs.
+The workflow produces initial assessments until maintainers supply a baseline.
