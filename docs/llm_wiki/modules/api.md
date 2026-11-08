@@ -18,6 +18,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.analysis_capture` | `analysis_input_status` |
+| `.services.behavior_reference` | `get_behavior_facts`, `validate_behavior_facts`, `render_behavior_reference` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
@@ -99,9 +100,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (57) |
+| Outbound | `src` (58) |
 
-> All 64 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 65 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -221,6 +222,9 @@ flowchart LR
 | `get_cli_contract` | `() -> dict[str, Any]` | `@_api_boundary` | Return the installed llm-wiki command definitions as a versioned contract. |
 | `render_cli_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Validate and render a supplied CLI contract without executing commands. |
 | `validate_cli_contract` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the structure and commitments of a supplied CLI contract. |
+| `get_behavior_facts` | `() -> dict[str, Any]` | `@_api_boundary` | Describe the installed provider's runtime requirements, defaults and bundled skills. |
+| `validate_behavior_facts` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate a versioned behavior facts document and its content commitment. |
+| `render_behavior_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Render validated behavior facts as Markdown. |
 | `export_publication_candidate` | `(consumer_root: str \| Path = '.', *, output_dir: str \| Path, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Render an explicitly mapped local wiki candidate without remote delivery. |
 | `check_publication_candidate` | `(consumer_root: str \| Path = '.', *, candidate_dir: str \| Path, receipt: Mapping[str, Any], config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Recheck candidate bytes, current inputs and exact-basis local review. |
 | `review_publication_candidate` | `(receipt: Mapping[str, Any], *, reviewer: str, reason: str) -> dict[str, Any]` | `@_api_boundary` | Prepare an exact-candidate approval for the consumer's review process. |

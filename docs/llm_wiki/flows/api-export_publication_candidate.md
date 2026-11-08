@@ -2,12 +2,12 @@
 
 **Entry point:** `export_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [common](../modules/common.md), and 19 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [cli_reference](../modules/cli_reference.md), [common](../modules/common.md), and 19 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
-- [cli](../modules/cli.md)
+- [behavior_reference](../modules/behavior_reference.md)
 - [cli_reference](../modules/cli_reference.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -100,9 +100,9 @@ sequenceDiagram
     p1-->>p30: files.items (src/llm_wiki_cli/services…ort_publication_candidate)
 ```
 
-> Call sequence diagram shows 30 of 2134 interactions; 2104 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2137 interactions; 2107 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 883 (882 omitted); unresolved 1 of 559 (558 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 884 (883 omitted); unresolved 1 of 560 (559 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -129,9 +129,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 693; effect analysis evaluated: 502, partial: 23, unavailable: 168. Counts include steps omitted from the displayed trace.
+Source steps: 694; effect analysis evaluated: 503, partial: 23, unavailable: 168. Counts include steps omitted from the displayed trace.
 
-Collector observations for 525 source steps with known totals: observed: 2674, emitted: 2596, omitted: 78. Unavailable totals are excluded.
+Collector observations for 526 source steps with known totals: observed: 2688, emitted: 2610, omitted: 78. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,7 +218,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| export_publication_candidate (src/llm_wiki_cli/api.py) | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3605 | `export(consumer_root, output_dir=output_dir, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| export_publication_candidate (src/llm_wiki_cli/api.py) | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3633 | `export(consumer_root, output_dir=output_dir, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
 | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 909 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
 | _prepare | _absolute_path | 647 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |

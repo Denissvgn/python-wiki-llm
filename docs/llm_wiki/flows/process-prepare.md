@@ -147,9 +147,9 @@ sequenceDiagram
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2940 interactions; 2910 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2944 interactions; 2914 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 941 (940 omitted); unresolved 1 of 712 (711 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 942 (941 omitted); unresolved 1 of 713 (712 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -176,9 +176,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1288; effect analysis evaluated: 828, partial: 51, unavailable: 409. Counts include steps omitted from the displayed trace.
+Source steps: 1290; effect analysis evaluated: 830, partial: 51, unavailable: 409. Counts include steps omitted from the displayed trace.
 
-Collector observations for 879 source steps with known totals: observed: 5271, emitted: 4998, omitted: 273. Unavailable totals are excluded.
+Collector observations for 881 source steps with known totals: observed: 5285, emitted: 5012, omitted: 273. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -271,7 +271,7 @@ flowchart LR
 | __main__ | parser.parse_args | 193 | `parser.parse_args(data not statically known)` |
 | __main__ | prepare | 194 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
 | prepare | load_publication_config | 52 | `load_publication_config(consumer, config_path=config_path)` |
-| load_publication_config | _consumer_root | 943 | `_consumer_root(consumer_root)` |
+| load_publication_config | _consumer_root | 959 | `_consumer_root(consumer_root)` |
 
 ### Boundary effects
 

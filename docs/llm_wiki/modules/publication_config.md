@@ -14,6 +14,7 @@ Reference dependencies require an explicitly declared, non-executable provider.
 
 | Source | Symbols |
 |--------|---------|
+| `.behavior_reference` | `BEHAVIOR_FACT_GROUPS` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_locator` |
 | `.source_selection` | `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `locate_exact_repository_path`, `path_is_link_or_reparse` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
@@ -52,9 +53,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (4) |
 | Inbound | `src` (10) |
-| Outbound | `src` (4) |
+| Outbound | `src` (5) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

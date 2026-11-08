@@ -682,6 +682,29 @@ def test_sibling_wiki_portability_keeps_consumer_case_and_helper_owners(path):
         assert selection["lanes"][lane]["helpers"] == []
 
 
+@pytest.mark.parametrize("path", [
+    "src/llm_wiki_cli/services/behavior_reference.py",
+    "src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
+    "src/llm_wiki_cli/skills/new-skill/SKILL.md",
+    "pyproject.toml",
+])
+def test_public_behavior_contract_owners_include_installed_and_review_consumers(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    for platform in ("ubuntu", "macos", "windows"):
+        assert {
+            "tests/test_behavior_reference.py",
+            "tests/test_behavior_reference_cli.py",
+            "tests/test_publication_references.py",
+        } <= set(selection["lanes"][platform]["selectors"])
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):

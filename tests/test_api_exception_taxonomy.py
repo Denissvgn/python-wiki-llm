@@ -63,6 +63,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "flow_segment",
     "get_calibration_run_status",
     "get_cli_contract",
+    "get_behavior_facts",
     "get_concept",
     "get_knowledge_coverage",
     "inspect_concept",
@@ -81,6 +82,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "reconcile_context_packet",
     "related_concepts",
     "render_cli_reference",
+    "render_behavior_reference",
     "resolve_publication_finding",
     "review_publication_candidate",
     "select_documentation_model",
@@ -89,6 +91,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
     "validate_cli_contract",
+    "validate_behavior_facts",
     "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_calibration_run",
@@ -135,6 +138,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "flow_segment",
         "get_concept",
         "get_cli_contract",
+        "get_behavior_facts",
         "get_knowledge_coverage",
         "inspect_concept",
         "list_concept_sections",
@@ -147,6 +151,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "record_p0_calibration_agent_result",
         "related_concepts",
         "render_cli_reference",
+        "render_behavior_reference",
         "resolve_publication_finding",
         "select_documentation_model",
         "traverse_typed_graph",
@@ -155,6 +160,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "reconcile_context_packet",
         "validate_context_packet",
         "validate_cli_contract",
+        "validate_behavior_facts",
         "validate_documentation_model_selection",
     }
 )
@@ -271,18 +277,18 @@ def _deprecated_context(callable_, *args, **kwargs) -> None:
         _enter(callable_(*args, **kwargs))
 
 
-def _provoke_cli_contract_export_failure():
-    from llm_wiki_cli.services import cli_reference
-
+def _provoke_reference_export_failure(service, name):
     def fail():
-        raise ValueError("provoked CLI contract failure")
+        raise ValueError("provoked reference export failure")
 
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(cli_reference, "get_cli_contract", fail)
-        return api.get_cli_contract()
+        patch.setattr(service, name, fail)
+        return getattr(api, name)()
 
 
 def _failure_cases(tmp_path: Path):
+    from llm_wiki_cli.services import behavior_reference, cli_reference
+
     missing_source = tmp_path / "missing-source"
     missing_wiki = tmp_path / "missing-wiki"
     missing_workspace = tmp_path / "missing-workspace"
@@ -293,7 +299,10 @@ def _failure_cases(tmp_path: Path):
     return {
         "helper_preparation": lambda: _enter(api.helper_preparation(cast(Any, "invalid"))),
         "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
-        "get_cli_contract": _provoke_cli_contract_export_failure,
+        "get_cli_contract": lambda: _provoke_reference_export_failure(cli_reference, "get_cli_contract"),
+        "get_behavior_facts": lambda: _provoke_reference_export_failure(behavior_reference, "get_behavior_facts"),
+        "render_behavior_reference": lambda: api.render_behavior_reference({}),
+        "validate_behavior_facts": lambda: api.validate_behavior_facts({}),
         "build_cli_contract": lambda: api.build_cli_contract(
             cast(Any, None),
             package={"name": "example", "version": "1.0.0", "requires_python": None},
@@ -744,6 +753,9 @@ def test_public_dict_return_annotations_import_and_resolve():
         "review_publication_candidate": dict[str, typing.Any],
         "validate_publication_receipt": type(None),
         "get_cli_contract": dict[str, typing.Any],
+        "get_behavior_facts": dict[str, typing.Any],
+        "render_behavior_reference": str,
+        "validate_behavior_facts": type(None),
         "build_cli_contract": dict[str, typing.Any],
         "render_cli_reference": str,
         "validate_cli_contract": type(None),

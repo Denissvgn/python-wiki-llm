@@ -7,10 +7,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 691 | [Open section](#entities) |
-| Modules | 281 | [Open section](#modules) |
-| Workflows | 277 | [Open section](#workflows) |
+| Modules | 282 | [Open section](#modules) |
+| Workflows | 278 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 484 | [Open section](#entry-point-flows) |
+| Entry-point flows | 487 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -720,6 +720,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
 - [api_diff_cmd](modules/api_diff_cmd.md) - Compare supplied local OpenAPI exports without invoking target code.
 - [api_types](modules/api_types.md) - Static return contracts for the supported Python API.
+- [behavior_reference](modules/behavior_reference.md) - Versioned reference data derived from the llm-wiki provider's declarations.
 - [bootstrap_recovery](modules/bootstrap_recovery.md) - Recover only journaled first-use output before capturing fresh evidence.
 - [bootstrap_runtime](modules/bootstrap_runtime.md) - `src/llm_wiki_cli/services/bootstrap_runtime.py`
 - [bootstrap_service](modules/bootstrap_service.md) - Typed request/result contract for deterministic wiki bootstrap.
@@ -908,7 +909,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [queue_cmd](modules/queue_cmd.md) - Read-only managed-wiki maintenance triage.
 - [record](modules/record.md) - Documentation-run record services.
 - [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
-- [reference_cmd](modules/reference_cmd.md) - Generate or render stable command reference data.
+- [reference_cmd](modules/reference_cmd.md) - Generate or render versioned CLI and behavior reference data.
 - [refresh](modules/refresh.md) - Documentation-run refresh services.
 - [relationships](modules/relationships.md) - Pure entity and callable relationship summaries.
 - [release_cmd](modules/release_cmd.md) - release_cmd — stamp the [Unreleased] CHANGELOG section with the current version.
@@ -1117,6 +1118,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
 - [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
 - [generated_sections_match](workflows/generated_sections_match.md) - entry: `sync_analysis_cache.generated_sections_match`
+- [get_behavior_facts](workflows/get_behavior_facts.md) - entry: `behavior_reference.get_behavior_facts`
 - [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
 - [get_yaml_infrastructure_inventory](workflows/get_yaml_infrastructure_inventory.md) - entry: `infrastructure_inventory.get_yaml_infrastructure_inventory`
@@ -1205,7 +1207,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
 - [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
-- [reference_cmd_flow](workflows/reference_cmd_flow.md) - entry: `reference_cmd.run`
+- [references](workflows/references.md) - entry: `publication_contracts._references`
 - [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native._refresh_documentation_native_projection`
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
@@ -1431,6 +1433,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-fresh_no_follow_stat](flows/api-fresh_no_follow_stat.md) - entry: `fresh_no_follow_stat`
 - [api-generated_semantics_for_file](flows/api-generated_semantics_for_file.md) - entry: `generated_semantics_for_file`
 - [api-get_analysis_input_status](flows/api-get_analysis_input_status.md) - entry: `get_analysis_input_status`
+- [api-get_behavior_facts](flows/api-get_behavior_facts.md) - entry: `get_behavior_facts`
 - [api-get_calibration_run_status-api](flows/api-get_calibration_run_status-api.md) - entry: `get_calibration_run_status`
 - [api-get_calibration_run_status-controller](flows/api-get_calibration_run_status-controller.md) - entry: `get_calibration_run_status`
 - [api-get_cli_contract](flows/api-get_cli_contract.md) - entry: `get_cli_contract`
@@ -1566,6 +1569,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-relationship_edge_key](flows/api-relationship_edge_key.md) - entry: `relationship_edge_key`
 - [api-remove_guarded_tree](flows/api-remove_guarded_tree.md) - entry: `remove_guarded_tree`
 - [api-render_api_contracts_markdown](flows/api-render_api_contracts_markdown.md) - entry: `render_api_contracts_markdown`
+- [api-render_behavior_reference](flows/api-render_behavior_reference.md) - entry: `render_behavior_reference`
 - [api-render_cli_reference](flows/api-render_cli_reference.md) - entry: `render_cli_reference`
 - [api-render_compact_task_context](flows/api-render_compact_task_context.md) - entry: `render_compact_task_context`
 - [api-render_doctor_text](flows/api-render_doctor_text.md) - entry: `render_doctor_text`
@@ -1669,6 +1673,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-use_p0_calibration_host_broker_authenticator](flows/api-use_p0_calibration_host_broker_authenticator.md) - entry: `use_p0_calibration_host_broker_authenticator`
 - [api-validate_alias_type](flows/api-validate_alias_type.md) - entry: `validate_alias_type`
 - [api-validate_alias_value](flows/api-validate_alias_value.md) - entry: `validate_alias_value`
+- [api-validate_behavior_facts](flows/api-validate_behavior_facts.md) - entry: `validate_behavior_facts`
 - [api-validate_bundle_id](flows/api-validate_bundle_id.md) - entry: `validate_bundle_id`
 - [api-validate_cli_contract](flows/api-validate_cli_contract.md) - entry: `validate_cli_contract`
 - [api-validate_compact_task_context](flows/api-validate_compact_task_context.md) - entry: `validate_compact_task_context`

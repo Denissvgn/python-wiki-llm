@@ -73,13 +73,15 @@ linting; `.llm-wiki-surface.json`, the deterministic machine-readable index of
 canonical pages, source mappings, surface counts, flow metadata,
 dependency-page presence, and internal wiki links; and the experimental
 `.llm-wiki-knowledge.json`, a deterministic evidence-aware projection of those
-canonical pages. Manifest v5 is the current writer format. All three JSON
-artifacts are CLI-owned generated state and must not be edited by hand; the
-manifest commits the surface and knowledge projections as one snapshot. Explicit
-[ordinary review adoption](maintenance.md) adds durable pending/acknowledged
-section records and an immutable marker, using flat manifest v7 or indexed v8;
-the default unadopted writer remains v5. The
-experimental knowledge projection is evidence, not an editable authority. Its
+canonical pages. The manifest commits both projections as one CLI-owned
+snapshot. Update these generated files through the CLI. Current setup selects
+indexed-v8 manifest storage and packed-v4-deflate knowledge when the native
+wiki is created. Older unadopted
+wikis can have a v5 manifest. [Ordinary review adoption](maintenance.md)
+adds durable pending and acknowledged section records and an immutable marker
+using flat v7 or indexed v8 storage. Use `llm-wiki reference behavior` for
+the [installed provider's defaults](cli-reference-data.md#export-installed-behavior-facts).
+The experimental knowledge projection records evidence. Its
 observation-versus-freshness model,
 availability states, strict-lint policy, context filters, API/MCP envelopes,
 bounds, and no-execution rules are documented in

@@ -183,10 +183,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3722 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
+| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3750 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
 | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 574 | `validate_publication_report(report)` |
-| validate_publication_report | _guard | 896 | `_guard(_report, value)` |
-| _guard | _json_tree | 876 | `_json_tree(value)` |
+| validate_publication_report | _guard | 909 | `_guard(_report, value)` |
+| _guard | _json_tree | 889 | `_json_tree(value)` |
 | _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |

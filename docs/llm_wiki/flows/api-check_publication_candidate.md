@@ -2,12 +2,12 @@
 
 **Entry point:** `check_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [instruction_ownership](../modules/instruction_ownership.md), and 14 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [cli_reference](../modules/cli_reference.md), [instruction_ownership](../modules/instruction_ownership.md), and 14 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
-- [cli](../modules/cli.md)
+- [behavior_reference](../modules/behavior_reference.md)
 - [cli_reference](../modules/cli_reference.md)
 - [instruction_ownership](../modules/instruction_ownership.md)
 - [io](../modules/io.md)
@@ -95,9 +95,9 @@ sequenceDiagram
     p2-->>p30: json.dumps(…).encode (src/llm_wiki_cli/services…idate_publication_receipt)('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 1395 interactions; 1365 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1398 interactions; 1368 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 536 (535 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 537 (536 omitted); unresolved 1 of 413 (412 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -124,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 448; effect analysis evaluated: 350, partial: 9, unavailable: 89. Counts include steps omitted from the displayed trace.
+Source steps: 449; effect analysis evaluated: 351, partial: 9, unavailable: 89. Counts include steps omitted from the displayed trace.
 
-Collector observations for 359 source steps with known totals: observed: 1637, emitted: 1591, omitted: 46. Unavailable totals are excluded.
+Collector observations for 360 source steps with known totals: observed: 1651, emitted: 1605, omitted: 46. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -214,9 +214,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 3637 | `isinstance(receipt, Mapping)` |
-| check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 3638 | `ValueError('Publication receipt must be a mapping')` |
-| check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3639 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 3665 | `isinstance(receipt, Mapping)` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 3666 | `ValueError('Publication receipt must be a mapping')` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3667 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
 | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 955 | `validate_publication_receipt(receipt)` |
 | validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 313 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 314 | `ValueError('Candidate receipt must be a mapping')` |
@@ -239,8 +239,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `check_publication_candidate` | `isinstance` | 3637 |
-| external_call | `check_publication_candidate` | `ValueError` | 3638 |
+| external_call | `check_publication_candidate` | `isinstance` | 3665 |
+| external_call | `check_publication_candidate` | `ValueError` | 3666 |
 | external_call | `validate_publication_receipt` | `isinstance` | 313 |
 | external_call | `validate_publication_receipt` | `ValueError` | 314 |
 | step_limit | `check_publication_candidate` | `first 12 steps` | 0 |

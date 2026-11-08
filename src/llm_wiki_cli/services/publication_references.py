@@ -18,6 +18,20 @@ def reference_identity(provider: str, configuration: Mapping[str, Any]) -> str:
     return hash_json({"provider": provider, "configuration": configuration})
 
 
+def _installed_contract(kind, cache):
+    """Capture each opt-in provider once during this observation."""
+    if kind not in cache:
+        if kind == "llm-wiki-behavior":
+            from .behavior_reference import get_behavior_facts
+
+            cache[kind] = get_behavior_facts()
+        else:
+            from .cli_reference import get_cli_contract
+
+            cache[kind] = get_cli_contract()
+    return cache[kind]
+
+
 def capture_reference_inputs(config, baseline, root, session):
     """Read current and former providers through the caller's guarded session."""
     declarations = {}
@@ -27,16 +41,14 @@ def capture_reference_inputs(config, baseline, root, session):
             declarations[key] = (provider, configuration)
     if not declarations:
         return {}
-    from .cli_reference import get_cli_contract, parse_cli_contract
+    from .cli_reference import parse_cli_contract
 
     captured = {}
-    builtin = None
+    installed = {}
     total = 0
     for key, (provider, configuration) in sorted(declarations.items()):
-        if configuration["kind"] == "llm-wiki-cli":
-            if builtin is None:
-                builtin = get_cli_contract()
-            contract = deepcopy(builtin)
+        if configuration["kind"] != "contract-file":
+            contract = deepcopy(_installed_contract(configuration["kind"], installed))
         else:
             path = publication_path(root, configuration["path"])
             contract = None
@@ -64,17 +76,17 @@ def recheck_reference_inputs(captured, root):
     """Recheck missing files and installed declarations after capture."""
     if not captured:
         return
-    from .cli_reference import get_cli_contract
-
-    builtin = None
+    installed = {}
     for reference in captured.values():
         configuration = reference["configuration"]
-        if configuration["kind"] == "llm-wiki-cli":
-            if builtin is None:
-                builtin = get_cli_contract()
-            if builtin != reference["contract"]:
+        if configuration["kind"] != "contract-file":
+            if (
+                _installed_contract(configuration["kind"], installed)
+                != reference["contract"]
+            ):
+                label = "CLI" if configuration["kind"] == "llm-wiki-cli" else "behavior"
                 raise ValueError(
-                    "Installed CLI declarations changed during publication capture"
+                    f"Installed {label} declarations changed during publication capture"
                 )
         elif (
             reference["contract"] is None
@@ -84,7 +96,7 @@ def recheck_reference_inputs(captured, root):
 
 
 def reference_dependency_basis(dep, basis, providers):
-    """Select one command subtree, retaining the provider's origin binding."""
+    """Commit a complete reference, one command subtree or one named fact group."""
     configuration = providers.get(dep["reference"])
     if configuration is None:
         return None
@@ -94,7 +106,17 @@ def reference_dependency_basis(dep, basis, providers):
         return None
     contract = reference["contract"]
     path = dep.get("command", [])
-    if not path:
+    if configuration["kind"] == "llm-wiki-behavior" and "fact" in dep:
+        fact = dep["fact"]
+        selected = hash_json(
+            {
+                "schema_version": contract["schema_version"],
+                "package": contract["facts"]["package"]["name"],
+                "fact": fact,
+                "value": contract["facts"][fact],
+            }
+        )
+    elif not path:
         selected = contract["contract_id"]
     else:
         node = contract["root"]

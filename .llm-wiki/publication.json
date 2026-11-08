@@ -30,6 +30,10 @@
           "command": [
             "upgrade"
           ]
+        },
+        {
+          "reference": "provider-policy",
+          "fact": "setup"
         }
       ]
     },
@@ -51,7 +55,35 @@
           "command": [
             "upgrade"
           ]
+        },
+        {
+          "reference": "provider-policy",
+          "fact": "storage"
+        },
+        {
+          "reference": "provider-policy",
+          "fact": "task"
         }
+      ]
+    },
+    {
+      "id": "installation.python-version",
+      "owner": "maintainers",
+      "wiki_page": "Installation-and-Requirements.md",
+      "anchor": "python-version",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"}
+      ]
+    },
+    {
+      "id": "plugins.bundled-skills",
+      "owner": "maintainers",
+      "wiki_page": "Plugins-and-Skills.md",
+      "anchor": "bundled-skills",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "skills"}
       ]
     },
     {
@@ -144,6 +176,9 @@
   "reference_providers": {
     "llm-wiki": {
       "kind": "llm-wiki-cli"
+    },
+    "provider-policy": {
+      "kind": "llm-wiki-behavior"
     }
   },
   "content": {

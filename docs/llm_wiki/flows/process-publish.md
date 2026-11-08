@@ -104,9 +104,9 @@ sequenceDiagram
     p0-->>p30: path.write_text (integrations/wiki-candida…ivery/publish.py:__main__)(..., encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 960 interactions; 930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 964 interactions; 934 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 373 (372 omitted); unresolved 1 of 257 (256 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 374 (373 omitted); unresolved 1 of 258 (257 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -133,9 +133,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 331; effect analysis evaluated: 221, partial: 10, unavailable: 100. Counts include steps omitted from the displayed trace.
+Source steps: 333; effect analysis evaluated: 223, partial: 10, unavailable: 100. Counts include steps omitted from the displayed trace.
 
-Collector observations for 231 source steps with known totals: observed: 1189, emitted: 1136, omitted: 53. Unavailable totals are excluded.
+Collector observations for 233 source steps with known totals: observed: 1203, emitted: 1150, omitted: 53. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

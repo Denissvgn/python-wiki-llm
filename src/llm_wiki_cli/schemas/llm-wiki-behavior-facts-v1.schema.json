@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-behavior-facts-v1.schema.json",
+  "title": "Installed llm-wiki behavior facts",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-behavior-facts/v1"
+    },
+    "facts": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "agent-wiki-cli"
+            },
+            "version": {
+              "$ref": "#/$defs/text"
+            },
+            "requires_python": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "name",
+            "version",
+            "requires_python"
+          ],
+          "additionalProperties": false
+        },
+        "setup": {
+          "type": "object",
+          "properties": {
+            "policy": {
+              "$ref": "#/$defs/identifier"
+            },
+            "wiki_directory": {
+              "$ref": "#/$defs/text"
+            },
+            "new_project": {
+              "type": "object",
+              "properties": {
+                "agent": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "quality_hints": {
+                  "type": "boolean"
+                },
+                "reference_skill": {
+                  "type": "boolean"
+                },
+                "issue_reporting": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "agent",
+                "quality_hints",
+                "reference_skill",
+                "issue_reporting"
+              ],
+              "additionalProperties": false
+            },
+            "agents": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              },
+              "uniqueItems": true
+            },
+            "reference_skill": {
+              "$ref": "#/$defs/identifier"
+            },
+            "init_prepares_extractors": {
+              "type": "boolean"
+            },
+            "helper_policy": {
+              "type": "object",
+              "properties": {
+                "analysis": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "preview": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "offline": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "strict_read_only": {
+                  "$ref": "#/$defs/identifier"
+                }
+              },
+              "required": [
+                "analysis",
+                "preview",
+                "offline",
+                "strict_read_only"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "policy",
+            "wiki_directory",
+            "new_project",
+            "agents",
+            "reference_skill",
+            "init_prepares_extractors",
+            "helper_policy"
+          ],
+          "additionalProperties": false
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "setup_and_upgrade": {
+              "type": "object",
+              "properties": {
+                "knowledge_format": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "manifest_format": {
+                  "$ref": "#/$defs/identifier"
+                }
+              },
+              "required": [
+                "knowledge_format",
+                "manifest_format"
+              ],
+              "additionalProperties": false
+            },
+            "explicit_knowledge_formats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              },
+              "uniqueItems": true
+            },
+            "migration_targets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              },
+              "uniqueItems": true
+            },
+            "export_formats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              },
+              "uniqueItems": true
+            },
+            "observed_wiki_formats": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "setup_and_upgrade",
+            "explicit_knowledge_formats",
+            "migration_targets",
+            "export_formats",
+            "observed_wiki_formats"
+          ],
+          "additionalProperties": false
+        },
+        "task": {
+          "type": "object",
+          "properties": {
+            "setup_and_upgrade": {
+              "type": "object",
+              "properties": {
+                "task_request": {
+                  "$ref": "#/$defs/text"
+                },
+                "compact_view": {
+                  "$ref": "#/$defs/text"
+                },
+                "storage_selection": {
+                  "$ref": "#/$defs/text"
+                },
+                "storage_receipt": {
+                  "$ref": "#/$defs/text"
+                }
+              },
+              "required": [
+                "task_request",
+                "compact_view",
+                "storage_selection",
+                "storage_receipt"
+              ],
+              "additionalProperties": false
+            },
+            "default_request": {
+              "type": "object",
+              "properties": {
+                "schema_version": {
+                  "$ref": "#/$defs/text"
+                },
+                "kind": {
+                  "$ref": "#/$defs/identifier"
+                },
+                "storage_options": {
+                  "$ref": "#/$defs/storage_options"
+                },
+                "profile": {
+                  "type": "object",
+                  "properties": {
+                    "schema_version": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "knowledge_mode": {
+                          "$ref": "#/$defs/identifier"
+                        },
+                        "prefer_fresh": {
+                          "type": "boolean"
+                        },
+                        "read_scope": {
+                          "$ref": "#/$defs/identifier"
+                        },
+                        "budget_mode": {
+                          "$ref": "#/$defs/identifier"
+                        },
+                        "budget_tokens": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "counter_id": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/text"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "max_files": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "max_source_bytes": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "max_wiki_bytes": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "max_read_rounds": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "max_graph_items": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "max_followups": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "max_retries": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "knowledge_mode",
+                        "prefer_fresh",
+                        "read_scope",
+                        "budget_mode",
+                        "budget_tokens",
+                        "counter_id",
+                        "max_files",
+                        "max_source_bytes",
+                        "max_wiki_bytes",
+                        "max_read_rounds",
+                        "max_graph_items",
+                        "max_followups",
+                        "max_retries"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "schema_version",
+                    "settings"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "schema_version",
+                "kind",
+                "storage_options",
+                "profile"
+              ],
+              "additionalProperties": false
+            },
+            "explicit_v1": {
+              "type": "object",
+              "properties": {
+                "schema_version": {
+                  "$ref": "#/$defs/text"
+                },
+                "storage_options": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/storage_options"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "schema_version",
+                "storage_options"
+              ],
+              "additionalProperties": false
+            },
+            "explicit_v2": {
+              "type": "object",
+              "properties": {
+                "schema_version": {
+                  "$ref": "#/$defs/text"
+                },
+                "storage_options": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/storage_options"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "empty_storage_options": {
+                  "$ref": "#/$defs/storage_options"
+                }
+              },
+              "required": [
+                "schema_version",
+                "storage_options",
+                "empty_storage_options"
+              ],
+              "additionalProperties": false
+            },
+            "compact_view": {
+              "type": "object",
+              "properties": {
+                "default_schema": {
+                  "$ref": "#/$defs/text"
+                },
+                "explicit_schemas": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "default_schema",
+                "explicit_schemas"
+              ],
+              "additionalProperties": false
+            },
+            "cli_view": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "required": [
+            "setup_and_upgrade",
+            "default_request",
+            "explicit_v1",
+            "explicit_v2",
+            "compact_view",
+            "cli_view"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill"
+          }
+        }
+      },
+      "required": [
+        "package",
+        "setup",
+        "storage",
+        "task",
+        "skills"
+      ],
+      "additionalProperties": false
+    },
+    "contract_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "facts",
+    "contract_id"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "storage_options": {
+      "type": "object",
+      "properties": {
+        "selection": {
+          "$ref": "#/$defs/identifier"
+        },
+        "receipt": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "required": [
+        "selection",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "skill": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "description": {
+          "type": "string",
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "files"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

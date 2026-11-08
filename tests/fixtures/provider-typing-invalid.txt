@@ -22,3 +22,4 @@ api.check_publication_candidate(candidate_dir="candidate", receipt="not a receip
 api.review_publication_candidate({}, reviewer=123, reason="reviewed")  # expected: reportArgumentType
 api.validate_publication_receipt("not a receipt")  # expected: reportArgumentType
 api.build_publication_patch(workspace="run", candidate_dir="candidate", receipt={}, topic_ids=[1])  # expected: reportArgumentType
+api.render_behavior_reference("not a facts document")  # expected: reportArgumentType

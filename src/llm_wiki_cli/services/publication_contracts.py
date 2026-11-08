@@ -533,6 +533,10 @@ def _references(value: object, config: Mapping[str, Any]) -> None:
                     field + ".contract",
                     "only a contract-file provider may record known missing input",
                 )
+        elif configuration["kind"] == "llm-wiki-behavior":
+            from .behavior_reference import validate_behavior_facts
+
+            validate_behavior_facts(reference["contract"])
         else:
             from .cli_reference import validate_cli_contract
 
@@ -645,7 +649,10 @@ def _dependency(value: object, field: str) -> Mapping[str, Any]:
     }
     if isinstance(value, Mapping) and "reference" in value:
         provider = _topic_id(value["reference"], field + ".reference")
-        config["reference_providers"] = {provider: {"kind": "llm-wiki-cli"}}
+        # Reasons may contain the normalized selector without its provider.
+        # Both CLI provider kinds normalize every selection to a command list.
+        kind = "llm-wiki-cli" if "command" in value else "llm-wiki-behavior"
+        config["reference_providers"] = {provider: {"kind": kind}}
     dependency = validate_publication_config(config, consumer_root=None)["topics"][0][
         "depends_on"
     ][0]
@@ -664,9 +671,15 @@ def _input(value: object, field: str) -> None:
         return
     if "reference" in dependency:
         evidence = _record(data["hash"], field + ".hash", {"provider", "contract"})
-        _provider_configuration(
+        configuration = _provider_configuration(
             evidence["provider"], dependency["reference"], field + ".hash.provider"
         )
+        expects_command = configuration["kind"] in {"llm-wiki-cli", "contract-file"}
+        if ("command" in dependency) != expects_command:
+            _fail(
+                field + ".dependency",
+                "selector differs from its reference provider kind",
+            )
         _hash(evidence["contract"], field + ".hash.contract")
         return
     evidence = _record(

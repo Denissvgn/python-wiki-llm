@@ -302,6 +302,7 @@ def _dependency(
             "source_file",
             "reference",
             "command",
+            "fact",
             "section",
             "facets",
         },
@@ -314,12 +315,24 @@ def _dependency(
         )
     kind = next(iter(kinds))
     if kind == "reference":
-        _object(data, field, {"reference"}, {"command"})
         provider = _text(data["reference"], f"{field}.reference", 128)
         if not _IDENTIFIER.fullmatch(provider) or provider not in reference_providers:
             raise PublicationConfigError(
                 f"{field}.reference", "must name a declared reference provider"
             )
+        if reference_providers[provider]["kind"] == "llm-wiki-behavior":
+            from .behavior_reference import BEHAVIOR_FACT_GROUPS
+
+            _object(data, field, {"reference"}, {"fact"})
+            if "fact" in data:
+                return {
+                    "reference": provider,
+                    "fact": _choice(
+                        data["fact"], f"{field}.fact", set(BEHAVIOR_FACT_GROUPS)
+                    ),
+                }
+            return {"reference": provider}
+        _object(data, field, {"reference"}, {"command"})
         command = []
         for index, raw_token in enumerate(
             _array(data.get("command", []), f"{field}.command", _MAX_COMMAND_TOKENS)
@@ -332,10 +345,11 @@ def _dependency(
                 )
             command.append(token)
         return {"reference": provider, "command": command}
-    if "command" in data:
-        raise PublicationConfigError(
-            f"{field}.command", "is only accepted for reference dependencies"
-        )
+    for selector in ("command", "fact"):
+        if selector in data:
+            raise PublicationConfigError(
+                f"{field}.{selector}", "is only accepted for reference dependencies"
+            )
     path = _relative_path(data[kind], f"{field}.{kind}")
     actual = (
         f"{architecture_root}/{path}"
@@ -406,9 +420,11 @@ def _reference_providers(
         ids.add(identity.casefold())
         provider = _object(raw, field, {"kind"}, {"path"})
         kind = _choice(
-            provider["kind"], field + ".kind", {"llm-wiki-cli", "contract-file"}
+            provider["kind"],
+            field + ".kind",
+            {"llm-wiki-cli", "llm-wiki-behavior", "contract-file"},
         )
-        if kind == "llm-wiki-cli":
+        if kind != "contract-file":
             _object(provider, field, {"kind"})
             result[identity] = {"kind": kind}
         else:
@@ -805,8 +821,8 @@ def validate_publication_config(
             )
             scope = (
                 tuple(dependency["command"])
-                if dep_kind == "reference"
-                else dependency.get("section")
+                if "command" in dependency
+                else dependency.get("fact", dependency.get("section"))
             )
             dep_key = (dep_kind, dependency[dep_kind], scope)
             if dep_key in seen_dependencies:

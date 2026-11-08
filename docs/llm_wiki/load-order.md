@@ -280,12 +280,13 @@ Topological module load / startup order and import-time side effects.
 273. [task_evidence](modules/task_evidence.md)
 274. [task_context](modules/task_context.md)
 275. [task_compact](modules/task_compact.md)
-276. [context_session](modules/context_session.md)
-277. [api](modules/api.md)
-278. [mcp_server](modules/mcp_server.md)
-279. [task_compact_delivery](modules/task_compact_delivery.md)
-280. [task_context_v2](modules/task_context_v2.md)
-281. [wiki_git_delivery](modules/wiki_git_delivery.md)
+276. [behavior_reference](modules/behavior_reference.md)
+277. [context_session](modules/context_session.md)
+278. [api](modules/api.md)
+279. [mcp_server](modules/mcp_server.md)
+280. [task_compact_delivery](modules/task_compact_delivery.md)
+281. [task_context_v2](modules/task_context_v2.md)
+282. [wiki_git_delivery](modules/wiki_git_delivery.md)
 
 ## Module-level side effects
 

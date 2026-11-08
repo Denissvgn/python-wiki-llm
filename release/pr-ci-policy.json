@@ -586,6 +586,8 @@
     "reference": {
       "tests": [
         "tests/test_cli_reference.py",
+        "tests/test_behavior_reference.py",
+        "tests/test_behavior_reference_cli.py",
         "tests/test_publication_references.py"
       ],
       "lanes": [
@@ -988,10 +990,16 @@
     {
       "paths": [
         "src/llm_wiki_cli/services/cli_reference.py",
+        "src/llm_wiki_cli/services/behavior_reference.py",
         "src/llm_wiki_cli/services/publication_references.py",
         "src/llm_wiki_cli/commands/reference_cmd.py",
         "src/llm_wiki_cli/schemas/llm-wiki-cli-contract-v1.schema.json",
+        "src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
+        "src/llm_wiki_cli/skills/**",
+        "pyproject.toml",
         "tests/test_cli_reference.py",
+        "tests/test_behavior_reference.py",
+        "tests/test_behavior_reference_cli.py",
         "tests/test_publication_references.py",
         "docs/cli-reference-data.md"
       ],

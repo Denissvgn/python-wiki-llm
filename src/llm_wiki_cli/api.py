@@ -3586,6 +3586,34 @@ def validate_cli_contract(contract: Mapping[str, Any]) -> None:
 
 
 @_api_boundary
+def get_behavior_facts() -> dict[str, Any]:
+    """Describe the installed provider's runtime requirements, defaults and bundled skills."""
+    from .services.behavior_reference import get_behavior_facts as get_facts
+
+    return get_facts()
+
+
+@_api_boundary
+def validate_behavior_facts(contract: Mapping[str, Any]) -> None:
+    """Validate a versioned behavior facts document and its content commitment."""
+    from .services.behavior_reference import validate_behavior_facts as validate
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("Behavior facts must be a mapping")
+    validate(dict(contract))
+
+
+@_api_boundary
+def render_behavior_reference(contract: Mapping[str, Any]) -> str:
+    """Render validated behavior facts as Markdown."""
+    from .services.behavior_reference import render_behavior_reference as render
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("Behavior facts must be a mapping")
+    return render(dict(contract))
+
+
+@_api_boundary
 def export_publication_candidate(
     consumer_root: str | Path = ".",
     *,
@@ -4141,6 +4169,7 @@ __all__ = [
     "fingerprint_documentation_wiki_input",
     "get_concept",
     "get_cli_contract",
+    "get_behavior_facts",
     "get_calibration_run_status",
     "get_documentation_run_status",
     "get_p0_calibration_run_status",
@@ -4157,6 +4186,7 @@ __all__ = [
     "reconcile_context_packet",
     "related_concepts",
     "render_cli_reference",
+    "render_behavior_reference",
     "resolve_publication_finding",
     "review_publication_candidate",
     "select_documentation_model",
@@ -4165,6 +4195,7 @@ __all__ = [
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
     "validate_cli_contract",
+    "validate_behavior_facts",
     "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_documentation_run",

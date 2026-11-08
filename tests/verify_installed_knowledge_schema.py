@@ -22,6 +22,8 @@ import subprocess
 import sys
 
 import llm_wiki_cli
+from importlib.metadata import distribution
+from llm_wiki_cli import api
 from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
 from llm_wiki_cli.services.knowledge_model import load_knowledge_schema
 
@@ -32,6 +34,20 @@ assert KNOWLEDGE_SCHEMA_VERSION == "llm-wiki-knowledge/v1"
 assert schema["properties"]["schema_version"]["const"] == KNOWLEDGE_SCHEMA_VERSION
 diagnostic = json.loads(files("llm_wiki_cli").joinpath("schemas/llm-wiki-normalization-diagnostic-v1.schema.json").read_text(encoding="utf-8"))
 assert diagnostic["properties"]["schema_version"]["const"] == NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
+
+behavior_schema = json.loads(files("llm_wiki_cli").joinpath("schemas/llm-wiki-behavior-facts-v1.schema.json").read_text(encoding="utf-8"))
+behavior = api.get_behavior_facts()
+assert behavior_schema["properties"]["schema_version"]["const"] == behavior["schema_version"]
+api.validate_behavior_facts(behavior)
+dist = distribution("agent-wiki-cli")
+assert Path(dist.locate_file("llm_wiki_cli/__init__.py")).resolve() == Path(llm_wiki_cli.__file__).resolve()
+assert behavior["facts"]["package"] == {
+    "name": dist.metadata["Name"], "version": dist.version, "requires_python": dist.metadata["Requires-Python"],
+}
+installed_skill_ids = {path.parent.name for path in dist.files or ()
+                       if len(path.parts) == 4 and path.parts[:2] == ("llm_wiki_cli", "skills")
+                       and path.name == "SKILL.md"}
+assert installed_skill_ids and {skill["id"] for skill in behavior["facts"]["skills"]} == installed_skill_ids
 
 # Exercise the installed sample using only its exported, self-contained README.
 from llm_wiki_cli.services.plugin_samples import export_sample
@@ -85,6 +101,7 @@ _FORBIDDEN_PARTS = {
 }
 _REQUIRED_HELPERS = {
     "llm_wiki_cli/py.typed",
+    "llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
     "llm_wiki_cli/schemas/llm-wiki-normalization-diagnostic-v1.schema.json",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",

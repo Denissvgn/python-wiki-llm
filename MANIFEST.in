@@ -25,4 +25,5 @@ recursive-include tests/fixtures/knowledge-evidence *.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-v6.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-catalog-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-cli-contract-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json
 include docs/cli-reference-data.md

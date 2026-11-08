@@ -5,6 +5,53 @@ dependencies aligned with command definitions. The built-in provider describes
 the installed `llm-wiki` CLI. Applications can supply their own saved contract
 through a file provider.
 
+## Export installed behavior facts
+
+Use `reference behavior` for claims about the installed provider that depend
+on more than an argument's parser default.
+
+```bash
+llm-wiki reference behavior --format json --output reports/behavior.json
+llm-wiki reference behavior --input reports/behavior.json --format markdown --output reports/behavior.md
+```
+
+The JSON document uses `llm-wiki-behavior-facts/v1`. Its `contract_id`
+commits to the schema version and all five groups under `facts`.
+[Behavior facts JSON Schema](../src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json)
+
+| Group | What it describes |
+| --- | --- |
+| `package` | The installed distribution name, version and `requires_python` requirement from its package metadata. |
+| `setup` | Fresh-project agent settings, wiki directory, reference skill and helper-preparation policies. Stored project choices and explicit flags can change an individual invocation. |
+| `storage` | Knowledge and manifest formats selected by current setup and upgrade, plus the explicit bootstrap, migration and compatibility export choices. |
+| `task` | The task policy recorded by setup and upgrade, the normalized request and workflow profile for an omitted schema, explicit v1 and v2 behavior, compact-view schemas, and the default CLI delivery view. Explicit v2 distinguishes omitted storage options from an empty options object. |
+| `skills` | The skill IDs, names, descriptions and relative files shipped by the installed provider. Project provisioning determines which skills are copied to the agent's directory. |
+
+The behavior export reads provider declarations. Its `observed_wiki_formats`
+field is `null`. To inspect the knowledge format in an existing project,
+run `llm-wiki knowledge storage-check --wiki-dir PATH`; its `format` field
+describes that wiki. See [knowledge storage](knowledge-storage.md).
+
+Python callers can use `llm_wiki_cli.api.get_behavior_facts()`,
+`validate_behavior_facts(document)` and `render_behavior_reference(document)`.
+Rendering a saved document uses its recorded values and verifies its commitment.
+
+### Bind a public claim to a fact group
+
+To document the provider's storage defaults, add this declaration to the
+consumer policy's `reference_providers` object.
+
+```json
+{"provider-policy": {"kind": "llm-wiki-behavior"}}
+```
+
+Add `{"reference": "provider-policy", "fact": "storage"}` to the topic's
+`depends_on` list. The impact report reopens that topic when its selected
+group changes. A skill inventory change can leave a storage topic's review
+current. Omit `fact` to bind all five groups, including the package version.
+The full candidate receipt still covers the complete captured basis. This
+provider is opt-in for consumers documenting `llm-wiki` itself.
+
 ## Export the installed CLI
 
 ```bash

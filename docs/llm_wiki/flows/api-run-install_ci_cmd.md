@@ -96,9 +96,9 @@ sequenceDiagram
     p1-->>p30: authored.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 1301 interactions; 1271 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1305 interactions; 1275 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 446 (445 omitted); unresolved 1 of 296 (295 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 297 (296 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -125,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 560; effect analysis evaluated: 315, partial: 18, unavailable: 227. Counts include steps omitted from the displayed trace.
+Source steps: 562; effect analysis evaluated: 317, partial: 18, unavailable: 227. Counts include steps omitted from the displayed trace.
 
-Collector observations for 333 source steps with known totals: observed: 1910, emitted: 1849, omitted: 61. Unavailable totals are excluded.
+Collector observations for 335 source steps with known totals: observed: 1924, emitted: 1863, omitted: 61. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

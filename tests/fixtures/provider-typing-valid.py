@@ -99,6 +99,12 @@ def sibling_candidate(root: str, receipt: dict[str, object]) -> dict[str, object
     return checked
 
 
+def installed_behavior_reference() -> str:
+    facts: dict[str, object] = api.get_behavior_facts()
+    api.validate_behavior_facts(facts)
+    return api.render_behavior_reference(facts)
+
+
 def sibling_semantic_patch(root: str, workspace: str, receipt: dict[str, object]) -> dict[str, object]:
     proposal: dict[str, object] = api.prepare_publication_maintenance(
         root, workspace=workspace, candidate_dir="reports/candidate", receipt=receipt, topic_ids=["setup"]

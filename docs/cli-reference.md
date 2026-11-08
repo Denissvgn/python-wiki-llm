@@ -1936,8 +1936,11 @@ identity-disclosure, rollback, checker, and authority rules.
 
 Generate versioned command data with `llm-wiki reference cli --format json` or
 render it with `--format markdown`. `reference render --input FILE` validates
-and renders saved data. The [reference-data guide](cli-reference-data.md)
-covers public Python APIs and consumer mappings for command changes.
+and renders a saved command contract. Use `llm-wiki reference behavior` for
+the installed Python requirement, setup and storage defaults, task behavior
+and bundled skill inventory. Add `--input FILE` to render a saved behavior
+contract. The [reference-data guide](cli-reference-data.md) covers the Python
+APIs and topic bindings for both kinds of reference.
 
 ## `docs`
 

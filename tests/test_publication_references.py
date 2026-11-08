@@ -15,6 +15,11 @@ from llm_wiki_cli.services.cli_reference import (
 )
 from llm_wiki_cli.services.knowledge_evidence import hash_json
 from llm_wiki_cli.services import publication_impact as impact
+from llm_wiki_cli.services.publication_config import validate_publication_config
+from llm_wiki_cli.services.publication_contracts import (
+    validate_publication_basis,
+    validate_publication_report,
+)
 from tests.test_publication_impact import consumer as consumer
 
 
@@ -381,3 +386,196 @@ def test_reference_cli_and_saved_renderer_use_the_same_contract(
         cli.main()
     assert error.value.code == 2
     assert json.loads((tmp_path / "cli.json").read_text()) == saved
+
+
+def configure_behavior(root, *groups):
+    path = root / ".llm-wiki/publication.json"
+    policy = json.loads(path.read_bytes())
+    policy["reference_providers"] = {"installed": {"kind": "llm-wiki-behavior"}}
+    original = policy["topics"][0]
+    topics = []
+    for group in groups:
+        topic_id = group or "all"
+        page = f"{topic_id}.md"
+        (root / "public" / page).write_bytes(b"# Reference\n")
+        dependency = {"reference": "installed"}
+        if group is not None:
+            dependency["fact"] = group
+        topics.append(
+            {**original, "id": topic_id, "wiki_page": page, "depends_on": [dependency]}
+        )
+    policy["topics"] = topics
+    path.write_text(json.dumps(policy), encoding="utf-8")
+    return policy
+
+
+def revised_distribution(contract):
+    updated = deepcopy(contract)
+    updated["facts"]["package"]["version"] = "9.8.7"
+    updated["contract_id"] = hash_json(
+        {k: v for k, v in updated.items() if k != "contract_id"}
+    )
+    return updated
+
+
+def test_behavior_capture_reopens_only_affected_scopes(consumer, monkeypatch):
+    from llm_wiki_cli.services import behavior_reference
+
+    configure_behavior(consumer, None, "package", "setup", "task", "storage", "skills")
+    before = capture(consumer)
+    contract = next(iter(before["references"].values()))["contract"]
+    initial = impact.compare_publication_impact(before)
+    ledger = None
+    for finding in initial["findings"]:
+        ledger = impact.resolve_publication_finding(
+            initial,
+            before,
+            finding_id=finding["id"],
+            reviewer="owner",
+            reason="Reviewed the declared behavior",
+            reviews=ledger,
+        )
+    assert impact.compare_publication_impact(before, reviews=ledger)["ready"]
+    updated = revised_distribution(contract)
+    monkeypatch.setattr(
+        behavior_reference, "get_behavior_facts", lambda: deepcopy(updated)
+    )
+    after = capture(consumer, before)
+    diff = impact.compare_publication_impact(after, before, reviews=ledger)
+    assert diff["complete"] and diff["changed"] and diff["review_required"]
+    assert {f["subject"] for f in diff["findings"]} == {"all", "package"}
+    all_findings = impact.compare_publication_impact(after, reviews=ledger)["findings"]
+    assert {
+        f["subject"] for f in all_findings if f["status"] == "reviewed-current"
+    } == {
+        "setup",
+        "task",
+        "storage",
+        "skills",
+    }
+    validate_publication_report(diff)
+    validate_publication_basis(after)
+
+
+def test_behavior_is_opt_in_and_rechecked_after_capture(consumer, monkeypatch):
+    from llm_wiki_cli.services import behavior_reference
+
+    current = behavior_reference.get_behavior_facts()
+    monkeypatch.setattr(
+        behavior_reference,
+        "get_behavior_facts",
+        lambda: pytest.fail("Unrequested capture"),
+    )
+    assert "references" not in capture(consumer)
+    configure(consumer)
+    (consumer / "app-reference.json").write_text(
+        json.dumps(app_contract()), encoding="utf-8"
+    )
+    assert impact.compare_publication_impact(capture(consumer))["complete"]
+
+    configure_behavior(consumer, "skills")
+    generations = iter([current, revised_distribution(current)])
+    monkeypatch.setattr(
+        behavior_reference, "get_behavior_facts", lambda: next(generations)
+    )
+    with pytest.raises(ValueError, match="changed during publication capture"):
+        capture(consumer)
+
+
+def test_rebound_behavior_provider_keeps_retired_review_on_its_original_scope(
+    consumer, monkeypatch
+):
+    from llm_wiki_cli.services import behavior_reference
+
+    policy = configure_behavior(consumer, "package")
+    before = capture(consumer)
+    policy["topics"] = []
+    policy["reference_providers"]["installed"] = {
+        "kind": "contract-file",
+        "path": "app.json",
+    }
+    (consumer / "app.json").write_text(json.dumps(app_contract()), encoding="utf-8")
+    (consumer / ".llm-wiki/publication.json").write_text(
+        json.dumps(policy), encoding="utf-8"
+    )
+    after = capture(consumer, before)
+    assert {ref["configuration"]["kind"] for ref in after["references"].values()} == {
+        "contract-file",
+        "llm-wiki-behavior",
+    }
+    report = impact.compare_publication_impact(after, before)
+    (finding,) = report["findings"]
+    assert finding["reasons"] == [{"kind": "mapping-retired"}]
+    ledger = impact.resolve_publication_finding(
+        report,
+        after,
+        finding_id=finding["id"],
+        reviewer="owner",
+        reason="Retire page",
+        decision="retired",
+    )
+    assert impact.compare_publication_impact(after, before, reviews=ledger)["ready"]
+    updated = revised_distribution(behavior_reference.get_behavior_facts())
+    monkeypatch.setattr(
+        behavior_reference, "get_behavior_facts", lambda: deepcopy(updated)
+    )
+    assert not impact.compare_publication_impact(
+        capture(consumer, before), before, reviews=ledger
+    )["ready"]
+
+
+@pytest.mark.parametrize(
+    "provider, dependencies",
+    [
+        (
+            {"kind": "llm-wiki-behavior", "path": "app.json"},
+            [{"reference": "installed"}],
+        ),
+        ({"kind": "llm-wiki-behavior"}, [{"reference": "installed", "command": []}]),
+        (
+            {"kind": "llm-wiki-behavior"},
+            [{"reference": "installed", "fact": "unknown"}],
+        ),
+        ({"kind": "llm-wiki-behavior"}, [{"reference": "installed", "fact": []}]),
+        (
+            {"kind": "llm-wiki-behavior"},
+            [{"reference": "installed", "fact": "task"}] * 2,
+        ),
+        ({"kind": "llm-wiki-cli"}, [{"reference": "installed", "fact": "package"}]),
+        (
+            {"kind": "contract-file", "path": "app.json"},
+            [{"reference": "installed", "fact": "package"}],
+        ),
+        ({"kind": "llm-wiki-behavior"}, [{"source_file": "app.py", "fact": "skills"}]),
+    ],
+)
+def test_behavior_selectors_are_typed_by_provider(consumer, provider, dependencies):
+    config = configure_behavior(consumer, "setup")
+    config["reference_providers"]["installed"] = provider
+    config["topics"][0]["depends_on"] = dependencies
+    with pytest.raises(ValueError):
+        validate_publication_config(config, consumer_root=None)
+
+
+def test_saved_behavior_evidence_enforces_origin_and_selector_shape(consumer):
+    configure_behavior(consumer, "skills")
+    basis = capture(consumer)
+    report = impact.compare_publication_impact(basis)
+    (finding,) = report["findings"]
+    change = next(
+        reason
+        for reason in finding["reasons"]
+        if reason["kind"] == "dependency-changed"
+    )
+    change["after"]["hash"]["provider"] = {"kind": "llm-wiki-cli"}
+    finding["id"] = hash_json({k: v for k, v in finding.items() if k != "id"})
+    report["report_id"] = hash_json(
+        {k: v for k, v in report.items() if k != "report_id"}
+    )
+    with pytest.raises(ValueError):
+        validate_publication_report(report)
+    reference = next(iter(basis["references"].values()))
+    reference["contract"] = app_contract()
+    basis["basis_id"] = hash_json({k: v for k, v in basis.items() if k != "basis_id"})
+    with pytest.raises(ValueError):
+        validate_publication_basis(basis)

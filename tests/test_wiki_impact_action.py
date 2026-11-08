@@ -37,10 +37,22 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
         ("Command-Reference.md", "upgrade"),
         ("Migration-and-Upgrades.md", "upgrade-framework-artifacts"),
         ("Command-Reference.md", "command-reference"),
+        ("Installation-and-Requirements.md", "python-version"),
+        ("Plugins-and-Skills.md", "bundled-skills"),
         ("Maintaining-a-Sibling-Wiki.md", None),
     }
     expected = {"flows/cli-upgrade.md", "workflows/upgrade_current_knowledge.md"}
+    assert config["reference_providers"]["provider-policy"] == {"kind": "llm-wiki-behavior"}
+    groups = {
+        "command-reference.upgrade": {"setup"},
+        "migration.upgrade-framework-artifacts": {"storage", "task"},
+        "installation.python-version": {"package"},
+        "plugins.bundled-skills": {"skills"},
+    }
     for topic in config["topics"]:
+        assert {
+            dep["fact"] for dep in topic["depends_on"] if dep.get("reference") == "provider-policy"
+        } == groups.get(topic["id"], set())
         if topic["id"] == "sibling-wiki.maintenance":
             assert topic["edit_at"] == "repository"
             assert topic["source_document"] == "docs/sibling-wiki.md"
@@ -52,6 +64,8 @@ def test_root_pilot_maps_both_upgrade_topics_and_leaves_cli_discovery_open():
             assert topic["depends_on"] == [{"reference": "llm-wiki", "command": []}]
             continue
         assert topic["owner"] == "maintainers" and topic["edit_at"] == "wiki"
+        if topic["id"] in {"installation.python-version", "plugins.bundled-skills"}:
+            continue
         assert {
             dependency["architecture_page"]
             for dependency in topic["depends_on"]
