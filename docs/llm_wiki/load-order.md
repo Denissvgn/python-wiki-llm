@@ -381,7 +381,7 @@ Topological module load / startup order and import-time side effects.
 | [publication_candidate](modules/publication_candidate.md) | `_HASH = re.compile`, `_REVISION = re.compile` |
 | [publication_config](modules/publication_config.md) | `_METADATA_DIRECTORIES = frozenset`, `_IDENTIFIER = re.compile`, `_REPOSITORY = re.compile`, `_ANCHOR = re.compile`, `_GLOB = re.compile` |
 | [publication_contracts](modules/publication_contracts.md) | `_TOPIC_ID = re.compile` |
-| [publication_links](modules/publication_links.md) | `_WIKI_LINK = re.compile`, `_REFERENCE = re.compile`, `_ESCAPE = re.compile`, `_FORMAT_TAGS = frozenset` |
+| [publication_links](modules/publication_links.md) | `_PRIVATE_COMPONENTS = frozenset`, `_WIKI_LINK = re.compile`, `_REFERENCE = re.compile`, `_ESCAPE = re.compile`, `_FORMAT_TAGS = frozenset` |
 | [python_implementation](modules/python_implementation.md) | `_HASH = re.compile`, `_LOCATIONS = frozenset` |
 | [python_stdlib](modules/python_stdlib.md) | `_PYTHON_STDLIB_FALLBACK = frozenset` |
 | [redaction](modules/redaction.md) | `SENSITIVE_KEYS = frozenset`, `SENSITIVE_KEY_RE = re.compile`, `PRIVATE_KEY_BLOCK_RE = re.compile`, `SENSITIVE_ASSIGNMENT_RE = re.compile`, `SENSITIVE_NATURAL_LANGUAGE_RE = re.compile`, `_REDACTION_SENSITIVE_ASSIGNMENT_RE = re.compile`, `_REDACTION_SENSITIVE_NATURAL_LANGUAGE_RE = re.compile`, `URI_USERINFO_RE = re.compile`, `PROJECTION_URI_USERINFO_RE = re.compile`, `_REDACTABLE_URI_USERINFO_RE = re.compile`, `_REDACTABLE_PROJECTION_URI_USERINFO_RE = re.compile`, `LIKELY_SECRET_RE = re.compile`, `CREDENTIAL_VALUE_RE = re.compile`, `_AUTHORIZATION_VALUE_RE = re.compile` |

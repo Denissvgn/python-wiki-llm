@@ -133,8 +133,13 @@ remains bound to its evidence and target bytes. A candidate also needs a separat
 exact-artifact approval covering its complete tree and ownership changes:
 
 ```bash
-.venv/bin/llm-wiki docs wiki review --candidate-dir reports/wiki-candidate --receipt reports/wiki-candidate.json --reviewer alice --reason "Reviewed the public diff, assets and ownership changes" --output .llm-wiki/candidate-review.proposed.json
+.venv/bin/llm-wiki docs wiki review --target-dir sibling-wiki --candidate-dir reports/wiki-candidate --receipt reports/wiki-candidate.json --reviewer alice --reason "Reviewed the public diff, assets and ownership changes" --output .llm-wiki/candidate-review.proposed.json
 ```
+
+Local-snapshot review requires the original `--target-dir`; the command checks
+that its bytes still match the receipt and keeps review metadata outside it.
+Artifact-only review omits that option. Current configuration inputs remain
+protected even when reviewing an older receipt.
 
 Submit canonical content, mapping changes and both proposed review records
 through the consumer's normal repository review process. Reviewer text alone

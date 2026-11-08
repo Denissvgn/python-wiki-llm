@@ -14,7 +14,12 @@ from .. import __version__
 from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
 from .knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
-from .publication_config import load_publication_config, publication_path
+from .publication_config import (
+    load_publication_config,
+    publication_control_overlap,
+    publication_input_controls,
+    publication_path,
+)
 from .publication_contracts import (
     _json_tree,
     validate_publication_basis,
@@ -95,6 +100,32 @@ def _within(path: Path, root: Path) -> bool:
     )
 
 
+def _target_path(root, value):
+    if not isinstance(value, (str, Path)):
+        raise ValueError("A local target snapshot directory is required")
+    selected = Path(value)
+    if (
+        any(
+            part.casefold()
+            in _VCS
+            | {
+                ".venv",
+                "__pycache__",
+                "node_modules",
+                ".llm-wiki-knowledge",
+                ".llm-wiki-manifest",
+            }
+            for part in selected.parts
+        )
+        or selected.name.casefold() == ".llm-wiki"
+    ):
+        raise ValueError("Target snapshots cannot be inside VCS or runtime state")
+    target = publication_path(root, str(value))
+    if _same(target, root) or not target.is_dir():
+        raise ValueError("Target must be a separate local public wiki snapshot")
+    return target
+
+
 def _tree_paths(root: Path):
     paths = []
     pending = [root]
@@ -102,7 +133,7 @@ def _tree_paths(root: Path):
         directory = pending.pop()
         for item in sorted(directory.iterdir(), key=lambda value: value.name):
             relative = item.relative_to(root).as_posix()
-            if item.name in _VCS:
+            if item.name.casefold() in _VCS:
                 continue
             _portable(relative)
             if item.is_symlink():
@@ -267,6 +298,9 @@ def _validate_review(value):
 
 def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
     """Validate a complete receipt without trusting its readiness assertions."""
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Candidate receipt must be a mapping")
+    receipt = dict(receipt)
     _json_tree(receipt)
     if (
         len(
@@ -301,6 +335,7 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
     if (
         type(target) is not dict
         or set(target) != {"mode", "files", "tree_hash", "remote_verified"}
+        or type(target["mode"]) is not str
         or target["mode"] not in {"local-snapshot", "artifact-only"}
         or target["remote_verified"] is not False
     ):
@@ -361,6 +396,7 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         if (
             type(item) is not dict
             or set(item) != {"kind", "owner", "source_document"}
+            or type(item["kind"]) is not str
             or item["kind"] not in {"page", "asset"}
             or type(item["owner"]) is not str
             or not item["owner"].strip()
@@ -400,6 +436,7 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         if (
             type(item) is not dict
             or set(item) != {"path", "kind", "before", "after", "reason"}
+            or type(item["kind"]) is not str
             or item["kind"] not in {"add", "update", "unchanged", "adopt", "remove"}
         ):
             raise ValueError("Candidate operation is invalid")
@@ -459,6 +496,17 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         or checks["ok"] != (not checks["findings"])
     ):
         raise ValueError("Candidate checks are inconsistent")
+    for finding in checks["findings"]:
+        if (
+            type(finding) is not dict
+            or set(finding) != {"path", "kind", "message"}
+            or any(type(finding[key]) is not str for key in finding)
+            or not finding["kind"]
+            or not finding["message"]
+        ):
+            raise ValueError("Candidate check finding is invalid")
+        if finding["path"]:
+            _portable(finding["path"])
     review = receipt["review"]
     if (
         type(review) is not dict
@@ -506,7 +554,7 @@ def review_publication_candidate(
     return proposal
 
 
-def _output_path(root, name, config, target, basis):
+def _output_path(root, name, config, target, basis, config_path):
     if str(name) == ".":
         raise ValueError(
             "Candidate output must be a separate consumer-relative directory"
@@ -523,9 +571,15 @@ def _output_path(root, name, config, target, basis):
             raise ValueError(
                 "Candidate output overlaps authored, native or target inputs"
             )
-    for source in basis["files"]:
-        item = root / source
-        if _within(path, item) or _within(item, path):
+    inputs = {root / source for source in basis["files"]}
+    inputs.update(
+        root / reference["configuration"]["path"]
+        for reference in basis.get("references", {}).values()
+        if reference["configuration"]["kind"] == "contract-file"
+    )
+    inputs.update(publication_input_controls(root, config, config_path))
+    for item in inputs:
+        if publication_control_overlap(path, item):
             raise ValueError("Candidate output overlaps a declared input")
     if path.exists() and (not path.is_dir() or any(path.iterdir())):
         raise ValueError("Candidate output must be absent or empty")
@@ -570,10 +624,15 @@ def _prepare(
             raise ValueError("Ownership receipt belongs to a different target")
     if candidate_review is not None:
         _validate_review(candidate_review)
-    target = None if target_dir is None else publication_path(root, str(target_dir))
+    target = None if target_dir is None else _target_path(root, target_dir)
     if target is not None:
-        if _same(target, root) or not target.is_dir():
-            raise ValueError("Target must be a separate local public wiki snapshot")
+        if any(
+            publication_control_overlap(target, control)
+            for control in publication_input_controls(root, config, config_path)
+        ):
+            raise ValueError(
+                "Target snapshot includes configuration or source-selection inputs"
+            )
         for protected in (config["content"]["root"], config["architecture"]["root"]):
             if protected != "." and _within(publication_path(root, protected), target):
                 raise ValueError(
@@ -815,7 +874,9 @@ def export_publication_candidate(
         source_revision=source_revision,
         target_revision=target_revision,
     )
-    destination = _output_path(root, output_dir, config, target, receipt["basis"])
+    destination = _output_path(
+        root, output_dir, config, target, receipt["basis"], config_path
+    )
     if config["architecture"]["baseline"] == "bootstrap-source":
         from .publication_snapshot import assert_bootstrap_output_excluded
 
@@ -915,3 +976,18 @@ def validate_candidate_tree(
 
     if check_github_wiki(files) != receipt["checks"]:
         raise ValueError("Candidate checks differ from its actual public content")
+
+
+def validate_candidate_target(
+    consumer_root: str | Path, target_dir: str | Path | None, receipt: Mapping[str, Any]
+) -> None:
+    """Recheck the original public target before preparing an artifact review."""
+    validate_publication_receipt(receipt)
+    if receipt["target"]["mode"] == "artifact-only":
+        if target_dir is not None:
+            raise ValueError("Artifact-only receipts do not bind a local target copy")
+        return
+    root = _absolute_path(Path(consumer_root))
+    target = _target_path(root, target_dir)
+    if _hashes(_read_tree(target)) != receipt["target"]["files"]:
+        raise ValueError("Original target differs from the supplied receipt")

@@ -9,10 +9,14 @@
 1. `source_snapshot._is_package_marker`
 2. `knowledge_storage_io._absolute_path`
 3. `publication_config.load_publication_config`
-4. `publication_cmd._inside_input_tree`
-5. `publication_cmd._same_file`
-6. `publication_cmd._declared_files`
-7. `publication_cmd._inside_input_tree`
+4. `publication_config.publication_input_controls`
+5. `publication_config.publication_control_overlap`
+6. `publication_cmd._inside_input_tree`
+7. `publication_config.publication_control_overlap`
+8. `publication_cmd._inside_input_tree`
+9. `publication_config.publication_control_overlap`
+10. `publication_cmd._declared_files`
+11. `publication_config.publication_control_overlap`
 
 ## Touches
 

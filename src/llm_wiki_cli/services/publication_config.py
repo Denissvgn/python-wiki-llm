@@ -20,6 +20,7 @@ from urllib.parse import quote, unquote, urlsplit
 
 from .concept_identity import ConceptIdentityError, validate_locator
 from .source_selection import (
+    SOURCE_SELECTION_PATH,
     SourceSelectionError,
     locate_exact_repository_path,
     path_is_link_or_reparse,
@@ -184,6 +185,29 @@ def publication_path(root: Path, relative: str) -> Path:
     path = _relative_path(relative, "path")
     _check_path(selected_root, path, "path", {})
     return selected_root / path
+
+
+def publication_input_controls(root: Path, config, config_path) -> set[Path]:
+    """Reserve implicit discovery inputs, including safely absent coordinates."""
+    root = Path(root)
+    roots = {root, root / config["architecture"]["root"]}
+    return {root / config_path} | {
+        directory / relative
+        for directory in roots
+        for relative in (".gitignore", SOURCE_SELECTION_PATH)
+    }
+
+
+def publication_control_overlap(left: Path, right: Path) -> bool:
+    """Compare protected input namespaces across portable filesystem names."""
+    first = tuple(
+        portable_path_key(part) for part in Path(left).resolve(strict=False).parts
+    )
+    second = tuple(
+        portable_path_key(part) for part in Path(right).resolve(strict=False).parts
+    )
+    length = min(len(first), len(second))
+    return first[:length] == second[:length]
 
 
 def _section(value: object, field: str) -> str:

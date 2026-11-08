@@ -14,8 +14,8 @@ Local GitHub wiki candidates and exact-artifact review proposals.
 | `..services.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `..services.knowledge_storage` | `KnowledgeStorageError` |
 | `..services.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
-| `..services.publication_candidate` | `check_publication_candidate`, `export_publication_candidate`, `review_publication_candidate`, `validate_candidate_tree`, `validate_publication_receipt` |
-| `..services.publication_config` | `load_publication_config` |
+| `..services.publication_candidate` | `check_publication_candidate`, `export_publication_candidate`, `review_publication_candidate`, `validate_candidate_target`, `validate_candidate_tree`, `validate_publication_receipt` |
+| `..services.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls` |
 | `..services.publication_contracts` | `validate_publication_basis` |
 | `..services.publication_impact` | `MAX_JSON_BYTES`, `read_publication_document` |
 | `..services.source_snapshot` | `_is_package_marker` |

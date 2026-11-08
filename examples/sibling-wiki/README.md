@@ -24,7 +24,7 @@ Create topic decisions against the proposed public text:
 ```bash
 .venv/bin/llm-wiki docs impact --consumer-root examples/sibling-wiki --target-dir reports/wiki-candidate --output reports/candidate-impact.json
 .venv/bin/llm-wiki docs impact resolve --consumer-root examples/sibling-wiki --target-dir reports/wiki-candidate --report reports/candidate-impact.json --finding <finding-id> --decision still-current --reviewer alice --reason "The proposed topic matches the current account" --output .llm-wiki/publication-reviews.proposed.json
-.venv/bin/llm-wiki docs wiki review --consumer-root examples/sibling-wiki --candidate-dir reports/wiki-candidate --receipt reports/wiki-candidate.json --reviewer alice --reason "Reviewed the pages, navigation, asset and adoption" --output .llm-wiki/candidate-review.proposed.json
+.venv/bin/llm-wiki docs wiki review --consumer-root examples/sibling-wiki --target-dir sibling-wiki --candidate-dir reports/wiki-candidate --receipt reports/wiki-candidate.json --reviewer alice --reason "Reviewed the pages, navigation, asset and adoption" --output .llm-wiki/candidate-review.proposed.json
 ```
 
 Resolve every topic, supplying `--reviews` to extend the proposed ledger. Submit

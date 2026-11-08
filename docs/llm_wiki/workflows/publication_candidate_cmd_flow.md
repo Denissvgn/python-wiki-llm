@@ -8,13 +8,14 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `publication_candidate.validate_publication_receipt`
 2. `publication_candidate.validate_candidate_tree`
-3. `publication_candidate.review_publication_candidate`
-4. `publication_cmd._document_bytes`
-5. `publication_contracts.validate_publication_basis`
-6. `publication_candidate.validate_publication_receipt`
-7. `publication_candidate.export_publication_candidate`
-8. `publication_candidate.check_publication_candidate`
-9. `publication_cmd._document_bytes`
+3. `publication_candidate.validate_candidate_target`
+4. `publication_candidate.review_publication_candidate`
+5. `publication_cmd._document_bytes`
+6. `publication_contracts.validate_publication_basis`
+7. `publication_candidate.validate_publication_receipt`
+8. `publication_candidate.export_publication_candidate`
+9. `publication_candidate.check_publication_candidate`
+10. `publication_cmd._document_bytes`
 
 ## Touches
 

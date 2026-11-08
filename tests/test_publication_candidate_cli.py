@@ -80,6 +80,13 @@ def invoke(monkeypatch, *arguments):
         "package.json",
         ".git/receipt.json",
         ".llm-wiki/publication.json",
+        ".llm-wiki/source-selection.json",
+        ".llm-wiki/source-selection.json/receipt.json",
+        "project/.llm-wiki/source-selection.json",
+        "project/.llm-wiki/source-selection.json/receipt.json",
+        "project/.LLM-WIKI/SOURCE-SELECTION.JSON",
+        ".gitignore/receipt.json",
+        "project/.gitignore/receipt.json",
     ],
 )
 def test_candidate_metadata_guard_runs_before_tree_creation(
@@ -116,6 +123,145 @@ def test_candidate_metadata_guard_runs_before_tree_creation(
     )
 
 
+def test_receipt_cannot_create_a_missing_bootstrap_selection_file(
+    candidate_consumer, monkeypatch
+):
+    selection = candidate_consumer / "project/.llm-wiki/source-selection.json"
+    assert not selection.exists()
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "project/.llm-wiki/source-selection.json",
+        )
+        == 2
+    )
+    assert not selection.exists()
+    assert not selection.parent.exists()
+    assert not (candidate_consumer / "out/candidate").exists()
+
+
+@pytest.mark.parametrize("kind", ["reference", "source_file"])
+def test_missing_input_case_alias_cannot_become_receipt(
+    candidate_consumer, monkeypatch, kind
+):
+    from llm_wiki_cli.services import publication_candidate
+
+    path = candidate_consumer / ".llm-wiki/publication.json"
+    policy = json.loads(path.read_text())
+    if kind == "reference":
+        policy["reference_providers"] = {
+            "app": {"kind": "contract-file", "path": "data.json"}
+        }
+    else:
+        policy["topics"][0]["depends_on"].append({"source_file": "data.json"})
+    path.write_text(json.dumps(policy))
+    monkeypatch.setattr(
+        publication_candidate,
+        "export_publication_candidate",
+        lambda *_args, **_kwargs: pytest.fail("Input guard must precede mutation"),
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "DATA.json",
+        )
+        == 2
+    )
+    assert not (candidate_consumer / "DATA.json").exists()
+    assert not (candidate_consumer / "out/candidate").exists()
+
+
+@pytest.mark.parametrize("action", ["check", "review"])
+@pytest.mark.parametrize(
+    "output",
+    ["project/.llm-wiki/source-selection.json", "project/.gitignore/proposal.json"],
+)
+def test_check_and_review_metadata_reserve_absent_source_controls(
+    candidate_consumer, monkeypatch, action, output
+):
+    from llm_wiki_cli.services import publication_candidate
+
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    before = {
+        path.relative_to(
+            candidate_consumer / "out/candidate"
+        ).as_posix(): path.read_bytes()
+        for path in (candidate_consumer / "out/candidate").rglob("*")
+        if path.is_file()
+    }
+    if action == "check":
+        monkeypatch.setattr(
+            publication_candidate,
+            "check_publication_candidate",
+            lambda *_args, **_kwargs: pytest.fail(
+                "Control guard must precede checking"
+            ),
+        )
+        extra = ["--target-dir", "public"]
+    else:
+        monkeypatch.setattr(
+            publication_candidate,
+            "review_publication_candidate",
+            lambda *_args, **_kwargs: pytest.fail("Control guard must precede review"),
+        )
+        extra = [
+            "--target-dir",
+            "public",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+        ]
+    assert (
+        invoke(
+            monkeypatch,
+            action,
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--output",
+            output,
+            *extra,
+        )
+        == 2
+    )
+    assert not (candidate_consumer / output).exists()
+    assert not (candidate_consumer / "project/.llm-wiki").exists()
+    assert not (candidate_consumer / "project/.gitignore").exists()
+    assert {
+        path.relative_to(
+            candidate_consumer / "out/candidate"
+        ).as_posix(): path.read_bytes()
+        for path in (candidate_consumer / "out/candidate").rglob("*")
+        if path.is_file()
+    } == before
+
+
 @pytest.mark.parametrize("malformed", [{"files": [123]}, {"references": []}])
 def test_malformed_baseline_fails_before_candidate_mutation(
     candidate_consumer, monkeypatch, malformed
@@ -150,6 +296,230 @@ def test_malformed_baseline_fails_before_candidate_mutation(
     assert path.read_bytes() == original
     assert not (candidate_consumer / "reports/candidate").exists()
     assert not (candidate_consumer / "reports/receipt.json").exists()
+
+
+@pytest.mark.parametrize("case", ["target-output", "stale-target", "missing-target"])
+def test_review_protects_and_rechecks_its_original_target(
+    candidate_consumer, monkeypatch, case
+):
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    target = candidate_consumer / "public/Manual.md"
+    original = target.read_bytes()
+    if case == "stale-target":
+        target.write_bytes(original + b"Changed target.\n")
+    output = (
+        "public/proposal.json" if case == "target-output" else "reports/proposal.json"
+    )
+    extra = [] if case == "missing-target" else ["--target-dir", "public"]
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            output,
+            *extra,
+        )
+        == 2
+    )
+    assert not (candidate_consumer / output).exists()
+    assert target.read_bytes() == (
+        original + b"Changed target.\n" if case == "stale-target" else original
+    )
+
+
+@pytest.mark.parametrize("change", ["architecture", "dependency"])
+def test_review_reserves_current_config_inputs_beside_saved_receipt(
+    candidate_consumer, monkeypatch, change
+):
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    path = candidate_consumer / ".llm-wiki/publication.json"
+    policy = json.loads(path.read_text())
+    if change == "architecture":
+        policy["architecture"]["root"] = "other-project"
+        (candidate_consumer / "other-project").mkdir()
+        output = "other-project/.llm-wiki/source-selection.json"
+    else:
+        policy["topics"][0]["depends_on"].append({"source_file": "new-input.json"})
+        output = "new-input.json"
+    path.write_text(json.dumps(policy))
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--target-dir",
+            "public",
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            output,
+        )
+        == 2
+    )
+    assert not (candidate_consumer / output).exists()
+
+
+def test_artifact_only_review_does_not_require_a_local_target(
+    candidate_consumer, monkeypatch
+):
+    (candidate_consumer / "docs/Home.md").write_text(
+        "# Home\n\nPublic overview.\n", encoding="utf-8"
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            "reports/proposal.json",
+        )
+        == 0
+    )
+    assert (candidate_consumer / "reports/proposal.json").is_file()
+
+
+def test_review_rejects_control_directory_as_target_before_target_read(
+    candidate_consumer, monkeypatch
+):
+    from llm_wiki_cli.services import publication_candidate
+
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    monkeypatch.setattr(
+        publication_candidate,
+        "validate_candidate_target",
+        lambda *_args, **_kwargs: pytest.fail(
+            "Control directory must not be read as target"
+        ),
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--target-dir",
+            ".llm-wiki",
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            "reports/proposal.json",
+        )
+        == 2
+    )
+    assert not (candidate_consumer / "reports/proposal.json").exists()
+
+
+def test_curated_target_inside_control_parent_remains_supported(
+    candidate_consumer, monkeypatch
+):
+    nested = candidate_consumer / ".llm-wiki/targets/public"
+    nested.mkdir(parents=True)
+    (nested / "Manual.md").write_bytes(
+        (candidate_consumer / "public/Manual.md").read_bytes()
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            ".llm-wiki/targets/public",
+            "--output-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 0
+    )
+    assert (
+        invoke(
+            monkeypatch,
+            "review",
+            "--target-dir",
+            ".llm-wiki/targets/public",
+            "--candidate-dir",
+            "out/candidate",
+            "--receipt",
+            "reports/receipt.json",
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            "reports/proposal.json",
+        )
+        == 0
+    )
 
 
 def test_candidate_cli_requires_exact_topic_and_artifact_review(
@@ -195,6 +565,8 @@ def test_candidate_cli_requires_exact_topic_and_artifact_review(
         invoke(
             monkeypatch,
             "review",
+            "--target-dir",
+            "public",
             "--candidate-dir",
             "reports/candidate",
             "--receipt",
@@ -213,6 +585,8 @@ def test_candidate_cli_requires_exact_topic_and_artifact_review(
         invoke(
             monkeypatch,
             "review",
+            "--target-dir",
+            "public",
             "--candidate-dir",
             "reports/candidate",
             "--receipt",

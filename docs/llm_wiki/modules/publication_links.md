@@ -54,7 +54,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_HTML](../entities/HTML.md) | 449 | `HTMLParser` | — |
+| [_HTML](../entities/HTML.md) | 516 | `HTMLParser` | — |
 
 ## Functions
 
@@ -69,10 +69,13 @@ flowchart LR
 | `_blank` | `(text: str) -> str` | — | — |
 | `_line_match` | `(text, part, start, end)` | — | — |
 | `_inline_offsets` | `(text, token, offsets, cursors)` | — | — |
-| `_visible` | `(text: str, tokens) -> str` | — | — |
+| `_line_offsets` | `(text: str)` | — | — |
+| `_visible` | `(text: str, tokens, *, mask_links = False, environment = None) -> str` | — | — |
+| `_reference_records` | `(environment)` | — | — |
+| `_reference_resources` | `(visible, environment)` | — | Locate parsed definitions across list/blockquote continuation prefixes. |
 | `_escaped` | `(text: str, position: int) -> bool` | — | — |
 | `_destination` | `(text: str, start: int) -> tuple[int, int] \| None` | — | — |
-| `_resources` | `(visible: str)` | — | — |
+| `_resources` | `(visible: str, *, wiki_visible = None, environment = None)` | — | — |
 | `_url` | `(value: str)` | — | — |
 | `_relative` | `(path: str, parent: str = '') -> str` | — | — |
 | `_append_url` | `(path: str, parsed) -> str` | — | — |

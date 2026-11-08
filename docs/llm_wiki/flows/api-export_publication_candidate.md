@@ -51,20 +51,20 @@ sequenceDiagram
     participant p12 as _atomic_write_private_bytes_windows
     participant p13 as validate_publication_receipt
     participant p14 as _atomic_write_private_bytes_posix
-    participant p15 as publication_path
-    participant p16 as _output_payload_path
-    participant p17 as _within
-    participant p18 as is_agent_worktree_path
-    participant p19 as _language_for_path
-    participant p20 as _provider
-    participant p21 as _read_tree
-    participant p22 as capture_publication_basis
-    participant p23 as build_source_snapshot
-    participant p24 as GitIgnoreMatcher.is_ignored
-    participant p25 as prepare_wiki_markdown
-    participant p26 as check_github_wiki
-    participant p27 as project_publication_targets
-    participant p28 as compare_publication_impact
+    participant p15 as _target_path
+    participant p16 as publication_control_overlap
+    participant p17 as _output_payload_path
+    participant p18 as _within
+    participant p19 as is_agent_worktree_path
+    participant p20 as _language_for_path
+    participant p21 as _provider
+    participant p22 as _read_tree
+    participant p23 as capture_publication_basis
+    participant p24 as build_source_snapshot
+    participant p25 as GitIgnoreMatcher.is_ignored
+    participant p26 as prepare_wiki_markdown
+    participant p27 as check_github_wiki
+    participant p28 as project_publication_targets
     participant p29 as sorted (src/llm_wiki_cli/services…ort_publication_candidate)
     participant p30 as files.items (src/llm_wiki_cli/services…ort_publication_candidate)
     p0->>p1: export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py)
@@ -81,27 +81,27 @@ sequenceDiagram
     p6->>p12: _atomic_write_private_bytes_windows
     p2->>p13: validate_publication_receipt
     p6->>p14: _atomic_write_private_bytes_posix
-    p2->>p15: publication_path
-    p4->>p16: _output_payload_path
-    p2->>p17: _within
-    p4->>p18: is_agent_worktree_path
-    p4->>p19: _language_for_path
-    p2->>p20: _provider
-    p2->>p21: _read_tree
-    p2->>p22: capture_publication_basis
-    p4->>p23: build_source_snapshot
-    p4->>p24: GitIgnoreMatcher.is_ignored
-    p2->>p25: prepare_wiki_markdown
-    p2->>p26: check_github_wiki
-    p2->>p27: project_publication_targets
-    p2->>p28: compare_publication_impact
+    p2->>p15: _target_path
+    p2->>p16: publication_control_overlap
+    p4->>p17: _output_payload_path
+    p2->>p18: _within
+    p4->>p19: is_agent_worktree_path
+    p4->>p20: _language_for_path
+    p2->>p21: _provider
+    p2->>p22: _read_tree
+    p2->>p23: capture_publication_basis
+    p4->>p24: build_source_snapshot
+    p4->>p25: GitIgnoreMatcher.is_ignored
+    p2->>p26: prepare_wiki_markdown
+    p2->>p27: check_github_wiki
+    p2->>p28: project_publication_targets
     p1-->>p29: sorted (src/llm_wiki_cli/services…ort_publication_candidate)(files.items(...))
     p1-->>p30: files.items (src/llm_wiki_cli/services…ort_publication_candidate)
 ```
 
-> Call sequence diagram shows 30 of 1999 interactions; 1969 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2064 interactions; 2034 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 819 (818 omitted); unresolved 1 of 528 (527 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 848 (847 omitted); unresolved 1 of 548 (547 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_prepare` | 3 | - | external | 47 |
 | `src/llm_wiki_cli/services/publication_config.py:load_publication_config` | 40 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 7 |
-> Omission summary shows 8 of 393 groups; 385 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 407 groups; 399 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -128,9 +128,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 653; effect analysis evaluated: 465, partial: 23, unavailable: 165. Counts include steps omitted from the displayed trace.
+Source steps: 669; effect analysis evaluated: 481, partial: 23, unavailable: 165. Counts include steps omitted from the displayed trace.
 
-Collector observations for 488 source steps with known totals: observed: 2490, emitted: 2412, omitted: 78. Unavailable totals are excluded.
+Collector observations for 504 source steps with known totals: observed: 2561, emitted: 2483, omitted: 78. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,8 +218,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | export_publication_candidate (src/llm_wiki_cli/api.py) | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3594 | `export(consumer_root, output_dir=output_dir, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 807 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| _prepare | _absolute_path | 550 | `_absolute_path(Path(...))` |
+| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 866 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| _prepare | _absolute_path | 604 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -233,9 +233,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `operations.append` | `_prepare` | 689 |
-| mutation | `output.pop` | `_prepare` | 708 |
-| mutation | `operations.append` | `_prepare` | 709 |
+| mutation | `operations.append` | `_prepare` | 748 |
+| mutation | `output.pop` | `_prepare` | 767 |
+| mutation | `operations.append` | `_prepare` | 768 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

@@ -13,7 +13,11 @@ from ..services.filesystem_guard import (
 )
 from ..services.knowledge_storage import KnowledgeStorageError
 from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
-from ..services.publication_config import load_publication_config
+from ..services.publication_config import (
+    load_publication_config,
+    publication_control_overlap,
+    publication_input_controls,
+)
 from ..services.publication_contracts import validate_publication_basis
 from ..services.publication_impact import MAX_JSON_BYTES, read_publication_document
 from ..services.source_snapshot import _is_package_marker
@@ -48,7 +52,7 @@ def add_commands(docs_sub):
     export.add_argument(
         "--output-dir",
         required=True,
-        help="New or empty consumer-relative candidate directory",
+        help="New or empty candidate directory; accepts consumer-relative or absolute paths",
     )
     check.add_argument("--candidate-dir", required=True)
     check.add_argument("--output", help="Optional separate rechecked receipt JSON")
@@ -56,6 +60,10 @@ def add_commands(docs_sub):
     review.add_argument("--reason", required=True)
     review.add_argument(
         "--candidate-dir", required=True, help="Exact candidate tree being reviewed"
+    )
+    review.add_argument(
+        "--target-dir",
+        help="Original pinned local wiki copy; required for local-snapshot review",
     )
     review.add_argument(
         "--output", required=True, help="Proposed candidate approval JSON"
@@ -119,18 +127,40 @@ def _guard_destination(args, value, *, receipt=None, baseline=None):
             "Publication metadata cannot replace version-control or package inputs"
         )
     root = _absolute_path(Path(args.consumer_root).expanduser())
-    if args.publication_action == "review":
-        if receipt is None:
-            raise ValueError("Candidate review needs its input receipt")
-        config = receipt["basis"]["config"]
-    else:
-        config = load_publication_config(root, config_path=args.config)
+    config = load_publication_config(root, config_path=args.config)
+    configurations = [config]
+    if receipt is not None:
+        configurations.append(receipt["basis"]["config"])
+    if baseline is not None:
+        configurations.append(baseline["config"])
+    reserved = set()
+    for policy in configurations:
+        reserved.update(publication_input_controls(root, policy, args.config))
+    if any(publication_control_overlap(destination, source) for source in reserved):
+        raise ValueError(
+            "Publication metadata cannot occupy source discovery or selection controls"
+        )
+    target_name = getattr(args, "target_dir", None)
+    if target_name:
+        target = _path(args, target_name)
+        if any(
+            publication_cmd._inside_input_tree(source, target)
+            or (
+                len(source.parts) >= len(target.parts)
+                and publication_control_overlap(source, target)
+            )
+            for source in reserved
+        ):
+            raise ValueError(
+                "Target snapshot cannot contain source configuration or discovery controls"
+            )
     protected = []
-    if config["architecture"]["baseline"] == "existing-wiki":
-        protected.append(root / config["architecture"]["root"])
-    content = config.get("content")
-    if content and content["root"] != ".":
-        protected.append(root / content["root"])
+    for policy in configurations:
+        if policy["architecture"]["baseline"] == "existing-wiki":
+            protected.append(root / policy["architecture"]["root"])
+        content = policy.get("content")
+        if content and content["root"] != ".":
+            protected.append(root / content["root"])
     for name in ("target_dir", "output_dir", "candidate_dir"):
         selected = getattr(args, name, None)
         if selected:
@@ -147,23 +177,19 @@ def _guard_destination(args, value, *, receipt=None, baseline=None):
     if args.publication_action != "export":
         controls.append(args.receipt)
     if any(
-        publication_cmd._same_file(destination, _path(args, source))
+        publication_control_overlap(destination, _path(args, source))
         for source in controls
     ):
         raise ValueError(
             "Publication metadata output must differ from accepted and input artifacts"
         )
-    files = set(publication_cmd._declared_files(config))
-    if content:
-        files.update(asset["source_document"] for asset in content.get("assets", []))
+    files = set()
+    for policy in configurations:
+        files.update(publication_cmd._declared_files(policy))
     files.update(_basis_files(baseline))
     if receipt is not None:
         files.update(_basis_files(receipt.get("basis")))
-    if any(
-        publication_cmd._inside_input_tree(destination, root / source)
-        or destination in (root / source).parents
-        for source in files
-    ):
+    if any(publication_control_overlap(destination, root / source) for source in files):
         raise ValueError(
             "Publication metadata cannot occupy source or reference input paths"
         )
@@ -188,6 +214,7 @@ def run(args):
         check_publication_candidate,
         export_publication_candidate,
         review_publication_candidate,
+        validate_candidate_target,
         validate_candidate_tree,
         validate_publication_receipt,
     )
@@ -199,8 +226,16 @@ def run(args):
             if receipt is None:
                 raise ValueError("Candidate review needs its input receipt")
             validate_publication_receipt(receipt)
+            if (
+                receipt["target"]["mode"] == "local-snapshot"
+                and args.target_dir is None
+            ):
+                raise ValueError(
+                    "Reviewing a local-snapshot candidate requires --target-dir"
+                )
             destination = _guard_destination(args, args.output, receipt=receipt)
             validate_candidate_tree(args.consumer_root, args.candidate_dir, receipt)
+            validate_candidate_target(args.consumer_root, args.target_dir, receipt)
             proposal = review_publication_candidate(
                 receipt, reviewer=args.reviewer, reason=args.reason
             )

@@ -208,10 +208,10 @@ flowchart LR
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 231 | `Path(consumer_root).absolute(data not statically known)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 231 | `Path(consumer_root)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 232 | `load_publication_config(root, config_path=config_path)` |
-| load_publication_config | _consumer_root | 863 | `_consumer_root(consumer_root)` |
-| _consumer_root | Path(…).expanduser | 137 | `Path(value).expanduser(data not statically known)` |
-| _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 137 | `Path(value)` |
-| _consumer_root | path_is_link_or_reparse | 138 | `path_is_link_or_reparse(root)` |
+| load_publication_config | _consumer_root | 887 | `_consumer_root(consumer_root)` |
+| _consumer_root | Path(…).expanduser | 138 | `Path(value).expanduser(data not statically known)` |
+| _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 138 | `Path(value)` |
+| _consumer_root | path_is_link_or_reparse | 139 | `path_is_link_or_reparse(root)` |
 | path_is_link_or_reparse | _is_link_or_reparse_stat | 309 | `_is_link_or_reparse_stat(path.lstat(...))` |
 | _is_link_or_reparse_stat | stat.S_ISLNK | 299 | `stat.S_ISLNK(metadata.st_mode)` |
 | _is_link_or_reparse_stat | getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat) | 301 | `getattr(metadata, 'st_file_attributes', 0)` |
@@ -228,7 +228,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `capture_publication_basis` | `Path(consumer_root).absolute` | 231 |
-| unresolved_call | `_consumer_root` | `Path(value).expanduser` | 137 |
+| unresolved_call | `_consumer_root` | `Path(value).expanduser` | 138 |
 | external_call | `_is_link_or_reparse_stat` | `stat.S_ISLNK` | 299 |
 | external_call | `_is_link_or_reparse_stat` | `getattr` | 301 |
 | step_limit | `capture_publication_basis` | `first 12 steps` | 0 |

@@ -6116,7 +6116,7 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 137,
+              "line": 138,
               "step": "_consumer_root",
               "target": "Path(value).expanduser"
             },
@@ -6254,7 +6254,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 409,
+              "line": 446,
               "step": "validate_publication_receipt",
               "step_index": 5,
               "target": "seen.add"
@@ -6264,7 +6264,7 @@
               "kind": "mutation",
               "line": 135,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.pop"
             },
             {
@@ -6272,7 +6272,7 @@
               "kind": "mutation",
               "line": 142,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.extend"
             },
             {
@@ -6280,7 +6280,7 @@
               "kind": "mutation",
               "line": 144,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.extend"
             }
           ],
@@ -6299,21 +6299,15 @@
             },
             {
               "kind": "external_call",
-              "line": 139,
-              "step": "_json_tree",
+              "line": 301,
+              "step": "validate_publication_receipt",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 140,
-              "step": "_json_tree",
-              "target": "any"
-            },
-            {
-              "kind": "external_call",
-              "line": 140,
-              "step": "_json_tree",
-              "target": "type"
+              "line": 302,
+              "step": "validate_publication_receipt",
+              "target": "ValueError"
             },
             {
               "kind": "step_limit",
@@ -6353,7 +6347,7 @@
             "src/llm_wiki_cli/services/instruction_ownership.py",
             "src/llm_wiki_cli/services/publication_links.py"
           ],
-          "step_count": 1266,
+          "step_count": 1327,
           "truncated": true
         }
       },
@@ -10742,7 +10736,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 689,
+              "line": 748,
               "step": "_prepare",
               "step_index": 3,
               "target": "operations.append"
@@ -10750,7 +10744,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 708,
+              "line": 767,
               "step": "_prepare",
               "step_index": 3,
               "target": "output.pop"
@@ -10758,7 +10752,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 709,
+              "line": 768,
               "step": "_prepare",
               "step_index": 3,
               "target": "operations.append"
@@ -10840,7 +10834,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 2000,
+          "step_count": 2065,
           "truncated": true
         }
       },
@@ -25836,7 +25830,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 409,
+              "line": 446,
               "step": "validate_publication_receipt",
               "step_index": 5,
               "target": "seen.add"
@@ -25846,7 +25840,7 @@
               "kind": "mutation",
               "line": 135,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.pop"
             },
             {
@@ -25854,7 +25848,7 @@
               "kind": "mutation",
               "line": 142,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.extend"
             },
             {
@@ -25862,7 +25856,7 @@
               "kind": "mutation",
               "line": 144,
               "step": "_json_tree",
-              "step_index": 6,
+              "step_index": 9,
               "target": "pending.extend"
             }
           ],
@@ -25881,21 +25875,15 @@
             },
             {
               "kind": "external_call",
-              "line": 139,
-              "step": "_json_tree",
+              "line": 301,
+              "step": "validate_publication_receipt",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 140,
-              "step": "_json_tree",
-              "target": "any"
-            },
-            {
-              "kind": "external_call",
-              "line": 140,
-              "step": "_json_tree",
-              "target": "type"
+              "line": 302,
+              "step": "validate_publication_receipt",
+              "target": "ValueError"
             },
             {
               "kind": "step_limit",
@@ -25923,7 +25911,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 213,
+          "step_count": 225,
           "truncated": true
         }
       },
@@ -31543,7 +31531,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 409,
+              "line": 446,
               "step": "validate_publication_receipt",
               "step_index": 4,
               "target": "seen.add"
@@ -31553,7 +31541,7 @@
               "kind": "mutation",
               "line": 135,
               "step": "_json_tree",
-              "step_index": 5,
+              "step_index": 8,
               "target": "pending.pop"
             },
             {
@@ -31561,7 +31549,7 @@
               "kind": "mutation",
               "line": 142,
               "step": "_json_tree",
-              "step_index": 5,
+              "step_index": 8,
               "target": "pending.extend"
             },
             {
@@ -31569,7 +31557,7 @@
               "kind": "mutation",
               "line": 144,
               "step": "_json_tree",
-              "step_index": 5,
+              "step_index": 8,
               "target": "pending.extend"
             }
           ],
@@ -31588,21 +31576,21 @@
             },
             {
               "kind": "external_call",
-              "line": 139,
-              "step": "_json_tree",
+              "line": 301,
+              "step": "validate_publication_receipt",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 140,
-              "step": "_json_tree",
-              "target": "any"
+              "line": 302,
+              "step": "validate_publication_receipt",
+              "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 140,
+              "line": 139,
               "step": "_json_tree",
-              "target": "type"
+              "target": "isinstance"
             },
             {
               "kind": "step_limit",
@@ -31630,7 +31618,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 236,
+          "step_count": 248,
           "truncated": true
         }
       },
@@ -40046,7 +40034,7 @@
             "src/llm_wiki_cli/services/analysis_compatibility.py",
             "src/llm_wiki_cli/services/progress.py"
           ],
-          "step_count": 843,
+          "step_count": 844,
           "truncated": true
         }
       },
@@ -71246,5 +71234,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:8461a02ea9329054e1d454b0c2342839e00bcbf2437f642103c1939c775353d5"
+  "source_hash": "sha256:fb602542d31dd4826984fca4a8e915126b2f6acd0c9df7b1b499cbcd29fffa00"
 }

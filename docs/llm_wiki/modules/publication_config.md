@@ -15,7 +15,7 @@ Reference dependencies require an explicitly declared, non-executable provider.
 | Source | Symbols |
 |--------|---------|
 | `.concept_identity` | `ConceptIdentityError`, `validate_locator` |
-| `.source_selection` | `SourceSelectionError`, `locate_exact_repository_path`, `path_is_link_or_reparse` |
+| `.source_selection` | `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `locate_exact_repository_path`, `path_is_link_or_reparse` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `.wiki_media` | `MEDIA_EXTENSIONS` |
 | `__future__` | `annotations` |
@@ -103,7 +103,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationConfigError](../entities/PublicationConfigError.md) | 50 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
+| [PublicationConfigError](../entities/PublicationConfigError.md) | 51 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
 
 ## Functions
 
@@ -117,6 +117,8 @@ flowchart LR
 | `_consumer_root` | `(value: str \| Path) -> Path` | — | — |
 | `_check_path` | `(root: Path \| None, path: str, field: str, spellings: dict[tuple[str, ...], tuple[str, ...]]) -> None` | — | — |
 | `publication_path` | `(root: Path, relative: str) -> Path` | — | Return a confined exact-case path, including a safely absent leaf. |
+| `publication_input_controls` | `(root: Path, config, config_path) -> set[Path]` | — | Reserve implicit discovery inputs, including safely absent coordinates. |
+| `publication_control_overlap` | `(left: Path, right: Path) -> bool` | — | Compare protected input namespaces across portable filesystem names. |
 | `_section` | `(value: object, field: str) -> str` | — | — |
 | `_dependency` | `(value: object, field: str, root: Path \| None, architecture_root: str, spellings: dict[tuple[str, ...], tuple[str, ...]], reference_providers: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_reference_providers` | `(value: object, root: Path \| None, spellings: dict[tuple[str, ...], tuple[str, ...]]) -> dict[str, dict[str, Any]]` | — | — |

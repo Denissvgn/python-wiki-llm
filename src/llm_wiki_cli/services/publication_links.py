@@ -17,6 +17,9 @@ MAX_WIKI_FILES = 5_000
 MAX_WIKI_FILE_BYTES = 8 * 1024 * 1024
 MAX_WIKI_TOTAL_BYTES = 64 * 1024 * 1024
 _MAX_TOKENS = 100_000
+_PRIVATE_COMPONENTS = frozenset(
+    {".git", ".hg", ".svn", ".venv", "node_modules", "__pycache__"}
+)
 _WIKI_LINK = re.compile(r"\[\[([^\]\r\n]+)\]\]")
 _REFERENCE = re.compile(r"(?m)^[ \t]*(?:>[ \t]*)*\[(?:\\.|[^\]\\\r\n])+\]:[ \t]*")
 _ESCAPE = re.compile(r"\\([!\"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])")
@@ -103,7 +106,7 @@ def _parse(text: str):
     )
     # Attach exact inline-source spans using MarkdownIt's own rule decisions;
     # unmatched backticks must never hide live links in another paragraph/cell.
-    for name in ("backticks", "html_inline"):
+    for name in ("backticks", "html_inline", "link", "image", "autolink"):
         rule = parser.inline.ruler.getRules("")[
             parser.inline.ruler.get_active_rules().index(name)
         ]
@@ -123,6 +126,8 @@ def _record_span(rule):
             token = state.tokens[-1]
             if token.type in {"code_inline", "html_inline"}:
                 token.meta["publication_source_span"] = (start, state.pos)
+            elif token.type in {"link_close", "image"}:
+                token.meta["publication_link_span"] = (start, state.pos)
         return matched
 
     return record
@@ -175,13 +180,18 @@ def _inline_offsets(text, token, offsets, cursors):
     return positions
 
 
-def _visible(text: str, tokens) -> str:
-    value = list(text)
+def _line_offsets(text: str):
     # CommonMark normalizes CRLF/CR, but does not treat Unicode line separators
     # as source lines. Token.map coordinates must use precisely those rules.
     offsets = [0, *(match.end() for match in re.finditer(r"\r\n|\r|\n", text))]
     if offsets[-1] < len(text):
         offsets.append(len(text))
+    return offsets
+
+
+def _visible(text: str, tokens, *, mask_links=False, environment=None) -> str:
+    value = list(text)
+    offsets = _line_offsets(text)
     cursors = {}
     for token in tokens:
         if token.map is None:
@@ -195,6 +205,12 @@ def _visible(text: str, tokens) -> str:
                 for child in token.children
                 if "publication_source_span" in child.meta
             ]
+            if mask_links:
+                spans.extend(
+                    child.meta["publication_link_span"]
+                    for child in token.children
+                    if "publication_link_span" in child.meta
+                )
             if spans:
                 positions = _inline_offsets(text, token, offsets, cursors)
                 for first, last in spans:
@@ -205,7 +221,52 @@ def _visible(text: str, tokens) -> str:
                 # Reserve an earlier table cell's source range even when it
                 # contains no code/HTML, so identical later cells map correctly.
                 _inline_offsets(text, token, offsets, cursors)
+    if mask_links and environment is not None:
+        for record in _reference_records(environment):
+            first, last = record["map"]
+            start, end = offsets[first], offsets[last]
+            value[start:end] = _blank(text[start:end])
     return "".join(value)
+
+
+def _reference_records(environment):
+    yield from environment.get("references", {}).values()
+    yield from environment.get("duplicate_refs", [])
+
+
+def _reference_resources(visible, environment):
+    """Locate parsed definitions across list/blockquote continuation prefixes."""
+    offsets = _line_offsets(visible)
+    for record in _reference_records(environment):
+        first, last = record["map"]
+        start, stop = offsets[first], offsets[last]
+        label = visible.find("[", start, offsets[first + 1])
+        if label < 0:
+            continue
+        cursor = label + 1
+        while cursor < stop:
+            if (
+                visible[cursor] == "]"
+                and not _escaped(visible, cursor)
+                and visible[cursor + 1 : cursor + 2] == ":"
+            ):
+                cursor += 2
+                break
+            cursor += 1
+        line_start = False
+        while cursor < stop:
+            if visible[cursor] in "\r\n":
+                line_start = True
+                cursor += 1
+            elif visible[cursor] in " \t":
+                cursor += 1
+            elif line_start and visible[cursor] == ">":
+                cursor += 1
+            else:
+                break
+        span = _destination(visible, cursor)
+        if span and span[1] <= stop:
+            yield (*span, visible[slice(*span)], "reference")
 
 
 def _escaped(text: str, position: int) -> bool:
@@ -246,7 +307,7 @@ def _destination(text: str, start: int) -> tuple[int, int] | None:
     return (start, end) if end > start else None
 
 
-def _resources(visible: str):
+def _resources(visible: str, *, wiki_visible=None, environment=None):
     stack = []
     for index, char in enumerate(visible):
         if _escaped(visible, index):
@@ -263,7 +324,10 @@ def _resources(visible: str):
         span = _destination(visible, match.end())
         if span:
             yield (*span, visible[slice(*span)], "reference")
-    for match in _WIKI_LINK.finditer(visible):
+    if environment is not None:
+        yield from _reference_resources(visible, environment)
+    wiki_source = visible if wiki_visible is None else wiki_visible
+    for match in _WIKI_LINK.finditer(wiki_source):
         if _escaped(visible, match.start()):
             continue
         content = match.group(1)
@@ -409,8 +473,11 @@ def prepare_wiki_markdown(
         for record in environment.get("references", {}).values()
     )
     visible = _visible(text, tokens)
+    wiki_visible = _visible(text, tokens, mask_links=True, environment=environment)
     replacements = []
-    for start, end, raw, kind in _resources(visible):
+    for start, end, raw, kind in _resources(
+        visible, wiki_visible=wiki_visible, environment=environment
+    ):
         if kind == "unsupported-wiki":
             raise ValueError("Wiki links with additional attributes are unsupported")
         parsed, path = _url(raw)
@@ -516,6 +583,14 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
     for path, raw in sorted(files.items(), key=lambda item: str(item[0])):
         try:
             _path(path)
+            if any(
+                part.casefold() in _PRIVATE_COMPONENTS
+                or part.casefold().startswith(".llm-wiki")
+                for part in path.split("/")
+            ):
+                raise ValueError(
+                    "VCS, runtime and native state are not public wiki content"
+                )
         except (ValueError, TypeError, UnicodeError) as exc:
             issue(path, "invalid-path", str(exc))
             continue
@@ -581,7 +656,7 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
             text = raw.decode("utf-8")
             if "\x00" in text:
                 raise ValueError("Markdown contains a NUL")
-            tokens, _environment = _parse(text)
+            tokens, environment = _parse(text)
             if re.match(r"\A---[ \t]*\r?\n", text):
                 issue(
                     path,
@@ -596,7 +671,7 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
         if folded in routes:
             issue(path, "page-collision", "Wiki page routes collide")
         routes[folded] = path
-        pages[path] = (text, tokens)
+        pages[path] = (text, tokens, environment)
         used = set()
         html = _HTML()
         for index, token in enumerate(tokens):
@@ -638,7 +713,14 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
                 "HTML URLs, media or unsupported attributes require explicit supported Markdown",
             )
         anchors[path] = used
-    for path, (text, tokens) in pages.items():
+    for route, page in routes.items():
+        if route in full_keys:
+            issue(
+                page,
+                "route-file-collision",
+                "A wiki page route also names a candidate file",
+            )
+    for path, (text, tokens, environment) in pages.items():
         targets = []
         for token in tokens:
             for child in token.children or []:
@@ -648,10 +730,16 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
                     targets.append((child.attrGet("src") or "", True, False))
         try:
             visible = _visible(text, tokens)
+            wiki_visible = _visible(
+                text, tokens, mask_links=True, environment=environment
+            )
         except ValueError as exc:
             issue(path, "unsupported-markdown-layout", str(exc))
             visible = ""
-        for _start, _end, raw, kind in _resources(visible):
+            wiki_visible, environment = "", {}
+        for _start, _end, raw, kind in _resources(
+            visible, wiki_visible=wiki_visible, environment=environment
+        ):
             if kind == "unsupported-wiki":
                 issue(
                     path,

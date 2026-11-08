@@ -1,6 +1,6 @@
 # _HTML
 
-**Location:** `src/llm_wiki_cli/services/publication_links.py:449`
+**Location:** `src/llm_wiki_cli/services/publication_links.py:516`
 **Kind:** Class
 **Bases:** `HTMLParser`
 **Module:** [publication_links](../modules/publication_links.md)

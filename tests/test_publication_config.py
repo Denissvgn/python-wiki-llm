@@ -12,6 +12,8 @@ from llm_wiki_cli.services.publication_config import (
     PublicationConfigError,
     load_publication_config,
     publication_path,
+    publication_input_controls,
+    publication_control_overlap,
     read_publication_json,
     validate_publication_config,
 )
@@ -37,6 +39,39 @@ def policy():
             }
         ],
     }
+
+
+def test_implicit_publication_inputs_are_reserved_even_when_absent(tmp_path):
+    value = policy()
+    value["architecture"] = {"baseline": "bootstrap-source", "root": "project"}
+    controls = publication_input_controls(
+        tmp_path, value, ".llm-wiki/custom-publication.json"
+    )
+    assert controls == {
+        tmp_path / ".gitignore",
+        tmp_path / ".llm-wiki/source-selection.json",
+        tmp_path / "project/.gitignore",
+        tmp_path / "project/.llm-wiki/source-selection.json",
+        tmp_path / ".llm-wiki/custom-publication.json",
+    }
+    assert not any(path.exists() for path in controls)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        "project/.LLM-WIKI/SOURCE-SELECTION.JSON",
+        "PROJECT/.gitignore/receipt.json",
+        "project/.llm-wiki",
+    ],
+)
+def test_reserved_control_overlap_is_portable_before_creation(tmp_path, output):
+    control = tmp_path / "project/.llm-wiki/source-selection.json"
+    if "gitignore" in output:
+        control = tmp_path / "project/.gitignore"
+    assert publication_control_overlap(tmp_path / output, control)
+    assert publication_control_overlap(control, tmp_path / output)
+    assert not publication_control_overlap(tmp_path / "reports/control.json", control)
 
 
 def write_policy(root: Path, payload=None):

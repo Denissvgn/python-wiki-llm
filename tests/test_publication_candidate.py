@@ -2,6 +2,8 @@
 
 from copy import deepcopy
 import json
+import shutil
+from types import MappingProxyType
 
 import pytest
 
@@ -457,6 +459,193 @@ def test_explicit_public_reports_asset_directory_is_supported(consumer):
     assert (consumer / "reports/candidate/reports/limits.txt").read_bytes() == (
         consumer / "docs/public/assets/limits.txt"
     ).read_bytes()
+
+
+@pytest.mark.parametrize("control", [".git", ".GIT", ".hG", ".SvN"])
+def test_target_vcs_entries_are_never_copied(consumer, control):
+    configure(consumer)
+    metadata = consumer / "public" / control
+    metadata.mkdir()
+    (metadata / "config").write_text("private VCS settings\n")
+    result = export(consumer)
+    assert not any(
+        path.casefold().startswith(control.casefold() + "/") for path in result["files"]
+    )
+    assert not (consumer / "reports/candidate" / control).exists()
+    assert (metadata / "config").read_text() == "private VCS settings\n"
+
+
+@pytest.mark.parametrize(
+    "target", [".git", ".GIT/objects", "private/.sVn", ".llm-wiki-knowledge"]
+)
+def test_target_root_cannot_be_control_state(consumer, target):
+    configure(consumer)
+    directory = consumer / target
+    directory.mkdir(parents=True)
+    (directory / "config").write_text("private state\n")
+    with pytest.raises(ValueError, match="VCS or runtime"):
+        candidate.export_publication_candidate(
+            consumer, output_dir="reports/candidate", target_dir=target
+        )
+    assert not (consumer / "reports/candidate").exists()
+
+
+def test_public_target_copy_can_be_stored_under_local_artifact_metadata(consumer):
+    configure(consumer)
+    target = ".llm-wiki/targets/public"
+    shutil.copytree(consumer / "public", consumer / target)
+    receipt = candidate.export_publication_candidate(
+        consumer, output_dir="reports/candidate", target_dir=target
+    )
+    assert receipt["checks"]["ok"]
+    candidate.validate_candidate_target(consumer, target, receipt)
+
+
+def test_custom_configuration_parent_cannot_be_exported_as_a_public_target(consumer):
+    policy = configure(consumer)
+    directory = consumer / "policies"
+    directory.mkdir()
+    config = directory / "publication.json"
+    config.write_text(json.dumps(policy))
+    before = config.read_bytes()
+    with pytest.raises(ValueError, match="configuration or source-selection"):
+        candidate.export_publication_candidate(
+            consumer,
+            config_path="policies/publication.json",
+            output_dir="reports/candidate",
+            target_dir="policies",
+        )
+    assert config.read_bytes() == before
+    assert not (consumer / "reports/candidate").exists()
+
+
+def test_review_rechecks_original_target_and_rejects_control_roots(consumer):
+    configure(consumer, manual=True)
+    receipt = export(consumer)
+    candidate.validate_candidate_target(consumer, "public", receipt)
+    with pytest.raises(ValueError, match="required"):
+        candidate.validate_candidate_target(consumer, None, receipt)
+    with pytest.raises(ValueError, match="VCS or runtime"):
+        candidate.validate_candidate_target(consumer, ".GIT", receipt)
+    (consumer / "public/Notes.md").write_text("# Notes\n\nChanged manual content.\n")
+    with pytest.raises(ValueError, match="Original target differs"):
+        candidate.validate_candidate_target(consumer, "public", receipt)
+
+
+def test_artifact_only_review_does_not_invent_a_local_target(consumer):
+    policy = configure(consumer)
+    policy["content"].pop("adoptions")
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    receipt = candidate.export_publication_candidate(
+        consumer, output_dir="reports/artifact-only"
+    )
+    candidate.validate_candidate_target(consumer, None, receipt)
+    with pytest.raises(ValueError, match="Artifact-only"):
+        candidate.validate_candidate_target(consumer, "public", receipt)
+
+
+@pytest.mark.parametrize(
+    "relationship",
+    [
+        "exact",
+        "ancestor",
+        "descendant",
+        "case-exact",
+        "case-ancestor",
+        "case-descendant",
+    ],
+)
+def test_output_cannot_occupy_a_missing_contract_namespace(consumer, relationship):
+    policy = configure(consumer)
+    kind = relationship.removeprefix("case-")
+    contract = "missing.json/contract.json" if kind == "ancestor" else "missing.json"
+    stem = "MISSING.JSON" if relationship.startswith("case-") else "missing.json"
+    output = stem + "/child" if kind == "descendant" else stem
+    policy["reference_providers"] = {"app": {"kind": "contract-file", "path": contract}}
+    policy["topics"][0]["depends_on"].append({"reference": "app"})
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    with pytest.raises(ValueError, match="declared input"):
+        export(consumer, output)
+    assert not (consumer / "missing.json").exists()
+    assert not (consumer / "MISSING.JSON").exists()
+
+
+def test_output_protects_former_contract_namespace_and_selection_controls(consumer):
+    policy = configure(consumer)
+    policy["reference_providers"] = {
+        "app": {"kind": "contract-file", "path": "former.json"}
+    }
+    policy["topics"][0]["depends_on"].append({"reference": "app"})
+    path = consumer / ".llm-wiki/publication.json"
+    path.write_text(json.dumps(policy))
+    baseline = impact.capture_publication_basis(consumer, target_dir="public")
+    policy["reference_providers"]["app"]["path"] = "current.json"
+    path.write_text(json.dumps(policy))
+    for output in (
+        "former.json",
+        "former.json/candidate",
+        ".gitignore",
+        ".gitignore/candidate",
+        ".llm-wiki/source-selection.json",
+    ):
+        with pytest.raises(ValueError, match="declared input"):
+            export(consumer, output, baseline=baseline)
+        assert not (consumer / output).exists()
+
+
+def test_public_api_accepts_immutable_previous_receipt_mapping(consumer):
+    from llm_wiki_cli import api
+
+    policy = configure(consumer)
+    proposal = export(consumer)
+    accepted = candidate.check_publication_candidate(
+        consumer,
+        candidate_dir="reports/candidate",
+        receipt=proposal,
+        target_dir="public",
+        reviews=accept_topics(proposal),
+        candidate_review=candidate.review_publication_candidate(
+            proposal, reviewer="alice", reason="Reviewed artifact"
+        ),
+    )
+    original = deepcopy(accepted)
+    frozen = MappingProxyType(accepted)
+    candidate.validate_publication_receipt(frozen)
+    for name in accepted["files"]:
+        destination = consumer / "public" / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((consumer / "reports/candidate" / name).read_bytes())
+    policy["content"].pop("adoptions")
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    receipt = api.export_publication_candidate(
+        consumer,
+        output_dir="reports/immutable",
+        target_dir="public",
+        previous_receipt=frozen,
+    )
+    assert receipt["ownership"] == accepted["ownership"]
+    assert accepted == original
+
+
+@pytest.mark.parametrize(
+    "field", ["target-mode", "ownership-kind", "operation-kind", "finding"]
+)
+def test_resealed_malformed_enum_values_raise_actionable_errors(consumer, field):
+    configure(consumer)
+    receipt = export(consumer)
+    if field == "target-mode":
+        receipt["target"]["mode"] = []
+    elif field == "ownership-kind":
+        receipt["ownership"]["Home.md"]["kind"] = []
+    elif field == "operation-kind":
+        receipt["operations"][0]["kind"] = []
+    else:
+        receipt["checks"] = {"ok": False, "findings": [[]]}
+    receipt["receipt_id"] = hash_json(
+        {key: value for key, value in receipt.items() if key != "receipt_id"}
+    )
+    with pytest.raises(ValueError):
+        candidate.validate_publication_receipt(receipt)
 
 
 @pytest.mark.parametrize(

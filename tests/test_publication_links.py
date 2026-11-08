@@ -58,6 +58,49 @@ def test_reference_links_nested_labels_and_wiki_links_are_rewritten():
     )["ok"]
 
 
+@pytest.mark.parametrize(
+    "prefix,continuation", [("> ", ">   "), ("> > ", "> >   "), ("- ", "  ")]
+)
+def test_multiline_container_reference_definitions_are_rewritten(prefix, continuation):
+    source = (
+        "# Home\n\n"
+        + prefix
+        + "[Account][guide]\n\n"
+        + prefix
+        + "[guide]:\n"
+        + continuation
+        + 'accounts.md#display-name "Guide"\n'
+    )
+    result = prepare(source)
+    assert continuation + 'Accounts#display-name "Guide"' in result
+    assert links.check_github_wiki(
+        {"Home.md": result.encode(), "Accounts.md": b"# Accounts\n\n## Display name\n"}
+    )["ok"]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "[Search](https://example.invalid/[[accounts.md]])",
+        "<https://example.invalid/[[accounts.md]]>",
+        '[Search](https://example.invalid "[[accounts.md]]")',
+        "![Picture](https://example.invalid/[[accounts.md]].png)",
+        "[Search][ref]\n\n[ref]: https://example.invalid/[[accounts.md]]",
+    ],
+)
+def test_wiki_like_text_in_markdown_link_attributes_stays_literal(value):
+    source = "# Home\n\n" + value + "\n"
+    assert prepare(source) == source
+    assert links.check_github_wiki({"Home.md": source.encode()})["ok"]
+
+
+def test_invalid_reference_container_is_not_rewritten_as_a_definition():
+    source = "# Home\n\n[Actual](accounts.md)\n\n[not-a-definition]:\n> accounts.md\n"
+    result = prepare(source)
+    assert "[Actual](Accounts)" in result
+    assert "> accounts.md" in result
+
+
 def test_code_and_comments_do_not_create_links_or_anchors():
     value = "# Home\n\n`[bad](missing)`\n\n```md\n# Fake\n[bad](missing)\n[[Missing]]\n```\n\n    [also](missing)\n\n<!--\n# Hidden\n[no](missing)\n-->\n"
     assert prepare(value) == value
@@ -207,6 +250,52 @@ def test_missing_anchors_pages_and_assets_are_reported_deterministically():
 )
 def test_nonportable_candidates_and_route_collisions_fail(extra, kind):
     assert kind in findings({"Home.md": b"# Home\n", **extra})
+
+
+def test_page_routes_cannot_alias_asset_or_raw_page_coordinates():
+    source = "# Home\n\n[Guide](guide.md) ![Picture](pic.png)\n"
+    result = links.prepare_wiki_markdown(
+        source,
+        source_path="docs/home.md",
+        source_pages={"docs/home.md": "Home.md", "docs/guide.md": "Logo.png.md"},
+        source_assets={"docs/pic.png": "Logo.png"},
+    )
+    assert "[Guide](Logo.png) ![Picture](Logo.png)" in result
+    assert "route-file-collision" in findings(
+        {"Home.md": result.encode(), "Logo.png.md": b"# Guide\n", "Logo.png": b"PNG"}
+    )
+    assert "route-file-collision" in findings(
+        {
+            "Home.md": b"# Home\n",
+            "Guide.md": b"# Guide\n",
+            "Guide.md.md": b"# Another guide\n",
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".git/config",
+        ".HG/store",
+        ".SvN/entries",
+        ".venv/a.py",
+        "NODE_MODULES/a.js",
+        "__PYCACHE__/a.pyc",
+        ".LLM-WIKI-knowledge/index.json",
+    ],
+)
+def test_private_namespaces_are_never_public_candidate_content(path):
+    assert "invalid-path" in findings({"Home.md": b"# Home\n", path: b"private"})
+
+
+def test_public_reports_folder_is_not_a_private_namespace():
+    assert links.check_github_wiki(
+        {
+            "Home.md": b"# Home\n[Report](reports/annual.txt)\n",
+            "reports/annual.txt": b"Public report\n",
+        }
+    )["ok"]
 
 
 def test_missing_home_wrong_case_and_invalid_utf8_do_not_pass():

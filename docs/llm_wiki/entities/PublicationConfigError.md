@@ -1,6 +1,6 @@
 # PublicationConfigError
 
-**Location:** `src/llm_wiki_cli/services/publication_config.py:50`
+**Location:** `src/llm_wiki_cli/services/publication_config.py:51`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [publication_config](../modules/publication_config.md)
