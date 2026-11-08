@@ -29,10 +29,11 @@ flowchart LR
     n4["_bind_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
     n5["_binding (src/llm_wiki_cli/services/documentation_run/publication.py)"]
     n6["_documents (src/llm_wiki_cli/services/documentation_run/publication.py)"]
-    n7["collect_reviewed_publication_edits (src/llm_wiki_cli/services/documentation_run/publication.py)"]
-    n8["publication_packet (src/llm_wiki_cli/services/documentation_run/publication.py)"]
-    n9["reconcile_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
-    n10["reviewed_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n7["_stage_publication_documents (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n8["collect_reviewed_publication_edits (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n9["publication_packet (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n10["reconcile_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n11["reviewed_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +44,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/documentation_run_contracts.md"
     click n1 "../modules/documentation_run_contracts.md"
     click n2 "../modules/documentation_run_contracts.md"
@@ -54,6 +56,7 @@ flowchart LR
     click n8 "../modules/publication.md"
     click n9 "../modules/publication.md"
     click n10 "../modules/publication.md"
+    click n11 "../modules/publication.md"
 ```
 
 ### Summary
@@ -74,9 +77,10 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
-| `_bind_publication` | call | [publication](../modules/publication.md) | 7 |
+| `_bind_publication` | call | [publication](../modules/publication.md) | 5 |
 | `_binding` | call | [publication](../modules/publication.md) | 1 |
 | `_documents` | call | [publication](../modules/publication.md) | 2 |
+| `_stage_publication_documents` | call | [publication](../modules/publication.md) | 2 |
 | `collect_reviewed_publication_edits` | call | [publication](../modules/publication.md) | 1 |
 | `publication_packet` | call | [publication](../modules/publication.md) | 2 |
 | `reconcile_publication` | call | [publication](../modules/publication.md) | 3 |

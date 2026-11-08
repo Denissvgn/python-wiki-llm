@@ -1,7 +1,7 @@
 # bind_publication
 
 **Entry point:** `publication._bind_publication`
-**Modules involved:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), [integrity](../modules/integrity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication](../modules/publication.md), [publication_candidate](../modules/publication_candidate.md), [validation](../modules/validation.md), [workspace](../modules/workspace.md)
+**Modules involved:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), [integrity](../modules/integrity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication](../modules/publication.md), [publication_candidate](../modules/publication_candidate.md), [workspace](../modules/workspace.md)
 
 ## Sequence
 
@@ -22,20 +22,14 @@
 14. `workspace._workspace_path`
 15. `workspace._workspace_path`
 16. `documentation_run_contracts.DocumentationIntegrityError`
-17. `validation.require_portable_relative_path`
-18. `documentation_run_contracts.DocumentationIntegrityError`
-19. `filesystem_guard.ensure_guarded_directory`
-20. `filesystem_guard.atomic_write_private_bytes`
-21. `publication_candidate._read_tree`
-22. `documentation_run_contracts.DocumentationIntegrityError`
-23. `documentation_run_contracts._utc_now`
-24. `documentation_run_contracts.DocumentationRun.from_dict`
-25. `filesystem_guard.atomic_write_private_bytes`
-26. `publication_candidate._read_tree`
-27. `documentation_run_contracts.DocumentationIntegrityError`
-28. `filesystem_guard.atomic_write_private_bytes`
-29. `publication_candidate._read_tree`
-30. `filesystem_guard.unlink_guarded_bytes`
+17. `documentation_run_contracts._utc_now`
+18. `documentation_run_contracts.DocumentationRun.from_dict`
+19. `filesystem_guard.atomic_write_private_bytes`
+20. `publication_candidate._read_tree`
+21. `documentation_run_contracts.DocumentationIntegrityError`
+22. `filesystem_guard.atomic_write_private_bytes`
+23. `publication_candidate._read_tree`
+24. `filesystem_guard.unlink_guarded_bytes`
 
 ## Touches
 
@@ -46,7 +40,6 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [publication](../modules/publication.md)
 - [publication_candidate](../modules/publication_candidate.md)
-- [validation](../modules/validation.md)
 - [workspace](../modules/workspace.md)
 
 ## Behavior

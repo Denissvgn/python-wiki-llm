@@ -19,7 +19,6 @@ from ..filesystem_guard import (
 from ..knowledge_evidence import hash_json
 from ..knowledge_governance import governance_lock
 from ..publication_candidate import _read_tree
-from ..validation import require_portable_relative_path
 from .contracts import (
     DocumentationAgentResult,
     DocumentationIntegrityError,
@@ -90,6 +89,23 @@ def bind_publication_workspace(
         _bind_publication(root, binding, documents)
 
 
+def _stage_publication_documents(staging: Path, documents: Mapping[str, bytes]) -> None:
+    """Validate, copy and re-read each declared Markdown file before committing the binding."""
+    for name, raw in documents.items():
+        path = _workspace_path(staging, name)
+        if not name.lower().endswith(".md") or b"\0" in raw:
+            raise DocumentationIntegrityError(
+                "Only mapped UTF-8 Markdown files can be imported."
+            )
+        raw.decode("utf-8")
+        ensure_guarded_directory(path.parent, mode=0o700)
+        atomic_write_private_bytes(path, raw, expected_existing=None)
+    if _read_tree(staging) != documents:
+        raise DocumentationIntegrityError(
+            "Mapped inputs changed while preparing the workspace."
+        )
+
+
 def _bind_publication(
     root: Path, binding: Mapping[str, Any], documents: Mapping[str, bytes]
 ) -> None:
@@ -146,19 +162,7 @@ def _bind_publication(
         )
     with TemporaryDirectory(prefix=".mapped-docs-", dir=root) as scratch:
         staging = Path(scratch) / MAPPED
-        for name, raw in documents.items():
-            path = staging / require_portable_relative_path(name)
-            if not name.lower().endswith(".md") or b"\0" in raw:
-                raise DocumentationIntegrityError(
-                    "Only mapped UTF-8 Markdown files can be imported."
-                )
-            raw.decode("utf-8")
-            ensure_guarded_directory(path.parent, mode=0o700)
-            atomic_write_private_bytes(path, raw, expected_existing=None)
-        if _read_tree(staging) != documents:
-            raise DocumentationIntegrityError(
-                "Mapped inputs changed while preparing the workspace."
-            )
+        _stage_publication_documents(staging, documents)
         run.extensions[KEY] = {
             "binding_id": identity,
             "documents": _hashes(documents),

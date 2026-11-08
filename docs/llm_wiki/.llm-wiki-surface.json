@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 278,
-      "workflows": 272
+      "workflows": 273
     },
     "dependency_architecture": 2,
-    "total": 1740
+    "total": 1741
   },
   "dependency_pages": {
     "count": 2,
@@ -42721,6 +42721,7 @@
         "workflows/source_path_diagnostics.md",
         "workflows/SourceSnapshot_path_is_effectively_selected.md",
         "workflows/SourceSnapshot_with_captured_inventory_paths.md",
+        "workflows/stage_publication_documents.md",
         "workflows/status_cmd_flow.md",
         "workflows/storage_report.md",
         "workflows/sync_run_options_from_args.md",
@@ -56978,7 +56979,6 @@
         "modules/knowledge_evidence.md",
         "modules/publication.md",
         "modules/publication_candidate.md",
-        "modules/validation.md",
         "modules/workspace.md"
       ],
       "role": "mixed",
@@ -60643,6 +60643,22 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/source_snapshot.py",
       "title": "SourceSnapshot_with_captured_inventory_paths"
+    },
+    {
+      "canonical_path": "workflows/stage_publication_documents.md",
+      "id": "stage_publication_documents",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/stage_publication_documents",
+      "outgoing_internal_links": [
+        "modules/documentation_run_contracts.md",
+        "modules/filesystem_guard.md",
+        "modules/publication.md",
+        "modules/publication_candidate.md",
+        "modules/workspace.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/documentation_run/publication.py",
+      "title": "stage_publication_documents"
     },
     {
       "canonical_path": "workflows/status_cmd_flow.md",
@@ -72338,5 +72354,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:de7ca118a8e23091133d46b32af5ff6c0de805973869618e80b05482290e6b56"
+  "source_hash": "sha256:ce837394b0c7206d2576be9fdd55de8285d6cb69621df9025cb23a3d4eb5394b"
 }

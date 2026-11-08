@@ -16,7 +16,6 @@ Supervisor-owned binding between a documentation run and mapped public prose.
 | `..knowledge_evidence` | `hash_json` |
 | `..knowledge_governance` | `governance_lock` |
 | `..publication_candidate` | `_read_tree` |
-| `..validation` | `require_portable_relative_path` |
 | `.contracts` | `DocumentationAgentResult`, `DocumentationIntegrityError`, `DocumentationRun`, `DocumentationTransitionError`, `RUN_CONTROL_DIR`, `_utc_now` |
 | `.integrity` | `_verify_read_only_inputs`, `_verify_read_only_inputs` |
 | `.workspace` | `_read_json`, `_resolve_workspace_root_argument`, `_workspace_path`, `documentation_run_path`, `load_documentation_run` |
@@ -47,9 +46,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (10) |
+| Outbound | `src` (9) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -60,6 +59,7 @@ flowchart LR
 | `_initial_hashes` | `(binding: Mapping[str, Any]) -> dict[str, str]` | — | — |
 | `_documents` | `(root: Path, run: DocumentationRun) -> dict[str, bytes]` | — | — |
 | `bind_publication_workspace` | `(workspace: str \| Path, *, binding: Mapping[str, Any], documents: Mapping[str, bytes]) -> None` | — | Seed an undispatched external workspace with the explicitly mapped originals. |
+| `_stage_publication_documents` | `(staging: Path, documents: Mapping[str, bytes]) -> None` | — | Validate, copy and re-read each declared Markdown file before committing the binding. |
 | `_bind_publication` | `(root: Path, binding: Mapping[str, Any], documents: Mapping[str, bytes]) -> None` | — | — |
 | `publication_packet` | `(root: Path, run: DocumentationRun, wiki_tree_hash: str) -> dict[str, Any]` | — | Check the last accepted workspace before another packet can redefine its baseline. |
 | `protected_stage_hash` | `(root: Path, stage: str, event: Path) -> str` | — | Cover supervisor controls, site outputs and unexpected workspace files. |

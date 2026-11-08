@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 688 | [Open section](#entities) |
 | Modules | 278 | [Open section](#modules) |
-| Workflows | 272 | [Open section](#workflows) |
+| Workflows | 273 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 483 | [Open section](#entry-point-flows) |
 | Infrastructure | 4 | [Open section](#infrastructure) |
@@ -1229,6 +1229,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [snapshot](workflows/snapshot.md) - entry: `publication_contracts._snapshot`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
+- [stage_publication_documents](workflows/stage_publication_documents.md) - entry: `publication._stage_publication_documents`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics._storage_report`
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`

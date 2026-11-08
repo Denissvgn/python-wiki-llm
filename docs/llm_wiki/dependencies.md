@@ -28,7 +28,7 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 80 | 0 |
+| [validation](modules/validation.md) | 79 | 0 |
 | [config](modules/config.md) | 62 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 58 | 7 |
 | [io](modules/io.md) | 51 | 2 |
@@ -105,7 +105,7 @@ flowchart TD
 | [maintenance_projection](modules/maintenance_projection.md) | 8 | 3 |
 | [api](modules/api.md) | 7 | 57 |
 | [data_flow](modules/data_flow.md) | 7 | 1 |
-| [publication](modules/publication.md) | 7 | 10 |
+| [publication](modules/publication.md) | 7 | 9 |
 | [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 5 |
 | [api_contracts](modules/api_contracts.md) | 6 | 5 |
 | [context_budget](modules/context_budget.md) | 6 | 8 |

@@ -41,7 +41,6 @@ flowchart LR
     n1 --> n0
     n1 --> n3
     n2 --> n0
-    n2 --> n3
     click n0 "../modules/documentation_review.md"
     click n1 "../modules/documentation_run_dependencies.md"
     click n2 "../modules/publication.md"
