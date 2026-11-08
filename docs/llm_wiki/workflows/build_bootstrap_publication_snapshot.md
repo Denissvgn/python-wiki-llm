@@ -9,8 +9,8 @@ The typed bootstrap accepts an external absolute source root and uses its
 ordinary source-selection discovery with one extraction worker. Plugins and
 automatic helper preparation are disabled; prepared helpers may be reused.
 Explicit packed storage avoids ephemeral maintenance-adoption identities.
-Bootstrap's generated history still records its execution date, so source
-and publication policy must account for that history when comparing dates.
+Temporary history identifies the configured source root independently of
+the execution date and working directory; its full contents are committed.
 
 ## Sequence
 

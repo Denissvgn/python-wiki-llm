@@ -37,6 +37,7 @@ _Auto-generated from `_BootstrapRunOptions` in `src/llm_wiki_cli/services/bootst
 | `progress_stream` | `TextIO` | *required* | — |
 | `diagnostic_stream` | `TextIO \| None` | `None` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
+| `publication_snapshot` | `bool` | `False` | — |
 
 ## Methods
 

@@ -165,7 +165,7 @@ def _guard_destination(args, value, *, receipt=None, baseline=None):
         selected = getattr(args, name, None)
         if selected:
             protected.append(_path(args, selected))
-    if any(publication_cmd._inside_input_tree(destination, path) for path in protected):
+    if any(publication_control_overlap(destination, path) for path in protected):
         raise ValueError(
             "Publication metadata must stay outside candidate, content, native and target trees"
         )
@@ -221,6 +221,23 @@ def run(args):
 
     try:
         action = args.publication_action
+        if args.target_dir is not None:
+            target = _path(args, args.target_dir)
+            for name in (
+                "receipt",
+                "baseline",
+                "reviews",
+                "previous_receipt",
+                "candidate_review",
+                "output",
+            ):
+                artifact = getattr(args, name, None)
+                if artifact and publication_control_overlap(
+                    _path(args, artifact), target
+                ):
+                    raise ValueError(
+                        "Candidate review metadata must stay outside the target snapshot"
+                    )
         if action == "review":
             receipt = _read(args, args.receipt)
             if receipt is None:

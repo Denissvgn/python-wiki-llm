@@ -54,7 +54,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_HTML](../entities/HTML.md) | 530 | `HTMLParser` | — |
+| [_HTML](../entities/HTML.md) | 531 | `HTMLParser` | — |
 
 ## Functions
 

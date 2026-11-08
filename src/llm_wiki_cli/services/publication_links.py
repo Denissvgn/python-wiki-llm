@@ -305,7 +305,8 @@ def _escaped(text: str, position: int) -> bool:
 
 
 def _destination(text: str, start: int) -> tuple[int, int] | None:
-    while start < len(text) and text[start].isspace():
+    # CommonMark treats Unicode spaces inside a destination as URL content.
+    while start < len(text) and text[start] in " \t\r\n":
         start += 1
     if start >= len(text):
         return None
@@ -322,7 +323,7 @@ def _destination(text: str, start: int) -> tuple[int, int] | None:
         if char == "\\" and end + 1 < len(text):
             end += 2
             continue
-        if char.isspace() or (char == ")" and depth == 0):
+        if char in " \t\r\n" or (char == ")" and depth == 0):
             break
         if char == "(":
             depth += 1
@@ -671,7 +672,7 @@ def check_github_wiki(files: Mapping[str, bytes]) -> dict[str, Any]:
             if "\x00" in text:
                 raise ValueError("Markdown contains a NUL")
             tokens, environment = _parse(text)
-            if re.match(r"\A---[ \t]*\r?\n", text):
+            if re.match(r"\A\ufeff?---[ \t]*[\r\n]", text):
                 issue(
                     path,
                     "unsupported-frontmatter",

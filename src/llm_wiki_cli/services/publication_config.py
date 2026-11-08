@@ -177,9 +177,11 @@ def _check_path(
         raise PublicationConfigError(field, exc.message) from exc
 
 
-def publication_path(root: Path, relative: str) -> Path:
+def publication_path(root: Path, relative: str | Path) -> Path:
     """Return a confined exact-case path, including a safely absent leaf."""
     selected_root = _consumer_root(root)
+    if isinstance(relative, Path):
+        relative = relative.as_posix()
     if relative == ".":
         return selected_root
     path = _relative_path(relative, "path")

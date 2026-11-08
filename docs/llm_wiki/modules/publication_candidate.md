@@ -63,8 +63,8 @@ flowchart LR
 | `_candidate_path` | `(root, value)` | — | — |
 | `_within` | `(path: Path, root: Path) -> bool` | — | — |
 | `_target_path` | `(root, value)` | — | — |
-| `_tree_paths` | `(root: Path)` | — | — |
-| `_read_tree` | `(root: Path)` | — | — |
+| `_tree_paths` | `(root: Path, *, target_snapshot: bool)` | — | — |
+| `_read_tree` | `(root: Path, *, target_snapshot: bool = False)` | — | — |
 | `_provider` | `()` | — | — |
 | `_check_hash` | `(value)` | — | — |
 | `_hash_map` | `(value)` | — | — |

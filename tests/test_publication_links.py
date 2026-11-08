@@ -144,6 +144,22 @@ def test_invalid_reference_container_is_not_rewritten_as_a_definition():
     assert "> accounts.md" in result
 
 
+@pytest.mark.parametrize("separator", ["\u00a0", "\u202f"])
+def test_unicode_space_in_mapped_link_is_part_of_the_filename(separator):
+    filename = f"Quick{separator}start.md"
+    source = f'[Inline]({filename})\n\n[Reference][guide]\n\n[guide]: {filename} "Guide"\n'
+    rendered = links.prepare_wiki_markdown(
+        source,
+        source_path="docs/start.md",
+        source_pages={f"docs/{filename}": "Overview.md"},
+        source_assets={},
+    )
+    assert rendered == source.replace(filename, "Overview")
+    assert links.check_github_wiki(
+        {"Home.md": rendered.encode(), "Overview.md": b"# Overview\n"}
+    )["ok"]
+
+
 def test_code_and_comments_do_not_create_links_or_anchors():
     value = "# Home\n\n`[bad](missing)`\n\n```md\n# Fake\n[bad](missing)\n[[Missing]]\n```\n\n    [also](missing)\n\n<!--\n# Hidden\n[no](missing)\n-->\n"
     assert prepare(value) == value
@@ -393,10 +409,16 @@ def test_source_parent_links_can_stay_within_the_repository_root():
     assert result == "[Home](Home)"
 
 
-def test_frontmatter_and_non_image_media_do_not_claim_readiness():
+@pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
+@pytest.mark.parametrize("bom", ["", "\ufeff"])
+def test_frontmatter_is_recognized_across_line_endings(bom, newline):
+    text = bom + newline.join(["---", "title: Home", "---", "# Home", ""])
     assert "unsupported-frontmatter" in findings(
-        {"Home.md": b"---\ntitle: Home\n---\n# Home\n"}
+        {"Home.md": text.encode()}
     )
+
+
+def test_non_image_media_does_not_claim_readiness():
     assert "image-format" in findings(
         {"Home.md": b"# Home\n![data](assets/a.txt)\n", "assets/a.txt": b"data"}
     )

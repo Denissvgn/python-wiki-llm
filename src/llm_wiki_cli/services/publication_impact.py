@@ -264,7 +264,7 @@ def capture_publication_basis(
             files[path] = _file_hash(session, root, path)
         references = capture_reference_inputs(config, baseline, root, session)
         if target_dir is not None:
-            target = publication_path(root, str(target_dir))
+            target = publication_path(root, target_dir)
             if not target.is_dir():
                 raise PublicationImpactError(
                     "target-dir must be an existing consumer-relative directory"

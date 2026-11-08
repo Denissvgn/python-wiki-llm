@@ -90,7 +90,7 @@ def _candidate_path(root, value):
     return (
         _absolute_path(selected)
         if selected.is_absolute()
-        else publication_path(root, _portable(str(selected)))
+        else publication_path(root, _portable(selected.as_posix()))
     )
 
 
@@ -120,13 +120,13 @@ def _target_path(root, value):
         or selected.name.casefold() == ".llm-wiki"
     ):
         raise ValueError("Target snapshots cannot be inside VCS or runtime state")
-    target = publication_path(root, str(value))
+    target = publication_path(root, value)
     if _same(target, root) or not target.is_dir():
         raise ValueError("Target must be a separate local public wiki snapshot")
     return target
 
 
-def _tree_paths(root: Path):
+def _tree_paths(root: Path, *, target_snapshot: bool):
     paths = []
     pending = [root]
     while pending:
@@ -134,6 +134,8 @@ def _tree_paths(root: Path):
         for item in sorted(directory.iterdir(), key=lambda value: value.name):
             relative = item.relative_to(root).as_posix()
             if item.name.casefold() in _VCS:
+                if not target_snapshot:
+                    raise ValueError("Candidate files cannot include VCS metadata")
                 continue
             _portable(relative)
             if item.is_symlink():
@@ -158,9 +160,9 @@ def _tree_paths(root: Path):
     return sorted(paths)
 
 
-def _read_tree(root: Path):
+def _read_tree(root: Path, *, target_snapshot: bool = False):
     root = _absolute_path(root)
-    paths = _tree_paths(root)
+    paths = _tree_paths(root, target_snapshot=target_snapshot)
     files = {}
     with StorageReadSession(root, max_bytes=3 * MAX_TREE_BYTES).phase() as session:
         total = 0
@@ -171,7 +173,7 @@ def _read_tree(root: Path):
                 raise ValueError("Wiki tree exceeds the public byte limit")
             files[path] = raw
     session.recheck()
-    if paths != _tree_paths(root):
+    if paths != _tree_paths(root, target_snapshot=target_snapshot):
         raise ValueError("Wiki tree changed during capture")
     return files
 
@@ -596,7 +598,11 @@ def _output_path(root, name, config, target, basis, config_path):
     if config["architecture"]["baseline"] == "existing-wiki":
         trees.append(publication_path(root, config["architecture"]["root"]))
     for tree in trees:
-        if _within(path, tree) or _within(tree, path):
+        if (
+            publication_control_overlap(path, tree)
+            or _within(path, tree)
+            or _within(tree, path)
+        ):
             raise ValueError(
                 "Candidate output overlaps authored, native or target inputs"
             )
@@ -668,7 +674,7 @@ def _prepare(
                     "Target snapshot includes source or architecture inputs"
                 )
     provider = _provider()
-    before = {} if target is None else _read_tree(target)
+    before = {} if target is None else _read_tree(target, target_snapshot=True)
     basis = capture_publication_basis(
         root, config_path=config_path, target_dir=target_dir, baseline=baseline
     )
@@ -829,7 +835,7 @@ def _prepare(
         raise ValueError(
             "Publication configuration or provider changed during rendering"
         )
-    if target is not None and _read_tree(target) != before:
+    if target is not None and _read_tree(target, target_snapshot=True) != before:
         raise ValueError("Target snapshot changed during rendering")
     receipt = {
         "schema_version": RECEIPT_SCHEMA,
@@ -986,7 +992,9 @@ def _recheck_basis(root, config_path, target_dir, baseline, files, receipt):
     target_hashes = (
         {}
         if target_dir is None
-        else _hashes(_read_tree(publication_path(root, str(target_dir))))
+        else _hashes(
+            _read_tree(publication_path(root, target_dir), target_snapshot=True)
+        )
     )
     if target_hashes != receipt["target"]["files"]:
         raise ValueError("Target snapshot changed while checking the candidate")
@@ -1037,5 +1045,5 @@ def validate_candidate_target(
         return
     root = _absolute_path(Path(consumer_root))
     target = _target_path(root, target_dir)
-    if _hashes(_read_tree(target)) != receipt["target"]["files"]:
+    if _hashes(_read_tree(target, target_snapshot=True)) != receipt["target"]["files"]:
         raise ValueError("Original target differs from the supplied receipt")

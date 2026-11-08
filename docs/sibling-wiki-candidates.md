@@ -97,8 +97,10 @@ first adoption, omit `--baseline` consistently from export, impact and check.
 ```
 
 The candidate directory must be new or empty and separate from authored,
-native and target inputs. Keep metadata outside the candidate tree. Use a fresh
-directory after changing the source or mapping. The checker re-reads candidate
+native and target inputs. Keep receipts, baselines and review records outside
+both the public target copy and the candidate directory. Files in the target
+copy are carried into the public candidate. Use a fresh directory after
+changing the source or mapping. The checker re-reads candidate
 bytes, re-renders current inputs and rejects stale or altered content. Identical
 inputs produce identical page bytes.
 

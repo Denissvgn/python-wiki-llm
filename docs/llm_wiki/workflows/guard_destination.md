@@ -13,7 +13,7 @@
 5. `publication_config.publication_control_overlap`
 6. `publication_cmd._inside_input_tree`
 7. `publication_config.publication_control_overlap`
-8. `publication_cmd._inside_input_tree`
+8. `publication_config.publication_control_overlap`
 9. `publication_config.publication_control_overlap`
 10. `publication_cmd._declared_files`
 11. `publication_config.publication_control_overlap`

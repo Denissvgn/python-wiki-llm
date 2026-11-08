@@ -4712,6 +4712,7 @@ class _BootstrapRunOptions:
     progress_stream: TextIO
     diagnostic_stream: TextIO | None = None
     knowledge_format: str | None = None
+    publication_snapshot: bool = False
 
 
 @dataclass
@@ -4866,6 +4867,7 @@ def _bootstrap_run_options_from_request(
     request: BootstrapRequest,
     *,
     progress_stream: TextIO,
+    publication_snapshot: bool = False,
 ) -> _BootstrapRunOptions:
     source_root = Path(request.source_root).expanduser().resolve()
     if not source_root.is_dir():
@@ -4907,6 +4909,7 @@ def _bootstrap_run_options_from_request(
         source_selection=request.source_selection,
         progress_stream=progress_stream,
         knowledge_format=request.knowledge_format,
+        publication_snapshot=publication_snapshot,
     )
 
 
@@ -5859,10 +5862,17 @@ def _append_bootstrap_log(
         plugin_lock_path=plugin_lock_path,
         plugin_lock_hash=plugin_lock_hash,
     )
+    if state.options.publication_snapshot:
+        # The temporary wiki describes the declared source root itself. Its
+        # full log participates in review across checkouts and dates.
+        heading, source_label = "Source snapshot", "."
+    else:
+        heading = date.today().isoformat()
+        source_label = portable_source_root_label(state.options.src_dir_for_scan)
     log_entry = (
-        f"\n## {date.today().isoformat()}\n\n"
+        f"\n## {heading}\n\n"
         f"### Wiki bootstrap\n"
-        f"- Source: `{portable_source_root_label(state.options.src_dir_for_scan)}`\n"
+        f"- Source: `{source_label}`\n"
         f"{provenance_lines}"
         f"- Depth: `{state.options.depth}`\n"
         f"- Entities created: {entity_result.entities_created}\n"
@@ -6801,11 +6811,14 @@ def execute_bootstrap(
     request: BootstrapRequest,
     *,
     progress_stream: TextIO | None = None,
+    publication_snapshot: bool = False,
 ) -> BootstrapResult:
     """Execute first-use deterministic bootstrap without argparse or exits."""
 
     stream = progress_stream if progress_stream is not None else io.StringIO()
-    options = _bootstrap_run_options_from_request(request, progress_stream=stream)
+    options = _bootstrap_run_options_from_request(
+        request, progress_stream=stream, publication_snapshot=publication_snapshot
+    )
     return _execute_bootstrap_options(options)
 
 

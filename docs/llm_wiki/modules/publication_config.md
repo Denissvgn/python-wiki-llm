@@ -117,7 +117,7 @@ flowchart LR
 | `_relative_path` | `(value: object, field: str) -> str` | — | — |
 | `_consumer_root` | `(value: str \| Path) -> Path` | — | — |
 | `_check_path` | `(root: Path \| None, path: str, field: str, spellings: dict[tuple[str, ...], tuple[str, ...]]) -> None` | — | — |
-| `publication_path` | `(root: Path, relative: str) -> Path` | — | Return a confined exact-case path, including a safely absent leaf. |
+| `publication_path` | `(root: Path, relative: str \| Path) -> Path` | — | Return a confined exact-case path, including a safely absent leaf. |
 | `publication_input_controls` | `(root: Path, config, config_path) -> set[Path]` | — | Reserve implicit discovery inputs, including safely absent coordinates. |
 | `publication_control_overlap` | `(left: Path, right: Path) -> bool` | — | Compare protected input namespaces across portable filesystem names. |
 | `_section` | `(value: object, field: str) -> str` | — | — |

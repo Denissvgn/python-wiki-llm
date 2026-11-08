@@ -91,9 +91,9 @@ sequenceDiagram
     p1-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 715 interactions; 685 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 716 interactions; 686 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 221 (220 omitted); unresolved 1 of 206 (205 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 221 (220 omitted); unresolved 1 of 207 (206 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 1 |
-> Omission summary shows 8 of 149 groups; 141 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 151 groups; 143 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -122,7 +122,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 289; effect analysis evaluated: 191, partial: 3, unavailable: 95. Counts include steps omitted from the displayed trace.
 
-Collector observations for 194 source steps with known totals: observed: 963, emitted: 948, omitted: 15. Unavailable totals are excluded.
+Collector observations for 194 source steps with known totals: observed: 971, emitted: 956, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -208,7 +208,7 @@ flowchart LR
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 231 | `Path(consumer_root).absolute(data not statically known)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 231 | `Path(consumer_root)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 232 | `load_publication_config(root, config_path=config_path)` |
-| load_publication_config | _consumer_root | 887 | `_consumer_root(consumer_root)` |
+| load_publication_config | _consumer_root | 889 | `_consumer_root(consumer_root)` |
 | _consumer_root | Path(…).expanduser | 138 | `Path(value).expanduser(data not statically known)` |
 | _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 138 | `Path(value)` |
 | _consumer_root | path_is_link_or_reparse | 139 | `path_is_link_or_reparse(root)` |

@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from llm_wiki_cli import api, cli
+from llm_wiki_cli import cli
 
 
 @pytest.fixture
@@ -63,8 +63,8 @@ def candidate_consumer(tmp_path, monkeypatch):
     return tmp_path
 
 
-def invoke(monkeypatch, *arguments):
-    monkeypatch.setattr("sys.argv", ["llm-wiki", "docs", "wiki", *arguments])
+def invoke(monkeypatch, *arguments, command="wiki"):
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "docs", command, *arguments])
     try:
         cli.main()
     except SystemExit as exc:
@@ -76,6 +76,7 @@ def invoke(monkeypatch, *arguments):
     "receipt",
     [
         "reports/candidate/receipt.json",
+        "reports/CANDIDATE/receipt.json",
         "docs/receipt.json",
         "package.json",
         ".git/receipt.json",
@@ -121,6 +122,62 @@ def test_candidate_metadata_guard_runs_before_tree_creation(
         ]
         is False
     )
+
+
+def test_receipt_cannot_contain_the_candidate_directory(
+    candidate_consumer, monkeypatch
+):
+    assert (
+        invoke(
+            monkeypatch,
+            "export",
+            "--target-dir",
+            "public",
+            "--output-dir",
+            "reports/receipt.json/candidate",
+            "--receipt",
+            "reports/receipt.json",
+        )
+        == 2
+    )
+    assert not (candidate_consumer / "reports").exists()
+
+
+@pytest.mark.parametrize(
+    "action, option",
+    [
+        ("export", "--baseline"),
+        ("export", "--reviews"),
+        ("export", "--previous-receipt"),
+        ("export", "--candidate-review"),
+        ("check", "--reviews"),
+        ("review", "--receipt"),
+    ],
+)
+def test_target_cannot_contain_review_metadata(
+    candidate_consumer, monkeypatch, capsys, action, option
+):
+    arguments = ["--target-dir", "public", option, "PUBLIC/accepted.json"]
+    if option != "--receipt":
+        arguments += ["--receipt", "reports/receipt.json"]
+    if action == "export":
+        arguments += ["--output-dir", "reports/candidate"]
+    else:
+        arguments += ["--candidate-dir", "reports/candidate"]
+    if action == "review":
+        arguments += [
+            "--reviewer",
+            "alice",
+            "--reason",
+            "Reviewed",
+            "--output",
+            "proposal.json",
+        ]
+
+    assert invoke(monkeypatch, action, *arguments) == 2
+    assert "metadata must stay outside the target snapshot" in capsys.readouterr().err
+    assert not (candidate_consumer / "reports").exists()
+    assert not (candidate_consumer / "proposal.json").exists()
 
 
 def test_receipt_cannot_create_a_missing_bootstrap_selection_file(
@@ -600,20 +657,48 @@ def test_candidate_cli_requires_exact_topic_and_artifact_review(
         )
         == 0
     )
-    ledger = None
-    for finding in receipt["impact"]["findings"]:
-        if finding["kind"] == "topic":
-            ledger = api.resolve_publication_finding(
-                receipt["impact"],
-                receipt["basis"],
-                finding_id=finding["id"],
-                reviewer="alice",
-                reason="The proposed topic matches the source",
-                reviews=ledger,
-            )
-    (candidate_consumer / "reports/topics.json").write_text(
-        json.dumps(ledger), encoding="utf-8"
+    assert (
+        invoke(
+            monkeypatch,
+            "--target-dir",
+            "reports/candidate",
+            "--output",
+            "reports/impact.json",
+            command="impact",
+        )
+        == 0
     )
+    report = json.loads((candidate_consumer / "reports/impact.json").read_bytes())
+    assert report == receipt["impact"]
+    ledger = "reports/topics.json"
+    for finding in report["findings"]:
+        if finding["kind"] == "topic":
+            previous = (
+                ["--reviews", ledger] if (candidate_consumer / ledger).exists() else []
+            )
+            assert (
+                invoke(
+                    monkeypatch,
+                    "resolve",
+                    "--target-dir",
+                    "reports/candidate",
+                    "--report",
+                    "reports/impact.json",
+                    "--finding",
+                    finding["id"],
+                    "--decision",
+                    "still-current",
+                    "--reviewer",
+                    "alice",
+                    "--reason",
+                    "The proposed topic matches the source",
+                    "--output",
+                    ledger,
+                    *previous,
+                    command="impact",
+                )
+                == 0
+            )
     assert (
         invoke(
             monkeypatch,

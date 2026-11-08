@@ -1,9 +1,12 @@
 """Public wiki candidates preserve target ownership and exact review bases."""
 
 from copy import deepcopy
+from datetime import date
 import json
+from pathlib import Path
 import shutil
 from types import MappingProxyType
+from unittest.mock import Mock
 
 import pytest
 
@@ -219,6 +222,39 @@ def test_artifact_only_source_bootstrap_needs_no_target_or_html(consumer):
     assert result["target"]["mode"] == "artifact-only" and result["checks"]["ok"]
     assert (consumer / "reports/new/Home.md").is_file()
     assert not result["delivery_ready"]
+
+
+def test_source_only_approval_survives_a_later_date_and_different_cwd(
+    consumer, monkeypatch
+):
+    from llm_wiki_cli.services import bootstrap_runtime
+
+    policy = configure(consumer)
+    policy["content"].pop("adoptions")
+    policy["architecture"] = {"baseline": "bootstrap-source", "root": "src"}
+    for topic in policy["topics"]:
+        topic["depends_on"] = [{"source_file": "src/accounts.py"}]
+    (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
+    clock = Mock()
+    clock.today.return_value = date(2020, 1, 1)
+    monkeypatch.setattr(bootstrap_runtime, "date", clock)
+    monkeypatch.chdir(consumer)
+    receipt = candidate.export_publication_candidate(consumer, output_dir="reports/new")
+    approval = candidate.review_publication_candidate(
+        receipt, reviewer="alice", reason="Reviewed the source-only candidate"
+    )
+    clock.today.return_value = date(2020, 1, 2)
+    monkeypatch.chdir(consumer / "src")
+    checked = candidate.check_publication_candidate(
+        consumer,
+        candidate_dir="reports/new",
+        receipt=receipt,
+        reviews=accept_topics(receipt),
+        candidate_review=approval,
+    )
+    assert checked["ready"]
+    assert checked["candidate_id"] == receipt["candidate_id"]
+    assert checked["basis"] == receipt["basis"]
 
 
 @pytest.mark.parametrize(
@@ -526,6 +562,44 @@ def test_public_target_copy_can_be_stored_under_local_artifact_metadata(consumer
     )
     assert receipt["checks"]["ok"]
     candidate.validate_candidate_target(consumer, target, receipt)
+
+
+def test_nested_native_paths_support_export_check_and_review(consumer):
+    configure(consumer)
+    target = Path("snapshots") / "public"
+    output = Path("reports") / "candidate"
+    shutil.copytree(consumer / "public", consumer / target)
+    receipt = candidate.export_publication_candidate(
+        consumer, output_dir=output, target_dir=target
+    )
+    assert candidate.check_publication_candidate(
+        consumer, candidate_dir=output, target_dir=target, receipt=receipt
+    ) == receipt
+    candidate.validate_candidate_tree(consumer, output, receipt)
+    candidate.validate_candidate_target(consumer, target, receipt)
+
+
+@pytest.mark.parametrize("metadata", [".git", "assets/.hG", ".sVn"])
+def test_candidate_validation_rejects_extra_vcs_metadata(consumer, metadata):
+    configure(consumer)
+    receipt = export(consumer)
+    output = "reports/candidate"
+    (consumer / output / metadata).mkdir()
+    with pytest.raises(ValueError, match="Candidate files cannot include VCS"):
+        candidate.validate_candidate_tree(consumer, output, receipt)
+    with pytest.raises(ValueError, match="Candidate files cannot include VCS"):
+        candidate.check_publication_candidate(
+            consumer, candidate_dir=output, target_dir="public", receipt=receipt
+        )
+
+
+@pytest.mark.parametrize("tree", ["DOCS/public", "WIKI", "PUBLIC"])
+def test_absolute_output_rejects_portable_input_tree_aliases(consumer, tree):
+    configure(consumer)
+    destination = consumer / tree / "new-candidate"
+    with pytest.raises(ValueError, match="overlaps"):
+        export(consumer, destination)
+    assert not destination.exists()
 
 
 def test_custom_configuration_parent_cannot_be_exported_as_a_public_target(consumer):

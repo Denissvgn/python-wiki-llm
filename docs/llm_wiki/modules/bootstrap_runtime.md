@@ -108,15 +108,15 @@ flowchart LR
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1063 | — | — |
 | [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3307 | — | — |
 | [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4692 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4718 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4732 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4739 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4747 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4753 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4764 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4775 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4783 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4790 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4719 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4733 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4740 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4748 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4754 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4765 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4776 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4784 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4791 | — | — |
 
 ## Functions
 
@@ -299,7 +299,7 @@ flowchart LR
 | `_data_flow_summary` | `(*, generated: bool, analyzed: int = 0, boundary_effects: int = 0, gaps: int = 0) -> dict` | — | — |
 | `_with_unsupported_sources` | `(payload: dict, unsupported_sources: dict[str, dict[str, object]]) -> dict` | — | — |
 | `_bootstrap_run_options_from_args` | `(args) -> _BootstrapRunOptions` | — | — |
-| `_bootstrap_run_options_from_request` | `(request: BootstrapRequest, *, progress_stream: TextIO) -> _BootstrapRunOptions` | — | — |
+| `_bootstrap_run_options_from_request` | `(request: BootstrapRequest, *, progress_stream: TextIO, publication_snapshot: bool = False) -> _BootstrapRunOptions` | — | — |
 | `_path_text` | `(path: Path) -> str` | — | — |
 | `_emit_bootstrap` | `(state: _BootstrapRunState, message: str = '', *, flush: bool = False) -> None` | — | — |
 | `_emit_bootstrap_warnings` | `(state: _BootstrapRunState, warnings: list[str]) -> None` | — | — |
@@ -350,7 +350,7 @@ flowchart LR
 | `_preflight_bootstrap_analysis` | `(state: _BootstrapRunState) -> None` | — | Validate and ready selected helpers under locks, before journal creation. |
 | `_execute_bootstrap_options_locked` | `(state: _BootstrapRunState, *, write_basis = None) -> BootstrapResult` | — | — |
 | `_preflight_bootstrap_governance` | `(wiki_dir: Path) -> None` | — | Reject corrupt or missing committed governance before creating pages. |
-| `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |
+| `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None, publication_snapshot: bool = False) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |
 | `_execute_documentation_workspace_refresh` | `(request: BootstrapRequest, *, workspace_root: str \| Path, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Refresh an isolated documentation-workspace snapshot. |
 | `run` | `(args)` | — | — |
 | `_update_agent_constraints` | `(wiki_dir: str, *, source_selection: str \| Path \| None = None, file = None) -> None` | — | Replace docs/llm_wiki path references inside the constraint block |
