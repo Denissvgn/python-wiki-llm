@@ -16,6 +16,7 @@ contracts.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `publication` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
 | `.integrity` | `*` |
@@ -33,38 +34,45 @@ flowchart LR
     n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n3["src/llm_wiki_cli/services/documentation_run/integrity.py"]
     n4["src/llm_wiki_cli/services/documentation_run/packet.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/schema.py"]
-    n6["src/llm_wiki_cli/services/documentation_run/workspace.py"]
+    n5["src/llm_wiki_cli/services/documentation_run/publication.py"]
+    n6["src/llm_wiki_cli/services/documentation_run/schema.py"]
+    n7["src/llm_wiki_cli/services/documentation_run/workspace.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n0 --> n5
     n0 --> n6
+    n0 --> n7
     n1 --> n2
     n1 --> n4
-    n1 --> n5
+    n1 --> n6
     n3 --> n1
     n3 --> n2
     n3 --> n5
     n3 --> n6
+    n3 --> n7
     n4 --> n1
     n4 --> n2
     n4 --> n3
     n4 --> n5
     n4 --> n6
+    n4 --> n7
     n5 --> n1
-    n5 --> n2
+    n5 --> n3
+    n5 --> n7
     n6 --> n1
     n6 --> n2
-    n6 --> n5
+    n7 --> n1
+    n7 --> n2
+    n7 --> n6
     click n0 "../modules/documentation_run___init__.md"
     click n1 "../modules/documentation_run_contracts.md"
     click n2 "../modules/documentation_run_dependencies.md"
     click n3 "../modules/integrity.md"
     click n4 "../modules/packet.md"
-    click n5 "../modules/documentation_run_schema.md"
-    click n6 "../modules/workspace.md"
+    click n5 "../modules/publication.md"
+    click n6 "../modules/documentation_run_schema.md"
+    click n7 "../modules/workspace.md"
 ```
 
 ### Internal neighbors
@@ -76,6 +84,7 @@ flowchart LR
 | Outbound | [documentation_run_contracts](../modules/documentation_run_contracts.md) |
 | Outbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Outbound | [integrity](../modules/integrity.md) |
+| Outbound | [publication](../modules/publication.md) |
 | Outbound | [documentation_run_schema](../modules/documentation_run_schema.md) |
 | Outbound | [workspace](../modules/workspace.md) |
 

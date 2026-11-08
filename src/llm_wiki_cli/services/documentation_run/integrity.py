@@ -238,6 +238,11 @@ def _verify_stage_dispatch_integrity(
             )
 
     event = _read_json(event_path)
+    from . import publication as mapped
+
+    if mapped.KEY in run.extensions:
+        if event.pop("workspace_controls", None) != mapped.protected_stage_hash(workspace_root, stage, event_path):
+            raise DocumentationIntegrityError("A worker changed supervisor-owned publication workspace controls.")
     _require_exact_fields(
         event,
         allowed={

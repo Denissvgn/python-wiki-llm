@@ -21,3 +21,4 @@ api.export_publication_candidate(output_dir=123)  # expected: reportArgumentType
 api.check_publication_candidate(candidate_dir="candidate", receipt="not a receipt")  # expected: reportArgumentType
 api.review_publication_candidate({}, reviewer=123, reason="reviewed")  # expected: reportArgumentType
 api.validate_publication_receipt("not a receipt")  # expected: reportArgumentType
+api.build_publication_patch(workspace="run", candidate_dir="candidate", receipt={}, topic_ids=[1])  # expected: reportArgumentType

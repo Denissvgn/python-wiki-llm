@@ -97,3 +97,13 @@ def sibling_candidate(root: str, receipt: dict[str, object]) -> dict[str, object
     )
     print(prepared)
     return checked
+
+
+def sibling_semantic_patch(root: str, workspace: str, receipt: dict[str, object]) -> dict[str, object]:
+    proposal: dict[str, object] = api.prepare_publication_maintenance(
+        root, workspace=workspace, candidate_dir="reports/candidate", receipt=receipt, topic_ids=["setup"]
+    )
+    print(proposal)
+    return api.build_publication_patch(
+        root, workspace=workspace, candidate_dir="reports/candidate", receipt=receipt, topic_ids=["setup"]
+    )

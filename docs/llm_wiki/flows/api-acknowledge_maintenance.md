@@ -249,16 +249,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1741 | `type(allow_external_src)` |
-| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1742 | `ValueError('allow_external_src must be a boolean')` |
-| acknowledge_maintenance | _detached | 1743 | `_detached(expected_basis)` |
+| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1745 | `type(allow_external_src)` |
+| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1746 | `ValueError('allow_external_src must be a boolean')` |
+| acknowledge_maintenance | _detached | 1747 | `_detached(expected_basis)` |
 | _detached | deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached) | 964 | `deepcopy(value)` |
 | _detached | MaintenanceError | 966 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
 | _detached | require | 969 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _detached | type (src/llm_wiki_cli/services…enance_state.py:_detached) | 970 | `type(result)` |
 | _detached | isinstance (src/llm_wiki_cli/services…enance_state.py:_detached) | 972 | `isinstance(result, dict)` |
-| acknowledge_maintenance | maintenance_core | 1744 | `maintenance_core(data not statically known)` |
+| acknowledge_maintenance | maintenance_core | 1748 | `maintenance_core(data not statically known)` |
 | maintenance_core | MaintenanceCore | 958 | `MaintenanceCore(validate_implementation_evidence)` |
 
 ### Boundary effects
@@ -269,8 +269,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `acknowledge_maintenance` | `type` | 1741 |
-| external_call | `acknowledge_maintenance` | `ValueError` | 1742 |
+| external_call | `acknowledge_maintenance` | `type` | 1745 |
+| external_call | `acknowledge_maintenance` | `ValueError` | 1746 |
 | external_call | `_detached` | `deepcopy` | 964 |
 | external_call | `_detached` | `type` | 970 |
 | external_call | `_detached` | `isinstance` | 972 |

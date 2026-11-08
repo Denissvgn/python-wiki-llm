@@ -163,6 +163,77 @@ Successful preparation exits 0 while review is pending. Structural failures
 exit 1, and `--require-ready` also exits 1 for unresolved review. Invalid inputs,
 stale receipts and changed candidate files exit 2.
 
+## Propose a reviewed edit to a mapped topic
+
+Use `docs wiki maintain` when an impact finding calls for a change to
+repository-authored Markdown. It copies the selected original documents into
+an isolated documentation workspace and records the finding, dependencies and
+before-hash for each topic. A manual wiki topic remains with its wiki editor.
+For wording that is still accurate, use the existing topic decision workflow.
+
+For example, in the source-only example consumer, first export a candidate
+using the commands in its README. From that consumer's root, use your installed
+`llm-wiki` and a fresh workspace outside the checkout.
+
+```bash
+scratch=$(mktemp -d)
+workspace="$scratch/workspace"
+printf '%s\n' 'Keep the public account guide consistent with the account implementation.' > "$scratch/brief.md"
+llm-wiki docs prepare --workspace "$workspace" --baseline bootstrap-source --src-dir project \
+  --site-name Accounts --project-brief "$scratch/brief.md" \
+  --audience operator --audience-intent 'operator=manage accounts'
+
+# Use these same candidate, receipt and topic inputs when collecting the patch.
+wiki_inputs=(--workspace "$workspace" --candidate-dir reports/wiki-candidate \
+  --receipt reports/wiki-candidate.json --target-dir sibling-wiki --topic accounts.overview)
+llm-wiki docs wiki maintain "${wiki_inputs[@]}"
+```
+
+For a managed native wiki, prepare with `--baseline existing-wiki`, its
+configured `--input-wiki-dir`, the matching `--src-dir` and current native
+evidence. Bind the workspace before issuing its first packet. Supply the same
+baseline, topic reviews and previous receipt used to check the candidate.
+Repeat `--topic` to select more than one pending repository-owned topic.
+
+The preparation result lists the work that awaits a host. The supervisor
+issues the normal `wiki-enrichment`, `user-docs` and `review` packets. During
+`user-docs`, the author edits only the assigned copies under `mapped-docs/`,
+reports their paths in `changed_document_paths` relative to that directory,
+and cites native evidence in `claims_evidence_pages`. The reviewer reads the
+exact edited text and returns findings. With `--actor`, the supervisor records
+the identity of the worker it dispatched. The host authenticates those
+identities. Use a reviewer
+distinct from the authors, keep lifecycle control files under supervisor
+ownership, and retain the resulting review record.
+
+```bash
+llm-wiki docs packet --workspace "$workspace" --stage wiki-enrichment --format json
+llm-wiki docs record-result --workspace "$workspace" --actor "$ENRICHER_ID" --result "$ENRICHER_RESULT"
+llm-wiki docs packet --workspace "$workspace" --stage user-docs --format json
+llm-wiki docs record-result --workspace "$workspace" --actor "$AUTHOR_ID" --result "$AUTHOR_RESULT"
+llm-wiki docs packet --workspace "$workspace" --stage review --format json
+llm-wiki docs record-result --workspace "$workspace" --actor "$REVIEWER_ID" --result "$REVIEW_RESULT"
+llm-wiki docs verify --workspace "$workspace"
+llm-wiki docs wiki patch "${wiki_inputs[@]}" --format patch > "$scratch/accounts.patch"
+git apply --check "$scratch/accounts.patch"
+```
+
+The collector re-renders the reviewed Markdown against the candidate's other
+pages and assets and checks their links and anchors before emitting the patch.
+The patch uses consumer-relative paths. If the consumer is a subdirectory of
+a Git repository, run `git apply --check --directory=path/to/consumer` with
+the patch file from the Git root. Python callers can use
+`api.prepare_publication_maintenance` and `api.build_publication_patch` with
+the same workspace, candidate, receipt and topic IDs. The default CLI JSON and
+the Python result include the review identity, document hashes and patch
+digest. Submit the edit through the
+consumer's normal repository review. After it lands, export and review a fresh
+wiki candidate. Preparation and patch collection leave the canonical Markdown,
+the public target and accepted publication records untouched.
+
+See the [documentation workspace handoff](standalone-documentation.md#run-the-agent-stages)
+for the stage contracts and supervisor responsibilities.
+
 ## Consumer automation
 
 Run `llm-wiki install-ci --profile documentation --action-ref "$ACTION_COMMIT_SHA"`

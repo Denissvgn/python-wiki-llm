@@ -830,6 +830,13 @@ that invokes a provider.
 
 ## Verify, export, and hand off
 
+For edits to repository-authored pages in a sibling wiki, bind the prepared
+workspace to a checked publication candidate before the first packet. In that
+workflow, the `user-docs` packet names the editable copies in `mapped-docs/`,
+the supervisor records each stage's actor, and the independent review
+authorizes a patch for repository review. Follow the
+[mapped topic guide](sibling-wiki-candidates.md#propose-a-reviewed-edit-to-a-mapped-topic).
+
 Inspect status at any time without requiring target agent configuration:
 
 ```bash

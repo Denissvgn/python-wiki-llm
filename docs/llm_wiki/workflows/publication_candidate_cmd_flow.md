@@ -1,7 +1,7 @@
 # publication_candidate_cmd_flow
 
 **Entry point:** `publication_candidate_cmd.run`
-**Modules involved:** [publication_candidate](../modules/publication_candidate.md), [publication_candidate_cmd](../modules/publication_candidate_cmd.md), [publication_cmd](../modules/publication_cmd.md), [publication_config](../modules/publication_config.md), [publication_contracts](../modules/publication_contracts.md)
+**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [publication_candidate](../modules/publication_candidate.md), [publication_candidate_cmd](../modules/publication_candidate_cmd.md), [publication_cmd](../modules/publication_cmd.md), [publication_config](../modules/publication_config.md), [publication_contracts](../modules/publication_contracts.md)
 
 ## Sequence
 
@@ -14,12 +14,16 @@
 6. `publication_cmd._document_bytes`
 7. `publication_contracts.validate_publication_basis`
 8. `publication_candidate.validate_publication_receipt`
-9. `publication_candidate.export_publication_candidate`
-10. `publication_candidate.check_publication_candidate`
+9. `knowledge_storage_io._absolute_path`
+10. `publication_config.publication_control_overlap`
 11. `publication_cmd._document_bytes`
+12. `publication_candidate.export_publication_candidate`
+13. `publication_candidate.check_publication_candidate`
+14. `publication_cmd._document_bytes`
 
 ## Touches
 
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_candidate_cmd](../modules/publication_candidate_cmd.md)
 - [publication_cmd](../modules/publication_cmd.md)

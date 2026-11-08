@@ -2543,6 +2543,10 @@ def _add_docs_command(subparsers):
     )
     record_result.add_argument("--workspace", required=True)
     record_result.add_argument(
+        "--actor",
+        help="Supervisor-supplied identity of the author or independent reviewer for mapped documentation",
+    )
+    record_result.add_argument(
         "--result",
         required=True,
         metavar="FILE|-",

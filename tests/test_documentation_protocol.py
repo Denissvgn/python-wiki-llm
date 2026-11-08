@@ -1370,6 +1370,7 @@ def test_first_review_ledger_preserves_prior_finding_until_identity_matches(tmp_
         run_id="run-1",
         adjustment_loop_limit=3,
         evidence=dict(artifacts),
+        extensions={},
         unresolved_findings=[
             {
                 "id": "claim-1",

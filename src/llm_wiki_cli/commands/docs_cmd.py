@@ -342,7 +342,11 @@ def _packet(args) -> None:
 def _record_result(args) -> None:
     payload = _read_json_object(args.result, label="agent result")
     result = DocumentationAgentResult.from_dict(payload)
-    record_documentation_agent_result(args.workspace, result)
+    actor = getattr(args, "actor", None)
+    if actor is None:
+        record_documentation_agent_result(args.workspace, result)
+    else:
+        record_documentation_agent_result(args.workspace, result, actor=actor)
     _print_run_status(args.workspace, output_format=args.format)
 
 

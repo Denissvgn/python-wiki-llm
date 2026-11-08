@@ -4368,3 +4368,23 @@ Existing permissions, validation bounds and native authority remain separate.
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 0
+
+## 2026-11-08
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.0.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:1e741d336018fe81759c0bb2f8dc947bd10932b0ca1f405be6539443f4aef424`
+- Source snapshot digest: `sha256:3ed1d7692b3ffe128f64a856b6f241b1b77a698fc460ff9c229c54ba3e19c39e`
+- Pages created: 11
+- Pages updated: 115
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1598
+- Pages deprecated: 0
+- Semantic fields preserved: 7
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 9
+- Dependency pages initialized: 0
+- Surface policy updated: no

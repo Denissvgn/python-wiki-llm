@@ -492,7 +492,10 @@
         "tests/test_publication_candidate.py",
         "tests/test_publication_links.py",
         "tests/test_publication_candidate_cli.py",
-        "tests/test_publication_output_policy.py"
+        "tests/test_publication_output_policy.py",
+        "tests/test_publication_maintenance.py",
+        "tests/test_publication_maintenance_cli.py",
+        "tests/test_documentation_publication.py"
       ],
       "lanes": [
         "ubuntu",
@@ -870,8 +873,10 @@
     {
       "paths": [
         "src/llm_wiki_cli/services/publication_*.py",
+        "src/llm_wiki_cli/services/documentation_run/publication.py",
         "src/llm_wiki_cli/commands/publication_cmd.py",
         "tests/test_publication_*.py",
+        "tests/test_documentation_publication.py",
         "docs/sibling-wiki.md",
         ".llm-wiki/publication.json",
         "src/llm_wiki_cli/commands/publication_candidate_cmd.py",

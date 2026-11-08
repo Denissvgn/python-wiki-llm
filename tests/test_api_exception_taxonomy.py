@@ -44,6 +44,8 @@ _PUBLIC_FUNCTION_NAMES = (
     "callers",
     "capture_publication_basis",
     "check_publication_candidate",
+    "prepare_publication_maintenance",
+    "build_publication_patch",
     "compare_context_packet_basis",
     "compare_publication_impact",
     "data_flow_for_entrypoint",
@@ -116,6 +118,8 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "callers",
         "capture_publication_basis",
         "check_publication_candidate",
+        "prepare_publication_maintenance",
+        "build_publication_patch",
         "export_publication_candidate",
         "review_publication_candidate",
         "validate_publication_receipt",
@@ -308,6 +312,12 @@ def _failure_cases(tmp_path: Path):
         ),
         "check_publication_candidate": lambda: api.check_publication_candidate(
             tmp_path, candidate_dir="candidate", receipt={}
+        ),
+        "prepare_publication_maintenance": lambda: api.prepare_publication_maintenance(
+            tmp_path, workspace=tmp_path / "workspace", candidate_dir="candidate", receipt={}
+        ),
+        "build_publication_patch": lambda: api.build_publication_patch(
+            tmp_path, workspace=tmp_path / "workspace", candidate_dir="candidate", receipt={}
         ),
         "review_publication_candidate": lambda: api.review_publication_candidate(
             {}, reviewer="reviewer", reason="reviewed"
@@ -728,6 +738,8 @@ def test_public_dict_return_annotations_import_and_resolve():
         "capture_publication_basis": dict[str, typing.Any],
         "export_publication_candidate": dict[str, typing.Any],
         "check_publication_candidate": dict[str, typing.Any],
+        "prepare_publication_maintenance": dict[str, typing.Any],
+        "build_publication_patch": dict[str, typing.Any],
         "install_documentation_ci_workflow": api.InstallCiResult,
         "review_publication_candidate": dict[str, typing.Any],
         "validate_publication_receipt": type(None),

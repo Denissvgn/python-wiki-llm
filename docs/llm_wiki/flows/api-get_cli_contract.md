@@ -85,9 +85,9 @@ sequenceDiagram
     p30-->>p31: source_metadata.read_text(encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 935 interactions; 905 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 936 interactions; 906 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 116 (115 omitted); unresolved 1 of 606 (605 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 116 (115 omitted); unresolved 1 of 607 (606 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -191,7 +191,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3559 | `get_contract(data not statically known)` |
+| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3565 | `get_contract(data not statically known)` |
 | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 303 | `build_cli_contract(build_cli_parser(...), package=_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 257 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract | CLIReferenceError | 258 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |

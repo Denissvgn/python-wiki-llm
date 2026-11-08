@@ -546,6 +546,37 @@ def test_sibling_wiki_workflow_only_changes_select_accepted_state_guards():
 
 
 @pytest.mark.parametrize(
+    "path",
+    [
+        "src/llm_wiki_cli/services/documentation_run/publication.py",
+        "src/llm_wiki_cli/services/publication_maintenance.py",
+    ],
+)
+def test_semantic_maintenance_selects_workspace_and_patch_regressions(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        ci.policy_load(ROOT / "release"),
+        tests,
+        tests,
+        [changed(path)],
+        None,
+        {"entries": []},
+        imports_index={},
+    )
+    expected = {
+        "tests/test_documentation_publication.py",
+        "tests/test_publication_maintenance.py",
+        "tests/test_publication_maintenance_cli.py",
+    }
+    assert set(result["lanes"]) == {"ubuntu", "macos", "windows"}
+    for lane in result["lanes"].values():
+        assert expected <= set(lane["selectors"])
+
+
+@pytest.mark.parametrize(
     "path,expected,lanes",
     [
         (

@@ -1,6 +1,6 @@
 # DocumentationRunError
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:295`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:298`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

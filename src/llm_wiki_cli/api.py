@@ -156,6 +156,10 @@ from .services.documentation_model_policy import (
     validate_documentation_model_selection,
 )
 from .services.documentation_policy import DocumentationPolicyError
+from .services.publication_maintenance import (
+    build_publication_patch as _build_publication_patch,
+    prepare_publication_maintenance as _prepare_publication_maintenance,
+)
 from .services.documentation_run import (
     DocumentationAgentPacket,
     DocumentationAgentResult,
@@ -3490,6 +3494,8 @@ def _run_query(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]:
 # Public service functions are adapted here rather than requiring callers to
 # understand each service's private exception family.
 install_documentation_ci_workflow = _api_boundary(_install_documentation_ci_workflow)
+prepare_publication_maintenance = _api_boundary(_prepare_publication_maintenance)
+build_publication_patch = _api_boundary(_build_publication_patch)
 _adopt_documentation_wiki_snapshot_impl = adopt_documentation_wiki_snapshot
 adopt_documentation_wiki_snapshot = _api_boundary(
     _adopt_documentation_wiki_snapshot_impl
@@ -4116,6 +4122,8 @@ __all__ = [
     "callers",
     "capture_publication_basis",
     "check_publication_candidate",
+    "prepare_publication_maintenance",
+    "build_publication_patch",
     "compare_context_packet_basis",
     "compare_publication_impact",
     "data_flow_for_entrypoint",

@@ -201,9 +201,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3655 | `isinstance(receipt, Mapping)` |
-| review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3656 | `ValueError('Publication receipt must be a mapping')` |
-| review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3657 | `review(dict(...), reviewer=reviewer, reason=reason)` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3661 | `isinstance(receipt, Mapping)` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3662 | `ValueError('Publication receipt must be a mapping')` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3663 | `review(dict(...), reviewer=reviewer, reason=reason)` |
 | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 569 | `validate_publication_receipt(receipt)` |
 | validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 303 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 304 | `ValueError('Candidate receipt must be a mapping')` |
@@ -226,8 +226,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `review_publication_candidate` | `isinstance` | 3655 |
-| external_call | `review_publication_candidate` | `ValueError` | 3656 |
+| external_call | `review_publication_candidate` | `isinstance` | 3661 |
+| external_call | `review_publication_candidate` | `ValueError` | 3662 |
 | external_call | `validate_publication_receipt` | `isinstance` | 303 |
 | external_call | `validate_publication_receipt` | `ValueError` | 304 |
 | step_limit | `review_publication_candidate` | `first 12 steps` | 0 |

@@ -540,10 +540,16 @@ def _record_review_ledger_iteration(
             max_loops=ledger.max_loops,
             findings=prior_findings,
         )
+    from . import publication as mapped
+
+    worker_actor, reviewer_actor = "documentation-worker", "documentation-reviewer"
+    if mapped.KEY in run.extensions:
+        worker_actor = _read_json(user_result_path)["reconciliation"]["mapped_publication"]["actor"]
+        reviewer_actor = _read_json(review_result_path)["reconciliation"]["mapped_publication"]["actor"]
     worker_packet = DocumentationReviewPacket(
         packet_id=f"{run.run_id}:worker:{iteration}",
         role="worker",
-        actor_id="documentation-worker",
+        actor_id=worker_actor,
         iteration=iteration,
         packet_hash=hash_bytes(user_packet_path.read_bytes()),
         result_hash=hash_bytes(user_result_path.read_bytes()),
@@ -556,7 +562,7 @@ def _record_review_ledger_iteration(
     reviewer_packet = DocumentationReviewPacket(
         packet_id=f"{run.run_id}:reviewer:{iteration}",
         role="reviewer",
-        actor_id="documentation-reviewer",
+        actor_id=reviewer_actor,
         iteration=iteration,
         packet_hash=hash_bytes(review_packet_path.read_bytes()),
         result_hash=hash_bytes(review_result_path.read_bytes()),
@@ -709,7 +715,7 @@ def _approve_review_ledger(
             approved=True,
             rationale=(
                 "The host supervisor independently reconciled the clean review ledger "
-                "with deterministic source, ownership, semantic, user-doc, and site checks."
+                "with the deterministic checks for this documentation target."
             ),
             evidence=supervisor_packet.evidence,
             reconciled_at=_utc_now(),
@@ -775,6 +781,7 @@ def _review_adjustment_state(findings: Iterable[Mapping[str, Any]]) -> str:
 def record_documentation_agent_result(
     workspace: str | Path,
     result: DocumentationAgentResult | Mapping[str, Any],
+    *, actor: str | None = None,
 ) -> DocumentationRun:
     """Validate, independently reconcile, and persist a worker result."""
 
@@ -841,6 +848,17 @@ def record_documentation_agent_result(
         wiki_root, display=f"{normalized.stage}_wiki_after"
     )
     actual_changed = _changed_paths(before_tree, current_tree)
+    from . import publication as mapped
+
+    publication_result = None
+    if mapped.KEY in run.extensions:
+        try:
+            publication_result = mapped.reconcile_publication(workspace_root, run, normalized, actor, actual_changed)
+        except DocumentationIntegrityError as exc:
+            _block_run_for_integrity(workspace_root, run, str(exc))
+            raise
+    elif normalized.changed_document_paths:
+        raise DocumentationSchemaError("changed_document_paths requires a mapped publication workspace.")
     if set(actual_changed) != set(normalized.changed_wiki_paths):
         _block_run_for_integrity(
             workspace_root,
@@ -975,6 +993,7 @@ def record_documentation_agent_result(
         **normalized.to_dict(),
         "reconciliation": {
             "actual_changed_wiki_paths": actual_changed,
+            **({"mapped_publication": publication_result} if publication_result is not None else {}),
             "imported_page_edits": reconciled_imported_edits,
             "claim_evidence": reconciled_claims,
             "runtime_captures": reconciled_captures,
@@ -1019,6 +1038,12 @@ def record_documentation_agent_result(
             "recorded_at": _utc_now(),
         },
     )
+    if publication_result is not None:
+        wiki_hash = (
+            capture_tree_baseline(wiki_root, display="publication wiki").tree_hash
+            if native_refresh is not None else current_tree.tree_hash
+        )
+        mapped.record_publication_evidence(workspace_root, run, normalized.stage, publication_result, wiki_hash)
     _merge_unique(run.work["reused"], normalized.reused_work_ids)
     _merge_unique(run.work["completed"], normalized.completed_work_ids)
     _merge_unique(run.work["deferred"], normalized.deferred_work_ids)
@@ -1070,7 +1095,8 @@ def record_documentation_agent_result(
             return run
         transition_documentation_run(run, "user_docs")
     elif normalized.stage == "user-docs":
-        _verify_user_docs_gate(wiki_root, run, normalized)
+        if publication_result is None:
+            _verify_user_docs_gate(wiki_root, run, normalized)
         if not _run_wiki_validation_pair(
             workspace_root, run, phase=f"user-docs-{attempt:02d}"
         ):
@@ -1089,6 +1115,11 @@ def record_documentation_agent_result(
             review_result=normalized,
             review_result_path=result_path,
         )
+        if publication_result is not None:
+            ledger_path = run.evidence["review_ledger"]
+            run.extensions[mapped.KEY]["artifacts"][ledger_path] = hash_bytes(
+                _workspace_path(workspace_root, ledger_path).read_bytes()
+            )
         if review_loop["decision"]["blocked"]:
             _block_run_for_integrity(
                 workspace_root,

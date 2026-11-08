@@ -42,7 +42,15 @@ def add_commands(docs_sub):
     review = actions.add_parser(
         "review", help="Prepare an exact-candidate review proposal"
     )
-    for action in (export, check, review):
+    maintain = actions.add_parser(
+        "maintain",
+        help="Give a prepared documentation workspace the mapped topics that need edits",
+    )
+    patch = actions.add_parser(
+        "patch",
+        help="Export independently reviewed workspace edits as a repository patch",
+    )
+    for action in (export, check, review, maintain, patch):
         _common(action)
         action.add_argument(
             "--receipt",
@@ -54,13 +62,31 @@ def add_commands(docs_sub):
         required=True,
         help="New or empty candidate directory; accepts consumer-relative or absolute paths",
     )
-    check.add_argument("--candidate-dir", required=True)
+    for action in (check, review, maintain, patch):
+        action.add_argument(
+            "--candidate-dir", required=True, help="Exact exported candidate directory"
+        )
+    for action in (maintain, patch):
+        action.add_argument(
+            "--workspace",
+            required=True,
+            help="Documentation workspace prepared with docs prepare",
+        )
+        action.add_argument(
+            "--topic",
+            action="append",
+            dest="topic_ids",
+            help="Scope the work to this mapped topic ID (repeatable)",
+        )
+    patch.add_argument(
+        "--format",
+        choices=("json", "patch"),
+        default="json",
+        help="Print the review proposal or its UTF-8 Git patch",
+    )
     check.add_argument("--output", help="Optional separate rechecked receipt JSON")
     review.add_argument("--reviewer", required=True)
     review.add_argument("--reason", required=True)
-    review.add_argument(
-        "--candidate-dir", required=True, help="Exact candidate tree being reviewed"
-    )
     review.add_argument(
         "--target-dir",
         help="Original pinned local wiki copy; required for local-snapshot review",
@@ -68,7 +94,7 @@ def add_commands(docs_sub):
     review.add_argument(
         "--output", required=True, help="Proposed candidate approval JSON"
     )
-    for action in (export, check):
+    for action in (export, check, maintain, patch):
         action.add_argument(
             "--target-dir", help="Consumer-relative pinned local sibling wiki copy"
         )
@@ -80,6 +106,7 @@ def add_commands(docs_sub):
         action.add_argument(
             "--candidate-review", help="Accepted exact-candidate review JSON"
         )
+    for action in (export, check):
         action.add_argument(
             "--source-revision", help="Explicit caller-declared source revision"
         )
@@ -268,12 +295,6 @@ def run(args):
         receipt = None if action == "export" else _read(args, args.receipt)
         if receipt is not None:
             validate_publication_receipt(receipt)
-        output = args.receipt if action == "export" else args.output
-        destination = (
-            None
-            if output is None
-            else _guard_destination(args, output, receipt=receipt, baseline=baseline)
-        )
         options = {
             "config_path": args.config,
             "target_dir": args.target_dir,
@@ -281,9 +302,58 @@ def run(args):
             "reviews": reviews,
             "previous_receipt": previous_receipt,
             "candidate_review": candidate_review,
-            "source_revision": args.source_revision,
-            "target_revision": args.target_revision,
         }
+        if action in {"maintain", "patch"}:
+            from ..services.publication_maintenance import (
+                build_publication_patch,
+                prepare_publication_maintenance,
+            )
+
+            if receipt is None:
+                raise ValueError(
+                    "Semantic maintenance requires the exported candidate receipt"
+                )
+            workspace = _absolute_path(Path(args.workspace).expanduser())
+            for artifact in (
+                args.receipt,
+                args.baseline,
+                args.reviews,
+                args.previous_receipt,
+                args.candidate_review,
+            ):
+                if artifact and publication_control_overlap(
+                    workspace, _path(args, artifact)
+                ):
+                    raise ValueError(
+                        "Keep publication inputs outside the documentation workspace"
+                    )
+            operation = (
+                prepare_publication_maintenance
+                if action == "maintain"
+                else build_publication_patch
+            )
+            result = operation(
+                args.consumer_root,
+                workspace=workspace,
+                candidate_dir=args.candidate_dir,
+                receipt=receipt,
+                topic_ids=args.topic_ids,
+                **options,
+            )
+            if action == "patch" and args.format == "patch":
+                sys.stdout.buffer.write(result["patch"].encode("utf-8"))
+            else:
+                sys.stdout.buffer.write(publication_cmd._document_bytes(result))
+            return
+        output = args.receipt if action == "export" else args.output
+        destination = (
+            None
+            if output is None
+            else _guard_destination(args, output, receipt=receipt, baseline=baseline)
+        )
+        options.update(
+            source_revision=args.source_revision, target_revision=args.target_revision
+        )
         if action == "export":
             result = export_publication_candidate(
                 args.consumer_root, output_dir=args.output_dir, **options

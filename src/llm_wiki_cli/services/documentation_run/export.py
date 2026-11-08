@@ -476,6 +476,10 @@ def export_documentation_run(
 
     workspace_root = _resolve_workspace_root_argument(workspace)
     run = load_documentation_run(workspace_root)
+    from . import publication as mapped
+
+    if mapped.KEY in run.extensions:
+        raise DocumentationTransitionError("Use the mapped publication patch handoff for this workspace.")
     _verify_read_only_inputs(workspace_root, run)
     generated_path = run.evidence.get("generated_ownership")
     if not generated_path:

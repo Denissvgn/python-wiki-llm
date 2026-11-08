@@ -204,7 +204,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_publication_basis (src/llm_wiki_cli/api.py) | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | 3681 | `capture(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)` |
+| capture_publication_basis (src/llm_wiki_cli/api.py) | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | 3687 | `capture(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 231 | `Path(consumer_root).absolute(data not statically known)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 231 | `Path(consumer_root)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 232 | `load_publication_config(root, config_path=config_path)` |

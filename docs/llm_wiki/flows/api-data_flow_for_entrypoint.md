@@ -206,11 +206,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| data_flow_for_entrypoint | _normalize_query_input | 2297 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2118 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2120 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2121 | `str(exc)` |
-| data_flow_for_entrypoint | normalize_documentation_query_text | 2298 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
+| data_flow_for_entrypoint | _normalize_query_input | 2301 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2122 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2124 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2125 | `str(exc)` |
+| data_flow_for_entrypoint | normalize_documentation_query_text | 2302 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 65 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
@@ -226,7 +226,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2118 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2122 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |

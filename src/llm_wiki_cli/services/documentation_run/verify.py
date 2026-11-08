@@ -19,6 +19,9 @@ def verify_documentation_run(
 
     workspace_root = _resolve_workspace_root_argument(workspace)
     run = load_documentation_run(workspace_root)
+    from . import publication as mapped
+
+    bound = mapped.KEY in run.extensions
     checks: list[dict[str, Any]] = []
     limitations = list(run.verdict_limitations)
     try:
@@ -76,7 +79,10 @@ def verify_documentation_run(
         )
     if run.state in {"review", "publish_ready"}:
         try:
-            _verify_user_docs_gate(workspace_root / run.paths["wiki"], run)
+            if bound:
+                mapped.reviewed_publication(workspace_root, run, approved=False)
+            else:
+                _verify_user_docs_gate(workspace_root / run.paths["wiki"], run)
             checks.append({"check": "user_docs", "ok": True})
         except DocumentationRunError as exc:
             checks.append({"check": "user_docs", "ok": False, "message": str(exc)})
@@ -118,7 +124,7 @@ def verify_documentation_run(
                 "link_mode": site_check.get("link_mode", ""),
             }
         )
-    elif run.state in {"review", "publish_ready"}:
+    elif not bound and run.state in {"review", "publish_ready"}:
         checks.append(
             {
                 "check": "site_check",
@@ -138,9 +144,17 @@ def verify_documentation_run(
         and run.state == "review"
         and run.baseline.get("freshness") == "verified_current"
     ):
-        _approve_review_ledger(workspace_root, run, checks=checks)
-        transition_documentation_run(run, "publish_ready")
-        next_state = "publish_ready"
+        if not bound or review_ledger_state != "publish_ready":
+            _approve_review_ledger(workspace_root, run, checks=checks)
+        if bound:
+            run.extensions[mapped.KEY]["verified"] = True
+            ledger_path = run.evidence["review_ledger"]
+            run.extensions[mapped.KEY]["artifacts"][ledger_path] = hash_bytes(
+                _workspace_path(workspace_root, ledger_path).read_bytes()
+            )
+        else:
+            transition_documentation_run(run, "publish_ready")
+            next_state = "publish_ready"
         save_documentation_run(workspace_root, run)
     elif not ok and any(
         check.get("check") in {"read_only_inputs", "generated_ownership"}

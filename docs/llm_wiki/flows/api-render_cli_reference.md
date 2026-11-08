@@ -181,9 +181,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_cli_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_cli_reference) | 3567 | `isinstance(contract, Mapping)` |
-| render_cli_reference (src/llm_wiki_cli/api.py) | ValueError | 3568 | `ValueError('CLI contract must be a mapping')` |
-| render_cli_reference (src/llm_wiki_cli/api.py) | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | 3569 | `render(dict(...))` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_cli_reference) | 3573 | `isinstance(contract, Mapping)` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | ValueError | 3574 | `ValueError('CLI contract must be a mapping')` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | 3575 | `render(dict(...))` |
 | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | validate_cli_contract | 569 | `validate_cli_contract(contract)` |
 | validate_cli_contract | _json_tree | 486 | `_json_tree(contract)` |
 | _json_tree | CLIReferenceError | 321 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
@@ -203,8 +203,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `render_cli_reference` | `isinstance` | 3567 |
-| external_call | `render_cli_reference` | `ValueError` | 3568 |
+| external_call | `render_cli_reference` | `isinstance` | 3573 |
+| external_call | `render_cli_reference` | `ValueError` | 3574 |
 | external_call | `_json_tree` | `type` | 322 |
 | external_call | `_json_tree` | `type` | 324 |
 | external_call | `_json_tree` | `math.isfinite` | 324 |

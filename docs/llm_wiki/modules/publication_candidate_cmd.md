@@ -18,6 +18,7 @@ Local GitHub wiki candidates and exact-artifact review proposals.
 | `..services.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls` |
 | `..services.publication_contracts` | `validate_publication_basis` |
 | `..services.publication_impact` | `MAX_JSON_BYTES`, `read_publication_document` |
+| `..services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
 | `..services.source_snapshot` | `_is_package_marker` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
@@ -39,7 +40,8 @@ flowchart LR
     n7["src/llm_wiki_cli/services/publication_config.py"]
     n8["src/llm_wiki_cli/services/publication_contracts.py"]
     n9["src/llm_wiki_cli/services/publication_impact.py"]
-    n10["src/llm_wiki_cli/services/source_snapshot.py"]
+    n10["src/llm_wiki_cli/services/publication_maintenance.py"]
+    n11["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
@@ -52,13 +54,14 @@ flowchart LR
     n1 --> n8
     n1 --> n9
     n1 --> n10
+    n1 --> n11
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n7
     n2 --> n8
     n2 --> n9
-    n2 --> n10
+    n2 --> n11
     n5 --> n3
     n5 --> n4
     n6 --> n3
@@ -70,7 +73,10 @@ flowchart LR
     n9 --> n5
     n9 --> n7
     n9 --> n8
-    n10 --> n3
+    n10 --> n5
+    n10 --> n6
+    n10 --> n7
+    n11 --> n3
     click n0 "../modules/docs_cmd.md"
     click n1 "../modules/publication_candidate_cmd.md"
     click n2 "../modules/publication_cmd.md"
@@ -81,7 +87,8 @@ flowchart LR
     click n7 "../modules/publication_config.md"
     click n8 "../modules/publication_contracts.md"
     click n9 "../modules/publication_impact.md"
-    click n10 "../modules/source_snapshot.md"
+    click n10 "../modules/publication_maintenance.md"
+    click n11 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -97,6 +104,7 @@ flowchart LR
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_contracts](../modules/publication_contracts.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
+| Outbound | [publication_maintenance](../modules/publication_maintenance.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Functions

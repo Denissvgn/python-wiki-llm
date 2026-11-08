@@ -16,6 +16,7 @@ authority.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `publication` |
 | `..bootstrap_runtime` | `execute_bootstrap`, `_execute_documentation_workspace_refresh` |
 | `..documentation_wiki_input` | `_adopt_documentation_wiki_snapshot_with_runtime` |
 | `.contracts` | `*` |
@@ -37,25 +38,27 @@ flowchart LR
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n4["src/llm_wiki_cli/services/documentation_run/integrity.py"]
     n5["src/llm_wiki_cli/services/documentation_run/prepare.py"]
-    n6["src/llm_wiki_cli/services/documentation_run/refresh.py"]
-    n7["src/llm_wiki_cli/services/documentation_run/schema.py"]
-    n8["src/llm_wiki_cli/services/documentation_run/workspace.py"]
-    n9["src/llm_wiki_cli/services/documentation_wiki_input.py"]
+    n6["src/llm_wiki_cli/services/documentation_run/publication.py"]
+    n7["src/llm_wiki_cli/services/documentation_run/refresh.py"]
+    n8["src/llm_wiki_cli/services/documentation_run/schema.py"]
+    n9["src/llm_wiki_cli/services/documentation_run/workspace.py"]
+    n10["src/llm_wiki_cli/services/documentation_wiki_input.py"]
     n1 --> n2
     n1 --> n3
     n1 --> n4
     n1 --> n5
-    n1 --> n6
     n1 --> n7
     n1 --> n8
+    n1 --> n9
     n2 --> n3
-    n2 --> n7
-    n3 --> n9
+    n2 --> n8
+    n3 --> n10
     n4 --> n2
     n4 --> n3
-    n4 --> n7
+    n4 --> n6
     n4 --> n8
     n4 --> n9
+    n4 --> n10
     n5 --> n0
     n5 --> n2
     n5 --> n3
@@ -64,26 +67,31 @@ flowchart LR
     n5 --> n7
     n5 --> n8
     n5 --> n9
+    n5 --> n10
     n6 --> n2
-    n6 --> n3
     n6 --> n4
-    n6 --> n7
-    n6 --> n8
+    n6 --> n9
     n7 --> n2
     n7 --> n3
+    n7 --> n4
+    n7 --> n8
+    n7 --> n9
     n8 --> n2
     n8 --> n3
-    n8 --> n7
+    n9 --> n2
+    n9 --> n3
+    n9 --> n8
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/documentation_run___init__.md"
     click n2 "../modules/documentation_run_contracts.md"
     click n3 "../modules/documentation_run_dependencies.md"
     click n4 "../modules/integrity.md"
     click n5 "../modules/documentation_run_prepare.md"
-    click n6 "../modules/refresh.md"
-    click n7 "../modules/documentation_run_schema.md"
-    click n8 "../modules/workspace.md"
-    click n9 "../modules/documentation_wiki_input.md"
+    click n6 "../modules/publication.md"
+    click n7 "../modules/refresh.md"
+    click n8 "../modules/documentation_run_schema.md"
+    click n9 "../modules/workspace.md"
+    click n10 "../modules/documentation_wiki_input.md"
 ```
 
 ### Internal neighbors
@@ -95,6 +103,7 @@ flowchart LR
 | Outbound | [documentation_run_contracts](../modules/documentation_run_contracts.md) |
 | Outbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Outbound | [integrity](../modules/integrity.md) |
+| Outbound | [publication](../modules/publication.md) |
 | Outbound | [refresh](../modules/refresh.md) |
 | Outbound | [documentation_run_schema](../modules/documentation_run_schema.md) |
 | Outbound | [workspace](../modules/workspace.md) |

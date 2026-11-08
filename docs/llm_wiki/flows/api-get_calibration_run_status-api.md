@@ -63,9 +63,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_calibration_run_status | _call_calibration_controller | 3779 | `_call_calibration_controller('get_calibration_run_status', root)` |
-| _call_calibration_controller | <dynamic> | 3736 | `<dynamic>(..., **=kwargs)` |
-| _call_calibration_controller | getattr | 3736 | `getattr(controller, name)` |
+| get_calibration_run_status | _call_calibration_controller | 3785 | `_call_calibration_controller('get_calibration_run_status', root)` |
+| _call_calibration_controller | <dynamic> | 3742 | `<dynamic>(..., **=kwargs)` |
+| _call_calibration_controller | getattr | 3742 | `getattr(controller, name)` |
 
 ### Boundary effects
 
@@ -75,8 +75,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3736 |
-| external_call | `_call_calibration_controller` | `getattr` | 3736 |
+| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3742 |
+| external_call | `_call_calibration_controller` | `getattr` | 3742 |
 
 ## Behavior
 

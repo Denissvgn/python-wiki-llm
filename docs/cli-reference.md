@@ -1954,6 +1954,12 @@ wiki candidate. `docs wiki check` verifies its files and current evidence;
 [candidate guide](sibling-wiki-candidates.md) explains page ownership, assets,
 manual-page adoption, receipts and the consumer review workflow.
 
+Use `docs wiki maintain` to give an isolated documentation workspace the
+authored pages and findings for selected topics. After independent review
+and `docs verify`, `docs wiki patch --format patch` writes the proposed
+repository changes to standard output. The [mapped topic guide](sibling-wiki-candidates.md#propose-a-reviewed-edit-to-a-mapped-topic)
+shows the author, reviewer and supervisor handoffs.
+
 Prepare and supervise an isolated, agent-driven human-documentation workspace.
 This mode does not replace the managed repo-local wiki workflow.
 

@@ -16,6 +16,7 @@ and are not decoded or hashed by this inventory.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `publication` |
 | `..documentation_wiki_input` | `DocumentationWikiInputError`, `fingerprint_documentation_wiki_input` |
 | `..inventory_cache` | `InventoryCacheOptions` |
 | `..lint_service` | `build_report`, `report_to_dict` |
@@ -43,10 +44,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
-| Outbound | `src` (7) |
+| Inbound | `src` (9) |
+| Outbound | `src` (8) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

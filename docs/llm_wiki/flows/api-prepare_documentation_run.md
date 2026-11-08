@@ -116,22 +116,22 @@ sequenceDiagram
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1228 interactions; 1198 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1232 interactions; 1202 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 298 (297 omitted); unresolved 1 of 364 (363 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 298 (297 omitted); unresolved 1 of 368 (367 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_run/prepare.py:prepare_documentation_run` | 1 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 156 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | external | 5 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
-| `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 75 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
-| `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 76 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 160 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 63 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 63 | - | external | 5 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 63 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 63 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 79 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 80 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
 > Omission summary shows 8 of 323 groups; 315 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -259,14 +259,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `imported_pages.extend` | `_prepare_documentation_run_impl` | 478 |
-| filesystem_read | `generated_ownership_path.read_bytes` | `_prepare_documentation_run_impl` | 552 |
-| filesystem_read | `source_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 556 |
-| filesystem_read | `source_plugins_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 560 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 608 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 610 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 612 |
-| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 626 |
+| mutation | `imported_pages.extend` | `_prepare_documentation_run_impl` | 483 |
+| filesystem_read | `generated_ownership_path.read_bytes` | `_prepare_documentation_run_impl` | 557 |
+| filesystem_read | `source_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 561 |
+| filesystem_read | `source_plugins_baseline_path.read_bytes` | `_prepare_documentation_run_impl` | 565 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 613 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 615 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 617 |
+| mutation | `limitations.append` | `_prepare_documentation_run_impl` | 631 |
 
 ### Static analysis gaps
 

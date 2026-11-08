@@ -183,7 +183,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3716 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
+| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3722 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
 | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 574 | `validate_publication_report(report)` |
 | validate_publication_report | _guard | 896 | `_guard(_report, value)` |
 | _guard | _json_tree | 876 | `_json_tree(value)` |

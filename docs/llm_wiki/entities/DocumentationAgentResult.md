@@ -1,6 +1,6 @@
 # DocumentationAgentResult
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:823`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:826`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)
@@ -35,6 +35,7 @@ _Auto-generated from `DocumentationAgentResult` in `src/llm_wiki_cli/services/do
 | `deferral_rationales` | `dict[str, str]` | `field(default_factory=dict)` | — |
 | `findings` | `tuple[dict[str, Any], ...]` | `()` | — |
 | `schema_version` | `str` | `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION` | — |
+| `changed_document_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 
@@ -51,18 +52,21 @@ flowchart LR
     n0["DocumentationAgentResult (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
     n1["src/llm_wiki_cli/services/documentation_run/__init__.py"]
     n2["DocumentationAgentResult.from_dict (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
+    n3["reconcile_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/documentation_run_contracts.md"
     click n1 "../modules/documentation_run___init__.md"
     click n2 "../modules/documentation_run_contracts.md"
+    click n3 "../modules/publication.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_run_contracts](../modules/documentation_run_contracts.md) | 2 | `changed_wiki_paths`, `claim_evidence`, `claims_evidence_pages`, `completed_work_ids`, `deferral_rationales`, `deferred_work_ids`, `findings`, `imported_page_edits`, `reported_generated_block_edits`, `reported_input_wiki_writes`, `reported_source_writes`, `requested_follow_up_checks` |
+| [documentation_run_contracts](../modules/documentation_run_contracts.md) | 2 | `changed_document_paths`, `changed_wiki_paths`, `claim_evidence`, `claims_evidence_pages`, `completed_work_ids`, `deferral_rationales`, `deferred_work_ids`, `findings`, `imported_page_edits`, `reported_generated_block_edits`, `reported_input_wiki_writes`, `reported_source_writes` |
 
 ### References
 
@@ -71,3 +75,4 @@ flowchart LR
 | `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
 | `DocumentationAgentResult.from_dict` | call | [documentation_run_contracts](../modules/documentation_run_contracts.md) | 1 |
 | `DocumentationAgentResult.from_dict` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |
+| `reconcile_publication` | type_reference | [publication](../modules/publication.md) | — |
