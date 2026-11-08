@@ -31,8 +31,11 @@ llm-wiki docs wiki check --config "Review settings/Wiki policy.json" --candidate
 
 Prepare dependencies while the required tools and downloads are available.
 With the installed provider, matching runtime, prepared helpers and local
-inputs, candidate generation and checking can run offline. A missing helper
-diagnostic names the language to prepare. In PowerShell, set the cache with
+inputs, candidate generation and checking can run offline. If TypeScript
+extraction reports `node not found`, install Node and npm, then prepare the
+helper. If Node is available and the TypeScript helper is missing, run
+`prepare-extractors` against the selected source using the cache that export
+will read. In PowerShell, set the cache with
 `$env:LLM_WIKI_CACHE_DIR` and pass that value to `--cache-dir`. Use `/` in
 paths stored in policy JSON on every platform. Quote CLI paths that contain
 spaces. `--config` and `--target-dir` resolve under `--consumer-root`.

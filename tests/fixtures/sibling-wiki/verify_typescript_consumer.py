@@ -148,6 +148,29 @@ def verify(workspace, cache, language):
     candidate = workspace / "Wiki artifact"
     receipt_path = workspace / "Wiki receipt.json"
     args = ["--receipt", receipt_path, "--config", CONFIG]
+    if language == "typescript":
+        assert shutil.which("node") is not None, (
+            "The TypeScript consumer verification requires Node.js"
+        )
+        cold_cache = workspace / "empty helper cache"
+        missing = cli(
+            workspace,
+            cold_cache,
+            "docs",
+            "wiki",
+            "export",
+            "--consumer-root",
+            consumer,
+            "--output-dir",
+            candidate,
+            *args,
+            expected=2,
+        ).stderr.decode("utf-8")
+        assert "typescript helper is not prepared" in missing
+        assert "prepare-extractors" in missing and "typescript" in missing
+        assert "go helper" not in missing
+        assert tree(consumer) == original
+        assert not any(path.exists() for path in (cold_cache, candidate, receipt_path))
     cli(
         workspace,
         cache,

@@ -3,6 +3,7 @@
 import json
 from pathlib import Path, PureWindowsPath
 import runpy
+import shutil
 import subprocess
 import sys
 
@@ -44,8 +45,8 @@ def test_installed_python_consumer_rollout_without_git_or_helper_cache(tmp_path)
     assert not cache.exists()
 
 
-def test_unprepared_selected_typescript_preserves_consumer_and_requests_only_its_helper(
-    tmp_path,
+def test_missing_node_preserves_consumer_and_reports_typescript_prerequisite(
+    tmp_path, monkeypatch
 ):
     root = tmp_path / "Consumer"
     fixture["create_consumer"](root, "typescript")
@@ -53,6 +54,10 @@ def test_unprepared_selected_typescript_preserves_consumer_and_requests_only_its
     cache = tmp_path / "cold cache"
     receipt = tmp_path / "candidate.json"
     destination = tmp_path / "candidate"
+    empty_bin = tmp_path / "empty PATH"
+    empty_bin.mkdir()
+    monkeypatch.setenv("PATH", str(empty_bin))
+    assert shutil.which("node") is None
     result = fixture["cli"](
         tmp_path,
         cache,
@@ -70,8 +75,8 @@ def test_unprepared_selected_typescript_preserves_consumer_and_requests_only_its
         expected=2,
     )
     diagnostic = result.stderr.decode("utf-8")
-    assert "typescript helper is not prepared" in diagnostic
-    assert "prepare-extractors" in diagnostic and "typescript" in diagnostic
+    assert "node not found. Install Node.js" in diagnostic
+    assert "to enable TypeScript extraction" in diagnostic
     assert "go helper" not in diagnostic
     assert before == fixture["tree"](root)
     assert not any(p.exists() for p in (cache, receipt, destination))
