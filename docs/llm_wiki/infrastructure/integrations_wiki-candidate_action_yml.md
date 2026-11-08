@@ -23,6 +23,8 @@ Structural summary only; templates, expressions and referenced files are not eva
 
 ## Outputs
 
+- `artifact-id`
+- `receipt-id`
 - `candidate-dir`
 - `receipt-path`
 - `report-path`

@@ -263,6 +263,17 @@ Home/sidebar pages, an asset, explicit manual-page adoption and a preserved
 manual topic. GitHub credentials and a publisher are unnecessary for local
 preparation and review.
 
+## Deliver or roll back a reviewed wiki
+
+For an initialized GitHub wiki, a separate protected publisher can deliver a
+reviewed candidate from the eligible source commit. Version 1 configurations
+remain read-only. Version 2 adds the explicit `publish` opt-in, an optional
+target branch and an exact tag for release-based documentation. The publisher
+checks the live source and target, records ownership in the wiki commit and
+fetches the commit back before reporting success. Rollback uses its own
+reviewed proposal and creates a new commit on top of the current wiki.
+See the [delivery and rollback guide](../integrations/wiki-candidate/delivery/README.md).
+
 ## Python integration
 
 ```python

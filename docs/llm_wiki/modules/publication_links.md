@@ -27,18 +27,23 @@ Pure Markdown rewriting and checks for portable GitHub wiki candidates.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/publication_candidate.py"]
-    n1["src/llm_wiki_cli/services/publication_links.py"]
-    n2["src/llm_wiki_cli/services/publication_maintenance.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n1["src/llm_wiki_cli/services/publication_delivery.py"]
+    n2["src/llm_wiki_cli/services/publication_links.py"]
+    n3["src/llm_wiki_cli/services/publication_maintenance.py"]
+    n4["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
-    n0 --> n3
-    n1 --> n3
-    n2 --> n0
-    n2 --> n1
+    n0 --> n2
+    n0 --> n4
+    n1 --> n0
+    n1 --> n2
+    n2 --> n4
+    n3 --> n0
+    n3 --> n2
     click n0 "../modules/publication_candidate.md"
-    click n1 "../modules/publication_links.md"
-    click n2 "../modules/publication_maintenance.md"
-    click n3 "../modules/validation.md"
+    click n1 "../modules/publication_delivery.md"
+    click n2 "../modules/publication_links.md"
+    click n3 "../modules/publication_maintenance.md"
+    click n4 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -46,6 +51,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [publication_candidate](../modules/publication_candidate.md) |
+| Inbound | [publication_delivery](../modules/publication_delivery.md) |
 | Inbound | [publication_maintenance](../modules/publication_maintenance.md) |
 | Outbound | [validation](../modules/validation.md) |
 

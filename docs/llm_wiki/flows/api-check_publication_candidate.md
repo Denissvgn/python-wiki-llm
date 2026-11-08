@@ -2,7 +2,7 @@
 
 **Entry point:** `check_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [instruction_ownership](../modules/instruction_ownership.md), and 13 more
+**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [instruction_ownership](../modules/instruction_ownership.md), and 14 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_contracts](../modules/publication_contracts.md)
+- [publication_delivery](../modules/publication_delivery.md)
 - [publication_impact](../modules/publication_impact.md)
 - [publication_links](../modules/publication_links.md)
 - [publication_references](../modules/publication_references.md)
@@ -54,12 +55,12 @@ sequenceDiagram
     participant p20 as check_github_wiki
     participant p21 as project_publication_targets
     participant p22 as compare_publication_impact
-    participant p23 as _hashes
-    participant p24 as _sealed
-    participant p25 as _validate_review
-    participant p26 as _proposal
-    participant p27 as _guard
-    participant p28 as _consumer_root
+    participant p23 as _sealed
+    participant p24 as _validate_review
+    participant p25 as _proposal
+    participant p26 as _guard
+    participant p27 as _consumer_root
+    participant p28 as _path
     participant p29 as isinstance (src/llm_wiki_cli/api.py:check_publication_candidate)
     participant p30 as json.dumps(…).encode (src/llm_wiki_cli/services…idate_publication_receipt)
     p0->>p1: check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py)
@@ -84,19 +85,19 @@ sequenceDiagram
     p3->>p20: check_github_wiki
     p3->>p21: project_publication_targets
     p3->>p22: compare_publication_impact
-    p3->>p23: _hashes
-    p3->>p24: _sealed
-    p2->>p25: _validate_review
-    p2->>p26: _proposal
-    p12->>p27: _guard
-    p7->>p28: _consumer_root
+    p3->>p23: _sealed
+    p2->>p24: _validate_review
+    p2->>p25: _proposal
+    p12->>p26: _guard
+    p7->>p27: _consumer_root
+    p19->>p28: _path
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:check_publication_candidate)(receipt, Mapping)
     p2-->>p30: json.dumps(…).encode (src/llm_wiki_cli/services…idate_publication_receipt)('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 1323 interactions; 1293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1395 interactions; 1365 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 502 (501 omitted); unresolved 1 of 397 (396 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 536 (535 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | - | external | 7 |
 | `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 5 | [src/llm_wiki_cli/services/publication_candidate.py](../modules/publication_candidate.md) | internal | 8 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | external | 2 |
-> Omission summary shows 8 of 254 groups; 246 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 269 groups; 261 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 425; effect analysis evaluated: 330, partial: 9, unavailable: 86. Counts include steps omitted from the displayed trace.
+Source steps: 448; effect analysis evaluated: 350, partial: 9, unavailable: 89. Counts include steps omitted from the displayed trace.
 
-Collector observations for 339 source steps with known totals: observed: 1556, emitted: 1510, omitted: 46. Unavailable totals are excluded.
+Collector observations for 359 source steps with known totals: observed: 1637, emitted: 1591, omitted: 46. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -216,11 +217,11 @@ flowchart LR
 | check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 3637 | `isinstance(receipt, Mapping)` |
 | check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 3638 | `ValueError('Publication receipt must be a mapping')` |
 | check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3639 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 947 | `validate_publication_receipt(receipt)` |
-| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 303 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 304 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 305 | `dict(receipt)` |
-| validate_publication_receipt | _json_tree | 306 | `_json_tree(receipt)` |
+| check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 955 | `validate_publication_receipt(receipt)` |
+| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 313 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 314 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 315 | `dict(receipt)` |
+| validate_publication_receipt | _json_tree | 316 | `_json_tree(receipt)` |
 | _json_tree | pending.pop (src/llm_wiki_cli/services…n_contracts.py:_json_tree) | 135 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
@@ -229,7 +230,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 458 |
+| mutation | `seen.add` | `validate_publication_receipt` | 464 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |
@@ -240,8 +241,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `check_publication_candidate` | `isinstance` | 3637 |
 | external_call | `check_publication_candidate` | `ValueError` | 3638 |
-| external_call | `validate_publication_receipt` | `isinstance` | 303 |
-| external_call | `validate_publication_receipt` | `ValueError` | 304 |
+| external_call | `validate_publication_receipt` | `isinstance` | 313 |
+| external_call | `validate_publication_receipt` | `ValueError` | 314 |
 | step_limit | `check_publication_candidate` | `first 12 steps` | 0 |
 | truncated_flow | `check_publication_candidate` | `depth limit` | 0 |
 

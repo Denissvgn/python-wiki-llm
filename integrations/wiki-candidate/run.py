@@ -120,7 +120,7 @@ def run(mode: str) -> None:
     if mode == "toolchains":
         return
 
-    materialized, _pin = accepted_inputs(consumer, accepted, action_input("accepted-state-revision"), runtime)
+    materialized, accepted_pin = accepted_inputs(consumer, accepted, action_input("accepted-state-revision"), runtime)
     common = [f"--config={config}", f"--source-revision={source_sha}"]
     if target_dir:
         common.append(f"--target-dir={target_dir}")
@@ -143,9 +143,26 @@ def run(mode: str) -> None:
         raise ValueError("The source or target checkout changed during preparation")
     retain(receipt, candidate, consumer / target_dir if target_dir else None, evidence)
     checked.replace(evidence / "receipt.json")
+    if receipt["ready"] and receipt["basis"]["config"]["publish"]:
+        handoff = {
+            "schema_version": "llm-wiki-delivery-handoff/v1",
+            "repository": os.environ["GITHUB_REPOSITORY"],
+            "run_id": os.environ["GITHUB_RUN_ID"],
+            "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+            "event": os.environ["GITHUB_EVENT_NAME"],
+            "ref": os.environ["GITHUB_REF"],
+            "source_sha": source_sha,
+            "accepted_state_revision": accepted_pin,
+            "receipt_id": receipt["receipt_id"],
+            "archive_hash": sha256_bytes((evidence / "candidate.zip").read_bytes()),
+        }
+        (evidence / "delivery-handoff.json").write_text(
+            json.dumps(handoff, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+        )
     changed = receipt["files"] != receipt["target"]["files"]
     impact = receipt["impact"]
     values = {
+        "receipt-id": receipt["receipt_id"],
         "candidate-dir": candidate.as_posix(), "receipt-path": (evidence / "receipt.json").as_posix(),
         "report-path": (evidence / "impact.json").as_posix(), "diff-path": (evidence / "candidate.diff").as_posix(),
         "changed": str(changed).lower(), "ready": str(receipt["ready"]).lower(),

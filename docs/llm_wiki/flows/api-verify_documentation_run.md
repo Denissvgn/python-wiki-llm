@@ -2,7 +2,7 @@
 
 **Entry point:** `verify_documentation_run` (`api`)
 **Source:** [verify](../modules/verify.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_review](../modules/documentation_review.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), and 12 more
+**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_review](../modules/documentation_review.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), and 13 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [publication](../modules/publication.md)
 - [publication_candidate](../modules/publication_candidate.md)
+- [publication_delivery](../modules/publication_delivery.md)
 - [validation](../modules/validation.md)
 - [verify](../modules/verify.md)
 - [workspace](../modules/workspace.md)
@@ -92,9 +93,9 @@ sequenceDiagram
     p0-->>p30: _resolve_workspace_root_argument(workspace)
 ```
 
-> Call sequence diagram shows 30 of 883 interactions; 853 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 893 interactions; 863 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 183 (182 omitted); unresolved 1 of 341 (340 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 189 (188 omitted); unresolved 1 of 342 (341 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_run/integrity.py:_verify_initial_integrity_anchors` | 41 | [src/llm_wiki_cli/services/documentation_run/integrity.py](../modules/integrity.md) | internal | 3 |
 | `src/llm_wiki_cli/services/documentation_run/integrity.py:_tree_hash_from_file_hashes` | 80 | - | unresolved | 13 |
 | `src/llm_wiki_cli/services/documentation_run/integrity.py:compare_generated_ownership` | 133 | [src/llm_wiki_cli/services/documentation_run/integrity.py](../modules/integrity.md) | internal | 1 |
-> Omission summary shows 8 of 168 groups; 160 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -121,9 +122,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 360; effect analysis evaluated: 237, partial: 4, unavailable: 119. Counts include steps omitted from the displayed trace.
+Source steps: 363; effect analysis evaluated: 240, partial: 4, unavailable: 119. Counts include steps omitted from the displayed trace.
 
-Collector observations for 241 source steps with known totals: observed: 968, emitted: 959, omitted: 9. Unavailable totals are excluded.
+Collector observations for 244 source steps with known totals: observed: 996, emitted: 987, omitted: 9. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

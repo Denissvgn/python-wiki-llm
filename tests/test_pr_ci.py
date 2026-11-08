@@ -606,6 +606,30 @@ def test_wiki_candidate_ci_selects_its_action_and_installer_owners(path, expecte
         assert expected in lane["selectors"]
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "integrations/wiki-candidate/delivery/action.yml",
+        "src/llm_wiki_cli/services/publication_delivery.py",
+    ],
+)
+def test_wiki_delivery_selects_git_transport_and_host_provenance_checks(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    assert "action" in selection["jobs"]
+    assert set(selection["lanes"]) == {"ubuntu", "macos", "windows"}
+    for lane in selection["lanes"].values():
+        assert "tests/test_wiki_delivery_transport.py" in lane["selectors"]
+        assert "tests/test_publication_delivery.py" in lane["selectors"]
+    assert "tests/test_wiki_delivery_action.py" in selection["lanes"]["ubuntu"]["selectors"]
+
+
 def test_security_document_selects_public_documentation_checks():
     policy = ci.policy_load(ROOT / "release")
     before = {

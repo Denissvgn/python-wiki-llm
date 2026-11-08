@@ -77,3 +77,8 @@ Check the step outcome before consuming any outputs. The action performs no
 remote wiki access or delivery.
 
 [Candidate configuration and review guide](../../docs/sibling-wiki-candidates.md)
+
+For a v2 consumer that opts into delivery, pass the successful job's
+`artifact-id` and `receipt-id` outputs to the separate protected publisher
+in the same workflow run and attempt. The candidate job retains its
+read-only permissions. [Delivery and rollback guide](delivery/README.md)

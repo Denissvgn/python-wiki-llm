@@ -94,9 +94,9 @@ sequenceDiagram
     p0-->>p30: authored.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 1444 interactions; 1414 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1462 interactions; 1432 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 525 (524 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 529 (528 omitted); unresolved 1 of 313 (312 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 18 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-> Omission summary shows 8 of 319 groups; 311 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 324 groups; 316 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 613; effect analysis evaluated: 318, partial: 21, unavailable: 274. Counts include steps omitted from the displayed trace.
+Source steps: 621; effect analysis evaluated: 323, partial: 21, unavailable: 277. Counts include steps omitted from the displayed trace.
 
-Collector observations for 339 source steps with known totals: observed: 1927, emitted: 1860, omitted: 67. Unavailable totals are excluded.
+Collector observations for 344 source steps with known totals: observed: 1944, emitted: 1877, omitted: 67. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -203,10 +203,10 @@ flowchart LR
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3671 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3672 | `ValueError('Publication receipt must be a mapping')` |
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | 3673 | `validate(dict(...))` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 303 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 304 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 305 | `dict(receipt)` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | _json_tree | 306 | `_json_tree(receipt)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 313 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 314 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 315 | `dict(receipt)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | _json_tree | 316 | `_json_tree(receipt)` |
 | _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
@@ -216,7 +216,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 458 |
+| mutation | `seen.add` | `validate_publication_receipt` | 464 |
 | mutation | `pending.pop` | `_json_tree` | 135 |
 | mutation | `pending.extend` | `_json_tree` | 142 |
 | mutation | `pending.extend` | `_json_tree` | 144 |
@@ -227,8 +227,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_publication_receipt` | `isinstance` | 3671 |
 | external_call | `validate_publication_receipt` | `ValueError` | 3672 |
-| external_call | `validate_publication_receipt` | `isinstance` | 303 |
-| external_call | `validate_publication_receipt` | `ValueError` | 304 |
+| external_call | `validate_publication_receipt` | `isinstance` | 313 |
+| external_call | `validate_publication_receipt` | `ValueError` | 314 |
 | external_call | `_json_tree` | `isinstance` | 139 |
 | step_limit | `validate_publication_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `validate_publication_receipt` | `depth limit` | 0 |

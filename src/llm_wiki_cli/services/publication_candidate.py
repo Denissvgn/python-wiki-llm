@@ -15,6 +15,7 @@ from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directo
 from .knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
 from .publication_config import (
+    DELIVERY_CHECKPOINT_PATH,
     load_publication_config,
     publication_control_overlap,
     publication_input_controls,
@@ -143,17 +144,19 @@ def _tree_paths(root: Path, *, target_snapshot: bool):
             info = item.lstat()
             if getattr(info, "st_file_attributes", 0) & 0x400:
                 raise ValueError("Wiki trees cannot contain reparse points")
-            if item.name.casefold() in _PRIVATE or item.name.casefold().startswith(
-                ".llm-wiki"
+            checkpoint = target_snapshot and relative == DELIVERY_CHECKPOINT_PATH
+            if not checkpoint and (
+                item.name.casefold() in _PRIVATE
+                or item.name.casefold().startswith(".llm-wiki")
             ):
                 raise ValueError(
                     "Wiki trees cannot contain native state or private workspace files"
                 )
-            if stat.S_ISDIR(info.st_mode):
+            if stat.S_ISDIR(info.st_mode) and not checkpoint:
                 pending.append(item)
             elif stat.S_ISREG(info.st_mode) and info.st_nlink == 1:
                 paths.append(relative)
-                if len(paths) > MAX_FILES:
+                if len(paths) > MAX_FILES + int(target_snapshot):
                     raise ValueError("Wiki tree exceeds the public file limit")
             else:
                 raise ValueError("Wiki trees require single-link regular files")
@@ -168,13 +171,20 @@ def _read_tree(root: Path, *, target_snapshot: bool = False):
         total = 0
         for path in paths:
             raw = session.read(path, MAX_FILE_BYTES)
-            total += len(raw)
+            if path != DELIVERY_CHECKPOINT_PATH:
+                total += len(raw)
             if total > MAX_TREE_BYTES:
                 raise ValueError("Wiki tree exceeds the public byte limit")
             files[path] = raw
     session.recheck()
     if paths != _tree_paths(root, target_snapshot=target_snapshot):
         raise ValueError("Wiki tree changed during capture")
+    if target_snapshot and DELIVERY_CHECKPOINT_PATH in files:
+        from .publication_delivery import split_delivery_tree
+
+        files, _ = split_delivery_tree(files)
+    if len(files) > MAX_FILES:
+        raise ValueError("Wiki tree exceeds the public file limit")
     return files
 
 
@@ -430,12 +440,8 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         }
     if receipt["ownership"] != declared:
         raise ValueError("Candidate ownership does not match its configured sources")
-    adoptions = {
-        item["path"]: item for item in config["content"].get("adoptions", [])
-    }
-    removals = {
-        item["path"]: item for item in config["content"].get("removals", [])
-    }
+    adoptions = {item["path"]: item for item in config["content"].get("adoptions", [])}
+    removals = {item["path"]: item for item in config["content"].get("removals", [])}
     if set(adoptions) - set(receipt["ownership"]):
         raise ValueError("Candidate adoptions must name a current owned output")
     if (
@@ -512,7 +518,9 @@ def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
         item["path"] for item in receipt["operations"] if item["kind"] == "remove"
     }
     if removed != set(removals):
-        raise ValueError("Candidate removals do not match their configured dispositions")
+        raise ValueError(
+            "Candidate removals do not match their configured dispositions"
+        )
     if set(target["files"]) - set(receipt["files"]) != removed & set(target["files"]):
         raise ValueError("Candidate removed paths without an explicit disposition")
     for path, digest in receipt["files"].items():
@@ -1007,6 +1015,13 @@ def validate_candidate_tree(
     validate_publication_receipt(receipt)
     root = _absolute_path(Path(consumer_root))
     files = _read_tree(_candidate_path(root, candidate_dir))
+    _validate_candidate_files(files, receipt)
+
+
+def _validate_candidate_files(
+    files: Mapping[str, bytes], receipt: Mapping[str, Any]
+) -> None:
+    """Check public file bytes against a previously validated candidate receipt."""
     if _hashes(files) != receipt["files"]:
         raise ValueError("Candidate files differ from the supplied receipt")
     from .publication_links import check_github_wiki
@@ -1027,10 +1042,7 @@ def validate_candidate_tree(
         observed = publication_target_observation(
             finding, files.get(finding["wiki_page"])
         )
-        if (
-            finding["target"] != observed
-            or targets.get(finding["subject"]) != observed
-        ):
+        if finding["target"] != observed or targets.get(finding["subject"]) != observed:
             raise ValueError("Candidate target observations differ from its content")
 
 

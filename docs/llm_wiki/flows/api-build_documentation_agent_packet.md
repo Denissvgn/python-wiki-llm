@@ -2,7 +2,7 @@
 
 **Entry point:** `build_documentation_agent_packet` (`api`)
 **Source:** [packet](../modules/packet.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 9 more
+**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 11 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,8 @@
 - [packet](../modules/packet.md)
 - [publication](../modules/publication.md)
 - [publication_candidate](../modules/publication_candidate.md)
+- [publication_config](../modules/publication_config.md)
+- [publication_delivery](../modules/publication_delivery.md)
 - [validation](../modules/validation.md)
 - [workspace](../modules/workspace.md)
 
@@ -31,7 +33,7 @@ sequenceDiagram
     participant p2 as protected_stage_hash
     participant p3 as _documents
     participant p4 as capture_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)
-    participant p5 as _hashes
+    participant p5 as _hashes (src/llm_wiki_cli/services…tation_run/publication.py)
     participant p6 as _read_tree
     participant p7 as _resolve_existing_directory
     participant p8 as _binding
@@ -40,28 +42,28 @@ sequenceDiagram
     participant p11 as _absolute_path
     participant p12 as _tree_paths
     participant p13 as _lstat
-    participant p14 as hash_json
-    participant p15 as _assert_safe_directory
-    participant p16 as _resolve_path
-    participant p17 as _guard_baseline_directory
-    participant p18 as _hash_windows_file
-    participant p19 as _assert_same_file_identity
+    participant p14 as _assert_safe_directory
+    participant p15 as _resolve_path
+    participant p16 as _guard_baseline_directory
+    participant p17 as _hash_windows_file
+    participant p18 as _assert_same_file_identity
+    participant p19 as split_delivery_tree
     participant p20 as windows_object_identity
     participant p21 as guard_windows_directory_chain
-    participant p22 as canonical_json_bytes
-    participant p23 as _assert_safe_regular_file
+    participant p22 as _assert_safe_regular_file
+    participant p23 as _public_hashes
     participant p24 as open_windows_readonly_file
-    participant p25 as _portable
-    participant p26 as _assert_stable_windows_path_handle_metadata
-    participant p27 as _assert_stable_file_metadata
-    participant p28 as DocumentationIntegrityError (src/llm_wiki_cli/services…entation_run/contracts.py)
+    participant p25 as _validated_checkpoint
+    participant p26 as _portable
+    participant p27 as _assert_stable_windows_path_handle_metadata
+    participant p28 as _assert_stable_file_metadata
     participant p29 as isinstance (src/llm_wiki_cli/services….py:capture_tree_baseline)
     participant p30 as DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_packet)
     p0->>p1: publication_packet
     p0->>p2: protected_stage_hash
     p1->>p3: _documents
     p2->>p4: capture_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)
-    p1->>p5: _hashes
+    p1->>p5: _hashes (src/llm_wiki_cli/services…tation_run/publication.py)
     p3->>p6: _read_tree
     p4->>p7: _resolve_existing_directory
     p3->>p8: _binding
@@ -70,28 +72,28 @@ sequenceDiagram
     p6->>p11: _absolute_path
     p6->>p12: _tree_paths
     p7->>p13: _lstat
-    p8->>p14: hash_json
-    p7->>p15: _assert_safe_directory
-    p7->>p16: _resolve_path
-    p9->>p17: _guard_baseline_directory
-    p10->>p18: _hash_windows_file
-    p7->>p19: _assert_same_file_identity
-    p19->>p20: windows_object_identity
-    p17->>p21: guard_windows_directory_chain
-    p14->>p22: canonical_json_bytes
-    p18->>p23: _assert_safe_regular_file
-    p18->>p24: open_windows_readonly_file
-    p12->>p25: _portable
-    p18->>p26: _assert_stable_windows_path_handle_metadata
-    p18->>p27: _assert_stable_file_metadata
-    p1->>p28: DocumentationIntegrityError (src/llm_wiki_cli/services…entation_run/contracts.py)
+    p7->>p14: _assert_safe_directory
+    p7->>p15: _resolve_path
+    p9->>p16: _guard_baseline_directory
+    p10->>p17: _hash_windows_file
+    p7->>p18: _assert_same_file_identity
+    p6->>p19: split_delivery_tree
+    p18->>p20: windows_object_identity
+    p16->>p21: guard_windows_directory_chain
+    p17->>p22: _assert_safe_regular_file
+    p19->>p23: _public_hashes
+    p17->>p24: open_windows_readonly_file
+    p19->>p25: _validated_checkpoint
+    p12->>p26: _portable
+    p17->>p27: _assert_stable_windows_path_handle_metadata
+    p17->>p28: _assert_stable_file_metadata
     p4-->>p29: isinstance (src/llm_wiki_cli/services….py:capture_tree_baseline)(value, bool)
     p0-->>p30: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_packet)(...)
 ```
 
-> Call sequence diagram shows 30 of 426 interactions; 396 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 477 interactions; 447 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 133 (132 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 163 (162 omitted); unresolved 1 of 161 (160 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -105,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_tree_paths` | 66 | - | unresolved | 12 |
-> Omission summary shows 8 of 88 groups; 80 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 95 groups; 87 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -118,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 141; effect analysis evaluated: 93, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
+Source steps: 154; effect analysis evaluated: 106, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
 
-Collector observations for 97 source steps with known totals: observed: 478, emitted: 465, omitted: 13. Unavailable totals are excluded.
+Collector observations for 110 source steps with known totals: observed: 529, emitted: 516, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -139,7 +141,7 @@ Collector observations for 97 source steps with known totals: observed: 478, emi
 | `str (src/llm_wiki_cli/services…ocumentation_agent_packet)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `tuple (src/llm_wiki_cli/services…ocumentation_agent_packet)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `str (src/llm_wiki_cli/services…ocumentation_agent_packet)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…ocumentation_agent_packet)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -154,7 +156,7 @@ flowchart LR
     s9["9. str (src/llm_wiki_cli/services…ocumentation_agent_packet)"]
     s10["10. tuple (src/llm_wiki_cli/services…ocumentation_agent_packet)"]
     s11["11. str (src/llm_wiki_cli/services…ocumentation_agent_packet)"]
-    s12["12. any"]
+    s12["12. any (src/llm_wiki_cli/services…ocumentation_agent_packet)"]
     s1 -. "DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_packet)(...)" .-> s2
     s1 -. "_resolve_workspace_root_argument(workspace)" .-> s3
     s1 -. "load_documentation_run(workspace_root)" .-> s4
@@ -165,7 +167,7 @@ flowchart LR
     s1 -. "str (src/llm_wiki_cli/services…ocumentation_agent_packet)(skill[...])" .-> s9
     s1 -. "tuple (src/llm_wiki_cli/services…ocumentation_agent_packet)(...)" .-> s10
     s1 -. "str (src/llm_wiki_cli/services…ocumentation_agent_packet)(skill_id)" .-> s11
-    s1 -. "any(...)" .-> s12
+    s1 -. "any (src/llm_wiki_cli/services…ocumentation_agent_packet)(...)" .-> s12
     b0["mutation stage_contract.update"]
     s1 -. "mutation stage_contract.update" .-> b0
     b1["filesystem_read before_path.read_bytes"]
@@ -197,7 +199,7 @@ flowchart LR
 | `str (src/llm_wiki_cli/services…ocumentation_agent_packet)` | - | - | - | - |
 | `tuple (src/llm_wiki_cli/services…ocumentation_agent_packet)` | - | - | - | - |
 | `str (src/llm_wiki_cli/services…ocumentation_agent_packet)` | - | - | - | - |
-| `any` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…ocumentation_agent_packet)` | - | - | - | - |
 
 ### Call data
 
@@ -213,7 +215,7 @@ flowchart LR
 | build_documentation_agent_packet | str (src/llm_wiki_cli/services…ocumentation_agent_packet) | 106 | `str(skill[...])` |
 | build_documentation_agent_packet | tuple (src/llm_wiki_cli/services…ocumentation_agent_packet) | 107 | `tuple(...)` |
 | build_documentation_agent_packet | str (src/llm_wiki_cli/services…ocumentation_agent_packet) | 107 | `str(skill_id)` |
-| build_documentation_agent_packet | any | 110 | `any(...)` |
+| build_documentation_agent_packet | any (src/llm_wiki_cli/services…ocumentation_agent_packet) | 110 | `any(...)` |
 
 ### Boundary effects
 

@@ -145,9 +145,9 @@ sequenceDiagram
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2864 interactions; 2834 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2882 interactions; 2852 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 909 (908 omitted); unresolved 1 of 693 (692 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 699 (698 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
 | `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-> Omission summary shows 8 of 674 groups; 666 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 679 groups; 671 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +174,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1263; effect analysis evaluated: 818, partial: 50, unavailable: 395. Counts include steps omitted from the displayed trace.
+Source steps: 1271; effect analysis evaluated: 823, partial: 50, unavailable: 398. Counts include steps omitted from the displayed trace.
 
-Collector observations for 868 source steps with known totals: observed: 5220, emitted: 4950, omitted: 270. Unavailable totals are excluded.
+Collector observations for 873 source steps with known totals: observed: 5237, emitted: 4967, omitted: 270. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -269,7 +269,7 @@ flowchart LR
 | __main__ | parser.parse_args | 173 | `parser.parse_args(data not statically known)` |
 | __main__ | prepare | 174 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
 | prepare | load_publication_config | 50 | `load_publication_config(consumer, config_path=config_path)` |
-| load_publication_config | _consumer_root | 889 | `_consumer_root(consumer_root)` |
+| load_publication_config | _consumer_root | 943 | `_consumer_root(consumer_root)` |
 
 ### Boundary effects
 

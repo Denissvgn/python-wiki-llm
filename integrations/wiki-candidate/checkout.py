@@ -92,6 +92,18 @@ def verified_target(
     return head
 
 
+def committed_blob(root: Path, pin: str, relative: str, maximum: int) -> tuple[str, bytes]:
+    """Read one regular blob from a pinned commit, without checking out or filtering it."""
+    entry = _git(root, "ls-tree", "-z", _revision(pin), "--", relative)
+    mode, _, rest = entry.partition(b" ")
+    if mode not in {b"100644", b"100755"} or not rest.startswith(b"blob "):
+        raise ValueError(f"Accepted input must be a regular file at {pin}: {relative}")
+    oid = rest.partition(b"\t")[0].split()[1].decode("ascii")
+    if int(_git(root, "cat-file", "-s", oid)) > maximum:
+        raise ValueError(f"Accepted input exceeds the publication document limit: {relative}")
+    return oid, _git(root, "cat-file", "blob", oid)
+
+
 def verified_checkout(
     consumer: Path, source_revision: str, target_dir: str, accepted: dict[str, str]
 ) -> str:
@@ -147,18 +159,7 @@ def accepted_inputs(
         }:
             raise ValueError("Unknown accepted artifact type")
         relative = publication_path(consumer, path).relative_to(root).as_posix()
-        entry = _git(root, "ls-tree", "-z", pin, "--", relative)
-        mode, _, rest = entry.partition(b" ")
-        if mode not in {b"100644", b"100755"} or not rest.startswith(b"blob "):
-            raise ValueError(
-                f"Accepted input must be a regular file at {pin}: {relative}"
-            )
-        oid = rest.partition(b"\t")[0].split()[1].decode("ascii")
-        if int(_git(root, "cat-file", "-s", oid)) > MAX_JSON_BYTES:
-            raise ValueError(
-                f"Accepted input exceeds the publication document limit: {relative}"
-            )
-        raw = _git(root, "cat-file", "blob", oid)
+        oid, raw = committed_blob(root, pin, relative, MAX_JSON_BYTES)
         destination = directory / (option + ".json")
         destination.write_bytes(raw)
         paths[option] = str(destination)

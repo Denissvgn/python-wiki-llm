@@ -524,7 +524,8 @@
       "tests": [
         "tests/test_wiki_candidate_action.py",
         "tests/test_wiki_candidate_checkout.py",
-        "tests/test_wiki_candidate_preparation.py"
+        "tests/test_wiki_candidate_preparation.py",
+        "tests/test_wiki_delivery_action.py"
       ],
       "lanes": [
         "ubuntu"
@@ -532,6 +533,21 @@
       "jobs": [
         "typecheck",
         "action"
+      ],
+      "helpers": []
+    },
+    "wiki-delivery": {
+      "tests": [
+        "tests/test_publication_delivery.py",
+        "tests/test_wiki_delivery_transport.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
       ],
       "helpers": []
     },
@@ -901,10 +917,26 @@
         ".github/workflows/action-selftest.yml",
         "integrations/wiki-candidate/**",
         "examples/sibling-wiki/**",
-        "tests/test_wiki_candidate_*.py"
+        "tests/test_wiki_candidate_*.py",
+        "src/llm_wiki_cli/services/publication_delivery.py",
+        "tests/test_wiki_delivery_action.py"
       ],
       "groups": [
         "wiki-candidate-action"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/publication_delivery.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+        "src/llm_wiki_cli/services/publication_candidate.py",
+        "src/llm_wiki_cli/services/publication_contracts.py",
+        "integrations/wiki-candidate/delivery/**",
+        "tests/test_publication_delivery.py",
+        "tests/test_wiki_delivery_transport.py"
+      ],
+      "groups": [
+        "wiki-delivery"
       ]
     },
     {

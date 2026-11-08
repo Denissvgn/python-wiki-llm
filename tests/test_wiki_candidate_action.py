@@ -40,7 +40,7 @@ def test_action_uses_pinned_dependencies_and_installed_interpreter():
     steps = action["runs"]["steps"]
     assert set(action["outputs"]) == {
         "candidate-dir", "receipt-path", "report-path", "diff-path",
-        "provider-receipt", "changed", "ready",
+        "provider-receipt", "changed", "ready", "artifact-id", "receipt-id",
     }
     assert steps[0]["uses"].startswith("actions/setup-python@")
     assert len(steps[0]["uses"].split("@")[1]) == 40

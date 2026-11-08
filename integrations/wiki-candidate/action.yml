@@ -35,6 +35,12 @@ inputs:
     default: "default"
 
 outputs:
+  artifact-id:
+    description: Immutable GitHub artifact ID for this run.
+    value: ${{ steps.upload.outputs.artifact-id }}
+  receipt-id:
+    description: Commitment to the exact independently checked receipt.
+    value: ${{ steps.candidate.outputs.receipt-id }}
   candidate-dir:
     description: Local candidate directory following an independent check.
     value: ${{ steps.candidate.outputs.candidate-dir }}
@@ -113,6 +119,7 @@ runs:
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
       run: '"${WIKI_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/run.py" candidate'
     - name: Retain the candidate and review evidence
+      id: upload
       if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:

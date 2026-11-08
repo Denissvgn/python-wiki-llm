@@ -1,0 +1,105 @@
+name: Reviewed sibling wiki delivery
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation on the initialized sibling wiki
+        type: choice
+        options: [qualify, deliver, plan-rollback, rollback]
+        default: qualify
+      target-revision:
+        description: Exact wiki commit used for candidate review or rollback planning
+        type: string
+      restore-revision:
+        description: Earlier wiki commit for rollback
+        type: string
+permissions:
+  contents: read
+
+# All jobs targeting this wiki in this repository use the same concurrency group.
+concurrency:
+  group: wiki-delivery-${{ github.repository }}.wiki
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: inputs.operation == 'deliver' && github.ref_protected
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      artifact: ${{ steps.candidate.outputs.artifact-id }}
+      receipt: ${{ steps.candidate.outputs.receipt-id }}
+      baseline: ${{ steps.pins.outputs.baseline }}
+      previous: ${{ steps.pins.outputs.previous }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin the reviewed target and accepted records
+        id: pins
+        shell: bash
+        env:
+          TARGET_SHA: ${{ inputs.target-revision }}
+          WIKI_READ_TOKEN: ${{ secrets.WIKI_READ_TOKEN }}
+          GIT_TERMINAL_PROMPT: "0"
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SERVER_URL" == https://github.com && "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ ! -e sibling-wiki && ! -L sibling-wiki ]]
+          url="https://github.com/${GITHUB_REPOSITORY}.wiki.git"
+          if [[ -n "$WIKI_READ_TOKEN" ]]; then
+            auth="$(printf '%s' "x-access-token:$WIKI_READ_TOKEN" | base64 -w0)"
+            export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$url.extraHeader"
+            export GIT_CONFIG_VALUE_0="Authorization: Basic $auth"
+          fi
+          git -c credential.helper= -c http.followRedirects=false clone --no-checkout --no-tags "$url" sibling-wiki
+          unset WIKI_READ_TOKEN auth GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
+          git -C sibling-wiki switch --detach "$TARGET_SHA"
+          accepted="$(git rev-parse --verify 'refs/remotes/origin/wiki-reviews^{commit}')"
+          echo "accepted=$accepted" >> "$GITHUB_OUTPUT"
+          for pair in baseline:publication-baseline previous:previous-receipt; do
+            path=".llm-wiki/${pair#*:}.json"
+            if git cat-file -e "$accepted:$path" 2>/dev/null; then
+              echo "${pair%:*}=$path" >> "$GITHUB_OUTPUT"
+            fi
+          done
+      - id: candidate
+        uses: Denissvgn/python-wiki-llm/integrations/wiki-candidate@FULL_PROVIDER_COMMIT
+        with:
+          source-revision: ${{ github.sha }}
+          target-dir: sibling-wiki
+          target-revision: ${{ inputs.target-revision }}
+          accepted-state-revision: ${{ steps.pins.outputs.accepted }}
+          baseline: ${{ steps.pins.outputs.baseline }}
+          reviews: .llm-wiki/publication-reviews.json
+          previous-receipt: ${{ steps.pins.outputs.previous }}
+          candidate-review: .llm-wiki/candidate-review.json
+          fail-on: review-required
+  publisher:
+    needs: prepare
+    if: >-
+      ${{ always() && !cancelled() && github.ref_protected &&
+          ((inputs.operation == 'deliver' && needs.prepare.result == 'success') ||
+           (inputs.operation != 'deliver' && needs.prepare.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: wiki-publisher
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: Denissvgn/python-wiki-llm/integrations/wiki-candidate/delivery@FULL_PROVIDER_COMMIT
+        with:
+          operation: ${{ inputs.operation }}
+          wiki-token: ${{ secrets.WIKI_GIT_TOKEN }}
+          artifact-id: ${{ needs.prepare.outputs.artifact }}
+          receipt-id: ${{ needs.prepare.outputs.receipt }}
+          baseline: ${{ needs.prepare.outputs.baseline }}
+          reviews: .llm-wiki/publication-reviews.json
+          previous-receipt: ${{ needs.prepare.outputs.previous }}
+          target-revision: ${{ inputs.target-revision }}
+          restore-revision: ${{ inputs.restore-revision }}

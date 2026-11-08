@@ -31,6 +31,8 @@ from .wiki_media import MEDIA_EXTENSIONS
 
 PUBLICATION_CONFIG_PATH = ".llm-wiki/publication.json"
 PUBLICATION_CONFIG_SCHEMA_VERSION = "llm-wiki-publication/v1"
+DELIVERY_CONFIG_SCHEMA_VERSION = "llm-wiki-publication/v2"
+DELIVERY_CHECKPOINT_PATH = ".llm-wiki-delivery.json"
 _MAX_CONFIG_BYTES = 256 * 1024
 _MAX_TOPICS = 1024
 _MAX_DEPENDENCIES = 1024
@@ -46,6 +48,32 @@ _REPOSITORY = re.compile(
 )
 _ANCHOR = re.compile(r"[\w.-]+\Z", re.UNICODE)
 _GLOB = re.compile(r"[*?\[\]]")
+
+
+def publication_ref_name(value: object, field: str) -> str:
+    """Validate a short, portable Git branch/tag name used by delivery."""
+    name = _relative_path(value, field)
+    if (
+        not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,199}", name)
+        or name.casefold() == "head"
+        or name.startswith("refs/")
+        or ".." in name
+        or any(
+            part.startswith(".") or part.lower().endswith(".lock")
+            for part in name.split("/")
+        )
+    ):
+        raise PublicationConfigError(field, "must be a portable short Git ref name")
+    return name
+
+
+def publication_repository(value: object, field: str) -> str:
+    name = _text(value, field, 140)
+    if not _REPOSITORY.fullmatch(name) or name.split("/")[1] in {".", ".."}:
+        raise PublicationConfigError(
+            field, "must be a GitHub owner/repository identifier"
+        )
+    return name
 
 
 class PublicationConfigError(ValueError):
@@ -627,15 +655,26 @@ def validate_publication_config(
             "publish",
             "topics",
         },
-        {"source_policy", "exclusions", "reference_providers", "content"},
+        {
+            "source_policy",
+            "exclusions",
+            "reference_providers",
+            "content",
+            "release_tag",
+        },
     )
-    if data["schema_version"] != PUBLICATION_CONFIG_SCHEMA_VERSION:
+    schema = data["schema_version"]
+    if schema not in (
+        PUBLICATION_CONFIG_SCHEMA_VERSION,
+        DELIVERY_CONFIG_SCHEMA_VERSION,
+    ):
         raise PublicationConfigError(
-            "schema_version", f"must be {PUBLICATION_CONFIG_SCHEMA_VERSION}"
+            "schema_version", "unsupported publication configuration version"
         )
-    if data["publish"] is not False:
+    delivery_policy = schema == DELIVERY_CONFIG_SCHEMA_VERSION
+    if type(data["publish"]) is not bool or (not delivery_policy and data["publish"]):
         raise PublicationConfigError(
-            "publish", "must be false; this contract grants no publication authority"
+            "publish", "must be a boolean; enabling delivery requires publication/v2"
         )
     architecture = _object(data["architecture"], "architecture", {"baseline", "root"})
     baseline = _choice(
@@ -656,20 +695,29 @@ def validate_publication_config(
         if "reference_providers" in data
         else {}
     )
-    target = _object(data["target"], "target", {"kind", "repository"})
+    target = _object(
+        data["target"],
+        "target",
+        {"kind", "repository"},
+        {"branch"} if delivery_policy else set(),
+    )
     kind = _choice(target["kind"], "target.kind", {"github-wiki"})
     repository = _text(target["repository"], "target.repository", 140)
-    if repository != "self" and (
-        not _REPOSITORY.fullmatch(repository) or repository.split("/")[1] in {".", ".."}
-    ):
-        raise PublicationConfigError(
-            "target.repository", "must be self or a GitHub owner/repository identifier"
-        )
+    if repository != "self":
+        publication_repository(repository, "target.repository")
     source_policy = _choice(
         data.get("source_policy", "default-branch"),
         "source_policy",
         {"default-branch", "release"},
     )
+    if "release_tag" in data and (not delivery_policy or source_policy != "release"):
+        raise PublicationConfigError(
+            "release_tag", "requires publication/v2 and a release source policy"
+        )
+    if data["publish"] and source_policy == "release" and "release_tag" not in data:
+        raise PublicationConfigError(
+            "release_tag", "an enabled release policy needs an exact release tag"
+        )
     enforcement = _choice(data["enforcement"], "enforcement", {"advisory", "required"})
     topics = []
     ids: set[str] = set()
@@ -803,15 +851,21 @@ def validate_publication_config(
             }
         )
     result = {
-        "schema_version": PUBLICATION_CONFIG_SCHEMA_VERSION,
+        "schema_version": schema,
         "source_policy": source_policy,
         "architecture": {"baseline": baseline, "root": architecture_root},
         "target": {"kind": kind, "repository": repository},
         "enforcement": enforcement,
-        "publish": False,
+        "publish": data["publish"],
         "topics": topics,
         "exclusions": exclusions,
     }
+    if "branch" in target:
+        result["target"]["branch"] = publication_ref_name(
+            target["branch"], "target.branch"
+        )
+    if "release_tag" in data:
+        result["release_tag"] = publication_ref_name(data["release_tag"], "release_tag")
     if "reference_providers" in data:
         result["reference_providers"] = reference_providers
     if "content" in data:

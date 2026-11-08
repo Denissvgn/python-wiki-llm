@@ -14,8 +14,9 @@ Portable, review-bound GitHub wiki candidates without remote mutation.
 | `.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
-| `.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
+| `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
+| `.publication_delivery` | `split_delivery_tree` |
 | `.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `project_publication_targets`, `project_publication_targets`, `publication_target_observation` |
 | `.publication_links` | `check_github_wiki`, `prepare_wiki_markdown`, `check_github_wiki` |
 | `.publication_snapshot` | `assert_bootstrap_output_excluded` |
@@ -49,11 +50,11 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `integrations` (1) |
-| Inbound | `src` (4) |
-| Outbound | `src` (10) |
+| Inbound | `integrations` (3) |
+| Inbound | `src` (5) |
+| Outbound | `src` (11) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -81,4 +82,5 @@ flowchart LR
 | `check_publication_candidate` | `(consumer_root: str \| Path = '.', *, candidate_dir: str \| Path, receipt: Mapping[str, Any], config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | — | Re-render current inputs and verify exact candidate bytes without writing. |
 | `_recheck_basis` | `(root, config_path, target_dir, baseline, files, receipt)` | — | — |
 | `validate_candidate_tree` | `(consumer_root: str \| Path, candidate_dir: str \| Path, receipt: Mapping[str, Any]) -> None` | — | Verify the full artifact inventory before preparing a local review. |
+| `_validate_candidate_files` | `(files: Mapping[str, bytes], receipt: Mapping[str, Any]) -> None` | — | Check public file bytes against a previously validated candidate receipt. |
 | `validate_candidate_target` | `(consumer_root: str \| Path, target_dir: str \| Path \| None, receipt: Mapping[str, Any]) -> None` | — | Recheck the original public target before preparing an artifact review. |

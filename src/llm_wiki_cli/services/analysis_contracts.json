@@ -226,6 +226,7 @@
     "services/publication_candidate.py",
     "services/publication_config.py",
     "services/publication_contracts.py",
+    "services/publication_delivery.py",
     "services/publication_impact.py",
     "services/publication_links.py",
     "services/publication_maintenance.py",

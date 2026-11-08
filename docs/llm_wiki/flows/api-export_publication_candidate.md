@@ -2,7 +2,7 @@
 
 **Entry point:** `export_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [common](../modules/common.md), and 18 more
+**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [common](../modules/common.md), and 19 more
 
 **Complete modules touched:**
 
@@ -21,6 +21,7 @@
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_contracts](../modules/publication_contracts.md)
+- [publication_delivery](../modules/publication_delivery.md)
 - [publication_impact](../modules/publication_impact.md)
 - [publication_links](../modules/publication_links.md)
 - [publication_references](../modules/publication_references.md)
@@ -99,9 +100,9 @@ sequenceDiagram
     p1-->>p30: files.items (src/llm_wiki_cli/services…ort_publication_candidate)
 ```
 
-> Call sequence diagram shows 30 of 2062 interactions; 2032 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2134 interactions; 2104 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 849 (848 omitted); unresolved 1 of 544 (543 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 883 (882 omitted); unresolved 1 of 559 (558 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +116,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_prepare` | 3 | - | external | 47 |
 | `src/llm_wiki_cli/services/publication_config.py:load_publication_config` | 40 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 7 |
-> Omission summary shows 8 of 407 groups; 399 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 422 groups; 414 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -128,9 +129,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 670; effect analysis evaluated: 482, partial: 23, unavailable: 165. Counts include steps omitted from the displayed trace.
+Source steps: 693; effect analysis evaluated: 502, partial: 23, unavailable: 168. Counts include steps omitted from the displayed trace.
 
-Collector observations for 505 source steps with known totals: observed: 2593, emitted: 2515, omitted: 78. Unavailable totals are excluded.
+Collector observations for 525 source steps with known totals: observed: 2674, emitted: 2596, omitted: 78. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,8 +219,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | export_publication_candidate (src/llm_wiki_cli/api.py) | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3605 | `export(consumer_root, output_dir=output_dir, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 901 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| _prepare | _absolute_path | 639 | `_absolute_path(Path(...))` |
+| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 909 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| _prepare | _absolute_path | 647 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -233,9 +234,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `operations.append` | `_prepare` | 783 |
-| mutation | `output.pop` | `_prepare` | 802 |
-| mutation | `operations.append` | `_prepare` | 803 |
+| mutation | `operations.append` | `_prepare` | 791 |
+| mutation | `output.pop` | `_prepare` | 810 |
+| mutation | `operations.append` | `_prepare` | 811 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

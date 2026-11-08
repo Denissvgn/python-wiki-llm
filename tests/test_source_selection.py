@@ -1379,6 +1379,8 @@ def test_committed_profile_freezes_intended_product_census():
     } | {
         "integrations/github-action/render_summary.py",
         "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/delivery/git_transport.py",
+        "integrations/wiki-candidate/delivery/publish.py",
         "integrations/wiki-candidate/prepare.py",
         "integrations/wiki-candidate/provider.py",
         "integrations/wiki-candidate/run.py",
@@ -1437,6 +1439,7 @@ def test_committed_profile_freezes_intended_product_census():
     assert [item.rel_path for item in snapshot.yaml_candidates] == [
         "integrations/github-action/action.yml",
         "integrations/wiki-candidate/action.yml",
+        "integrations/wiki-candidate/delivery/action.yml",
         "integrations/wiki-impact/action.yml",
         "integrations/wiki-integrity/action.yml",
     ]

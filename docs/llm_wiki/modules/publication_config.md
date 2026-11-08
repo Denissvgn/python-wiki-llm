@@ -50,22 +50,24 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `integrations` (2) |
-| Inbound | `src` (9) |
+| Inbound | `integrations` (4) |
+| Inbound | `src` (10) |
 | Outbound | `src` (4) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationConfigError](../entities/PublicationConfigError.md) | 51 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
+| [PublicationConfigError](../entities/PublicationConfigError.md) | 79 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `publication_ref_name` | `(value: object, field: str) -> str` | — | Validate a short, portable Git branch/tag name used by delivery. |
+| `publication_repository` | `(value: object, field: str) -> str` | — | — |
 | `_object` | `(value: object, field: str, required: set[str], optional: set[str] \| None = None) -> Mapping[str, Any]` | — | — |
 | `_text` | `(value: object, field: str, maximum: int = 1024) -> str` | — | — |
 | `_choice` | `(value: object, field: str, choices: set[str]) -> str` | — | — |

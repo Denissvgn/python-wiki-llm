@@ -164,7 +164,7 @@ def test_unknown_fields_fail_at_every_object_boundary(tmp_path, path, value):
 @pytest.mark.parametrize(
     "key,value",
     [
-        ("schema_version", "llm-wiki-publication/v2"),
+        ("schema_version", "llm-wiki-publication/v3"),
         ("source_policy", "HEAD"),
         ("enforcement", "optional"),
         ("exclusions", [{"pattern": "**/*.md", "reason": ""}]),
