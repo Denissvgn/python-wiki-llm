@@ -758,6 +758,8 @@
     },
     {
       "paths": [
+        ".llm-wiki/publication.json",
+        "integrations/wiki-impact/**",
         "integrations/wiki-candidate/**"
       ],
       "groups": [
