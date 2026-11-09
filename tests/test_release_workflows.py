@@ -589,7 +589,7 @@ def test_wiki_integrity_delegates_to_the_candidate_composite_contract() -> None:
     assert gate == {
         "name": "Check LLM Wiki integrity",
         "uses": "./integrations/wiki-integrity",
-        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v4", "comparison-policy": "analysis-v1", "maintenance-candidate-sha": "${{ github.sha }}"},
+        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v4", "comparison-policy": "analysis-v1", "maintenance-candidate-sha": "${{ github.sha }}", "require-referenced-storage": "true"},
     }
     assert [step.get("name") for step in job["steps"]] == [
         "Check out the candidate without credentials",

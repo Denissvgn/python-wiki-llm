@@ -547,6 +547,7 @@ def test_wiki_integrity_uses_the_automatic_locked_helper_plan():
         "report-schema": "v4",
         "comparison-policy": "analysis-v1",
         "maintenance-candidate-sha": "${{ github.sha }}",
+        "require-referenced-storage": "true",
     }
 
     action = yaml.safe_load(

@@ -684,7 +684,7 @@ jobs:
         PYTHONIOENCODING: utf-8
       run: '"${CORE_PYTHON}" -m pytest tests/test_architecture_layers.py tests/test_static_quality_architecture.py
         tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py tests/test_public_docs_performance.py
-        tests/test_core_check_performance.py -q -p no:cacheprovider --strict-config --strict-markers -W error -o
+        tests/test_core_check_performance.py tests/test_storage_update_cleanup.py -q -p no:cacheprovider --strict-config --strict-markers -W error -o
         xfail_strict=true --junitxml=../../core-check-controls.xml'
     - name: Compare policies on identical candidate inputs
       env:
