@@ -427,6 +427,13 @@ roots and selection. A subsequent sync with unchanged inputs should be a no-op.
 If publication is rejected, follow its explicit recovery diagnostic before
 retrying; do not delete authority files or reinitialize an established wiki.
 
+Add `--prune-storage` to validate and clean unreferenced native storage after
+successful sync. The writer uses a fresh generation-bound plan and verified
+recovery copies. `--storage-recovery-dir` selects a directory outside the wiki.
+Use `knowledge storage-check --full --require-referenced` for a read-only gate.
+The [storage lifecycle guide](knowledge-storage.md) describes recovery and the
+complete audit.
+
 For a narrowly authorized repair of captured invalid evidence, use
 `--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
 
@@ -468,7 +475,7 @@ uses a cross-platform test-path classifier for the selected flow/dependency
 analysis. `--dry-run` previews ordinary source changes or optional-surface
 initialization, including the surface/knowledge/manifest artifact actions,
 without writing the wiki, manifest, log, index, projections, or cache.
-Selected flow categories and test filtering are persisted in manifest v5 so a
+Selected flow categories and test filtering are persisted in the sync manifest so a
 later ordinary sync cannot silently expand an HTTP-only backfill to every flow.
 Pass `--include-tests go` to include Go `_test.go` files in the synced
 inventory and generated module pages; the default remains production Go source
@@ -1932,7 +1939,36 @@ allowlist-only; use `--knowledge-profile internal` only for a private derived
 mirror. See [Safe derived projections][native-knowledge-projections] for the
 identity-disclosure, rollback, checker, and authority rules.
 
+## `reference`
+
+Generate versioned command data with `llm-wiki reference cli --format json` or
+render it with `--format markdown`. `reference render --input FILE` validates
+and renders a saved command contract. Use `llm-wiki reference behavior` for
+the installed Python requirement, setup and storage defaults, task behavior
+and bundled skill inventory. Add `--input FILE` to render a saved behavior
+contract. The [reference-data guide](cli-reference-data.md) covers the Python
+APIs and topic bindings for both kinds of reference.
+
 ## `docs`
+
+Use `docs impact` for read-only architecture-to-sibling wiki review. Configure
+topics, owners and evidence dependencies in `.llm-wiki/publication.json`.
+Compare against an accepted basis with `--baseline`, inspect JSON or Markdown
+findings, and prepare exact-basis decisions with `docs impact resolve`.
+The [sibling wiki guide](sibling-wiki.md) covers source-only setup, manual and
+repository-authored topics, accepted review ledgers and the portable CI action.
+
+Use `docs wiki export` to render mapped repository content into a fresh GitHub
+wiki candidate. `docs wiki check` verifies its files and current evidence;
+`docs wiki review` prepares an exact-artifact review record. The
+[candidate guide](sibling-wiki-candidates.md) explains page ownership, assets,
+manual-page adoption, receipts and the consumer review workflow.
+
+Use `docs wiki maintain` to give an isolated documentation workspace the
+authored pages and findings for selected topics. After independent review
+and `docs verify`, `docs wiki patch --format patch` writes the proposed
+repository changes to standard output. The [mapped topic guide](sibling-wiki-candidates.md#propose-a-reviewed-edit-to-a-mapped-topic)
+shows the author, reviewer and supervisor handoffs.
 
 Prepare and supervise an isolated, agent-driven human-documentation workspace.
 This mode does not replace the managed repo-local wiki workflow.
@@ -1988,10 +2024,12 @@ imported semantic prose; `allow-unverified` permits source-unavailable local
 artifacts but cannot claim source-verified publication readiness.
 
 Existing-wiki adoption preserves legacy index-only inputs and pre-native
-manifest v4/surface pairs. A markerless manifest v5/surface pair remains
-surface-only, while a marked v5 input must contain a matching manifest,
-surface index, and knowledge index whose exact hashes and canonical Markdown
-commitment validate together. Orphan, partial, mixed, corrupt, and future
+manifest v4/surface pairs. A markerless v5 manifest with its surface index
+remains surface-only. Native snapshots in supported manifest formats (v5–v8)
+must include the matching surface and knowledge indexes and all referenced
+storage objects. Their hashes and canonical Markdown commitment must validate
+together. Adopted v7 and v8 manifests also require the matching maintenance
+adoption marker. Orphan, partial, mixed, corrupt, and future
 artifact combinations fail closed. The three native JSON artifacts remain
 controller-owned in the workspace. After an accepted semantic Markdown edit,
 the controller refreshes the native projection and re-anchors generated
@@ -2085,7 +2123,7 @@ contracts that contain no labels, weights, scores, or candidate policy.
 For an adopted manifest v4 wiki, `require-current` builds the current
 supported-source inventory and compares its path set and hashes with the
 imported manifest, along with recorded generation inputs such as OpenAPI. For a
-manifest v5 native trio, it additionally evaluates the current source,
+native snapshot, it additionally evaluates the current source,
 generation options, inventory policy, and trusted producer commitments
 independently of the recorded generation-options hash. An unavailable or failed
 live evaluation remains unverified, while a computed source or generation-basis

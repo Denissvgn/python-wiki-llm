@@ -37,51 +37,57 @@ needs Node.js at runtime. Read-only analysis never invokes this setup service.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/init_cmd.py"]
-    n1["src/llm_wiki_cli/commands/prepare_extractors_cmd.py"]
-    n2["src/llm_wiki_cli/services/extraction_service.py"]
-    n3["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n4["src/llm_wiki_cli/services/helper_cache.py"]
-    n5["src/llm_wiki_cli/services/helper_preparation.py"]
-    n6["src/llm_wiki_cli/services/helper_runtime.py"]
-    n7["src/llm_wiki_cli/services/progress.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n3
+    n0["integrations/wiki-candidate/prepare.py"]
+    n1["src/llm_wiki_cli/commands/init_cmd.py"]
+    n2["src/llm_wiki_cli/commands/prepare_extractors_cmd.py"]
+    n3["src/llm_wiki_cli/services/extraction_service.py"]
+    n4["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n5["src/llm_wiki_cli/services/helper_cache.py"]
+    n6["src/llm_wiki_cli/services/helper_preparation.py"]
+    n7["src/llm_wiki_cli/services/helper_runtime.py"]
+    n8["src/llm_wiki_cli/services/progress.py"]
+    n9["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n5
-    n1 --> n3
-    n1 --> n5
-    n1 --> n8
-    n2 --> n5
+    n0 --> n6
+    n0 --> n7
+    n1 --> n4
+    n1 --> n6
+    n2 --> n4
     n2 --> n6
-    n2 --> n7
-    n2 --> n8
-    n3 --> n4
+    n2 --> n9
     n3 --> n6
-    n4 --> n3
-    n4 --> n6
-    n5 --> n3
+    n3 --> n7
+    n3 --> n8
+    n3 --> n9
+    n4 --> n5
+    n4 --> n7
     n5 --> n4
-    n5 --> n6
     n5 --> n7
-    n5 --> n8
-    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    n6 --> n7
     n6 --> n8
-    n8 --> n7
-    click n0 "../modules/init_cmd.md"
-    click n1 "../modules/prepare_extractors_cmd.md"
-    click n2 "../modules/extraction_service.md"
-    click n3 "../modules/extractor_helpers.md"
-    click n4 "../modules/helper_cache.md"
-    click n5 "../modules/helper_preparation.md"
-    click n6 "../modules/helper_runtime.md"
-    click n7 "../modules/progress.md"
-    click n8 "../modules/source_snapshot.md"
+    n6 --> n9
+    n7 --> n4
+    n7 --> n9
+    n9 --> n8
+    click n0 "../modules/wiki-candidate_prepare.md"
+    click n1 "../modules/init_cmd.md"
+    click n2 "../modules/prepare_extractors_cmd.md"
+    click n3 "../modules/extraction_service.md"
+    click n4 "../modules/extractor_helpers.md"
+    click n5 "../modules/helper_cache.md"
+    click n6 "../modules/helper_preparation.md"
+    click n7 "../modules/helper_runtime.md"
+    click n8 "../modules/progress.md"
+    click n9 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md) |
 | Inbound | [init_cmd](../modules/init_cmd.md) |
 | Inbound | [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |

@@ -1,6 +1,6 @@
 # InstallCiError
 
-**Location:** `src/llm_wiki_cli/services/ci_installer.py:42`
+**Location:** `src/llm_wiki_cli/services/ci_installer.py:54`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [ci_installer](../modules/ci_installer.md)
@@ -24,14 +24,17 @@ Raised when a portable CI workflow cannot be installed safely.
 flowchart LR
     n0["InstallCiError (src/llm_wiki_cli/services/ci_installer.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/commands/install_ci_cmd.py"]
-    n3["_project_directory (src/llm_wiki_cli/services/ci_installer.py)"]
-    n4["_validate_default_selection_contract (src/llm_wiki_cli/services/ci_installer.py)"]
-    n5["_validate_workflow_target (src/llm_wiki_cli/services/ci_installer.py)"]
-    n6["_validated_project_path (src/llm_wiki_cli/services/ci_installer.py)"]
-    n7["_without_github_expression (src/llm_wiki_cli/services/ci_installer.py)"]
-    n8["install_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
-    n9["normalize_action_ref (src/llm_wiki_cli/services/ci_installer.py)"]
+    n2["run (src/llm_wiki_cli/commands/install_ci_cmd.py)"]
+    n3["_install_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n4["_project_directory (src/llm_wiki_cli/services/ci_installer.py)"]
+    n5["_project_root (src/llm_wiki_cli/services/ci_installer.py)"]
+    n6["_validate_default_selection_contract (src/llm_wiki_cli/services/ci_installer.py)"]
+    n7["_validate_workflow_target (src/llm_wiki_cli/services/ci_installer.py)"]
+    n8["_validated_project_path (src/llm_wiki_cli/services/ci_installer.py)"]
+    n9["_without_github_expression (src/llm_wiki_cli/services/ci_installer.py)"]
+    n10["install_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n11["install_documentation_ci_workflow (src/llm_wiki_cli/services/ci_installer.py)"]
+    n12["normalize_action_ref (src/llm_wiki_cli/services/ci_installer.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -41,6 +44,9 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
+    n12 --> n0
     click n0 "../modules/ci_installer.md"
     click n2 "../modules/install_ci_cmd.md"
     click n3 "../modules/ci_installer.md"
@@ -50,6 +56,9 @@ flowchart LR
     click n7 "../modules/ci_installer.md"
     click n8 "../modules/ci_installer.md"
     click n9 "../modules/ci_installer.md"
+    click n10 "../modules/ci_installer.md"
+    click n11 "../modules/ci_installer.md"
+    click n12 "../modules/ci_installer.md"
 ```
 
 ### Summary
@@ -68,11 +77,14 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `install_ci_cmd` | import | [install_ci_cmd](../modules/install_ci_cmd.md) | — |
+| `run` | call | [install_ci_cmd](../modules/install_ci_cmd.md) | 2 |
+| `_install_workflow` | call | [ci_installer](../modules/ci_installer.md) | 3 |
 | `_project_directory` | call | [ci_installer](../modules/ci_installer.md) | 5 |
+| `_project_root` | call | [ci_installer](../modules/ci_installer.md) | 2 |
 | `_validate_default_selection_contract` | call | [ci_installer](../modules/ci_installer.md) | 2 |
 | `_validate_workflow_target` | call | [ci_installer](../modules/ci_installer.md) | 3 |
 | `_validated_project_path` | call | [ci_installer](../modules/ci_installer.md) | 7 |
 | `_without_github_expression` | call | [ci_installer](../modules/ci_installer.md) | 1 |
-| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) | 6 |
+| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) | 1 |
+| `install_documentation_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) | 7 |
 | `normalize_action_ref` | call | [ci_installer](../modules/ci_installer.md) | 1 |

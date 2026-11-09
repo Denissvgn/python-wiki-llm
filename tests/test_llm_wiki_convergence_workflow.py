@@ -302,7 +302,7 @@ def test_convergence_upload_is_always_a_pinned_fixed_allowlist() -> None:
     assert "*" not in upload["with"]["path"]
     assert "?" not in upload["with"]["path"]
 
-    capture = job["steps"][-2]
+    capture = next(step for step in job["steps"] if step.get("name") == "Retain complete writer output for review")
     assert capture["name"] == "Retain complete writer output for review"
     assert capture["if"] == upload["if"]
     assert "capture-llm-wiki-review-snapshot.py" in capture["run"]

@@ -177,11 +177,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| helper_preparation | isinstance (src/llm_wiki_cli/api.py:helper_preparation) | 792 | `isinstance(cache_dir, (...))` |
-| helper_preparation | InvalidRequestError | 793 | `InvalidRequestError('cache_dir must be a path', code='invalid-request', details={...})` |
-| helper_preparation | callable (src/llm_wiki_cli/api.py:helper_preparation) | 797 | `callable(progress)` |
-| helper_preparation | InvalidRequestError | 798 | `InvalidRequestError('progress must be a callback', code='invalid-request', details={...})` |
-| helper_preparation | helper_policy | 802 | `helper_policy(policy, cache_dir=..., progress=progress)` |
+| helper_preparation | isinstance (src/llm_wiki_cli/api.py:helper_preparation) | 801 | `isinstance(cache_dir, (...))` |
+| helper_preparation | InvalidRequestError | 802 | `InvalidRequestError('cache_dir must be a path', code='invalid-request', details={...})` |
+| helper_preparation | callable (src/llm_wiki_cli/api.py:helper_preparation) | 806 | `callable(progress)` |
+| helper_preparation | InvalidRequestError | 807 | `InvalidRequestError('progress must be a callback', code='invalid-request', details={...})` |
+| helper_preparation | helper_policy | 811 | `helper_policy(policy, cache_dir=..., progress=progress)` |
 | helper_policy | _check_progress | 173 | `_check_progress(progress)` |
 | _check_progress | callable (src/llm_wiki_cli/services…untime.py:_check_progress) | 161 | `callable(progress)` |
 | _check_progress | ValueError (src/llm_wiki_cli/services…untime.py:_check_progress) | 162 | `ValueError('helper progress must be callable')` |
@@ -197,8 +197,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `helper_preparation` | `isinstance` | 792 |
-| external_call | `helper_preparation` | `callable` | 797 |
+| external_call | `helper_preparation` | `isinstance` | 801 |
+| external_call | `helper_preparation` | `callable` | 806 |
 | external_call | `_check_progress` | `callable` | 161 |
 | external_call | `_check_progress` | `ValueError` | 162 |
 | external_call | `resolve_helper_policy` | `type` | 40 |

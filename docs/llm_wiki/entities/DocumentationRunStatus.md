@@ -1,6 +1,6 @@
 # DocumentationRunStatus
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:774`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:777`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

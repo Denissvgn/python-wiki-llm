@@ -15,34 +15,37 @@ sequenceDiagram
     participant p1 as _normalize_newlines
     participant p2 as normalized.decode
     participant p3 as _MANAGED_HEADER_RE.match
-    participant p4 as text[…].encode
-    participant p5 as match.end
-    participant p6 as hashlib.sha256(…).hexdigest
-    participant p7 as hashlib.sha256
-    participant p8 as hmac.compare_digest
-    participant p9 as match.group
-    participant p10 as content.decode
-    participant p11 as text.replace(…).replace(…).encode
-    participant p12 as text.replace(…).replace
-    participant p13 as text.replace
+    participant p4 as match.group
+    participant p5 as schemas.get
+    participant p6 as text[…].encode
+    participant p7 as match.end
+    participant p8 as hashlib.sha256(…).hexdigest
+    participant p9 as hashlib.sha256
+    participant p10 as hmac.compare_digest
+    participant p11 as content.decode
+    participant p12 as text.replace(…).replace(…).encode
+    participant p13 as text.replace(…).replace
+    participant p14 as text.replace
     p0->>p1: _normalize_newlines
     p0-->>p2: normalized.decode('utf-8')
     p0-->>p3: _MANAGED_HEADER_RE.match(text)
-    p0-->>p4: text[…].encode('utf-8')
-    p0-->>p5: match.end
-    p0-->>p6: hashlib.sha256(…).hexdigest
-    p0-->>p7: hashlib.sha256(body)
-    p0-->>p8: hmac.compare_digest(match.group(...), actual)
-    p0-->>p9: match.group(1)
-    p1-->>p10: content.decode('utf-8')
-    p1-->>p11: text.replace(…).replace(…).encode('utf-8')
-    p1-->>p12: text.replace(…).replace('\r', '\n')
-    p1-->>p13: text.replace('\r\n', '\n')
+    p0-->>p4: match.group(1)
+    p0-->>p5: schemas.get(workflow_path)
+    p0-->>p6: text[…].encode('utf-8')
+    p0-->>p7: match.end
+    p0-->>p8: hashlib.sha256(…).hexdigest
+    p0-->>p9: hashlib.sha256(body)
+    p0-->>p10: hmac.compare_digest(match.group(...), actual)
+    p0-->>p4: match.group(2)
+    p1-->>p11: content.decode('utf-8')
+    p1-->>p12: text.replace(…).replace(…).encode('utf-8')
+    p1-->>p13: text.replace(…).replace('\r', '\n')
+    p1-->>p14: text.replace('\r\n', '\n')
 ```
 
-> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 15 of 15 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 10 of 10 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 12 of 12 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -55,7 +58,7 @@ sequenceDiagram
 
 Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 2 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
+Collector observations for 2 source steps with known totals: observed: 13, emitted: 13, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
@@ -67,10 +70,10 @@ flowchart LR
     s6["6. text.replace"]
     s7["7. normalized.decode"]
     s8["8. _MANAGED_HEADER_RE.match"]
-    s9["9. text[…].encode"]
-    s10["10. match.end"]
-    s11["11. hashlib.sha256(…).hexdigest"]
-    s12["12. hashlib.sha256"]
+    s9["9. match.group"]
+    s10["10. schemas.get"]
+    s11["11. text[…].encode"]
+    s12["12. match.end"]
     s1 -->|"_normalize_newlines(content)"| s2
     s2 -. "content.decode('utf-8')" .-> s3
     s2 -. "text.replace(…).replace(…).encode('utf-8')" .-> s4
@@ -78,10 +81,10 @@ flowchart LR
     s2 -. "text.replace('\r\n', '\n')" .-> s6
     s1 -. "normalized.decode('utf-8')" .-> s7
     s1 -. "_MANAGED_HEADER_RE.match(text)" .-> s8
-    s1 -. "text[…].encode('utf-8')" .-> s9
-    s1 -. "match.end(data not statically known)" .-> s10
-    s1 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s11
-    s1 -. "hashlib.sha256(body)" .-> s12
+    s1 -. "match.group(1)" .-> s9
+    s1 -. "schemas.get(workflow_path)" .-> s10
+    s1 -. "text[…].encode('utf-8')" .-> s11
+    s1 -. "match.end(data not statically known)" .-> s12
     click s1 "../modules/ci_installer.md"
     click s2 "../modules/ci_installer.md"
 ```
@@ -90,7 +93,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `is_unmodified_managed_workflow` | `content: bytes` | - | - | `False`, `False`, `hmac.compare_digest(...)` |
+| `is_unmodified_managed_workflow` | `content: bytes`, `workflow_path: Path \| None` | `MANAGED_WORKFLOW_PATH`, `DOCUMENTATION_WORKFLOW_PATH`, `MANAGED_WORKFLOW_SCHEMA`, `DOCUMENTATION_WORKFLOW_SCHEMA` | - | `False`, `False`, `False`, `hmac.compare_digest(...)` |
 | `_normalize_newlines` | `content: bytes` | - | - | `None`, `...` |
 | `content.decode` | - | - | - | - |
 | `text.replace(…).replace(…).encode` | - | - | - | - |
@@ -98,26 +101,26 @@ flowchart LR
 | `text.replace` | - | - | - | - |
 | `normalized.decode` | - | - | - | - |
 | `_MANAGED_HEADER_RE.match` | - | - | - | - |
+| `match.group` | - | - | - | - |
+| `schemas.get` | - | - | - | - |
 | `text[…].encode` | - | - | - | - |
 | `match.end` | - | - | - | - |
-| `hashlib.sha256(…).hexdigest` | - | - | - | - |
-| `hashlib.sha256` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_unmodified_managed_workflow | _normalize_newlines | 245 | `_normalize_newlines(content)` |
-| _normalize_newlines | content.decode | 236 | `content.decode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace(…).encode | 239 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace | 239 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| _normalize_newlines | text.replace | 239 | `text.replace('\r\n', '\n')` |
-| is_unmodified_managed_workflow | normalized.decode | 248 | `normalized.decode('utf-8')` |
-| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 249 | `_MANAGED_HEADER_RE.match(text)` |
-| is_unmodified_managed_workflow | text[…].encode | 252 | `text[match.end():].encode('utf-8')` |
-| is_unmodified_managed_workflow | match.end | 252 | `match.end(data not statically known)` |
-| is_unmodified_managed_workflow | hashlib.sha256(…).hexdigest | 253 | `hashlib.sha256(body).hexdigest(data not statically known)` |
-| is_unmodified_managed_workflow | hashlib.sha256 | 253 | `hashlib.sha256(body)` |
+| is_unmodified_managed_workflow | _normalize_newlines | 263 | `_normalize_newlines(content)` |
+| _normalize_newlines | content.decode | 252 | `content.decode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace(…).encode | 255 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace | 255 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| _normalize_newlines | text.replace | 255 | `text.replace('\r\n', '\n')` |
+| is_unmodified_managed_workflow | normalized.decode | 266 | `normalized.decode('utf-8')` |
+| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 267 | `_MANAGED_HEADER_RE.match(text)` |
+| is_unmodified_managed_workflow | match.group | 275 | `match.group(1)` |
+| is_unmodified_managed_workflow | schemas.get | 275 | `schemas.get(workflow_path)` |
+| is_unmodified_managed_workflow | text[…].encode | 277 | `text[match.end():].encode('utf-8')` |
+| is_unmodified_managed_workflow | match.end | 277 | `match.end(data not statically known)` |
 
 ### Boundary effects
 
@@ -127,16 +130,16 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_newlines` | `content.decode` | 236 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 239 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 239 |
-| unresolved_call | `_normalize_newlines` | `text.replace` | 239 |
-| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 248 |
-| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 249 |
-| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 252 |
-| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 252 |
-| unresolved_call | `is_unmodified_managed_workflow` | `hashlib.sha256(body).hexdigest` | 253 |
-| external_call | `is_unmodified_managed_workflow` | `hashlib.sha256` | 253 |
+| unresolved_call | `_normalize_newlines` | `content.decode` | 252 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 255 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 255 |
+| unresolved_call | `_normalize_newlines` | `text.replace` | 255 |
+| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 266 |
+| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 267 |
+| unresolved_call | `is_unmodified_managed_workflow` | `match.group` | 275 |
+| unresolved_call | `is_unmodified_managed_workflow` | `schemas.get` | 275 |
+| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 277 |
+| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 277 |
 | step_limit | `is_unmodified_managed_workflow` | `first 12 steps` | 0 |
 
 ## Behavior

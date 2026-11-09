@@ -18,10 +18,13 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.analysis_capture` | `analysis_input_status` |
+| `.services.behavior_reference` | `get_behavior_facts`, `validate_behavior_facts`, `render_behavior_reference` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
 | `.services.calibration.host_broker` | `HostBrokerAuthenticationError`, `HostBrokerAuthenticationProof`, `HostBrokerAuthenticationUnavailable`, `HostBrokerAuthenticator`, `use_calibration_host_broker_authenticator` |
+| `.services.ci_installer` | `InstallCiResult`, `install_documentation_ci_workflow` |
+| `.services.cli_reference` | `build_cli_contract`, `get_cli_contract`, `render_cli_reference`, `validate_cli_contract` |
 | `.services.context_budget` | `BudgetedContext`, `build_budgeted_context`, `validate_budgeted_context` |
 | `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
 | `.services.context_session` | `ContextSession`, `SessionReply`, `CompactSessionReply`, `CanonicalReceipt`, `apply_task_delta` |
@@ -49,6 +52,9 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.maintenance_service` | `adopt_maintenance_authority`, `get_maintenance_status_authority`, `acknowledge_maintenance_authority`, `recover_maintenance_authority` |
 | `.services.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
+| `.services.publication_candidate` | `export_publication_candidate`, `check_publication_candidate`, `review_publication_candidate`, `validate_publication_receipt` |
+| `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
+| `.services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
 | `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
@@ -63,6 +69,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.wiki_surface_index` | `evaluate_surface_index` |
 | `.services.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `__future__` | `annotations` |
+| `argparse` | `argparse` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
 | `functools` | `wraps` |
@@ -93,20 +100,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (52) |
+| Outbound | `src` (58) |
 
-> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 65 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 274 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 355 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 370 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 374 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 378 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1605 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 283 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 364 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 379 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 383 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 387 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1614 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -211,6 +218,20 @@ flowchart LR
 | `_query_service` | `(service: DocumentationGraphQueryService \| None, *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, read_only: bool, source_selection: str \| Path \| None) -> DocumentationGraphQueryService` | — | — |
 | `_run_query` | `(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]` | — | — |
 | `export_documentation_run` | `(workspace: str \| Path, *, build: bool = False, builder_command: Iterable[str] \| None = None, knowledge_mode: str \| None = None, knowledge_public_repository_identity: str \| None = None) -> DocumentationExportResult` | `@_api_boundary` | Export a documentation workspace through the stable API boundary. |
+| `build_cli_contract` | `(parser: argparse.ArgumentParser, *, package: Mapping[str, Any], program: str) -> dict[str, Any]` | `@_api_boundary` | Capture a caller-owned parser as data without parsing application arguments. |
+| `get_cli_contract` | `() -> dict[str, Any]` | `@_api_boundary` | Return the installed llm-wiki command definitions as a versioned contract. |
+| `render_cli_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Validate and render a supplied CLI contract without executing commands. |
+| `validate_cli_contract` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the structure and commitments of a supplied CLI contract. |
+| `get_behavior_facts` | `() -> dict[str, Any]` | `@_api_boundary` | Describe the installed provider's runtime requirements, defaults and bundled skills. |
+| `validate_behavior_facts` | `(contract: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate a versioned behavior facts document and its content commitment. |
+| `render_behavior_reference` | `(contract: Mapping[str, Any]) -> str` | `@_api_boundary` | Render validated behavior facts as Markdown. |
+| `export_publication_candidate` | `(consumer_root: str \| Path = '.', *, output_dir: str \| Path, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Render an explicitly mapped local wiki candidate without remote delivery. |
+| `check_publication_candidate` | `(consumer_root: str \| Path = '.', *, candidate_dir: str \| Path, receipt: Mapping[str, Any], config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None, reviews: Mapping[str, Any] \| None = None, previous_receipt: Mapping[str, Any] \| None = None, candidate_review: Mapping[str, Any] \| None = None, source_revision: str \| None = None, target_revision: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Recheck candidate bytes, current inputs and exact-basis local review. |
+| `review_publication_candidate` | `(receipt: Mapping[str, Any], *, reviewer: str, reason: str) -> dict[str, Any]` | `@_api_boundary` | Prepare an exact-candidate approval for the consumer's review process. |
+| `validate_publication_receipt` | `(receipt: Mapping[str, Any]) -> None` | `@_api_boundary` | Validate the shape and commitments of a saved local candidate receipt. |
+| `capture_publication_basis` | `(consumer_root: str \| Path = '.', *, config_path: str \| Path = '.llm-wiki/publication.json', target_dir: str \| Path \| None = None, baseline: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Capture complete local publication inputs without remote access or writes. |
+| `compare_publication_impact` | `(candidate: Mapping[str, Any], baseline: Mapping[str, Any] \| None = None, *, reviews: Mapping[str, Any] \| None = None) -> dict[str, Any]` | `@_api_boundary` | Compare publication bases and exact-basis review decisions without writes. |
+| `resolve_publication_finding` | `(report: Mapping[str, Any], candidate: Mapping[str, Any], *, finding_id: str, reviewer: str, reason: str, reviews: Mapping[str, Any] \| None = None, decision: str = 'still-current') -> dict[str, Any]` | `@_api_boundary` | Return a proposed current or retired decision for caller-owned acceptance. |
 | `_call_calibration_controller` | `(name: str, *args: Any, **kwargs: Any) -> Any` | — | Call one isolated calibration operation after an explicit API request. |
 | `prepare_calibration_run` | `(root: str \| Path, *, control_workspaces: Sequence[str \| Path], execution_manifest: Mapping[str, Any]) -> P0CalibrationRun` | `@_api_boundary` | Freeze two matching documentation controls into a fresh cohort. |
 | `admit_calibration_run` | `(root: str \| Path, *, authority_grant: Mapping[str, Any], broker_attestation: Mapping[str, Any] \| None = None) -> P0CalibrationRun` | `@_api_boundary` | Authorize one frozen calibration cohort. |

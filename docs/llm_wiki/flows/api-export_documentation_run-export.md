@@ -88,22 +88,22 @@ sequenceDiagram
     p0-->>p30: _resolve_workspace_root_argument(workspace)
 ```
 
-> Call sequence diagram shows 30 of 1746 interactions; 1716 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1747 interactions; 1717 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 356 (355 omitted); unresolved 1 of 756 (755 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 356 (355 omitted); unresolved 1 of 757 (756 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_run/export.py:export_documentation_run` | 1 | - | unresolved | 54 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | - | external | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_file_friendly` | 24 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | - | external | 1 |
-| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
+| `src/llm_wiki_cli/services/documentation_run/export.py:export_documentation_run` | 1 | - | unresolved | 55 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 21 | - | external | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_format` | 21 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_file_friendly` | 25 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | - | external | 1 |
+| `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
 > Omission summary shows 8 of 359 groups; 351 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -130,6 +130,7 @@ Collector observations for 468 source steps with known totals: observed: 2320, e
 | `export_documentation_run` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `_resolve_workspace_root_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `load_documentation_run` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationTransitionError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_verify_read_only_inputs` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `run.evidence.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -138,33 +139,32 @@ Collector observations for 468 source steps with known totals: observed: 2320, e
 | `compare_generated_ownership` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `generated_payload.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `any (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `generated_diff.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. export_documentation_run"]
     s2["2. _resolve_workspace_root_argument"]
     s3["3. load_documentation_run"]
-    s4["4. _verify_read_only_inputs"]
-    s5["5. run.evidence.get"]
-    s6["6. DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)"]
-    s7["7. _read_json"]
-    s8["8. _workspace_path"]
-    s9["9. compare_generated_ownership"]
-    s10["10. generated_payload.get"]
-    s11["11. any (src/llm_wiki_cli/services…:export_documentation_run)"]
-    s12["12. generated_diff.values"]
+    s4["4. DocumentationTransitionError"]
+    s5["5. _verify_read_only_inputs"]
+    s6["6. run.evidence.get"]
+    s7["7. DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)"]
+    s8["8. _read_json"]
+    s9["9. _workspace_path"]
+    s10["10. compare_generated_ownership"]
+    s11["11. generated_payload.get"]
+    s12["12. any (src/llm_wiki_cli/services…:export_documentation_run)"]
     s1 -. "_resolve_workspace_root_argument(workspace)" .-> s2
     s1 -. "load_documentation_run(workspace_root)" .-> s3
-    s1 -. "_verify_read_only_inputs(workspace_root, run)" .-> s4
-    s1 -. "run.evidence.get('generated_ownership')" .-> s5
-    s1 -. "DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)('Workspace export requires generated-ownership evidence.')" .-> s6
-    s1 -. "_read_json(_workspace_path(...))" .-> s7
-    s1 -. "_workspace_path(workspace_root, generated_path)" .-> s8
-    s1 -. "compare_generated_ownership(generated_payload.get(...), ...)" .-> s9
-    s1 -. "generated_payload.get('fingerprints', {...})" .-> s10
-    s1 -. "any (src/llm_wiki_cli/services…:export_documentation_run)(generated_diff.values(...))" .-> s11
-    s1 -. "generated_diff.values(data not statically known)" .-> s12
+    s1 -. "DocumentationTransitionError('Use the mapped publication patch handoff for this workspace.')" .-> s4
+    s1 -. "_verify_read_only_inputs(workspace_root, run)" .-> s5
+    s1 -. "run.evidence.get('generated_ownership')" .-> s6
+    s1 -. "DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)('Workspace export requires generated-ownership evidence.')" .-> s7
+    s1 -. "_read_json(_workspace_path(...))" .-> s8
+    s1 -. "_workspace_path(workspace_root, generated_path)" .-> s9
+    s1 -. "compare_generated_ownership(generated_payload.get(...), ...)" .-> s10
+    s1 -. "generated_payload.get('fingerprints', {...})" .-> s11
+    s1 -. "any (src/llm_wiki_cli/services…:export_documentation_run)(generated_diff.values(...))" .-> s12
     b0["mutation run.verdict_limitations.append"]
     s1 -. "mutation run.verdict_limitations.append" .-> b0
     b1["mutation run.verdict_limitations.remove"]
@@ -182,6 +182,7 @@ flowchart LR
 | `export_documentation_run` | `workspace: str \| Path`, `build: bool`, `builder_command: Iterable[str] \| None`, `knowledge_mode: str \| None`, `knowledge_public_repository_identity: str \| None` | - | `export_payload[...]`, `run.evidence[...]`, `run.evidence[...]`, `check_payload[...]`, `run.evidence[...]`, `run.evidence[...]` | `final_report` |
 | `_resolve_workspace_root_argument` | - | - | - | - |
 | `load_documentation_run` | - | - | - | - |
+| `DocumentationTransitionError` | - | - | - | - |
 | `_verify_read_only_inputs` | - | - | - | - |
 | `run.evidence.get` | - | - | - | - |
 | `DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)` | - | - | - | - |
@@ -190,7 +191,6 @@ flowchart LR
 | `compare_generated_ownership` | - | - | - | - |
 | `generated_payload.get` | - | - | - | - |
 | `any (src/llm_wiki_cli/services…:export_documentation_run)` | - | - | - | - |
-| `generated_diff.values` | - | - | - | - |
 
 ### Call data
 
@@ -198,22 +198,22 @@ flowchart LR
 |---|---|---:|---|
 | export_documentation_run | _resolve_workspace_root_argument | 477 | `_resolve_workspace_root_argument(workspace)` |
 | export_documentation_run | load_documentation_run | 478 | `load_documentation_run(workspace_root)` |
-| export_documentation_run | _verify_read_only_inputs | 479 | `_verify_read_only_inputs(workspace_root, run)` |
-| export_documentation_run | run.evidence.get | 480 | `run.evidence.get('generated_ownership')` |
-| export_documentation_run | DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run) | 482 | `DocumentationIntegrityError('Workspace export requires generated-ownership evidence.')` |
-| export_documentation_run | _read_json | 485 | `_read_json(_workspace_path(...))` |
-| export_documentation_run | _workspace_path | 485 | `_workspace_path(workspace_root, generated_path)` |
-| export_documentation_run | compare_generated_ownership | 486 | `compare_generated_ownership(generated_payload.get(...), ...)` |
-| export_documentation_run | generated_payload.get | 487 | `generated_payload.get('fingerprints', {...})` |
-| export_documentation_run | any (src/llm_wiki_cli/services…:export_documentation_run) | 490 | `any(generated_diff.values(...))` |
-| export_documentation_run | generated_diff.values | 490 | `generated_diff.values(data not statically known)` |
+| export_documentation_run | DocumentationTransitionError | 482 | `DocumentationTransitionError('Use the mapped publication patch handoff for this workspace.')` |
+| export_documentation_run | _verify_read_only_inputs | 483 | `_verify_read_only_inputs(workspace_root, run)` |
+| export_documentation_run | run.evidence.get | 484 | `run.evidence.get('generated_ownership')` |
+| export_documentation_run | DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run) | 486 | `DocumentationIntegrityError('Workspace export requires generated-ownership evidence.')` |
+| export_documentation_run | _read_json | 489 | `_read_json(_workspace_path(...))` |
+| export_documentation_run | _workspace_path | 489 | `_workspace_path(workspace_root, generated_path)` |
+| export_documentation_run | compare_generated_ownership | 490 | `compare_generated_ownership(generated_payload.get(...), ...)` |
+| export_documentation_run | generated_payload.get | 491 | `generated_payload.get('fingerprints', {...})` |
+| export_documentation_run | any (src/llm_wiki_cli/services…:export_documentation_run) | 494 | `any(generated_diff.values(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `run.verdict_limitations.append` | `export_documentation_run` | 639 |
-| mutation | `run.verdict_limitations.remove` | `export_documentation_run` | 641 |
+| mutation | `run.verdict_limitations.append` | `export_documentation_run` | 643 |
+| mutation | `run.verdict_limitations.remove` | `export_documentation_run` | 645 |
 
 ### Static analysis gaps
 
@@ -221,15 +221,15 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `export_documentation_run` | `_resolve_workspace_root_argument` | 477 |
 | unresolved_call | `export_documentation_run` | `load_documentation_run` | 478 |
-| unresolved_call | `export_documentation_run` | `_verify_read_only_inputs` | 479 |
-| unresolved_call | `export_documentation_run` | `run.evidence.get` | 480 |
-| unresolved_call | `export_documentation_run` | `DocumentationIntegrityError` | 482 |
-| unresolved_call | `export_documentation_run` | `_read_json` | 485 |
-| unresolved_call | `export_documentation_run` | `_workspace_path` | 485 |
-| unresolved_call | `export_documentation_run` | `compare_generated_ownership` | 486 |
-| unresolved_call | `export_documentation_run` | `generated_payload.get` | 487 |
-| unresolved_call | `export_documentation_run` | `any` | 490 |
-| unresolved_call | `export_documentation_run` | `generated_diff.values` | 490 |
+| unresolved_call | `export_documentation_run` | `DocumentationTransitionError` | 482 |
+| unresolved_call | `export_documentation_run` | `_verify_read_only_inputs` | 483 |
+| unresolved_call | `export_documentation_run` | `run.evidence.get` | 484 |
+| unresolved_call | `export_documentation_run` | `DocumentationIntegrityError` | 486 |
+| unresolved_call | `export_documentation_run` | `_read_json` | 489 |
+| unresolved_call | `export_documentation_run` | `_workspace_path` | 489 |
+| unresolved_call | `export_documentation_run` | `compare_generated_ownership` | 490 |
+| unresolved_call | `export_documentation_run` | `generated_payload.get` | 491 |
+| unresolved_call | `export_documentation_run` | `any` | 494 |
 | step_limit | `export_documentation_run` | `first 12 steps` | 0 |
 
 ## Behavior

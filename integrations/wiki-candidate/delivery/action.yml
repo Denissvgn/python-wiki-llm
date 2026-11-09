@@ -1,0 +1,125 @@
+name: Reviewed wiki delivery
+description: Qualify wiki Git access, deliver a same-run reviewed candidate, or restore reviewed owned content.
+inputs:
+  operation:
+    description: One of qualify, deliver, plan-rollback, or rollback.
+    default: qualify
+  wiki-token:
+    description: Target-scoped credential supplied only by the protected publisher job.
+    required: true
+  source-token:
+    description: Read-only Git credential for the caller repository.
+    default: ${{ github.token }}
+  target-repository:
+    description: Explicitly authorized GitHub owner/repository for the sibling wiki, or self.
+    default: self
+  working-directory:
+    description: Consumer inside the checked-out source repository.
+    default: .
+  config:
+    description: Publication configuration in the eligible source commit.
+    default: .llm-wiki/publication.json
+  approval-branch:
+    description: Trusted branch containing accepted review records, fetched by the caller.
+    default: wiki-reviews
+  artifact-id:
+    description: Immutable artifact ID output by the successful candidate job in this run.
+  receipt-id:
+    description: Exact receipt ID output by that same preparation job.
+  candidate-review:
+    description: Accepted exact candidate approval path on the approval branch.
+    default: .llm-wiki/candidate-review.json
+  reviews:
+    description: Topic review ledger used during preparation, if supplied.
+  baseline:
+    description: Accepted publication basis used during preparation, if supplied.
+  previous-receipt:
+    description: Prior accepted ownership receipt used during preparation, if supplied.
+  target-revision:
+    description: Exact wiki commit reviewed as the starting point of a rollback.
+  restore-revision:
+    description: Earlier wiki commit whose owned content should be restored.
+  rollback-review:
+    description: Accepted rollback review path on the approval branch.
+    default: .llm-wiki/rollback-review.json
+outputs:
+  result-path:
+    description: Job-local qualification, delivery or rollback report.
+    value: ${{ steps.publish.outputs.result-path }}
+  readback-verified:
+    description: Whether this invocation fetched and verified the delivered remote tree.
+    value: ${{ steps.publish.outputs.readback-verified || 'false' }}
+runs:
+  using: composite
+  steps:
+    - name: Check publisher inputs
+      shell: bash
+      env:
+        OPERATION: ${{ inputs.operation }}
+        ARTIFACT_ID: ${{ inputs.artifact-id }}
+        RECEIPT_ID: ${{ inputs.receipt-id }}
+        PIN: ${{ github.action_ref }}
+      run: |
+        set -euo pipefail
+        [[ "$GITHUB_SERVER_URL" == https://github.com && "$GITHUB_REF_PROTECTED" == true ]]
+        [[ "$GITHUB_EVENT_NAME" == workflow_dispatch || "$GITHUB_EVENT_NAME" == push ]]
+        [[ "$PIN" =~ ^[0-9a-f]{40}$ ]]
+        case "$OPERATION" in
+          deliver) [[ "$ARTIFACT_ID" =~ ^[1-9][0-9]{0,14}$ && "$RECEIPT_ID" =~ ^sha256:[0-9a-f]{64}$ ]] ;;
+          qualify|plan-rollback|rollback) ;;
+          *) exit 2 ;;
+        esac
+    - name: Set up the publisher Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      id: python
+      with:
+        python-version: "3.13.18"
+    - name: Install and verify the pinned publisher
+      id: provider
+      shell: bash
+      env:
+        PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
+        PROVIDER_ACTION_REF: ${{ github.action_ref }}
+        PROVIDER_REPOSITORY: ${{ github.action_repository }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_EVIDENCE_ID: delivery
+      run: '"${PROVIDER_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/../provider.py"'
+    - name: Download the successful preparation artifact from this run
+      if: inputs.operation == 'deliver'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        artifact-ids: ${{ inputs.artifact-id }}
+        digest-mismatch: error
+        path: ${{ steps.provider.outputs.runtime }}/incoming
+    - name: Check policy, Git revisions and remote result
+      id: publish
+      shell: bash
+      env:
+        WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+        WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        WIKI_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        ACTION_REVISION: ${{ github.action_ref }}
+        ACTION_REPOSITORY: ${{ github.action_repository }}
+        CONFIG_PATH: ${{ inputs.config }}
+        OPERATION: ${{ inputs.operation }}
+        TARGET_REPOSITORY: ${{ inputs.target-repository }}
+        APPROVAL_BRANCH: ${{ inputs.approval-branch }}
+        EXPECTED_RECEIPT: ${{ inputs.receipt-id }}
+        CANDIDATE_REVIEW_PATH: ${{ inputs.candidate-review }}
+        REVIEWS_PATH: ${{ inputs.reviews }}
+        BASELINE_PATH: ${{ inputs.baseline }}
+        PREVIOUS_RECEIPT_PATH: ${{ inputs.previous-receipt }}
+        ROLLBACK_REVIEW_PATH: ${{ inputs.rollback-review }}
+        TARGET_REVISION: ${{ inputs.target-revision }}
+        RESTORE_REVISION: ${{ inputs.restore-revision }}
+        SOURCE_TOKEN: ${{ inputs.source-token }}
+        WIKI_TOKEN: ${{ inputs.wiki-token }}
+      run: '"${WIKI_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/publish.py"'
+    - name: Retain delivery evidence
+      if: ${{ always() && steps.provider.outcome == 'success' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: wiki-delivery-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ steps.provider.outputs.evidence-dir }}/delivery-result.json
+        if-no-files-found: warn
+        retention-days: 14

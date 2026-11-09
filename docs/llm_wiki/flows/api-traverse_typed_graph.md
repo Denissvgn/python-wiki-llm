@@ -208,11 +208,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | _normalize_query_input | 2583 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2113 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2115 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2116 | `str(exc)` |
-| traverse_typed_graph | normalize_concept_coordinate | 2584 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| traverse_typed_graph | _normalize_query_input | 2592 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2122 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2124 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2125 | `str(exc)` |
+| traverse_typed_graph | normalize_concept_coordinate | 2593 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 78 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `value.strip(data not statically known)` |
@@ -228,7 +228,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2113 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2122 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |

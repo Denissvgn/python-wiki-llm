@@ -33,73 +33,23 @@ agent's project directory: ``.claude/skills`` for Claude and the neutral
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/init_cmd.py"]
-    n1["src/llm_wiki_cli/commands/skills_cmd.py"]
-    n2["src/llm_wiki_cli/commands/status_cmd.py"]
-    n3["src/llm_wiki_cli/commands/uninstall_cmd.py"]
-    n4["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n6["src/llm_wiki_cli/services/instruction_ownership.py"]
-    n7["src/llm_wiki_cli/services/io.py"]
-    n8["src/llm_wiki_cli/services/rendering_lifecycle.py"]
-    n9["src/llm_wiki_cli/services/schema.py"]
-    n10["src/llm_wiki_cli/services/skills.py"]
-    n11["src/llm_wiki_cli/services/validation.py"]
-    n0 --> n4
-    n0 --> n8
-    n0 --> n9
-    n0 --> n10
-    n1 --> n10
-    n2 --> n7
-    n2 --> n8
-    n2 --> n9
-    n2 --> n10
-    n3 --> n7
-    n3 --> n9
-    n3 --> n10
-    n4 --> n8
-    n4 --> n9
-    n4 --> n10
-    n5 --> n7
-    n5 --> n10
-    n5 --> n11
-    n6 --> n9
-    n6 --> n10
-    n8 --> n9
-    n8 --> n10
-    n9 --> n7
-    n9 --> n10
-    n10 --> n7
-    n10 --> n11
-    click n0 "../modules/init_cmd.md"
-    click n1 "../modules/skills_cmd.md"
-    click n2 "../modules/status_cmd.md"
-    click n3 "../modules/uninstall_cmd.md"
-    click n4 "../modules/upgrade_cmd.md"
-    click n5 "../modules/documentation_run_dependencies.md"
-    click n6 "../modules/instruction_ownership.md"
-    click n7 "../modules/io.md"
-    click n8 "../modules/rendering_lifecycle.md"
-    click n9 "../modules/services_schema.md"
-    click n10 "../modules/skills.md"
-    click n11 "../modules/validation.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/skills.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/skills.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [init_cmd](../modules/init_cmd.md) |
-| Inbound | [skills_cmd](../modules/skills_cmd.md) |
-| Inbound | [status_cmd](../modules/status_cmd.md) |
-| Inbound | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| Inbound | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Inbound | [instruction_ownership](../modules/instruction_ownership.md) |
-| Inbound | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| Inbound | [services_schema](../modules/services_schema.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [validation](../modules/validation.md) |
+| Inbound | `src` (10) |
+| Outbound | `src` (2) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

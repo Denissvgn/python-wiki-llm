@@ -374,6 +374,31 @@ Cleanup requires a valid current generation. It preserves referenced objects,
 unrecognized files and busy files. Review and commit the resulting changes using
 your normal Git workflow.
 
+To prune automatically after a successful sync, enable the writer option:
+
+```sh
+llm-wiki sync --src-dir . --wiki-dir wiki --prune-storage --storage-recovery-dir ../wiki-recovery
+```
+
+The writer validates the completed generation, creates a generation-bound plan,
+applies it with verified recovery copies and audits the resulting storage. A dry
+run reports the cleanup policy. The command fails when
+cleanup is incomplete, its inspection budget is exhausted or unknown objects
+need attention. Its output identifies any recovery manifest. The optional
+recovery directory stays outside the wiki. The default uses Git metadata when
+available.
+
+Require a fully referenced generation in read-only automation:
+
+```sh
+llm-wiki knowledge storage-check --wiki-dir wiki --full --require-referenced
+```
+
+This audits the complete snapshot and fails on unreferenced or unrecognized
+objects. The wiki-integrity action exposes the same check through
+`require-referenced-storage: 'true'`. Keep recovery copies outside the tracked
+wiki so only the current generation and its referenced files are committed.
+
 To apply exactly the reviewed candidates, save a bounded plan outside the wiki:
 
 ```sh

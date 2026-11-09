@@ -18,6 +18,59 @@ from llm_wiki_cli.commands import bootstrap_cmd
 from tests.test_github_action import ACTION_PATH, ROOT, _yaml
 
 
+@pytest.mark.parametrize("field", ["ACCEPTED_BASELINE", "ACCEPTED_REVIEWS"])
+@pytest.mark.parametrize(
+    "kind",
+    ["empty", "regular", "missing", "absolute", "traversal", "backslash", "newline", "symlink", "symlink-parent"],
+)
+def test_sibling_wiki_accepted_state_paths_are_confined(tmp_path, field, kind):
+    workflow = _yaml(ROOT / ".github/workflows/sibling-wiki-impact.yml")
+    step = next(step for step in workflow["jobs"]["report"]["steps"] if "run" in step)
+    # Exercise the input guard without reaching the independently hosted clone.
+    guard = "for accepted_artifact" + step["run"].split("for accepted_artifact", 1)[1].split(
+        "[[ ! -e sibling-wiki", 1
+    )[0]
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "accepted.json").write_text("{}\n", encoding="utf-8")
+    selected = {
+        "empty": "",
+        "regular": "state/accepted.json",
+        "missing": "state/missing.json",
+        "absolute": str(state / "accepted.json"),
+        "traversal": "../accepted.json",
+        "backslash": "state\\accepted.json",
+        "newline": "state/accepted.json\n",
+        "symlink": "alias.json",
+        "symlink-parent": "alias/accepted.json",
+    }[kind]
+    if kind == "symlink":
+        (tmp_path / "alias.json").symlink_to(state / "accepted.json")
+    elif kind == "symlink-parent":
+        (tmp_path / "alias").symlink_to(state, target_is_directory=True)
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+         "-c", "commit.gpgsign=false", "commit", "-qm", "Accepted state"],
+        cwd=tmp_path, check=True,
+    )
+    pin = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
+    environment = {"ACCEPTED_SHA": pin, "ACCEPTED_BASELINE": "", "ACCEPTED_REVIEWS": "", field: selected}
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-e", "-o", "pipefail"],
+        input="set -u\n" + guard + "printf 'STATE_ACCEPTED\\n'\n",
+        cwd=tmp_path,
+        env={**os.environ, **environment},
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert (result.returncode == 0) == (kind in {"empty", "regular"}), result.stderr
+    assert ("STATE_ACCEPTED" in result.stdout) == (kind in {"empty", "regular"})
+
+
 @pytest.mark.parametrize("shadow", [False, True])
 @pytest.mark.parametrize("core,ubuntu,windows,union", [
     ("success", "success", "success", "success"),

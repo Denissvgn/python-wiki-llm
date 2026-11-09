@@ -3198,6 +3198,59 @@ def verify_download(args: argparse.Namespace) -> int:
     return 0
 
 
+def verify_rust_manifest(args: argparse.Namespace) -> int:
+    """Bind the selected Linux Rust/Clippy archives to their pinned manifest."""
+    keys = {
+        "x86_64-unknown-linux-gnu": ("artifact", "clippy_artifact"),
+        "aarch64-unknown-linux-gnu": (
+            "platform_artifacts.linux_arm64",
+            "platform_clippy_artifacts.linux_arm64",
+        ),
+    }
+    if args.target not in keys:
+        raise QualificationError("unsupported locked Rust manifest target")
+    lock = load_json(args.lock.resolve())
+    try:
+        rust = lock["toolchains"]["rust"]
+        manifest_artifact = _require_object(
+            rust["checksum_manifest"], name="Rust checksum manifest", keys=("url", "sha256")
+        )
+        expected = _require_sha256(manifest_artifact["sha256"], "Rust checksum manifest.sha256")
+        raw = args.manifest.resolve().read_bytes()
+        if _sha256_bytes(raw) != expected:
+            raise QualificationError("Rust checksum manifest digest differs from lock")
+        if tomllib is None:
+            raise QualificationError("Rust manifest validation requires Python 3.11+")
+        manifest = tomllib.loads(raw.decode("utf-8"))
+        version = _require_string(rust["version"], "Rust version")
+        if manifest.get("manifest-version") != "2":
+            raise QualificationError("unsupported Rust checksum manifest version")
+        package = manifest["pkg"]["rust"]
+        package_version = _require_string(package["version"], "Rust manifest package version")
+        if package_version.split()[0] != version:
+            raise QualificationError("Rust manifest package version differs from lock")
+        for package_name, key in zip(("rust", "clippy-preview"), keys[args.target]):
+            artifact = rust
+            for component in key.split("."):
+                artifact = artifact[component]
+            artifact = _require_object(
+                artifact, name=f"Rust lock {key}", keys=("url", "sha256")
+            )
+            expected_url = _require_string(artifact["url"], key + ".url")
+            target = manifest["pkg"][package_name]["target"][args.target]
+            if target.get("available") is not True:
+                raise QualificationError(f"Rust manifest target is unavailable: {package_name}")
+            if (target.get("xz_url") != expected_url
+                    or target.get("xz_hash") != _require_sha256(artifact["sha256"], key + ".sha256")):
+                raise QualificationError(f"Rust manifest archive differs from lock: {key}")
+    except QualificationError:
+        raise
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:
+        raise QualificationError("Rust checksum manifest or selected lock entry is invalid") from exc
+    print(args.target)
+    return 0
+
+
 def validate_workflow_run(
     payload: object,
     *,
@@ -3511,6 +3564,16 @@ def _parser() -> argparse.ArgumentParser:
     download.add_argument("--key", required=True)
     download.add_argument("--output", type=Path, required=True)
     download.set_defaults(function=verify_download)
+
+    rust_manifest = subparsers.add_parser("verify-rust-manifest")
+    rust_manifest.add_argument("--lock", type=Path, required=True)
+    rust_manifest.add_argument("--manifest", type=Path, required=True)
+    rust_manifest.add_argument(
+        "--target",
+        choices=("x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"),
+        required=True,
+    )
+    rust_manifest.set_defaults(function=verify_rust_manifest)
 
     run = subparsers.add_parser("verify-workflow-run")
     run.add_argument("--repository", required=True)

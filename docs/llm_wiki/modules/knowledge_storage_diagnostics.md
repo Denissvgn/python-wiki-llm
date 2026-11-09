@@ -25,7 +25,7 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `packed_format`, `PACK_NAME`, `INDEX_NAME`, `INDEX_PAGE_NAME`, `INDEX_PAGE_BYTES`, `MAX_PACK_BYTES`, `MAX_INDEX_BYTES`, `parse_packed_root` |
 | `.knowledge_storage` | `GIT_FAILURE_BYTES`, `GIT_WARNING_BYTES`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeStorageError`, `canonical_bytes`, `parse_store_root`, `digest`, `digest`, `digest`, `digest` |
 | `.knowledge_storage_access` | `capture_knowledge_slice` |
-| `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
+| `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path`, `read_guarded` |
 | `.knowledge_storage_lifecycle` | `stored_object_paths` |
 | `.manifest_storage` | `OBJECT_NAME`, `OBJECT_LIMIT` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
@@ -60,7 +60,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (3) |
+| Inbound | `src` (4) |
 | Outbound | `src` (13) |
 
 > All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
@@ -71,7 +71,8 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_git` | `(root: Path, arguments: list[str], *, input_bytes: bytes \| None = None, maximum: int = 16777216, environment: dict[str, str] \| None = None) -> tuple[int, bytes]` | — | Drain both pipes with hard byte/time bounds; never invoke a shell. |
 | `inspect_git_range` | `(project: str \| Path, *, base: str, head: str) -> dict[str, Any]` | — | Inspect every blob in head minus base, including subsequently deleted files. |
-| `storage_report` | `(wiki_dir: str \| Path, *, full: bool = False, git_base: str \| None = None, git_head: str \| None = None) -> dict[str, Any]` | — | — |
+| `storage_report` | `(wiki_dir: str \| Path, *, full: bool = False, git_base: str \| None = None, git_head: str \| None = None, require_referenced: bool = False) -> dict[str, Any]` | — | — |
+| `_referenced_storage_report` | `(root, report, *, git_base, git_head)` | — | Audit a stable generation and namespace without performing cleanup. |
 | `_retention_recovery` | `(root: Path) -> dict[str, Any]` | — | Offer the maintained preview route, never a size-based cleanup decision. |
 | `_storage_report` | `(root: Path, report: dict[str, Any], *, full: bool, git_base: str \| None, git_head: str \| None) -> dict[str, Any]` | — | Inspect within existing bounds; the caller retains storage-limit gaps. |
 | `_review_records` | `(wiki_dir: str \| Path) -> tuple[dict[str, Any], dict[str, Any]]` | — | Logical review keys preserve duplicates and avoid physical pack identities. |

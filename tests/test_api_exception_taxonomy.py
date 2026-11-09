@@ -17,6 +17,7 @@ from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryS
 
 
 _PUBLIC_FUNCTION_NAMES = (
+    "install_documentation_ci_workflow",
     "helper_preparation",
     "build_compact_task_context",
     "render_compact_task_context",
@@ -34,13 +35,19 @@ _PUBLIC_FUNCTION_NAMES = (
     "build_calibration_agent_packet",
     "build_budgeted_context",
     "build_context",
+    "build_cli_contract",
     "build_qualified_context",
     "build_documentation_agent_packet",
     "build_documentation_query_service",
     "build_p0_calibration_agent_packet",
     "callees",
     "callers",
+    "capture_publication_basis",
+    "check_publication_candidate",
+    "prepare_publication_maintenance",
+    "build_publication_patch",
     "compare_context_packet_basis",
+    "compare_publication_impact",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
     "dispatch_calibration_agent",
@@ -49,11 +56,14 @@ _PUBLIC_FUNCTION_NAMES = (
     "explain_evidence",
     "expand_task_storage_receipt",
     "export_documentation_run",
+    "export_publication_candidate",
     "extract_source",
     "fingerprint_documentation_wiki_input",
     "flow_for_entrypoint",
     "flow_segment",
     "get_calibration_run_status",
+    "get_cli_contract",
+    "get_behavior_facts",
     "get_concept",
     "get_knowledge_coverage",
     "inspect_concept",
@@ -71,11 +81,18 @@ _PUBLIC_FUNCTION_NAMES = (
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "render_cli_reference",
+    "render_behavior_reference",
+    "resolve_publication_finding",
+    "review_publication_candidate",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
+    "validate_cli_contract",
+    "validate_behavior_facts",
+    "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_calibration_run",
     "verify_documentation_run",
@@ -84,6 +101,7 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "install_documentation_ci_workflow",
         "helper_preparation",
         "build_compact_task_context",
         "render_compact_task_context",
@@ -96,11 +114,20 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "recover_maintenance",
         "build_budgeted_context",
         "build_context",
+        "build_cli_contract",
         "build_qualified_context",
         "build_documentation_query_service",
         "callees",
         "callers",
+        "capture_publication_basis",
+        "check_publication_candidate",
+        "prepare_publication_maintenance",
+        "build_publication_patch",
+        "export_publication_candidate",
+        "review_publication_candidate",
+        "validate_publication_receipt",
         "compare_context_packet_basis",
+        "compare_publication_impact",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
         "doctor",
@@ -110,6 +137,8 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "flow_for_entrypoint",
         "flow_segment",
         "get_concept",
+        "get_cli_contract",
+        "get_behavior_facts",
         "get_knowledge_coverage",
         "inspect_concept",
         "list_concept_sections",
@@ -121,12 +150,17 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "record_calibration_agent_result",
         "record_p0_calibration_agent_result",
         "related_concepts",
+        "render_cli_reference",
+        "render_behavior_reference",
+        "resolve_publication_finding",
         "select_documentation_model",
         "traverse_typed_graph",
         "use_calibration_host_broker_authenticator",
         "use_p0_calibration_host_broker_authenticator",
         "reconcile_context_packet",
         "validate_context_packet",
+        "validate_cli_contract",
+        "validate_behavior_facts",
         "validate_documentation_model_selection",
     }
 )
@@ -243,7 +277,18 @@ def _deprecated_context(callable_, *args, **kwargs) -> None:
         _enter(callable_(*args, **kwargs))
 
 
+def _provoke_reference_export_failure(service, name):
+    def fail():
+        raise ValueError("provoked reference export failure")
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(service, name, fail)
+        return getattr(api, name)()
+
+
 def _failure_cases(tmp_path: Path):
+    from llm_wiki_cli.services import behavior_reference, cli_reference
+
     missing_source = tmp_path / "missing-source"
     missing_wiki = tmp_path / "missing-wiki"
     missing_workspace = tmp_path / "missing-workspace"
@@ -254,6 +299,43 @@ def _failure_cases(tmp_path: Path):
     return {
         "helper_preparation": lambda: _enter(api.helper_preparation(cast(Any, "invalid"))),
         "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
+        "get_cli_contract": lambda: _provoke_reference_export_failure(cli_reference, "get_cli_contract"),
+        "get_behavior_facts": lambda: _provoke_reference_export_failure(behavior_reference, "get_behavior_facts"),
+        "render_behavior_reference": lambda: api.render_behavior_reference({}),
+        "validate_behavior_facts": lambda: api.validate_behavior_facts({}),
+        "build_cli_contract": lambda: api.build_cli_contract(
+            cast(Any, None),
+            package={"name": "example", "version": "1.0.0", "requires_python": None},
+            program="example",
+        ),
+        "render_cli_reference": lambda: api.render_cli_reference({}),
+        "validate_cli_contract": lambda: api.validate_cli_contract({}),
+        "capture_publication_basis": lambda: api.capture_publication_basis(
+            tmp_path, config_path="../publication.json"
+        ),
+        "export_publication_candidate": lambda: api.export_publication_candidate(
+            tmp_path, output_dir="candidate", config_path="../publication.json"
+        ),
+        "install_documentation_ci_workflow": lambda: api.install_documentation_ci_workflow(
+            action_ref="main", project_root=tmp_path
+        ),
+        "check_publication_candidate": lambda: api.check_publication_candidate(
+            tmp_path, candidate_dir="candidate", receipt={}
+        ),
+        "prepare_publication_maintenance": lambda: api.prepare_publication_maintenance(
+            tmp_path, workspace=tmp_path / "workspace", candidate_dir="candidate", receipt={}
+        ),
+        "build_publication_patch": lambda: api.build_publication_patch(
+            tmp_path, workspace=tmp_path / "workspace", candidate_dir="candidate", receipt={}
+        ),
+        "review_publication_candidate": lambda: api.review_publication_candidate(
+            {}, reviewer="reviewer", reason="reviewed"
+        ),
+        "validate_publication_receipt": lambda: api.validate_publication_receipt({}),
+        "compare_publication_impact": lambda: api.compare_publication_impact({}),
+        "resolve_publication_finding": lambda: api.resolve_publication_finding(
+            {}, {}, finding_id="missing", reviewer="reviewer", reason="reviewed"
+        ),
         "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
         "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),
         "validate_compact_task_context": lambda: api.validate_compact_task_context("", "", {}, view_options={}),
@@ -662,6 +744,23 @@ def test_public_dict_return_annotations_import_and_resolve():
         "inspect_concept": api_types.NativeInspectionResult,
         "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
+        "capture_publication_basis": dict[str, typing.Any],
+        "export_publication_candidate": dict[str, typing.Any],
+        "check_publication_candidate": dict[str, typing.Any],
+        "prepare_publication_maintenance": dict[str, typing.Any],
+        "build_publication_patch": dict[str, typing.Any],
+        "install_documentation_ci_workflow": api.InstallCiResult,
+        "review_publication_candidate": dict[str, typing.Any],
+        "validate_publication_receipt": type(None),
+        "get_cli_contract": dict[str, typing.Any],
+        "get_behavior_facts": dict[str, typing.Any],
+        "render_behavior_reference": str,
+        "validate_behavior_facts": type(None),
+        "build_cli_contract": dict[str, typing.Any],
+        "render_cli_reference": str,
+        "validate_cli_contract": type(None),
+        "compare_publication_impact": dict[str, typing.Any],
+        "resolve_publication_finding": dict[str, typing.Any],
     }
 
     assert {

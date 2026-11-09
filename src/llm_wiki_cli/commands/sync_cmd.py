@@ -5432,12 +5432,27 @@ def run(args) -> None:
     options = _sync_run_options_from_args(args)
     from ..services.maintenance_protocol import maintenance_write_operation, MaintenanceProtocolError
 
+    prune = bool(getattr(args, "prune_storage", False))
+    recovery = getattr(args, "storage_recovery_dir", None)
+    if recovery is not None:
+        if not prune:
+            raise ValueError("--storage-recovery-dir requires --prune-storage")
+        from ..services.knowledge_storage_lifecycle import _outside_tree
+        _outside_tree(Path(recovery), options.wiki_dir)
     try:
         with maintenance_write_operation(options.wiki_dir, dry_run=options.dry_run) as basis:
             _run_sync_options(options, basis)
     except MaintenanceProtocolError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
+    if prune and options.dry_run:
+        print("Storage cleanup will validate and prune unreferenced objects after successful sync.")
+    elif prune:
+        from ..services.knowledge_storage_lifecycle import finalize_knowledge_storage
+        cleaned = finalize_knowledge_storage(options.wiki_dir, recovery_dir=recovery)
+        print(f"Storage cleanup removed {len(cleaned['removed'])} objects ({cleaned['bytes']} bytes).")
+        if cleaned["recovery_manifest"] is not None:
+            print("Storage recovery manifest " + cleaned["recovery_manifest"])
 
 
 def _run_sync_options(options, write_basis=None) -> None:

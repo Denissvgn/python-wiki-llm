@@ -27,11 +27,13 @@ Reads complete files and exact ranges through bounded request-owned handles and 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n0 --> n1
-    n1 --> n0
-    click n1 "../modules/knowledge_storage_io.md"
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n0 --> n2
+    n1 --> n2
+    n2 --> n1
+    click n2 "../modules/knowledge_storage_io.md"
 ```
 
 > Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
@@ -40,10 +42,11 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (38) |
+| Inbound | `integrations` (2) |
+| Inbound | `src` (47) |
 | Outbound | `src` (4) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

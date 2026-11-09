@@ -27,126 +27,43 @@ permissions, the five rollback roots or the four refresh-mutable roots.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/documentation_run/__init__.py"]
+    n0["src"]
     n1["src/llm_wiki_cli/services/documentation_run/contracts.py"]
-    n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n3["src/llm_wiki_cli/services/documentation_run/export.py"]
-    n4["src/llm_wiki_cli/services/documentation_run/integrity.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/packet.py"]
-    n6["src/llm_wiki_cli/services/documentation_run/prepare.py"]
-    n7["src/llm_wiki_cli/services/documentation_run/record.py"]
-    n8["src/llm_wiki_cli/services/documentation_run/refresh.py"]
-    n9["src/llm_wiki_cli/services/documentation_run/schema.py"]
-    n10["src/llm_wiki_cli/services/documentation_run/verify.py"]
-    n11["src/llm_wiki_cli/services/documentation_run/workspace.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n3
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n0 --> n8
-    n0 --> n9
-    n0 --> n10
-    n0 --> n11
-    n1 --> n2
-    n1 --> n5
-    n1 --> n9
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n7
-    n3 --> n8
-    n3 --> n9
-    n3 --> n10
-    n3 --> n11
-    n4 --> n1
-    n4 --> n2
-    n4 --> n9
-    n4 --> n11
-    n5 --> n1
-    n5 --> n2
-    n5 --> n4
-    n5 --> n9
-    n5 --> n11
-    n6 --> n1
-    n6 --> n2
-    n6 --> n4
-    n6 --> n8
-    n6 --> n9
-    n6 --> n11
-    n7 --> n1
-    n7 --> n2
-    n7 --> n4
-    n7 --> n8
-    n7 --> n9
-    n7 --> n11
-    n8 --> n1
-    n8 --> n2
-    n8 --> n4
-    n8 --> n9
-    n8 --> n11
-    n9 --> n1
-    n9 --> n2
-    n10 --> n1
-    n10 --> n2
-    n10 --> n4
-    n10 --> n7
-    n11 --> n1
-    click n0 "../modules/documentation_run___init__.md"
+    n1 --> n0
     click n1 "../modules/documentation_run_contracts.md"
-    click n2 "../modules/documentation_run_dependencies.md"
-    click n3 "../modules/export.md"
-    click n4 "../modules/integrity.md"
-    click n5 "../modules/packet.md"
-    click n6 "../modules/prepare.md"
-    click n7 "../modules/record.md"
-    click n8 "../modules/refresh.md"
-    click n9 "../modules/documentation_run_schema.md"
-    click n10 "../modules/verify.md"
-    click n11 "../modules/workspace.md"
 ```
 
-> Diagram shows 55 of 60 local dependency edges; 5 omitted to keep the visualization within the generated-diagram limits. Complete inbound and outbound dependencies remain in the tables below.
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| Inbound | [export](../modules/export.md) |
-| Inbound | [integrity](../modules/integrity.md) |
-| Inbound | [packet](../modules/packet.md) |
-| Inbound | [prepare](../modules/prepare.md) |
-| Inbound | [record](../modules/record.md) |
-| Inbound | [refresh](../modules/refresh.md) |
-| Inbound | [documentation_run_schema](../modules/documentation_run_schema.md) |
-| Inbound | [verify](../modules/verify.md) |
-| Inbound | [workspace](../modules/workspace.md) |
-| Outbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Outbound | [packet](../modules/packet.md) |
-| Outbound | [documentation_run_schema](../modules/documentation_run_schema.md) |
+| Inbound | `src` (11) |
+| Outbound | `src` (3) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationRunError](../entities/DocumentationRunError.md) | 295 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
-| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 299 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
-| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 303 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
-| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 307 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
-| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 311 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
-| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 319 | — | — |
-| [DocumentationRun](../entities/DocumentationRun.md) | 625 | — | — |
-| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 774 | — | — |
-| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 801 | — | — |
-| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 823 | — | — |
-| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 952 | — | — |
-| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 974 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
-| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 985 | — | Tracks an archived run until its replacement is safely committed. |
-| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 999 | — | Captured controller state for refresh plus evidence reconciliation. |
-| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 1009 | — | Tracks a pristine workspace root until initial preparation commits. |
+| [DocumentationRunError](../entities/DocumentationRunError.md) | 298 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
+| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 302 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
+| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 306 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
+| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 310 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
+| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 314 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
+| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 322 | — | — |
+| [DocumentationRun](../entities/DocumentationRun.md) | 628 | — | — |
+| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 777 | — | — |
+| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 804 | — | — |
+| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 826 | — | — |
+| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 958 | — | — |
+| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 980 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
+| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 991 | — | Tracks an archived run until its replacement is safely committed. |
+| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 1005 | — | Captured controller state for refresh plus evidence reconciliation. |
+| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 1015 | — | Tracks a pristine workspace root until initial preparation commits. |
 
 ## Functions
 

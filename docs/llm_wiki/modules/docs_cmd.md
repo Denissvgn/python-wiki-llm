@@ -10,6 +10,7 @@ Commands for deterministic standalone documentation workspaces.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `publication_candidate_cmd`, `publication_cmd` |
 | `..config` | `PathValidationError`, `validate_source_root` |
 | `..services.calibration` | `controller` |
 | `..services.calibration.controller` | `P0CalibrationError` |
@@ -30,32 +31,42 @@ flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
     n1["src/llm_wiki_cli/commands/__init__.py"]
     n2["src/llm_wiki_cli/commands/docs_cmd.py"]
-    n3["src/llm_wiki_cli/config.py"]
-    n4["src/llm_wiki_cli/services/calibration/controller.py"]
-    n5["src/llm_wiki_cli/services/contracts.py"]
-    n6["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n7["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n3["src/llm_wiki_cli/commands/publication_candidate_cmd.py"]
+    n4["src/llm_wiki_cli/commands/publication_cmd.py"]
+    n5["src/llm_wiki_cli/config.py"]
+    n6["src/llm_wiki_cli/services/calibration/controller.py"]
+    n7["src/llm_wiki_cli/services/contracts.py"]
+    n8["src/llm_wiki_cli/services/documentation_run/__init__.py"]
+    n9["src/llm_wiki_cli/services/filesystem_guard.py"]
     n0 --> n2
-    n0 --> n3
+    n0 --> n4
     n0 --> n5
+    n0 --> n7
     n1 --> n2
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
     n2 --> n7
-    n3 --> n7
-    n4 --> n5
-    n4 --> n6
-    n4 --> n7
+    n2 --> n8
+    n2 --> n9
+    n3 --> n4
+    n3 --> n9
+    n4 --> n9
+    n5 --> n9
+    n6 --> n7
+    n6 --> n8
+    n6 --> n9
     click n0 "../modules/cli.md"
     click n1 "../modules/commands___init__.md"
     click n2 "../modules/docs_cmd.md"
-    click n3 "../modules/config.md"
-    click n4 "../modules/controller.md"
-    click n5 "../modules/services_contracts.md"
-    click n6 "../modules/documentation_run___init__.md"
-    click n7 "../modules/filesystem_guard.md"
+    click n3 "../modules/publication_candidate_cmd.md"
+    click n4 "../modules/publication_cmd.md"
+    click n5 "../modules/config.md"
+    click n6 "../modules/controller.md"
+    click n7 "../modules/services_contracts.md"
+    click n8 "../modules/documentation_run___init__.md"
+    click n9 "../modules/filesystem_guard.md"
 ```
 
 ### Internal neighbors
@@ -64,6 +75,8 @@ flowchart LR
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
 | Inbound | [commands___init__](../modules/commands___init__.md) |
+| Outbound | [publication_candidate_cmd](../modules/publication_candidate_cmd.md) |
+| Outbound | [publication_cmd](../modules/publication_cmd.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [controller](../modules/controller.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
@@ -74,6 +87,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `add_publication_candidate_commands` | `(docs_sub)` | — | — |
 | `_read_bounded_text` | `(path: str, *, label: str) -> str` | — | — |
 | `_read_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |
 | `_read_calibration_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |

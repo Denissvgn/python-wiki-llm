@@ -38,55 +38,60 @@ performs no source reads; delivery uses the owned task/session lifecycle.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_budget.py"]
-    n2["src/llm_wiki_cli/services/context_session.py"]
-    n3["src/llm_wiki_cli/services/immutable.py"]
-    n4["src/llm_wiki_cli/services/request_json.py"]
-    n5["src/llm_wiki_cli/services/task_compact.py"]
-    n6["src/llm_wiki_cli/services/task_compact_delivery.py"]
-    n7["src/llm_wiki_cli/services/task_compact_readable.py"]
-    n8["src/llm_wiki_cli/services/task_context.py"]
-    n9["src/llm_wiki_cli/services/task_contract.py"]
-    n10["src/llm_wiki_cli/services/workflow_profile.py"]
+    n1["src/llm_wiki_cli/services/behavior_reference.py"]
+    n2["src/llm_wiki_cli/services/context_budget.py"]
+    n3["src/llm_wiki_cli/services/context_session.py"]
+    n4["src/llm_wiki_cli/services/immutable.py"]
+    n5["src/llm_wiki_cli/services/request_json.py"]
+    n6["src/llm_wiki_cli/services/task_compact.py"]
+    n7["src/llm_wiki_cli/services/task_compact_delivery.py"]
+    n8["src/llm_wiki_cli/services/task_compact_readable.py"]
+    n9["src/llm_wiki_cli/services/task_context.py"]
+    n10["src/llm_wiki_cli/services/task_contract.py"]
+    n11["src/llm_wiki_cli/services/workflow_profile.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n5
+    n0 --> n3
     n0 --> n6
-    n0 --> n8
+    n0 --> n7
     n0 --> n9
     n0 --> n10
-    n1 --> n4
-    n2 --> n3
+    n0 --> n11
+    n1 --> n6
+    n1 --> n10
     n2 --> n5
-    n2 --> n8
-    n2 --> n9
-    n2 --> n10
-    n5 --> n1
-    n5 --> n3
-    n5 --> n4
-    n5 --> n7
-    n5 --> n8
-    n5 --> n9
-    n5 --> n10
+    n3 --> n4
+    n3 --> n6
+    n3 --> n9
+    n3 --> n10
+    n3 --> n11
     n6 --> n2
+    n6 --> n4
     n6 --> n5
-    n8 --> n1
-    n8 --> n4
-    n8 --> n9
-    n8 --> n10
+    n6 --> n8
+    n6 --> n9
+    n6 --> n10
+    n6 --> n11
+    n7 --> n3
+    n7 --> n6
+    n9 --> n2
+    n9 --> n5
     n9 --> n10
-    n10 --> n4
+    n9 --> n11
+    n10 --> n11
+    n11 --> n5
     click n0 "../modules/api.md"
-    click n1 "../modules/context_budget.md"
-    click n2 "../modules/context_session.md"
-    click n3 "../modules/immutable.md"
-    click n4 "../modules/request_json.md"
-    click n5 "../modules/task_compact.md"
-    click n6 "../modules/task_compact_delivery.md"
-    click n7 "../modules/task_compact_readable.md"
-    click n8 "../modules/task_context.md"
-    click n9 "../modules/task_contract.md"
-    click n10 "../modules/workflow_profile.md"
+    click n1 "../modules/behavior_reference.md"
+    click n2 "../modules/context_budget.md"
+    click n3 "../modules/context_session.md"
+    click n4 "../modules/immutable.md"
+    click n5 "../modules/request_json.md"
+    click n6 "../modules/task_compact.md"
+    click n7 "../modules/task_compact_delivery.md"
+    click n8 "../modules/task_compact_readable.md"
+    click n9 "../modules/task_context.md"
+    click n10 "../modules/task_contract.md"
+    click n11 "../modules/workflow_profile.md"
 ```
 
 ### Internal neighbors
@@ -94,6 +99,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
+| Inbound | [behavior_reference](../modules/behavior_reference.md) |
 | Inbound | [context_session](../modules/context_session.md) |
 | Inbound | [task_compact_delivery](../modules/task_compact_delivery.md) |
 | Outbound | [context_budget](../modules/context_budget.md) |

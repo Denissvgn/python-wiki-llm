@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, get_agent_config_path, validate_path
 from ..services.ci_installer import (
+    DOCUMENTATION_WORKFLOW_PATH,
     MANAGED_WORKFLOW_PATH,
     is_unmodified_managed_workflow,
 )
@@ -742,10 +743,9 @@ def _remove_runtime_artifacts(
     return removed
 
 
-def _preflight_ci_workflow() -> _CiWorkflowInspection:
+def _preflight_ci_workflow(path: Path) -> _CiWorkflowInspection:
     """Capture dedicated CI workflow ownership for the uninstall preview."""
 
-    path = Path(MANAGED_WORKFLOW_PATH)
     unsafe = first_unsafe_path_component(path)
     if unsafe is not None:
         return _CiWorkflowInspection(
@@ -763,7 +763,7 @@ def _preflight_ci_workflow() -> _CiWorkflowInspection:
         return _CiWorkflowInspection(
             path, None, False, "cannot verify managed ownership"
         )
-    if not is_unmodified_managed_workflow(content):
+    if not is_unmodified_managed_workflow(content, workflow_path=path):
         return _CiWorkflowInspection(
             path, content, False, "locally modified or not managed by llm-wiki"
         )
@@ -773,17 +773,17 @@ def _preflight_ci_workflow() -> _CiWorkflowInspection:
 def _remove_ci_workflow(
     dry_run: bool = False,
     *,
-    plan: _CiWorkflowInspection | None = None,
+    plan: _CiWorkflowInspection,
 ) -> int:
     """Remove the dedicated CI workflow only from its previewed checksum."""
 
-    inspection = _preflight_ci_workflow() if plan is None else plan
+    inspection = plan
     path = inspection.path
     if not inspection.removable:
         if inspection.reason != "absent":
             print(f"  SKIP {display_project_path(path)} ({inspection.reason})")
         return 0
-    if not dry_run and _preflight_ci_workflow() != inspection:
+    if not dry_run and _preflight_ci_workflow(path) != inspection:
         raise UnsafeUninstallPathError(
             "managed CI workflow changed after uninstall preflight: "
             f"{display_project_path(path)}"
@@ -830,7 +830,10 @@ def run(args):
             wiki_removal=wiki_plan.removable,
             preserved_reference_roots=preserved_reference_roots,
         )
-        ci_plan = _preflight_ci_workflow()
+        ci_plans = [
+            _preflight_ci_workflow(path)
+            for path in (MANAGED_WORKFLOW_PATH, DOCUMENTATION_WORKFLOW_PATH)
+        ]
     except (
         ManagedSchemaBlockError,
         ManagedSchemaPathError,
@@ -915,7 +918,7 @@ def run(args):
 
     # Dedicated CI workflow installed by `llm-wiki install-ci`.
     print("\n6. Managed CI Workflow:")
-    ci_workflow_count = _remove_ci_workflow(dry_run=True, plan=ci_plan)
+    ci_workflow_count = sum(_remove_ci_workflow(dry_run=True, plan=plan) for plan in ci_plans)
     if ci_workflow_count == 0:
         print("  Nothing removable.")
 
@@ -966,7 +969,7 @@ def run(args):
                 f"{display_project_path(wiki_dir)}"
             )
         _validate_reference_plan(reference_plan)
-        if _preflight_ci_workflow() != ci_plan:
+        if any(_preflight_ci_workflow(plan.path) != plan for plan in ci_plans):
             raise UnsafeUninstallPathError(
                 "managed CI workflow changed after uninstall preflight"
             )
@@ -1005,8 +1008,7 @@ def run(args):
     r = _remove_reference_skill(plan=reference_plan)
     removed_total += r
 
-    r = _remove_ci_workflow(plan=ci_plan)
-    removed_total += r
+    removed_total += sum(_remove_ci_workflow(plan=plan) for plan in ci_plans)
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
     print("To uninstall the CLI itself: pip uninstall agent-wiki-cli")

@@ -55,6 +55,7 @@ _AGENT_RESULT_FIELDS = frozenset(
         "stage",
         "status",
         "changed_wiki_paths",
+        "changed_document_paths",
         "reused_work_ids",
         "completed_work_ids",
         "deferred_work_ids",
@@ -74,6 +75,7 @@ _AGENT_RESULT_FIELDS = frozenset(
 )
 
 _REQUIRED_AGENT_RESULT_FIELDS = _AGENT_RESULT_FIELDS - {
+    "changed_document_paths",
     "claim_evidence",
     "deferral_rationales",
     "imported_page_edits",
@@ -265,6 +267,7 @@ _PACKET_FORBIDDEN_KEY_SUFFIXES = frozenset(
 )
 
 _CONTROL_SNAPSHOT_EVIDENCE_KEYS = (
+    "publication_binding",
     "source_baseline",
     "source_plugins_baseline",
     "bootstrap",
@@ -841,6 +844,7 @@ class DocumentationAgentResult:
     deferral_rationales: dict[str, str] = field(default_factory=dict)
     findings: tuple[dict[str, Any], ...] = ()
     schema_version: str = DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION
+    changed_document_paths: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "DocumentationAgentResult":
@@ -894,6 +898,7 @@ class DocumentationAgentResult:
             stage=stage,
             status=status,
             changed_wiki_paths=changed_paths,
+            changed_document_paths=_portable_path_tuple(payload.get("changed_document_paths", [])),
             reused_work_ids=_text_tuple(payload.get("reused_work_ids", [])),
             completed_work_ids=_text_tuple(payload.get("completed_work_ids", [])),
             deferred_work_ids=_text_tuple(payload.get("deferred_work_ids", [])),
@@ -930,6 +935,7 @@ class DocumentationAgentResult:
             "stage": self.stage,
             "status": self.status,
             "changed_wiki_paths": list(self.changed_wiki_paths),
+            **({"changed_document_paths": list(self.changed_document_paths)} if self.changed_document_paths else {}),
             "reused_work_ids": list(self.reused_work_ids),
             "completed_work_ids": list(self.completed_work_ids),
             "deferred_work_ids": list(self.deferred_work_ids),
@@ -1053,6 +1059,15 @@ def _next_actions(run: DocumentationRun) -> tuple[str, ...]:
                 f"build another {run.current_stage} packet from recorded state",
                 "resolve or defer the recorded unknowns before advancement",
             )
+    if "mapped_publication" in run.extensions and run.state == "review":
+        if run.extensions["mapped_publication"].get("verified"):
+            return ("hand off the reviewed edits with docs wiki patch",)
+        attempt = run.stage_attempts.get("review", 0)
+        if not attempt:
+            return ("build the independent review packet",)
+        if run.evidence.get("review_result") != f"{RUN_CONTROL_DIR}/results/review-{attempt:02d}.json":
+            return ("record the independent review result with its host actor",)
+        return ("verify the mapped edits with docs verify",)
     actions = {
         "prepared": ("complete deterministic baseline",),
         "baseline_ready": ("build wiki-enrichment packet",),

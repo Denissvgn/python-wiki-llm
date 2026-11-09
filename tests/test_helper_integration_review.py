@@ -192,6 +192,9 @@ def test_strict_configured_empty_cache_never_falls_back_to_project_or_shared_hel
 ):
     from tests.test_helper_preparation import _prepare_fixture
 
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    monkeypatch.setattr(cache, "user_helper_cache_root", lambda: tmp_path / "empty-user-cache")
+
     source = tmp_path / "project"
     (source / ".git").mkdir(parents=True)
     (source / "main.ts").write_text("export const value = 1;\n")
@@ -221,6 +224,9 @@ def test_strict_configured_empty_cache_never_falls_back_to_project_or_shared_hel
 
 def test_unbound_capture_obeys_strict_configured_cache_without_project_fallback(tmp_path, monkeypatch):
     from tests.test_helper_preparation import _prepare_fixture
+
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    monkeypatch.setattr(cache, "user_helper_cache_root", lambda: tmp_path / "empty-user-cache")
 
     source = tmp_path / "project"
     (source / ".git").mkdir(parents=True)

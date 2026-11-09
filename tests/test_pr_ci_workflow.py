@@ -70,7 +70,7 @@ def test_integrity_and_activation_remain_the_exact_independent_gates():
     text = (ROOT / ".github/workflows/ci.yml").read_text()
     frozen = {
         "activation-proof": "2fb4212f674ee29ea1da09867003d522899be9c4e3c89b3b0b7073e389f7eb85",
-        "wiki-integrity": "283a14c2aa3081839e7492e4161ae3b00654b13cd2a73cc293eb7f57a90f5f27",
+        "wiki-integrity": "2623f000b09191d39fc2ab99ca7b2bdd4ea4f91cd514d3b7fa351e3198dce6de",
     }
     for name, expected in frozen.items():
         block = re.search(r"(?ms)^  " + name + r":\n.*?(?=^  [a-z0-9-]+:\n|\Z)", text)

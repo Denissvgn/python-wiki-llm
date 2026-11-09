@@ -1,0 +1,130 @@
+name: LLM Wiki candidate
+description: Prepare, independently check and retain a local GitHub wiki candidate for review.
+
+inputs:
+  working-directory:
+    description: Consumer project inside GITHUB_WORKSPACE.
+    default: "."
+  config:
+    description: Publication configuration relative to the consumer.
+    default: ".llm-wiki/publication.json"
+  src-dir:
+    description: Consumer-relative source for an existing wiki. Defaults to its configured architecture.source_root, or the consumer root.
+    default: ""
+  source-revision:
+    description: Expected full Git revision of the consumer checkout. Defaults to its HEAD.
+  target-dir:
+    description: Optional pinned public wiki copy inside the consumer.
+  target-revision:
+    description: Optional full Git revision identifying the local target copy.
+  accepted-state-revision:
+    description: Full local Git commit containing accepted review state. Pull requests use their base commit.
+  baseline:
+    description: Consumer-relative accepted publication basis.
+  reviews:
+    description: Consumer-relative accepted topic review ledger.
+  previous-receipt:
+    description: Consumer-relative previously accepted ownership receipt.
+  candidate-review:
+    description: Consumer-relative accepted exact candidate approval.
+  fail-on:
+    description: Use error for structural and configured policy failures, or review-required to also require exact candidate approval.
+    default: "error"
+  evidence-id:
+    description: Unique lowercase artifact suffix for this invocation.
+    default: "default"
+
+outputs:
+  artifact-id:
+    description: Immutable GitHub artifact ID for this run.
+    value: ${{ steps.upload.outputs.artifact-id }}
+  receipt-id:
+    description: Commitment to the exact independently checked receipt.
+    value: ${{ steps.candidate.outputs.receipt-id }}
+  candidate-dir:
+    description: Local candidate directory following an independent check.
+    value: ${{ steps.candidate.outputs.candidate-dir }}
+  receipt-path:
+    description: Checked candidate receipt.
+    value: ${{ steps.candidate.outputs.receipt-path }}
+  report-path:
+    description: Impact report for the checked candidate.
+    value: ${{ steps.candidate.outputs.report-path }}
+  diff-path:
+    description: Public changes relative to the supplied target copy.
+    value: ${{ steps.candidate.outputs.diff-path }}
+  provider-receipt:
+    description: Action revision, installed package origin and fingerprint.
+    value: ${{ steps.provider.outputs.provider-receipt }}
+  changed:
+    description: Whether the complete candidate tree differs from its target.
+    value: ${{ steps.candidate.outputs.changed || 'false' }}
+  ready:
+    description: Whether all local checks and exact reviews are satisfied.
+    value: ${{ steps.candidate.outputs.ready || 'false' }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up provider Python
+      id: python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      with:
+        python-version: "3.13.18"
+    - name: Install and verify the pinned action provider
+      id: provider
+      shell: bash
+      env:
+        PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
+        PROVIDER_ACTION_REF: ${{ github.action_ref }}
+        PROVIDER_REPOSITORY: ${{ github.action_repository }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
+      run: '"${PROVIDER_PYTHON}" -I "${GITHUB_ACTION_PATH}/provider.py"'
+    - name: Prepare the selected language toolchains
+      shell: bash
+      env:
+        WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+        WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        WIKI_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_SOURCE_REVISION: ${{ inputs.source-revision }}
+        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+        INPUT_TARGET_REVISION: ${{ inputs.target-revision }}
+        INPUT_ACCEPTED_STATE_REVISION: ${{ inputs.accepted-state-revision }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_REVIEWS: ${{ inputs.reviews }}
+        INPUT_PREVIOUS_RECEIPT: ${{ inputs.previous-receipt }}
+        INPUT_CANDIDATE_REVIEW: ${{ inputs.candidate-review }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+      run: '"${WIKI_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/run.py" toolchains'
+    - name: Export and independently check the public candidate
+      id: candidate
+      shell: bash
+      env:
+        WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+        WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        WIKI_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_SOURCE_REVISION: ${{ inputs.source-revision }}
+        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+        INPUT_TARGET_REVISION: ${{ inputs.target-revision }}
+        INPUT_ACCEPTED_STATE_REVISION: ${{ inputs.accepted-state-revision }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_REVIEWS: ${{ inputs.reviews }}
+        INPUT_PREVIOUS_RECEIPT: ${{ inputs.previous-receipt }}
+        INPUT_CANDIDATE_REVIEW: ${{ inputs.candidate-review }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+      run: '"${WIKI_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/run.py" candidate'
+    - name: Retain the candidate and review evidence
+      id: upload
+      if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: llm-wiki-candidate-${{ inputs.evidence-id }}-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ steps.provider.outputs.evidence-dir }}
+        if-no-files-found: error
+        retention-days: 14

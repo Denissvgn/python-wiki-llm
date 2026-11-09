@@ -4,14 +4,15 @@
 
 ## Description
 
-CLI adapter for installing the portable LLM Wiki integrity workflow.
+CLI adapter for installing portable LLM Wiki workflows.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR` |
-| `..services.ci_installer` | `InstallCiError`, `install_ci_workflow` |
+| `..services.ci_installer` | `InstallCiError`, `install_ci_workflow`, `install_documentation_ci_workflow` |
+| `..services.publication_config` | `PUBLICATION_CONFIG_PATH` |
 | `__future__` | `annotations` |
 | `sys` | `sys` |
 
@@ -25,16 +26,20 @@ flowchart LR
     n2["src/llm_wiki_cli/commands/install_ci_cmd.py"]
     n3["src/llm_wiki_cli/config.py"]
     n4["src/llm_wiki_cli/services/ci_installer.py"]
+    n5["src/llm_wiki_cli/services/publication_config.py"]
     n0 --> n2
     n0 --> n3
     n1 --> n2
     n2 --> n3
     n2 --> n4
+    n2 --> n5
+    n4 --> n5
     click n0 "../modules/cli.md"
     click n1 "../modules/commands___init__.md"
     click n2 "../modules/install_ci_cmd.md"
     click n3 "../modules/config.md"
     click n4 "../modules/ci_installer.md"
+    click n5 "../modules/publication_config.md"
 ```
 
 ### Internal neighbors
@@ -45,6 +50,7 @@ flowchart LR
 | Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [ci_installer](../modules/ci_installer.md) |
+| Outbound | [publication_config](../modules/publication_config.md) |
 
 ## Functions
 

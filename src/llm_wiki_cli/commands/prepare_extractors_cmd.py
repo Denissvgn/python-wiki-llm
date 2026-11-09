@@ -109,14 +109,6 @@ def run(args) -> None:
         _print_plan(languages, output_format)
         return
 
-    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
-    if cache_root is None:
-        print(
-            "Error: helper cache directory unavailable. Use --cache-dir PATH or run inside a git repository.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
     languages = selected_languages or _languages_from_snapshot(
         src_dir,
         source_selection=source_selection,
@@ -127,6 +119,14 @@ def run(args) -> None:
             "Nothing to prepare."
         )
         return
+
+    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
+    if cache_root is None:
+        print(
+            "Error: helper cache directory unavailable. Use --cache-dir PATH or run inside a git repository.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     print(f"Preparing extractor helpers in: {Path(cache_root)}")
     results = []

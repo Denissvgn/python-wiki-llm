@@ -79,3 +79,37 @@ def scoped_workflow(source: str, wiki: str) -> api.TaskContext:
         "storage_options": {"selection": "required-facets-v1", "receipt": "compact-v1"},
         "requirements": [{"id": "contract", "facet": "source-contract", "selector": "app.py:run"}]}
     return api.build_task_context(request, src_dir=source, wiki_dir=wiki)
+
+
+def sibling_candidate(root: str, receipt: dict[str, object]) -> dict[str, object]:
+    prepared: dict[str, object] = api.export_publication_candidate(
+        root, output_dir="reports/wiki-candidate", target_dir="sibling-wiki"
+    )
+    approval: dict[str, object] = api.review_publication_candidate(
+        receipt, reviewer="maintainer", reason="Candidate matches the reviewed source"
+    )
+    api.validate_publication_receipt(receipt)
+    checked: dict[str, object] = api.check_publication_candidate(
+        root,
+        candidate_dir="reports/wiki-candidate",
+        receipt=receipt,
+        candidate_review=approval,
+    )
+    print(prepared)
+    return checked
+
+
+def installed_behavior_reference() -> str:
+    facts: dict[str, object] = api.get_behavior_facts()
+    api.validate_behavior_facts(facts)
+    return api.render_behavior_reference(facts)
+
+
+def sibling_semantic_patch(root: str, workspace: str, receipt: dict[str, object]) -> dict[str, object]:
+    proposal: dict[str, object] = api.prepare_publication_maintenance(
+        root, workspace=workspace, candidate_dir="reports/candidate", receipt=receipt, topic_ids=["setup"]
+    )
+    print(proposal)
+    return api.build_publication_patch(
+        root, workspace=workspace, candidate_dir="reports/candidate", receipt=receipt, topic_ids=["setup"]
+    )

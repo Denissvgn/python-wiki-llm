@@ -26,6 +26,10 @@ inputs:
     description: Repository-relative path to the committed LLM Wiki directory.
     required: false
     default: docs/llm_wiki
+  require-referenced-storage:
+    description: Require a complete read-only audit with zero unreferenced or unrecognized native storage objects.
+    required: false
+    default: "false"
   src-dir:
     description: Repository-relative source root; its default source-selection profile is discovered automatically.
     required: false
@@ -524,6 +528,19 @@ runs:
         --jobs 1
         --knowledge-drift-report
 
+    - name: Require fully referenced native storage
+      if: inputs.require-referenced-storage != 'false'
+      shell: bash
+      env:
+        INPUT_REQUIRE_REFERENCED_STORAGE: ${{ inputs.require-referenced-storage }}
+        INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
+      run: |
+        set -euo pipefail
+        [[ "${INPUT_REQUIRE_REFERENCED_STORAGE}" == true ]]
+        "${{ steps.setup-python.outputs.python-path }}" -I -m llm_wiki_cli.cli knowledge storage-check \
+          --wiki-dir "${INPUT_WIKI_DIR}" --full --require-referenced \
+          > "${LLM_WIKI_EVIDENCE_DIR}/llm-wiki-storage-report.json"
+
     - name: Derive advisory repository health policy from CI
       if: ${{ always() && !cancelled() && inputs.maintenance-candidate-sha != '' && steps.maintenance-path.outcome == 'success' }}
       continue-on-error: true
@@ -621,6 +638,7 @@ runs:
         path: |
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json
+          ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-storage-report.json
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.json
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.md

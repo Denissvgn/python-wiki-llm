@@ -12,6 +12,8 @@ include src/llm_wiki_cli/schemas/llm-wiki-knowledge-pack-index-v2.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-object-v1.schema.json
 include src/llm_wiki_cli/extractors/ts_scripts/package-lock.json
 include docs/standalone-documentation.md
+include docs/sibling-wiki.md
+include docs/sibling-wiki-candidates.md
 include docs/wiki-guide.md
 include docs/cli-reference.md
 include docs/automation.md
@@ -22,3 +24,6 @@ prune reports
 recursive-include tests/fixtures/knowledge-evidence *.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-v6.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-catalog-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-cli-contract-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json
+include docs/cli-reference-data.md

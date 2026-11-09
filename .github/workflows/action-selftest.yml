@@ -122,6 +122,139 @@ jobs:
           test "${STEP_OUTCOME}" = "failure"
 
 
+  wiki-candidate:
+    name: Sibling wiki candidate from a source-only caller
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the provider
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          path: .provider
+          persist-credentials: false
+
+      - name: Create a separate consumer revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init --quiet --initial-branch=fixture consumer
+          git -C .provider archive HEAD:examples/sibling-wiki | tar -x -C consumer
+          git -C consumer add .
+          git -C consumer -c user.name=Fixture -c user.email=fixture@example.invalid \
+            commit --quiet -m 'Source-only consumer'
+          git -C consumer status -sb
+          test -z "$(git -C consumer for-each-ref --format='%(upstream:short)' refs/heads/fixture)"
+
+      - name: Prepare a reviewable candidate
+        id: candidate
+        uses: ./.provider/integrations/wiki-candidate
+        with:
+          working-directory: consumer
+          target-dir: sibling-wiki
+
+      - name: Verify revision binding, manual content and review outputs
+        shell: bash
+        env:
+          CANDIDATE_DIR: ${{ steps.candidate.outputs.candidate-dir }}
+          RECEIPT: ${{ steps.candidate.outputs.receipt-path }}
+          REPORT: ${{ steps.candidate.outputs.report-path }}
+          DIFF: ${{ steps.candidate.outputs.diff-path }}
+          PROVIDER_RECEIPT: ${{ steps.candidate.outputs.provider-receipt }}
+          CHANGED: ${{ steps.candidate.outputs.changed }}
+          READY: ${{ steps.candidate.outputs.ready }}
+        run: |
+          set -euo pipefail
+          test "${CHANGED}" = true
+          test "${READY}" = false
+          test -s "${REPORT}" && test -s "${DIFF}" && test -s "${PROVIDER_RECEIPT}"
+          "${pythonLocation}/bin/python" -I - "${PROVIDER_RECEIPT}" "${RECEIPT}" <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          provider, receipt = [json.loads(Path(path).read_bytes()) for path in sys.argv[1:]]
+          provider_sha, source_sha = [
+              subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"], text=True).strip()
+              for repo in (".provider", "consumer")
+          ]
+          assert provider["installed"] and provider["action_ref"] == provider["provider_revision"] == provider_sha
+          assert receipt["context"]["source_revision"] == source_sha != provider_sha
+          assert receipt["checks"]["ok"] and not receipt["ready"] and not receipt["delivery_ready"]
+          assert receipt["target"]["remote_verified"] is False
+          PY
+          test -s "${CANDIDATE_DIR}/Home.md"
+          cmp consumer/sibling-wiki/Wiki-Tooling.md "${CANDIDATE_DIR}/Wiki-Tooling.md"
+          test -z "$(git -C consumer status --porcelain=v1 --untracked-files=all)"
+
+  wiki-candidate-typescript:
+    name: Source-only TypeScript wiki candidate
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          path: .provider
+          persist-credentials: false
+      - id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13.18"
+      - name: Install and verify the provider outside the consumer
+        id: provider
+        shell: bash
+        env:
+          PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
+          INPUT_WORKING_DIRECTORY: .
+          INPUT_EVIDENCE_ID: typescript-consumer
+        run: '"${PROVIDER_PYTHON}" -B -I .provider/integrations/wiki-candidate/provider.py'
+      - name: Install the locked Node and npm for the selected TypeScript helper
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        run: >-
+          .provider/.github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode routine --install-root "${WIKI_RUNTIME}/toolchains"
+          --lock .provider/release/toolchain-lock.json --python "${WIKI_PYTHON}"
+      - name: Prepare the selected helper
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+        run: |
+          set -euo pipefail
+          mkdir "${WIKI_RUNTIME}/seed"
+          cd "${WIKI_RUNTIME}/seed"
+          "${WIKI_PYTHON}" -I -m llm_wiki_cli.cli prepare-extractors \
+            --src-dir . --language typescript --cache-dir "${WIKI_RUNTIME}/helpers" \
+            > "${WIKI_RUNTIME}/evidence/preparation.log" 2>&1
+      - name: Verify the installed source-only consumer with existing dependencies
+        shell: bash
+        env:
+          WIKI_PYTHON: ${{ steps.provider.outputs.python }}
+          WIKI_RUNTIME: ${{ steps.provider.outputs.runtime }}
+          PIP_NO_INDEX: "1"
+          npm_config_offline: "true"
+        run: >-
+          "${WIKI_PYTHON}" -B -I .provider/tests/fixtures/sibling-wiki/verify_typescript_consumer.py
+          --workspace "${WIKI_RUNTIME}/consumer"
+          --helper-cache "${WIKI_RUNTIME}/helpers"
+          --output "${WIKI_RUNTIME}/evidence/consumer.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
+        with:
+          name: wiki-candidate-typescript-${{ github.run_id }}-${{ github.run_attempt }}
+          archive: true
+          path: ${{ steps.provider.outputs.evidence-dir }}
+          if-no-files-found: error
+          retention-days: 14
+
   foreign-caller:
     if: ${{ github.event_name != 'workflow_dispatch' }}
     name: Foreign caller (${{ matrix.integration }}, ${{ matrix.state }})

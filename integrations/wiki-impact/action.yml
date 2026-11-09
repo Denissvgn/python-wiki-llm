@@ -1,0 +1,236 @@
+name: LLM Wiki publication impact
+description: Report which public wiki sections need review using local evidence and an isolated, source-verified provider.
+
+inputs:
+  config:
+    description: Publication configuration path relative to the consumer working directory.
+    required: false
+    default: .llm-wiki/publication.json
+  baseline:
+    description: Optional accepted local snapshot; omission requests the CLI's initial assessment.
+    required: false
+    default: ""
+  reviews:
+    description: Optional review ledger obtained from the consumer's trusted accepted source.
+    required: false
+    default: ""
+  target-dir:
+    description: Optional local public wiki checkout, confined to the consumer working directory.
+    required: false
+    default: ""
+  working-directory:
+    description: Consumer project directory within GITHUB_WORKSPACE.
+    required: false
+    default: .
+  accepted-state-revision:
+    description: Commit holding accepted baseline and review files. Pull requests always use their base commit.
+    default: ""
+  observe-drift:
+    description: Compare an independent full target checkout with its last delivered checkpoint.
+    default: "false"
+  fail-on:
+    description: error preserves the configured CLI policy; review-required additionally requires a ready impact review.
+    required: false
+    default: error
+  evidence-id:
+    description: Unique safe suffix when this action is invoked more than once in a job.
+    required: false
+    default: default
+
+outputs:
+  drift-path:
+    description: Optional local Git drift report.
+    value: ${{ steps.drift.outputs.path }}
+  drift-status:
+    description: Unmanaged, unchanged, unmanaged-edits, owned-conflict or indeterminate when observation runs.
+    value: ${{ steps.drift.outputs.status }}
+  report-path:
+    description: Absolute path to the JSON impact report when produced.
+    value: ${{ steps.provider.outputs.report-path }}
+  summary-path:
+    description: Absolute path to the Markdown impact summary when produced.
+    value: ${{ steps.provider.outputs.summary-path }}
+  provider-receipt:
+    description: Installed provider identity and verified package fingerprint.
+    value: ${{ steps.provider.outputs.provider-receipt }}
+  complete:
+    description: Whether the impact evaluation has complete evidence.
+    value: ${{ steps.result.outputs.complete || 'false' }}
+  review_required:
+    description: Whether public sections or coverage need review; unavailable results require attention.
+    value: ${{ steps.result.outputs.review_required || 'true' }}
+  changed:
+    description: Whether the report observes changed inputs; inspect complete before using this value.
+    value: ${{ steps.result.outputs.changed || 'false' }}
+  ready:
+    description: Whether the impact review gate is satisfied; this is not a publication receipt.
+    value: ${{ (inputs.observe-drift != 'true' || steps.drift.outcome == 'success') && steps.result.outputs.ready || 'false' }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up the provider Python
+      id: python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      with:
+        python-version: "3.13.18"
+
+    - name: Install and verify the action provider in an isolated environment
+      id: provider
+      shell: bash
+      env:
+        PROVIDER_PYTHON: ${{ steps.python.outputs.python-path }}
+        PROVIDER_ACTION_REF: ${{ github.action_ref }}
+        PROVIDER_REPOSITORY: ${{ github.action_repository }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
+      run: '"${PROVIDER_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/../wiki-candidate/provider.py" impact'
+
+    - name: Evaluate local publication impact
+      id: impact
+      shell: bash
+      env:
+        IMPACT_PYTHON: ${{ steps.provider.outputs.python }}
+        IMPACT_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        IMPACT_EVIDENCE: ${{ steps.provider.outputs.evidence-dir }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_REVIEWS: ${{ inputs.reviews }}
+        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_ACCEPTED_STATE_REVISION: ${{ inputs.accepted-state-revision }}
+        INPUT_OBSERVE_DRIFT: ${{ inputs.observe-drift }}
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: |
+        set -euo pipefail
+        "${IMPACT_PYTHON}" -B -I - <<'PY'
+        import os
+        from pathlib import Path
+        import subprocess
+        import sys
+
+        for key in ("INPUT_CONFIG", "INPUT_BASELINE", "INPUT_REVIEWS", "INPUT_TARGET_DIR"):
+            if any(c in os.environ[key] for c in ("\n", "\r")):
+                raise SystemExit(f"{key} must be a single line")
+        if not os.environ["INPUT_CONFIG"] or os.environ.get("INPUT_FAIL_ON", "error") not in {"error", "review-required"}:
+            raise SystemExit("Supply a config path and a supported fail-on policy")
+        evidence = Path(os.environ["IMPACT_EVIDENCE"])
+        if os.environ.get("INPUT_OBSERVE_DRIFT", "false") not in {"true", "false"}:
+            raise SystemExit("observe-drift must be true or false")
+        selected = {name: os.environ["INPUT_" + name.upper()] for name in ("baseline", "reviews")
+                    if os.environ.get("INPUT_" + name.upper())}
+        pin = os.environ.get("INPUT_ACCEPTED_STATE_REVISION", "")
+        if selected and (pin or os.environ.get("GITHUB_EVENT_NAME") in {"pull_request", "pull_request_target"}):
+            sys.path.insert(0, str(Path(os.environ["GITHUB_ACTION_PATH"]).resolve().parent / "wiki-candidate"))
+            from checkout import accepted_inputs
+            selected, _ = accepted_inputs(Path(os.environ["IMPACT_CONSUMER"]), selected, pin, evidence.parent,
+                                          workspace=Path(os.environ["GITHUB_WORKSPACE"]))
+        command = [sys.executable, "-I", "-m", "llm_wiki_cli.cli", "docs", "impact",
+                   "--config", os.environ["INPUT_CONFIG"], "--output", str(evidence / "impact.json"),
+                   "--format", "markdown"]
+        for name, path in selected.items():
+            command.extend(("--" + name, path))
+        if os.environ["INPUT_TARGET_DIR"]:
+            command.extend(("--target-dir", os.environ["INPUT_TARGET_DIR"]))
+        with (evidence / "impact.md").open("wb") as summary, (evidence / "impact.stderr").open("wb") as errors:
+            try:
+                result = subprocess.run(command, cwd=os.environ["IMPACT_CONSUMER"], stdout=summary,
+                                        stderr=errors, timeout=1800, check=False)
+                code = result.returncode
+            except subprocess.TimeoutExpired:
+                errors.write(b"Publication impact exceeded its 30-minute limit.\n")
+                code = 2
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            output.write(f"exit-code={code}\n")
+        PY
+
+    - name: Observe the delivered wiki checkpoint
+      id: drift
+      if: ${{ !cancelled() && steps.provider.outcome == 'success' && inputs.observe-drift == 'true' }}
+      shell: bash
+      env:
+        IMPACT_PYTHON: ${{ steps.provider.outputs.python }}
+        IMPACT_CONSUMER: ${{ steps.provider.outputs.consumer }}
+        IMPACT_EVIDENCE: ${{ steps.provider.outputs.evidence-dir }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_TARGET_DIR: ${{ inputs.target-dir }}
+      run: '"${IMPACT_PYTHON}" -B -I "${GITHUB_ACTION_PATH}/observe.py"'
+    - name: Retain publication impact evidence
+      if: ${{ always() && steps.provider.outputs.evidence-dir != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: llm-wiki-impact-${{ inputs.evidence-id }}-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ steps.provider.outputs.evidence-dir }}/impact.json
+          ${{ steps.provider.outputs.evidence-dir }}/impact.md
+          ${{ steps.provider.outputs.evidence-dir }}/impact.stderr
+          ${{ steps.provider.outputs.evidence-dir }}/provider.json
+          ${{ steps.provider.outputs.evidence-dir }}/provider-install.log
+          ${{ steps.provider.outputs.evidence-dir }}/accepted-state.json
+          ${{ steps.provider.outputs.evidence-dir }}/drift.json
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Validate the impact report and enforce its policy
+      id: result
+      if: ${{ always() && steps.provider.outcome == 'success' }}
+      shell: bash
+      env:
+        IMPACT_PYTHON: ${{ steps.provider.outputs.python }}
+        IMPACT_EVIDENCE: ${{ steps.provider.outputs.evidence-dir }}
+        IMPACT_EXIT: ${{ steps.impact.outputs.exit-code }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        set -euo pipefail
+        "${IMPACT_PYTHON}" -I - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        from llm_wiki_cli.services.publication_contracts import validate_publication_report
+
+        evidence = Path(os.environ["IMPACT_EVIDENCE"])
+        summary_path = evidence / "impact.md"
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+            summary.write("\n## Sibling wiki impact\n\n")
+            if summary_path.is_file() and not summary_path.is_symlink():
+                with summary_path.open("rb") as source:
+                    raw = source.read(65537)
+                summary.write(raw[:65536].decode("utf-8", errors="replace"))
+                if len(raw) > 65536:
+                    summary.write("\n\nSummary truncated; complete output is retained in the evidence artifact.\n")
+            else:
+                summary.write("Impact evaluation produced no Markdown summary; inspect the evidence artifact.\n")
+        report_path = evidence / "impact.json"
+        try:
+            if report_path.is_symlink() or not report_path.is_file() or not 0 < report_path.stat().st_size <= 67108864:
+                raise ValueError("impact report is missing, unsafe or exceeds 64 MiB")
+            def object_pairs(pairs):
+                result = {}
+                for key, value in pairs:
+                    if key in result:
+                        raise ValueError("duplicate report key")
+                    result[key] = value
+                return result
+            def constant(value):
+                raise ValueError("non-standard JSON constant")
+            report = json.loads(report_path.read_text(encoding="utf-8"), object_pairs_hook=object_pairs,
+                                parse_constant=constant)
+            validate_publication_report(report)
+            code = int(os.environ["IMPACT_EXIT"])
+            if code not in {0, 1, 2}:
+                raise ValueError("impact CLI did not finish with a supported exit code")
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                for name in ("complete", "review_required", "changed", "ready"):
+                    output.write(f"{name}={str(report[name]).lower()}\n")
+            if code:
+                raise SystemExit(code)
+            if not report["complete"]:
+                raise ValueError("impact evaluation is incomplete")
+            if os.environ["INPUT_FAIL_ON"] == "review-required" and not report["ready"]:
+                raise SystemExit(1)
+        except (OSError, UnicodeError, ValueError) as error:
+            print(f"Publication impact evidence is invalid: {error}")
+            raise SystemExit(2) from error
+        PY

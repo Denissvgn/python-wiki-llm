@@ -27,6 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+publication = ["markdown-it-py>=4.0,<5"]
 # Exact counting uses local tokenizer JSON. Its secure dependency line requires 3.11+.
 tokens = [
     "tokenizers>=0.22,<0.23; python_version >= '3.11'",
@@ -71,6 +72,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "llm_wiki_cli" = [
+    "schemas/llm-wiki-behavior-facts-v1.schema.json",
+    "schemas/llm-wiki-cli-contract-v1.schema.json",
     "py.typed",
     "services/analysis_contracts.json",
     "schemas/llm-wiki-normalization-diagnostic-v1.schema.json",

@@ -47,12 +47,13 @@ def run(args) -> None:
             result = inspect_wiki_git_delivery(root, staged=args.staged)
         else:
             if args.stream:
-                if args.full or args.git_base is not None or args.git_head is not None:
-                    raise ValueError("--stream is a separate audit scope; omit --full and Git range options")
+                if args.full or args.git_base is not None or args.git_head is not None or getattr(args, "require_referenced", False):
+                    raise ValueError("Use --stream separately from --full, --require-referenced and Git range options")
                 from ..services.knowledge_stream_audit import audit_knowledge_stream
                 result = audit_knowledge_stream(root)
             else:
-                result = storage_report(root, full=args.full, git_base=args.git_base, git_head=args.git_head)
+                result = storage_report(root, full=args.full, git_base=args.git_base, git_head=args.git_head,
+                                        require_referenced=getattr(args, "require_referenced", False))
     except (ValueError, OSError) as exc:
         result = {"ok": False, "error": {"code": getattr(exc, "code", "storage-invalid"), "message": str(exc)}}
     # Structured output keeps unusual paths and control characters escaped.

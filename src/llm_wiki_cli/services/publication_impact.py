@@ -1,0 +1,765 @@
+"""Portable, deterministic architecture-to-public-topic impact and review."""
+
+from __future__ import annotations
+
+from collections import Counter
+from copy import deepcopy
+from fnmatch import fnmatchcase
+from functools import partial
+import json
+from pathlib import Path
+from typing import Any, Mapping
+
+from .knowledge_evidence import hash_json, sha256_bytes
+from .knowledge_storage_io import StorageReadSession
+from .publication_links import public_atx_section
+from .publication_config import load_publication_config, publication_path
+from .publication_contracts import (
+    PublicationProtocolError,
+    validate_publication_basis,
+    validate_publication_report,
+    validate_publication_reviews,
+)
+from .publication_snapshot import (
+    build_publication_snapshot,
+    build_bootstrap_publication_snapshot,
+)
+from .publication_references import (
+    capture_reference_inputs,
+    recheck_reference_inputs,
+    reference_dependency_basis,
+)
+from .validation import portable_path_key, require_repository_relative_path
+
+
+BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
+IMPACT_SCHEMA = "llm-wiki-publication-impact/v1"
+REVIEWS_SCHEMA = "llm-wiki-publication-reviews/v1"
+MAX_JSON_BYTES = 64 * 1024 * 1024
+
+
+PublicationImpactError = PublicationProtocolError
+
+
+def read_publication_document(path: str | Path) -> dict[str, Any]:
+    """Read bounded JSON with unique keys and finite values."""
+    path = Path(path).absolute()
+    with StorageReadSession(path.parent).phase() as session:
+        raw = session.read(path.name, MAX_JSON_BYTES)
+    try:
+        result = json.loads(
+            raw, object_pairs_hook=_unique_object, parse_constant=_invalid_constant
+        )
+    except (ValueError, UnicodeError, RecursionError) as exc:
+        raise PublicationImpactError(f"Invalid publication JSON: {path.name}") from exc
+    if not isinstance(result, dict):
+        raise PublicationImpactError("Publication JSON must be an object")
+    return result
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise PublicationImpactError(f"Duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _invalid_constant(value):
+    raise PublicationImpactError(f"Nonfinite JSON value: {value}")
+
+
+def _seal(value: dict[str, Any], key: str) -> dict[str, Any]:
+    return {**value, key: hash_json(value)}
+
+
+def _file_hash(session: StorageReadSession, root: Path, relative: str) -> str | None:
+    path = publication_path(root, relative)
+    if not path.exists():
+        return None
+    return sha256_bytes(session.read(relative, MAX_JSON_BYTES))
+
+
+def _topic_versions(config, baseline):
+    previous = (
+        {} if baseline is None else {t["id"]: t for t in baseline["config"]["topics"]}
+    )
+    current = {t["id"]: t for t in config["topics"]}
+    for key in sorted(previous.keys() & current.keys()):
+        old, new = previous[key], current[key]
+        if (old["wiki_page"], old.get("anchor")) != (
+            new["wiki_page"],
+            new.get("anchor"),
+        ):
+            identity = "previous:" + hash_json(old).removeprefix("sha256:")[:32]
+            if identity in previous or identity in current:
+                raise PublicationImpactError(
+                    "Topic ID collides with a retained destination"
+                )
+            previous[identity] = {**old, "id": identity}
+    return previous, current
+
+
+def publication_target_observation(
+    topic: Mapping[str, Any], raw: bytes | None
+) -> dict[str, Any]:
+    """Commit supplied public bytes without filesystem or remote access."""
+    if raw is None:
+        return {"state": "missing", "hash": None}
+    if type(raw) is not bytes or len(raw) > MAX_JSON_BYTES:
+        raise PublicationImpactError("Target content must be bounded bytes or null")
+    if not topic.get("anchor"):
+        return {"state": "available", "hash": sha256_bytes(raw)}
+    try:
+        section = public_atx_section(raw.decode("utf-8"), topic["anchor"])
+    except UnicodeError as exc:
+        raise PublicationImpactError(
+            f"Target is not UTF-8 Markdown: {topic['wiki_page']}"
+        ) from exc
+    if section is None:
+        return {"state": "unresolved-anchor", "hash": sha256_bytes(raw)}
+    return {"state": "available", "hash": sha256_bytes(section)}
+
+
+def _target_hash(
+    session: StorageReadSession, topic: Mapping[str, Any]
+) -> dict[str, Any]:
+    path = topic["wiki_page"]
+    raw = (
+        session.read(path, MAX_JSON_BYTES)
+        if publication_path(session.root, path).exists()
+        else None
+    )
+    return publication_target_observation(topic, raw)
+
+
+def _projected_file_path(value: object) -> str:
+    error = PublicationImpactError(
+        "Projected files require canonical portable relative paths"
+    )
+    return require_repository_relative_path(
+        value,
+        text_error=error,
+        posix_error=error,
+        normalized_error=error,
+        absolute_error=error,
+        separator_error=error,
+        control_error=error,
+        portability_error=error,
+        reject_delete_character=True,
+        leading_backslash_is_absolute=True,
+    )
+
+
+def project_publication_targets(
+    basis: Mapping[str, Any],
+    files: Mapping[str, bytes],
+    baseline: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Rebind a captured input basis to checked candidate bytes, without I/O.
+
+    Callers retain original-target commitments separately. Supply the same
+    accepted baseline used during capture to observe former destinations too.
+    """
+    validate_publication_basis(basis)
+    if baseline is not None:
+        validate_publication_basis(baseline)
+        for key in ("target", "source_policy"):
+            if baseline["config"][key] != basis["config"][key]:
+                raise PublicationImpactError(
+                    "Target or source policy changed; establish a new baseline"
+                )
+    if (
+        not isinstance(files, Mapping)
+        or len(files) > 65_536
+        or any(type(path) is not str for path in files)
+    ):
+        raise PublicationImpactError("Projected files must be a bounded mapping")
+    paths = {}
+    spellings = {}
+    for raw_path in sorted(files):
+        path = _projected_file_path(raw_path)
+        if type(files[raw_path]) is not bytes:
+            raise PublicationImpactError("Projected file values must be bytes")
+        parts = path.split("/")
+        for end in range(1, len(parts) + 1):
+            exact = tuple(parts[:end])
+            folded = tuple(portable_path_key(part) for part in exact)
+            if spellings.setdefault(folded, exact) != exact:
+                raise PublicationImpactError(
+                    "Projected file paths collide across filesystems"
+                )
+            if end < len(parts) and folded in paths:
+                raise PublicationImpactError(
+                    "Projected files overlap a file and directory"
+                )
+        paths[tuple(portable_path_key(part) for part in parts)] = path
+    previous, current = _topic_versions(basis["config"], baseline)
+    result = deepcopy(dict(basis))
+    result["targets"] = {
+        key: publication_target_observation(topic, files.get(topic["wiki_page"]))
+        for key, topic in {**previous, **current}.items()
+    }
+    result.pop("basis_id")
+    result = _seal(result, "basis_id")
+    validate_publication_basis(result)
+    return result
+
+
+def capture_publication_basis(
+    consumer_root: str | Path = ".",
+    *,
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Capture a portable input basis without extraction or remote access.
+
+    The native wiki must be populated by its owning workflow first. A source-only
+    consumer may point architecture.root at an isolated bootstrap output.
+    """
+    root = Path(consumer_root).absolute()
+    config = load_publication_config(root, config_path=config_path)
+    if baseline is not None:
+        validate_publication_basis(baseline)
+    old_topics, new_topics = _topic_versions(config, baseline)
+    topics = {**old_topics, **new_topics}
+    architecture_root = publication_path(root, config["architecture"]["root"])
+    snapshot_builder = build_publication_snapshot
+    if config["architecture"]["baseline"] == "bootstrap-source":
+        snapshot_builder = build_bootstrap_publication_snapshot
+    elif "source_root" in config["architecture"]:
+        snapshot_builder = partial(
+            build_publication_snapshot,
+            source_root=publication_path(root, config["architecture"]["source_root"]),
+        )
+    native = snapshot_builder(architecture_root)
+    files = {}
+    targets = {}
+    source_paths = {
+        dep["source_file"]
+        for topic in topics.values()
+        for dep in topic["depends_on"]
+        if "source_file" in dep
+    }
+    source_paths.update(
+        topic["source_document"]
+        for topic in topics.values()
+        if topic.get("source_document")
+    )
+    for policy in ([] if baseline is None else [baseline["config"]]) + [config]:
+        source_paths.update(
+            asset["source_document"]
+            for asset in policy.get("content", {}).get("assets", [])
+        )
+    with StorageReadSession(root).phase() as session:
+        for path in sorted(source_paths):
+            files[path] = _file_hash(session, root, path)
+        references = capture_reference_inputs(config, baseline, root, session)
+        if target_dir is not None:
+            target = publication_path(root, target_dir)
+            if not target.is_dir():
+                raise PublicationImpactError(
+                    "target-dir must be an existing consumer-relative directory"
+                )
+            with StorageReadSession(target).phase() as target_session:
+                for topic in topics.values():
+                    targets[topic["id"]] = _target_hash(target_session, topic)
+    # A prose edit can occur without a manifest write. Revalidate the full
+    # native snapshot after capturing external inputs, including its pages.
+    if snapshot_builder(architecture_root)["snapshot_id"] != native["snapshot_id"]:
+        raise PublicationImpactError("Native snapshot changed during input capture")
+    recheck_reference_inputs(references, root)
+    session.recheck()
+    for path, digest in files.items():
+        if digest is None and publication_path(root, path).exists():
+            raise PublicationImpactError("Source evidence appeared during capture")
+    if target_dir is not None:
+        target_session.recheck()
+        for topic in topics.values():
+            if (
+                targets[topic["id"]]["state"] == "missing"
+                and publication_path(target, topic["wiki_page"]).exists()
+            ):
+                raise PublicationImpactError("Target evidence appeared during capture")
+    if config != load_publication_config(root, config_path=config_path):
+        raise PublicationImpactError("Publication configuration changed during capture")
+    result = {
+        "schema_version": BASIS_SCHEMA,
+        "config": config,
+        "architecture": native,
+        "files": files,
+        "targets": targets,
+    }
+    if references:
+        result["references"] = references
+    captured = _seal(result, "basis_id")
+    validate_publication_basis(captured)
+    return captured
+
+
+def _dependency_basis(
+    dep: Mapping[str, Any], basis: Mapping[str, Any], providers=None
+) -> Any:
+    if "reference" in dep:
+        return reference_dependency_basis(
+            dep,
+            basis,
+            providers
+            if providers is not None
+            else basis["config"].get("reference_providers", {}),
+        )
+    if "source_file" in dep:
+        return basis["files"].get(dep["source_file"])
+    page = next(
+        (
+            p
+            for p in basis["architecture"]["pages"]
+            if p["canonical_path"] == dep["architecture_page"]
+        ),
+        None,
+    )
+    if page is None:
+        return None
+    uid = page["uid"]
+    source_basis = page.get("source_basis")
+    if dep.get("section"):
+        sections = [
+            *page["sections"],
+            *([page["preamble"]] if page.get("preamble") else []),
+        ]
+        page = next((s for s in sections if s["locator"] == dep["section"]), None)
+        if page is None:
+            return None
+    facets = dep.get("facets", ["whole"])
+    if facets == ["whole"]:
+        hashes = page.get("normalized_hash", page.get("exact_hash"))
+    else:
+        hashes = {facet: page.get(facet + "_hash") for facet in facets}
+        if not all(hashes.values()):
+            return None
+    return {
+        **({"uid": uid} if uid is not None else {}),
+        **(
+            {"source_root": basis["config"]["architecture"]["source_root"]}
+            if "source_root" in basis["config"]["architecture"]
+            else {}
+        ),
+        "content": hashes,
+        "source_basis": source_basis,
+        "generation_options": basis["architecture"]["commitments"][
+            "generation_options_hash"
+        ],
+        "producer": basis["architecture"]["commitments"]["producer_hash"],
+    }
+
+
+def _topic_inputs(
+    topic: Mapping[str, Any], basis: Mapping[str, Any], providers=None
+) -> dict[str, Any]:
+    inputs = {
+        hash_json(dep): {
+            "dependency": dep,
+            "hash": _dependency_basis(dep, basis, providers),
+        }
+        for dep in topic["depends_on"]
+    }
+    if topic.get("source_document"):
+        path = topic["source_document"]
+        inputs["authored"] = {
+            "dependency": {"source_file": path},
+            "hash": basis["files"].get(path),
+        }
+    return inputs
+
+
+def _finding(kind: str, subject: str, details: Mapping[str, Any]) -> dict[str, Any]:
+    body = {"kind": kind, "subject": subject, **details}
+    return {**body, "id": hash_json(body)}
+
+
+def _topic_findings(before, after) -> list[dict[str, Any]]:
+    old_topics, new_topics = _topic_versions(after["config"], before)
+    previous_uids = (
+        {}
+        if before is None
+        else {
+            page["canonical_path"]: page["uid"]
+            for page in before["architecture"]["pages"]
+            if page["uid"]
+        }
+    )
+    current_paths = {
+        page["uid"]: page["canonical_path"]
+        for page in after["architecture"]["pages"]
+        if page["uid"]
+    }
+    findings = []
+    for key in sorted(old_topics.keys() | new_topics.keys()):
+        old, new = old_topics.get(key), new_topics.get(key)
+        topic = new or old
+        assert topic is not None
+        previous = {}
+        if old is not None:
+            assert before is not None
+            previous = _topic_inputs(old, before)
+        retired = new is None
+        provider_basis = before if retired else after
+        assert provider_basis is not None
+        providers = provider_basis["config"].get("reference_providers", {})
+        current = _topic_inputs(topic, after, providers)
+        reasons = []
+        outdated_binding = False
+        old_paths = {
+            dep["architecture_page"]
+            for dep in (old or {}).get("depends_on", [])
+            if "architecture_page" in dep
+        }
+        new_paths = {
+            dep["architecture_page"]
+            for dep in (new or {}).get("depends_on", [])
+            if "architecture_page" in dep
+        }
+        for path in sorted(old_paths):
+            uid = previous_uids.get(path)
+            moved_to = current_paths.get(uid)
+            if moved_to and moved_to != path:
+                reasons.append(
+                    {
+                        "kind": "architecture-page-moved",
+                        "uid": uid,
+                        "before": path,
+                        "after": moved_to,
+                    }
+                )
+                outdated_binding |= path in new_paths
+        if before and before["config"].get("release_tag") != after["config"].get(
+            "release_tag"
+        ):
+            reasons.append({"kind": "release-tag-changed"})
+        if old != new:
+            reasons.append(
+                {
+                    "kind": "mapping-retired"
+                    if retired
+                    else "mapping-changed"
+                    if old
+                    else "initial-review"
+                }
+            )
+        for dep_key in sorted(previous.keys() | current.keys()):
+            left, right = previous.get(dep_key), current.get(dep_key)
+            if left != right:
+                reasons.append(
+                    {"kind": "dependency-changed", "before": left, "after": right}
+                )
+        target = after["targets"].get(key, {"state": "not-evaluated", "hash": None})
+        if target["state"] in {"missing", "unresolved-anchor"}:
+            reasons.append({"kind": "target-" + target["state"]})
+        if before and before["targets"].get(key) != target:
+            reasons.append({"kind": "target-changed"})
+        missing = [
+            value["dependency"] for value in current.values() if value["hash"] is None
+        ]
+        if missing:
+            reasons.append({"kind": "evidence-unavailable", "dependencies": missing})
+        if reasons:
+            findings.append(
+                _finding(
+                    "topic",
+                    key,
+                    {
+                        "status": "incomplete"
+                        if not retired
+                        and (
+                            outdated_binding
+                            or missing
+                            or target["state"] == "unresolved-anchor"
+                        )
+                        else "needs-review",
+                        "owner": topic["owner"],
+                        "wiki_page": topic["wiki_page"],
+                        "anchor": topic.get("anchor"),
+                        "edit_at": topic["edit_at"],
+                        "target": target,
+                        "reasons": reasons,
+                        # Current commitments make a decision reopen after any covered
+                        # input changes, independently of transient report/run identity.
+                        "review_basis": hash_json(
+                            {
+                                "topic": topic,
+                                "inputs": current,
+                                "target": target,
+                                "source_policy": after["config"]["source_policy"],
+                                **(
+                                    {"release_tag": after["config"]["release_tag"]}
+                                    if "release_tag" in after["config"]
+                                    else {}
+                                ),
+                                "destination": after["config"]["target"],
+                            }
+                        ),
+                    },
+                )
+            )
+    return findings
+
+
+def compare_publication_impact(
+    candidate: Mapping[str, Any],
+    baseline: Mapping[str, Any] | None = None,
+    *,
+    reviews: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compare complete bases through the union of previous/current bindings.
+
+    The caller supplies an accepted baseline and review ledger under its own
+    repository review policy. This function authenticates neither Git identities
+    nor hosting permissions. All output is deterministic and has no side effects.
+    """
+    after = deepcopy(dict(candidate))
+    before = None if baseline is None else deepcopy(dict(baseline))
+    validate_publication_basis(after)
+    if before is not None:
+        validate_publication_basis(before)
+        if before["config"]["target"] != after["config"]["target"]:
+            raise PublicationImpactError(
+                "Target changed; explicitly establish a new baseline"
+            )
+        if before["config"]["source_policy"] != after["config"]["source_policy"]:
+            raise PublicationImpactError(
+                "Source policy changed; explicitly establish a new baseline"
+            )
+    findings = _topic_findings(before, after)
+    pages = {p["canonical_path"] for p in after["architecture"]["pages"]}
+    mapped = {
+        d["architecture_page"]
+        for t in after["config"]["topics"]
+        for d in t["depends_on"]
+        if "architecture_page" in d
+    }
+    exclusions = after["config"]["exclusions"]
+    excluded = {
+        p for p in pages if any(fnmatchcase(p, e["pattern"]) for e in exclusions)
+    }
+    for path in sorted(pages - mapped - excluded):
+        findings.append(
+            _finding(
+                "coverage",
+                path,
+                {
+                    "status": "unmapped",
+                    "reasons": [
+                        {
+                            "kind": "architecture-page-unmapped",
+                            "action": "Map a public topic or record a scoped exclusion",
+                        }
+                    ],
+                },
+            )
+        )
+    decisions = validate_publication_reviews(reviews)
+    for finding in findings:
+        if finding["kind"] != "topic" or finding["status"] == "incomplete":
+            continue
+        retired = any(r["kind"] == "mapping-retired" for r in finding["reasons"])
+        target = finding["target"]
+        if not _reviewable_target(target, retired=retired):
+            continue
+        if any(
+            record["topic"] == finding["subject"]
+            and record["review_basis"] == finding["review_basis"]
+            and record["owner"] == finding["owner"]
+            and record["decision"] == ("retired" if retired else "still-current")
+            for record in decisions
+        ):
+            finding["status"] = "reviewed-retired" if retired else "reviewed-current"
+    complete = not any(f["status"] == "incomplete" for f in findings)
+    pending = any(
+        f["status"] in {"needs-review", "unmapped", "incomplete"} for f in findings
+    )
+    report = {
+        "schema_version": IMPACT_SCHEMA,
+        "complete": complete,
+        "review_required": pending,
+        "changed": before is None or before["basis_id"] != after["basis_id"],
+        "ready": complete
+        and not pending
+        and all(
+            after["targets"].get(t["id"], {}).get("state") == "available"
+            for t in after["config"]["topics"]
+        ),
+        "config_hash": hash_json(after["config"]),
+        "enforcement": after["config"]["enforcement"],
+        "basis": {
+            "baseline": None if before is None else before["basis_id"],
+            "candidate": after["basis_id"],
+        },
+        "coverage": {
+            "total": len(pages),
+            "mapped": len(pages & mapped),
+            "excluded": len(excluded - mapped),
+            "unmapped": len(pages - mapped - excluded),
+        },
+        "findings": findings,
+        "limitations": [
+            (
+                "Native source freshness was verified against the declared source root."
+                if after["architecture"]["freshness"]["state"] == "verified-current"
+                else "Native source freshness is snapshot-only; run the owning native integrity workflow."
+            ),
+            "Target anchors use unique ATX headings; map legacy pages as whole pages.",
+            "Review ledger acceptance is controlled by the calling repository.",
+        ],
+    }
+    return _seal(report, "report_id")
+
+
+def resolve_publication_finding(
+    report: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    finding_id: str,
+    reviewer: str,
+    reason: str,
+    reviews: Mapping[str, Any] | None = None,
+    decision: str = "still-current",
+) -> dict[str, Any]:
+    """Prepare an exact-basis no-edit decision for normal repository review."""
+    validate_publication_report(report)
+    validate_publication_basis(candidate)
+    if report["basis"]["candidate"] != candidate["basis_id"]:
+        raise PublicationImpactError(
+            "Impact report is stale; rerun against current inputs"
+        )
+    finding = next((f for f in report["findings"] if f["id"] == finding_id), None)
+    if (
+        finding is None
+        or finding["kind"] != "topic"
+        or finding["status"] == "incomplete"
+    ):
+        raise PublicationImpactError("Only a complete topic finding can be reviewed")
+    retired = any(r["kind"] == "mapping-retired" for r in finding["reasons"])
+    if decision != ("retired" if retired else "still-current"):
+        raise PublicationImpactError(
+            "Decision must match the active or retired topic obligation"
+        )
+    if not _reviewable_target(finding["target"], retired=retired):
+        raise PublicationImpactError(
+            "Review requires the exact available target page/section"
+        )
+    if not retired and any(
+        r["kind"] in {"target-missing", "evidence-unavailable"}
+        for r in finding["reasons"]
+    ):
+        raise PublicationImpactError(
+            "Missing evidence or target cannot be accepted as still current"
+        )
+    if not reviewer.strip() or not reason.strip():
+        raise PublicationImpactError("Reviewer and rationale are required")
+    records = deepcopy(validate_publication_reviews(reviews))
+    record = {
+        "topic": finding["subject"],
+        "owner": finding["owner"],
+        "reviewer": reviewer,
+        "reason": reason,
+        "decision": decision,
+        "review_basis": finding["review_basis"],
+    }
+    records = [
+        r
+        for r in records
+        if not (
+            r["topic"] == record["topic"]
+            and r["review_basis"] == record["review_basis"]
+        )
+    ]
+    records.append(record)
+    result = {
+        "schema_version": REVIEWS_SCHEMA,
+        "records": sorted(records, key=lambda r: (r["topic"], r["review_basis"])),
+    }
+    validate_publication_reviews(result)
+    return result
+
+
+def _reviewable_target(target, *, retired):
+    if target["state"] == "available":
+        return True
+    return retired and (
+        target["state"] == "missing"
+        or (target["state"] == "unresolved-anchor" and target["hash"] is not None)
+    )
+
+
+def _reason_label(reason):
+    kind = reason["kind"]
+    if kind == "architecture-page-moved":
+        return f"{reason['before']} → {reason['after']} ({reason['uid']})"
+    if kind != "dependency-changed":
+        return kind
+    record = reason["after"] or reason["before"]
+    dep = record["dependency"]
+    if "reference" in dep:
+        scope = dep.get("fact") or " ".join(dep.get("command", []))
+        return " ".join(part for part in (dep["reference"], scope) if part)
+    if "source_file" in dep:
+        return dep["source_file"]
+    locator = dep["architecture_page"]
+    if dep.get("section"):
+        locator += " " + dep["section"]
+    source = record["hash"]
+    if source and (
+        source_path := (source.get("source_basis") or {}).get("source_path")
+    ):
+        locator += f" ({source_path})"
+    return locator
+
+
+def render_publication_impact(report: Mapping[str, Any]) -> str:
+    """Render inert Markdown for CI summaries, including unresolved coverage."""
+
+    def safe(value):
+        # Labels can contain literal Markdown, HTML or mention syntax. Keep
+        # them visible as text in the hosted summary and the portable artifact.
+        return str(value).translate(escapes)
+
+    escapes = {ord(c): f"&#{ord(c)};" for c in "\\|`*_~[]!<>&@:#"}
+    escapes.update({ord("\n"): " ", ord("\r"): " "})
+    counts = Counter(f["status"] for f in report["findings"])
+    lines = [
+        "# Sibling wiki impact",
+        "",
+        f"Complete: {str(report['complete']).lower()}",
+        f"Review required: {str(report['review_required']).lower()}",
+        "",
+        "| Status | Topic or architecture page | Public target | Evidence or reason | Review |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for finding in report["findings"]:
+        target = finding.get("wiki_page", "") + (
+            "#" + finding["anchor"] if finding.get("anchor") else ""
+        )
+        reasons = ", ".join(_reason_label(r) for r in finding["reasons"])
+        if finding["kind"] == "coverage":
+            action = "Map a public topic or record a scoped exclusion"
+        else:
+            action = f"{finding['owner']} · {finding['edit_at']}"
+        lines.append(
+            "| "
+            + " | ".join(
+                safe(v)
+                for v in (
+                    finding["status"],
+                    finding["subject"],
+                    target,
+                    reasons,
+                    action,
+                )
+            )
+            + " |"
+        )
+    lines.extend(["", "Findings: " + safe(dict(sorted(counts.items()))), ""])
+    lines.extend("- " + safe(value) for value in report["limitations"])
+    return "\n".join(lines) + "\n"

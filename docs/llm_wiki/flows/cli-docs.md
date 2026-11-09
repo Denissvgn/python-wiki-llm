@@ -43,13 +43,13 @@ sequenceDiagram
 
 Source steps: 1; effect analysis evaluated: 0, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1 source steps with known totals: observed: 12, emitted: 10, omitted: 2. Unavailable totals are excluded.
+Collector observations for 1 source steps with known totals: observed: 14, emitted: 10, omitted: 4. Unavailable totals are excluded.
 
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `partial` | `available` | `12` | `10` | `2` |
+| `run` | `available` | `partial` | `available` | `14` | `10` | `4` |
 | `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `handlers.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -86,7 +86,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `_prepare`, `_status`, `_packet`, `_record_result`, `_verify`, `_export`, `_calibration`, `PathValidationError` | - | - |
+| `run` | `args` | `publication_cmd`, `publication_candidate_cmd`, `_prepare`, `_status`, `_packet`, `_record_result`, `_verify`, `_export` | - | - |
 | `getattr` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `handlers.get` | - | - | - | - |
@@ -99,30 +99,30 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 654 | `getattr(args, 'docs_action', None)` |
-| run | isinstance | 664 | `isinstance(action, str)` |
-| run | handlers.get | 664 | `handlers.get(action)` |
-| run | DocumentationRunError | 666 | `DocumentationRunError('Missing documentation action.')` |
-| run | handler | 668 | `handler(args)` |
-| run | print | 672 | `print(..., file=sys.stderr)` |
-| run | SystemExit | 673 | `SystemExit(1)` |
+| run | getattr | 664 | `getattr(args, 'docs_action', None)` |
+| run | isinstance | 676 | `isinstance(action, str)` |
+| run | handlers.get | 676 | `handlers.get(action)` |
+| run | DocumentationRunError | 678 | `DocumentationRunError('Missing documentation action.')` |
+| run | handler | 680 | `handler(args)` |
+| run | print | 684 | `print(..., file=sys.stderr)` |
+| run | SystemExit | 685 | `SystemExit(1)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 672 |
+| output | `print` | `run` | 684 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 654 |
-| external_call | `run` | `isinstance` | 664 |
-| unresolved_call | `run` | `handlers.get` | 664 |
-| unresolved_call | `run` | `DocumentationRunError` | 666 |
-| unresolved_call | `run` | `handler` | 668 |
-| external_call | `run` | `SystemExit` | 673 |
+| external_call | `run` | `getattr` | 664 |
+| external_call | `run` | `isinstance` | 676 |
+| unresolved_call | `run` | `handlers.get` | 676 |
+| unresolved_call | `run` | `DocumentationRunError` | 678 |
+| unresolved_call | `run` | `handler` | 680 |
+| external_call | `run` | `SystemExit` | 685 |
 
 ## Behavior
 

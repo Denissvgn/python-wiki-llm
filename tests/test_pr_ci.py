@@ -517,6 +517,134 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
     assert "tests/test_pr_ci_workflow.py" not in policy["groups"]["ci-policy"]["tests"]
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".github/workflows/sibling-wiki-impact.yml",
+        "integrations/wiki-impact/observe.py",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/provider.py",
+        "integrations/wiki-candidate/delivery/git_transport.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+    ],
+)
+def test_sibling_wiki_impact_changes_select_accepted_state_and_observation_guards(path):
+    policy = ci.policy_load(ROOT / "release")
+    # Exercise explicit ownership with the actual inventory even when imports
+    # cannot expose dependencies between actions and their shared scripts.
+    tests = {
+        path.relative_to(ROOT).as_posix(): b""
+        for path in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        policy,
+        tests,
+        tests,
+        [changed(path)],
+        None,
+        {"entries": []},
+        imports_index={},
+    )
+    guard = (
+        "tests/test_github_action_shell.py::"
+        "test_sibling_wiki_accepted_state_paths_are_confined"
+    )
+    if path.endswith(("checkout.py", "git_transport.py", "publication_config.py")):
+        assert set(result["lanes"]) == {"ubuntu", "macos", "windows"}
+    else:
+        assert set(result["lanes"]) == {"ubuntu"}
+    assert "tests/test_wiki_impact_observation.py" in result["lanes"]["ubuntu"]["selectors"]
+    assert any(
+        ci.matches(selected, guard)
+        for selected in result["lanes"]["ubuntu"]["selectors"]
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "src/llm_wiki_cli/services/documentation_run/publication.py",
+        "src/llm_wiki_cli/services/publication_maintenance.py",
+    ],
+)
+def test_semantic_maintenance_selects_workspace_and_patch_regressions(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        ci.policy_load(ROOT / "release"),
+        tests,
+        tests,
+        [changed(path)],
+        None,
+        {"entries": []},
+        imports_index={},
+    )
+    expected = {
+        "tests/test_documentation_publication.py",
+        "tests/test_publication_maintenance.py",
+        "tests/test_publication_maintenance_cli.py",
+    }
+    assert set(result["lanes"]) == {"ubuntu", "macos", "windows"}
+    for lane in result["lanes"].values():
+        assert expected <= set(lane["selectors"])
+
+
+@pytest.mark.parametrize(
+    "path,expected,lanes",
+    [
+        (
+            "integrations/wiki-candidate/action.yml",
+            "tests/test_wiki_candidate_action.py",
+            {"ubuntu"},
+        ),
+        (
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "tests/test_install_ci.py",
+            {"ubuntu", "macos", "windows"},
+        ),
+    ],
+)
+def test_wiki_candidate_ci_selects_its_action_and_installer_owners(path, expected, lanes):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    result = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    assert "action" in result["jobs"]
+    assert set(result["lanes"]) == lanes
+    for lane in result["lanes"].values():
+        assert expected in lane["selectors"]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "integrations/wiki-candidate/delivery/action.yml",
+        "src/llm_wiki_cli/services/publication_delivery.py",
+    ],
+)
+def test_wiki_delivery_selects_git_transport_and_host_provenance_checks(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    assert "action" in selection["jobs"]
+    assert set(selection["lanes"]) == {"ubuntu", "macos", "windows"}
+    for lane in selection["lanes"].values():
+        assert "tests/test_wiki_delivery_transport.py" in lane["selectors"]
+        assert "tests/test_publication_delivery.py" in lane["selectors"]
+    assert "tests/test_wiki_delivery_action.py" in selection["lanes"]["ubuntu"]["selectors"]
+
+
 def test_security_document_selects_public_documentation_checks():
     policy = ci.policy_load(ROOT / "release")
     before = {
@@ -539,6 +667,62 @@ def test_security_document_selects_public_documentation_checks():
         ci.select(
             policy, before, unowned_after, [changed("UNOWNED.md")], None, {"entries": []}
         )
+
+
+@pytest.mark.parametrize("path", [
+    "src/llm_wiki_cli/commands/prepare_extractors_cmd.py",
+    "src/llm_wiki_cli/commands/publication_cmd.py",
+    "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+    "src/llm_wiki_cli/services/publication_snapshot.py",
+    "integrations/wiki-candidate/checkout.py",
+    "tests/fixtures/sibling-wiki/verify_typescript_consumer.py",
+])
+def test_sibling_wiki_portability_keeps_consumer_case_and_helper_owners(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    expected = {
+        "tests/test_publication_portability_source.py",
+        "tests/test_publication_portability_adoption.py",
+        "tests/test_wiki_candidate_checkout.py",
+    }
+    assert "action" in selection["jobs"]
+    for lane in ("ubuntu", "windows", "macos"):
+        assert expected <= set(selection["lanes"][lane]["selectors"])
+        assert selection["lanes"][lane]["helpers"] == []
+
+
+@pytest.mark.parametrize("path", [
+    "src/llm_wiki_cli/__init__.py",
+    "src/llm_wiki_cli/services/behavior_reference.py",
+    "src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
+    "src/llm_wiki_cli/skills/new-skill/SKILL.md",
+    "pyproject.toml",
+])
+def test_public_behavior_contract_owners_include_installed_and_review_consumers(path):
+    tests = {
+        entry.relative_to(ROOT).as_posix(): b""
+        for entry in (ROOT / "tests").rglob("test_*.py")
+    }
+    selection = ci.select(
+        ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None,
+        {"entries": []}, imports_index={},
+    )
+    for platform in ("ubuntu", "macos", "windows"):
+        assert {
+            "tests/test_cli_reference.py",
+            "tests/test_behavior_reference.py",
+            "tests/test_behavior_reference_cli.py",
+            "tests/test_publication_references.py",
+        } <= set(selection["lanes"][platform]["selectors"])
+    if path == "src/llm_wiki_cli/__init__.py":
+        assert {"package", "mcp-sdk"} <= set(selection["jobs"])
+        assert "tests/test_package_metadata.py" in selection["lanes"]["minimum-python"]["selectors"]
 
 
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(

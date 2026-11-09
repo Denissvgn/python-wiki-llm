@@ -119,8 +119,8 @@ sequenceDiagram
     participant p18 as record_event
     participant p19 as resolve_inventory_cache_path
     participant p20 as _new_lint_report
-    participant p21 as _storage_report
-    participant p22 as _preflight_lint_inputs
+    participant p21 as _preflight_lint_inputs
+    participant p22 as _referenced_storage_report
     participant p23 as _finalize_lint_report
     participant p24 as _collect_lint_inputs
     participant p25 as prepare_destination
@@ -149,21 +149,21 @@ sequenceDiagram
     p9->>p18: record_event
     p4->>p19: resolve_inventory_cache_path
     p6->>p20: _new_lint_report
-    p7->>p21: _storage_report
-    p6->>p22: _preflight_lint_inputs
+    p6->>p21: _preflight_lint_inputs
+    p7->>p22: _referenced_storage_report
     p6->>p23: _finalize_lint_report
     p6->>p24: _collect_lint_inputs
     p3->>p25: prepare_destination
     p6->>p26: _run_report_checks
     p1->>p27: windows_current_user_sid
-    p22->>p28: resolve_team_policy
+    p21->>p28: resolve_team_policy
     p0-->>p29: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4599 interactions; 4569 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4456 interactions; 4426 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1403 (1402 omitted); unresolved 1 of 1408 (1407 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1358 (1357 omitted); unresolved 1 of 1390 (1389 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -177,7 +177,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 1153 groups; 1145 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1131 groups; 1123 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -190,9 +190,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1789; effect analysis evaluated: 1339, partial: 64, unavailable: 386. Counts include steps omitted from the displayed trace.
+Source steps: 1709; effect analysis evaluated: 1283, partial: 61, unavailable: 365. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1403 source steps with known totals: observed: 7999, emitted: 7676, omitted: 323. Unavailable totals are excluded.
+Collector observations for 1344 source steps with known totals: observed: 7778, emitted: 7428, omitted: 350. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

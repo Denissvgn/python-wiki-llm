@@ -93,6 +93,15 @@ jobs:
           --root . --evidence-dir "${RUNNER_TEMP}/reviewed-wiki-capture"
           --candidate-sha "${{ github.sha }}" --run-id "${{ github.run_id }}"
           --attempt "${{ github.run_attempt }}"
+      - name: Retain verified storage cleanup recovery
+        if: ${{ always() && inputs.operation == 'apply' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: reviewed-wiki-storage-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reviewed-wiki-capture/storage-recovery/
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

@@ -126,6 +126,7 @@ still stop the operation.
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `..services.knowledge_storage` | `MAX_EXPANDED_BYTES` |
 | `..services.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
+| `..services.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
 | `..services.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `..services.module_maps` | `build_module_dependency_maps` |
@@ -182,9 +183,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (45) |
+| Outbound | `src` (46) |
 
-> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

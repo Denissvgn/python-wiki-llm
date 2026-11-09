@@ -13,6 +13,7 @@ Structural summary only; templates, expressions and referenced files are not eva
 - `maintenance-source-archive`
 - `report-schema`
 - `wiki-dir`
+- `require-referenced-storage`
 - `src-dir`
 - `impact-base`
 - `impact-head`
@@ -39,6 +40,7 @@ Structural summary only; templates, expressions and referenced files are not eva
 - `Reserve optional maintenance evidence`
 - `Check installed candidate and recorded producer`
 - `Validate committed wiki (native drift diagnostics are advisory)`
+- `Require fully referenced native storage`
 - `Derive advisory repository health policy from CI`
 - `Upload optional maintenance evidence`
 - `Report advisory change impact`

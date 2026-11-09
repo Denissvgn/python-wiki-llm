@@ -27,17 +27,17 @@ flowchart LR
     n0["KnowledgeStorageError (src/llm_wiki_cli/services/knowledge_storage.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/commands/task_cmd.py"]
-    n4["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n5["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n6["audit_logical_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n7["audit_spilled_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n8["expected_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n9["_fail (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n10["_pack_structure (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n11["decode_member (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n12["inspect_pack (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n13["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
+    n3["src/llm_wiki_cli/commands/publication_candidate_cmd.py"]
+    n4["src/llm_wiki_cli/commands/publication_cmd.py"]
+    n5["src/llm_wiki_cli/commands/task_cmd.py"]
+    n6["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n7["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n8["audit_logical_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
+    n9["audit_spilled_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
+    n10["expected_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
+    n11["_fail (src/llm_wiki_cli/services/knowledge_packs.py)"]
+    n12["_pack_structure (src/llm_wiki_cli/services/knowledge_packs.py)"]
+    n13["decode_member (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -53,17 +53,17 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/knowledge_storage.md"
     click n2 "../modules/api.md"
-    click n3 "../modules/task_cmd.md"
-    click n4 "../modules/knowledge_artifacts.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_audit.md"
-    click n7 "../modules/knowledge_audit.md"
+    click n3 "../modules/publication_candidate_cmd.md"
+    click n4 "../modules/publication_cmd.md"
+    click n5 "../modules/task_cmd.md"
+    click n6 "../modules/knowledge_artifacts.md"
+    click n7 "../modules/knowledge_artifacts.md"
     click n8 "../modules/knowledge_audit.md"
-    click n9 "../modules/knowledge_packs.md"
-    click n10 "../modules/knowledge_packs.md"
+    click n9 "../modules/knowledge_audit.md"
+    click n10 "../modules/knowledge_audit.md"
     click n11 "../modules/knowledge_packs.md"
     click n12 "../modules/knowledge_packs.md"
-    click n13 "../modules/knowledge_reuse.md"
+    click n13 "../modules/knowledge_packs.md"
 ```
 
 ### Summary
@@ -83,6 +83,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `publication_candidate_cmd` | import | [publication_candidate_cmd](../modules/publication_candidate_cmd.md) | — |
+| `publication_cmd` | import | [publication_cmd](../modules/publication_cmd.md) | — |
 | `task_cmd` | import | [task_cmd](../modules/task_cmd.md) | — |
 | `build_knowledge_commit_plan` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
 | `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 5 |
@@ -92,7 +94,5 @@ flowchart LR
 | `_fail` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `_pack_structure` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `decode_member` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
-| `inspect_pack` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
-| `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
 
-> References: showing 12 of 95 logical references; 83 omitted by the 12-row generated summary limit.
+> References: showing 12 of 100 logical references; 88 omitted by the 12-row generated summary limit.

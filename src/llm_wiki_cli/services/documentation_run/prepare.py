@@ -186,6 +186,11 @@ def _prepare_documentation_run_impl(
 
     workspace_root = _resolve_workspace_root_argument(workspace)
     _recover_interrupted_refresh(workspace_root)
+    if refresh and documentation_run_path(workspace_root).is_file():
+        from . import publication as mapped
+
+        if mapped.KEY in load_documentation_run(workspace_root).extensions:
+            raise DocumentationTransitionError("A changed publication basis requires a fresh workspace.")
     policy = resolve_documentation_policy(
         workspace_root,
         source_root=source_root,

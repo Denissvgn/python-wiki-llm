@@ -1,6 +1,6 @@
 # DocumentationRun
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:625`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:628`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)
@@ -58,13 +58,31 @@ flowchart LR
     n1["src/llm_wiki_cli/services/documentation_run/__init__.py"]
     n2["_next_actions (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
     n3["DocumentationRun.from_dict (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
+    n4["_binding (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n5["_documents (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n6["publication_packet (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n7["reconcile_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n8["record_publication_evidence (src/llm_wiki_cli/services/documentation_run/publication.py)"]
+    n9["reviewed_publication (src/llm_wiki_cli/services/documentation_run/publication.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
+    n5 --> n0
+    n6 --> n0
+    n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/documentation_run_contracts.md"
     click n1 "../modules/documentation_run___init__.md"
     click n2 "../modules/documentation_run_contracts.md"
     click n3 "../modules/documentation_run_contracts.md"
+    click n4 "../modules/publication.md"
+    click n5 "../modules/publication.md"
+    click n6 "../modules/publication.md"
+    click n7 "../modules/publication.md"
+    click n8 "../modules/publication.md"
+    click n9 "../modules/publication.md"
 ```
 
 ### Summary
@@ -81,3 +99,9 @@ flowchart LR
 | `_next_actions` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |
 | `DocumentationRun.from_dict` | call | [documentation_run_contracts](../modules/documentation_run_contracts.md) | 1 |
 | `DocumentationRun.from_dict` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |
+| `_binding` | type_reference | [publication](../modules/publication.md) | — |
+| `_documents` | type_reference | [publication](../modules/publication.md) | — |
+| `publication_packet` | type_reference | [publication](../modules/publication.md) | — |
+| `reconcile_publication` | type_reference | [publication](../modules/publication.md) | — |
+| `record_publication_evidence` | type_reference | [publication](../modules/publication.md) | — |
+| `reviewed_publication` | type_reference | [publication](../modules/publication.md) | — |

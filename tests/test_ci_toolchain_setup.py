@@ -112,17 +112,19 @@ printf '%s\\n' '{NPM_VERSION}'
         )
 
 
-def _write_fake_go_archive(path: Path) -> None:
+def _write_fake_go_archive(path: Path, *, target: str = GO_PLATFORM) -> None:
     go = f"""#!/usr/bin/env bash
 set -euo pipefail
 test "${{1:-}}" = version
-printf '%s\\n' 'go version go{GO_VERSION} {GO_PLATFORM}'
+printf '%s\\n' 'go version go{GO_VERSION} {target}'
 """
     with tarfile.open(path, "w:gz") as archive:
         _add_tar_file(archive, "go/bin/go", go, mode=0o755)
 
 
-def _write_fake_rust_archive(path: Path) -> None:
+def _write_fake_rust_archive(
+    path: Path, *, target: str = "x86_64-unknown-linux-gnu", release: str = "91.8.9"
+) -> None:
     install = f"""#!/usr/bin/env bash
 set -euo pipefail
 prefix=""
@@ -144,7 +146,8 @@ EOF
 cat > "${{prefix}}/bin/rustc" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-printf '%s\\n' 'rustc fixture'
+test "${{1:-}}" = -vV
+printf '%s\\n' 'rustc fixture' 'host: {target}' 'release: {release}'
 EOF
 chmod 0755 "${{prefix}}/bin/cargo" "${{prefix}}/bin/rustc"
 """
@@ -152,7 +155,10 @@ chmod 0755 "${{prefix}}/bin/cargo" "${{prefix}}/bin/rustc"
         _add_tar_file(archive, "rust-fixture/install.sh", install, mode=0o755)
 
 
-def _write_fake_ghc_archive(path: Path) -> None:
+def _write_fake_ghc_archive(
+    path: Path, *, host: str = "x86_64-unknown-linux", target: str | None = None
+) -> None:
+    target = host if target is None else target
     configure = """#!/usr/bin/env bash
 set -euo pipefail
 prefix=""
@@ -172,12 +178,37 @@ EOF
 """
     ghc = f"""#!/usr/bin/env bash
 set -euo pipefail
-test "${{1:-}}" = --numeric-version
-printf '%s\\n' '{GHC_VERSION}'
+case "${{1:-}}" in
+  --numeric-version) printf '%s\\n' '{GHC_VERSION}' ;;
+  --print-host-platform) printf '%s\\n' '{host}' ;;
+  --print-target-platform) printf '%s\\n' '{target}' ;;
+  *) exit 64 ;;
+esac
 """
     with tarfile.open(path, "w:xz") as archive:
         _add_tar_file(archive, "ghc-fixture/configure", configure, mode=0o755)
         _add_tar_file(archive, "ghc-fixture/ghc-shim", ghc, mode=0o755)
+
+
+def _write_fake_rust_manifest(payload: dict, manifest: Path) -> None:
+    lines = ['manifest-version = "2"', '[pkg.rust]',
+             f'version = "{payload["toolchains"]["rust"]["version"]} (fixture)"']
+    rust = payload["toolchains"]["rust"]
+    for package, base_key, platforms_key in (
+        ("rust", "artifact", "platform_artifacts"),
+        ("clippy-preview", "clippy_artifact", "platform_clippy_artifacts"),
+    ):
+        for target, artifact in (
+            ("x86_64-unknown-linux-gnu", rust[base_key]),
+            ("aarch64-unknown-linux-gnu", rust[platforms_key]["linux_arm64"]),
+        ):
+            lines.extend([
+                f"[pkg.{package}.target.{target}]", "available = true",
+                "xz_url = " + json.dumps(artifact["url"]),
+                "xz_hash = " + json.dumps(artifact["sha256"]),
+            ])
+    manifest.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    rust["checksum_manifest"]["sha256"] = _sha256(manifest)
 
 
 @pytest.fixture
@@ -189,13 +220,22 @@ def fake_lock(tmp_path: Path) -> Path:
     go = downloads / "go.tar.gz"
     rust_channel = downloads / "rust-channel.toml"
     rust = downloads / "rust.tar.xz"
+    rust_arm = downloads / "rust-arm64.tar.xz"
+    clippy = downloads / "clippy.tar.xz"
+    clippy_arm = downloads / "clippy-arm64.tar.xz"
     ghc = downloads / "ghc.tar.xz"
+    ghc_arm = downloads / "ghc-arm64.tar.xz"
+    go_arm = downloads / "go-arm64.tar.gz"
     _write_fake_node_archive(node)
     _write_fake_npm_archive(npm)
     _write_fake_go_archive(go)
-    rust_channel.write_text("manifest-version = 2\n", encoding="utf-8")
+    _write_fake_go_archive(go_arm, target="linux/arm64")
     _write_fake_rust_archive(rust)
+    _write_fake_rust_archive(rust_arm, target="aarch64-unknown-linux-gnu")
+    shutil.copyfile(rust, clippy)
+    shutil.copyfile(rust_arm, clippy_arm)
     _write_fake_ghc_archive(ghc)
+    _write_fake_ghc_archive(ghc_arm, host="aarch64-unknown-linux")
 
     node_artifact = {"url": node.as_uri(), "sha256": _sha256(node)}
     go_artifact = {"url": go.as_uri(), "sha256": _sha256(go)}
@@ -219,26 +259,32 @@ def fake_lock(tmp_path: Path) -> Path:
             "go": {
                 "artifact": go_artifact,
                 # These archives contain native shell shims, not Go binaries.
-                "platform_artifacts": {"darwin_arm64": go_artifact, "linux_arm64": go_artifact},
+                "platform_artifacts": {"darwin_arm64": go_artifact,
+                                       "linux_arm64": {"url": go_arm.as_uri(), "sha256": _sha256(go_arm)}},
                 "version": GO_VERSION,
                 "version_output": f"go version go{GO_VERSION}",
             },
             "rust": {
                 "artifact": {"url": rust.as_uri(), "sha256": _sha256(rust)},
+                "platform_artifacts": {"linux_arm64": {"url": rust_arm.as_uri(), "sha256": _sha256(rust_arm)}},
+                "clippy_artifact": {"url": clippy.as_uri(), "sha256": _sha256(clippy)},
+                "platform_clippy_artifacts": {"linux_arm64": {"url": clippy_arm.as_uri(), "sha256": _sha256(clippy_arm)}},
                 "checksum_manifest": {
                     "url": rust_channel.as_uri(),
-                    "sha256": _sha256(rust_channel),
+                    "sha256": "0" * 64,
                 },
                 "version": "91.8.9",
                 "version_output": CARGO_VERSION_OUTPUT,
             },
             "haskell": {
                 "artifact": {"url": ghc.as_uri(), "sha256": _sha256(ghc)},
+                "platform_artifacts": {"linux_arm64": {"url": ghc_arm.as_uri(), "sha256": _sha256(ghc_arm)}},
                 "version": GHC_VERSION,
                 "version_output": GHC_VERSION,
             },
         },
     }
+    _write_fake_rust_manifest(payload, rust_channel)
     path = tmp_path / "toolchain-lock.json"
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
@@ -367,7 +413,10 @@ def _github_environment(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str
 
 
 @pytest.mark.parametrize("mode", ["qualification-go", "extractor-go"])
-def test_unsupported_arm64_go_refusal_precedes_cache_or_environment_writes(fake_lock, setup_harness, tmp_path, mode):
+def test_missing_arm64_go_lock_refusal_precedes_cache_or_environment_writes(fake_lock, setup_harness, tmp_path, mode):
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    del payload["toolchains"]["go"]["platform_artifacts"]["linux_arm64"]
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     environment = _with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine="aarch64")
     install_root = setup_harness.root / "ignored" / "unsupported-go-target"
     environment_file = setup_harness.root / "ignored" / "unsupported-go-target.env"
@@ -484,9 +533,13 @@ def test_linux_arm64_routine_rejects_corrupt_download_before_publication(
 
 
 @pytest.mark.parametrize("mode", ["qualification-go", "extractor-go", "extractor-rust", "extractor-haskell"])
-def test_linux_arm64_does_not_infer_support_for_other_toolchains(
+def test_linux_arm64_requires_an_explicit_locked_host_artifact(
     tmp_path: Path, fake_lock: Path, setup_harness: SetupHarness, mode: str,
 ) -> None:
+    toolchain = {"qualification-go": "go", "extractor-go": "go", "extractor-rust": "rust", "extractor-haskell": "haskell"}[mode]
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    del payload["toolchains"][toolchain]["platform_artifacts"]["linux_arm64"]
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     install_root = setup_harness.root / ".git" / "llm-wiki-ci-arm64-unsupported"
     environment_file = setup_harness.root / ".git" / "llm-wiki-ci-arm64-unsupported.env"
     completed = _run_setup(
@@ -499,6 +552,99 @@ def test_linux_arm64_does_not_infer_support_for_other_toolchains(
     assert f"no locked {mode} artifact for Linux/aarch64" in completed.stderr
     assert not install_root.exists()
     assert not environment_file.exists()
+
+
+@pytest.mark.parametrize("mode", ["qualification-go", "extractor-go", "extractor-rust", "extractor-haskell"])
+@pytest.mark.parametrize("machine", ["aarch64", "arm64"])
+def test_linux_arm64_installs_only_the_selected_locked_native_toolchain(
+    tmp_path, fake_lock, setup_harness, mode, machine,
+):
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    toolchain = {"qualification-go": "go", "extractor-go": "go", "extractor-rust": "rust", "extractor-haskell": "haskell"}[mode]
+    payload["toolchains"][toolchain]["artifact"]["url"] = "file:///must-not-download-x86"
+    if toolchain == "rust":
+        # The unselected x86 entries remain internally consistent with the fixture manifest.
+        _write_fake_rust_manifest(payload, fake_lock.parent / "downloads/rust-channel.toml")
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(tmp_path, environment, system="Linux", machine=machine)
+    install_root = runner_temp / "native-toolchains"
+    result = _run_setup(setup_harness, "--mode", mode, "--install-root", install_root,
+                        "--lock", fake_lock, "--python", setup_harness.python,
+                        environment=environment, github_actions=True)
+    _assert_success(result)
+    target = "haskell" if toolchain == "haskell" else toolchain
+    assert github_path.read_text(encoding="utf-8") == f"{install_root / target / 'bin'}\n"
+    assert (install_root / target / "bin").is_dir()
+    assert not list(install_root.glob(".setup-*"))
+
+
+@pytest.mark.parametrize("mode", ["routine", "qualification-go", "extractor-go", "extractor-rust", "extractor-haskell"])
+def test_unknown_architecture_fails_before_download_or_output_creation(
+    tmp_path, fake_lock, setup_harness, mode,
+):
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(tmp_path, environment, system="Linux", machine="riscv64")
+    install_root = runner_temp / "unsupported"
+    result = _run_setup(setup_harness, "--mode", mode, "--install-root", install_root,
+                        "--lock", fake_lock, "--python", setup_harness.python,
+                        environment=environment, github_actions=True)
+    assert result.returncode != 0
+    assert f"no locked {mode} artifact for Linux/riscv64" in result.stderr
+    assert not install_root.exists()
+    assert not github_path.read_text() and not github_env.read_text()
+
+
+@pytest.mark.parametrize("member", ["platform_artifacts", "platform_clippy_artifacts"])
+def test_rust_missing_arm64_artifact_is_rejected_before_manifest_download(
+    tmp_path, fake_lock, setup_harness, member,
+):
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    del payload["toolchains"]["rust"][member]["linux_arm64"]
+    payload["toolchains"]["rust"]["checksum_manifest"]["url"] = "file:///must-not-download-manifest"
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    install_root = setup_harness.root / "ignored/native-rust"
+    environment_file = setup_harness.root / "ignored/native-rust.env"
+    result = _run_setup(setup_harness, *_local_arguments(mode="extractor-rust", install_root=install_root,
+                                                       environment_file=environment_file, lock=fake_lock),
+                        environment=_with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine="arm64"))
+    assert result.returncode != 0
+    assert "no locked extractor-rust artifact" in result.stderr
+    assert not install_root.exists() and not environment_file.exists()
+
+
+@pytest.mark.parametrize("mode,wrong", [
+    ("extractor-go", "go"), ("extractor-rust", "rust-host"), ("extractor-rust", "rust-release"),
+    ("extractor-haskell", "ghc-host"), ("extractor-haskell", "ghc-target"),
+])
+def test_arm64_compiler_platform_or_release_mismatch_never_publishes(
+    tmp_path, fake_lock, setup_harness, mode, wrong,
+):
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    toolchain = {"extractor-go": "go", "extractor-rust": "rust", "extractor-haskell": "haskell"}[mode]
+    artifact = payload["toolchains"][toolchain]["platform_artifacts"]["linux_arm64"]
+    archive = fake_lock.parent / "downloads" / {"go": "go-arm64.tar.gz", "rust": "rust-arm64.tar.xz", "haskell": "ghc-arm64.tar.xz"}[toolchain]
+    if wrong == "go":
+        _write_fake_go_archive(archive, target="linux/amd64")
+    elif wrong.startswith("rust"):
+        _write_fake_rust_archive(archive, target="x86_64-unknown-linux-gnu" if wrong == "rust-host" else "aarch64-unknown-linux-gnu",
+                                 release="0.0.0" if wrong == "rust-release" else "91.8.9")
+    else:
+        _write_fake_ghc_archive(archive, host="x86_64-unknown-linux" if wrong == "ghc-host" else "aarch64-unknown-linux",
+                                target="x86_64-unknown-linux" if wrong == "ghc-target" else "aarch64-unknown-linux")
+    artifact["sha256"] = _sha256(archive)
+    if toolchain == "rust":
+        _write_fake_rust_manifest(payload, fake_lock.parent / "downloads/rust-channel.toml")
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    result = _run_setup(setup_harness, "--mode", mode, "--install-root", runner_temp / "native-tools",
+                        "--lock", fake_lock, "--python", setup_harness.python,
+                        environment=_with_fake_uname(tmp_path, environment, system="Linux", machine="aarch64"),
+                        github_actions=True)
+    assert result.returncode != 0
+    assert "platform mismatch" in result.stderr or "version mismatch" in result.stderr
+    assert not (runner_temp / "native-tools" / toolchain).exists()
+    assert not github_path.read_text() and not github_env.read_text()
 
 
 def test_qualification_go_is_isolated_and_exports_exact_go_path(
@@ -880,6 +1026,9 @@ def test_extractor_compiler_digest_mismatch_never_publishes_partial_install(
 ) -> None:
     payload = json.loads(fake_lock.read_text(encoding="utf-8"))
     payload["toolchains"][toolchain][lock_member]["sha256"] = "0" * 64
+    if toolchain == "rust" and lock_member == "artifact":
+        # Keep locked metadata coherent so this case reaches the archive digest check.
+        _write_fake_rust_manifest(payload, fake_lock.parent / "downloads/rust-channel.toml")
     fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
     environment = _with_fake_uname(
@@ -1249,9 +1398,6 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     script = SETUP_SCRIPT.read_text(encoding="utf-8")
     lock = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
     serialized_values = json.dumps(lock)
-    # Synthetic portability fixtures do not expand the production target set.
-    assert "linux_arm64" not in lock["toolchains"]["go"]["platform_artifacts"]
-
     for toolchain in ("node", "go"):
         artifact = lock["toolchains"][toolchain]["platform_artifacts"][
             "darwin_arm64"
@@ -1264,6 +1410,16 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     assert set(arm64) == {"sha256", "url"}
     assert arm64["url"] == f"https://nodejs.org/dist/v{lock['toolchains']['node']['version']}/node-v{lock['toolchains']['node']['version']}-linux-arm64.tar.xz"
     assert re.fullmatch(r"[0-9a-f]{64}", arm64["sha256"])
+    for toolchain in ("go", "rust", "haskell"):
+        artifact = lock["toolchains"][toolchain]["platform_artifacts"]["linux_arm64"]
+        assert set(artifact) == {"sha256", "url"}
+        assert artifact["url"].startswith("https://")
+        assert "arm64" in artifact["url"] or "aarch64" in artifact["url"]
+        assert re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"])
+    clippy = lock["toolchains"]["rust"]["platform_clippy_artifacts"]["linux_arm64"]
+    assert set(clippy) == {"sha256", "url"}
+    assert "aarch64-unknown-linux-gnu" in clippy["url"]
+    assert re.fullmatch(r"[0-9a-f]{64}", clippy["sha256"])
     assert "release/qualification.py" in script
     assert "lock-value" in script
     assert "verify-download" in script
@@ -1271,6 +1427,8 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     assert "toolchains.npm.version_output" in script
     assert "toolchains.go.version_output" in script
     assert "toolchains.rust.checksum_manifest" in script
+    assert "verify-rust-manifest" in script
+    assert "--print-host-platform" in script and "--print-target-platform" in script
     assert "toolchains.rust.version_output" in script
     assert "toolchains.haskell.version_output" in script
     assert "https://" not in script
@@ -1291,12 +1449,21 @@ def test_setup_has_no_privileged_or_qualification_only_dependency_surface() -> N
         "gh_token",
         "actions/cache",
         "cargo-audit",
-        "clippy",
         "govulncheck",
         "rustup",
         "sudo",
     ):
         assert forbidden not in script
+    # Selected Clippy metadata participates in the shared Rust manifest binding;
+    # this installer must not download or invoke qualification-only components.
+    clippy_metadata = re.compile(
+        r'(?:rust_clippy_key="toolchains\.rust\.(?:clippy_artifact|platform_clippy_artifacts\.linux_arm64)"'
+        r'|require_locked_artifact "\$\{rust_clippy_key\}")'
+    )
+    assert all(
+        clippy_metadata.fullmatch(line.strip())
+        for line in script.splitlines() if "clippy" in line
+    )
     assert re.search(r"(^|\n)\s*uses:\s*", script) is None
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
         encoding="utf-8"

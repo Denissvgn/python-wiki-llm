@@ -384,7 +384,7 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
     expected = {
         "get_documentation_run_status": ["workspace"],
         "build_documentation_agent_packet": ["workspace", "stage"],
-        "record_documentation_agent_result": ["workspace", "result"],
+        "record_documentation_agent_result": ["workspace", "result", "actor"],
         "verify_documentation_run": ["workspace", "advance"],
         "export_documentation_run": [
             "workspace",
@@ -425,7 +425,7 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         ),
         "record_documentation_agent_result": (
             "(workspace: 'str | Path', result: 'DocumentationAgentResult | "
-            "Mapping[str, Any]') -> 'DocumentationRun'"
+            "Mapping[str, Any]', *, actor: 'str | None' = None) -> 'DocumentationRun'"
         ),
         "verify_documentation_run": (
             "(workspace: 'str | Path', *, advance: 'bool' = True) -> "

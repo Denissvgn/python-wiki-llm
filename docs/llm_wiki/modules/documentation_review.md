@@ -35,13 +35,16 @@ different order must not reset its occurrence counter.
 flowchart LR
     n0["src/llm_wiki_cli/services/documentation_review.py"]
     n1["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n2["src/llm_wiki_cli/services/validation.py"]
-    n0 --> n2
+    n2["src/llm_wiki_cli/services/documentation_run/publication.py"]
+    n3["src/llm_wiki_cli/services/validation.py"]
+    n0 --> n3
     n1 --> n0
-    n1 --> n2
+    n1 --> n3
+    n2 --> n0
     click n0 "../modules/documentation_review.md"
     click n1 "../modules/documentation_run_dependencies.md"
-    click n2 "../modules/validation.md"
+    click n2 "../modules/publication.md"
+    click n3 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -49,6 +52,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Inbound | [publication](../modules/publication.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

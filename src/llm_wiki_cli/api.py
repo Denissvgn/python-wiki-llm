@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .services import analysis_compatibility as ac
 
+import argparse
 import inspect
 import json
 import re
@@ -25,6 +26,10 @@ from typing import (
 )
 
 from .services import bootstrap_runtime as bootstrap_cmd
+from .services.ci_installer import (
+    InstallCiResult as InstallCiResult,
+    install_documentation_ci_workflow as _install_documentation_ci_workflow,
+)
 from .services import context_service as context_cmd
 from .services import extraction_service as extract_cmd
 from .api_types import (
@@ -151,6 +156,10 @@ from .services.documentation_model_policy import (
     validate_documentation_model_selection,
 )
 from .services.documentation_policy import DocumentationPolicyError
+from .services.publication_maintenance import (
+    build_publication_patch as _build_publication_patch,
+    prepare_publication_maintenance as _prepare_publication_maintenance,
+)
 from .services.documentation_run import (
     DocumentationAgentPacket,
     DocumentationAgentResult,
@@ -3484,6 +3493,9 @@ def _run_query(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]:
 
 # Public service functions are adapted here rather than requiring callers to
 # understand each service's private exception family.
+install_documentation_ci_workflow = _api_boundary(_install_documentation_ci_workflow)
+prepare_publication_maintenance = _api_boundary(_prepare_publication_maintenance)
+build_publication_patch = _api_boundary(_build_publication_patch)
 _adopt_documentation_wiki_snapshot_impl = adopt_documentation_wiki_snapshot
 adopt_documentation_wiki_snapshot = _api_boundary(
     _adopt_documentation_wiki_snapshot_impl
@@ -3529,6 +3541,220 @@ def export_documentation_run(
             knowledge_mode=knowledge_mode,
             knowledge_public_repository_identity=(knowledge_public_repository_identity),
         ),
+    )
+
+
+@_api_boundary
+def build_cli_contract(
+    parser: argparse.ArgumentParser,
+    *,
+    package: Mapping[str, Any],
+    program: str,
+) -> dict[str, Any]:
+    """Capture a caller-owned parser as data without parsing application arguments."""
+    from .services.cli_reference import build_cli_contract as build
+
+    return build(parser, package=package, program=program)
+
+
+@_api_boundary
+def get_cli_contract() -> dict[str, Any]:
+    """Return the installed llm-wiki command definitions as a versioned contract."""
+    from .services.cli_reference import get_cli_contract as get_contract
+
+    return get_contract()
+
+
+@_api_boundary
+def render_cli_reference(contract: Mapping[str, Any]) -> str:
+    """Validate and render a supplied CLI contract without executing commands."""
+    from .services.cli_reference import render_cli_reference as render
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("CLI contract must be a mapping")
+    return render(dict(contract))
+
+
+@_api_boundary
+def validate_cli_contract(contract: Mapping[str, Any]) -> None:
+    """Validate the structure and commitments of a supplied CLI contract."""
+    from .services.cli_reference import validate_cli_contract as validate
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("CLI contract must be a mapping")
+    validate(dict(contract))
+
+
+@_api_boundary
+def get_behavior_facts() -> dict[str, Any]:
+    """Describe the installed provider's runtime requirements, defaults and bundled skills."""
+    from .services.behavior_reference import get_behavior_facts as get_facts
+
+    return get_facts()
+
+
+@_api_boundary
+def validate_behavior_facts(contract: Mapping[str, Any]) -> None:
+    """Validate a versioned behavior facts document and its content commitment."""
+    from .services.behavior_reference import validate_behavior_facts as validate
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("Behavior facts must be a mapping")
+    validate(dict(contract))
+
+
+@_api_boundary
+def render_behavior_reference(contract: Mapping[str, Any]) -> str:
+    """Render validated behavior facts as Markdown."""
+    from .services.behavior_reference import render_behavior_reference as render
+
+    if not isinstance(contract, Mapping):
+        raise ValueError("Behavior facts must be a mapping")
+    return render(dict(contract))
+
+
+@_api_boundary
+def export_publication_candidate(
+    consumer_root: str | Path = ".",
+    *,
+    output_dir: str | Path,
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+    reviews: Mapping[str, Any] | None = None,
+    previous_receipt: Mapping[str, Any] | None = None,
+    candidate_review: Mapping[str, Any] | None = None,
+    source_revision: str | None = None,
+    target_revision: str | None = None,
+) -> dict[str, Any]:
+    """Render an explicitly mapped local wiki candidate without remote delivery."""
+    from .services.publication_candidate import export_publication_candidate as export
+
+    return export(
+        consumer_root,
+        output_dir=output_dir,
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+        reviews=reviews,
+        previous_receipt=previous_receipt,
+        candidate_review=candidate_review,
+        source_revision=source_revision,
+        target_revision=target_revision,
+    )
+
+
+@_api_boundary
+def check_publication_candidate(
+    consumer_root: str | Path = ".",
+    *,
+    candidate_dir: str | Path,
+    receipt: Mapping[str, Any],
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+    reviews: Mapping[str, Any] | None = None,
+    previous_receipt: Mapping[str, Any] | None = None,
+    candidate_review: Mapping[str, Any] | None = None,
+    source_revision: str | None = None,
+    target_revision: str | None = None,
+) -> dict[str, Any]:
+    """Recheck candidate bytes, current inputs and exact-basis local review."""
+    from .services.publication_candidate import check_publication_candidate as check
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    return check(
+        consumer_root,
+        candidate_dir=candidate_dir,
+        receipt=dict(receipt),
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+        reviews=reviews,
+        previous_receipt=previous_receipt,
+        candidate_review=candidate_review,
+        source_revision=source_revision,
+        target_revision=target_revision,
+    )
+
+
+@_api_boundary
+def review_publication_candidate(
+    receipt: Mapping[str, Any], *, reviewer: str, reason: str
+) -> dict[str, Any]:
+    """Prepare an exact-candidate approval for the consumer's review process."""
+    from .services.publication_candidate import review_publication_candidate as review
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    return review(dict(receipt), reviewer=reviewer, reason=reason)
+
+
+@_api_boundary
+def validate_publication_receipt(receipt: Mapping[str, Any]) -> None:
+    """Validate the shape and commitments of a saved local candidate receipt."""
+    from .services.publication_candidate import validate_publication_receipt as validate
+
+    if not isinstance(receipt, Mapping):
+        raise ValueError("Publication receipt must be a mapping")
+    validate(dict(receipt))
+
+
+@_api_boundary
+def capture_publication_basis(
+    consumer_root: str | Path = ".",
+    *,
+    config_path: str | Path = ".llm-wiki/publication.json",
+    target_dir: str | Path | None = None,
+    baseline: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Capture complete local publication inputs without remote access or writes."""
+    from .services.publication_impact import capture_publication_basis as capture
+
+    return capture(
+        consumer_root,
+        config_path=config_path,
+        target_dir=target_dir,
+        baseline=baseline,
+    )
+
+
+@_api_boundary
+def compare_publication_impact(
+    candidate: Mapping[str, Any],
+    baseline: Mapping[str, Any] | None = None,
+    *,
+    reviews: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compare publication bases and exact-basis review decisions without writes."""
+    from .services.publication_impact import compare_publication_impact as compare
+
+    return compare(candidate, baseline, reviews=reviews)
+
+
+@_api_boundary
+def resolve_publication_finding(
+    report: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    finding_id: str,
+    reviewer: str,
+    reason: str,
+    reviews: Mapping[str, Any] | None = None,
+    decision: str = "still-current",
+) -> dict[str, Any]:
+    """Return a proposed current or retired decision for caller-owned acceptance."""
+    from .services.publication_impact import resolve_publication_finding as resolve
+
+    return resolve(
+        report,
+        candidate,
+        finding_id=finding_id,
+        reviewer=reviewer,
+        reason=reason,
+        reviews=reviews,
+        decision=decision,
     )
 
 
@@ -3782,6 +4008,8 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "InstallCiResult",
+    "install_documentation_ci_workflow",
     "helper_preparation",
     "CompactSessionReply",
     "CanonicalReceipt",
@@ -3911,6 +4139,7 @@ __all__ = [
     "build_documentation_agent_packet",
     "build_p0_calibration_agent_packet",
     "build_context",
+    "build_cli_contract",
     "build_qualified_context",
     "build_budgeted_context",
     "BudgetedContext",
@@ -3919,7 +4148,12 @@ __all__ = [
     "build_documentation_query_service",
     "callees",
     "callers",
+    "capture_publication_basis",
+    "check_publication_candidate",
+    "prepare_publication_maintenance",
+    "build_publication_patch",
     "compare_context_packet_basis",
+    "compare_publication_impact",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
     "dispatch_calibration_agent",
@@ -3928,11 +4162,14 @@ __all__ = [
     "get_analysis_input_status",
     "explain_evidence",
     "export_documentation_run",
+    "export_publication_candidate",
     "extract_source",
     "flow_for_entrypoint",
     "flow_segment",
     "fingerprint_documentation_wiki_input",
     "get_concept",
+    "get_cli_contract",
+    "get_behavior_facts",
     "get_calibration_run_status",
     "get_documentation_run_status",
     "get_p0_calibration_run_status",
@@ -3948,11 +4185,18 @@ __all__ = [
     "record_p0_calibration_agent_result",
     "reconcile_context_packet",
     "related_concepts",
+    "render_cli_reference",
+    "render_behavior_reference",
+    "resolve_publication_finding",
+    "review_publication_candidate",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
     "validate_context_packet",
+    "validate_cli_contract",
+    "validate_behavior_facts",
+    "validate_publication_receipt",
     "validate_documentation_model_selection",
     "verify_documentation_run",
     "verify_calibration_run",

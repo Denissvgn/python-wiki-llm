@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 684; effect analysis evaluated: 527, partial: 40, unavailable: 117. Counts include steps omitted from the displayed trace.
 
-Collector observations for 567 source steps with known totals: observed: 3475, emitted: 3234, omitted: 241. Unavailable totals are excluded.
+Collector observations for 567 source steps with known totals: observed: 3477, emitted: 3236, omitted: 241. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -169,9 +169,9 @@ Collector observations for 567 source steps with known totals: observed: 3475, e
 |---|---|---|---|---:|---:|---:|
 | `bootstrap_wiki` | `available` | `partial` | `available` | `20` | `12` | `8` |
 | `BootstrapRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `execute_bootstrap` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `execute_bootstrap` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `io.StringIO` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_bootstrap_run_options_from_request` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_bootstrap_run_options_from_request` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…_run_options_from_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -197,7 +197,7 @@ flowchart LR
     s1 -->|"BootstrapRequest(…)"| s2
     s1 -->|"execute_bootstrap(request)"| s3
     s3 -. "io.StringIO(data not statically known)" .-> s4
-    s3 -->|"_bootstrap_run_options_from_request(request, progress_stream=stream)"| s5
+    s3 -->|"_bootstrap_run_options_from_request(request, progress_stream=stream, publication_snapshot=publication_snapshot)"| s5
     s5 -. "Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)(data not statically known)" .-> s6
     s5 -. "Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request)(data not statically known)" .-> s7
     s5 -. "Path (src/llm_wiki_cli/services…_run_options_from_request)(request.source_root)" .-> s8
@@ -218,9 +218,9 @@ flowchart LR
 |---|---|---|---|---|
 | `bootstrap_wiki` | `source_root: str`, `wiki_root: str`, `depth: str`, `skip_workflows: bool`, `skip_flows: bool`, `skip_data_flow: bool`, `skip_dependencies: bool`, `api_contracts: bool` | `BootstrapRequestError`, `BootstrapContractError`, `BootstrapServiceError` | - | `bootstrap_cmd.execute_bootstrap(...)` |
 | `BootstrapRequest` | - | - | - | - |
-| `execute_bootstrap` | `request: BootstrapRequest`, `progress_stream: TextIO \| None` | - | - | `_execute_bootstrap_options(...)` |
+| `execute_bootstrap` | `request: BootstrapRequest`, `progress_stream: TextIO \| None`, `publication_snapshot: bool` | - | - | `_execute_bootstrap_options(...)` |
 | `io.StringIO` | - | - | - | - |
-| `_bootstrap_run_options_from_request` | `request: BootstrapRequest`, `progress_stream: TextIO` | - | - | `_BootstrapRunOptions(...)` |
+| `_bootstrap_run_options_from_request` | `request: BootstrapRequest`, `progress_stream: TextIO`, `publication_snapshot: bool` | - | - | `_BootstrapRunOptions(...)` |
 | `Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)` | - | - | - | - |
 | `Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…_run_options_from_request)` | - | - | - | - |
@@ -233,17 +233,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| bootstrap_wiki | BootstrapRequest | 1198 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection, knowledge_format=knowledge_format)` |
-| bootstrap_wiki | execute_bootstrap | 1218 | `bootstrap_cmd.execute_bootstrap(request)` |
-| execute_bootstrap | io.StringIO | 6807 | `io.StringIO(data not statically known)` |
-| execute_bootstrap | _bootstrap_run_options_from_request | 6808 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root).expanduser().resolve(data not statically known)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root).expanduser(data not statically known)` |
-| _bootstrap_run_options_from_request | Path (src/llm_wiki_cli/services…_run_options_from_request) | 4870 | `Path(request.source_root)` |
-| _bootstrap_run_options_from_request | source_root.is_dir (src/llm_wiki_cli/services…_run_options_from_request) | 4871 | `source_root.is_dir(data not statically known)` |
-| _bootstrap_run_options_from_request | BootstrapContractError | 4872 | `BootstrapContractError(...)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…n_options_from_request, 1) | 4875 | `Path(request.wiki_root).expanduser().resolve(data not statically known)` |
-| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…n_options_from_request, 1) | 4875 | `Path(request.wiki_root).expanduser(data not statically known)` |
+| bootstrap_wiki | BootstrapRequest | 1207 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection, knowledge_format=knowledge_format)` |
+| bootstrap_wiki | execute_bootstrap | 1227 | `bootstrap_cmd.execute_bootstrap(request)` |
+| execute_bootstrap | io.StringIO | 6818 | `io.StringIO(data not statically known)` |
+| execute_bootstrap | _bootstrap_run_options_from_request | 6819 | `_bootstrap_run_options_from_request(request, progress_stream=stream, publication_snapshot=publication_snapshot)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4872 | `Path(request.source_root).expanduser().resolve(data not statically known)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request) | 4872 | `Path(request.source_root).expanduser(data not statically known)` |
+| _bootstrap_run_options_from_request | Path (src/llm_wiki_cli/services…_run_options_from_request) | 4872 | `Path(request.source_root)` |
+| _bootstrap_run_options_from_request | source_root.is_dir (src/llm_wiki_cli/services…_run_options_from_request) | 4873 | `source_root.is_dir(data not statically known)` |
+| _bootstrap_run_options_from_request | BootstrapContractError | 4874 | `BootstrapContractError(...)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…n_options_from_request, 1) | 4877 | `Path(request.wiki_root).expanduser().resolve(data not statically known)` |
+| _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…n_options_from_request, 1) | 4877 | `Path(request.wiki_root).expanduser(data not statically known)` |
 
 ### Boundary effects
 
@@ -253,12 +253,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `execute_bootstrap` | `io.StringIO` | 6807 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser().resolve` | 4870 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser` | 4870 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `source_root.is_dir` | 4871 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser().resolve` | 4875 |
-| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser` | 4875 |
+| external_call | `execute_bootstrap` | `io.StringIO` | 6818 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser().resolve` | 4872 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser` | 4872 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `source_root.is_dir` | 4873 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser().resolve` | 4877 |
+| unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.wiki_root).expanduser` | 4877 |
 | step_limit | `bootstrap_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `bootstrap_wiki` | `depth limit` | 0 |
 

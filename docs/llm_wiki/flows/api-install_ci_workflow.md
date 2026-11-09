@@ -34,75 +34,74 @@ sequenceDiagram
     participant p0 as install_ci_workflow
     participant p1 as normalize_action_ref
     participant p2 as _portable_project_path
-    participant p3 as _project_directory
-    participant p4 as classify_wiki_lifecycle
-    participant p5 as _validate_default_selection_contract
-    participant p6 as render_managed_workflow
-    participant p7 as _validate_workflow_target
-    participant p8 as is_unmodified_managed_workflow
-    participant p9 as write_bytes_atomic
-    participant p10 as InstallCiError
-    participant p11 as _normalize_newlines
-    participant p12 as InstallCiResult
-    participant p13 as _without_github_expression
-    participant p14 as locate_exact_repository_path
-    participant p15 as _validated_project_path
-    participant p16 as is_pristine_wiki_target
-    participant p17 as SyncManifest.load
-    participant p18 as resolve_source_selection
-    participant p19 as validate_persisted_source_selection_identity
-    participant p20 as require_repository_relative_path
-    participant p21 as _locate_exact_path
-    participant p22 as source_selection_identity_from_generation_inputs
-    participant p23 as source_selection_inputs_from_generation_inputs
-    participant p24 as _override_text
-    participant p25 as StorageReadSession.read
-    participant p26 as SyncManifest.from_payload
-    participant p27 as _read_config
-    participant p28 as _policy_from_content
-    participant p29 as Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p30 as Path.cwd().resolve
+    participant p3 as _project_root
+    participant p4 as _project_directory
+    participant p5 as classify_wiki_lifecycle
+    participant p6 as _validate_default_selection_contract
+    participant p7 as render_managed_workflow
+    participant p8 as _install_workflow
+    participant p9 as InstallCiError
+    participant p10 as _without_github_expression
+    participant p11 as locate_exact_repository_path
+    participant p12 as _validate_workflow_target
+    participant p13 as _validated_project_path
+    participant p14 as is_pristine_wiki_target
+    participant p15 as SyncManifest.load
+    participant p16 as resolve_source_selection
+    participant p17 as validate_persisted_source_selection_identity
+    participant p18 as is_unmodified_managed_workflow
+    participant p19 as ensure_guarded_directory
+    participant p20 as atomic_write_guarded_bytes
+    participant p21 as require_repository_relative_path
+    participant p22 as _locate_exact_path
+    participant p23 as source_selection_identity_from_generation_inputs
+    participant p24 as source_selection_inputs_from_generation_inputs
+    participant p25 as _override_text
+    participant p26 as guard_windows_directory_chain
+    participant p27 as StorageReadSession.read
+    participant p28 as _atomic_write_guarded_bytes_windows
+    participant p29 as isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)
+    participant p30 as (…).resolve
     p0->>p1: normalize_action_ref
     p0->>p2: _portable_project_path
-    p0->>p3: _project_directory
-    p0->>p4: classify_wiki_lifecycle
-    p0->>p5: _validate_default_selection_contract
-    p0->>p6: render_managed_workflow
-    p0->>p7: _validate_workflow_target
-    p0->>p8: is_unmodified_managed_workflow
-    p0->>p9: write_bytes_atomic
-    p0->>p10: InstallCiError
-    p0->>p11: _normalize_newlines
-    p0->>p12: InstallCiResult
-    p2->>p13: _without_github_expression
-    p3->>p14: locate_exact_repository_path
-    p2->>p15: _validated_project_path
-    p4->>p16: is_pristine_wiki_target
-    p5->>p17: SyncManifest.load
-    p5->>p18: resolve_source_selection
-    p5->>p19: validate_persisted_source_selection_identity
-    p15->>p20: require_repository_relative_path
-    p14->>p21: _locate_exact_path
-    p19->>p22: source_selection_identity_from_generation_inputs
-    p19->>p23: source_selection_inputs_from_generation_inputs
-    p18->>p24: _override_text
-    p17->>p25: StorageReadSession.read
-    p17->>p26: SyncManifest.from_payload
-    p18->>p27: _read_config
-    p18->>p28: _policy_from_content
-    p0-->>p29: Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    p0-->>p30: Path.cwd().resolve
+    p0->>p3: _project_root
+    p0->>p4: _project_directory
+    p0->>p5: classify_wiki_lifecycle
+    p0->>p6: _validate_default_selection_contract
+    p0->>p7: render_managed_workflow
+    p0->>p8: _install_workflow
+    p0->>p9: InstallCiError
+    p2->>p10: _without_github_expression
+    p4->>p11: locate_exact_repository_path
+    p8->>p12: _validate_workflow_target
+    p2->>p13: _validated_project_path
+    p5->>p14: is_pristine_wiki_target
+    p6->>p15: SyncManifest.load
+    p6->>p16: resolve_source_selection
+    p6->>p17: validate_persisted_source_selection_identity
+    p8->>p18: is_unmodified_managed_workflow
+    p8->>p19: ensure_guarded_directory
+    p8->>p20: atomic_write_guarded_bytes
+    p13->>p21: require_repository_relative_path
+    p11->>p22: _locate_exact_path
+    p17->>p23: source_selection_identity_from_generation_inputs
+    p17->>p24: source_selection_inputs_from_generation_inputs
+    p16->>p25: _override_text
+    p19->>p26: guard_windows_directory_chain
+    p15->>p27: StorageReadSession.read
+    p20->>p28: _atomic_write_guarded_bytes_windows
+    p1-->>p29: isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)(value, str)
+    p3-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 752 interactions; 722 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1110 interactions; 1080 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 223 (222 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 449 (448 omitted); unresolved 1 of 222 (221 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 8 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
@@ -110,7 +109,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
-> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | unresolved | 5 |
+> Omission summary shows 8 of 256 groups; 248 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 347; effect analysis evaluated: 174, partial: 12, unavailable: 161. Counts include steps omitted from the displayed trace.
+Source steps: 440; effect analysis evaluated: 220, partial: 20, unavailable: 200. Counts include steps omitted from the displayed trace.
 
-Collector observations for 186 source steps with known totals: observed: 999, emitted: 939, omitted: 60. Unavailable totals are excluded.
+Collector observations for 240 source steps with known totals: observed: 1393, emitted: 1321, omitted: 72. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -133,7 +133,7 @@ Collector observations for 186 source steps with known totals: observed: 999, em
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `install_ci_workflow` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `install_ci_workflow` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `normalize_action_ref` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -171,8 +171,6 @@ flowchart LR
     s7 -->|"_validated_project_path(value, label=label)"| s10
     s10 -->|"require_repository_relative_path(…)"| s11
     s11 -. "isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)" .-> s12
-    b0["filesystem_read target.read_bytes"]
-    s1 -. "filesystem_read target.read_bytes" .-> b0
     click s1 "../modules/ci_installer.md"
     click s2 "../modules/ci_installer.md"
     click s5 "../modules/ci_installer.md"
@@ -181,15 +179,13 @@ flowchart LR
     click s9 "../modules/ci_installer.md"
     click s10 "../modules/ci_installer.md"
     click s11 "../modules/validation.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `install_ci_workflow` | `action_ref: str`, `src_dir: str`, `wiki_dir: str`, `dry_run: bool`, `force: bool`, `project_root: str \| Path \| None` | `WikiLifecycleState`, `MANIFEST_FILENAME`, `MANAGED_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH` | - | `InstallCiResult(...)`, `InstallCiResult(...)` |
+| `install_ci_workflow` | `action_ref: str`, `src_dir: str`, `wiki_dir: str`, `dry_run: bool`, `force: bool`, `project_root: str \| Path \| None` | `WikiLifecycleState`, `MANIFEST_FILENAME`, `MANAGED_WORKFLOW_PATH` | - | `_install_workflow(...)` |
 | `normalize_action_ref` | `value: object` | - | - | `value.lower(...)` |
 | `isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)` | - | - | - | - |
 | `_ACTION_REF_RE.fullmatch` | - | - | - | - |
@@ -206,31 +202,29 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_ci_workflow | normalize_action_ref | 297 | `normalize_action_ref(action_ref)` |
-| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 63 | `isinstance(value, str)` |
-| normalize_action_ref | _ACTION_REF_RE.fullmatch | 63 | `_ACTION_REF_RE.fullmatch(value)` |
-| normalize_action_ref | InstallCiError | 64 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
-| normalize_action_ref | value.lower | 65 | `value.lower(data not statically known)` |
-| install_ci_workflow | _portable_project_path | 298 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
-| _portable_project_path | _without_github_expression | 100 | `_without_github_expression(_validated_project_path(...), label=label)` |
-| _without_github_expression | InstallCiError | 93 | `InstallCiError(...)` |
-| _portable_project_path | _validated_project_path | 101 | `_validated_project_path(value, label=label)` |
-| _validated_project_path | require_repository_relative_path | 69 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
+| install_ci_workflow | normalize_action_ref | 320 | `normalize_action_ref(action_ref)` |
+| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 75 | `isinstance(value, str)` |
+| normalize_action_ref | _ACTION_REF_RE.fullmatch | 75 | `_ACTION_REF_RE.fullmatch(value)` |
+| normalize_action_ref | InstallCiError | 76 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
+| normalize_action_ref | value.lower | 77 | `value.lower(data not statically known)` |
+| install_ci_workflow | _portable_project_path | 321 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
+| _portable_project_path | _without_github_expression | 112 | `_without_github_expression(_validated_project_path(...), label=label)` |
+| _without_github_expression | InstallCiError | 105 | `InstallCiError(...)` |
+| _portable_project_path | _validated_project_path | 113 | `_validated_project_path(value, label=label)` |
+| _validated_project_path | require_repository_relative_path | 81 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| filesystem_read | `target.read_bytes` | `install_ci_workflow` | 328 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_action_ref` | `isinstance` | 63 |
-| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 63 |
-| unresolved_call | `normalize_action_ref` | `value.lower` | 65 |
+| external_call | `normalize_action_ref` | `isinstance` | 75 |
+| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 75 |
+| unresolved_call | `normalize_action_ref` | `value.lower` | 77 |
 | external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | step_limit | `install_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_ci_workflow` | `depth limit` | 0 |

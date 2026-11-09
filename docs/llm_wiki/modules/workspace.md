@@ -20,104 +20,23 @@ Documentation-run workspace services.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n1["src/llm_wiki_cli/services/documentation_run/contracts.py"]
-    n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n3["src/llm_wiki_cli/services/documentation_run/export.py"]
-    n4["src/llm_wiki_cli/services/documentation_run/integrity.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/packet.py"]
-    n6["src/llm_wiki_cli/services/documentation_run/prepare.py"]
-    n7["src/llm_wiki_cli/services/documentation_run/record.py"]
-    n8["src/llm_wiki_cli/services/documentation_run/refresh.py"]
-    n9["src/llm_wiki_cli/services/documentation_run/schema.py"]
-    n10["src/llm_wiki_cli/services/documentation_run/verify.py"]
-    n11["src/llm_wiki_cli/services/documentation_run/workspace.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/documentation_run/workspace.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n3
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n0 --> n8
-    n0 --> n9
-    n0 --> n10
-    n0 --> n11
-    n1 --> n2
-    n1 --> n5
-    n1 --> n9
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n7
-    n3 --> n8
-    n3 --> n9
-    n3 --> n10
-    n3 --> n11
-    n4 --> n1
-    n4 --> n2
-    n4 --> n9
-    n4 --> n11
-    n5 --> n1
-    n5 --> n2
-    n5 --> n4
-    n5 --> n9
-    n5 --> n11
-    n6 --> n1
-    n6 --> n2
-    n6 --> n4
-    n6 --> n8
-    n6 --> n9
-    n6 --> n11
-    n7 --> n1
-    n7 --> n2
-    n7 --> n4
-    n7 --> n8
-    n7 --> n9
-    n7 --> n11
-    n8 --> n1
-    n8 --> n2
-    n8 --> n4
-    n8 --> n9
-    n8 --> n11
-    n9 --> n1
-    n9 --> n2
-    n10 --> n1
-    n10 --> n11
-    n11 --> n1
-    n11 --> n2
-    n11 --> n9
-    click n0 "../modules/documentation_run___init__.md"
-    click n1 "../modules/documentation_run_contracts.md"
-    click n2 "../modules/documentation_run_dependencies.md"
-    click n3 "../modules/export.md"
-    click n4 "../modules/integrity.md"
-    click n5 "../modules/packet.md"
-    click n6 "../modules/prepare.md"
-    click n7 "../modules/record.md"
-    click n8 "../modules/refresh.md"
-    click n9 "../modules/documentation_run_schema.md"
-    click n10 "../modules/verify.md"
-    click n11 "../modules/workspace.md"
+    n1 --> n0
+    click n1 "../modules/workspace.md"
 ```
 
-> Diagram shows 55 of 60 local dependency edges; 5 omitted to keep the visualization within the generated-diagram limits. Complete inbound and outbound dependencies remain in the tables below.
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| Inbound | [export](../modules/export.md) |
-| Inbound | [integrity](../modules/integrity.md) |
-| Inbound | [packet](../modules/packet.md) |
-| Inbound | [prepare](../modules/prepare.md) |
-| Inbound | [record](../modules/record.md) |
-| Inbound | [refresh](../modules/refresh.md) |
-| Inbound | [verify](../modules/verify.md) |
-| Outbound | [documentation_run_contracts](../modules/documentation_run_contracts.md) |
-| Outbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Outbound | [documentation_run_schema](../modules/documentation_run_schema.md) |
+| Inbound | `src` (10) |
+| Outbound | `src` (3) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

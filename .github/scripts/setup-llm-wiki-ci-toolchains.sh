@@ -37,8 +37,8 @@ When GITHUB_ACTIONS=true, --install-root must be below RUNNER_TEMP and the
 script persists executable paths through GITHUB_PATH/GITHUB_ENV. Otherwise,
 the install root and environment file must be ignored paths in this checkout
 or use its dedicated llm-wiki-ci-* Git metadata namespace.
-Routine Node/npm supports Linux x86_64/ARM64 and Darwin ARM64. Other modes
-require their own locked host artifact.
+Linux x86_64/ARM64 supports all modes with explicit locked host artifacts.
+Darwin ARM64 supports locked Node/npm and Go; other hosts fail before download.
 EOF
 }
 
@@ -282,17 +282,21 @@ verify_download() {
 
 kernel="$(uname -s)"
 machine="$(uname -m)"
-linux_x86_64=false
+linux_native=false
 case "${kernel}:${machine}" in
   Linux:x86_64|Linux:amd64)
     artifact_suffix="artifact"
     expected_go_platform="linux/amd64"
-    linux_x86_64=true
+    expected_rust_platform="x86_64-unknown-linux-gnu"
+    expected_ghc_platform="x86_64-unknown-linux"
+    linux_native=true
     ;;
   Linux:aarch64|Linux:arm64)
-    [[ "${mode}" == "routine" ]] ||
-      die "no locked ${mode} artifact for ${kernel}/${machine}"
     artifact_suffix="platform_artifacts.linux_arm64"
+    expected_go_platform="linux/arm64"
+    expected_rust_platform="aarch64-unknown-linux-gnu"
+    expected_ghc_platform="aarch64-unknown-linux"
+    linux_native=true
     ;;
   Darwin:arm64|Darwin:aarch64)
     artifact_suffix="platform_artifacts.darwin_arm64"
@@ -301,9 +305,40 @@ case "${kernel}:${machine}" in
   *) die "no locked ${mode} artifact for ${kernel}/${machine}" ;;
 esac
 if [[ "${mode}" == "extractor-rust" || "${mode}" == "extractor-haskell" ]]; then
-  ${linux_x86_64} ||
+  ${linux_native} ||
     die "no locked ${mode} artifact for ${kernel}/${machine}"
 fi
+
+require_locked_artifact() {
+  local key="$1"
+  lock_value "${key}.url" >/dev/null &&
+    lock_value "${key}.sha256" >/dev/null ||
+    die "no locked ${mode} artifact for ${kernel}/${machine}: ${key}"
+}
+
+# Select every required artifact before making install/cache paths or downloading.
+case "${mode}" in
+  routine)
+    require_locked_artifact "toolchains.node.${artifact_suffix}"
+    require_locked_artifact toolchains.npm.artifact
+    ;;
+  qualification-go|extractor-go)
+    require_locked_artifact "toolchains.go.${artifact_suffix}"
+    ;;
+  extractor-rust)
+    rust_artifact_key="toolchains.rust.${artifact_suffix}"
+    rust_clippy_key="toolchains.rust.clippy_artifact"
+    if [[ "${artifact_suffix}" != artifact ]]; then
+      rust_clippy_key="toolchains.rust.platform_clippy_artifacts.linux_arm64"
+    fi
+    require_locked_artifact toolchains.rust.checksum_manifest
+    require_locked_artifact "${rust_artifact_key}"
+    require_locked_artifact "${rust_clippy_key}"
+    ;;
+  extractor-haskell)
+    require_locked_artifact "toolchains.haskell.${artifact_suffix}"
+    ;;
+esac
 
 mkdir -p -- "${install_root}"
 [[ -d "${install_root}" && ! -L "${install_root}" ]] ||
@@ -467,7 +502,10 @@ extractor-rust)
   rust_archive="${staging_dir}/rust.tar.xz"
   rust_source="${staging_dir}/rust-source"
   verify_download "toolchains.rust.checksum_manifest" "${rust_channel_manifest}"
-  verify_download "toolchains.rust.artifact" "${rust_archive}"
+  "${qualification_python}" -I "${QUALIFICATION_HELPER}" verify-rust-manifest \
+    --lock "${lock_path}" --manifest "${rust_channel_manifest}" \
+    --target "${expected_rust_platform}"
+  verify_download "${rust_artifact_key}" "${rust_archive}"
   mkdir -p -- "${rust_source}"
   tar -xJf "${rust_archive}" -C "${rust_source}" --strip-components=1
   [[ -x "${rust_source}/install.sh" ]] ||
@@ -480,6 +518,26 @@ extractor-rust)
   actual_cargo="$("${target}/bin/cargo" --version)"
   [[ "${actual_cargo}" == "${expected_cargo}" ]] ||
     die "locked Cargo version mismatch: expected ${expected_cargo}, got ${actual_cargo}"
+  expected_rust_release="$(lock_value toolchains.rust.version)"
+  actual_rust_metadata="$("${target}/bin/rustc" -vV)"
+  actual_rust_platform=""
+  actual_rust_release=""
+  while IFS= read -r metadata_line; do
+    case "${metadata_line}" in
+      'host: '*)
+        [[ -z "${actual_rust_platform}" ]] || die "duplicate locked Rust host metadata"
+        actual_rust_platform="${metadata_line#host: }"
+        ;;
+      'release: '*)
+        [[ -z "${actual_rust_release}" ]] || die "duplicate locked Rust release metadata"
+        actual_rust_release="${metadata_line#release: }"
+        ;;
+    esac
+  done <<< "${actual_rust_metadata}"
+  [[ "${actual_rust_release}" == "${expected_rust_release}" ]] ||
+    die "locked Rust version mismatch: expected ${expected_rust_release}, got ${actual_rust_release}"
+  [[ "${actual_rust_platform}" == "${expected_rust_platform}" ]] ||
+    die "locked Rust platform mismatch: expected ${expected_rust_platform}, got ${actual_rust_platform}"
   persist_environment "${target}/bin"
   target_created=false
   printf 'installed locked extractor Rust under %s\n' "${target}"
@@ -490,7 +548,7 @@ extractor-haskell)
     die "extractor Haskell target already exists: ${target}"
   ghc_archive="${staging_dir}/ghc.tar.xz"
   ghc_source="${staging_dir}/ghc-source"
-  verify_download "toolchains.haskell.artifact" "${ghc_archive}"
+  verify_download "toolchains.haskell.${artifact_suffix}" "${ghc_archive}"
   mkdir -p -- "${ghc_source}"
   tar -xJf "${ghc_archive}" -C "${ghc_source}" --strip-components=1
   [[ -x "${ghc_source}/configure" ]] ||
@@ -507,6 +565,11 @@ extractor-haskell)
   actual_ghc="$("${target}/bin/ghc" --numeric-version)"
   [[ "${actual_ghc}" == "${expected_ghc}" ]] ||
     die "locked GHC version mismatch: expected ${expected_ghc}, got ${actual_ghc}"
+  actual_ghc_host="$("${target}/bin/ghc" --print-host-platform)"
+  actual_ghc_target="$("${target}/bin/ghc" --print-target-platform)"
+  [[ "${actual_ghc_host}" == "${expected_ghc_platform}" &&
+     "${actual_ghc_target}" == "${expected_ghc_platform}" ]] ||
+    die "locked GHC platform mismatch: expected ${expected_ghc_platform}, got host ${actual_ghc_host} and target ${actual_ghc_target}"
   persist_environment "${target}/bin" "" "${target}/bin/ghc"
   target_created=false
   printf 'installed locked extractor Haskell under %s\n' "${target}"

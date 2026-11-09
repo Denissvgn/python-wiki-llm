@@ -79,10 +79,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_action_ref | isinstance | 63 | `isinstance(value, str)` |
-| normalize_action_ref | _ACTION_REF_RE.fullmatch | 63 | `_ACTION_REF_RE.fullmatch(value)` |
-| normalize_action_ref | InstallCiError | 64 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
-| normalize_action_ref | value.lower | 65 | `value.lower(data not statically known)` |
+| normalize_action_ref | isinstance | 75 | `isinstance(value, str)` |
+| normalize_action_ref | _ACTION_REF_RE.fullmatch | 75 | `_ACTION_REF_RE.fullmatch(value)` |
+| normalize_action_ref | InstallCiError | 76 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
+| normalize_action_ref | value.lower | 77 | `value.lower(data not statically known)` |
 
 ### Boundary effects
 
@@ -92,9 +92,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_action_ref` | `isinstance` | 63 |
-| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 63 |
-| unresolved_call | `normalize_action_ref` | `value.lower` | 65 |
+| external_call | `normalize_action_ref` | `isinstance` | 75 |
+| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 75 |
+| unresolved_call | `normalize_action_ref` | `value.lower` | 77 |
 
 ## Behavior
 

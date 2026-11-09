@@ -217,6 +217,9 @@ def test_clean_real_sync_writes_the_fixed_hashed_evidence(
     invocations = convergence_case["invocations"].read_text(encoding="utf-8")
     assert "<sync>" in invocations
     assert "<--no-plugins>" in invocations
+    assert "<--prune-storage>" in invocations
+    assert "<--storage-recovery-dir>" in invocations
+    assert f"<{evidence}/storage-recovery>" in invocations
     assert "<--dry-run>" not in invocations
     assert "<--force>" not in invocations
 

@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from . import publication_candidate_cmd, publication_cmd
+
 from ..config import PathValidationError, validate_source_root
 from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
@@ -39,6 +41,10 @@ _INTAKE_KEYS = {
     "audience_intent",
     "live_service",
 }
+
+
+def add_publication_candidate_commands(docs_sub):
+    publication_candidate_cmd.add_commands(docs_sub)
 
 
 def _read_bounded_text(path: str, *, label: str) -> str:
@@ -336,7 +342,11 @@ def _packet(args) -> None:
 def _record_result(args) -> None:
     payload = _read_json_object(args.result, label="agent result")
     result = DocumentationAgentResult.from_dict(payload)
-    record_documentation_agent_result(args.workspace, result)
+    actor = getattr(args, "actor", None)
+    if actor is None:
+        record_documentation_agent_result(args.workspace, result)
+    else:
+        record_documentation_agent_result(args.workspace, result, actor=actor)
     _print_run_status(args.workspace, output_format=args.format)
 
 
@@ -653,6 +663,8 @@ def run(args) -> None:
 
     action = getattr(args, "docs_action", None)
     handlers = {
+        "impact": publication_cmd.run,
+        "wiki": publication_candidate_cmd.run,
         "prepare": _prepare,
         "status": _status,
         "packet": _packet,

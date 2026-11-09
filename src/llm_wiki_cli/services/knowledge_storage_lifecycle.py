@@ -412,6 +412,55 @@ def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
     return owned, unknown
 
 
+def finalize_knowledge_storage(
+    wiki_dir: str | Path, *, recovery_dir: str | Path | None = None
+) -> dict[str, Any]:
+    """Finish an opted-in successful writer with verified, recoverable cleanup."""
+    from .knowledge_storage_diagnostics import storage_report
+
+    root = _absolute_path(Path(wiki_dir))
+    if recovery_dir is not None:
+        _outside_tree(Path(recovery_dir), root)
+    before = storage_report(root, require_referenced=True)
+    if before["ok"]:
+        return {"removed": [], "bytes": 0, "recovery_manifest": None}
+    repairable = {"unreferenced-storage", "unrecognized-storage"}
+    if before["integrity"] != "valid-committed-snapshot" or any(
+        failure["reason"] not in repairable for failure in before["failures"]
+    ):
+        raise KnowledgeStorageError(
+            "storage",
+            "a valid complete storage audit is required before automatic cleanup",
+        )
+    preview = prune_knowledge_storage(root)
+    if preview["budget_exhausted"] or preview["retained"]:
+        raise KnowledgeStorageError(
+            "storage",
+            "cleanup preview is incomplete or contains retained objects",
+            code="storage-prune-incomplete",
+        )
+    applied = prune_knowledge_storage(
+        root, dry_run=False, plan=preview["plan"], recovery_dir=recovery_dir
+    )
+    try:
+        after = storage_report(root, require_referenced=True)
+        if applied["retained"] or not after["ok"]:
+            raise KnowledgeStorageError(
+                "storage",
+                "automatic cleanup did not reach a fully referenced generation",
+                code="storage-prune-incomplete",
+            )
+    except BaseException as error:
+        if applied["recovery_manifest"] is not None:
+            error.add_note("Recovery manifest " + applied["recovery_manifest"])
+        raise
+    return {
+        "removed": applied["removed"],
+        "bytes": applied["bytes"],
+        "recovery_manifest": applied["recovery_manifest"],
+    }
+
+
 def _prune_plan(root, root_bytes, manifest_bytes, candidates):
     stamp = root.stat()
     body = {"schema_version": "llm-wiki-prune-plan/v1",
@@ -561,19 +610,24 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
             session.recheck()
             if safe:
                 recovery = _prune_backup(root, recovery_dir, prepared, safe, cancelled)
-            for name, content in safe.items():
-                if cancelled is not None and cancelled():
-                    retained.extend(name for name in safe if name not in removed)
-                    break
-                # Recheck current authority before each deletion, without
-                # rematerializing the model or trusting the preview as a lease.
-                session.read(ROOT_FILENAME, len(root_bytes))
-                session.read(MANIFEST_FILENAME, len(expected_inputs[MANIFEST_FILENAME]))
-                try:
-                    unlink_guarded_bytes(root / name, expected=content)
-                    removed.append(name)
-                except OSError:
-                    retained.append(name)
+            try:
+                for name, content in safe.items():
+                    if cancelled is not None and cancelled():
+                        retained.extend(name for name in safe if name not in removed)
+                        break
+                    # Recheck current authority before each deletion, without
+                    # rematerializing the model or trusting the preview as a lease.
+                    session.read(ROOT_FILENAME, len(root_bytes))
+                    session.read(MANIFEST_FILENAME, len(expected_inputs[MANIFEST_FILENAME]))
+                    try:
+                        unlink_guarded_bytes(root / name, expected=content)
+                        removed.append(name)
+                    except OSError:
+                        retained.append(name)
+            except BaseException as error:
+                if recovery is not None:
+                    error.add_note("Recovery manifest " + recovery)
+                raise
     return {"dry_run": dry_run, "unreferenced_objects": sorted(safe), "removed": removed,
             "retained": sorted(set(retained)), "bytes": sum(map(len, safe.values())), "git_history_changed": False,
             "plan": prepared, "recovery_manifest": recovery, "inspection_bytes": inspected_bytes,

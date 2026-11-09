@@ -21,9 +21,11 @@ from .commands import (
     migrate_cmd,
     obsidian_cmd,
     plugins_cmd,
+    publication_cmd,
     prepare_extractors_cmd,
     queue_cmd,
     query_cmd,
+    reference_cmd,
     release_cmd,
     review_cmd,
     search_cmd,
@@ -185,6 +187,7 @@ _COMMAND_MODULES = {
     "migrate": migrate_cmd,
     "context": context_cmd,
     "docs": docs_cmd,
+    "reference": reference_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
     "maintenance": maintenance_cmd,
@@ -274,6 +277,11 @@ def _build_parser():
     return parser
 
 
+def build_cli_parser() -> argparse.ArgumentParser:
+    """Build the declared CLI without parsing arguments or running commands."""
+    return _build_parser()
+
+
 def _add_helper_preparation_arguments(parser):
     """Accept the operation policy before or after nested command names."""
     parser.add_argument(
@@ -344,6 +352,7 @@ def _add_task_context_command(subparsers):
 
 
 def _register_commands(subparsers):
+    reference_cmd.add_commands(subparsers)
     _add_init_command(subparsers)
     _add_extract_command(subparsers)
     _add_lint_command(subparsers)
@@ -740,21 +749,27 @@ def _add_ci_check_command(subparsers):
 def _add_install_ci_command(subparsers):
     install_ci_parser = subparsers.add_parser(
         "install-ci",
-        help="Install a portable LLM Wiki integrity workflow",
+        help="Install a portable integrity or documentation workflow",
     )
     install_ci_parser.add_argument(
         "--action-ref",
         required=True,
         metavar="SHA",
         help=(
-            "Immutable 40-hex commit for a v4-capable integrity action; "
+            "Immutable 40-hex commit containing the selected reusable action "
+            "(a v4-capable action for integrity); "
             "SHA spelling checked offline"
         ),
     )
     install_ci_parser.add_argument(
+        "--profile",
+        choices=("integrity", "documentation"),
+        default="integrity",
+        help="Select the managed workflow (default: integrity)",
+    )
+    install_ci_parser.add_argument(
         "--src-dir",
-        default=".",
-        help="Project-relative source directory evaluated by the wiki (default: .)",
+        help="Project-relative source directory (defaults to the configured documentation source or .)",
     )
     install_ci_parser.add_argument(
         "--wiki-dir",
@@ -770,6 +785,31 @@ def _add_install_ci_command(subparsers):
         "--force",
         action="store_true",
         help="Replace a workflow not recognized as unmodified llm-wiki output",
+    )
+    docs_ci = install_ci_parser.add_argument_group("documentation profile")
+    docs_ci.add_argument(
+        "--working-directory",
+        help="Consumer directory within the repository (default: .)",
+    )
+    docs_ci.add_argument(
+        "--config",
+        help="Consumer publication configuration (default: .llm-wiki/publication.json)",
+    )
+    docs_ci.add_argument(
+        "--target-dir", help="Project-relative local public wiki snapshot"
+    )
+    docs_ci.add_argument("--baseline", help="Accepted publication basis JSON")
+    docs_ci.add_argument("--reviews", help="Accepted topic review ledger JSON")
+    docs_ci.add_argument(
+        "--previous-receipt", help="Previous accepted ownership receipt JSON"
+    )
+    docs_ci.add_argument(
+        "--candidate-review", help="Accepted exact-artifact approval JSON"
+    )
+    docs_ci.add_argument(
+        "--require-ready",
+        action="store_true",
+        help="Require exact candidate approval in CI",
     )
 
 
@@ -887,6 +927,8 @@ def _add_knowledge_command(subparsers):
     storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
     _add_knowledge_wiki_argument(storage_check)
     storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--require-referenced", action="store_true",
+                               help="Require a complete read-only audit with zero unreferenced or unrecognized storage objects")
     storage_check.add_argument("--stream", action="store_true",
                                help="Bounded complete storage/routing audit; companion authority is outside this scope")
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
@@ -1298,11 +1340,12 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki output directory"
     )
-    bootstrap_parser.add_argument(
+    legacy_overwrite = bootstrap_parser.add_argument(
         "--overwrite",
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    setattr(legacy_overwrite, "reference_notes", ["Compatibility flag rejected by bootstrap; use sync for a managed wiki."])
     bootstrap_parser.add_argument(
         "--depth",
         choices=["shallow", "full"],
@@ -1630,7 +1673,8 @@ def _add_mcp_command(subparsers):
     _add_helper_cache_argument(mcp_parser)
     mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting (Python 3.11+ and [tokens])")
     sessions = mcp_parser.add_mutually_exclusive_group()
-    sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    legacy_sessions = sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    setattr(legacy_sessions, "reference_notes", ["Compatibility flag; session tools are enabled by default. Opening a session is explicit."])
     sessions.add_argument("--disable-sessions", dest="enable_sessions", action="store_false", help="Disable bounded in-memory task sessions")
 
 
@@ -1996,11 +2040,12 @@ def _add_upgrade_command(subparsers):
             "preserved)"
         ),
     )
-    upgrade_parser.add_argument(
+    legacy_force = upgrade_parser.add_argument(
         "--force",
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    setattr(legacy_force, "reference_notes", ["Compatibility flag; it does not override managed ownership checks."])
     upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
     upgrade_hints.add_argument(
         "--quality-hints",
@@ -2103,6 +2148,10 @@ def _add_sync_command(subparsers):
     _add_helper_cache_argument(sync_parser)
     _add_include_tests_argument(sync_parser)
     _add_jobs_argument(sync_parser)
+    sync_parser.add_argument("--prune-storage", action="store_true",
+                             help="After successful sync, validate and prune unreferenced storage with verified recovery")
+    sync_parser.add_argument("--storage-recovery-dir", default=None,
+                             help="Cleanup recovery directory outside the wiki (requires --prune-storage)")
     sync_parser.add_argument(
         "--force",
         action="store_true",
@@ -2306,6 +2355,8 @@ def _add_docs_command(subparsers):
         help="Prepare and supervise a standalone documentation workspace",
     )
     docs_sub = docs_parser.add_subparsers(dest="docs_action", required=True)
+    publication_cmd.add_impact_command(docs_sub)
+    docs_cmd.add_publication_candidate_commands(docs_sub)
 
     prepare = docs_sub.add_parser(
         "prepare",
@@ -2496,6 +2547,10 @@ def _add_docs_command(subparsers):
         help="Reconcile a versioned agent-result JSON object with workspace changes",
     )
     record_result.add_argument("--workspace", required=True)
+    record_result.add_argument(
+        "--actor",
+        help="Supervisor-supplied identity of the author or independent reviewer for mapped documentation",
+    )
     record_result.add_argument(
         "--result",
         required=True,

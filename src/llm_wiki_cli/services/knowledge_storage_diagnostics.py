@@ -22,7 +22,7 @@ from .knowledge_storage import (
     MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA, KnowledgeStorageError,
     canonical_bytes, parse_store_root,
 )
-from .knowledge_storage_io import _absolute_path, read_guarded
+from .knowledge_storage_io import StorageReadSession, _absolute_path, read_guarded
 from .knowledge_packs import (
     PACKED_SCHEMAS, packed_format, PACK_NAME, INDEX_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_PACK_BYTES, MAX_INDEX_BYTES,
     parse_packed_root,
@@ -147,41 +147,107 @@ def inspect_git_range(project: str | Path, *, base: str, head: str) -> dict[str,
     return report
 
 
-def storage_report(wiki_dir: str | Path, *, full: bool = False,
-                   git_base: str | None = None, git_head: str | None = None) -> dict[str, Any]:
-    if type(full) is not bool or (git_base is None) != (git_head is None):
-        raise KnowledgeStorageError("request", "use a boolean full flag and both explicit Git range endpoints")
+def storage_report(
+    wiki_dir: str | Path,
+    *,
+    full: bool = False,
+    git_base: str | None = None,
+    git_head: str | None = None,
+    require_referenced: bool = False,
+) -> dict[str, Any]:
+    if (
+        type(full) is not bool
+        or type(require_referenced) is not bool
+        or (git_base is None) != (git_head is None)
+    ):
+        raise KnowledgeStorageError(
+            "request", "use a boolean full flag and both explicit Git range endpoints"
+        )
     root = _absolute_path(Path(wiki_dir))
-    report: dict[str, Any] = {"schema_version": "llm-wiki-storage-report/v1", "format": "absent",
-                              "integrity": "not-audited", "artifacts": [], "warnings": [], "failures": [],
-                              "objects": 0, "object_bytes": 0, "unreferenced_objects": None,
-                              "unknown_entries": [], "git_history_changed": False}
+    report: dict[str, Any] = {
+        "schema_version": "llm-wiki-storage-report/v1",
+        "format": "absent",
+        "integrity": "not-audited",
+        "artifacts": [],
+        "warnings": [],
+        "failures": [],
+        "objects": 0,
+        "object_bytes": 0,
+        "unreferenced_objects": None,
+        "unknown_entries": [],
+        "git_history_changed": False,
+    }
     report["retention"] = {
-        "namespace_complete": False, "size_inspection_complete": False,
+        "namespace_complete": False,
+        "size_inspection_complete": False,
         "max_inspection_bytes": MAX_EXPANDED_BYTES,
-        "referenced_objects": None, "referenced_bytes": None,
-        "unreferenced_candidates": None, "unreferenced_candidate_bytes": None,
+        "referenced_objects": None,
+        "referenced_bytes": None,
+        "unreferenced_candidates": None,
+        "unreferenced_candidate_bytes": None,
         "candidate_validation": "not-performed",
         "qualification": "Sizes and reachability are separate; only prune preview validates cleanup candidates. Incomplete inspection is not a deletion decision.",
     }
     try:
-        return _storage_report(root, report, full=full, git_base=git_base, git_head=git_head)
+        if require_referenced:
+            return _referenced_storage_report(
+                root, report, git_base=git_base, git_head=git_head
+            )
+        return _storage_report(
+            root, report, full=full, git_base=git_base, git_head=git_head
+        )
     except KnowledgeStorageError as exc:
         if exc.code != "storage-limit":
             raise
         # Preserve failure and bounded partial size observations without running
         # another audit, reading orphan payloads or changing the inspection limit.
         report["error"] = {"code": exc.code, "message": str(exc)}
-        report["failures"].append({"path": exc.field, "reason": exc.code, "message": exc.message})
+        report["failures"].append(
+            {"path": exc.field, "reason": exc.code, "message": exc.message}
+        )
         report["next_action"] = _retention_recovery(root)
         report["ok"] = False
         return report
 
 
+def _referenced_storage_report(root, report, *, git_base, git_head):
+    """Audit a stable generation and namespace without performing cleanup."""
+    with StorageReadSession(root).phase() as session:
+        for name in (ROOT_FILENAME, MANIFEST_FILENAME, SURFACE_INDEX_FILENAME):
+            session.read(name, MAX_EXPANDED_BYTES)
+        owned, unknown = stored_object_paths(root)
+        report = _storage_report(
+            root, report, full=True, git_base=git_base, git_head=git_head
+        )
+        observed_owned, observed_unknown = stored_object_paths(root)
+        if set(owned) != set(observed_owned) or set(unknown) != set(observed_unknown):
+            raise KnowledgeStorageError(
+                "objects",
+                "storage namespace changed during audit",
+                code="storage-mutation",
+            )
+    if report["integrity"] != "valid-committed-snapshot":
+        report["failures"].append({"reason": "storage-audit-incomplete"})
+    if report["unreferenced_objects"]:
+        report["failures"].append(
+            {
+                "reason": "unreferenced-storage",
+                "count": len(report["unreferenced_objects"]),
+            }
+        )
+    if report["unknown_entries"]:
+        report["failures"].append(
+            {"reason": "unrecognized-storage", "count": len(report["unknown_entries"])}
+        )
+    report["ok"] = report["ok"] and not report["failures"]
+    return report
+
+
 def _retention_recovery(root: Path) -> dict[str, Any]:
     """Offer the maintained preview route, never a size-based cleanup decision."""
     return {
-        "operation": "prune-storage", "dry_run": True,
+        "operation": "prune-storage",
+        "dry_run": True,
         "argv": ["llm-wiki", "knowledge", "prune-storage", "--wiki-dir", str(root)],
         "instructions": [
             "Preview requires a valid committed indexed knowledge or manifest store; it can remain unavailable or budget-exhausted.",

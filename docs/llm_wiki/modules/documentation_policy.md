@@ -37,31 +37,35 @@ flowchart LR
     n1["src/llm_wiki_cli/services/calibration/controller.py"]
     n2["src/llm_wiki_cli/services/documentation_policy.py"]
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n5["src/llm_wiki_cli/services/source_selection.py"]
-    n6["src/llm_wiki_cli/services/source_snapshot.py"]
+    n4["src/llm_wiki_cli/services/documentation_run/publication.py"]
+    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n6["src/llm_wiki_cli/services/source_selection.py"]
+    n7["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n5
     n0 --> n6
+    n0 --> n7
     n1 --> n2
-    n1 --> n4
-    n2 --> n4
+    n1 --> n5
     n2 --> n5
     n2 --> n6
+    n2 --> n7
     n3 --> n2
-    n3 --> n4
     n3 --> n5
     n3 --> n6
-    n6 --> n4
-    n6 --> n5
+    n3 --> n7
+    n4 --> n2
+    n4 --> n5
+    n7 --> n5
+    n7 --> n6
     click n0 "../modules/api.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/documentation_policy.md"
     click n3 "../modules/documentation_run_dependencies.md"
-    click n4 "../modules/filesystem_guard.md"
-    click n5 "../modules/source_selection.md"
-    click n6 "../modules/source_snapshot.md"
+    click n4 "../modules/publication.md"
+    click n5 "../modules/filesystem_guard.md"
+    click n6 "../modules/source_selection.md"
+    click n7 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -71,6 +75,7 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Inbound | [publication](../modules/publication.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |

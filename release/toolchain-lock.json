@@ -20,6 +20,10 @@
         "darwin_arm64": {
           "sha256": "efb87ff28af9a188d0536ef5d42e63dd52ba8263cd7344a993cc48dd11dedb6a",
           "url": "https://go.dev/dl/go1.26.5.darwin-arm64.tar.gz"
+        },
+        "linux_arm64": {
+          "sha256": "fe4789e92b1f33358680864bbe8704289e7bb5fc207d80623c308935bd696d49",
+          "url": "https://go.dev/dl/go1.26.5.linux-arm64.tar.gz"
         }
       },
       "version": "1.26.5",
@@ -32,7 +36,13 @@
       },
       "checksum_manifest_sha256": "ca3cc526b8310a58e36f85952b503ef0fd5d6327832260efa1efae280b6ccf35",
       "version": "9.6.7",
-      "version_output": "9.6.7"
+      "version_output": "9.6.7",
+      "platform_artifacts": {
+        "linux_arm64": {
+          "sha256": "3cfa843687856de304a946dbe849a497c4fdad021f0275628b8ca7b55ccf8082",
+          "url": "https://downloads.haskell.org/~ghc/9.6.7/ghc-9.6.7-aarch64-deb10-linux.tar.xz"
+        }
+      }
     },
     "node": {
       "artifact": {
@@ -76,7 +86,19 @@
         "url": "https://static.rust-lang.org/dist/channel-rust-1.95.0.toml"
       },
       "version": "1.95.0",
-      "version_output": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)"
+      "version_output": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+      "platform_artifacts": {
+        "linux_arm64": {
+          "sha256": "094c9c36531911c5cc7dd6ab2d3069ab8dcd744d6239b0bda1387b243dfc391e",
+          "url": "https://static.rust-lang.org/dist/2026-04-16/rust-1.95.0-aarch64-unknown-linux-gnu.tar.xz"
+        }
+      },
+      "platform_clippy_artifacts": {
+        "linux_arm64": {
+          "sha256": "fb021e0c0fc2238be9266d7614f4a26bc372544c4cba3528d729ab24ad229fc9",
+          "url": "https://static.rust-lang.org/dist/2026-04-16/clippy-1.95.0-aarch64-unknown-linux-gnu.tar.xz"
+        }
+      }
     }
   },
   "qualification_tools": {

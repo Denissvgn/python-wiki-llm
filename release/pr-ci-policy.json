@@ -173,7 +173,8 @@
     },
     "wiki-git-native": {
       "tests": [
-        "tests/test_wiki_git_delivery.py"
+        "tests/test_wiki_git_delivery.py",
+        "tests/test_storage_update_cleanup.py"
       ],
       "lanes": [
         "ubuntu",
@@ -481,6 +482,125 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "publication": {
+      "tests": [
+        "tests/test_publication_config.py",
+        "tests/test_publication_snapshot.py",
+        "tests/test_publication_contracts.py",
+        "tests/test_publication_impact.py",
+        "tests/test_publication_references.py",
+        "tests/test_publication_candidate.py",
+        "tests/test_publication_links.py",
+        "tests/test_publication_candidate_cli.py",
+        "tests/test_publication_output_policy.py",
+        "tests/test_publication_maintenance.py",
+        "tests/test_publication_maintenance_cli.py",
+        "tests/test_documentation_publication.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "wiki-portability": {
+      "tests": [
+        "tests/test_publication_portability_source.py",
+        "tests/test_publication_portability_adoption.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
+    "publication-action": {
+      "tests": [
+        "tests/test_wiki_impact_action.py",
+        "tests/test_wiki_impact_observation.py",
+        "tests/test_github_action_shell.py::test_sibling_wiki_accepted_state_paths_are_confined"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "wiki-candidate-action": {
+      "tests": [
+        "tests/test_wiki_candidate_action.py",
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_wiki_candidate_preparation.py",
+        "tests/test_wiki_delivery_action.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
+    "wiki-delivery": {
+      "tests": [
+        "tests/test_publication_delivery.py",
+        "tests/test_wiki_delivery_transport.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "ci-installer": {
+      "tests": [
+        "tests/test_install_ci.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
+    "reference": {
+      "tests": [
+        "tests/test_cli_reference.py",
+        "tests/test_behavior_reference.py",
+        "tests/test_behavior_reference_cli.py",
+        "tests/test_publication_references.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -488,6 +608,17 @@
       "paths": [
         "src/llm_wiki_cli/services/wiki_git_delivery.py",
         "tests/test_wiki_git_delivery.py"
+      ],
+      "groups": [
+        "wiki-git-native"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+        "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
+        "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
+        "tests/test_storage_update_cleanup.py"
       ],
       "groups": [
         "wiki-git-native"
@@ -582,6 +713,15 @@
         "inventory",
         "defaults",
         "storage"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/__init__.py"
+      ],
+      "groups": [
+        "packaging",
+        "reference"
       ]
     },
     {
@@ -787,6 +927,113 @@
       ],
       "groups": [
         "release"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/publication_*.py",
+        "src/llm_wiki_cli/services/documentation_run/publication.py",
+        "src/llm_wiki_cli/commands/publication_cmd.py",
+        "tests/test_publication_*.py",
+        "tests/test_documentation_publication.py",
+        "docs/sibling-wiki.md",
+        ".llm-wiki/publication.json",
+        "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+        "docs/sibling-wiki-candidates.md"
+      ],
+      "groups": [
+        "publication"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/wiki-impact/**",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/provider.py",
+        "integrations/wiki-candidate/delivery/git_transport.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+        ".github/workflows/sibling-wiki-impact.yml",
+        "tests/test_wiki_impact_action.py",
+        "tests/test_wiki_impact_observation.py"
+      ],
+      "groups": [
+        "publication-action"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/commands/prepare_extractors_cmd.py",
+        "src/llm_wiki_cli/commands/publication_cmd.py",
+        "src/llm_wiki_cli/commands/publication_candidate_cmd.py",
+        "src/llm_wiki_cli/services/publication_snapshot.py",
+        "src/llm_wiki_cli/services/publication_candidate.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+        "src/llm_wiki_cli/services/ci_installer.py",
+        "integrations/wiki-candidate/checkout.py",
+        "integrations/wiki-candidate/prepare.py",
+        "tests/fixtures/sibling-wiki/**",
+        "tests/test_publication_portability_*.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "groups": [
+        "wiki-portability"
+      ]
+    },
+    {
+      "paths": [
+        ".github/workflows/action-selftest.yml",
+        "integrations/wiki-candidate/**",
+        "examples/sibling-wiki/**",
+        "tests/test_wiki_candidate_*.py",
+        "src/llm_wiki_cli/services/publication_delivery.py",
+        "tests/test_wiki_delivery_action.py"
+      ],
+      "groups": [
+        "wiki-candidate-action"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/publication_delivery.py",
+        "src/llm_wiki_cli/services/publication_config.py",
+        "src/llm_wiki_cli/services/publication_candidate.py",
+        "src/llm_wiki_cli/services/publication_contracts.py",
+        "integrations/wiki-candidate/delivery/**",
+        "tests/test_publication_delivery.py",
+        "tests/test_wiki_delivery_transport.py"
+      ],
+      "groups": [
+        "wiki-delivery"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/ci_installer.py",
+        "src/llm_wiki_cli/commands/install_ci_cmd.py",
+        "tests/test_install_ci.py"
+      ],
+      "groups": [
+        "ci-installer"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/cli_reference.py",
+        "src/llm_wiki_cli/services/behavior_reference.py",
+        "src/llm_wiki_cli/services/publication_references.py",
+        "src/llm_wiki_cli/commands/reference_cmd.py",
+        "src/llm_wiki_cli/schemas/llm-wiki-cli-contract-v1.schema.json",
+        "src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
+        "src/llm_wiki_cli/skills/**",
+        "pyproject.toml",
+        "tests/test_cli_reference.py",
+        "tests/test_behavior_reference.py",
+        "tests/test_behavior_reference_cli.py",
+        "tests/test_publication_references.py",
+        "docs/cli-reference-data.md"
+      ],
+      "groups": [
+        "reference"
       ]
     }
   ],
