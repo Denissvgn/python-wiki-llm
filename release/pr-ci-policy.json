@@ -173,7 +173,8 @@
     },
     "wiki-git-native": {
       "tests": [
-        "tests/test_wiki_git_delivery.py"
+        "tests/test_wiki_git_delivery.py",
+        "tests/test_storage_update_cleanup.py"
       ],
       "lanes": [
         "ubuntu",
@@ -607,6 +608,17 @@
       "paths": [
         "src/llm_wiki_cli/services/wiki_git_delivery.py",
         "tests/test_wiki_git_delivery.py"
+      ],
+      "groups": [
+        "wiki-git-native"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+        "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
+        "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
+        "tests/test_storage_update_cleanup.py"
       ],
       "groups": [
         "wiki-git-native"

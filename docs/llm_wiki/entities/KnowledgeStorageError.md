@@ -95,4 +95,4 @@ flowchart LR
 | `_pack_structure` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `decode_member` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 
-> References: showing 12 of 98 logical references; 86 omitted by the 12-row generated summary limit.
+> References: showing 12 of 100 logical references; 88 omitted by the 12-row generated summary limit.

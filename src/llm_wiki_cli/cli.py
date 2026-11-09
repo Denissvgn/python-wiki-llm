@@ -927,6 +927,8 @@ def _add_knowledge_command(subparsers):
     storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
     _add_knowledge_wiki_argument(storage_check)
     storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--require-referenced", action="store_true",
+                               help="Require a complete read-only audit with zero unreferenced or unrecognized storage objects")
     storage_check.add_argument("--stream", action="store_true",
                                help="Bounded complete storage/routing audit; companion authority is outside this scope")
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
@@ -2146,6 +2148,10 @@ def _add_sync_command(subparsers):
     _add_helper_cache_argument(sync_parser)
     _add_include_tests_argument(sync_parser)
     _add_jobs_argument(sync_parser)
+    sync_parser.add_argument("--prune-storage", action="store_true",
+                             help="After successful sync, validate and prune unreferenced storage with verified recovery")
+    sync_parser.add_argument("--storage-recovery-dir", default=None,
+                             help="Cleanup recovery directory outside the wiki (requires --prune-storage)")
     sync_parser.add_argument(
         "--force",
         action="store_true",

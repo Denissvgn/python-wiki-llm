@@ -434,6 +434,7 @@ jobs:
           report-schema: v4
           comparison-policy: analysis-v1
           maintenance-candidate-sha: ${{ github.sha }}
+          require-referenced-storage: "true"
 
   p0-oci-integration:
     name: P0 synthetic OCI isolation

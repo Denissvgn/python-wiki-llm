@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 283,
-      "workflows": 278
+      "workflows": 280
     },
     "dependency_architecture": 2,
-    "total": 1760
+    "total": 1762
   },
   "dependency_pages": {
     "count": 2,
@@ -12226,7 +12226,7 @@
             "src/llm_wiki_cli/commands/docs_cmd.py",
             "src/llm_wiki_cli/__init__.py"
           ],
-          "step_count": 959,
+          "step_count": 962,
           "truncated": true
         }
       },
@@ -26510,7 +26510,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 60,
+              "line": 61,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -26518,7 +26518,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 62,
+              "line": 63,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -26656,7 +26656,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4818,
+          "step_count": 4861,
           "truncated": true
         }
       },
@@ -34142,9 +34142,9 @@
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+            "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
-            "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/ci_report.py",
             "src/llm_wiki_cli/services/doctor_service.py",
@@ -34152,7 +34152,7 @@
             "src/llm_wiki_cli/services/health_summary.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4600,
+          "step_count": 4457,
           "truncated": true
         }
       },
@@ -35555,7 +35555,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 60,
+              "line": 61,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -35563,7 +35563,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 62,
+              "line": 63,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -35701,7 +35701,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4818,
+          "step_count": 4861,
           "truncated": true
         }
       },
@@ -38278,7 +38278,31 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5439,
+              "line": 5446,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 5449,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 5453,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 5455,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -38370,9 +38394,10 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
@@ -38440,9 +38465,12 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/normalization_diagnostics.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py",
-            "src/llm_wiki_cli/services/sync_recovery.py"
+            "src/llm_wiki_cli/services/sync_recovery.py",
+            "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/maintenance_projection.py"
           ],
-          "step_count": 6550,
+          "step_count": 7171,
           "truncated": true
         }
       },
@@ -40539,7 +40567,7 @@
             "src/llm_wiki_cli/services/analysis_compatibility.py",
             "src/llm_wiki_cli/services/progress.py"
           ],
-          "step_count": 861,
+          "step_count": 864,
           "truncated": true
         }
       },
@@ -43166,6 +43194,7 @@
         "workflows/export_publication_candidate.md",
         "workflows/extract_bootstrap_inventory.md",
         "workflows/finalize_bootstrap_artifacts.md",
+        "workflows/finalize_knowledge_storage.md",
         "workflows/finalize_prepared_sync.md",
         "workflows/first_use_guidance.md",
         "workflows/fresh_inventory_source_files.md",
@@ -43269,6 +43298,7 @@
         "workflows/recover_knowledge_storage.md",
         "workflows/recover_maintenance_authority.md",
         "workflows/recover_new_sync_pages.md",
+        "workflows/referenced_storage_report.md",
         "workflows/references.md",
         "workflows/refresh_documentation_native_projection.md",
         "workflows/regenerate_dependency_pages.md",
@@ -51184,6 +51214,7 @@
         "modules/knowledge_maintenance.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage_access.md",
+        "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md",
         "modules/publication_candidate_cmd.md",
@@ -59126,6 +59157,21 @@
       "title": "finalize_bootstrap_artifacts"
     },
     {
+      "canonical_path": "workflows/finalize_knowledge_storage.md",
+      "id": "finalize_knowledge_storage",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/finalize_knowledge_storage",
+      "outgoing_internal_links": [
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_io.md",
+        "modules/knowledge_storage_lifecycle.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
+      "title": "finalize_knowledge_storage"
+    },
+    {
       "canonical_path": "workflows/finalize_prepared_sync.md",
       "id": "finalize_prepared_sync",
       "kind": "workflows",
@@ -60801,6 +60847,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/sync_recovery.py",
       "title": "recover_new_sync_pages"
+    },
+    {
+      "canonical_path": "workflows/referenced_storage_report.md",
+      "id": "referenced_storage_report",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/referenced_storage_report",
+      "outgoing_internal_links": [
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_io.md",
+        "modules/knowledge_storage_lifecycle.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+      "title": "referenced_storage_report"
     },
     {
       "canonical_path": "workflows/references.md",
@@ -71789,13 +71850,17 @@
         "modules/knowledge_governance.md",
         "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
+        "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
         "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
+        "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
+        "modules/knowledge_storage_lifecycle.md",
         "modules/maintenance_evidence.md",
+        "modules/maintenance_projection.md",
         "modules/maintenance_protocol.md",
         "modules/maintenance_recovery.md",
         "modules/maintenance_shapes.md",
@@ -73272,5 +73337,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:ca38d3e47280d256aa3736ed4bedd627f331bf897529f059b3bb8c2436aa0e82"
+  "source_hash": "sha256:8dcdcb6b74cb7ce9f78996f9fd29edd00aa68b9ac42706c6ade37230974ddb52"
 }

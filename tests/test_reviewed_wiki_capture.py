@@ -20,6 +20,7 @@ spec = importlib.util.spec_from_file_location("reviewed_wiki_capture", SCRIPT)
 assert spec is not None and spec.loader is not None
 driver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(driver)
+OWNING_SYNC = driver.run_sync
 PLAN = b"Sync dry-run plan:\n  generator refresh sources: 53\n  requires --force: yes\nDRY-RUN: no files modified.\n"
 
 
@@ -65,6 +66,18 @@ def test_preview_is_clean_and_has_no_owning_or_snapshot_receipt(case):
     assert (evidence / "preview.stdout").read_bytes() == PLAN
     assert not (evidence / "convergence-result.json").exists()
     assert not (evidence / "wiki-review-snapshot.tar").exists()
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+def test_owning_sync_enables_verified_cleanup_outside_the_wiki(case, monkeypatch, dry_run):
+    root, evidence, *_ = case
+    seen = []
+    monkeypatch.setattr(driver.subprocess, "run", lambda argv, **kwargs: seen.append(argv))
+    OWNING_SYNC(root, evidence, dry_run=dry_run)
+    argv = seen[0]
+    assert "--prune-storage" in argv
+    assert argv[argv.index("--storage-recovery-dir") + 1] == str(evidence / "storage-recovery")
+    assert ("--dry-run" in argv) == dry_run
 
 
 @pytest.mark.parametrize("approved", [None, "", "z" * 64])

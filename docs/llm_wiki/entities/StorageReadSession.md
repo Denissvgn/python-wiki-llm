@@ -43,9 +43,9 @@ flowchart LR
     n7["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
     n8["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
     n9["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n10["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n11["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n12["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n10["_referenced_storage_report (src/llm_wiki_cli/services/knowledge_storage_diagnostics.py)"]
+    n11["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n12["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -68,7 +68,7 @@ flowchart LR
     click n7 "../modules/knowledge_maintenance.md"
     click n8 "../modules/knowledge_reuse.md"
     click n9 "../modules/knowledge_storage_access.md"
-    click n10 "../modules/knowledge_storage_lifecycle.md"
+    click n10 "../modules/knowledge_storage_diagnostics.md"
     click n11 "../modules/knowledge_storage_lifecycle.md"
     click n12 "../modules/knowledge_storage_lifecycle.md"
 ```
@@ -92,8 +92,8 @@ flowchart LR
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 1 |
 | `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
+| `_referenced_storage_report` | call | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) | 1 |
 | `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 
-> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.
+> References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

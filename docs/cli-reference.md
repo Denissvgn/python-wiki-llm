@@ -427,6 +427,13 @@ roots and selection. A subsequent sync with unchanged inputs should be a no-op.
 If publication is rejected, follow its explicit recovery diagnostic before
 retrying; do not delete authority files or reinitialize an established wiki.
 
+Add `--prune-storage` to validate and clean unreferenced native storage after
+successful sync. The writer uses a fresh generation-bound plan and verified
+recovery copies. `--storage-recovery-dir` selects a directory outside the wiki.
+Use `knowledge storage-check --full --require-referenced` for a read-only gate.
+The [storage lifecycle guide](knowledge-storage.md) describes recovery and the
+complete audit.
+
 For a narrowly authorized repair of captured invalid evidence, use
 `--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
 

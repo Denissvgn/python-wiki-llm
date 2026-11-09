@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 691 | [Open section](#entities) |
 | Modules | 283 | [Open section](#modules) |
-| Workflows | 278 | [Open section](#workflows) |
+| Workflows | 280 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 488 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1113,6 +1113,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [export_publication_candidate](workflows/export_publication_candidate.md) - entry: `publication_candidate.export_publication_candidate`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
+- [finalize_knowledge_storage](workflows/finalize_knowledge_storage.md) - entry: `knowledge_storage_lifecycle.finalize_knowledge_storage`
 - [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
 - [first_use_guidance](workflows/first_use_guidance.md) - entry: `bootstrap_runtime._first_use_guidance`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
@@ -1208,6 +1209,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
 - [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
+- [referenced_storage_report](workflows/referenced_storage_report.md) - entry: `knowledge_storage_diagnostics._referenced_storage_report`
 - [references](workflows/references.md) - entry: `publication_contracts._references`
 - [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native._refresh_documentation_native_projection`
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`

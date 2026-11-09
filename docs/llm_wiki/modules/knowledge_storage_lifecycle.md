@@ -22,6 +22,7 @@ Cleanup plans bind the generation, root and exact candidate bytes. Apply verifie
 | `.knowledge_loader` | `load_knowledge_state` |
 | `.knowledge_packs` | `PACKED_SCHEMA`, `LOCAL_PACKED_SCHEMA`, `PACKED_SCHEMAS`, `PACKED_FORMATS`, `packed_format`, `PACK_NAME`, `INDEX_NAME`, `PACK_DIRECTORY`, `PACK_INDEX_DIRECTORY`, `INDEX_PAGE_NAME`, `INDEX_PAGE_DIRECTORY`, `PackedKnowledgeStoreReader`, `inspect_pack`, `inspect_index_pages` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `OBJECT_DIRECTORY`, `ROOT_FILENAME`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `decode_bytes`, `canonical_bytes`, `digest`, `_hash`, `decode_bytes` |
+| `.knowledge_storage_diagnostics` | `storage_report` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded`, `_absolute_path` |
 | `.maintenance_projection` | `validate_maintenance_prose`, `validate_maintenance_projection` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `governance_writer_lock`, `maintenance_write_operation`, `storage_writer_lock`, `MaintenanceProtocolError`, `load_adoption_marker` |
@@ -58,10 +59,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
-| Outbound | `src` (17) |
+| Inbound | `src` (7) |
+| Outbound | `src` (18) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -80,6 +81,7 @@ flowchart LR
 | `_canonical_markdown` | `(relative: str) -> bool` | — | — |
 | `is_storage_path` | `(relative: str) -> bool` | — | — |
 | `stored_object_paths` | `(wiki_dir: str \| Path) -> tuple[list[str], list[str]]` | — | Bounded enumeration of the owned two-level object namespace, without links. |
+| `finalize_knowledge_storage` | `(wiki_dir: str \| Path, *, recovery_dir: str \| Path \| None = None) -> dict[str, Any]` | — | Finish an opted-in successful writer with verified, recoverable cleanup. |
 | `_prune_plan` | `(root, root_bytes, manifest_bytes, candidates)` | — | — |
 | `_prune_backup` | `(root, directory, plan, candidates, cancelled)` | — | — |
 | `prune_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = True, plan = None, recovery_dir: str \| Path \| None = None, max_bytes: int = MAX_EXPANDED_BYTES, cancelled = None) -> dict[str, Any]` | — | Preview or apply an exact generation-bound cleanup with verified recovery. |

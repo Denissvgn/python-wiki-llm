@@ -283,6 +283,8 @@ if [[ ${before_status_exit} -eq 0 && ${before_worktree_exit} -eq 0 &&
     --wiki-dir "${wiki_dir}" \
     --cache-dir "${inventory_cache_dir}" \
     --helper-cache-dir "${helper_cache_dir}" \
+    --prune-storage \
+    --storage-recovery-dir "${evidence_dir}/storage-recovery" \
     --jobs "${jobs}" \
     --no-plugins > "${SYNC_LOG}" 2>&1
   sync_exit=$?

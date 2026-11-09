@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 77 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 81 more
 
 **Complete modules touched:**
 
@@ -40,13 +40,17 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
@@ -96,70 +100,70 @@
 sequenceDiagram
     participant p0 as run
     participant p1 as _sync_run_options_from_args
-    participant p2 as maintenance_write_operation
-    participant p3 as _run_sync_options
-    participant p4 as _absolute_path
-    participant p5 as _prepare_sync_run
-    participant p6 as guard_maintenance_owner
-    participant p7 as governance_writer_lock
-    participant p8 as storage_writer_lock
-    participant p9 as prepare_boundary
-    participant p10 as _cache_options_from_args
-    participant p11 as _capture_spooled_wiki
-    participant p12 as _recovery_directory
-    participant p13 as extraction_job_request_from_args
-    participant p14 as report_capture
-    participant p15 as save_recovery_snapshot
-    participant p16 as _print_cache_stats
-    participant p17 as mark_recovery_complete
-    participant p18 as retain_recovery_catalogs
-    participant p19 as _run_prepared_sync
-    participant p20 as repair_paths
-    participant p21 as validate_source_root
-    participant p22 as cache_options_from_args
-    participant p23 as validate_path
-    participant p24 as _wiki_files
-    participant p25 as _recovery_parent
-    participant p26 as save_recovery_catalog
-    participant p27 as assert_no_pending_page_moves
-    participant p28 as _require
-    participant p29 as print (src/llm_wiki_cli/commands/sync_cmd.py:run)
+    participant p2 as _outside_tree
+    participant p3 as maintenance_write_operation
+    participant p4 as _run_sync_options
+    participant p5 as finalize_knowledge_storage
+    participant p6 as _absolute_path
+    participant p7 as _prepare_sync_run
+    participant p8 as guard_maintenance_owner
+    participant p9 as governance_writer_lock
+    participant p10 as storage_writer_lock
+    participant p11 as prepare_boundary
+    participant p12 as storage_report
+    participant p13 as _cache_options_from_args
+    participant p14 as _capture_spooled_wiki
+    participant p15 as prune_knowledge_storage
+    participant p16 as _recovery_directory
+    participant p17 as extraction_job_request_from_args
+    participant p18 as report_capture
+    participant p19 as save_recovery_snapshot
+    participant p20 as _print_cache_stats
+    participant p21 as mark_recovery_complete
+    participant p22 as retain_recovery_catalogs
+    participant p23 as _run_prepared_sync
+    participant p24 as repair_paths
+    participant p25 as validate_source_root
+    participant p26 as cache_options_from_args
+    participant p27 as validate_path
+    participant p28 as _wiki_files
+    participant p29 as bool (src/llm_wiki_cli/commands/sync_cmd.py:run)
     participant p30 as application.changed_files.extend
     p0->>p1: _sync_run_options_from_args
-    p0->>p2: maintenance_write_operation
-    p0->>p3: _run_sync_options
-    p2->>p4: _absolute_path
-    p3->>p5: _prepare_sync_run
-    p2->>p6: guard_maintenance_owner
-    p2->>p7: governance_writer_lock
-    p2->>p8: storage_writer_lock
-    p3->>p9: prepare_boundary
-    p1->>p10: _cache_options_from_args
-    p2->>p11: _capture_spooled_wiki
-    p2->>p12: _recovery_directory
-    p1->>p13: extraction_job_request_from_args
-    p3->>p14: report_capture
-    p2->>p15: save_recovery_snapshot
-    p3->>p16: _print_cache_stats
-    p2->>p17: mark_recovery_complete
-    p2->>p18: retain_recovery_catalogs
-    p3->>p19: _run_prepared_sync
-    p1->>p20: repair_paths
-    p1->>p21: validate_source_root
-    p10->>p22: cache_options_from_args
-    p21->>p23: validate_path
-    p11->>p24: _wiki_files
-    p12->>p25: _recovery_parent
-    p15->>p26: save_recovery_catalog
-    p5->>p27: assert_no_pending_page_moves
-    p9->>p28: _require
-    p0-->>p29: print (src/llm_wiki_cli/commands/sync_cmd.py:run)(..., file=sys.stderr)
-    p3-->>p30: application.changed_files.extend(selected)
+    p0->>p2: _outside_tree
+    p0->>p3: maintenance_write_operation
+    p0->>p4: _run_sync_options
+    p0->>p5: finalize_knowledge_storage
+    p2->>p6: _absolute_path
+    p4->>p7: _prepare_sync_run
+    p3->>p8: guard_maintenance_owner
+    p3->>p9: governance_writer_lock
+    p3->>p10: storage_writer_lock
+    p4->>p11: prepare_boundary
+    p5->>p12: storage_report
+    p1->>p13: _cache_options_from_args
+    p3->>p14: _capture_spooled_wiki
+    p5->>p15: prune_knowledge_storage
+    p3->>p16: _recovery_directory
+    p1->>p17: extraction_job_request_from_args
+    p4->>p18: report_capture
+    p3->>p19: save_recovery_snapshot
+    p4->>p20: _print_cache_stats
+    p3->>p21: mark_recovery_complete
+    p3->>p22: retain_recovery_catalogs
+    p4->>p23: _run_prepared_sync
+    p1->>p24: repair_paths
+    p1->>p25: validate_source_root
+    p13->>p26: cache_options_from_args
+    p25->>p27: validate_path
+    p14->>p28: _wiki_files
+    p0-->>p29: bool (src/llm_wiki_cli/commands/sync_cmd.py:run)(getattr(...))
+    p4-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6549 interactions; 6519 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 7170 interactions; 7140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2265 (2264 omitted); unresolved 1 of 1978 (1977 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2447 (2446 omitted); unresolved 1 of 2140 (2139 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -173,7 +177,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1527 groups; 1519 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1658 groups; 1650 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -186,9 +190,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2307; effect analysis evaluated: 1652, partial: 103, unavailable: 552. Counts include steps omitted from the displayed trace.
+Source steps: 2584; effect analysis evaluated: 1854, partial: 112, unavailable: 618. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1755 source steps with known totals: observed: 10728, emitted: 10210, omitted: 518. Unavailable totals are excluded.
+Collector observations for 1966 source steps with known totals: observed: 11976, emitted: 11325, omitted: 651. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -196,7 +200,7 @@ Collector observations for 1755 source steps with known totals: observed: 10728,
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `run` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
 | `_sync_run_options_from_args` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
 | `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -237,13 +241,19 @@ flowchart LR
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
-    s2 -. "output print" .-> b1
+    s1 -. "output print" .-> b1
     b2["output print"]
-    s2 -. "output print" .-> b2
+    s1 -. "output print" .-> b2
     b3["output print"]
-    s2 -. "output print" .-> b3
+    s1 -. "output print" .-> b3
     b4["output print"]
     s2 -. "output print" .-> b4
+    b5["output print"]
+    s2 -. "output print" .-> b5
+    b6["output print"]
+    s2 -. "output print" .-> b6
+    b7["output print"]
+    s2 -. "output print" .-> b7
     click s1 "../modules/sync_cmd.md"
     click s2 "../modules/sync_cmd.md"
     click s10 "../modules/sync_cmd.md"
@@ -254,13 +264,16 @@ flowchart LR
     class b2 boundary
     class b3 boundary
     class b4 boundary
+    class b5 boundary
+    class b6 boundary
+    class b7 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `options.wiki_dir`, `options.dry_run`, `sys` | - | - |
+| `run` | `args` | `options.wiki_dir`, `options.wiki_dir`, `options.dry_run`, `sys`, `options.dry_run`, `options.wiki_dir` | - | - |
 | `_sync_run_options_from_args` | `args` | `ScopedRepairError`, `sys`, `sys`, `sys`, `sys`, `print_extraction_job_plan` | - | `_SyncRunOptions(...)` |
 | `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | - | - | - | - |
@@ -293,7 +306,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5439 |
+| output | `print` | `run` | 5446 |
+| output | `print` | `run` | 5449 |
+| output | `print` | `run` | 5453 |
+| output | `print` | `run` | 5455 |
 | output | `print` | `_sync_run_options_from_args` | 2464 |
 | output | `print` | `_sync_run_options_from_args` | 2467 |
 | output | `print` | `_sync_run_options_from_args` | 2473 |

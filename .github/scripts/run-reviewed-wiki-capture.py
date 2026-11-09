@@ -98,6 +98,7 @@ def run_sync(root: Path, evidence: Path, *, dry_run: bool) -> subprocess.Complet
             "--src-dir", ".", "--wiki-dir", WIKI,
             "--helper-cache-dir", str(root / ".git"),
             "--cache-dir", str(evidence / "inventory"),
+            "--prune-storage", "--storage-recovery-dir", str(evidence / "storage-recovery"),
             "--jobs", "1", "--no-plugins", "--progress", "never",
             "--dry-run" if dry_run else "--force"]
     return subprocess.run(argv, cwd=root, capture_output=True, timeout=1800)
