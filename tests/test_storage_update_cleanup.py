@@ -3,6 +3,7 @@
 from pathlib import Path
 import json
 import subprocess
+import sys
 
 import pytest
 import yaml
@@ -141,17 +142,26 @@ def test_strict_audit_fences_the_generation_roots(stored_wiki, monkeypatch):
     root, _orphan = stored_wiki
     original = diagnostics._storage_report
     marker = root / ".llm-wiki-manifest.json"
-    changed = marker.read_bytes() + b" "
+    before = marker.read_bytes()
+    changed = before + b" "
+    attempted = []
 
     def report(*args, **kwargs):
         result = original(*args, **kwargs)
+        attempted.append(True)
         marker.write_bytes(changed)
         return result
 
     monkeypatch.setattr(diagnostics, "_storage_report", report)
-    with pytest.raises(KnowledgeStorageError, match="changed"):
-        diagnostics.storage_report(root, require_referenced=True)
-    assert marker.read_bytes() == changed
+    if sys.platform == "win32":
+        with pytest.raises(PermissionError):
+            diagnostics.storage_report(root, require_referenced=True)
+        assert marker.read_bytes() == before
+    else:
+        with pytest.raises(KnowledgeStorageError, match="changed"):
+            diagnostics.storage_report(root, require_referenced=True)
+        assert marker.read_bytes() == changed
+    assert attempted == [True]
 
 
 def test_strict_audit_keeps_budget_exhaustion_incomplete(stored_wiki, monkeypatch):
