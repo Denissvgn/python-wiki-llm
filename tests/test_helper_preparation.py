@@ -10,8 +10,16 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.services import extractor_helpers as helpers
+from llm_wiki_cli.services import helper_cache
 from llm_wiki_cli.services.helper_preparation import ensure_source_helpers
 from llm_wiki_cli.services.source_selection import SourceSelectionError
+
+
+@pytest.fixture(autouse=True)
+def isolated_shared_helper_cache(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        helper_cache, "user_helper_cache_root", lambda: tmp_path / "shared-helper-cache"
+    )
 
 
 def _prepare_fixture(language, cache_root):

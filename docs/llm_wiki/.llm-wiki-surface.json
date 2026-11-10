@@ -2388,12 +2388,6 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 72,
-              "step": "_value",
-              "target": "value.is_absolute"
-            },
-            {
-              "kind": "unresolved_call",
               "line": 76,
               "step": "_value",
               "target": "value.as_posix"
@@ -2409,6 +2403,12 @@
               "line": 79,
               "step": "_value",
               "target": "type"
+            },
+            {
+              "kind": "external_call",
+              "line": 79,
+              "step": "_value",
+              "target": "math.isfinite"
             },
             {
               "kind": "step_limit",
@@ -2428,7 +2428,7 @@
             "src/llm_wiki_cli/services/cli_reference.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 236,
+          "step_count": 235,
           "truncated": false
         }
       },
@@ -11992,15 +11992,15 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 72,
-              "step": "_value",
-              "target": "value.is_absolute"
-            },
-            {
-              "kind": "unresolved_call",
               "line": 76,
               "step": "_value",
               "target": "value.as_posix"
+            },
+            {
+              "kind": "external_call",
+              "line": 77,
+              "step": "_value",
+              "target": "type"
             },
             {
               "kind": "step_limit",
@@ -12042,7 +12042,7 @@
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 601,
+          "step_count": 600,
           "truncated": true
         }
       },
@@ -12181,12 +12181,6 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 72,
-              "step": "_value",
-              "target": "value.is_absolute"
-            },
-            {
-              "kind": "unresolved_call",
               "line": 76,
               "step": "_value",
               "target": "value.as_posix"
@@ -12194,6 +12188,12 @@
             {
               "kind": "external_call",
               "line": 77,
+              "step": "_value",
+              "target": "type"
+            },
+            {
+              "kind": "external_call",
+              "line": 79,
               "step": "_value",
               "target": "type"
             },
@@ -12226,7 +12226,7 @@
             "src/llm_wiki_cli/commands/docs_cmd.py",
             "src/llm_wiki_cli/__init__.py"
           ],
-          "step_count": 962,
+          "step_count": 961,
           "truncated": true
         }
       },
@@ -37299,9 +37299,9 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 72,
+              "line": 76,
               "step": "_value",
-              "target": "value.is_absolute"
+              "target": "value.as_posix"
             },
             {
               "kind": "step_limit",
@@ -37343,7 +37343,7 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 864,
+          "step_count": 863,
           "truncated": true
         }
       },
@@ -73337,5 +73337,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:018e0d05346332762829d81165c82f308f1ffcda63ee3b6769660e9db2ccf398"
+  "source_hash": "sha256:45f7a01b0c1bd81e898de3bd175c2a3bdede82f47a945c6d0b8d2281939cdf45"
 }

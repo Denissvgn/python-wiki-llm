@@ -85,9 +85,9 @@ sequenceDiagram
     p4-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 961 interactions; 931 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 960 interactions; 930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 129 (128 omitted); unresolved 1 of 615 (614 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 129 (128 omitted); unresolved 1 of 614 (613 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -96,11 +96,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:build_cli_contract` | 3 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 1 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 6 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 5 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 6 | - | external | 9 |
-| `src/llm_wiki_cli/services/cli_reference.py:_value` | 6 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/cli_reference.py:_value` | 6 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/cli_reference.py:build_cli_contract` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | external | 24 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | unresolved | 14 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | external | 24 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | unresolved | 14 |
 > Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -131,9 +131,9 @@ Collector observations for 183 source steps with known totals: observed: 559, em
 | `_value` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `value.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/services/cli_reference.py:_value)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `type (src/llm_wiki_cli/services/cli_reference.py:_value)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -146,9 +146,9 @@ flowchart LR
     s6["6. _value"]
     s7["7. CLIReferenceError"]
     s8["8. isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)"]
-    s9["9. value.is_absolute"]
-    s10["10. CLIReferenceError"]
-    s11["11. value.as_posix"]
+    s9["9. CLIReferenceError"]
+    s10["10. value.as_posix"]
+    s11["11. type (src/llm_wiki_cli/services/cli_reference.py:_value)"]
     s12["12. type (src/llm_wiki_cli/services/cli_reference.py:_value)"]
     s1 -->|"get_cli_contract (src/llm_wiki_cli/services/cli_reference.py)(data not statically known)"| s2
     s2 -->|"build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')"| s3
@@ -157,9 +157,9 @@ flowchart LR
     s3 -->|"_value(dict(...))"| s6
     s6 -->|"CLIReferenceError('Reference values exceed the supported nesting depth')"| s7
     s6 -. "isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)(value, Path)" .-> s8
-    s6 -. "value.is_absolute(data not statically known)" .-> s9
-    s6 -->|"CLIReferenceError('Reference defaults cannot contain live absolute Path objects')"| s10
-    s6 -. "value.as_posix(data not statically known)" .-> s11
+    s6 -->|"CLIReferenceError('Reference defaults require Path objects without a drive or root')"| s9
+    s6 -. "value.as_posix(data not statically known)" .-> s10
+    s6 -. "type (src/llm_wiki_cli/services/cli_reference.py:_value)(value)" .-> s11
     s6 -. "type (src/llm_wiki_cli/services/cli_reference.py:_value)(value)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/cli_reference.md"
@@ -167,7 +167,7 @@ flowchart LR
     click s5 "../modules/cli_reference.md"
     click s6 "../modules/cli_reference.md"
     click s7 "../modules/cli_reference.md"
-    click s10 "../modules/cli_reference.md"
+    click s9 "../modules/cli_reference.md"
 ```
 
 ### Step data
@@ -182,9 +182,9 @@ flowchart LR
 | `_value` | `value: object`, `depth: int` | `_MAX_DEPTH`, `Path`, `Mapping` | - | `value`, `value`, `value`, `...`, `...` |
 | `CLIReferenceError` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | - | - | - | - |
-| `value.is_absolute` | - | - | - | - |
 | `CLIReferenceError` | - | - | - | - |
 | `value.as_posix` | - | - | - | - |
+| `type (src/llm_wiki_cli/services/cli_reference.py:_value)` | - | - | - | - |
 | `type (src/llm_wiki_cli/services/cli_reference.py:_value)` | - | - | - | - |
 
 ### Call data
@@ -198,10 +198,10 @@ flowchart LR
 | build_cli_contract | _value | 260 | `_value(dict(...))` |
 | _value | CLIReferenceError | 70 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
 | _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 71 | `isinstance(value, Path)` |
-| _value | value.is_absolute | 72 | `value.is_absolute(data not statically known)` |
-| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults require Path objects without a drive or root')` |
 | _value | value.as_posix | 76 | `value.as_posix(data not statically known)` |
 | _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 77 | `type(value)` |
+| _value | type (src/llm_wiki_cli/services/cli_reference.py:_value) | 79 | `type(value)` |
 
 ### Boundary effects
 
@@ -213,9 +213,9 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `build_cli_contract` | `isinstance` | 256 |
 | external_call | `_value` | `isinstance` | 71 |
-| unresolved_call | `_value` | `value.is_absolute` | 72 |
 | unresolved_call | `_value` | `value.as_posix` | 76 |
 | external_call | `_value` | `type` | 77 |
+| external_call | `_value` | `type` | 79 |
 | step_limit | `get_cli_contract` | `first 12 steps` | 0 |
 | truncated_flow | `get_cli_contract` | `depth limit` | 0 |
 
