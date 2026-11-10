@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd, bootstrap_cmd
+from llm_wiki_cli import api
 from llm_wiki_cli.services import sync_analysis_cache, knowledge_generation
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.lint_service import build_report
@@ -102,6 +104,90 @@ def test_sharded_capture_reuses_the_same_committed_payload(primed, monkeypatch, 
     sync()
     assert "reuse: hit" in capsys.readouterr().out
     assert build_report("wiki", "src", strict=True).passed
+
+
+@pytest.mark.parametrize(
+    "knowledge_format,capture",
+    [(None, "full"), ("v1", "full"), (None, "inventory"), (None, "sharded")],
+    ids=["current", "legacy", "inventory-only", "sharded-analysis"],
+)
+def test_constraint_edit_is_stable_on_first_committed_analysis_reuse(
+    tmp_path, monkeypatch, capsys, knowledge_format, capture,
+):
+    from llm_wiki_cli.services import sync_analysis_storage
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    subprocess.run(
+        ["git", "init", "-q", "--initial-branch=codex/constraint-reuse"],
+        check=True, capture_output=True, timeout=30,
+    )
+    source = Path("src/model.py")
+    source.parent.mkdir()
+    source.write_text(
+        "raise RuntimeError('target must not execute')\n"
+        "from pydantic import BaseModel, Field\n\n"
+        "class Example(BaseModel):\n"
+        "    name: str = Field(min_length=1, max_length=32)\n",
+        encoding="utf-8",
+    )
+    api.bootstrap_wiki("src", "wiki", knowledge_format=knowledge_format)
+    page = Path("wiki/entities/Example.md")
+    page.write_text(page.read_text().replace(
+        "_Auto-generated from `Example` in `model.py`._", "Keep this authored description."
+    ))
+    sync()
+    cache = Path("cache", sync_analysis_cache.FILENAME)
+    if capture == "inventory":
+        monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", cache.stat().st_size - 1)
+    if capture == "sharded":
+        monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", 1024)
+
+    def wiki_snapshot():
+        return {
+            path.relative_to("wiki").as_posix(): (path.read_bytes(), path.stat().st_mtime_ns)
+            for path in Path("wiki").rglob("*") if path.is_file()
+        }
+
+    for maximum in (64, 128):
+        source.write_text(source.read_text().replace(
+            f"max_length={32 if maximum == 64 else 64}", f"max_length={maximum}"
+        ), encoding="utf-8")
+        capsys.readouterr()
+        sync()
+        assert "inputs-changed" in capsys.readouterr().out
+        assert f"max_length={maximum}" in page.read_text()
+        assert "Keep this authored description." in page.read_text()
+        payload = sync_analysis_storage.load(
+            cache, root_limit=sync_analysis_cache.MAX_BYTES,
+            total_limit=sync_analysis_cache.MAX_CAPTURE_BYTES,
+        )
+        assert payload["coverage"] == ("inventory" if capture == "inventory" else "full")
+        if capture == "sharded":
+            assert json.loads(cache.read_bytes())["schema_version"] == sync_analysis_storage.SCHEMA
+        before = wiki_snapshot()
+        with monkeypatch.context() as reused:
+            reused.setattr(
+                sync_cmd, "_extract_current_inventory",
+                lambda *_a, **_kw: pytest.fail("unchanged source was extracted again"),
+            )
+            for _ in range(2):
+                sync()
+                output = capsys.readouterr().out
+                assert "hit (committed-inputs-match)" in output
+                assert "Wiki is up to date." in output
+                assert wiki_snapshot() == before
+        assert f"max_length={maximum}; min_length=1" in page.read_text()
+
+    # A forced independent rebuild must agree with the committed-analysis path.
+    before = wiki_snapshot()
+    with patch.object(sync_cmd, "_extract_current_inventory", wraps=sync_cmd._extract_current_inventory) as extract:
+        sync(rebuild_knowledge=True)
+    assert extract.call_count == 1
+    assert {path: value[0] for path, value in wiki_snapshot().items()} == {
+        path: value[0] for path, value in before.items()
+    }
 
 
 @pytest.mark.parametrize("primed", [("packed-v4-deflate", "full")], indirect=True)

@@ -12,6 +12,7 @@ import subprocess
 import tarfile
 import unicodedata
 from dataclasses import dataclass
+from html import escape
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Iterator, Mapping
@@ -1518,8 +1519,6 @@ def test_internal_prose_scanner_rejects_phrase_case_variants(snippet, rule):
         f"<textarea>{_PRIORITY_MARKER}\n\n{_CALIBRATION_WORD}</textarea>",
         f"<textarea>{_PRIORITY_MARKER}<br>\n{_CALIBRATION_WORD}</textarea>",
         f"![{_PRIORITY_MARKER}<br>{_CALIBRATION_WORD}](image.png)",
-        f'![<span title="{_PRIORITY_MARKER} '
-        f'{_CALIBRATION_WORD}">x</span>](image.png)',
         f'<div value="{_PRIORITY_MARKER} {_CALIBRATION_WORD}" '
         f'label="{_SHADOW_WORD} {_PILOT_WORD}">public</div>',
         f'<button value="{_PRIORITY_MARKER} '
@@ -1547,6 +1546,42 @@ def test_internal_prose_scanner_rejects_phrase_case_variants(snippet, rule):
 )
 def test_internal_prose_scanner_preserves_public_product_language(snippet):
     assert scan_internal_prose(snippet) == []
+
+
+@pytest.mark.parametrize(
+    "label,rendered_alternatives",
+    [
+        (
+            f'<span title="{_PRIORITY_MARKER} {_CALIBRATION_WORD}">x</span>',
+            {
+                "x": [],
+                f'<span title="{_PRIORITY_MARKER} {_CALIBRATION_WORD}">x</span>':
+                    ["priority-calibration-name"],
+            },
+        ),
+        (
+            f"`{_PRIORITY_MARKER} {_CALIBRATION_WORD}`",
+            {"": [], f"{_PRIORITY_MARKER} {_CALIBRATION_WORD}": ["priority-calibration-name"]},
+        ),
+        (
+            f"{_PRIORITY_MARKER} {_CALIBRATION_WORD}",
+            {f"{_PRIORITY_MARKER} {_CALIBRATION_WORD}": ["priority-calibration-name"]},
+        ),
+    ],
+    ids=["html-markup", "code-span", "plain-text"],
+)
+def test_image_alt_policy_tracks_rendered_text(label, rendered_alternatives):
+    snippet = f"![{label}](image.png)"
+    # Supported renderer versions differ on retaining markup in image alt text.
+    # Match explicit HTML goldens: literal markup in alt is visible text, whereas
+    # discarded markup cannot expose its source attributes to the reader.
+    expected = {
+        f'<p><img src="image.png" alt="{escape(alt, quote=True)}" /></p>\n': rules
+        for alt, rules in rendered_alternatives.items()
+    }
+    rendered = MARKDOWN.render(snippet)
+    assert rendered in expected
+    assert [finding.rule for finding in scan_internal_prose(snippet)] == expected[rendered]
 
 
 def test_full_scanner_preserves_plain_text_generated_report_path():
