@@ -2262,7 +2262,7 @@ matter on some pages emit non-failing `warnings` in JSON and text reports.
 List, export, and install the agent skills bundled with the package. Each
 skill is a directory holding a `SKILL.md` workflow definition (Claude
 Code-compatible frontmatter plus instructions) and optional supporting files.
-Sixteen skills are bundled:
+The bundled workflow catalog includes:
 
 - `agent-docs`: standalone documentation supervisor workflow — record intake
   once, prepare/resume an isolated source or existing-wiki baseline, dispatch
@@ -2306,6 +2306,9 @@ Sixteen skills are bundled:
   plaintext secrets, and over-broad Actions permissions, reading raw source
   for the fields (K8s security context, Actions permissions) the generated
   pages don't capture.
+- `native-coding`: gather qualified source or committed-wiki evidence for an
+  explicitly selected coding workflow, support the authorized change, and
+  preserve a validated handoff for resume.
 - `onboarding-guide`: persona-scoped navigation narratives — verify the
   wiki is current, rank the flows a newcomer actually hits, write one
   guided-tour page per persona into the agent-owned `guides/` surface with

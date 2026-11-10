@@ -20,7 +20,7 @@ ROOT = Path(__file__).parents[1]
 ACTION_PATH = ROOT / "integrations/wiki-impact/action.yml"
 
 
-def test_root_pilot_binds_manual_claims_and_leaves_cli_discovery_open():
+def test_root_mapping_covers_public_flows_and_keeps_future_discovery_open():
     from llm_wiki_cli.services.publication_config import load_publication_config
 
     config = load_publication_config(ROOT)
@@ -69,9 +69,29 @@ def test_root_pilot_binds_manual_claims_and_leaves_cli_discovery_open():
     assert {"reference": "llm-wiki", "command": ["ci-check"]} in topics[
         "command-reference.ci-check"
     ]["depends_on"]
-    assert topics["command-reference.commands"]["depends_on"] == [
-        {"reference": "llm-wiki", "command": []}
-    ]
+    assert {"reference": "llm-wiki", "command": []} in topics[
+        "command-reference.commands"
+    ]["depends_on"]
+    native = ROOT / config["architecture"]["root"]
+    public_flows = {
+        path.relative_to(native).as_posix()
+        for pattern in ("flows/cli-*.md", "flows/mcp-*.md")
+        for path in native.glob(pattern)
+    }
+    mapped_flows = {
+        dependency["architecture_page"]
+        for topic in topics.values()
+        for dependency in topic["depends_on"]
+        if "architecture_page" in dependency
+    }
+    assert public_flows <= mapped_flows
+    for page in (
+        "Agent-Support.md", "Architecture.md", "Bootstrapping-a-Wiki.md",
+        "Development-and-Testing.md", "Examples.md", "Linting-and-Troubleshooting.md",
+        "Multi-Language-Extraction.md",
+        "Public-Behavior-Reference.md", "Security-Model.md", "_Sidebar.md",
+    ):
+        assert any(topic["wiki_page"] == page for topic in topics.values())
     for key in ("command-reference.upgrade", "migration.upgrade-framework-artifacts"):
         assert {"reference": "llm-wiki", "command": ["upgrade"]} in topics[key][
             "depends_on"

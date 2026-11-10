@@ -72,7 +72,8 @@
       "depends_on": [
         {"reference": "provider-policy", "fact": "package"},
         {"reference": "provider-policy", "fact": "setup"},
-        {"source_file": "docs/wiki-guide.md"}
+        {"source_file": "docs/wiki-guide.md"},
+        {"source_file": "src/llm_wiki_cli/services/extractor_helpers.py"}
       ]
     },
     {
@@ -146,7 +147,29 @@
         {"reference": "llm-wiki", "command": ["mcp"]},
         {"reference": "provider-policy", "fact": "package"},
         {"source_file": "src/llm_wiki_cli/services/mcp_server.py"},
-        {"source_file": "docs/native-knowledge-provider.md"}
+        {"source_file": "docs/native-knowledge-provider.md"},
+        {"architecture_page": "flows/mcp-build_budgeted_context.md"},
+        {"architecture_page": "flows/mcp-build_task_context.md"},
+        {"architecture_page": "flows/mcp-check_wiki.md"},
+        {"architecture_page": "flows/mcp-close_context_session.md"},
+        {"architecture_page": "flows/mcp-explain_evidence.md"},
+        {"architecture_page": "flows/mcp-get_architecture_page.md"},
+        {"architecture_page": "flows/mcp-get_concept.md"},
+        {"architecture_page": "flows/mcp-get_context.md"},
+        {"architecture_page": "flows/mcp-get_context_packet.md"},
+        {"architecture_page": "flows/mcp-get_entity.md"},
+        {"architecture_page": "flows/mcp-get_flow.md"},
+        {"architecture_page": "flows/mcp-get_knowledge_coverage.md"},
+        {"architecture_page": "flows/mcp-get_module.md"},
+        {"architecture_page": "flows/mcp-get_status.md"},
+        {"architecture_page": "flows/mcp-inspect_concept.md"},
+        {"architecture_page": "flows/mcp-list_concept_sections.md"},
+        {"architecture_page": "flows/mcp-open_context_session.md"},
+        {"architecture_page": "flows/mcp-query_documentation.md"},
+        {"architecture_page": "flows/mcp-query_graph.md"},
+        {"architecture_page": "flows/mcp-related_concepts.md"},
+        {"architecture_page": "flows/mcp-search_wiki.md"},
+        {"architecture_page": "flows/mcp-traverse_typed_graph.md"}
       ]
     },
     {
@@ -244,7 +267,8 @@
       "anchor": "bundled-skills",
       "edit_at": "wiki",
       "depends_on": [
-        {"reference": "provider-policy", "fact": "skills"}
+        {"reference": "provider-policy", "fact": "skills"},
+        {"source_file": "src/llm_wiki_cli/services/skills.py"}
       ]
     },
     {
@@ -257,7 +281,289 @@
         {
           "reference": "llm-wiki",
           "command": []
-        }
+        },
+        {"architecture_page": "flows/cli-api-diff.md"},
+        {"architecture_page": "flows/cli-bump.md"},
+        {"architecture_page": "flows/cli-doctor.md"},
+        {"architecture_page": "flows/cli-extract.md"},
+        {"architecture_page": "flows/cli-generate-prompt.md"},
+        {"architecture_page": "flows/cli-install-ci.md"},
+        {"architecture_page": "flows/cli-install.md"},
+        {"architecture_page": "flows/cli-knowledge.md"},
+        {"architecture_page": "flows/cli-lint.md"},
+        {"architecture_page": "flows/cli-maintenance.md"},
+        {"architecture_page": "flows/cli-metrics.md"},
+        {"architecture_page": "flows/cli-migrate.md"},
+        {"architecture_page": "flows/cli-obsidian.md"},
+        {"architecture_page": "flows/cli-plugins.md"},
+        {"architecture_page": "flows/cli-prepare-extractors.md"},
+        {"architecture_page": "flows/cli-query.md"},
+        {"architecture_page": "flows/cli-queue.md"},
+        {"architecture_page": "flows/cli-reference.md"},
+        {"architecture_page": "flows/cli-release.md"},
+        {"architecture_page": "flows/cli-review.md"},
+        {"architecture_page": "flows/cli-search.md"},
+        {"architecture_page": "flows/cli-site.md"},
+        {"architecture_page": "flows/cli-skills.md"},
+        {"architecture_page": "flows/cli-status.md"},
+        {"architecture_page": "flows/cli-team.md"},
+        {"architecture_page": "flows/cli-trigger-agent.md"},
+        {"architecture_page": "flows/cli-uninstall.md"},
+        {"source_file": "docs/cli-reference.md"},
+        {"source_file": "src/llm_wiki_cli/services/extractor_helpers.py"}
+      ]
+    },
+    {
+      "id": "bootstrap.storage-defaults",
+      "owner": "maintainers",
+      "wiki_page": "Bootstrapping-a-Wiki.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"reference": "llm-wiki", "command": ["bootstrap"]},
+        {"source_file": "docs/wiki-guide.md"}
+      ]
+    },
+    {
+      "id": "core-concepts.bootstrap",
+      "owner": "maintainers",
+      "wiki_page": "Core-Concepts.md",
+      "anchor": "bootstrap",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"reference": "provider-policy", "fact": "task"},
+        {"source_file": "docs/knowledge-storage.md"}
+      ]
+    },
+    {
+      "id": "examples.guides",
+      "owner": "maintainers",
+      "wiki_page": "Examples.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"source_file": "examples/README.md"},
+        {"source_file": "examples/plugin-hooks/README.md"}
+      ]
+    },
+    {
+      "id": "installation.publication",
+      "owner": "maintainers",
+      "wiki_page": "Installation-and-Requirements.md",
+      "anchor": "public-documentation-and-behavior-references",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["reference"]},
+        {"reference": "llm-wiki", "command": ["docs", "wiki"]},
+        {"source_file": "pyproject.toml"},
+        {"source_file": "docs/cli-reference-data.md"}
+      ]
+    },
+    {
+      "id": "multilanguage.extraction",
+      "owner": "maintainers",
+      "wiki_page": "Multi-Language-Extraction.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "docs/wiki-guide.md"},
+        {"source_file": "src/llm_wiki_cli/services/helper_preparation.py"},
+        {"source_file": "src/llm_wiki_cli/services/extractor_helpers.py"}
+      ]
+    },
+    {
+      "id": "plugins.samples",
+      "owner": "maintainers",
+      "wiki_page": "Plugins-and-Skills.md",
+      "anchor": "install-and-manage-plugins",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["plugins"]},
+        {"source_file": "examples/README.md"},
+        {"source_file": "examples/plugin-hooks/README.md"},
+        {"source_file": "examples/plugins/documentation-hooks/llm-wiki-plugin.json"},
+        {"source_file": "src/llm_wiki_cli/services/plugin_samples.py"}
+      ]
+    },
+    {
+      "id": "public.behavior-reference",
+      "owner": "maintainers",
+      "wiki_page": "Public-Behavior-Reference.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"reference": "provider-policy", "fact": "task"},
+        {"reference": "provider-policy", "fact": "skills"}
+      ]
+    },
+    {
+      "id": "security.model",
+      "owner": "maintainers",
+      "wiki_page": "Security-Model.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "SECURITY.md"},
+        {"source_file": "docs/cli-reference.md"},
+        {"source_file": "docs/sibling-wiki-candidates.md"},
+        {"source_file": "src/llm_wiki_cli/services/helper_runtime.py"},
+        {"source_file": "src/llm_wiki_cli/services/publication_delivery.py"}
+      ]
+    },
+    {
+      "id": "navigation.sidebar",
+      "owner": "maintainers",
+      "wiki_page": "_Sidebar.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"source_file": "README.md"},
+        {"source_file": "docs/sibling-wiki.md"},
+        {"source_file": "docs/cli-reference-data.md"}
+      ]
+    },
+    {
+      "id": "agent-support.skills",
+      "owner": "maintainers",
+      "wiki_page": "Agent-Support.md",
+      "anchor": "bundled-agent-skills",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "provider-policy", "fact": "skills"},
+        {"source_file": "docs/cli-reference.md"},
+        {"source_file": "src/llm_wiki_cli/services/skills.py"}
+      ]
+    },
+    {
+      "id": "architecture.extractors",
+      "owner": "maintainers",
+      "wiki_page": "Architecture.md",
+      "anchor": "extractor-registry",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "src/llm_wiki_cli/services/helper_preparation.py"},
+        {"source_file": "src/llm_wiki_cli/services/helper_runtime.py"}
+      ]
+    },
+    {
+      "id": "development.runtime",
+      "owner": "maintainers",
+      "wiki_page": "Development-and-Testing.md",
+      "anchor": "ci-matrix",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"source_file": ".github/workflows/ci.yml"},
+        {"source_file": "release/pr-ci-policy.json"}
+      ]
+    },
+    {
+      "id": "home.product",
+      "owner": "maintainers",
+      "wiki_page": "Home.md",
+      "anchor": "what-it-does",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "llm-wiki", "command": []},
+        {"source_file": "README.md"},
+        {"source_file": "docs/sibling-wiki.md"}
+      ]
+    },
+    {
+      "id": "getting-started.maintenance",
+      "owner": "maintainers",
+      "wiki_page": "Getting-Started.md",
+      "anchor": "5-keep-it-updated",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["sync"]},
+        {"reference": "llm-wiki", "command": ["knowledge"]},
+        {"reference": "provider-policy", "fact": "storage"},
+        {"source_file": "docs/maintenance.md"}
+      ]
+    },
+    {
+      "id": "sync.storage-cleanup",
+      "owner": "maintainers",
+      "wiki_page": "Keeping-the-Wiki-in-Sync.md",
+      "anchor": "verified-storage-cleanup",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["sync"]},
+        {"reference": "llm-wiki", "command": ["knowledge"]},
+        {"source_file": "docs/knowledge-storage.md"},
+        {"source_file": "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"}
+      ]
+    },
+    {
+      "id": "faq.compatibility",
+      "owner": "maintainers",
+      "wiki_page": "FAQ.md",
+      "anchor": "why-does-my-v401-installation-lack-the-sibling-wiki-commands",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "package"},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"reference": "llm-wiki", "command": ["docs", "wiki"]},
+        {"source_file": "pyproject.toml"},
+        {"source_file": "docs/cli-reference-data.md"}
+      ]
+    },
+    {
+      "id": "faq.helper-preparation",
+      "owner": "maintainers",
+      "wiki_page": "FAQ.md",
+      "anchor": "how-do-i-fix-a-missing-prepared-helper-error",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "src/llm_wiki_cli/services/helper_preparation.py"}
+      ]
+    },
+    {
+      "id": "core-concepts.local-wiki",
+      "owner": "maintainers",
+      "wiki_page": "Core-Concepts.md",
+      "anchor": "local-llm-wiki",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"source_file": "docs/sibling-wiki.md"},
+        {"source_file": "docs/knowledge-storage.md"}
+      ]
+    },
+    {
+      "id": "core-concepts.extraction",
+      "owner": "maintainers",
+      "wiki_page": "Core-Concepts.md",
+      "anchor": "extraction",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "src/llm_wiki_cli/services/helper_preparation.py"},
+        {"source_file": "src/llm_wiki_cli/services/extractor_helpers.py"}
+      ]
+    },
+    {
+      "id": "troubleshooting.validation",
+      "owner": "maintainers",
+      "wiki_page": "Linting-and-Troubleshooting.md",
+      "edit_at": "wiki",
+      "depends_on": [
+        {"reference": "llm-wiki", "command": ["lint"]},
+        {"reference": "llm-wiki", "command": ["ci-check"]},
+        {"reference": "llm-wiki", "command": ["sync"]},
+        {"reference": "provider-policy", "fact": "setup"},
+        {"source_file": "docs/cli-reference.md"},
+        {"source_file": "src/llm_wiki_cli/services/extractor_helpers.py"}
       ]
     },
     {
