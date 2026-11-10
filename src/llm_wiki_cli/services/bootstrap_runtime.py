@@ -1746,8 +1746,10 @@ def _field_default(attribute: Mapping) -> str:
 
 
 def _field_constraints(attribute: Mapping) -> str:
+    # Fresh extraction and canonical analysis storage can have different key order.
     parts = [
-        f"{name}={value}" for name, value in attribute.get("constraints", {}).items()
+        f"{name}={value}"
+        for name, value in sorted(attribute.get("constraints", {}).items())
     ]
     parts.extend(str(value) for value in attribute.get("annotated_metadata", []))
     parts.extend(

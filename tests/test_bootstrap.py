@@ -1468,6 +1468,47 @@ class TestBootstrapModulePages:
         assert "input: inputLabels; output: outputLabels" in content
         assert "Call(func=" not in content
 
+    def test_python_constraint_rendering_survives_canonical_mapping_order(self):
+        info = {
+            "name": "Example",
+            "kind": "class",
+            "model_kind": "pydantic",
+            "bases": ["BaseModel"],
+            "line": 1,
+            "attributes": [
+                {
+                    "name": "z_declared_first",
+                    "type": "str",
+                    "constraints": {
+                        "min_length": "1", "pattern": "'a|b'", "max_length": "64",
+                    },
+                    "annotated_metadata": ["LastMetadata", "FirstMetadata"],
+                    "unknowns": [
+                        {"property": "constraint:lt", "expression": "dynamic_z"},
+                        {"property": "constraint:gt", "expression": "dynamic_a"},
+                    ],
+                },
+                {"name": "a_declared_second", "type": "int"},
+            ],
+            "methods": [],
+        }
+        original = deepcopy(info)
+        restored = json.loads(json.dumps(info, sort_keys=True))
+        fresh = bootstrap_cmd._generate_entity_md(info, "model.py", {})
+        cached = bootstrap_cmd._generate_entity_md(restored, "model.py", {})
+
+        assert fresh == cached
+        assert (
+            "max_length=64; min_length=1; pattern='a\\|b'; "
+            "LastMetadata; FirstMetadata; lt=unknown (dynamic_z); "
+            "gt=unknown (dynamic_a)"
+        ) in fresh
+        assert fresh.index("| `z_declared_first`") < fresh.index("| `a_declared_second`")
+        assert info == original
+        assert list(info["attributes"][0]["constraints"]) == [
+            "min_length", "pattern", "max_length",
+        ]
+
     def test_enum_and_type_alias_contracts_render_declared_values(self):
         enum_content = bootstrap_cmd._generate_entity_md(
             {
