@@ -80,6 +80,32 @@ def test_owning_sync_enables_verified_cleanup_outside_the_wiki(case, monkeypatch
     assert ("--dry-run" in argv) == dry_run
 
 
+def test_capture_preparation_inspection_and_writer_share_the_same_cache_base(case, monkeypatch):
+    from release.readiness import helper_cache_base
+    from llm_wiki_cli.services.extractor_helpers import resolve_helper_cache_root
+
+    root, evidence, *_ = case
+    workflow = yaml.safe_load((ROOT / ".github/workflows/reviewed-wiki-capture.yml").read_text())
+    job = workflow["jobs"]["capture"]
+    configured = job["env"].get("LLM_WIKI_CACHE_DIR")
+    if configured is None:
+        monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    else:
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", configured.replace("${{ github.workspace }}", str(root)))
+    prepare = next(step["run"] for step in job["steps"]
+                   if step.get("name") == "Prepare the source-matching TypeScript helper")
+    arguments = shlex.split(prepare)
+    prepared_base = root / arguments[arguments.index("--cache-dir") + 1]
+    seen = []
+    monkeypatch.setattr(driver.subprocess, "run", lambda argv, **kwargs: seen.append(argv))
+    OWNING_SYNC(root, evidence, dry_run=True)
+    written_base = seen[0][seen[0].index("--helper-cache-dir") + 1]
+
+    expected = resolve_helper_cache_root(root, str(prepared_base))
+    assert resolve_helper_cache_root(root, str(helper_cache_base(root))) == expected
+    assert resolve_helper_cache_root(root, written_base) == expected
+
+
 @pytest.mark.parametrize("approved", [None, "", "z" * 64])
 def test_apply_without_valid_explicit_approval_never_invokes_sync(case, approved):
     with pytest.raises(ValueError, match="requires the reviewed preview"):
