@@ -1,6 +1,7 @@
 """Exercise the source-only semantic handoff through the consumer CLI."""
 
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -18,6 +19,22 @@ def test_reviewed_workspace_yields_an_applicable_patch_for_the_authored_page(
     consumer = tmp_path / "consumer"
     example = Path(__file__).resolve().parents[1] / "examples" / "sibling-wiki"
     shutil.copytree(example, consumer, ignore=shutil.ignore_patterns("reports"))
+    for key in (
+        "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
+        "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_ATTR_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_TERMINAL_PROMPT", "0")
+    subprocess.run(
+        ["git", "init", "-q", "--initial-branch=codex/source-review"],
+        cwd=consumer,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
     monkeypatch.chdir(consumer)
     workspace = tmp_path / "workspace"
     ws = ["--workspace", str(workspace)]
@@ -113,18 +130,24 @@ def test_reviewed_workspace_yields_an_applicable_patch_for_the_authored_page(
     assert proposal["ready_for_repository_review"] and not proposal["delivery_ready"]
     assert proposal["patch"].encode("utf-8") == patch
     assert canonical.read_bytes() == original
-    subprocess.run(
-        ["git", "apply", "--check", "-"], input=patch, cwd=consumer, check=True
+    checked = subprocess.run(
+        ["git", "-c", "core.autocrlf=false", "--no-pager", "apply", "--check", "--verbose", "-"],
+        input=patch, cwd=consumer, capture_output=True, timeout=30,
     )
+    assert checked.returncode == 0, checked.stderr.decode("utf-8", errors="replace")
     repository = tmp_path / "review-copy"
     repository.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "init", "-q", "--initial-branch=codex/monorepo-review"],
+        cwd=repository, capture_output=True, check=True, timeout=30,
+    )
     copy = repository / "packages" / "accounts"
     shutil.copytree(consumer, copy)
-    subprocess.run(
-        ["git", "apply", "--directory=packages/accounts", "-"],
-        input=patch, cwd=repository, check=True,
+    applied = subprocess.run(
+        ["git", "-c", "core.autocrlf=false", "--no-pager", "apply", "--verbose", "--directory=packages/accounts", "-"],
+        input=patch, cwd=repository, capture_output=True, timeout=30,
     )
+    assert applied.returncode == 0, applied.stderr.decode("utf-8", errors="replace")
     assert (copy / source_document).read_bytes() == new_text
 
     editable.write_bytes(new_text + b"Changed after review.\n")
