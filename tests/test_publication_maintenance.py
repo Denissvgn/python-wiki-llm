@@ -1,5 +1,6 @@
 """Publication patches bind the checked target, canonical bytes, and workspace review."""
 
+import os
 from pathlib import Path
 import subprocess
 
@@ -190,20 +191,52 @@ def test_final_workspace_reread_detects_a_change_during_artifact_preparation(
     ],
 )
 def test_git_patch_preserves_reviewed_bytes_and_portable_filenames(
-    tmp_path, original, updated
+    tmp_path, original, updated, monkeypatch
 ):
+    for key in (
+        "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
+        "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_ATTR_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_TERMINAL_PROMPT", "0")
+    subprocess.run(
+        ["git", "init", "-q", "--initial-branch=codex/patch-check"],
+        cwd=tmp_path,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    actual_root = subprocess.check_output(
+        ["git", "rev-parse", "--show-toplevel"], cwd=tmp_path, timeout=30
+    ).decode("utf-8").strip()
+    assert Path(actual_root).resolve() == tmp_path.resolve()
     path = Path("public") / "Résumé accounts.md"
     (tmp_path / path.parent).mkdir()
     destination = tmp_path / path
     destination.write_bytes(original)
     patch = maintenance._document_patch(path.as_posix(), original, updated).encode()
-    subprocess.run(
-        ["git", "apply", "--whitespace=nowarn", "-"],
+    result = subprocess.run(
+        ["git", "-c", "core.autocrlf=false", "--no-pager", "apply", "--verbose", "--whitespace=nowarn", "-"],
         cwd=tmp_path,
         input=patch,
-        check=True,
+        capture_output=True,
+        timeout=30,
     )
-    assert destination.read_bytes() == updated
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    applied = destination.read_bytes()
+    if applied != updated:
+        expected_crlf = updated.count(b"\r\n")
+        actual_crlf = applied.count(b"\r\n")
+        pytest.fail(
+            "Applied bytes differ from the reviewed document: "
+            f"expected {len(updated)} bytes ({sha256_bytes(updated)}), "
+            f"got {len(applied)} bytes ({sha256_bytes(applied)}); "
+            f"CRLF counts: expected {expected_crlf}, got {actual_crlf}",
+            pytrace=False,
+        )
     if b"NEW" in updated:
         assert len(patch) < 400
 
