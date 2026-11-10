@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [4.1.0] - 2026-11-10
+## [4.1.0] - 2026-11-11
 
 ### Added
 
@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   review inputs, and supports consumer layouts and native platform boundaries.
 - Reused committed analysis preserves constraint ordering so repeated syncs
   produce consistent rendered documentation.
+- CLI reference data rejects rooted and drive-relative Windows path defaults,
+  preserving portable reference output across platforms.
 
 ## [4.0.1] - 2026-11-03
 

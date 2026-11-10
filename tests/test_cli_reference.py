@@ -6,7 +6,7 @@ import argparse
 from copy import deepcopy
 from importlib import resources
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import sys
 
 from jsonschema import Draft202012Validator
@@ -461,3 +461,30 @@ def test_unrepresentable_parser_defaults_are_not_stringified(default):
     value.add_argument("--value", default=default)
     with pytest.raises(reference.CLIReferenceError):
         reference.build_cli_contract(value, package=PACKAGE, program="example")
+
+
+@pytest.mark.parametrize("default", [
+    PureWindowsPath(r"\private\host\default"),
+    PureWindowsPath("C:private/host/default"),
+    PureWindowsPath("C:/private/host/default"),
+    PureWindowsPath(r"\\host\share\default"),
+])
+def test_host_anchored_windows_path_defaults_are_rejected(default, monkeypatch):
+    monkeypatch.setattr(reference, "Path", PureWindowsPath)
+    value = argparse.ArgumentParser()
+    value.add_argument("--value", default=default)
+    with pytest.raises(reference.CLIReferenceError):
+        reference.build_cli_contract(value, package=PACKAGE, program="example")
+
+
+@pytest.mark.parametrize("path_type, spelling, expected", [
+    (PureWindowsPath, "relative/folder", "relative/folder"),
+    (PurePosixPath, r"literal\name", r"literal\name"),
+])
+def test_relative_path_defaults_preserve_their_native_spelling(path_type, spelling, expected, monkeypatch):
+    monkeypatch.setattr(reference, "Path", path_type)
+    value = argparse.ArgumentParser()
+    value.add_argument("--value", default=path_type(spelling))
+    data = reference.build_cli_contract(value, package=PACKAGE, program="example")
+    argument = next(item for item in data["root"]["arguments"] if item["dest"] == "value")
+    assert argument["default"]["value"] == expected
