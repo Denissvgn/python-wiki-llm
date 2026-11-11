@@ -24,6 +24,21 @@ BINDING = {"repository_root": str(ROOT), "kind": "local-pre-release-work/v1"}
 SHA = "a" * 40
 
 
+@pytest.fixture
+def preparation_metadata(tmp_path, monkeypatch):
+    from release import readiness
+
+    metadata = tmp_path / "preparation-git-metadata"
+    metadata.mkdir()
+    original = readiness.git_metadata_directory
+    monkeypatch.setattr(
+        readiness,
+        "git_metadata_directory",
+        lambda root: metadata if root == ROOT else original(root),
+    )
+    return metadata
+
+
 def test_launcher_probe_preserves_virtualenv_symlink_spelling(tmp_path):
     # Frozen host suites deliberately have no checkout-local .venv; construct
     # this fixture without pip or any mutation of the executing environment.
@@ -208,7 +223,7 @@ def test_unsupported_native_python_refuses_instead_of_renaming_lane(
         )
 
 
-def test_prepare_only_has_locked_setup_and_readiness_without_wiki_write(tmp_path, monkeypatch):
+def test_prepare_only_has_locked_setup_and_readiness_without_wiki_write(tmp_path, monkeypatch, preparation_metadata):
     monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
     commands = runner.stage_commands(
         "prepare", ROOT, tmp_path, candidate_sha=SHA, version="3.0.0"
@@ -595,7 +610,7 @@ def test_expansion_preflight_withholds_archive_and_wrong_head_creates_nothing(
 
 
 def test_archive_block_does_not_hide_independent_wiki_health_checks(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, preparation_metadata
 ):
     work = runner.claim_work(tmp_path / "work", BINDING)
     monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
