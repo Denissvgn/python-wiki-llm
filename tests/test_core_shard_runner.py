@@ -1315,6 +1315,21 @@ def test_execute_checks_actual_coverage_policy_before_starting_worker(tmp_path, 
     assert r.s.read(args.output / "execution.json")["complete"] is False
 
 
+@pytest.mark.parametrize("prefix", ["C:/owned/package", r"C:\owned\package"])
+def test_windows_coverage_prefix_cannot_enter_canonical_linux_transport(tmp_path, prefix):
+    from release import core_coverage
+
+    package, directory = coverage_fixture(tmp_path, [1])
+    path = directory / "coverage.data"
+    sources = r.source_manifest(package)
+    before = r.q.sha256_file(path)
+    with pytest.raises(r.q.QualificationError, match="invalid coverage source prefix"):
+        r.coverage_rows(path, [prefix], sources)
+    with pytest.raises(ValueError, match="invalid coverage source prefix"):
+        core_coverage.raw_lines(path, [prefix], sources)
+    assert r.q.sha256_file(path) == before
+
+
 def test_pure_coverage_reader_rejects_oversized_bitset_before_expansion(tmp_path):
     import sqlite3
     from release import core_coverage
