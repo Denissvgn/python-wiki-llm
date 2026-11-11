@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from contextlib import closing
 import hashlib
+import io
 from pathlib import Path, PurePosixPath
 import sqlite3
 import stat
+import tokenize
 import xml.etree.ElementTree as ET
 
 
@@ -111,6 +113,30 @@ def statement_inventory(receipt: dict, sources: dict) -> dict:
     return statements
 
 
+def logical_statement_hits(source: bytes, executed: list[int]) -> set[int]:
+    """Attribute physical trace events to their Python logical statement."""
+    hits = set(executed)
+    beginning = None
+    trivia = {tokenize.ENCODING, tokenize.COMMENT, tokenize.NL,
+              tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER}
+    try:
+        for item in tokenize.tokenize(io.BytesIO(source).readline):
+            if item.type in trivia:
+                continue
+            if item.type == tokenize.NEWLINE:
+                if beginning is not None and item.end[0] > beginning:
+                    physical = hits.intersection(range(beginning, item.end[0] + 1))
+                    if physical:
+                        hits.difference_update(physical)
+                        hits.add(beginning)
+                beginning = None
+            elif beginning is None:
+                beginning = item.start[0]
+    except (tokenize.TokenError, IndentationError, SyntaxError, UnicodeError) as error:
+        raise ValueError("coverage logical statement mapping failed") from error
+    return hits
+
+
 def validate_combination(directory: Path, shards: list[Path], package: Path, load) -> None:
     sources = source_manifest(package)
     union: dict[str, set[int]] = {name: set() for name in sources}
@@ -149,6 +175,11 @@ def validate_combination(directory: Path, shards: list[Path], package: Path, loa
             name = name[len(prefix):]
         require(name in sources and name not in seen, "coverage XML source inventory differs")
         seen.add(name)
+        source = (package / name).read_bytes()
+        require(hashlib.sha256(source).hexdigest() == sources[name]["sha256"],
+                "coverage XML source identity differs")
+        # XML uses logical statements; the checked raw union remains physical.
+        executed = logical_statement_hits(source, joined["lines"][name])
         line_ids = set()
         for line in entry.findall("./lines/line"):
             number, hits = int(line.attrib["number"]), int(line.attrib["hits"])
@@ -156,7 +187,7 @@ def validate_combination(directory: Path, shards: list[Path], package: Path, loa
                     and number not in line_ids and hits >= 0,
                     "invalid coverage XML line")
             line_ids.add(number)
-            require((hits > 0) == (number in joined["lines"][name]),
+            require((hits > 0) == (number in executed),
                     "coverage XML hits differ from raw union")
             statements += 1
             covered += hits > 0
