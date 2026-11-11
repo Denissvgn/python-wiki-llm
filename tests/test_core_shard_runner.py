@@ -254,8 +254,10 @@ def canonical_linux_artifact(directory):
     assert len(roots) == 1
     expected = {str(Path(roots[0]) / name) for name in record["lines"]}
     assert set(data.measured_files()) == expected
-    assert all(sorted(data.lines(name)) == record["lines"][Path(name).relative_to(Path(roots[0])).as_posix()]
-               for name in expected)
+    for name in expected:
+        observed = data.lines(name)
+        assert observed is not None
+        assert sorted(observed) == record["lines"][Path(name).relative_to(Path(roots[0])).as_posix()]
     data.erase()
     data = CoverageData(basename=str(directory / "coverage.data"))
     data.add_lines({"/owned/package/" + name: lines for name, lines in record["lines"].items()})
