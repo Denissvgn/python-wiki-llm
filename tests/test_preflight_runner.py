@@ -123,7 +123,7 @@ def test_owner_binding_refuses_replacement_and_malformed_metadata(tmp_path):
 
 
 def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, preparation_metadata
 ):
     monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
     monkeypatch.setattr(
@@ -433,7 +433,9 @@ def test_evidence_inventory_excludes_mutable_consumer_symlinks(tmp_path, monkeyp
     assert len(paths) == 4
 
 
-def test_shared_driver_environment_skip_stays_blocked(tmp_path, monkeypatch):
+def test_shared_driver_environment_skip_stays_blocked(
+    tmp_path, monkeypatch, preparation_metadata
+):
     work = runner.claim_work(tmp_path / "work", BINDING)
     monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {})
 

@@ -371,8 +371,8 @@ def test_ci_uses_shared_driver_without_replacing_full_producers():
 
 def test_rebound_registry_cannot_remove_admission_dependency(repository):
     workflow = repository / p.WORKFLOW
-    text = workflow.read_text().replace("needs: [freeze, admission]", "needs: freeze", 1)
-    workflow.write_text(text)
+    text = workflow.read_text(encoding="utf-8").replace("needs: [freeze, admission]", "needs: freeze", 1)
+    workflow.write_bytes(text.encode("utf-8"))
     _, declarations = p.workflow_declarations(repository)
     def rebind(value):
         for row in value["jobs"]:
