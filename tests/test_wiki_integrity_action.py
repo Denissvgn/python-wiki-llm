@@ -68,6 +68,14 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
             "required": False,
             "default": "docs/llm_wiki",
         },
+        "require-referenced-storage": {
+            "description": (
+                "Require a complete read-only audit with zero unreferenced or "
+                "unrecognized native storage objects."
+            ),
+            "required": False,
+            "default": "false",
+        },
         "src-dir": {
             "description": (
                 "Repository-relative source root; its default source-selection "
@@ -351,8 +359,8 @@ def test_full_integrity_action_isolates_python_modules_from_candidate_source() -
 
     assert run_text.count("-I -m pip") == 1
     assert run_text.count("-m pip") == 1
-    assert run_text.count("-I -m llm_wiki_cli.cli") == 3
-    assert run_text.count("-m llm_wiki_cli.cli") == 3
+    assert run_text.count("-I -m llm_wiki_cli.cli") == 4
+    assert run_text.count("-m llm_wiki_cli.cli") == 4
     assert "python -m pip" not in run_text
 
 
@@ -590,6 +598,7 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     assert set(upload["with"]["path"].splitlines()) == {
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json",
+        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-storage-report.json",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.json",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.md",
