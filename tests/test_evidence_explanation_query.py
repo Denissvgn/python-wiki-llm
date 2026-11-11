@@ -169,7 +169,8 @@ def test_receipt_identity_uses_actual_bytes_and_does_not_prepare(tmp_path, monke
         probes.append(a)
         return "v24.18.0"
     monkeypatch.setattr(helpers, "command_output", probe)
-    monkeypatch.setattr(helpers.shutil, "which", lambda *a, **kw: "/active/node")
+    active_node = str(tmp_path / "active" / "node")
+    monkeypatch.setattr(helpers.shutil, "which", lambda *a, **kw: active_node)
     before = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
     result = helpers.helper_identity(language, tmp_path, str(cache))
     assert result["status"] == "ready" and result["issues"] == []
@@ -179,7 +180,7 @@ def test_receipt_identity_uses_actual_bytes_and_does_not_prepare(tmp_path, monke
     if language == "typescript":
         assert len(probes) == 1
         assert result["prepared"]["toolchain"] == receipt["toolchain"]
-        assert result["active_runtime"] == {"kind": "node", "path": "/active/node", "version": "v24.18.0"}
+        assert result["active_runtime"] == {"kind": "node", "path": active_node, "version": "v24.18.0"}
         assert result["execution_source_fingerprint"] == result["current_source_fingerprint"]
     else:
         assert not probes  # No compiler is needed to inspect a native binary.

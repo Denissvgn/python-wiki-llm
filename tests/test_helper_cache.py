@@ -433,7 +433,7 @@ def test_typescript_runtime_pins_physical_node_when_selection_alias_changes(
     monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: str(alias if name == "node" else npm))
 
     def output(command, *, cwd, env):
-        if command[0] == str(npm):
+        if Path(command[0]) == npm:
             return "11.16.0"
         assert command[0] == str(one)
         if command[1] == "--version":
@@ -470,7 +470,7 @@ def test_npm_shebang_uses_pinned_node_when_selection_alias_changes(tmp_path, mon
     monkeypatch.setenv("PATH", str(aliases))
 
     def output(command, *, cwd, env):
-        if command[0] == str(npm):
+        if Path(command[0]) == npm:
             alias.unlink()
             alias.symlink_to(two)
             selected = cache.shutil.which("node", path=env["PATH"])
@@ -799,7 +799,8 @@ def test_rust_profile_forces_the_compiler_it_validated(tmp_path, monkeypatch):
     monkeypatch.setenv("CARGO_BUILD_RUSTC", "other-compiler")
     monkeypatch.setattr(cache.platform, "system", lambda: "Linux")
     monkeypatch.setattr(cache.platform, "machine", lambda: "aarch64")
-    monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: "/selected/" + name)
+    selected = tmp_path / "selected"
+    monkeypatch.setattr(cache.shutil, "which", lambda name, path=None: str(selected / name))
     monkeypatch.setattr(cache, "_executable_identity", lambda paths: {name: path for name, path in paths.items()})
 
     def output(command, *, cwd, env):
@@ -808,7 +809,7 @@ def test_rust_profile_forces_the_compiler_it_validated(tmp_path, monkeypatch):
 
     monkeypatch.setattr(cache, "_output", output)
     profile = cache._profile("rust", tmp_path / "cache", tmp_path)
-    assert profile.environment["RUSTC"] == "/selected/rustc"
+    assert profile.environment["RUSTC"] == str(selected / "rustc")
     assert profile.environment["RUSTC_WRAPPER"] == profile.environment["RUSTC_WORKSPACE_WRAPPER"] == ""
     assert "CARGO_BUILD_RUSTC" not in profile.environment
 

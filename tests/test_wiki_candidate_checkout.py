@@ -38,6 +38,7 @@ def git(root, *args):
 def repository(root):
     root.mkdir()
     git(root, "init", "-q")
+    git(root, "config", "core.autocrlf", "false")
     (root / ".gitignore").write_text("ignored/\n", encoding="utf-8")
     (root / "Home.md").write_text("# Home\n", encoding="utf-8")
     git(root, "add", ".")

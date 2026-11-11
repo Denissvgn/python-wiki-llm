@@ -16,6 +16,12 @@ from release import core_shard_runner as r
 from tests.test_core_shards import context, NODES
 
 
+linux_coverage_producer = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="canonical coverage producer requires POSIX filesystem paths",
+)
+
+
 @pytest.mark.parametrize("system", ["nt", "posix"])
 @pytest.mark.parametrize("failure", ["timeout", "interrupt", "cleanup"])
 def test_owned_tree_is_reaped_on_timeout_or_cancellation(
@@ -235,6 +241,29 @@ def coverage_fixture(tmp_path, lines):
         },
     )
     return package, output
+
+
+def canonical_linux_artifact(directory):
+    """Represent a Linux producer artifact independently of this test host."""
+    record = r.s.read(directory / "coverage.json")
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.read()
+    # Verify the native merger's exact file inventory before constructing the
+    # POSIX transport fixture. Never teach the promotion reader Windows paths.
+    roots = record["source_roots"]
+    assert len(roots) == 1
+    expected = {str(Path(roots[0]) / name) for name in record["lines"]}
+    assert set(data.measured_files()) == expected
+    for name in expected:
+        observed = data.lines(name)
+        assert observed is not None
+        assert sorted(observed) == record["lines"][Path(name).relative_to(Path(roots[0])).as_posix()]
+    data.erase()
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.add_lines({"/owned/package/" + name: lines for name, lines in record["lines"].items()})
+    data.write()
+    record["source_roots"] = ["/owned/package"]
+    r.q.write_json(directory / "coverage.json", record)
 
 
 def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
@@ -862,6 +891,8 @@ def test_complete_provider_namespace_is_checked_before_collection(
         raise RuntimeError("stop after verified namespace")
 
     monkeypatch.setattr(r, "context", observed_context)
+    # Namespace admission is independent of the Ubuntu coverage producer probe.
+    monkeypatch.setattr(r, "probe_coverage_transport", lambda root: None)
     monkeypatch.setattr(r, "invoke", no_collection)
     args = argparse.Namespace(root=root, output=tmp_path / "evidence", shards=2, lane=lane, archive=tmp_path / "unused.tar")
     with pytest.raises((ValueError, RuntimeError), match=(
@@ -997,6 +1028,7 @@ def test_pure_promotion_reader_replays_raw_coverage_union_without_third_party_re
     output = tmp_path / "combined"
     output.mkdir()
     r.combine_coverage(r.s.plan(NODES, context(), 2), [first, second], package.parents[1], output)
+    canonical_linux_artifact(output)
     core_coverage.validate_combination(output, [first, second], package, r.s.read)
     data = CoverageData(basename=str(second / "coverage.data"))
     data.erase()
@@ -1061,6 +1093,14 @@ def test_qualifying_ubuntu_command_replays_complete_inventory_and_raw_coverage(t
         r.q.write_json(directory / "execution.json", receipt)
     monkeypatch.setattr(r, "context", lambda args: current)
     monkeypatch.setattr(r, "package_root", lambda source: package)
+    native_combine = r.combine_coverage
+
+    def linux_combine(*args):
+        result = native_combine(*args)
+        canonical_linux_artifact(args[-1])
+        return result
+
+    monkeypatch.setattr(r, "combine_coverage", linux_combine)
     output = tmp_path / "aggregate"
     args = argparse.Namespace(root=root, output=output, preparation=preparation, shards_root=shards)
     assert r.aggregate_qualification(args) == 0
@@ -1078,6 +1118,7 @@ def test_qualifying_ubuntu_command_replays_complete_inventory_and_raw_coverage(t
             current["identity"], current["harness_sha256"], current["run_id"], current["run_attempt"], allowlist, source_root=root)
 
 
+@linux_coverage_producer
 def test_real_coverage_storage_is_admitted_before_qualifying_collection():
     r.probe_coverage_transport()
 
@@ -1130,6 +1171,7 @@ def test_candidate_pytest_instrumentation_overrides_are_rejected_without_executi
         r.probe_coverage_transport(tmp_path)
 
 
+@linux_coverage_producer
 def test_coverage_admission_does_not_execute_candidate_conftest_or_plugin(tmp_path):
     marker = tmp_path / "executed"
     source = f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\nraise RuntimeError('must not import')\n"
@@ -1184,6 +1226,7 @@ def test_coverage_report_inventory_mismatch_is_rejected_before_collection(
     "exclude_lines = ^SECOND", "skip_covered = True", "include = */llm_wiki_cli/*",
     "omit = */unowned.py", "contexts = ^$",
 ])
+@linux_coverage_producer
 def test_compatible_coverage_report_settings_remain_supported(tmp_path, setting):
     package = tmp_path / "src/llm_wiki_cli"
     package.mkdir(parents=True)
@@ -1208,6 +1251,7 @@ def test_coverage_additional_source_directory_is_rejected_before_collection(tmp_
 @pytest.mark.parametrize("setting", [
     "omit = */unowned.py", "source_pkgs = llm_wiki_cli", "parallel = True", "concurrency = multiprocessing",
 ])
+@linux_coverage_producer
 def test_compatible_coverage_run_settings_remain_supported(tmp_path, setting):
     package = tmp_path / "src/llm_wiki_cli"
     package.mkdir(parents=True)
@@ -1217,6 +1261,7 @@ def test_compatible_coverage_run_settings_remain_supported(tmp_path, setting):
     r.probe_coverage_transport(tmp_path)
 
 
+@linux_coverage_producer
 def test_coverage_report_probe_preserves_active_configured_outputs(tmp_path):
     package = tmp_path / "src/llm_wiki_cli"
     package.mkdir(parents=True)
@@ -1300,6 +1345,7 @@ def test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line(tmp_
     output = tmp_path / "combined"
     output.mkdir()
     r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
+    canonical_linux_artifact(output)
     core_coverage.validate_combination(output, [directory], package, r.s.read)
     xml_path = output / "coverage-core-ubuntu-3.11.xml"
     tree = ET.parse(xml_path)
