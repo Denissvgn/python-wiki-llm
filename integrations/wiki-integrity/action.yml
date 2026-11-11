@@ -532,6 +532,11 @@ runs:
       if: inputs.require-referenced-storage != 'false'
       shell: bash
       env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
         INPUT_REQUIRE_REFERENCED_STORAGE: ${{ inputs.require-referenced-storage }}
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
       run: |
