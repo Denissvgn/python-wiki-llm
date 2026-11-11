@@ -332,7 +332,7 @@ def test_interrupted_notes_materialization_resumes_without_accepting_changed_not
     assert not target.exists()
     monkeypatch.setattr(Path, "open", original)
     assert api._notes(state).read_bytes() == b"Product behavior.\n"
-    target.write_text("Unreviewed changes\n", encoding="utf-8")
+    target.write_bytes(b"Unreviewed changes\n")
     with pytest.raises(manual.SessionError, match="Release notes changed"):
         api._notes(state)
     assert target.read_bytes() == b"Unreviewed changes\n"

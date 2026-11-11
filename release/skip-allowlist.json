@@ -2900,6 +2900,78 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[contexts = ^$]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[exclude_lines = ^SECOND]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[include = */llm_wiki_cli/*]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[omit = */unowned.py]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[skip_covered = True]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_run_settings_remain_supported[concurrency = multiprocessing]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_run_settings_remain_supported[omit = */unowned.py]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_run_settings_remain_supported[parallel = True]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_run_settings_remain_supported[source_pkgs = llm_wiki_cli]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_coverage_admission_does_not_execute_candidate_conftest_or_plugin",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_coverage_report_probe_preserves_active_configured_outputs",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_core_shard_runner.py::test_real_coverage_storage_is_admitted_before_qualifying_collection",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "canonical coverage producer requires POSIX filesystem paths"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
       "owner_lane": "mcp-3.13",
       "reason": "Optional MCP SDK is not installed"

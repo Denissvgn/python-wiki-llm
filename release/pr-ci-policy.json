@@ -601,6 +601,23 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "release-fixtures-native": {
+      "tests": [
+        "tests/test_core_shard_runner.py",
+        "tests/test_evidence_explanation_query.py",
+        "tests/test_helper_cache.py",
+        "tests/test_manual_release.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -1034,6 +1051,18 @@
       ],
       "groups": [
         "reference"
+      ]
+    },
+    {
+      "paths": [
+        "tests/test_core_shard_runner.py",
+        "tests/test_evidence_explanation_query.py",
+        "tests/test_helper_cache.py",
+        "tests/test_manual_release.py",
+        "tests/test_wiki_candidate_checkout.py"
+      ],
+      "groups": [
+        "release-fixtures-native"
       ]
     }
   ],
