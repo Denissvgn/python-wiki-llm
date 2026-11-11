@@ -36,6 +36,7 @@ jobs:
       PYTHONIOENCODING: utf-8
       PIP_NO_INPUT: "1"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      LLM_WIKI_CACHE_DIR: ${{ github.workspace }}/.git
     steps:
       - name: Require the exact manual main candidate
         env:

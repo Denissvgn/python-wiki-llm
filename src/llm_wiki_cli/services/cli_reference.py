@@ -69,9 +69,9 @@ def _value(value: object, depth: int = 0) -> Any:
     if depth > _MAX_DEPTH:
         raise CLIReferenceError("Reference values exceed the supported nesting depth")
     if isinstance(value, Path):
-        if value.is_absolute():
+        if value.anchor:
             raise CLIReferenceError(
-                "Reference defaults cannot contain live absolute Path objects"
+                "Reference defaults require Path objects without a drive or root"
             )
         value = value.as_posix()
     if value is None or type(value) in {bool, int}:

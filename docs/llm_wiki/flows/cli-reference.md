@@ -96,9 +96,9 @@ sequenceDiagram
     p0-->>p30: content.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 863 interactions; 833 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 862 interactions; 832 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 408 (407 omitted); unresolved 1 of 172 (171 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 408 (407 omitted); unresolved 1 of 171 (170 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,10 +108,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:build_cli_contract` | 5 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 4 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 8 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 5 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 8 | - | external | 9 |
-| `src/llm_wiki_cli/services/cli_reference.py:_value` | 8 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 27 | - | external | 24 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 27 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 27 | - | unresolved | 14 |
+| `src/llm_wiki_cli/services/cli_reference.py:_value` | 8 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | external | 24 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | unresolved | 14 |
 > Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -145,8 +145,8 @@ Collector observations for 205 source steps with known totals: observed: 1138, e
 | `_value` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `CLIReferenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -160,8 +160,8 @@ flowchart LR
     s8["8. _value"]
     s9["9. CLIReferenceError"]
     s10["10. isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)"]
-    s11["11. value.is_absolute"]
-    s12["12. CLIReferenceError"]
+    s11["11. CLIReferenceError"]
+    s12["12. value.as_posix"]
     s1 -->|"_reference(args)"| s2
     s2 -->|"get_behavior_facts(data not statically known)"| s3
     s3 -->|"get_cli_contract(data not statically known)"| s4
@@ -171,8 +171,8 @@ flowchart LR
     s5 -->|"_value(dict(...))"| s8
     s8 -->|"CLIReferenceError('Reference values exceed the supported nesting depth')"| s9
     s8 -. "isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)(value, Path)" .-> s10
-    s8 -. "value.is_absolute(data not statically known)" .-> s11
-    s8 -->|"CLIReferenceError('Reference defaults cannot contain live absolute Path objects')"| s12
+    s8 -->|"CLIReferenceError('Reference defaults require Path objects without a drive or root')"| s11
+    s8 -. "value.as_posix(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -185,7 +185,7 @@ flowchart LR
     click s7 "../modules/cli_reference.md"
     click s8 "../modules/cli_reference.md"
     click s9 "../modules/cli_reference.md"
-    click s12 "../modules/cli_reference.md"
+    click s11 "../modules/cli_reference.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -205,8 +205,8 @@ flowchart LR
 | `_value` | `value: object`, `depth: int` | `_MAX_DEPTH`, `Path`, `Mapping` | - | `value`, `value`, `value`, `...`, `...` |
 | `CLIReferenceError` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services/cli_reference.py:_value)` | - | - | - | - |
-| `value.is_absolute` | - | - | - | - |
 | `CLIReferenceError` | - | - | - | - |
+| `value.as_posix` | - | - | - | - |
 
 ### Call data
 
@@ -221,8 +221,8 @@ flowchart LR
 | build_cli_contract | _value | 260 | `_value(dict(...))` |
 | _value | CLIReferenceError | 70 | `CLIReferenceError('Reference values exceed the supported nesting depth')` |
 | _value | isinstance (src/llm_wiki_cli/services/cli_reference.py:_value) | 71 | `isinstance(value, Path)` |
-| _value | value.is_absolute | 72 | `value.is_absolute(data not statically known)` |
-| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults cannot contain live absolute Path objects')` |
+| _value | CLIReferenceError | 73 | `CLIReferenceError('Reference defaults require Path objects without a drive or root')` |
+| _value | value.as_posix | 76 | `value.as_posix(data not statically known)` |
 
 ### Boundary effects
 
@@ -237,7 +237,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `build_cli_contract` | `isinstance` | 256 |
 | external_call | `_value` | `isinstance` | 71 |
-| unresolved_call | `_value` | `value.is_absolute` | 72 |
+| unresolved_call | `_value` | `value.as_posix` | 76 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

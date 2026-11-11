@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-11-11
+
+### Added
+
+- GitHub wiki candidates render explicitly mapped Markdown and assets into a
+  portable, reviewable snapshot. Source-only projects and existing native wikis
+  can use the same read-only candidate workflow.
+- Sibling wiki impact reports identify affected documentation, retain accepted
+  review decisions, and support independently reviewed patches for mapped pages.
+  Optional delivery verifies the reviewed candidate, checks the remote result,
+  and retains guarded rollback support.
+- Stable CLI reference data and installed behavior facts provide structured
+  evidence for documentation review.
+
+### Changed
+
+- Source operations automatically prepare missing or stale bundled language
+  helpers in a shared managed cache. Read-only operations and previews reuse
+  existing helpers without setup, and callers can select an explicit preparation
+  policy.
+- Opt-in storage pruning after wiki updates verifies cleanup and preserves
+  recovery data. Read-only retention checks report eligible cleanup without
+  changing stored snapshots.
+
+### Fixed
+
+- Helper preparation isolates builds from project dependencies, publishes
+  independent native executables, and reports damaged shared helpers with
+  actionable recovery guidance.
+- GitHub wiki review preserves manual content, validates mapped links and exact
+  review inputs, and supports consumer layouts and native platform boundaries.
+- Reused committed analysis preserves constraint ordering so repeated syncs
+  produce consistent rendered documentation.
+- CLI reference data rejects rooted and drive-relative Windows path defaults,
+  preserving portable reference output across platforms.
+
 ## [4.0.1] - 2026-11-03
 
 ### Changed
@@ -1648,7 +1684,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...v3.3.0
