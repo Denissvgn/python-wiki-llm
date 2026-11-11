@@ -961,6 +961,7 @@ def test_build_dependency_redirect_cannot_receive_writes(tmp_path):
 
 
 def test_legacy_receipt_cannot_read_an_artifact_outside_cache(tmp_path, monkeypatch):
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     source = tmp_path / "source"
     (source / ".git").mkdir(parents=True)
     root = source / ".git" / helpers.HELPER_CACHE_DIRNAME
