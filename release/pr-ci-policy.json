@@ -126,6 +126,10 @@
         "tests/test_knowledge_maintenance.py",
         "tests/test_policy_activation.py",
         "tests/test_policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py",
+        "tests/test_reviewed_wiki_capture.py",
+        "tests/test_wiki_review_snapshot.py",
         "tests/test_qualification_automation.py",
         "tests/test_hosted_evidence.py",
         "tests/test_core_shards.py",
@@ -637,6 +641,21 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "release-preparation-native": {
+      "tests": [
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -831,6 +850,10 @@
         "release/analysis_conformance.py",
         "release/hosted_evidence.py",
         "release/knowledge_maintenance.py",
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
         "release/knowledge-maintenance.json",
         "release/action-runtimes.json",
         "release/*policy*.json",
@@ -1099,6 +1122,19 @@
       ],
       "groups": [
         "integrity-action-contracts"
+      ]
+    },
+    {
+      "paths": [
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "groups": [
+        "release-preparation-native"
       ]
     }
   ],

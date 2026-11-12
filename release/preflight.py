@@ -441,6 +441,7 @@ def _capture_binding(root: Path) -> dict:
 def _maintenance(root: Path) -> dict:
     from release import knowledge_maintenance as maintenance
     from release import preflight_targets
+    from release.preparation import source_status
 
     config = root / "release/knowledge-maintenance.json"
     if not config.exists():
@@ -454,6 +455,9 @@ def _maintenance(root: Path) -> dict:
         targets = preflight_targets.inspect(
             root, policy["wiki_dir"], lambda name: _read(root / name)
         )
+        sources = source_status(root, policy)
+        capture_required = policy["mode"] == "required" and (
+            sources["status"] == "capture-required" or targets["status"] == "capture-required")
         return {
             "policy": policy["policy"],
             "mode": policy["mode"],
@@ -461,7 +465,9 @@ def _maintenance(root: Path) -> dict:
             "binding": "current",
             "version": maintenance.version_check(root, policy),
             "target_runtime": targets,
-            "status": "hosted-proof-required"
+            "sources": sources,
+            "reason": "Review and merge target-host wiki capture before final rehearsal" if capture_required else None,
+            "status": "blocked" if capture_required else "hosted-proof-required"
             if policy["mode"] == "required"
             else policy["mode"],
         }
@@ -478,6 +484,7 @@ def _maintenance(root: Path) -> dict:
                 "target_runtime": preflight_targets.inspect(
                     root, declared["wiki_dir"], lambda name: _read(root / name)
                 ),
+                "sources": source_status(root, declared),
             }
         return {"status": "blocked", "reason": str(exc)[:2000]}
 
