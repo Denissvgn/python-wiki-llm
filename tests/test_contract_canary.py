@@ -1,7 +1,10 @@
 """Bounded early producer evidence and placement before complete release suites."""
 
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 from types import SimpleNamespace
 import xml.etree.ElementTree as ET
 
@@ -58,6 +61,15 @@ def test_canary_uses_actual_multiline_tracer_and_tampered_output_controls():
     assert "tests/test_core_shard_runner.py::test_unexecuted_source_files_cannot_disappear_from_coverage_denominator" in c.COVERAGE
 
 
+def test_multiline_fixture_cannot_silently_drop_its_native_tracer_variant():
+    nodes = [s + "[case]" for s in c.COVERAGE[2:]]
+    nodes += [c.COVERAGE[0] + "[continuation-events]"]
+    nodes += [c.COVERAGE[1] + f"[continuation-events-{line}-{hits}]" for line, hits in ((10, 0), (15, 1))]
+    collection = {"collected": nodes, "selected": nodes[:], "deselected": []}
+    with pytest.raises(ValueError, match="real tracer"):
+        c.validate_results(c.COVERAGE, collection, nodes[:], {n: ET.Element("testcase") for n in nodes})
+
+
 def test_full_producers_join_all_early_contract_and_health_owners():
     jobs = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())["jobs"]
     assert set(jobs["admission"]["needs"]) == {"readiness", "contract-canary", "windows-canary", "smoke-parity", "knowledge-maintenance"}
@@ -75,6 +87,18 @@ def test_full_producers_join_all_early_contract_and_health_owners():
         assert "continue-on-error" not in run
         assert "--identity incoming/source/identity.json" in run["run"]
         assert "--source-sha" in run["run"] and "--expected-prefix" in run["run"]
+
+
+@pytest.mark.parametrize("gate", ["CONTRACTS", "MAINTENANCE"])
+@pytest.mark.parametrize("state", ["failure", "skipped"])
+def test_early_contract_or_health_failure_cannot_pass_admission(gate, state):
+    jobs = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())["jobs"]
+    command = jobs["admission"]["steps"][0]["run"]
+    environment = {**os.environ, **{name: "success" for name in ("READINESS", "CONTRACTS", "MAINTENANCE", "NATIVE", "PARITY")}}
+    environment[gate] = state
+    bash = shutil.which("bash")
+    assert bash is not None
+    assert subprocess.run([bash, "-e", "-o", "pipefail", "-c", command], env=environment).returncode != 0
 
 
 def test_local_freeze_checks_installed_archive_before_full_host_core(tmp_path):

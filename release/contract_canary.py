@@ -69,6 +69,11 @@ def validate_results(selectors, collection, started, cases) -> dict:
                    "Contract canary omitted a required selector")
     canary.require(all(any(n == s or n.startswith(s + "[") for s in selectors) for n in nodes),
                    "Contract canary collected an unexpected selector")
+    if selectors == COVERAGE:
+        required = {COVERAGE[0] + "[" + mode + "]" for mode in ("continuation-events", "native-tracer")}
+        required.update(COVERAGE[1] + f"[{mode}-{line}-{hits}]"
+                        for mode in ("continuation-events", "native-tracer") for line, hits in ((10, 0), (15, 1)))
+        canary.require(required <= set(nodes), "Contract canary omitted a real tracer or tampered multiline output")
     canary.require(Counter(started) == Counter(nodes) and set(cases) == set(nodes),
                    "Contract canary collection, started nodes and JUnit differ")
     canary.require(all(not any(c.find(t) is not None for t in ("failure", "error", "skipped")) for c in cases.values()),
