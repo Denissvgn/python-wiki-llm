@@ -248,7 +248,23 @@ def _overlaps(left: Path, right: Path) -> bool:
 def _inactive(path: Path, consumers: dict) -> bool:
     if consumers["host"].get(str(path), {}).get("status") != "inactive" or consumers["docker"]["status"] != "observed":
         return False
-    return not any(_overlaps(path, Path(m["source"]).absolute()) for m in consumers["docker"]["mounts"])
+    for mount in consumers["docker"]["mounts"]:
+        source = Path(mount["source"])
+        if not source.is_absolute():
+            return False
+        # Docker Desktop may expose its VM spelling instead of the host
+        # spelling. Consider both, and resolve host aliases such as /tmp and
+        # /var; never discard the original mount observation.
+        possible = [source]
+        for prefix in (Path("/host_mnt"), Path("/run/desktop/mnt/host")):
+            if source.is_relative_to(prefix):
+                possible.append(Path("/") / source.relative_to(prefix))
+        try:
+            if any(_overlaps(path, candidate.resolve()) for candidate in possible):
+                return False
+        except (OSError, RuntimeError):
+            return False
+    return True
 
 
 def _allocated(root: Path) -> int:

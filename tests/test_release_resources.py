@@ -288,3 +288,27 @@ def test_consumer_scanner_does_not_turn_unavailable_tools_into_inactivity(resour
     monkeypatch.setattr(r, "_command", command)
     observed = r.scan_consumers(paths)
     assert all(not r._inactive(path, observed) for path in paths)
+
+
+@pytest.mark.parametrize("prefix", ["/host_mnt", "/run/desktop/mnt/host", ""])
+def test_docker_desktop_alias_cannot_hide_a_stopped_host_bind_consumer(resources, prefix):
+    controller, paths, *_ = resources
+
+    def scan(values):
+        result = inactive(values)
+        result["docker"]["mounts"] = [{"container_id": "stopped-bind-consumer", "running": False,
+                                        "source": prefix + str(controller.store.root)}]
+        return result
+
+    plan = r.preview(controller.store, scanner=scan)
+    assert all(row["status"] == "retain" for row in plan["resources"])
+    assert all(path.exists() for path in paths)
+
+
+def test_host_filesystem_alias_is_resolved_before_mount_overlap(resources):
+    controller, paths, scratch, _ = resources
+    alias = controller.store.root / "private/mount-alias"
+    alias.symlink_to(scratch, target_is_directory=True)
+    observed = inactive(paths)
+    observed["docker"]["mounts"] = [{"source": str(alias), "running": False}]
+    assert all(not r._inactive(path, observed) for path in paths)
