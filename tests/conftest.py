@@ -11,6 +11,10 @@ from types import SimpleNamespace
 import pytest
 
 from tests.pytest_portability import require_portable_node_ids
+from tests.prepared_workspaces import (
+    _prepared_workspace_pool as _prepared_workspace_pool,
+    prepared_workspace as prepared_workspace,
+)
 
 
 @pytest.hookimpl(trylast=True)

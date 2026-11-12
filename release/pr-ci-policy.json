@@ -656,6 +656,30 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "native-scheduling": {
+      "tests": [
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_documentation_calibration_host_broker.py",
+        "tests/test_publication_impact.py",
+        "tests/test_publication_candidate.py",
+        "tests/test_sync_analysis_cache.py",
+        "tests/test_core_shards.py",
+        "tests/test_core_shard_runner.py",
+        "tests/test_core_shard_workflow.py",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -868,7 +892,10 @@
         "release/readiness.py",
         "release/runtime-policy.json",
         "release/measurement_canary.py",
-        "release/core_coverage.py"
+        "release/core_coverage.py",
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json"
       ],
       "groups": [
         "release",
@@ -1135,6 +1162,24 @@
       ],
       "groups": [
         "release-preparation-native"
+      ]
+    },
+    {
+      "paths": [
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json",
+        "tests/prepared_workspaces.py",
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_publication_impact.py",
+        "tests/test_sync_analysis_cache.py",
+        ".github/workflows/core-shard-shadow.yml",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "groups": [
+        "native-scheduling"
       ]
     }
   ],

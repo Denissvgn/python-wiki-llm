@@ -33,12 +33,16 @@ HARNESS_FILES = (
     "core_shards.py",
     "core_shard_runner.py",
     "core-shard-timings.json",
+    "core-shard-windows-trial.json",
+    "core_schedule.py",
+    "hosted_evidence.py",
     "core_coverage.py",
     "measurement_canary.py",
 )
 ISOLATED_ENVIRONMENT_KEYS = (
     "PYTHONPATH", "PYTHONHOME", "PYTEST_ADDOPTS", "PYTEST_PLUGINS",
     "COVERAGE_PROCESS_START", "COVERAGE_FORCE_CONFIG", "LLM_WIKI_CACHE_DIR",
+    "LLM_WIKI_TEST_PREPARED_WORKSPACES", "LLM_WIKI_TEST_PREPARED_WORKSPACE_REPORT", "LLM_WIKI_TEST_PREPARED_REPORT_PID",
 )
 
 
@@ -504,6 +508,10 @@ def export_coverage(root: Path, output: Path) -> None:
 def worker(args) -> int:
     import pytest
 
+    # Nested pytest children must not publish into their parent's diagnostic.
+    if os.environ.get("LLM_WIKI_TEST_PREPARED_WORKSPACE_REPORT"):
+        os.environ["LLM_WIKI_TEST_PREPARED_REPORT_PID"] = str(os.getpid())
+
     output = args.output.resolve()
     purpose = getattr(args, "purpose", "shadow")
     value = (
@@ -601,6 +609,9 @@ def worker_command(output: Path, purpose: str) -> list[str]:
 
 
 def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
+    history = getattr(args, "history", None)
+    s.require(history is None or (purpose == "shadow" and args.lane == s.WINDOWS_LANE),
+              "an experimental timing history is restricted to Windows shadow runs")
     collected = invoke(
         worker_command(args.output, purpose) + ["--collect"],
         args.root,
@@ -614,7 +625,7 @@ def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
         s.read(args.output / "collected.json"),
         current,
         args.shards,
-        s.read(Path(__file__).with_name("core-shard-timings.json")),
+        s.read(history or Path(__file__).with_name("core-shard-timings.json")),
         purpose=purpose,
         file_hashes={name: q.sha256_file(args.root / name) for name in {s.file_name(node) for node in s.read(args.output / "collected.json")}},
     )
@@ -789,6 +800,7 @@ def prepare(args) -> int:
     q.write_json(args.output / "preparation.json", record)
     started = time.monotonic()
     try:
+        s.require(getattr(args, "history", None) is None, "qualification cannot select an experimental timing history")
         current = context(args)
         s.validate_purpose("qualification", current, args.shards)
         if current["environment"]["profile"]["coverage"]:
@@ -856,6 +868,8 @@ def execute(args) -> int:
     q.write_json(args.output / "execution.json", receipt)
     started = time.monotonic()
     try:
+        s.require(getattr(args, "history", None) is None or (purpose == "shadow" and args.lane == s.WINDOWS_LANE),
+                  "an experimental timing history is restricted to Windows shadow runs")
         current = context(args)
         s.validate_purpose(purpose, current, args.shards)
         if current["environment"]["profile"]["coverage"]:
@@ -870,6 +884,11 @@ def execute(args) -> int:
             env = child_environment(
                 Path(temporary) / "state", Path(temporary) / "tmp", args.archive
             )
+            if purpose == "shadow":
+                s.require(os.environ.get("LLM_WIKI_TEST_PREPARED_WORKSPACES", "0") in {"0", "1"},
+                          "prepared workspace experiment must be 0 or 1")
+                env["LLM_WIKI_TEST_PREPARED_WORKSPACES"] = "1" if os.environ.get("LLM_WIKI_TEST_PREPARED_WORKSPACES", "0") == "1" else "0"
+                env["LLM_WIKI_TEST_PREPARED_WORKSPACE_REPORT"] = str(args.output / "workspace-profile.json")
             command = worker_command(args.output, purpose)
             if args.plan is None:
                 s.require(args.index is None, "reference must not select a shard")
@@ -1205,6 +1224,16 @@ def compare(args) -> int:
             "comparison_limit": "Hosted image revisions are recorded per job. Different builds can affect timing; functional parity does not establish image equality or a speedup.",
             "scope": "Collection and execution only. Runner setup, queueing and artifact transfer must be measured from job metadata before rollout.",
         }
+        profiles = {}
+        for name, directory in [("reference", args.reference), *[("shard-" + str(i), p) for i, p in enumerate(directories)]]:
+            path = directory / "workspace-profile.json"
+            if path.exists():
+                details = s.read(path)
+                s.require(details.get("schema_version") == "llm-wiki-prepared-test-workspaces/v1"
+                          and details.get("qualifying") is False and details.get("shared_mutable_files") is False,
+                          "invalid prepared fixture diagnostic")
+                profiles[name] = details
+        report["prepared_workspace_profiles"] = profiles
         report.update(complete=True, passed=True)
     except BaseException as error:
         report["error"] = str(error)
@@ -1268,6 +1297,7 @@ def main() -> int:
         if command in {"execute", "prepare"}:
             child.add_argument("--shards", type=int, default=2)
         if command == "execute":
+            child.add_argument("--history", type=Path)
             child.add_argument("--index", type=int)
             child.add_argument(
                 "--purpose",
