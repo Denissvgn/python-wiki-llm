@@ -28,7 +28,7 @@ PLAN_SCHEMA = "agent-wiki-release-cleanup-plan/v1"
 MARKER = ".release-resource-owner.json"
 MAX_RESOURCES = 1000
 MAX_ENTRIES = 100_000
-MAX_PLAN_BYTES = 64 * 1024 * 1024
+MAX_PLAN_BYTES = preflight.MAX_DOCUMENT
 DISPOSABLE = {"venv", "scratch", "source-export"}
 require = manual.require
 
