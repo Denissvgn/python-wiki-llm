@@ -196,6 +196,7 @@ def job_metrics(jobs: list[dict]) -> dict:
             "summed_runner_seconds": sum(row["seconds"] for row in completed),
             "elapsed_span_seconds": (max(hosted.timestamp(r["completed_at"]) for r in completed)
                                      - min(hosted.timestamp(r["started_at"]) for r in completed)).total_seconds() if completed else None,
+            "execution_imbalance_seconds": max(r["seconds"] for r in completed) - min(r["seconds"] for r in completed) if completed else None,
             "first_failed_producer": min(failures, key=lambda r: hosted.timestamp(r["completed_at"])) if failures else None,
             "first_case_failure_time": "unobserved; job completion bounds the observation, not the testcase failure time"}
 

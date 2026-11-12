@@ -142,6 +142,7 @@ def test_job_clocks_do_not_mix_queue_span_runner_sum_or_first_failure():
     )
     assert result["workers"]["summed_runner_seconds"] == 18
     assert result["workers"]["elapsed_span_seconds"] == 13
+    assert result["workers"]["execution_imbalance_seconds"] == 2
     assert result["workers"]["elapsed_after_reference_seconds"] == 15
     assert sorted(result["workers"]["queue_after_reference_seconds"].values()) == [2, 5]
     assert result["first_failed_producer"]["job_id"] == 3

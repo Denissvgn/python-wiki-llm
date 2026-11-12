@@ -11,6 +11,7 @@ from pathlib import Path
 import platform
 import statistics
 import sys
+import tempfile
 import time
 
 if __package__ in {None, ""}:
@@ -123,12 +124,22 @@ def run(args) -> int:
         # Reverse the order on alternating pairs; retain every sample.
         for mode in (("fresh", "prepared") if sample % 2 == 0 else ("prepared", "fresh")):
             target = args.output / (mode + "-" + str(sample))
-            env = runner.child_environment(args.output / (target.name + "-state"), args.output / (target.name + "-tmp"), args.archive)
             command = [sys.executable, "-I", str(Path(__file__).resolve()), "worker"]
             for name in ("root", "archive", "identity", "expected_prefix"):
                 command += ["--" + name.replace("_", "-"), str(getattr(args, name))]
             command += ["--source-sha", args.source_sha, "--output", str(target), "--mode", mode, "--sample", str(sample)]
-            receipt = runner.invoke(command, args.root, env, args.output / (target.name + ".log"), timeout=600)
+            # Evidence commonly lives in an ignored repository directory. Test
+            # inputs must not inherit that repository's governance/Git roots.
+            with tempfile.TemporaryDirectory(prefix="native-bottleneck-") as temporary:
+                temporary_root = Path(temporary).resolve()
+                shards.require(not any((p / ".git").exists() for p in (temporary_root, *temporary_root.parents)),
+                               "bottleneck temporary inputs must be outside Git checkouts")
+                env = runner.child_environment(args.output / (target.name + "-state"), temporary_root / "tests", args.archive)
+                receipt = runner.invoke(command, args.root, env, args.output / (target.name + ".log"), timeout=600)
+                receipt["temporary_root"] = str(temporary_root)
+                if receipt["exit_code"] != 0:
+                    import shutil
+                    shutil.copytree(temporary_root, args.output / (target.name + "-failed-inputs"))
             shards.q.write_json(args.output / (target.name + "-execution.json"), receipt)
             shards.require(receipt["exit_code"] == 0, "bottleneck sample failed; retained original log and partial evidence")
             observations.append(shards.read(target / "result.json"))

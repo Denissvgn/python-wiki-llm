@@ -76,3 +76,45 @@ def test_mismatched_or_partial_runs_never_report_a_speedup(fault):
         values.pop()
     with pytest.raises(b.shards.q.QualificationError):
         b.summarize(values)
+
+
+def test_evidence_in_a_repository_never_places_mutable_test_inputs_under_git(
+    tmp_path, monkeypatch
+):
+    import json
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / ".git").mkdir()
+    source = repository / "candidate"
+    source.mkdir()
+    output = repository / "reports/benchmark"
+    output.parent.mkdir()
+    args = SimpleNamespace(
+        root=source,
+        output=output,
+        samples=2,
+        source_sha="a" * 40,
+        archive=repository / "source.tar",
+        identity=repository / "identity.json",
+        expected_prefix=repository / "venv",
+    )
+    monkeypatch.setattr(b.canary, "verify_candidate", lambda _: {})
+    temporaries = []
+
+    def observed(command, root, env, log, *, timeout):
+        temporary = Path(env["TMPDIR"])
+        assert temporary.is_dir() and not temporary.is_relative_to(repository)
+        temporaries.append(temporary)
+        mode = command[command.index("--mode") + 1]
+        sample = int(command[command.index("--sample") + 1])
+        target = Path(command[command.index("--output") + 1])
+        target.mkdir()
+        (target / "result.json").write_text(json.dumps(row(mode, sample)))
+        return {"exit_code": 0, "seconds": 1, "error": None}
+
+    monkeypatch.setattr(b.runner, "invoke", observed)
+    assert b.run(args) == 0
+    assert len(temporaries) == 4 and all(not p.exists() for p in temporaries)
