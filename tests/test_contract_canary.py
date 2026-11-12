@@ -13,6 +13,7 @@ import yaml
 
 from release import contract_canary as c
 from release import preflight_contracts
+from tests.test_preflight_runner import preparation_metadata as preparation_metadata
 
 ROOT = Path(__file__).parents[1]
 
@@ -101,7 +102,7 @@ def test_early_contract_or_health_failure_cannot_pass_admission(gate, state):
     assert subprocess.run([bash, "-e", "-o", "pipefail", "-c", command], env=environment).returncode != 0
 
 
-def test_local_freeze_checks_installed_archive_before_full_host_core(tmp_path):
+def test_local_freeze_checks_installed_archive_before_full_host_core(tmp_path, preparation_metadata):
     from release import preflight_runner as r
 
     commands = r.stage_commands("freeze", ROOT, tmp_path, candidate_sha="a" * 40, version="4.2.0")
