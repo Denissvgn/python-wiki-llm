@@ -138,7 +138,10 @@
         "tests/test_static_quality_architecture.py",
         "tests/test_release_readiness.py",
         "tests/test_measurement_canary.py",
-        "tests/test_manual_release.py"
+        "tests/test_manual_release.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
       ],
       "lanes": [
         "ubuntu"
@@ -680,6 +683,24 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "release-recovery-native": {
+      "tests": [
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py",
+        "tests/test_manual_release.py",
+        "tests/test_preflight_runner.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -895,7 +916,9 @@
         "release/core_coverage.py",
         "release/core_schedule.py",
         "release/native_bottlenecks.py",
-        "release/core-shard-windows-trial.json"
+        "release/core-shard-windows-trial.json",
+        "release/session_report.py",
+        "release/release_resources.py"
       ],
       "groups": [
         "release",
@@ -1180,6 +1203,20 @@
       ],
       "groups": [
         "native-scheduling"
+      ]
+    },
+    {
+      "paths": [
+        "release/session_report.py",
+        "release/release_resources.py",
+        "release/manual_release.py",
+        "release/preflight_runner.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
+      ],
+      "groups": [
+        "release-recovery-native"
       ]
     }
   ],

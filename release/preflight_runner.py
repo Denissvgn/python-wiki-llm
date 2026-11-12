@@ -1025,6 +1025,14 @@ def execute_stage(
                         "destructive smoke harness destination is unexpectedly occupied"
                     )
             log = scratch / (f"{index:02d}-" + command.name + ".log")
+            resource_ticket = None
+            if "create-venv" in argv and "--path" in argv:
+                from release import release_resources
+
+                resource_ticket = release_resources.begin_allocation(
+                    scratch, work=work, binding=binding, candidate_sha=candidate_sha,
+                    attempt_id=attempt_id, role=command.name, path=Path(argv[argv.index("--path") + 1]),
+                )
             elapsed = time.monotonic()
             row = {
                 "name": command.name,
@@ -1092,6 +1100,8 @@ def execute_stage(
             row["log_sha256"] = (
                 hashlib.sha256(log.read_bytes()).hexdigest() if log.exists() else None
             )
+            if resource_ticket is not None:
+                release_resources.finish_allocation(resource_ticket, outcome=row["status"], runtime=observed_launcher)
             result["commands"].append(row)
             (scratch / "attempt.json").write_bytes(_canonical(result) + b"\n")
             if row["status"] != "passed":
@@ -1255,6 +1265,8 @@ def evidence_paths(attempt: dict) -> list[Path]:
     scratch = Path(attempt["scratch"])
     _safe(scratch)
     files = {scratch / "attempt.json"}
+    if (scratch / "resources.json").exists():
+        files.add(scratch / "resources.json")
     for row in attempt["commands"]:
         files.add(Path(row["log"]))
     for name in (
