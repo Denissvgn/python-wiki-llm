@@ -637,3 +637,26 @@ def test_selected_source_comparison_ignores_replaced_capture_history(
     capture.fetch(root, producer.request, folder, client=producer)
     with pytest.raises(ValueError, match="selected source changed"):
         capture.preview_import(root, folder, client=producer)
+
+
+def test_later_wiki_changes_require_fresh_preview_and_preserve_newer_ownership(
+    producer, monkeypatch
+):
+    root = producer.root
+    (root / capture.WIKI / "index.md").write_text("new authored prose\n")
+    (root / capture.WIKI / ".llm-wiki-maintenance-adoption.json").write_text(
+        "new owner sentinel\n"
+    )
+    _git(root, "add", ".")
+    _git(root, "commit", "-qm", "newer wiki owner and prose")
+    folder = root / "reports/capture"
+    capture.fetch(root, producer.request, folder, client=producer)
+    calls = []
+    monkeypatch.setattr(capture, "storage_audit", lambda *_: calls.append("audit"))
+    with pytest.raises(ValueError, match="wiki baseline changed"):
+        capture.preview_import(root, folder, client=producer)
+    assert calls == []
+    assert (root / capture.WIKI / "index.md").read_text() == "new authored prose\n"
+    assert (
+        root / capture.WIKI / ".llm-wiki-maintenance-adoption.json"
+    ).read_text() == "new owner sentinel\n"

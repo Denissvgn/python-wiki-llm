@@ -313,6 +313,9 @@ def _selected_changes(root: Path, source: str, head: str) -> list[str]:
 
     require(manual.git(root, "merge-base", "--is-ancestor", source, head, check=False).returncode == 0,
             "capture source is not in target history")
+    require(manual.git(root, "rev-parse", source + ":" + WIKI).stdout.strip()
+            == manual.git(root, "rev-parse", head + ":" + WIKI).stdout.strip(),
+            "wiki baseline changed since capture; review a fresh preview to preserve newer prose and ownership")
     config = hosted._json(maintenance.read(root / maintenance.POLICY_PATH))
     original = hosted._json(_git_bytes(root, "show", source + ":" + maintenance.POLICY_PATH))
     require(all(config[n] == original[n] for n in ("wiki_dir", "src_dir", "selection")), "capture selection configuration changed")
