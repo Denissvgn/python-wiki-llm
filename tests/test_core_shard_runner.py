@@ -266,6 +266,85 @@ def canonical_linux_artifact(directory):
     r.q.write_json(directory / "coverage.json", record)
 
 
+@pytest.fixture(params=["continuation-events", "native-tracer"])
+def multiline_coverage_artifact(tmp_path, monkeypatch, request):
+    from coverage import Coverage
+
+    package = tmp_path / "candidate/src/llm_wiki_cli"
+    package.mkdir(parents=True)
+    source = package / "owned.py"
+    source.write_bytes((
+        "\n".join(f"value_{n} = {n}" for n in range(8))
+        + "\nflag = True\nif (\n    flag\n):\n    covered = 1\nelse:\n    missed = 2\n"
+    ).encode())
+    # Python 3.11 traces the condition's continuation line, while the XML
+    # reporter attributes that event to the logical statement's first line.
+    events = set(range(1, 10)) | {11, 13}
+    if request.param == "native-tracer":
+        measured = Coverage(data_file=str(tmp_path / "native.data"),
+                            source=[str(package)], branch=False, config_file=False)
+        with measured.collect():
+            exec(compile(source.read_bytes(), str(source), "exec"), {})
+        measured.save()
+        data = measured.get_data()
+        files = list(data.measured_files())
+        assert len(files) == 1 and Path(files[0]).resolve() == source.resolve()
+        observed = data.lines(files[0])
+        assert observed is not None
+        events = set(observed)
+    directory = tmp_path / "input"
+    directory.mkdir()
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.add_lines({"/owned/package/owned.py": events})
+    data.write()
+    sources = r.source_manifest(package)
+    r.q.write_json(directory / "coverage.json", {
+        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/package"],
+        "sources": sources,
+        "statements": r.statement_map(package, directory / "coverage.data", package.parents[1]),
+        "lines": {"owned.py": sorted(events)},
+    })
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    result = r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
+    assert result["percent"] == pytest.approx(100 * 11 / 12)
+    canonical_linux_artifact(output)
+    assert r.s.read(output / "coverage.json")["lines"] == {"owned.py": sorted(events)}
+    return package, directory, output
+
+
+def test_pure_coverage_reader_preserves_raw_union_for_multiline_statement_hits(multiline_coverage_artifact):
+    from release import core_coverage
+
+    package, directory, output = multiline_coverage_artifact
+    before = {path: r.q.sha256_file(path) for path in (
+        directory / "coverage.data", directory / "coverage.json",
+        output / "coverage.data", output / "coverage.json",
+    )}
+    core_coverage.validate_combination(output, [directory], package, r.s.read)
+    assert {path: r.q.sha256_file(path) for path in before} == before
+
+
+@pytest.mark.parametrize("number,hits", [(10, 0), (15, 1)])
+def test_multiline_coverage_reader_rejects_rehashed_xml_hits(multiline_coverage_artifact, number, hits):
+    from release import core_coverage
+
+    package, directory, output = multiline_coverage_artifact
+    path = output / "coverage-core-ubuntu-3.11.xml"
+    tree = ET.parse(path)
+    lines = list(tree.getroot().iter("line"))
+    changed = next(line for line in lines if int(line.attrib["number"]) == number)
+    assert int(changed.attrib["hits"]) != hits
+    changed.set("hits", str(hits))
+    covered = sum(int(line.attrib["hits"]) > 0 for line in lines)
+    tree.getroot().set("lines-covered", str(covered))
+    tree.getroot().set("line-rate", str(covered / len(lines)))
+    tree.write(path)
+    with pytest.raises(ValueError, match="coverage XML hits differ from raw union"):
+        core_coverage.validate_combination(output, [directory], package, r.s.read)
+
+
 def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
     tmp_path, monkeypatch
 ):
