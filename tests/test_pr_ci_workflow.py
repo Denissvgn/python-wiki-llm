@@ -199,7 +199,7 @@ def test_full_native_release_and_new_native_evidence_are_still_required():
 
 def test_shared_action_dependencies_retain_their_required_consumer():
     policy = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
-    assert type(policy["revision"]) is int and policy["revision"] == 2
+    assert type(policy["revision"]) is int and policy["revision"] == 3
     for path in [
         ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
         "release/qualification.py",

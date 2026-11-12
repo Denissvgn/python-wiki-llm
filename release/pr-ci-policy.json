@@ -608,7 +608,10 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py"
       ],
       "lanes": [
         "ubuntu",
@@ -1059,7 +1062,13 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py",
+        "release/contract_canary.py",
+        "release/preflight_runner.py",
+        "release/preflight_contracts.py"
       ],
       "groups": [
         "release-fixtures-native"
@@ -1138,5 +1147,5 @@
     ]
   },
   "always": [],
-  "revision": 2
+  "revision": 3
 }

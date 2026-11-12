@@ -86,7 +86,7 @@ def test_newer_parser_control_skips_require_supported_parser_owner_cases():
 def test_maintenance_consumer_binds_identity_without_downloading_source():
     workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
     job = workflow["jobs"]["knowledge-maintenance"]
-    assert job["needs"] == ["freeze", "action", "admission"]
+    assert job["needs"] == ["freeze", "action", "readiness"]
     assert "always()" in job["if"] and "needs.freeze.result == 'success'" in job["if"]
     identity = next(step for step in job["steps"] if step.get("name") == "Bind expected identity to the frozen candidate")
     assert identity["env"] == {
@@ -1147,7 +1147,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     workflow = _yaml("release-qualification.yml")
     job = workflow["jobs"]["action"]
     assert job["name"] == "RD-10 hosted composite Action"
-    assert job["needs"] == ["freeze", "admission"]
+    assert job["needs"] == ["freeze", "readiness"]
     assert job["timeout-minutes"] == 60
     assert "env" not in job
 
@@ -1681,7 +1681,10 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         if job_name != "action":
             expected = expected.replace(" }}", " && !inputs.knowledge-policy-shadow }}")
         actual = jobs[job_name]["if"]
-        if "admission" in jobs[job_name].get("needs", []):
+        if job_name == "action":
+            assert expected.removeprefix("${{ ").removesuffix(" }}") in actual
+            assert "needs.readiness.result == 'success'" in actual
+        elif "admission" in jobs[job_name].get("needs", []):
             assert expected.removeprefix("${{ ").removesuffix(" }}") in actual
             assert "needs.admission.result == 'success'" in actual
         else:
@@ -2305,7 +2308,7 @@ def test_final_decision_cannot_report_success_after_candidate_freeze_failure():
 
 def test_normal_admission_precedes_costly_producers_and_never_hides_native_owners():
     jobs = _yaml("release-qualification.yml")["jobs"]
-    assert set(jobs["admission"]["needs"]) == {"readiness", "windows-canary", "smoke-parity"}
+    assert set(jobs["admission"]["needs"]) == {"readiness", "contract-canary", "windows-canary", "smoke-parity", "knowledge-maintenance"}
     for name in ("readiness", "windows-canary", "admission"):
         for mode in ("discovery-mode", "bandit-parity-verification", "ubuntu-suite-shadow", "knowledge-policy-shadow"):
             assert "!inputs." + mode in jobs[name]["if"]

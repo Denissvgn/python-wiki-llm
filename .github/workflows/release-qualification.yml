@@ -254,6 +254,7 @@ jobs:
             release/readiness.py \
             release/runtime-policy.json \
             release/measurement_canary.py \
+            release/contract_canary.py \
             release/pr_ci_pytest.py \
             release/core-shard-timings.json \
             release/ubuntu_suites.py \
@@ -559,6 +560,82 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  contract-canary:
+    name: Frozen release fixture and coverage contracts
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up exact coverage owner Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.11.18"
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Exercise frozen fixtures and real coverage producer contracts
+        env:
+          CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
+        run: >-
+          python -I incoming/tools/release/contract_canary.py run
+          --root candidate --archive incoming/source/candidate-source.tar
+          --identity incoming/source/identity.json --source-sha "${CANDIDATE_SHA}"
+          --expected-prefix "${RUNNER_TEMP}/qualification-venv"
+          --output "${RUNNER_TEMP}/release-contracts"
+      - name: Retain complete or partial release contract evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-release-contracts
+          path: ${{ runner.temp }}/release-contracts/
+          if-no-files-found: error
+          retention-days: 14
+
   windows-canary:
     name: Native Windows release canary
     if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
@@ -616,6 +693,25 @@ jobs:
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
 
+      - name: Exercise frozen fixture contracts on native Windows
+        env:
+          CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
+        run: >-
+          python -I incoming/tools/release/contract_canary.py run
+          --root candidate --archive incoming/source/candidate-source.tar
+          --identity incoming/source/identity.json --source-sha "${CANDIDATE_SHA}"
+          --expected-prefix "${RUNNER_TEMP}/qualification-venv"
+          --output "${RUNNER_TEMP}/release-contracts"
+      - name: Retain complete or partial native fixture contract evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: evidence-windows-contracts
+          path: ${{ runner.temp }}/release-contracts/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Exercise the complete native measurement consumer before full suites
         env:
           CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
@@ -638,16 +734,20 @@ jobs:
   admission:
     name: Require release admission
     if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
-    needs: [readiness, windows-canary, smoke-parity]
+    needs: [readiness, contract-canary, windows-canary, smoke-parity, knowledge-maintenance]
     runs-on: ubuntu-24.04
     steps:
       - name: Require platform, native consumer and literal artifact parity success
         env:
           READINESS: ${{ needs.readiness.result }}
+          CONTRACTS: ${{ needs.contract-canary.result }}
+          MAINTENANCE: ${{ needs.knowledge-maintenance.result }}
           NATIVE: ${{ needs.windows-canary.result }}
           PARITY: ${{ needs.smoke-parity.result }}
         run: |
           test "${READINESS}" = success
+          test "${CONTRACTS}" = success
+          test "${MAINTENANCE}" = success
           test "${NATIVE}" = success
           test "${PARITY}" = success
 
@@ -3044,8 +3144,8 @@ jobs:
 
   action:
     name: RD-10 hosted composite Action
-    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
-    needs: [freeze, admission]
+    if: ${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.readiness.result == 'success') }}
+    needs: [freeze, readiness]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -3418,8 +3518,8 @@ jobs:
 
   knowledge-maintenance:
     name: Repository knowledge maintenance
-    if: ${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}
-    needs: [freeze, action, admission]
+    if: ${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.readiness.result == 'success') }}
+    needs: [freeze, action, readiness]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
