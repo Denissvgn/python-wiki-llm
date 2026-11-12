@@ -75,7 +75,10 @@
       "tests/test_release_readiness.py",
       "tests/test_measurement_canary.py",
       "tests/test_contract_canary.py",
-      "tests/test_manual_release.py"
+      "tests/test_manual_release.py",
+      "tests/test_session_report.py",
+      "tests/test_release_startup_recovery.py",
+      "tests/test_release_resources.py"
     ],
     "sdk": [
       "tests/test_mcp_sdk.py",
