@@ -3,6 +3,7 @@
 from copy import deepcopy
 import json
 from pathlib import Path
+import subprocess
 from types import SimpleNamespace
 
 import pytest
@@ -16,6 +17,19 @@ from release import (
 from tests.test_knowledge_health_refresh import recorded_project as recorded_project
 
 ROOT = Path(__file__).parents[1]
+
+
+def test_frozen_source_has_a_source_hash_without_claiming_a_git_diff(monkeypatch):
+    monkeypatch.setattr(
+        preparation.manual,
+        "git",
+        lambda *_a, **_kw: subprocess.CompletedProcess([], 128, "", "no Git metadata"),
+    )
+    config = json.loads((ROOT / maintenance.POLICY_PATH).read_bytes())
+    result = preparation.source_status(ROOT, config)
+    assert result["status"] in {"source-current", "capture-required"}, result
+    assert result["capture_diff_status"] == "unavailable"
+    assert result["selected_changes_since_capture"] == []
 
 
 def test_source_current_inspection_does_not_claim_native_execution(recorded_project):

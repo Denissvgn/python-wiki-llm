@@ -76,9 +76,10 @@ def source_status(root: Path, config: dict) -> dict:
         selected_changes = []
         diff_status = "unavailable"
         if captured_sha:
-            head = manual.git(root, "rev-parse", "HEAD").stdout.strip()
-            ancestor = manual.git(root, "merge-base", "--is-ancestor", captured_sha, head, check=False)
-            if ancestor.returncode == 0:
+            observed_head = manual.git(root, "rev-parse", "HEAD", check=False)
+            head = observed_head.stdout.strip()
+            ancestor = manual.git(root, "merge-base", "--is-ancestor", captured_sha, head, check=False) if observed_head.returncode == 0 else None
+            if ancestor is not None and ancestor.returncode == 0:
                 def selected(path):
                     if path is None:
                         return False
