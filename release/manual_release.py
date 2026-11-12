@@ -316,7 +316,7 @@ class Controller:
                 if result is None:
                     return {**state, "observation": "awaiting_remote_visibility_or_completion"}
                 if result.get("pending"):
-                    return {**state, "observation": "remote-running", "remote": result}
+                    return {**state, "observation": result.get("observation", "remote-running"), "remote": result}
                 if result.get("failed"):
                     if state["pending"].get("failure") != result:
                         state["pending"]["failure"] = result
@@ -712,14 +712,20 @@ class GitHubBackend:
             if set(assets) != set(expected):
                 return {"retry_safe": True}
             return {"verified": True, "candidate_sha": state["candidate_sha"], "release_id": release["id"], "url": release["html_url"]}
-        run = self._run(state, action, pending)
-        if run is None:
-            return None
-        if run["status"] != "completed":
-            jobs = self.client.list(f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs", "jobs")
-            return {"pending": True, "run_id": run["id"], "attempt": run["run_attempt"],
-                    "status": run["status"], "active_jobs": [j["name"] for j in jobs if j["status"] != "completed"],
-                    "failed_jobs": [j["name"] for j in jobs if j["conclusion"] == "failure"]}
+        try:
+            run = self._run(state, action, pending)
+            if run is None:
+                return None
+            if run["status"] != "completed":
+                jobs = self.client.list(f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs", "jobs")
+                return {"pending": True, "run_id": run["id"], "attempt": run["run_attempt"],
+                        "status": run["status"], "active_jobs": [j["name"] for j in jobs if j["status"] != "completed"],
+                        "failed_jobs": [j["name"] for j in jobs if j["conclusion"] == "failure"]}
+        except automation.APIError as exc:
+            if exc.status not in {502, 503, 504}:
+                raise
+            # Only the run and jobs reads are retried, at the existing watch interval.
+            return {"pending": True, "observation": "remote-observation-unavailable", "http_status": exc.status}
         if run["conclusion"] != "success":
             return {"failed": True, "run_id": run["id"], "attempt": run["run_attempt"],
                     "candidate_sha": state["candidate_sha"], "conclusion": run["conclusion"]}

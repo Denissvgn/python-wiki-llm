@@ -1087,6 +1087,76 @@ def dispatch_session(project, monkeypatch, action):
     return controller, client
 
 
+@pytest.mark.parametrize(("action", "http_status", "fail_jobs"), [
+    ("qualify", 502, True), ("dry-run", 503, False), ("publish", 504, True),
+])
+def test_watch_continues_after_unavailable_workflow_read(
+        project, monkeypatch, capsys, action, http_status, fail_jobs):
+    controller, client = dispatch_session(project, monkeypatch, action)
+    submitted = controller.advance()
+    pending = submitted["pending"]
+    workflow, name = manual.WORKFLOWS[action]
+    run = {"id": 42, "created_at": pending["started_at"], "run_attempt": 1,
+           "head_sha": submitted["candidate_sha"], "head_branch": "main", "event": "workflow_dispatch",
+           "path": ".github/workflows/" + workflow, "name": name, "status": "in_progress",
+           "repository": {"full_name": "example/agent-wiki"}, "head_repository": {"full_name": "example/agent-wiki"}}
+    failures = [http_status]
+
+    def get(path):
+        assert path == "/actions/runs/42"
+        if failures and not fail_jobs:
+            raise manual.automation.APIError(failures.pop(), "Run read unavailable")
+        return run
+
+    def jobs(path, key):
+        assert (path, key) == ("/actions/runs/42/attempts/1/jobs", "jobs")
+        if failures:
+            raise manual.automation.APIError(failures.pop(), "Jobs read unavailable")
+        return [{"name": "Native suite", "status": "in_progress", "conclusion": None}]
+
+    monkeypatch.setattr(client, "get", get)
+    monkeypatch.setattr(client, "list", jobs)
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: controller.backend)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    pauses = []
+    monkeypatch.setattr(manual.time, "sleep", pauses.append)
+    assert manual.main(["watch", "--root", str(project), "--work", str(controller.store.work),
+                        "--interval", "5", "--max-polls", "2"]) == 0
+    first, recovered, bounded = map(json.loads, capsys.readouterr().out.splitlines())
+    assert first["observation"] == "remote-observation-unavailable" and first["remote"]["http_status"] == http_status
+    assert recovered["observation"] == "remote-running" and recovered["remote"]["run_id"] == 42
+    assert bounded["observation"] == "observation-budget-exhausted" and pauses == [5]
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
+def test_pending_workflow_read_permission_failure_remains_visible(project, monkeypatch):
+    controller, client = dispatch_session(project, monkeypatch, "qualify")
+    submitted = controller.advance()
+
+    def forbidden(path):
+        raise manual.automation.APIError(403, "Run read forbidden")
+
+    monkeypatch.setattr(client, "get", forbidden)
+    with pytest.raises(manual.automation.APIError, match="Run read forbidden"):
+        controller.advance()
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
+def test_gateway_error_submitting_workflow_stays_an_unknown_write(project, monkeypatch):
+    controller, client = dispatch_session(project, monkeypatch, "qualify")
+
+    def lost_response(method, path, payload):
+        assert method == "POST"
+        client.posts.append(payload)
+        raise manual.automation.APIError(502, "Dispatch response unavailable")
+
+    monkeypatch.setattr(client, "request", lost_response)
+    submitted = controller.advance()
+    assert submitted["pending"]["outcome_unknown"] is True
+    assert controller.advance()["observation"] == "awaiting_remote_visibility_or_completion"
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
 @pytest.mark.parametrize("when", ["prepare", "after-intent"])
 @pytest.mark.parametrize("mutation", ["absent", "lightweight", "wrong-source", "retargeted-object"])
 def test_published_tag_is_revalidated_before_publisher_dispatch(project, monkeypatch, when, mutation):
