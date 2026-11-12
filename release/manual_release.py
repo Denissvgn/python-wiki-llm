@@ -389,6 +389,8 @@ class Controller:
                 preparation.update(status="interrupted", reason=type(exc).__name__)
                 self.store.save(state, "preparation-interrupted")
                 raise
+        attempt = attempts[-1]
+        work = safe(Path(attempt["work"]))
         require(receipt.parent == work / "receipts", "Preparation receipt escaped its operation")
         preparation["receipt"] = str(receipt)
         try:

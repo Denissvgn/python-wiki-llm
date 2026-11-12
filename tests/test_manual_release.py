@@ -42,7 +42,7 @@ class Remote:
     def __init__(self):
         self.writes = []
         self.results = {}
-        self.lose_after_accept = None
+        self.lose_after_accept: str | None = None
         self.lose_before_accept = False
         self.public_ready = True
         self.admitted = True
