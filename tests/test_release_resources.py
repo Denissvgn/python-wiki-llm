@@ -312,3 +312,21 @@ def test_host_filesystem_alias_is_resolved_before_mount_overlap(resources):
     observed = inactive(paths)
     observed["docker"]["mounts"] = [{"source": str(alias), "running": False}]
     assert all(not r._inactive(path, observed) for path in paths)
+
+
+@pytest.mark.parametrize("limit_kind", ["resources", "entries"])
+def test_bounded_cleanup_defers_the_remaining_owned_trees_until_a_fresh_preview(resources, monkeypatch, limit_kind):
+    from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest
+
+    controller, paths, *_ = resources
+    kwargs = {"max_resources": 1} if limit_kind == "resources" else {}
+    if limit_kind == "entries":
+        monkeypatch.setattr(r, "MAX_ENTRIES", len(guarded_tree_manifest(paths[0])))
+    plan = r.preview(controller.store, scanner=inactive, **kwargs)
+    assert plan["resources"][0]["status"] == "remove"
+    assert plan["resources"][1]["status"] == "retain" and plan["resources"][1]["reason"] == "cleanup-batch-limit"
+    assert plan["batch"]["deferred_resources"] == 1
+    r.apply(controller.store, plan, plan["plan_sha256"], scanner=inactive)
+    assert not paths[0].exists() and paths[1].exists()
+    following = r.preview(controller.store, scanner=inactive, **kwargs)
+    assert following["resources"][1]["status"] == "remove"

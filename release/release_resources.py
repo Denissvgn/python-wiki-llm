@@ -28,6 +28,7 @@ PLAN_SCHEMA = "agent-wiki-release-cleanup-plan/v1"
 MARKER = ".release-resource-owner.json"
 MAX_RESOURCES = 1000
 MAX_ENTRIES = 100_000
+MAX_PLAN_BYTES = 64 * 1024 * 1024
 DISPOSABLE = {"venv", "scratch", "source-export"}
 require = manual.require
 
@@ -285,15 +286,17 @@ def _allocated_roots(roots: list[Path]) -> int:
     return total
 
 
-def preview(store: manual.Store, *, scanner=scan_consumers) -> dict:
+def preview(store: manual.Store, *, scanner=scan_consumers, max_resources: int = 8) -> dict:
     from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest
 
     state = store.load()
+    require(type(max_resources) is int and 1 <= max_resources <= MAX_RESOURCES, "Invalid cleanup batch limit")
     require(state["phase"] == "complete" and state.get("public_verification", {}).get("verified") is True,
             "Cleanup requires the controller's recorded public verification")
     protected = protected_files(state)
     pins = retention_state(state)["pins"]
     rows = []
+    selected_count = selected_entries = 0
     for catalog_path, catalog in catalogs(state):
         attempt = manual.read(catalog_path.parent / "attempt.json")
         for record in catalog["resources"]:
@@ -310,14 +313,21 @@ def preview(store: manual.Store, *, scanner=scan_consumers) -> dict:
                 row["reason"] = "producer-execution-lock"
             elif any(Path(p).is_relative_to(path) for p in protected):
                 row["reason"] = "protected-evidence-overlap"
+            elif selected_count >= max_resources or selected_entries >= MAX_ENTRIES:
+                row["reason"] = "cleanup-batch-limit"
             else:
                 require(_identity(path) == record["identity"], "Resource directory identity changed")
                 marker = preflight._read(path / MARKER)
                 require(hosted.sha256(marker) == record["marker_sha256"], "Resource ownership marker changed")
                 manifest = guarded_tree_manifest(path)
                 require(len(manifest) <= MAX_ENTRIES, "Resource tree exceeds cleanup bound")
-                row.update(status="candidate", identity=record["identity"], marker_sha256=record["marker_sha256"],
-                           manifest=[list(entry) for entry in manifest], allocated_bytes=_allocated(path))
+                if selected_entries + len(manifest) > MAX_ENTRIES:
+                    row["reason"] = "cleanup-batch-limit"
+                else:
+                    row.update(status="candidate", identity=record["identity"], marker_sha256=record["marker_sha256"],
+                               manifest=[list(entry) for entry in manifest], allocated_bytes=_allocated(path))
+                    selected_count += 1
+                    selected_entries += len(manifest)
             rows.append(row)
     registered = {r["path"] for r in rows}
     # Older attempts remain visible without fabricating an ownership marker or
@@ -352,9 +362,13 @@ def preview(store: manual.Store, *, scanner=scan_consumers) -> dict:
     value = {"schema_version": PLAN_SCHEMA, "session_id": state["session_id"], "candidate_sha": state["candidate_sha"],
              "root": str(store.root), "work": str(store.work), "state_sha256": hosted.sha256(manual.canonical(state)),
              "protected": protected, "resources": rows, "consumers": consumers,
+             "batch": {"resource_limit": max_resources, "entry_limit": MAX_ENTRIES, "selected_entries": selected_entries,
+                       "deferred_resources": sum(r["reason"] == "cleanup-batch-limit" for r in rows)},
              "allocated_work_bytes": _allocated(store.work), "created_at": manual.now(), "publication_authority": False,
              "docker_disposition": "No image, builder cache, volume or unrelated container removal is supported by this plan."}
-    return {**value, "plan_sha256": hosted.sha256(manual.canonical(value))}
+    result = {**value, "plan_sha256": hosted.sha256(manual.canonical(value))}
+    require(len(manual.canonical(result)) <= MAX_PLAN_BYTES, "Cleanup plan exceeds byte bound; select a smaller batch")
+    return result
 
 
 def apply(store: manual.Store, plan: dict, approved: str, *, scanner=scan_consumers) -> dict:
@@ -370,9 +384,12 @@ def apply(store: manual.Store, plan: dict, approved: str, *, scanner=scan_consum
                 and hosted.sha256(manual.canonical(state)) == plan["state_sha256"], "Controller changed after cleanup preview")
         require(not store.lease.exists(), "An active release lease prevents cleanup")
         require(protected_files(state) == plan["protected"], "Protected evidence changed after preview")
+        require(isinstance(plan["resources"], list) and len(plan["resources"]) <= MAX_RESOURCES,
+                "Cleanup inventory exceeds bound")
         selected = [r for r in plan["resources"] if r["status"] == "remove"]
         require(len(selected) <= MAX_RESOURCES and len({r["resource_id"] for r in selected}) == len(selected)
-                and len({r["path"] for r in selected}) == len(selected),
+                and len({r["path"] for r in selected}) == len(selected)
+                and sum(len(r["manifest"]) for r in selected) <= MAX_ENTRIES,
                 "Duplicate or oversized cleanup selection")
         roots = {str(path): value for path, value in catalogs(state)}
         pins = retention_state(state)["pins"]
@@ -440,6 +457,8 @@ def main(argv=None) -> int:
     parser.add_argument("--approved-plan-sha256")
     parser.add_argument("--resource-id")
     parser.add_argument("--reason")
+    parser.add_argument("--max-resources", type=manual.bounded_integer(1, MAX_RESOURCES), default=8,
+                        help="Maximum disposable trees per preview; remaining resources are retained for a later batch")
     args = parser.parse_args(argv)
     try:
         root = manual.safe(args.root)
@@ -451,11 +470,15 @@ def main(argv=None) -> int:
                 raise ValueError("Resource identity and retention reason required")
             result = pin(store, args.resource_id, args.reason, keep=args.operation == "pin")
         elif args.operation == "preview":
-            result = preview(store)
+            result = preview(store, max_resources=args.max_resources)
         else:
             if args.plan is None or args.approved_plan_sha256 is None:
                 raise ValueError("Reviewed cleanup plan and digest required")
-            result = apply(store, manual.read(root / args.plan), args.approved_plan_sha256)
+            # A real environment manifest can exceed the controller's small
+            # state-document bound. Plans have their own symmetric read/write
+            # bound and a shared entry budget across the entire batch.
+            plan = hosted._json(preflight._read(manual.safe(root / args.plan), MAX_PLAN_BYTES))
+            result = apply(store, plan, args.approved_plan_sha256)
         preflight.write_document(output, result, root=root)
         print(json.dumps({"output": str(output), "status": result.get("status", args.operation), "plan_sha256": result.get("plan_sha256")}, sort_keys=True))
         return 0
