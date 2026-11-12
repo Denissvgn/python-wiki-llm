@@ -330,3 +330,20 @@ def test_bounded_cleanup_defers_the_remaining_owned_trees_until_a_fresh_preview(
     assert not paths[0].exists() and paths[1].exists()
     following = r.preview(controller.store, scanner=inactive, **kwargs)
     assert following["resources"][1]["status"] == "remove"
+
+
+def test_cli_preview_and_apply_use_the_reviewed_batch_and_refuse_invalid_limits(resources, monkeypatch):
+    controller, paths, *_ = resources
+    monkeypatch.setattr(r.shutil, "which", lambda tool: tool)
+    monkeypatch.setattr(r, "_command", lambda argv, **kwargs: SimpleNamespace(returncode=1 if argv[0] == "lsof" else 0, stdout="", stderr=""))
+    common = ["--root", str(controller.store.root), "--work", str(controller.store.work)]
+    plan_path = controller.store.root / "private/cli-cleanup-plan.json"
+    assert r.main(["preview", *common, "--max-resources", "1", "--output", str(plan_path)]) == 0
+    plan = json.loads(plan_path.read_bytes())
+    assert plan["batch"]["resource_limit"] == 1 and plan["batch"]["deferred_resources"] == 1
+    output = controller.store.root / "private/cli-cleanup-result.json"
+    assert r.main(["apply", *common, "--plan", str(plan_path), "--approved-plan-sha256", plan["plan_sha256"], "--output", str(output)]) == 0
+    assert not paths[0].exists() and paths[1].exists()
+    refused = controller.store.root / "private/refused-cleanup-plan.json"
+    assert r.main(["preview", *common, "--max-resources", "0", "--output", str(refused)]) == 2
+    assert not refused.exists() and paths[1].exists()

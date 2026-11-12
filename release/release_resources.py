@@ -457,7 +457,7 @@ def main(argv=None) -> int:
     parser.add_argument("--approved-plan-sha256")
     parser.add_argument("--resource-id")
     parser.add_argument("--reason")
-    parser.add_argument("--max-resources", type=manual.bounded_integer(1, MAX_RESOURCES), default=8,
+    parser.add_argument("--max-resources", type=int, default=8,
                         help="Maximum disposable trees per preview; remaining resources are retained for a later batch")
     args = parser.parse_args(argv)
     try:
