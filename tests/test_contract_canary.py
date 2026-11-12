@@ -18,7 +18,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def evidence(selectors):
-    nodes = [s + "[case]" for s in selectors]
+    nodes = [s if "[" in s else s + "[case]" for s in selectors]
     collection = {"collected": nodes, "selected": nodes[:], "deselected": []}
     return collection, nodes[:], {n: ET.Element("testcase") for n in nodes}
 
@@ -147,6 +147,28 @@ def test_zero_worker_exit_without_collection_evidence_fails(tmp_path, monkeypatc
     monkeypatch.setattr(c.runner, "invoke", lambda *a, **kw: {"exit_code": 0, "error": None})
     assert c.run(args) == 1
     assert json.loads((args.output / "result.json").read_text())["profiles"][0]["error"]
+
+
+def test_source_mutation_after_profiles_records_a_terminal_failure(tmp_path, monkeypatch):
+    root = tmp_path / "candidate"
+    root.mkdir()
+    args = SimpleNamespace(root=root, output=tmp_path / "evidence", archive=tmp_path / "source.tar",
+                           identity=tmp_path / "identity.json", expected_prefix=tmp_path / "venv", source_sha="a" * 40,
+                           helper_cache_dir=None)
+    calls = []
+
+    def source(args):
+        calls.append(args)
+        if len(calls) == 2:
+            raise ValueError("Frozen source changed")
+        return {}
+
+    monkeypatch.setattr(c, "verify_candidate", source)
+    monkeypatch.setattr(c, "verify_profile", lambda *a: {"passed": 1})
+    monkeypatch.setattr(c.runner, "invoke", lambda *a, **kw: {"exit_code": 0, "error": None})
+    assert c.run(args) == 1
+    result = json.loads((args.output / "result.json").read_text())
+    assert result["status"] == "failed" and result["error"] == "Frozen source changed"
 
 
 def test_contract_registry_contains_early_producer_and_current_dependencies():

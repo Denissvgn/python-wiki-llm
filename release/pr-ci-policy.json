@@ -621,6 +621,22 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "integrity-action-contracts": {
+      "tests": [
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_has_bounded_portable_inputs",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_isolates_python_modules_from_candidate_source",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -1068,10 +1084,21 @@
         "tests/test_contract_canary.py",
         "release/contract_canary.py",
         "release/preflight_runner.py",
-        "release/preflight_contracts.py"
+        "release/preflight_contracts.py",
+        "release/core_coverage.py",
+        "release/core_shard_runner.py"
       ],
       "groups": [
         "release-fixtures-native"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/wiki-integrity/**",
+        "tests/test_wiki_integrity_action.py"
+      ],
+      "groups": [
+        "integrity-action-contracts"
       ]
     }
   ],
@@ -1147,5 +1174,5 @@
     ]
   },
   "always": [],
-  "revision": 3
+  "revision": 2
 }

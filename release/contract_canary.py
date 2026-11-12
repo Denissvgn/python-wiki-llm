@@ -28,7 +28,7 @@ FIXTURES = (
     "tests/test_helper_cache.py::test_legacy_receipt_cannot_read_an_artifact_outside_cache",
     "tests/test_helper_cache.py::test_npm_shebang_uses_pinned_node_when_selection_alias_changes",
     "tests/test_helper_cache.py::test_rust_profile_forces_the_compiler_it_validated",
-    "tests/test_evidence_explanation_query.py::test_receipt_identity_uses_actual_bytes_and_does_not_prepare",
+    "tests/test_evidence_explanation_query.py::test_receipt_identity_uses_actual_bytes_and_does_not_prepare[typescript]",
     "tests/test_manual_release.py::test_interrupted_notes_materialization_resumes_without_accepting_changed_notes",
     "tests/test_wiki_candidate_checkout.py::test_source_and_separate_target_have_independent_verified_revisions",
     "tests/test_wiki_candidate_checkout.py::test_pinned_target_rejects_materialized_git_symlink",
@@ -65,9 +65,9 @@ def validate_results(selectors, collection, started, cases) -> dict:
     nodes = core_shards.inventory(collection["collected"])
     canary.require(collection["deselected"] == [] and Counter(collection["selected"]) == Counter(nodes),
                    "Contract canary selection was reduced")
-    canary.require(all(any(n == s or n.startswith(s + "[") for n in nodes) for s in selectors),
+    canary.require(all(any(runner.q._selector_matches(s, n) for n in nodes) for s in selectors),
                    "Contract canary omitted a required selector")
-    canary.require(all(any(n == s or n.startswith(s + "[") for s in selectors) for n in nodes),
+    canary.require(all(any(runner.q._selector_matches(s, n) for s in selectors) for n in nodes),
                    "Contract canary collected an unexpected selector")
     if selectors == COVERAGE:
         required = {COVERAGE[0] + "[" + mode + "]" for mode in ("continuation-events", "native-tracer")}
@@ -146,38 +146,43 @@ def run(args) -> int:
               "runtime": {"python": sys.version, "platform": sys.platform, "prefix": str(sys.prefix)},
               "status": "running", "profiles": results}
     runner.q.write_json(out / "result.json", report)
-    for profile, mode in profiles:
-        target = out / (profile + "-" + mode)
-        env = runner.child_environment(out / (target.name + "-state"), out / (target.name + "-temp"), args.archive)
-        env["PYTHONDONTWRITEBYTECODE"] = "1"
-        if mode == "inherited":
-            cache = canary.safe(args.helper_cache_dir or out / "helper-cache")
-            canary.require(not cache.is_relative_to(args.root.absolute()), "Helper cache must be outside candidate source")
-            env["LLM_WIKI_CACHE_DIR"] = str(cache)
-        command = [sys.executable, "-I", str(Path(__file__).resolve()), "worker", "--root", str(args.root),
-                   "--archive", str(args.archive), "--identity", str(args.identity), "--source-sha", args.source_sha,
-                   "--expected-prefix", str(args.expected_prefix), "--output", str(target), "--profile", profile]
-        started = time.monotonic()
-        execution = runner.invoke(command, args.root, env, out / (target.name + ".log"), timeout=180)
-        code = execution["exit_code"]
-        result: dict[str, Any] = {"profile": profile, "cache_mode": mode, "exit_code": code, "seconds": time.monotonic() - started}
-        if execution["error"]:
-            result["error"] = execution["error"]
-        if code == 0:
-            try:
-                result["counts"] = verify_profile(target, profile, args.source_sha)
-            except (OSError, ValueError, RuntimeError) as error:
-                code = 1
-                result.update(exit_code=code, error=str(error))
-        results.append(result)
-        report["status"] = "failed" if code else "running"
+    try:
+        for profile, mode in profiles:
+            target = out / (profile + "-" + mode)
+            env = runner.child_environment(out / (target.name + "-state"), out / (target.name + "-temp"), args.archive)
+            env["PYTHONDONTWRITEBYTECODE"] = "1"
+            if mode == "inherited":
+                cache = canary.safe(args.helper_cache_dir or out / "helper-cache")
+                canary.require(not cache.is_relative_to(args.root.absolute()), "Helper cache must be outside candidate source")
+                env["LLM_WIKI_CACHE_DIR"] = str(cache)
+            command = [sys.executable, "-I", str(Path(__file__).resolve()), "worker", "--root", str(args.root),
+                       "--archive", str(args.archive), "--identity", str(args.identity), "--source-sha", args.source_sha,
+                       "--expected-prefix", str(args.expected_prefix), "--output", str(target), "--profile", profile]
+            started = time.monotonic()
+            execution = runner.invoke(command, args.root, env, out / (target.name + ".log"), timeout=180)
+            code = execution["exit_code"]
+            result: dict[str, Any] = {"profile": profile, "cache_mode": mode, "exit_code": code, "seconds": time.monotonic() - started}
+            if execution["error"]:
+                result["error"] = execution["error"]
+            if code == 0:
+                try:
+                    result["counts"] = verify_profile(target, profile, args.source_sha)
+                except (OSError, ValueError, RuntimeError) as error:
+                    code = 1
+                    result.update(exit_code=code, error=str(error))
+            results.append(result)
+            report["status"] = "failed" if code else "running"
+            runner.q.write_json(out / "result.json", report)
+            if code:
+                return 1
+        verify_candidate(args)
+        report["status"] = "passed"
         runner.q.write_json(out / "result.json", report)
-        if code:
-            return 1
-    verify_candidate(args)
-    report["status"] = "passed"
-    runner.q.write_json(out / "result.json", report)
-    return 0
+        return 0
+    except (OSError, ValueError, RuntimeError) as error:
+        report.update(status="failed", error=str(error))
+        runner.q.write_json(out / "result.json", report)
+        return 1
 
 
 def main(argv=None) -> int:

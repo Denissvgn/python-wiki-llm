@@ -199,7 +199,7 @@ def test_full_native_release_and_new_native_evidence_are_still_required():
 
 def test_shared_action_dependencies_retain_their_required_consumer():
     policy = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
-    assert type(policy["revision"]) is int and policy["revision"] == 3
+    assert type(policy["revision"]) is int and policy["revision"] == 2
     for path in [
         ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
         "release/qualification.py",
@@ -220,12 +220,12 @@ def test_new_controller_is_in_both_pr_and_full_release_lint_scopes():
     checks = static_checks.default_checks(ROOT, ROOT / "unused-evidence")
     command = next(check.command for check in checks if check.name == "ruff")
     assert command[:2] == (sys.executable, "-m")
-    assert {"release/pr_ci.py", "release/pr_ci_pytest.py"} <= set(command)
+    assert {"release/pr_ci.py", "release/pr_ci_pytest.py", "release/contract_canary.py"} <= set(command)
     lint = next(
         s
         for s in workflow("ci.yml")["jobs"]["typecheck"]["steps"]
         if s.get("name") == "Check the release lint scope"
     )
     assert all(
-        path in lint["run"] for path in ["release/pr_ci.py", "release/pr_ci_pytest.py"]
+        path in lint["run"] for path in ["release/pr_ci.py", "release/pr_ci_pytest.py", "release/contract_canary.py"]
     )
