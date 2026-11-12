@@ -614,3 +614,26 @@ def test_foreign_edit_after_interruption_keeps_preimage_and_refuses_resume(
         == b"original\n"
     )
     assert created.read_bytes() == b"foreign edit"
+
+
+def test_selected_source_comparison_ignores_replaced_capture_history(
+    producer, monkeypatch
+):
+    root = producer.root
+    (root / "src/llm_wiki_cli/__init__.py").write_text("# selected change\nVALUE = 1\n")
+    _git(root, "add", ".")
+    _git(root, "commit", "-qm", "selected source")
+    target = _git(root, "rev-parse", "HEAD")
+    # A replacement tree hides the selected change and leaves a harmless path
+    # difference. Reading the replaced history would admit this stale capture.
+    (root / "release/extra.py").write_text("# unrelated tree difference\n")
+    _git(root, "add", ".")
+    _git(root, "commit", "-qm", "replacement tree")
+    replacement = _git(root, "rev-parse", "HEAD")
+    _git(root, "checkout", "--detach", target)
+    subprocess.run(["git", "replace", producer.sha, replacement], cwd=root, check=True)
+    monkeypatch.setattr(capture, "storage_audit", lambda *_: {"ok": True})
+    folder = root / "reports/capture"
+    capture.fetch(root, producer.request, folder, client=producer)
+    with pytest.raises(ValueError, match="selected source changed"):
+        capture.preview_import(root, folder, client=producer)

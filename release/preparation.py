@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+import subprocess
 import tomllib
 
 if __package__ in {None, ""}:
@@ -26,7 +27,19 @@ def changes_since(root: Path, base: str, head: str) -> list[dict]:
     # contract and handle this read-only comparison before calling it.
     comparison = manual.git(root, "diff", "--quiet", "--no-ext-diff", "--no-textconv", base, head, "--", check=False)
     manual.require(comparison.returncode in {0, 1}, "Preparation source comparison failed")
-    return [] if comparison.returncode == 0 else pr_ci.changes(root, base, head)
+    if comparison.returncode == 0:
+        return []
+    fields = manual.git(root, "diff", "--name-status", "-z", "--find-renames", "--no-ext-diff", "--no-textconv", base, head, "--").stdout.split("\0")
+    rows = []
+    while fields and fields[0]:
+        status = fields.pop(0)
+        manual.require(re.fullmatch(r"[AMDT]|R[0-9]{1,3}", status) is not None and len(fields) >= 2,
+                       "Unsupported preparation diff record")
+        old = pr_ci.safe_path(fields.pop(0))
+        new = pr_ci.safe_path(fields.pop(0)) if status.startswith("R") else old
+        rows.append({"status": status, "old": old, "path": new})
+        manual.require(len(rows) <= pr_ci.MAX_PATHS, "Preparation diff exceeds path bound")
+    return rows
 
 
 def source_status(root: Path, config: dict) -> dict:
@@ -75,6 +88,7 @@ def source_status(root: Path, config: dict) -> dict:
         captured_sha = revision[4:] if re.fullmatch(r"git:[0-9a-f]{40}", revision) else None
         selected_changes = []
         diff_status = "unavailable"
+        diff_issue = None
         if captured_sha:
             observed_head = manual.git(root, "rev-parse", "HEAD", check=False)
             head = observed_head.stdout.strip()
@@ -87,14 +101,20 @@ def source_status(root: Path, config: dict) -> dict:
                         return snapshot.path_is_effectively_selected((root / path).relative_to(source_root).as_posix())
                     except ValueError:
                         return False
-                selected_changes = [r for r in changes_since(root, captured_sha, head)
-                                    if selected(r["path"]) or selected(r["old"])]
-                diff_status = "observed"
+                try:
+                    selected_changes = [r for r in changes_since(root, captured_sha, head)
+                                        if selected(r["path"]) or selected(r["old"])]
+                    diff_status = "observed"
+                except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                    # Git history is diagnostic. It cannot erase an already
+                    # observed source-snapshot mismatch or imply a matching one.
+                    diff_issue = str(exc)
         mismatch = actual != bundle.snapshot.source_snapshot_hash or bool(selection_issue)
         return {"status": "capture-required" if mismatch else "source-current",
                 "captured_source_sha": captured_sha, "captured_source_hash": bundle.snapshot.source_snapshot_hash,
                 "current_source_hash": actual, "changed_recorded_paths": changed,
                 "selected_changes_since_capture": selected_changes, "capture_diff_status": diff_status,
+                "capture_diff_issue": diff_issue,
                 "selection_issue": selection_issue, "selection": snapshot.source_selection_identity,
                 "selected_inputs": len(current), "runtime_verified": False,
                 "reason": "Required release health evaluates exact source bytes, including nonsemantic changes."

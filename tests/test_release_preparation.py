@@ -221,3 +221,20 @@ def test_plan_dependency_order_places_capture_merge_before_policy_and_final_rehe
         "policy-approval-review",
     ]
     assert result["publication_authority"] is False
+
+
+def test_failed_git_diagnostic_does_not_erase_observed_source_hash(monkeypatch):
+    def unavailable(*_a, **_kw):
+        raise ValueError("history diagnostic unavailable")
+
+    monkeypatch.setattr(preparation, "changes_since", unavailable)
+    monkeypatch.setattr(
+        preparation.manual,
+        "git",
+        lambda *_a, **_kw: subprocess.CompletedProcess([], 0, "a" * 40, ""),
+    )
+    config = json.loads((ROOT / maintenance.POLICY_PATH).read_bytes())
+    result = preparation.source_status(ROOT, config)
+    assert result["status"] in {"source-current", "capture-required"}, result
+    assert result["capture_diff_status"] == "unavailable"
+    assert result["capture_diff_issue"] == "history diagnostic unavailable"
