@@ -16,7 +16,6 @@ from llm_wiki_cli.services.helper_cache import ensure_helper
 from llm_wiki_cli.services.helper_preparation import selected_helper_languages
 from llm_wiki_cli.services.helper_runtime import helper_operation
 from llm_wiki_cli.services.knowledge_evidence import hash_json
-from llm_wiki_cli.services.knowledge_freshness import REASON_CONCEPT_OBSERVATION_CHANGED
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.publication_config import (
     load_publication_config,
@@ -155,23 +154,21 @@ def prepare(
             trust_source_plugins=False,
             helper_cache_dir=cache,
         )
-    report = {"current": freshness.current, "reasons": freshness.reasons}
-    retained_only = False
-    if not freshness.current:
-        retired = retired_entity_mappings(state.manifest_basis)
-        retained = {
-            f"{concept.locator}:{REASON_CONCEPT_OBSERVATION_CHANGED}": concept.document.canonical_path
-            for concept in state.knowledge.concepts
-            if concept.document.canonical_path in retired
-        }
-        causes = set(freshness.reasons)
-        if causes.intersection(retained):
-            report["retained_source_pages"] = sorted(
-                retained[r] for r in causes.intersection(retained)
-            )
-            retained_only = causes <= retained.keys()
+    # Historical members make no current structural promise, so ordinary
+    # freshness can be healthy while this publication baseline remains blocked.
+    retired = retired_entity_mappings(state.manifest_basis)
+    retained_pages = sorted({
+        concept.document.canonical_path
+        for concept in state.knowledge.concepts
+        if concept.document.canonical_path in retired
+    })
+    reasons = list(freshness.reasons)
+    report = {"current": freshness.current and not retained_pages, "reasons": reasons}
+    if retained_pages:
+        reasons.append("retained-source-history")
+        report["retained_source_pages"] = retained_pages
     _write(evidence / "native-freshness.json", report)
-    if retained_only:
+    if retained_pages and freshness.current:
         raise ValueError(
             "Native wiki freshness is blocked by retained source history; see retained_source_pages "
             "in native-freshness.json. Preserve the historical wiki. To document current source, "

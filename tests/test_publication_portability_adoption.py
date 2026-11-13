@@ -165,6 +165,12 @@ def test_managed_native_wiki_custom_paths_stale_evidence_and_recovery(
     )
     if retire_member:
         history = _files(native)
+        health = json.loads(_provider(
+            consumer, "doctor", "--strict", "--src-dir", SOURCE,
+            "--wiki-dir", NATIVE, "--format", "json", "--report-schema", "v4",
+            "--comparison-policy", "analysis-v1", "--helper-preparation", "never",
+        ).stdout)
+        assert health["status"] == "healthy"
         blocked = _provider(tmp_path, "check", *options, script=prepare, ok=False)
         assert b"retained source history" in blocked.stderr
         freshness = json.loads((evidence / "native-freshness.json").read_bytes())
