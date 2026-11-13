@@ -391,6 +391,29 @@ def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
     assert upload["with"]["if-no-files-found"] == "error"
 
 
+def test_retired_member_typescript_cases_have_required_toolchain_ownership():
+    family = (
+        "tests/test_retired_member_freshness.py::"
+        "test_retirement_converges_across_doctor_ci_and_revival"
+    )
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"].startswith(family)]
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == {
+        (lane, f"{family}[{transition}-.tsx]", "toolchains",
+         "Prepared typescript helper required; owned by toolchains")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.11", "core-windows-3.13")
+        for transition in ("surviving-member", "empty-module")
+    }
+    owner = _named_step(
+        _yaml("release-qualification.yml")["jobs"]["toolchains"],
+        "Run toolchain owner suites",
+    )
+    assert family in shlex.split(owner["run"])
+    assert owner["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
+    assert owner["env"]["LLM_WIKI_CACHE_DIR"] == "${{ runner.temp }}/extractor-cache"
+
+
 def test_recursion_coverage_probe_preserves_the_full_linux_gate():
     steps = _yaml("release-qualification.yml")["jobs"]["core"]["steps"]
     early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")
@@ -1424,8 +1447,8 @@ def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     assert "--junit evidence/toolchains.xml" in command
     assert "--lane toolchains" in command
     assert "--allowlist candidate/release/skip-allowlist.json" in command
-    assert "--minimum-collected 597" in command
-    assert "--minimum-passed 597" in command
+    assert "--minimum-collected 601" in command
+    assert "--minimum-passed 601" in command
     assert "--output evidence/result-toolchains.json" in command
     assert "--discovery" not in command
     assert "DISCOVERY_MODE" not in str(verifier)

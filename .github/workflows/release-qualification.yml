@@ -2743,6 +2743,7 @@ jobs:
           tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade
           tests/test_qualified_empty_modules.py
           tests/test_javascript_module_coverage.py
+          tests/test_retired_member_freshness.py::test_retirement_converges_across_doctor_ci_and_revival
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --durations=20
           --junitxml=../evidence/toolchains.xml
@@ -2762,8 +2763,8 @@ jobs:
           --junit evidence/toolchains.xml
           --lane toolchains
           --allowlist candidate/release/skip-allowlist.json
-          --minimum-collected 597
-          --minimum-passed 597
+          --minimum-collected 601
+          --minimum-passed 601
           --output evidence/result-toolchains.json
       - name: Verify independent provider parser controls
         working-directory: candidate
