@@ -40914,7 +40914,7 @@
             {
               "confidence": "unknown",
               "kind": "process",
-              "line": 75,
+              "line": 74,
               "step": "prepare",
               "step_index": 10,
               "target": "subprocess.run"
@@ -40922,7 +40922,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 91,
+              "line": 90,
               "step": "prepare",
               "step_index": 10,
               "target": "plan_path.read_bytes"
@@ -40930,18 +40930,44 @@
             {
               "confidence": "unknown",
               "kind": "process",
-              "line": 107,
+              "line": 106,
               "step": "prepare",
               "step_index": 10,
               "target": "subprocess.run"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 168,
+              "step": "prepare",
+              "step_index": 10,
+              "target": "reasons.append"
             }
           ],
           "gaps": [
             {
               "kind": "external_call",
-              "line": 187,
+              "line": 184,
               "step": "__main__",
               "target": "argparse.ArgumentParser"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 185,
+              "step": "__main__",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 186,
+              "step": "__main__",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 187,
+              "step": "__main__",
+              "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
@@ -40964,24 +40990,6 @@
             {
               "kind": "unresolved_call",
               "line": 191,
-              "step": "__main__",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 192,
-              "step": "__main__",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 193,
-              "step": "__main__",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 194,
               "step": "__main__",
               "target": "parser.parse_args"
             },
@@ -41062,7 +41070,7 @@
             "src/llm_wiki_cli/services/maintenance_projection.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py"
           ],
-          "step_count": 2921,
+          "step_count": 2919,
           "truncated": true
         }
       },
@@ -57269,7 +57277,6 @@
         "modules/helper_preparation.md",
         "modules/helper_runtime.md",
         "modules/knowledge_evidence.md",
-        "modules/knowledge_freshness.md",
         "modules/knowledge_loader.md",
         "modules/publication_config.md",
         "modules/source_retirement.md",
@@ -73390,5 +73397,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:b30ee717819c56e9ab572d82fefde6f3f6c44468e6c05796ebc669b33b9fbc6b"
+  "source_hash": "sha256:525c4286711677b01be789bc6ef950c4a2eb24d1d2b48d1bc26b9b4846fe2dd1"
 }

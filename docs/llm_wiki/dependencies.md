@@ -84,7 +84,6 @@ flowchart TD
 | [knowledge_reuse](modules/knowledge_reuse.md) | 11 | 21 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [workspace](modules/workspace.md) | 10 | 3 |
-| [knowledge_freshness](modules/knowledge_freshness.md) | 10 | 11 |
 | [python_imports](modules/python_imports.md) | 10 | 1 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [skills](modules/skills.md) | 10 | 2 |
@@ -94,6 +93,7 @@ flowchart TD
 | [integrity](modules/integrity.md) | 9 | 8 |
 | [entrypoints](modules/entrypoints.md) | 9 | 5 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 12 |
+| [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 11 |
 | [maintenance_status](modules/maintenance_status.md) | 9 | 9 |
 | [manifest_storage](modules/manifest_storage.md) | 9 | 7 |
 | [publication_candidate](modules/publication_candidate.md) | 9 | 11 |
@@ -299,7 +299,7 @@ flowchart TD
 | [checkout](modules/checkout.md) | 0 | 5 |
 | [git_transport](modules/git_transport.md) | 0 | 5 |
 | [publish](modules/publish.md) | 0 | 7 |
-| [wiki-candidate_prepare](modules/wiki-candidate_prepare.md) | 0 | 9 |
+| [wiki-candidate_prepare](modules/wiki-candidate_prepare.md) | 0 | 8 |
 | [provider](modules/provider.md) | 0 | 1 |
 | [run](modules/run.md) | 0 | 3 |
 | [observe](modules/observe.md) | 0 | 1 |

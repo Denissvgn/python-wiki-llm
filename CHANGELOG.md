@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retired source members retain their historical evidence without making doctor
   report stale current structure. Coverage counts them as unmodeled, and normal
   freshness checks resume when the declaration returns.
+- Wiki candidate preparation continues to reject retained source history as a
+  current publication baseline, with guidance to preserve it separately.
 
 ## [4.1.0] - 2026-11-11
 
