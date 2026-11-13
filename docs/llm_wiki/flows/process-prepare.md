@@ -63,7 +63,7 @@
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
 
-**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 5 more
+**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 4 more
 
 **Complete related modules:**
 
@@ -72,7 +72,6 @@
 - [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [publication_config](../modules/publication_config.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -147,9 +146,9 @@ sequenceDiagram
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2920 interactions; 2890 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2918 interactions; 2888 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 922 (921 omitted); unresolved 1 of 709 (708 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 922 (921 omitted); unresolved 1 of 707 (706 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -230,6 +229,8 @@ flowchart LR
     s10 -. "filesystem_read plan_path.read_bytes" .-> b1
     b2["process subprocess.run"]
     s10 -. "process subprocess.run" .-> b2
+    b3["mutation reasons.append"]
+    s10 -. "mutation reasons.append" .-> b3
     click s1 "../modules/wiki-candidate_prepare.md"
     click s10 "../modules/wiki-candidate_prepare.md"
     click s11 "../modules/publication_config.md"
@@ -238,6 +239,7 @@ flowchart LR
     class b0 boundary
     class b1 boundary
     class b2 boundary
+    class b3 boundary
 ```
 
 ### Step data
@@ -253,7 +255,7 @@ flowchart LR
 | `parser.add_argument` | - | - | - | - |
 | `parser.add_argument` | - | - | - | - |
 | `parser.parse_args` | - | - | - | - |
-| `prepare` | `mode: str`, `consumer: Path`, `config_path: str`, `source_dir: str`, `evidence: Path`, `cache: Path` | `_PROVIDER`, `_MODES`, `_LOCK`, `sys`, `sys`, `REASON_CONCEPT_OBSERVATION_CHANGED` | `helpers[...]`, `report[...]` | `none`, `none` |
+| `prepare` | `mode: str`, `consumer: Path`, `config_path: str`, `source_dir: str`, `evidence: Path`, `cache: Path` | `_PROVIDER`, `_MODES`, `_LOCK`, `sys`, `sys` | `helpers[...]`, `report[...]` | `none`, `none` |
 | `load_publication_config` | `consumer_root: str \| Path`, `config_path: str \| Path` | `Path`, `SourceSelectionError` | - | `validate_publication_config(...)` |
 | `_consumer_root` | `value: str \| Path` | `PublicationConfigError` | - | `root` |
 
@@ -261,38 +263,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| __main__ | argparse.ArgumentParser | 187 | `argparse.ArgumentParser(description=__doc__)` |
-| __main__ | parser.add_argument | 188 | `parser.add_argument('mode', choices=(...))` |
-| __main__ | parser.add_argument | 189 | `parser.add_argument('consumer', type=Path)` |
-| __main__ | parser.add_argument | 190 | `parser.add_argument('config')` |
-| __main__ | parser.add_argument | 191 | `parser.add_argument('source_dir')` |
-| __main__ | parser.add_argument | 192 | `parser.add_argument('evidence', type=Path)` |
-| __main__ | parser.add_argument | 193 | `parser.add_argument('cache', type=Path)` |
-| __main__ | parser.parse_args | 194 | `parser.parse_args(data not statically known)` |
-| __main__ | prepare | 195 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
-| prepare | load_publication_config | 53 | `load_publication_config(consumer, config_path=config_path)` |
+| __main__ | argparse.ArgumentParser | 184 | `argparse.ArgumentParser(description=__doc__)` |
+| __main__ | parser.add_argument | 185 | `parser.add_argument('mode', choices=(...))` |
+| __main__ | parser.add_argument | 186 | `parser.add_argument('consumer', type=Path)` |
+| __main__ | parser.add_argument | 187 | `parser.add_argument('config')` |
+| __main__ | parser.add_argument | 188 | `parser.add_argument('source_dir')` |
+| __main__ | parser.add_argument | 189 | `parser.add_argument('evidence', type=Path)` |
+| __main__ | parser.add_argument | 190 | `parser.add_argument('cache', type=Path)` |
+| __main__ | parser.parse_args | 191 | `parser.parse_args(data not statically known)` |
+| __main__ | prepare | 192 | `prepare(args.mode, args.consumer, args.config, args.source_dir, args.evidence, args.cache)` |
+| prepare | load_publication_config | 52 | `load_publication_config(consumer, config_path=config_path)` |
 | load_publication_config | _consumer_root | 987 | `_consumer_root(consumer_root)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| process | `subprocess.run` | `prepare` | 75 |
-| filesystem_read | `plan_path.read_bytes` | `prepare` | 91 |
-| process | `subprocess.run` | `prepare` | 107 |
+| process | `subprocess.run` | `prepare` | 74 |
+| filesystem_read | `plan_path.read_bytes` | `prepare` | 90 |
+| process | `subprocess.run` | `prepare` | 106 |
+| mutation | `reasons.append` | `prepare` | 168 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `__main__` | `argparse.ArgumentParser` | 187 |
+| external_call | `__main__` | `argparse.ArgumentParser` | 184 |
+| unresolved_call | `__main__` | `parser.add_argument` | 185 |
+| unresolved_call | `__main__` | `parser.add_argument` | 186 |
+| unresolved_call | `__main__` | `parser.add_argument` | 187 |
 | unresolved_call | `__main__` | `parser.add_argument` | 188 |
 | unresolved_call | `__main__` | `parser.add_argument` | 189 |
 | unresolved_call | `__main__` | `parser.add_argument` | 190 |
-| unresolved_call | `__main__` | `parser.add_argument` | 191 |
-| unresolved_call | `__main__` | `parser.add_argument` | 192 |
-| unresolved_call | `__main__` | `parser.add_argument` | 193 |
-| unresolved_call | `__main__` | `parser.parse_args` | 194 |
+| unresolved_call | `__main__` | `parser.parse_args` | 191 |
 | step_limit | `__main__` | `first 12 steps` | 0 |
 | truncated_flow | `__main__` | `depth limit` | 0 |
 
