@@ -153,6 +153,7 @@ def capture_health_details(
     )
     reasons = []
     if knowledge is not None:
+        assert view is not None
         snapshot.update(
             recorded_source_hash=knowledge.bundle.snapshot.source_snapshot_hash,
             recorded_markdown_hash=knowledge.bundle.snapshot.markdown_snapshot_hash,
@@ -163,7 +164,7 @@ def capture_health_details(
             knowledge.bundle.snapshot.generation_options_hash,
         )
         modeled = sum(
-            structural_freshness_modeled(concept) for concept in knowledge.concepts
+            structural_freshness_modeled(concept, view.retired_locators) for concept in knowledge.concepts
         )
         total = len(knowledge.concepts)
         coverage.update(total=total, modeled=modeled, unmodeled=total - modeled)
@@ -190,7 +191,7 @@ def capture_health_details(
                     raise HealthDetailsError(
                         "freshness result does not match its recorded locator"
                     )
-                if structural_freshness_modeled(concept):
+                if structural_freshness_modeled(concept, freshness.retired_locators):
                     outcomes[result.state.value] += 1
                     attempted += result.live_comparison_performed
                 reason_counts[result.reason_code] += 1

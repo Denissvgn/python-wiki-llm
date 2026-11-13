@@ -22,12 +22,13 @@ rather than treating a fresh basis as an owning commit or review.
 | Source | Symbols |
 |--------|---------|
 | `.implementation_evidence` | `ImplementationReport`, `ImplementationReport`, `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `compare_knowledge_implementation`, `compare_knowledge_implementation` |
-| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
+| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `LiveKnowledgeEvaluation`, `evaluate_knowledge_freshness` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeLoadState` |
 | `.knowledge_verification` | `attach_machine_verification_read_view` |
 | `.maintenance_status` | `build_maintenance_status`, `marker_from_validated_state` |
+| `.source_retirement` | `qualified_retired_entity_locators` |
 | `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -58,9 +59,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (24) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -88,6 +89,7 @@ flowchart LR
 | `load_knowledge_read_view` | `(wiki_dir: str \| Path, *, live_evaluation: LiveKnowledgeEvaluation \| None = None, snapshot_only: bool = False, mode: KnowledgeReadMode \| str \| None = None, markdown_pages: Mapping[str, str \| bytes] \| None = None, include_machine_verification: bool = False) -> KnowledgeReadView` | — | Load exactly once and return a read-only native-consumer session. |
 | `_read_mode` | `(*, snapshot_only: bool, mode: KnowledgeReadMode \| str \| None) -> KnowledgeReadMode` | — | — |
 | `_loaded_freshness` | `(load_result, live_evaluation)` | — | — |
+| `_loaded_retired_locators` | `(load_result) -> frozenset[str]` | — | — |
 | `_snapshot_maintenance_report` | `(load_result)` | — | — |
 | `_implementation_report` | `(knowledge, live_evaluation)` | — | Compare captured syntax independently of structural freshness. |
 | `attach_implementation_read_view` | `(view: KnowledgeReadView, *, implementation_observations: Mapping \| None, analysis_scope: str, captured_paths: Sequence[str] \| frozenset[str] \| None = None, source_content_hashes: Mapping[str, str] \| None = None, analysis_compatibility_hash: str \| None = None, missing_source_paths: Sequence[str] \| frozenset[str] = ()) -> KnowledgeReadView` | — | Attach a selected-source comparison without upgrading global freshness. |

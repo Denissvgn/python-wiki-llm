@@ -2,7 +2,7 @@
 
 **Entry point:** `build_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 17 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 19 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,8 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
@@ -39,67 +41,67 @@ sequenceDiagram
     participant p2 as _validate_load_result
     participant p3 as _loaded_freshness
     participant p4 as _knowledge_counts
-    participant p5 as _snapshot_maintenance_report
-    participant p6 as _implementation_report
-    participant p7 as KnowledgeReadView
-    participant p8 as _unsupported_reason
-    participant p9 as build_maintenance_status
-    participant p10 as evaluate_knowledge_freshness
-    participant p11 as marker_from_validated_state
-    participant p12 as compare_knowledge_implementation
-    participant p13 as parse_knowledge_index
-    participant p14 as _knowledge_index_to_payload_unchecked
-    participant p15 as _evaluate_model_freshness
-    participant p16 as owner_key
-    participant p17 as compare_implementation_observations
-    participant p18 as _record
-    participant p19 as _bundle_to_payload
-    participant p20 as _validate_live_evaluation
-    participant p21 as _string
-    participant p22 as _parse_bundle
-    participant p23 as _evaluate_concept
-    participant p24 as _array (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p25 as _concept_to_payload
-    participant p26 as _parse_concept
-    participant p27 as _relationship_to_payload
-    participant p28 as _parse_relationship
+    participant p5 as _loaded_retired_locators
+    participant p6 as _snapshot_maintenance_report
+    participant p7 as _implementation_report
+    participant p8 as KnowledgeReadView
+    participant p9 as _unsupported_reason
+    participant p10 as build_maintenance_status
+    participant p11 as evaluate_knowledge_freshness
+    participant p12 as marker_from_validated_state
+    participant p13 as compare_knowledge_implementation
+    participant p14 as parse_knowledge_index
+    participant p15 as _knowledge_index_to_payload_unchecked
+    participant p16 as qualified_retired_entity_locators
+    participant p17 as _evaluate_model_freshness
+    participant p18 as owner_key
+    participant p19 as compare_implementation_observations
+    participant p20 as _record
+    participant p21 as _bundle_to_payload
+    participant p22 as retired_entity_mappings
+    participant p23 as _validate_live_evaluation
+    participant p24 as _string
+    participant p25 as _parse_bundle
+    participant p26 as _evaluate_concept
+    participant p27 as _array (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p28 as _concept_to_payload
     participant p29 as isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)
     participant p30 as evidence.get
     p0->>p1: _read_mode
     p0->>p2: _validate_load_result
     p0->>p3: _loaded_freshness
     p0->>p4: _knowledge_counts
-    p0->>p5: _snapshot_maintenance_report
-    p0->>p6: _implementation_report
-    p0->>p7: KnowledgeReadView
-    p0->>p8: _unsupported_reason
-    p5->>p9: build_maintenance_status
-    p3->>p10: evaluate_knowledge_freshness
-    p5->>p11: marker_from_validated_state
-    p6->>p12: compare_knowledge_implementation
-    p10->>p13: parse_knowledge_index
-    p10->>p14: _knowledge_index_to_payload_unchecked
-    p10->>p15: _evaluate_model_freshness
-    p9->>p16: owner_key
-    p9->>p17: compare_implementation_observations
-    p13->>p18: _record
-    p14->>p19: _bundle_to_payload
-    p15->>p20: _validate_live_evaluation
-    p13->>p21: _string
-    p13->>p22: _parse_bundle
-    p15->>p23: _evaluate_concept
-    p13->>p24: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p14->>p25: _concept_to_payload
-    p13->>p26: _parse_concept
-    p14->>p27: _relationship_to_payload
-    p13->>p28: _parse_relationship
+    p0->>p5: _loaded_retired_locators
+    p0->>p6: _snapshot_maintenance_report
+    p0->>p7: _implementation_report
+    p0->>p8: KnowledgeReadView
+    p0->>p9: _unsupported_reason
+    p6->>p10: build_maintenance_status
+    p3->>p11: evaluate_knowledge_freshness
+    p6->>p12: marker_from_validated_state
+    p7->>p13: compare_knowledge_implementation
+    p11->>p14: parse_knowledge_index
+    p11->>p15: _knowledge_index_to_payload_unchecked
+    p11->>p16: qualified_retired_entity_locators
+    p11->>p17: _evaluate_model_freshness
+    p10->>p18: owner_key
+    p10->>p19: compare_implementation_observations
+    p14->>p20: _record
+    p15->>p21: _bundle_to_payload
+    p16->>p22: retired_entity_mappings
+    p17->>p23: _validate_live_evaluation
+    p14->>p24: _string
+    p14->>p25: _parse_bundle
+    p17->>p26: _evaluate_concept
+    p14->>p27: _array (src/llm_wiki_cli/services/knowledge_model.py)
+    p15->>p28: _concept_to_payload
     p0-->>p29: isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)(load_result, KnowledgeLoadResult)
     p4-->>p30: evidence.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1102 interactions; 1072 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1170 interactions; 1140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 299 (298 omitted); unresolved 1 of 176 (175 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 328 (327 omitted); unresolved 1 of 189 (188 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_unsupported_reason` | 29 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_loaded_freshness` | 32 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:require_validated_artifacts` | 33 | - | external | 4 |
-> Omission summary shows 8 of 223 groups; 215 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 239 groups; 231 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +128,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 628; effect analysis evaluated: 406, partial: 24, unavailable: 198. Counts include steps omitted from the displayed trace.
+Source steps: 654; effect analysis evaluated: 416, partial: 25, unavailable: 213. Counts include steps omitted from the displayed trace.
 
-Collector observations for 430 source steps with known totals: observed: 2336, emitted: 2186, omitted: 150. Unavailable totals are excluded.
+Collector observations for 441 source steps with known totals: observed: 2397, emitted: 2244, omitted: 153. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -201,17 +203,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 621 | `isinstance(load_result, KnowledgeLoadResult)` |
-| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 622 | `TypeError('load_result must be a KnowledgeLoadResult')` |
-| build_knowledge_read_view | _read_mode | 623 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 768 | `isinstance(snapshot_only, bool)` |
-| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 769 | `TypeError('snapshot_only must be a boolean')` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 779 | `isinstance(mode, KnowledgeReadMode)` |
-| _read_mode | KnowledgeReadMode | 780 | `KnowledgeReadMode(mode)` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 783 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 787 | `ValueError('snapshot_only conflicts with the requested mode')` |
-| build_knowledge_read_view | _validate_load_result | 624 | `_validate_load_result(load_result)` |
-| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 888 | `isinstance(result.status, KnowledgeLoadState)` |
+| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 622 | `isinstance(load_result, KnowledgeLoadResult)` |
+| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 623 | `TypeError('load_result must be a KnowledgeLoadResult')` |
+| build_knowledge_read_view | _read_mode | 624 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 773 | `isinstance(snapshot_only, bool)` |
+| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 774 | `TypeError('snapshot_only must be a boolean')` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 784 | `isinstance(mode, KnowledgeReadMode)` |
+| _read_mode | KnowledgeReadMode | 785 | `KnowledgeReadMode(mode)` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 788 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 792 | `ValueError('snapshot_only conflicts with the requested mode')` |
+| build_knowledge_read_view | _validate_load_result | 625 | `_validate_load_result(load_result)` |
+| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 909 | `isinstance(result.status, KnowledgeLoadState)` |
 
 ### Boundary effects
 
@@ -221,14 +223,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_read_view` | `isinstance` | 621 |
-| external_call | `build_knowledge_read_view` | `TypeError` | 622 |
-| external_call | `_read_mode` | `isinstance` | 768 |
-| external_call | `_read_mode` | `TypeError` | 769 |
-| external_call | `_read_mode` | `isinstance` | 779 |
-| external_call | `_read_mode` | `ValueError` | 783 |
-| external_call | `_read_mode` | `ValueError` | 787 |
-| external_call | `_validate_load_result` | `isinstance` | 888 |
+| external_call | `build_knowledge_read_view` | `isinstance` | 622 |
+| external_call | `build_knowledge_read_view` | `TypeError` | 623 |
+| external_call | `_read_mode` | `isinstance` | 773 |
+| external_call | `_read_mode` | `TypeError` | 774 |
+| external_call | `_read_mode` | `isinstance` | 784 |
+| external_call | `_read_mode` | `ValueError` | 788 |
+| external_call | `_read_mode` | `ValueError` | 792 |
+| external_call | `_validate_load_result` | `isinstance` | 909 |
 | step_limit | `build_knowledge_read_view` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_read_view` | `depth limit` | 0 |
 

@@ -46,7 +46,7 @@ silently accept a different retirement claim.
 | `.manifest_storage` | `build_manifest_store`, `current_manifest_format` |
 | `.progress` | `observed_phase` |
 | `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
-| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
+| `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.storage_spool` | `SpooledArtifactWrite`, `spool_write` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
@@ -94,9 +94,9 @@ flowchart LR
 | [CommitStage](../entities/CommitStage.md) | Enum | 106 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
 | [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 117 | — | One exact-byte action in a knowledge artifact commit. |
 | [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 130 | — | Validated canonical projections and their exact-byte commitments. |
-| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 150 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 213 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 240 | — | Outcome of a real or dry-run commit. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 151 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 216 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 243 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 

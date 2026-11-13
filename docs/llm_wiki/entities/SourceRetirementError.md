@@ -1,6 +1,6 @@
 # SourceRetirementError
 
-**Location:** `src/llm_wiki_cli/services/source_retirement.py:23`
+**Location:** `src/llm_wiki_cli/services/source_retirement.py:27`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_retirement](../modules/source_retirement.md)
@@ -33,9 +33,9 @@ flowchart LR
     n8["_check_duplicate_removal_custody (src/llm_wiki_cli/services/source_retirement.py)"]
     n9["discover_retired_entities (src/llm_wiki_cli/services/source_retirement.py)"]
     n10["entity_owner_present (src/llm_wiki_cli/services/source_retirement.py)"]
-    n11["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
-    n12["retained_empty_module_paths (src/llm_wiki_cli/services/source_retirement.py)"]
-    n13["retired_entity_mappings (src/llm_wiki_cli/services/source_retirement.py)"]
+    n11["qualified_retired_entity_locators (src/llm_wiki_cli/services/source_retirement.py)"]
+    n12["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
+    n13["retained_empty_module_paths (src/llm_wiki_cli/services/source_retirement.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -89,6 +89,8 @@ flowchart LR
 | `_check_duplicate_removal_custody` | call | [source_retirement](../modules/source_retirement.md) | 2 |
 | `discover_retired_entities` | call | [source_retirement](../modules/source_retirement.md) | 4 |
 | `entity_owner_present` | call | [source_retirement](../modules/source_retirement.md) | 1 |
+| `qualified_retired_entity_locators` | call | [source_retirement](../modules/source_retirement.md) | 2 |
 | `read_entity_retirement_state` | call | [source_retirement](../modules/source_retirement.md) | 9 |
 | `retained_empty_module_paths` | call | [source_retirement](../modules/source_retirement.md) | 1 |
-| `retired_entity_mappings` | call | [source_retirement](../modules/source_retirement.md) | 1 |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

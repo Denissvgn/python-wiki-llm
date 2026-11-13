@@ -52,10 +52,10 @@ from .knowledge_model import (
 )
 from .section_ownership import SectionOwnershipError, validate_section_ownership
 from .source_retirement import (
-    ENTITY_RETIREMENT_SCHEMA_VERSION,
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
+    source_retirement_projection,
 )
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from .storage_spool import SpooledArtifactWrite, spool_write
@@ -141,6 +141,7 @@ class ValidatedKnowledgeArtifacts:
     knowledge_payload: Mapping[str, Any] = field(
         default_factory=dict, repr=False, compare=False
     )
+    retired_locators: frozenset[str] = frozenset()
     # init=False prevents dataclasses.replace from carrying authority to new data.
     _validation: _ArtifactValidation | None = field(
         default=None, init=False, repr=False, compare=False
@@ -163,6 +164,7 @@ class _ArtifactValidation:
         self.surface = artifacts.surface_payload
         self.storage_objects = artifacts.storage_objects
         self.storage_statistics = artifacts.storage_statistics
+        self.retired_locators = artifacts.retired_locators
         self.hashes = (
             artifacts.surface_index_hash,
             artifacts.knowledge_index_hash,
@@ -188,6 +190,7 @@ def require_validated_artifacts(value: object) -> ValidatedKnowledgeArtifacts:
         or validation.surface is not value.surface_payload
         or validation.storage_objects is not value.storage_objects
         or validation.storage_statistics is not value.storage_statistics
+        or validation.retired_locators is not value.retired_locators
         or validation.hashes
         != (
             value.surface_index_hash,
@@ -562,6 +565,10 @@ def _validate_artifact_parity(
         storage_objects=storage_objects,
         storage_statistics=storage_statistics,
         knowledge_payload=canonical_payload,
+        retired_locators=frozenset(
+            concept.locator for concept in knowledge.concepts
+            if SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+        ),
     )
     object.__setattr__(
         validated,
@@ -1385,13 +1392,7 @@ def _validate_manifest_knowledge_parity(
         expected_retirement = (
             None
             if owner is None
-            else {
-                "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
-                "state": "source-member-removed",
-                "source_path": owner.source_path,
-                "entity_name": owner.entity_name,
-                "occurrence": owner.occurrence,
-            }
+            else source_retirement_projection(owner)
         )
         if concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY) != expected_retirement or (
             owner is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions

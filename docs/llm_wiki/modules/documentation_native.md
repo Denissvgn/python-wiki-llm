@@ -34,7 +34,7 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.knowledge_consumption` | `KnowledgeReadView` |
 | `.knowledge_envelope` | `ConsumedInput`, `ConsumedInputKind`, `hash_source_snapshot` |
 | `.knowledge_evidence` | `is_valid_sha256` |
-| `.knowledge_freshness` | `KnowledgeFreshnessReport`, `evaluate_knowledge_freshness` |
+| `.knowledge_freshness` | `KnowledgeFreshnessReport`, `evaluate_knowledge_freshness`, `structural_freshness_modeled` |
 | `.knowledge_model` | `ComputedFreshness`, `KnowledgeIndex`, `ObservationScope` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `collect_runtime_repository_evidence`, `finalize_runtime_knowledge`, `runtime_generation_options` |
 | `.maintenance_protocol` | `load_adoption_marker`, `maintenance_write_operation`, `guard_maintenance_owner`, `ADOPTION_FILENAME` |
@@ -44,7 +44,6 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `LEGACY_MANIFEST_VERSION`, `MANIFEST_FILENAME`, `MANIFEST_VERSION`, `SyncManifest` |
 | `.validation` | `is_portable_relative_path` |
-| `.wiki_surface` | `PageKind` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
@@ -79,9 +78,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (1) |
 | Inbound | `src` (3) |
-| Outbound | `src` (26) |
+| Outbound | `src` (25) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

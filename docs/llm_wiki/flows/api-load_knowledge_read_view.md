@@ -61,23 +61,23 @@ sequenceDiagram
     participant p9 as _loaded_freshness
     participant p10 as _knowledge_counts
     participant p11 as guard_maintenance_owner
-    participant p12 as _snapshot_maintenance_report
-    participant p13 as _implementation_report
-    participant p14 as _load_once
-    participant p15 as _absolute_path
-    participant p16 as _read_artifact
-    participant p17 as build_maintenance_status
-    participant p18 as evaluate_knowledge_freshness
-    participant p19 as marker_from_validated_state
-    participant p20 as compare_knowledge_implementation
-    participant p21 as guard_incomplete_bootstrap
-    participant p22 as validate_surface_index_bytes
-    participant p23 as load_adoption_marker
-    participant p24 as _issue_from_artifact_error
-    participant p25 as load_verification_receipt
-    participant p26 as SyncManifest.load
-    participant p27 as _current_markdown
-    participant p28 as _validated_artifacts_for_view
+    participant p12 as _loaded_retired_locators
+    participant p13 as _snapshot_maintenance_report
+    participant p14 as _implementation_report
+    participant p15 as _load_once
+    participant p16 as _absolute_path
+    participant p17 as _read_artifact
+    participant p18 as build_maintenance_status
+    participant p19 as evaluate_knowledge_freshness
+    participant p20 as marker_from_validated_state
+    participant p21 as compare_knowledge_implementation
+    participant p22 as guard_incomplete_bootstrap
+    participant p23 as validate_surface_index_bytes
+    participant p24 as load_adoption_marker
+    participant p25 as _issue_from_artifact_error
+    participant p26 as load_verification_receipt
+    participant p27 as SyncManifest.load
+    participant p28 as _current_markdown
     participant p29 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
     participant p30 as _UNSUPPORTED_REASON_BY_ISSUE.get
     p0->>p1: load_knowledge_state
@@ -91,30 +91,30 @@ sequenceDiagram
     p2->>p9: _loaded_freshness
     p2->>p10: _knowledge_counts
     p1->>p11: guard_maintenance_owner
-    p2->>p12: _snapshot_maintenance_report
-    p2->>p13: _implementation_report
-    p1->>p14: _load_once
-    p11->>p15: _absolute_path
-    p14->>p16: _read_artifact
-    p12->>p17: build_maintenance_status
-    p9->>p18: evaluate_knowledge_freshness
-    p12->>p19: marker_from_validated_state
-    p13->>p20: compare_knowledge_implementation
-    p11->>p21: guard_incomplete_bootstrap
-    p14->>p22: validate_surface_index_bytes
-    p11->>p23: load_adoption_marker
-    p14->>p24: _issue_from_artifact_error
-    p8->>p25: load_verification_receipt
-    p11->>p26: SyncManifest.load
-    p14->>p27: _current_markdown
-    p8->>p28: _validated_artifacts_for_view
+    p2->>p12: _loaded_retired_locators
+    p2->>p13: _snapshot_maintenance_report
+    p2->>p14: _implementation_report
+    p1->>p15: _load_once
+    p11->>p16: _absolute_path
+    p15->>p17: _read_artifact
+    p13->>p18: build_maintenance_status
+    p9->>p19: evaluate_knowledge_freshness
+    p13->>p20: marker_from_validated_state
+    p14->>p21: compare_knowledge_implementation
+    p11->>p22: guard_incomplete_bootstrap
+    p15->>p23: validate_surface_index_bytes
+    p11->>p24: load_adoption_marker
+    p15->>p25: _issue_from_artifact_error
+    p8->>p26: load_verification_receipt
+    p11->>p27: SyncManifest.load
+    p15->>p28: _current_markdown
     p0-->>p29: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1623 interactions; 1593 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1642 interactions; 1612 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 536 (535 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 310 (309 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 363 groups; 355 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 369 groups; 361 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 781; effect analysis evaluated: 414, partial: 39, unavailable: 328. Counts include steps omitted from the displayed trace.
+Source steps: 792; effect analysis evaluated: 421, partial: 39, unavailable: 332. Counts include steps omitted from the displayed trace.
 
-Collector observations for 453 source steps with known totals: observed: 2916, emitted: 2666, omitted: 250. Unavailable totals are excluded.
+Collector observations for 460 source steps with known totals: observed: 2950, emitted: 2700, omitted: 250. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -216,9 +216,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 726 | `isinstance(include_machine_verification, bool)` |
-| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 727 | `TypeError('include_machine_verification must be a boolean')` |
-| load_knowledge_read_view | load_knowledge_state | 729 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
+| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 731 | `isinstance(include_machine_verification, bool)` |
+| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 732 | `TypeError('include_machine_verification must be a boolean')` |
+| load_knowledge_read_view | load_knowledge_state | 734 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
 | load_knowledge_state | isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
 | load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
 | load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
@@ -236,8 +236,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_read_view` | `isinstance` | 726 |
-| external_call | `load_knowledge_read_view` | `TypeError` | 727 |
+| external_call | `load_knowledge_read_view` | `isinstance` | 731 |
+| external_call | `load_knowledge_read_view` | `TypeError` | 732 |
 | external_call | `load_knowledge_state` | `isinstance` | 112 |
 | external_call | `load_knowledge_state` | `ValueError` | 116 |
 | external_call | `load_knowledge_state` | `ValueError` | 118 |

@@ -201,10 +201,10 @@ flowchart LR
 |---|---|---:|---|
 | governance_bundle_id_from_knowledge | validate_governance_projection | 2123 | `validate_governance_projection(knowledge)` |
 | validate_governance_projection | require_validated_artifacts | 1872 | `require_validated_artifacts(_validated_artifacts)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 182 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 185 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 199 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 183 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 184 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 187 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 202 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1874 | `TypeError('governance validation requires its exact validated knowledge')` |
 | validate_governance_projection | isinstance (src/llm_wiki_cli/services…ate_governance_projection) | 1876 | `isinstance(knowledge, KnowledgeIndex)` |
 | validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1877 | `TypeError('knowledge must be a KnowledgeIndex')` |
@@ -223,10 +223,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_validated_artifacts` | `isinstance` | 181 |
-| external_call | `require_validated_artifacts` | `TypeError` | 182 |
-| external_call | `require_validated_artifacts` | `isinstance` | 185 |
-| external_call | `require_validated_artifacts` | `TypeError` | 199 |
+| external_call | `require_validated_artifacts` | `isinstance` | 183 |
+| external_call | `require_validated_artifacts` | `TypeError` | 184 |
+| external_call | `require_validated_artifacts` | `isinstance` | 187 |
+| external_call | `require_validated_artifacts` | `TypeError` | 202 |
 | external_call | `validate_governance_projection` | `TypeError` | 1874 |
 | external_call | `validate_governance_projection` | `isinstance` | 1876 |
 | external_call | `validate_governance_projection` | `TypeError` | 1877 |

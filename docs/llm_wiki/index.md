@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 691 | [Open section](#entities) |
 | Modules | 283 | [Open section](#modules) |
-| Workflows | 280 | [Open section](#workflows) |
+| Workflows | 282 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 488 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1082,6 +1082,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [captured_semantic_sections](workflows/captured_semantic_sections.md) - entry: `maintenance_evidence.captured_semantic_sections`
 - [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
 - [check_duplicate_removal_custody](workflows/check_duplicate_removal_custody.md) - entry: `source_retirement._check_duplicate_removal_custody`
+- [check_knowledge_concepts](workflows/check_knowledge_concepts.md) - entry: `lint_service._check_knowledge_concepts`
 - [check_site_mirror](workflows/check_site_mirror.md) - entry: `site_export.check_site_mirror`
 - [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
@@ -1107,6 +1108,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
 - [documents](workflows/documents.md) - entry: `publication._documents`
 - [ensure_legacy_gitignore](workflows/ensure_legacy_gitignore.md) - entry: `migrate_cmd._ensure_legacy_gitignore`
+- [evaluate_knowledge_freshness](workflows/evaluate_knowledge_freshness.md) - entry: `knowledge_freshness.evaluate_knowledge_freshness`
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [explanation_provenance](workflows/explanation_provenance.md) - entry: `evidence_explanation.explanation_provenance`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`

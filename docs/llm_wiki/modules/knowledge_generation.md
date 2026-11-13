@@ -46,7 +46,7 @@ producer incompatibility can still downgrade historical provenance explicitly.
 | `.maintenance_projection` | `project_maintenance_knowledge` |
 | `.progress` | `observed_phase`, `record_counts` |
 | `.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
-| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
+| `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.sync_analysis_cache` | `EXTENSION` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `.sync_transitions` | `PageTransitionPlan` |

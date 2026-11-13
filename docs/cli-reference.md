@@ -1185,6 +1185,14 @@ threshold, which remains independent of the report's classification mode.
 
 Governance adoption and running verification checkers are explicit operations;
 expected optional absence is disclosed without inventing review or semantic approval.
+A source member retained by sync with a validated retirement record is historical
+and makes no current structural evidence promise. Its freshness is unmodeled
+(`unknown`, `freshness-not-modeled`), so it does not make doctor unhealthy or
+require a governance lifecycle decision. Coverage includes it in the unmodeled
+count, and its recorded evidence remains available as history. When owning sync
+revives the declaration, ordinary live freshness comparison resumes. A reliably
+missing source file remains distinct from a declaration removed from a file that
+still exists.
 A valid governance ledger does not establish current human-review coverage,
 and zero expired findings does not mean every section was reviewed. Inspect
 the scoped review records. A valid machine receipt covers its recorded scope

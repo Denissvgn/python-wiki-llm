@@ -127,7 +127,7 @@ sequenceDiagram
     p1-->>p31: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 2404 interactions; 2374 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2405 interactions; 2375 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 773 (772 omitted); unresolved 1 of 767 (766 omitted). These counts cover the captured static trace.
 
@@ -156,9 +156,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 865; effect analysis evaluated: 585, partial: 35, unavailable: 245. Counts include steps omitted from the displayed trace.
+Source steps: 866; effect analysis evaluated: 586, partial: 35, unavailable: 245. Counts include steps omitted from the displayed trace.
 
-Collector observations for 620 source steps with known totals: observed: 4028, emitted: 3773, omitted: 255. Unavailable totals are excluded.
+Collector observations for 621 source steps with known totals: observed: 4031, emitted: 3776, omitted: 255. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

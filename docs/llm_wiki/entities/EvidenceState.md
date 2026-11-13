@@ -42,6 +42,7 @@ flowchart LR
     n11["src/llm_wiki_cli/services/knowledge_observability.py"]
     n12["src/llm_wiki_cli/services/knowledge_projection.py"]
     n13["src/llm_wiki_cli/services/lint_service.py"]
+    n14["src/llm_wiki_cli/services/source_retirement.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -55,6 +56,7 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     n13 --> n0
+    n14 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_service.md"
@@ -67,6 +69,7 @@ flowchart LR
     click n11 "../modules/knowledge_observability.md"
     click n12 "../modules/knowledge_projection.md"
     click n13 "../modules/lint_service.md"
+    click n14 "../modules/source_retirement.md"
 ```
 
 ### Summary
@@ -97,3 +100,4 @@ flowchart LR
 | `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |

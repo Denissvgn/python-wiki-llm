@@ -2,7 +2,7 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), and 40 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), and 41 more
 
 **Complete modules touched:**
 
@@ -43,6 +43,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -121,7 +122,7 @@ sequenceDiagram
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:query_documentation)('source')
 ```
 
-> Call sequence diagram shows 30 of 2590 interactions; 2560 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2593 interactions; 2563 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 999 (998 omitted); unresolved 1 of 692 (691 omitted). These counts cover the captured static trace.
 
@@ -137,7 +138,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
-> Omission summary shows 8 of 625 groups; 617 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 627 groups; 619 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -150,9 +151,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 900; effect analysis evaluated: 583, partial: 43, unavailable: 274. Counts include steps omitted from the displayed trace.
+Source steps: 903; effect analysis evaluated: 586, partial: 43, unavailable: 274. Counts include steps omitted from the displayed trace.
 
-Collector observations for 626 source steps with known totals: observed: 3924, emitted: 3642, omitted: 282. Unavailable totals are excluded.
+Collector observations for 629 source steps with known totals: observed: 3940, emitted: 3658, omitted: 282. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

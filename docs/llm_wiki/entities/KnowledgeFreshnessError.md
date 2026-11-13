@@ -1,6 +1,6 @@
 # KnowledgeFreshnessError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:166`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:170`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -61,4 +61,4 @@ flowchart LR
 | `_validate_live_evaluation` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 13 |
 | `_validate_live_producer` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
 | `_validate_source_path` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 4 |
-| `evaluate_knowledge_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `evaluate_knowledge_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 3 |

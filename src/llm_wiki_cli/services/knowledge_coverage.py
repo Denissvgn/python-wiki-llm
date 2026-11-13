@@ -60,7 +60,7 @@ def build_knowledge_coverage(view: KnowledgeReadView) -> dict[str, Any]:
         value = getattr(concept.concept_kind, "value", concept.concept_kind)
         kind = value if value in _KINDS else "other"
         row = by_kind.setdefault(kind, counts())
-        modeled = structural_freshness_modeled(concept)
+        modeled = structural_freshness_modeled(concept, view.retired_locators)
         outcome = None if freshness is None else freshness.by_locator[concept.locator]
         if outcome is not None and outcome.live_comparison_performed and not modeled:
             raise ValueError("an unmodeled concept cannot claim a live comparison")

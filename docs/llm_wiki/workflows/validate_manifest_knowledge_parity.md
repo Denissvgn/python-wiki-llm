@@ -8,9 +8,10 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `maintenance_projection.validate_maintenance_projection`
 2. `source_retirement.retired_entity_mappings`
-3. `implementation_evidence.validate_concept_implementation`
-4. `knowledge_evidence.is_valid_sha256`
-5. `infrastructure_sync.infrastructure_evidence_by_page`
+3. `source_retirement.source_retirement_projection`
+4. `implementation_evidence.validate_concept_implementation`
+5. `knowledge_evidence.is_valid_sha256`
+6. `infrastructure_sync.infrastructure_evidence_by_page`
 
 ## Touches
 

@@ -68,7 +68,7 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.module_coverage` | `classify_uncovered_python_sources` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.progress` | `phase` |
-| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `retained_empty_module_paths` |
+| `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection`, `retained_empty_module_paths` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |

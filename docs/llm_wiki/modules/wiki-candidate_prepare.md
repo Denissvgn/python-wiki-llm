@@ -58,6 +58,7 @@ flowchart LR
     n3 --> n2
     n3 --> n4
     n6 --> n5
+    n6 --> n9
     n9 --> n5
     click n0 "../modules/wiki-candidate_prepare.md"
     click n1 "../modules/documentation_native.md"
