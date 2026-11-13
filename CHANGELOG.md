@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-11-13
+
+### Fixed
+
+- Retired source members retain their historical evidence without making doctor
+  report stale current structure. Coverage counts them as unmodeled, and normal
+  freshness checks resume when the declaration returns.
+
 ## [4.1.0] - 2026-11-11
 
 ### Added
