@@ -49,6 +49,7 @@ from .knowledge_envelope import (
 from .knowledge_freshness import (
     KnowledgeFreshnessReport,
     evaluate_knowledge_freshness,
+    structural_freshness_modeled,
 )
 from .knowledge_evidence import is_valid_sha256
 from .knowledge_model import ComputedFreshness, KnowledgeIndex, ObservationScope
@@ -82,7 +83,6 @@ from .sync_manifest import (
     SyncManifest,
 )
 from .validation import is_portable_relative_path
-from .wiki_surface import PageKind
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
@@ -271,7 +271,7 @@ def evaluate_documentation_native_freshness(
                 ),
             )
         )
-        report = evaluate_knowledge_freshness(knowledge, live)
+        report = evaluate_knowledge_freshness(knowledge, live, retirement_manifest=manifest)
     except (KeyError, OSError, TypeError, UnicodeError, ValueError) as exc:
         raise DocumentationNativeError(
             f"Cannot evaluate native freshness: {exc}"
@@ -288,8 +288,7 @@ def evaluate_documentation_native_freshness(
     structural_locators = {
         concept.locator
         for concept in knowledge.concepts
-        if concept.document.page_kind
-        in {PageKind.MODULES, PageKind.ENTITIES, PageKind.INFRASTRUCTURE}
+        if structural_freshness_modeled(concept, report.retired_locators)
     }
     for locator in sorted(structural_locators):
         result = report.by_locator[locator]

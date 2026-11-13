@@ -24,6 +24,7 @@ Validated canonical projections and their exact-byte commitments.
 | `storage_objects` | `Mapping[str, bytes]` | `field(default_factory=dict, repr=False)` | — |
 | `storage_statistics` | `Mapping[str, Any]` | `field(default_factory=dict, repr=False)` | — |
 | `knowledge_payload` | `Mapping[str, Any]` | `field(default_factory=dict, repr=False, compare=False)` | — |
+| `retired_locators` | `frozenset[str]` | `frozenset()` | — |
 | `_validation` | `_ArtifactValidation \| None` | `field(default=None, init=False, repr=False, compare=False)` | — |
 
 ## Methods
@@ -76,7 +77,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `_validation`, `evaluated_envelope_hash`, `governance_hash`, `knowledge`, `knowledge_index_hash`, `knowledge_payload`, `storage_objects`, `storage_statistics`, `surface_index_hash`, `surface_payload` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `_validation`, `evaluated_envelope_hash`, `governance_hash`, `knowledge`, `knowledge_index_hash`, `knowledge_payload`, `retired_locators`, `storage_objects`, `storage_statistics`, `surface_index_hash`, `surface_payload` |
 
 ### References
 

@@ -34,6 +34,8 @@ turn unknown evidence into known evidence or alter freshness classification.
 | `.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
 | `.knowledge_model` | `BundleRecord`, `ComputedFreshness`, `ConceptRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `ObservationScope`, `ProducerComponent`, `ProducerRecord`, `SnapshotRecord`, `_knowledge_index_to_payload_unchecked`, `knowledge_index_to_payload`, `parse_knowledge_index` |
 | `.normalization_diagnostics` | `NormalizationDiagnostic` |
+| `.source_retirement` | `qualified_retired_entity_locators` |
+| `.sync_manifest` | `SyncManifest` |
 | `.validation` | `require_repository_relative_path` |
 | `.wiki_surface` | `PageKind` |
 | `__future__` | `annotations` |
@@ -41,6 +43,7 @@ turn unknown evidence into known evidence or alter freshness classification.
 | `collections.abc` | `Mapping`, `Set` |
 | `dataclasses` | `dataclass`, `field` |
 | `types` | `MappingProxyType` |
+| `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map
 
@@ -64,32 +67,32 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (1) |
 | Inbound | `src` (9) |
-| Outbound | `src` (9) |
+| Outbound | `src` (11) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 166 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
-| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 176 | — | Already evaluated live inputs required for freshness comparison. |
-| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 198 | — | Normalized recorded or live concept basis returned to consumers. |
-| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 212 | — | One consumer-computed freshness outcome. |
-| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 225 | — | Freshness results for every recorded concept and aggregate counts. |
-| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 239 | — | — |
+| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 170 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
+| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 180 | — | Already evaluated live inputs required for freshness comparison. |
+| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 202 | — | Normalized recorded or live concept basis returned to consumers. |
+| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 216 | — | One consumer-computed freshness outcome. |
+| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 229 | — | Freshness results for every recorded concept and aggregate counts. |
+| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 244 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `evaluate_knowledge_freshness` | `(knowledge: KnowledgeIndex \| object, live: LiveKnowledgeEvaluation \| None = None) -> KnowledgeFreshnessReport` | — | Evaluate every concept exactly once from supplied in-memory values. |
+| `evaluate_knowledge_freshness` | `(knowledge: KnowledgeIndex \| object, live: LiveKnowledgeEvaluation \| None = None, *, retirement_manifest: SyncManifest \| None = None) -> KnowledgeFreshnessReport` | — | Evaluate concepts; retirement requires native validation or manifest context. |
 | `evaluate_validated_knowledge_freshness` | `(artifacts: object, live: LiveKnowledgeEvaluation \| None = None) -> KnowledgeFreshnessReport` | — | Reuse a validator-issued immutable recorded model; live inputs still validate. |
-| `_evaluate_model_freshness` | `(model: KnowledgeIndex, live: LiveKnowledgeEvaluation \| None) -> KnowledgeFreshnessReport` | — | — |
+| `_evaluate_model_freshness` | `(model: KnowledgeIndex, live: LiveKnowledgeEvaluation \| None, retired_locators: frozenset[str]) -> KnowledgeFreshnessReport` | — | — |
 | `_validate_live_evaluation` | `(recorded: KnowledgeIndex, live: LiveKnowledgeEvaluation) -> _ValidatedLiveEvaluation` | — | — |
 | `_validate_live_producer` | `(recorded: KnowledgeIndex, live: LiveKnowledgeEvaluation) -> None` | — | — |
-| `structural_freshness_modeled` | `(concept: ConceptRecord) -> bool` | — | Whether the contract models this concept, independent of basis presence. |
-| `_evaluate_concept` | `(knowledge: KnowledgeIndex, concept: ConceptRecord, live: _ValidatedLiveEvaluation \| None) -> ConceptFreshnessResult` | — | — |
+| `structural_freshness_modeled` | `(concept: ConceptRecord, retired_locators: frozenset[str] = frozenset()) -> bool` | — | Whether the contract models this concept, independent of basis presence. |
+| `_evaluate_concept` | `(knowledge: KnowledgeIndex, concept: ConceptRecord, live: _ValidatedLiveEvaluation \| None, retired_locators: frozenset[str]) -> ConceptFreshnessResult` | — | — |
 | `analysis_basis_diagnostic` | `(recorded: ProducerRecord, live: ProducerRecord, *, extractor_ref: str) -> dict \| None` | — | Explain the captured components that actually qualify this concept. |
 | `_reliable_recorded_basis` | `(concept: ConceptRecord) -> EvidenceBasis \| None` | — | — |
 | `_basis_incompatibility_reason` | `(recorded: KnowledgeIndex, recorded_basis: EvidenceBasis, live: _ValidatedLiveEvaluation) -> str \| None` | — | — |

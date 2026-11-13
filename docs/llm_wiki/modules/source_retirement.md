@@ -32,6 +32,7 @@ the independent historical retirement policy.
 | Source | Symbols |
 |--------|---------|
 | `.knowledge_evidence` | `entity_observation_hash` |
+| `.knowledge_model` | `KnowledgeIndex`, `EvidenceState`, `Origin` |
 | `.sync_analysis` | `_recorded_entity_pages` |
 | `.sync_manifest` | `ManifestPageSource`, `SyncManifest`, `SyncManifestError`, `generated_semantics_for_file` |
 | `.validation` | `portable_path_key` |
@@ -40,6 +41,7 @@ the independent historical retirement policy.
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
 | `pathlib` | `PurePosixPath` |
+| `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map
 
@@ -62,16 +64,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (1) |
-| Inbound | `src` (11) |
-| Outbound | `src` (5) |
+| Inbound | `src` (13) |
+| Outbound | `src` (6) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceRetirementError](../entities/SourceRetirementError.md) | 23 | `ValueError` | A retirement record cannot be reconciled with authoritative ownership. |
+| [SourceRetirementError](../entities/SourceRetirementError.md) | 27 | `ValueError` | A retirement record cannot be reconciled with authoritative ownership. |
 
 ## Functions
 
@@ -82,6 +84,8 @@ flowchart LR
 | `read_entity_retirement_state` | `(generation_inputs: Mapping[str, object]) -> dict[str, ManifestPageSource]` | — | Decode exact machine records without deriving ownership from Markdown. |
 | `entity_owner_present` | `(owner: ManifestPageSource, sources: Mapping[str, Mapping]) -> bool` | — | Compare the exact declaration occurrence with captured source membership. |
 | `retired_entity_mappings` | `(manifest: SyncManifest) -> dict[str, ManifestPageSource]` | — | Validate committed retirements against mappings and historical tombstones. |
+| `source_retirement_projection` | `(owner: ManifestPageSource) -> dict[str, object]` | — | Project the exact source coordinate without an authored lifecycle claim. |
+| `qualified_retired_entity_locators` | `(knowledge: KnowledgeIndex, manifest: SyncManifest) -> frozenset[str]` | — | Qualify historical concepts from manifest ownership and projection parity. |
 | `with_entity_retirement_state` | `(generation_inputs: Mapping[str, object], mappings: Mapping[str, ManifestPageSource], *, generated_semantics: Mapping[str, dict] \| None = None) -> dict[str, object]` | — | Retain the planned coordinates without minting evidence or lifecycle. |
 | `historical_entity_semantics` | `(manifest: SyncManifest, owner: ManifestPageSource) -> dict \| None` | — | Return recorded generated defaults for attribution when the owner revives. |
 | `discover_retired_entities` | `(manifest: SyncManifest, inventory: Mapping[str, Mapping]) -> dict[str, ManifestPageSource]` | — | Plan fresh removals and recover exact persisted, previously unmarked owners. |

@@ -95,24 +95,24 @@ sequenceDiagram
     participant p8 as load_knowledge_state
     participant p9 as helper_operation
     participant p10 as evaluate_documentation_native_freshness
-    participant p11 as retired_entity_mappings
-    participant p12 as _consumer_root
-    participant p13 as build_source_snapshot
-    participant p14 as read_entity_retirement_state
-    participant p15 as _relative_path
-    participant p16 as canonical_json_bytes
-    participant p17 as entity_owner_present
-    participant p18 as locate_exact_repository_path
-    participant p19 as _native_source_snapshot_preflight
-    participant p20 as _safe
-    participant p21 as _generation_input_paths
-    participant p22 as preparation_cache_root
-    participant p23 as _collect_runtime
-    participant p24 as lookup_helper
-    participant p25 as guard_maintenance_owner
-    participant p26 as _retained_empty_paths
-    participant p27 as read_publication_json
-    participant p28 as _runtime_generation_options
+    participant p11 as _consumer_root
+    participant p12 as build_source_snapshot
+    participant p13 as _relative_path
+    participant p14 as canonical_json_bytes
+    participant p15 as locate_exact_repository_path
+    participant p16 as _native_source_snapshot_preflight
+    participant p17 as _safe
+    participant p18 as _generation_input_paths
+    participant p19 as preparation_cache_root
+    participant p20 as _collect_runtime
+    participant p21 as lookup_helper
+    participant p22 as guard_maintenance_owner
+    participant p23 as _retained_empty_paths
+    participant p24 as read_publication_json
+    participant p25 as _runtime_generation_options
+    participant p26 as _source_mismatches
+    participant p27 as _profile
+    participant p28 as validate_publication_config
     participant p29 as argparse.ArgumentParser
     participant p30 as parser.add_argument
     p0->>p1: prepare
@@ -125,31 +125,31 @@ sequenceDiagram
     p1->>p8: load_knowledge_state
     p1->>p9: helper_operation
     p1->>p10: evaluate_documentation_native_freshness
-    p1->>p11: retired_entity_mappings
-    p2->>p12: _consumer_root
-    p5->>p13: build_source_snapshot
-    p11->>p14: read_entity_retirement_state
-    p2->>p15: _relative_path
-    p7->>p16: canonical_json_bytes
-    p11->>p17: entity_owner_present
-    p2->>p18: locate_exact_repository_path
-    p10->>p19: _native_source_snapshot_preflight
-    p6->>p20: _safe
-    p10->>p21: _generation_input_paths
-    p6->>p22: preparation_cache_root
-    p10->>p23: _collect_runtime
-    p6->>p24: lookup_helper
-    p8->>p25: guard_maintenance_owner
-    p10->>p26: _retained_empty_paths
-    p2->>p27: read_publication_json
-    p10->>p28: _runtime_generation_options
+    p2->>p11: _consumer_root
+    p5->>p12: build_source_snapshot
+    p2->>p13: _relative_path
+    p7->>p14: canonical_json_bytes
+    p2->>p15: locate_exact_repository_path
+    p10->>p16: _native_source_snapshot_preflight
+    p6->>p17: _safe
+    p10->>p18: _generation_input_paths
+    p6->>p19: preparation_cache_root
+    p10->>p20: _collect_runtime
+    p6->>p21: lookup_helper
+    p8->>p22: guard_maintenance_owner
+    p10->>p23: _retained_empty_paths
+    p2->>p24: read_publication_json
+    p10->>p25: _runtime_generation_options
+    p10->>p26: _source_mismatches
+    p6->>p27: _profile
+    p2->>p28: validate_publication_config
     p0-->>p29: argparse.ArgumentParser(description=__doc__)
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2950 interactions; 2920 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2920 interactions; 2890 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 942 (941 omitted); unresolved 1 of 714 (713 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 922 (921 omitted); unresolved 1 of 709 (708 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -163,7 +163,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
 | `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-> Omission summary shows 8 of 692 groups; 684 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 688 groups; 680 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -176,9 +176,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1295; effect analysis evaluated: 833, partial: 51, unavailable: 411. Counts include steps omitted from the displayed trace.
+Source steps: 1290; effect analysis evaluated: 834, partial: 51, unavailable: 405. Counts include steps omitted from the displayed trace.
 
-Collector observations for 884 source steps with known totals: observed: 5301, emitted: 5028, omitted: 273. Unavailable totals are excluded.
+Collector observations for 885 source steps with known totals: observed: 5311, emitted: 5038, omitted: 273. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

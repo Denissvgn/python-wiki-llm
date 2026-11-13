@@ -43,8 +43,8 @@ flowchart LR
     n7["historical_entity_semantics (src/llm_wiki_cli/services/source_retirement.py)"]
     n8["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
     n9["retired_entity_mappings (src/llm_wiki_cli/services/source_retirement.py)"]
-    n10["with_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
-    n11["src/llm_wiki_cli/services/sync_analysis.py"]
+    n10["source_retirement_projection (src/llm_wiki_cli/services/source_retirement.py)"]
+    n11["with_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,7 +67,7 @@ flowchart LR
     click n8 "../modules/source_retirement.md"
     click n9 "../modules/source_retirement.md"
     click n10 "../modules/source_retirement.md"
-    click n11 "../modules/sync_analysis.md"
+    click n11 "../modules/source_retirement.md"
 ```
 
 ### Summary
@@ -90,7 +90,7 @@ flowchart LR
 | `historical_entity_semantics` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `read_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `retired_entity_mappings` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `source_retirement_projection` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `with_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
-| `sync_analysis` | import | [sync_analysis](../modules/sync_analysis.md) | — |
 
-> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.
+> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.

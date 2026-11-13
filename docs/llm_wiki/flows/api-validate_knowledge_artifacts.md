@@ -108,9 +108,9 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2280 interactions; 2250 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2282 interactions; 2252 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 659 (658 omitted); unresolved 1 of 377 (376 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 660 (659 omitted); unresolved 1 of 377 (376 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1245; effect analysis evaluated: 700, partial: 42, unavailable: 503. Counts include steps omitted from the displayed trace.
+Source steps: 1246; effect analysis evaluated: 701, partial: 42, unavailable: 503. Counts include steps omitted from the displayed trace.
 
-Collector observations for 742 source steps with known totals: observed: 3897, emitted: 3706, omitted: 191. Unavailable totals are excluded.
+Collector observations for 743 source steps with known totals: observed: 3900, emitted: 3709, omitted: 191. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -232,7 +232,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | _validator_identity | 313 | `_validator_identity(data not statically known)` |
+| validate_knowledge_artifacts | _validator_identity | 316 | `_validator_identity(data not statically known)` |
 | _validator_identity | maintenance_core | 387 | `maintenance_state.maintenance_core(data not statically known)` |
 | maintenance_core | MaintenanceCore | 958 | `MaintenanceCore(validate_implementation_evidence)` |
 | _validator_identity | tuple (src/llm_wiki_cli/services…ex.py:_validator_identity) | 390 | `tuple(...)` |

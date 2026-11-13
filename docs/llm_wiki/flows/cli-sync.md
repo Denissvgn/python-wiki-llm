@@ -161,9 +161,9 @@ sequenceDiagram
     p4-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 7170 interactions; 7140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 7171 interactions; 7141 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2447 (2446 omitted); unresolved 1 of 2140 (2139 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2448 (2447 omitted); unresolved 1 of 2140 (2139 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

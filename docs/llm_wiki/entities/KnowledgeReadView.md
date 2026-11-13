@@ -30,6 +30,7 @@ Validated, immutable-by-contract state for one native read operation.
 | `validated_artifacts` | `Any` | `field(default=None, repr=False, compare=False)` | — |
 | `maintenance_report` | `Any` | `field(default=None, repr=False, compare=False)` | — |
 | `implementation_report` | `ImplementationReport \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `retired_locators` | `frozenset[str]` | `frozenset()` | — |
 
 ## Methods
 

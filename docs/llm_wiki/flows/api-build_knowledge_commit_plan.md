@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: (…).exists (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
 ```
 
-> Call sequence diagram shows 30 of 2409 interactions; 2379 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2411 interactions; 2381 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 847 (846 omitted); unresolved 1 of 424 (423 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 848 (847 omitted); unresolved 1 of 424 (423 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -139,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1139; effect analysis evaluated: 694, partial: 41, unavailable: 404. Counts include steps omitted from the displayed trace.
+Source steps: 1140; effect analysis evaluated: 695, partial: 41, unavailable: 404. Counts include steps omitted from the displayed trace.
 
-Collector observations for 735 source steps with known totals: observed: 4005, emitted: 3800, omitted: 205. Unavailable totals are excluded.
+Collector observations for 736 source steps with known totals: observed: 4009, emitted: 3803, omitted: 206. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -215,9 +215,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 679 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 682 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
-| build_knowledge_commit_plan | current_manifest_format | 683 | `current_manifest_format(root)` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 686 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 689 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
+| build_knowledge_commit_plan | current_manifest_format | 690 | `current_manifest_format(root)` |
 | current_manifest_format | Path (src/llm_wiki_cli/services…y:current_manifest_format) | 287 | `Path(wiki_dir)` |
 | current_manifest_format | adoption.exists | 289 | `adoption.exists(data not statically known)` |
 | current_manifest_format | adoption.is_symlink | 289 | `adoption.is_symlink(data not statically known)` |

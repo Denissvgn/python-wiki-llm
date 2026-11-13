@@ -5,10 +5,14 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Mapping
 from pathlib import PurePosixPath
+from typing import TYPE_CHECKING
 
 from .sync_manifest import ManifestPageSource, SyncManifest, SyncManifestError
 from .validation import portable_path_key
 from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
+
+if TYPE_CHECKING:
+    from .knowledge_model import KnowledgeIndex
 
 ENTITY_RETIREMENT_INPUT_KEY = "entity_retirement"
 ENTITY_RETIREMENT_SCHEMA_VERSION = "llm-wiki-entity-retirement/v1"
@@ -114,6 +118,57 @@ def retired_entity_mappings(manifest: SyncManifest) -> dict[str, ManifestPageSou
         ):
             raise SourceRetirementError(f"Retirement is not bound to a removed historical member: {path!r}")
     return result
+
+
+def source_retirement_projection(owner: ManifestPageSource) -> dict[str, object]:
+    """Project the exact source coordinate without an authored lifecycle claim."""
+    return {
+        "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+        "state": "source-member-removed",
+        "source_path": owner.source_path,
+        "entity_name": owner.entity_name,
+        "occurrence": owner.occurrence,
+    }
+
+
+def qualified_retired_entity_locators(
+    knowledge: KnowledgeIndex, manifest: SyncManifest,
+) -> frozenset[str]:
+    """Qualify historical concepts from manifest ownership and projection parity."""
+    from .knowledge_model import EvidenceState, Origin
+
+    mappings = retired_entity_mappings(manifest)
+    locators = set()
+    for concept in knowledge.concepts:
+        path = concept.document.canonical_path
+        owner = mappings.get(path)
+        expected = None if owner is None else source_retirement_projection(owner)
+        if concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY) != expected or (
+            owner is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+        ):
+            raise SourceRetirementError(f"Source retirement projection does not match the manifest-owned binding: {path!r}")
+        if owner is None:
+            continue
+        structure = concept.facets.structure
+        basis = structure.basis
+        historical = manifest.tombstones[path].last_valid_basis
+        actual = None if basis is None else (
+            basis.scope.value, basis.source_path, basis.extractor_ref,
+            basis.source_content_hash, basis.concept_observation_hash,
+        )
+        recorded = None if historical is None else (
+            historical.scope, historical.source_path, historical.extractor_ref,
+            historical.source_content_hash, historical.concept_observation_hash,
+        )
+        if (
+            concept.document.page_kind is not PageKind.ENTITIES
+            or actual != recorded
+            or structure.origin is not (Origin.UNKNOWN if historical is None else Origin.EXTRACTED)
+            or structure.evidence is not (EvidenceState.PRESENT if historical is not None and historical.is_known else EvidenceState.UNKNOWN)
+        ):
+            raise SourceRetirementError(f"Retired source evidence does not match its historical tombstone: {path!r}")
+        locators.add(concept.locator)
+    return frozenset(locators)
 
 
 def with_entity_retirement_state(

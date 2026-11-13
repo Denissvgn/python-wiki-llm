@@ -36,16 +36,16 @@ flowchart TD
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 49 | 4 |
 | [knowledge_storage](modules/knowledge_storage.md) | 48 | 9 |
 | [services_contracts](modules/services_contracts.md) | 47 | 0 |
-| [sync_manifest](modules/sync_manifest.md) | 43 | 14 |
-| [wiki_surface](modules/wiki_surface.md) | 42 | 1 |
+| [sync_manifest](modules/sync_manifest.md) | 44 | 14 |
+| [wiki_surface](modules/wiki_surface.md) | 41 | 1 |
 | [filesystem_guard](modules/filesystem_guard.md) | 40 | 1 |
-| [knowledge_model](modules/knowledge_model.md) | 36 | 13 |
+| [knowledge_model](modules/knowledge_model.md) | 37 | 13 |
 | [source_selection](modules/source_selection.md) | 36 | 2 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 33 | 30 |
 | [knowledge_governance](modules/knowledge_governance.md) | 30 | 11 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 25 | 5 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
-| [knowledge_consumption](modules/knowledge_consumption.md) | 24 | 8 |
+| [knowledge_consumption](modules/knowledge_consumption.md) | 24 | 9 |
 | [extraction_service](modules/extraction_service.md) | 23 | 36 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 22 | 0 |
 | [maintenance_protocol](modules/maintenance_protocol.md) | 21 | 17 |
@@ -65,6 +65,7 @@ flowchart TD
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [extractor_helpers](modules/extractor_helpers.md) | 14 | 6 |
 | [helper_runtime](modules/helper_runtime.md) | 14 | 4 |
+| [source_retirement](modules/source_retirement.md) | 14 | 6 |
 | [context_packet](modules/context_packet.md) | 13 | 36 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [knowledge_packs](modules/knowledge_packs.md) | 13 | 4 |
@@ -74,7 +75,6 @@ flowchart TD
 | [knowledge_loader](modules/knowledge_loader.md) | 12 | 10 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 12 | 26 |
 | [section_ownership](modules/section_ownership.md) | 12 | 5 |
-| [source_retirement](modules/source_retirement.md) | 12 | 5 |
 | [analysis_capture](modules/analysis_capture.md) | 11 | 6 |
 | [concept_identity](modules/concept_identity.md) | 11 | 2 |
 | [documentation_queries](modules/documentation_queries.md) | 11 | 16 |
@@ -84,7 +84,7 @@ flowchart TD
 | [knowledge_reuse](modules/knowledge_reuse.md) | 11 | 21 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [workspace](modules/workspace.md) | 10 | 3 |
-| [knowledge_freshness](modules/knowledge_freshness.md) | 10 | 9 |
+| [knowledge_freshness](modules/knowledge_freshness.md) | 10 | 11 |
 | [python_imports](modules/python_imports.md) | 10 | 1 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [skills](modules/skills.md) | 10 | 2 |
@@ -132,7 +132,7 @@ flowchart TD
 | [verification_contracts](modules/verification_contracts.md) | 5 | 6 |
 | [bootstrap_service](modules/bootstrap_service.md) | 4 | 0 |
 | [calibration___init__](modules/calibration___init__.md) | 4 | 4 |
-| [documentation_native](modules/documentation_native.md) | 4 | 26 |
+| [documentation_native](modules/documentation_native.md) | 4 | 25 |
 | [documentation_policy](modules/documentation_policy.md) | 4 | 3 |
 | [documentation_wiki_input](modules/documentation_wiki_input.md) | 4 | 19 |
 | [freshness_wording](modules/freshness_wording.md) | 4 | 0 |

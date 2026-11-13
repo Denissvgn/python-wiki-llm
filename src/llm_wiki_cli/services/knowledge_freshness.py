@@ -13,6 +13,7 @@ from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from . import analysis_compatibility as ac
 from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
@@ -46,6 +47,9 @@ from .knowledge_model import (
 )
 from .validation import require_repository_relative_path
 from .wiki_surface import PageKind
+
+if TYPE_CHECKING:
+    from .sync_manifest import SyncManifest
 
 REASON_LIVE_EVALUATION_NOT_PERFORMED = "live-evaluation-not-performed"
 REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION = "recorded-basis-matches-live-evaluation"
@@ -233,6 +237,7 @@ class KnowledgeFreshnessReport:
     live_schema_version: str | None = None
 
     comparison_policy: str = field(default_factory=ac.selected_policy)
+    retired_locators: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -250,8 +255,10 @@ class _ValidatedLiveEvaluation:
 def evaluate_knowledge_freshness(
     knowledge: KnowledgeIndex | object,
     live: LiveKnowledgeEvaluation | None = None,
+    *,
+    retirement_manifest: SyncManifest | None = None,
 ) -> KnowledgeFreshnessReport:
-    """Evaluate every concept exactly once from supplied in-memory values."""
+    """Evaluate concepts; retirement requires native validation or manifest context."""
 
     from .knowledge_artifacts import (
         ValidatedKnowledgeArtifacts,
@@ -259,9 +266,13 @@ def evaluate_knowledge_freshness(
     )
 
     try:
+        artifacts = (
+            require_validated_artifacts(knowledge)
+            if isinstance(knowledge, ValidatedKnowledgeArtifacts) else None
+        )
         model = (
-            require_validated_artifacts(knowledge).knowledge
-            if isinstance(knowledge, ValidatedKnowledgeArtifacts)
+            artifacts.knowledge
+            if artifacts is not None
             else parse_knowledge_index(_knowledge_index_to_payload_unchecked(knowledge))
             if isinstance(knowledge, KnowledgeIndex)
             else parse_knowledge_index(knowledge)
@@ -272,7 +283,17 @@ def evaluate_knowledge_freshness(
             f"must be a validated knowledge index: {exc}",
         ) from exc
 
-    return _evaluate_model_freshness(model, live)
+    retired = frozenset() if artifacts is None else artifacts.retired_locators
+    if retirement_manifest is not None:
+        from .source_retirement import qualified_retired_entity_locators
+
+        try:
+            retired = qualified_retired_entity_locators(model, retirement_manifest)
+        except (TypeError, ValueError, AttributeError) as exc:
+            raise KnowledgeFreshnessError("retirement_manifest", str(exc)) from exc
+        if artifacts is not None and retired != artifacts.retired_locators:
+            raise KnowledgeFreshnessError("retirement_manifest", "does not match validated retirements")
+    return _evaluate_model_freshness(model, live, retired)
 
 
 def evaluate_validated_knowledge_freshness(
@@ -283,18 +304,19 @@ def evaluate_validated_knowledge_freshness(
     from .knowledge_artifacts import require_validated_artifacts
 
     validated = require_validated_artifacts(artifacts)
-    return _evaluate_model_freshness(validated.knowledge, live)
+    return _evaluate_model_freshness(validated.knowledge, live, validated.retired_locators)
 
 
 def _evaluate_model_freshness(
     model: KnowledgeIndex,
     live: LiveKnowledgeEvaluation | None,
+    retired_locators: frozenset[str],
 ) -> KnowledgeFreshnessReport:
     validated_live = None if live is None else _validate_live_evaluation(model, live)
     results: dict[str, ConceptFreshnessResult] = {}
     counts: Counter[ComputedFreshness] = Counter()
     for concept in sorted(model.concepts, key=lambda item: item.locator):
-        result = _evaluate_concept(model, concept, validated_live)
+        result = _evaluate_concept(model, concept, validated_live, retired_locators)
         results[concept.locator] = result
         counts[result.state] += 1
 
@@ -308,6 +330,7 @@ def _evaluate_model_freshness(
         ),
         live_schema_version=None if validated_live is None else validated_live.schema_version,
         comparison_policy=ac.selected_policy(None if live is None else live.comparison_policy),
+        retired_locators=retired_locators,
     )
 
 
@@ -449,10 +472,12 @@ def _validate_live_producer(
         ) from exc
 
 
-def structural_freshness_modeled(concept: ConceptRecord) -> bool:
+def structural_freshness_modeled(
+    concept: ConceptRecord, retired_locators: frozenset[str] = frozenset(),
+) -> bool:
     """Whether the contract models this concept, independent of basis presence."""
     basis = concept.facets.structure.basis
-    return concept.document.page_kind in _STRUCTURAL_PAGE_KINDS and not (
+    return concept.locator not in retired_locators and concept.document.page_kind in _STRUCTURAL_PAGE_KINDS and not (
         basis is not None and basis.scope is ObservationScope.AGGREGATE
     )
 
@@ -461,6 +486,7 @@ def _evaluate_concept(
     knowledge: KnowledgeIndex,
     concept: ConceptRecord,
     live: _ValidatedLiveEvaluation | None,
+    retired_locators: frozenset[str],
 ) -> ConceptFreshnessResult:
     recorded_raw = concept.facets.structure.basis
     recorded_details = _recorded_basis_details(knowledge, recorded_raw)
@@ -474,7 +500,7 @@ def _evaluate_concept(
             compared=False,
         )
 
-    if not structural_freshness_modeled(concept):
+    if not structural_freshness_modeled(concept, retired_locators):
         return _result(
             concept.locator,
             ComputedFreshness.UNKNOWN,

@@ -78,10 +78,10 @@ from .contracts import (
 )
 from .section_ownership import observe_page_sections, section_ownership_extension
 from .source_retirement import (
-    ENTITY_RETIREMENT_SCHEMA_VERSION,
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
+    source_retirement_projection,
 )
 from .sync_manifest import (
     EVIDENCE_NOT_RECORDED,
@@ -444,13 +444,7 @@ def _build_knowledge_generation_plan(
     for page_path, owner in retired_mappings.items():
         concept_implementations.setdefault(page_path, {})[
             SOURCE_RETIREMENT_EXTENSION_KEY
-        ] = {
-            "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
-            "state": "source-member-removed",
-            "source_path": owner.source_path,
-            "entity_name": owner.entity_name,
-            "occurrence": owner.occurrence,
-        }
+        ] = source_retirement_projection(owner)
     # Governance/maintenance replace the assembled model. Validate their exact
     # final result at the commit boundary instead of parsing an intermediate
     # model that cannot supply the final validation receipt.

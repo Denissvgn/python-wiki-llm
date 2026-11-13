@@ -117,10 +117,10 @@ from .source_selection import (
     validate_persisted_source_selection_identity,
 )
 from .source_retirement import (
-    ENTITY_RETIREMENT_SCHEMA_VERSION,
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
+    source_retirement_projection,
     retained_empty_module_paths,
 )
 from .sync_manifest import (
@@ -2127,13 +2127,7 @@ def _check_knowledge_concepts(
         expected_retirement = (
             None
             if retired_owner is None
-            else {
-                "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
-                "state": "source-member-removed",
-                "source_path": retired_owner.source_path,
-                "entity_name": retired_owner.entity_name,
-                "occurrence": retired_owner.occurrence,
-            }
+            else source_retirement_projection(retired_owner)
         )
         if retirement != expected_retirement or (
             retirement is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions

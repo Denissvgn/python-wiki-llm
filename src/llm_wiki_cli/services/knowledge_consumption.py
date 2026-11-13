@@ -311,6 +311,7 @@ class KnowledgeReadView:
     implementation_report: ImplementationReport | None = field(
         default=None, repr=False, compare=False
     )
+    retired_locators: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if not isinstance(
@@ -648,6 +649,10 @@ def build_knowledge_read_view(
             knowledge=load_result.knowledge,
             manifest_basis=load_result.manifest_basis,
             freshness=freshness,
+            retired_locators=(
+                _loaded_retired_locators(load_result)
+                if freshness is None else freshness.retired_locators
+            ),
             counts=counts,
             projection_findings=load_result.issues,
             load_state=load_result.status,
@@ -797,7 +802,23 @@ def _loaded_freshness(load_result, live_evaluation):
         artifacts = None
     if artifacts is not None and artifacts.knowledge is load_result.knowledge:
         return evaluate_knowledge_freshness(artifacts, live_evaluation)
-    return evaluate_knowledge_freshness(load_result.knowledge, live_evaluation)
+    return evaluate_knowledge_freshness(
+        load_result.knowledge, live_evaluation,
+        retirement_manifest=load_result.manifest_basis,
+    )
+
+
+def _loaded_retired_locators(load_result) -> frozenset[str]:
+    from .knowledge_artifacts import require_validated_artifacts
+    from .source_retirement import qualified_retired_entity_locators
+
+    try:
+        artifacts = require_validated_artifacts(load_result.validated_artifacts)
+    except TypeError:
+        artifacts = None
+    if artifacts is not None and artifacts.knowledge is load_result.knowledge:
+        return artifacts.retired_locators
+    return qualified_retired_entity_locators(load_result.knowledge, load_result.manifest_basis)
 
 
 
