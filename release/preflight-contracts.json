@@ -935,7 +935,7 @@
       ],
       "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "5163019752d71cdc5a3827d330613587d27941e2cc91b5a195ed61f01c59b50c",
+      "declaration_sha256": "6aa5d6c2df8979d7785dda8bbaff2d3fcb2eba4b05ed5756faa76076dc4c164a",
       "environments": [
         "ubuntu-24.04"
       ],
