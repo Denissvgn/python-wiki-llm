@@ -1692,7 +1692,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...HEAD
+[4.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...v4.0.0
