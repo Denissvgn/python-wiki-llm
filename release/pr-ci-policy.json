@@ -821,6 +821,7 @@
         "release/skip-allowlist.json",
         "release/core_shard*.py",
         "release/core-shard-timings.json",
+        "release/core-shard-windows-trial.json",
         "release/toolchain-lock.json",
         "release/manual_release.py",
         "release/readiness.py",
