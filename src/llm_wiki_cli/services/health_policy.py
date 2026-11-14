@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import copy
 from enum import Enum
+import hashlib
 import json
 import re
 from collections.abc import Mapping
 from typing import Any
-
-from .canonical_json import sha256_digest
 
 
 class DoctorStatus(str, Enum):
@@ -134,7 +133,8 @@ def strict_json(raw: bytes) -> dict[str, Any]:
     return value
 
 
-digest = sha256_digest
+def digest(raw: bytes) -> str:
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
 
 
 def _binding(value: object) -> Mapping[str, Any]:
