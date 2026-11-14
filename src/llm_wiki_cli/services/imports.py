@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
-from ..config import is_agent_worktree_path
+from .path_policy import is_agent_worktree_path
 from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
 from .python_imports import PythonModuleIndex, is_python_source
 from .validation import (

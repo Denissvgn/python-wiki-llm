@@ -14,7 +14,8 @@ from typing import Any
 
 import llm_wiki_cli
 from .host import current_host
-from ..config import EXTRACTOR_REGISTRY, validate_path, validate_source_root
+from .extractor_registry import EXTRACTOR_REGISTRY
+from .path_policy import validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
 from . import extractor_helpers, analysis_compatibility as ac
 from .analysis_capture import capture_analysis, attach

@@ -5,7 +5,8 @@ from __future__ import annotations
 import stat
 from pathlib import Path
 
-from ..config import EXCLUDED_DIRS, GitIgnoreMatcher, PathValidationError, is_agent_worktree_path
+from .gitignore import GitIgnoreMatcher
+from .path_policy import EXCLUDED_DIRS, PathValidationError, is_agent_worktree_path
 from ..extractors.common import is_bundled_helper_implementation_path, is_generated_javascript_bundle_path
 from .source_selection import path_is_selected
 from .source_snapshot import SourceSnapshot, _language_selection_for_path, _is_rescuable_typescript_src_lib_file

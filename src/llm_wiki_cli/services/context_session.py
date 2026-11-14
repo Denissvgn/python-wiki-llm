@@ -20,7 +20,7 @@ import time
 from typing import Any
 
 from .. import __version__
-from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets
 from .immutable import freeze
 from .io import first_unsafe_path_component

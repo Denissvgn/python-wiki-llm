@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets, context_service as context
 from .change_selection import select_changes
 from .context_budget import _accounted_render, fit_payload, validate_request as budget_request

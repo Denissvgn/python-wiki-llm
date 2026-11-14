@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
 
-from ..config import EXCLUDED_DIRS
+from .path_policy import EXCLUDED_DIRS
 from .python_imports import normalized_root, under_root
 from .validation import nearest_path_scope
 

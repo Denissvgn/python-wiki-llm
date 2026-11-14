@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 import json
 
-from ..config import EXTRACTOR_REGISTRY
+from .extractor_registry import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
 from .io import first_unsafe_path_component, write_bytes_atomic

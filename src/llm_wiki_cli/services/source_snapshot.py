@@ -14,15 +14,9 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
-from ..config import (
-    COMPOSE_PATTERNS,
-    DOCKERFILE_PATTERNS,
-    EXCLUDED_DIRS,
-    GitIgnoreMatcher,
-    _GitignoreRule,
-    _parse_gitignore_text,
-    is_agent_worktree_path,
-)
+from .extractor_registry import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
+from .gitignore import GitIgnoreMatcher, _GitignoreRule, _parse_gitignore_text
+from .path_policy import EXCLUDED_DIRS, is_agent_worktree_path
 from ..extractors.common import (
     GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE,
     LANGUAGE_EXTENSIONS,

@@ -28,12 +28,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Literal, overload
 
 from .host import current_host
-from ..config import (
-    DEFAULT_WIKI_DIR,
-    PathValidationError,
-    validate_path,
-    validate_source_root,
-)
+from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from . import wiki_surface
 from .contracts import (
     CONTEXT_BUDGET_PROTOCOL_VERSION,

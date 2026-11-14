@@ -31,7 +31,7 @@ from types import MappingProxyType
 from typing import Any
 
 from .. import __version__
-from ..config import DEFAULT_WIKI_DIR, PathValidationError, validate_path
+from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path
 from . import context_service, wiki_surface
 from .contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,

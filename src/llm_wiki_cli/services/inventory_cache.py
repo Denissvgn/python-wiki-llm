@@ -11,13 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from .. import __version__ as LLM_WIKI_VERSION
-from ..config import (
-    AGENT_WORKTREE_DIR_PATTERNS,
-    COMPOSE_PATTERNS,
-    DOCKERFILE_PATTERNS,
-    EXCLUDED_DIRS,
-    is_agent_worktree_path,
-)
+from .extractor_registry import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
+from .path_policy import AGENT_WORKTREE_DIR_PATTERNS, EXCLUDED_DIRS, is_agent_worktree_path
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot

@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from ..config import is_agent_worktree_path
+from .path_policy import is_agent_worktree_path
 from .contracts import DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION
 from .source_snapshot import SourceSnapshot
 

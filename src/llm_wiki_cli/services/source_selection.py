@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ..config import EXCLUDED_DIRS, is_agent_worktree_path
+from .path_policy import EXCLUDED_DIRS, is_agent_worktree_path
 from .validation import portable_path_key, require_repository_relative_path
 
 SOURCE_SELECTION_PATH = ".llm-wiki/source-selection.json"

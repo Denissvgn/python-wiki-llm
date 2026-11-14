@@ -10,7 +10,7 @@ from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
-from ..config import DEFAULT_WIKI_DIR
+from .path_policy import DEFAULT_WIKI_DIR
 from . import context_packet as packets, context_service as context
 from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
 from .io import write_text_output, write_utf8_stdout

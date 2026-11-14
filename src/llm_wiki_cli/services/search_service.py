@@ -7,7 +7,7 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
-from ..config import validate_path, validate_source_root
+from .path_policy import validate_path, validate_source_root
 from . import wiki_surface
 from .documentation_query_builder import (
     normalize_documentation_query_limit,

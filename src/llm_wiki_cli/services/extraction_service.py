@@ -20,12 +20,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Iterable
 
-from ..config import (
-    EXTRACTOR_REGISTRY,
-    PathValidationError,
-    validate_source_paths,
-    validate_source_root,
-)
+from .extractor_registry import EXTRACTOR_REGISTRY
+from .path_policy import PathValidationError, validate_source_paths, validate_source_root
 from ..extractors.common import (
     LANGUAGE_EXTENSIONS,
     filter_bundled_source_inventory,

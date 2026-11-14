@@ -28,11 +28,13 @@ PRIMITIVE_SERVICES = frozenset(
         "contracts",
         "filesystem_guard",
         "freshness_wording",
+        "gitignore",
         "host",
         "immutable",
         "io",
         "lockfile",
         "normalization_diagnostics",
+        "path_policy",
         "paths",
         "progress",
         "redaction",
@@ -152,6 +154,7 @@ ANALYSIS_SERVICES = frozenset(
         "extraction_jobs",
         "extraction_service",
         "extractor_helpers",
+        "extractor_registry",
         "flow_followup",
         "flow_overview",
         "go_calls",
@@ -278,10 +281,8 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.extraction_service",
         }
     ),
-    "context_budget": frozenset({"config"}),
     "context_packet": frozenset(
         {
-            "config",
             "llm_wiki_cli",
             "services.dependencies",
             "services.extraction_jobs",
@@ -294,7 +295,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
     "context_service": frozenset(
         {
-            "config",
             "services.dependencies",
             "services.extraction_jobs",
             "services.extraction_service",
@@ -307,7 +307,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
     "context_session": frozenset(
         {
-            "config",
             "llm_wiki_cli",
             "services.analysis_compatibility",
         }
@@ -331,7 +330,12 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
         }
     ),
     "filesystem_guard": frozenset({"services.wiki_write_basis"}),
-    "io": frozenset({"services.knowledge_evidence", "services.wiki_write_basis"}),
+    "io": frozenset(
+        {
+            "services.knowledge_evidence",
+            "services.wiki_write_basis",
+        }
+    ),
     "knowledge_artifacts": frozenset(
         {
             "services.implementation_evidence",
@@ -349,12 +353,12 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
     "knowledge_maintenance": frozenset(
         {
-            "config",
             "extractors.common",
             "llm_wiki_cli",
             "services.analysis_capture",
             "services.analysis_compatibility",
             "services.extractor_helpers",
+            "services.extractor_registry",
             "services.health_policy",
             "services.knowledge_orchestration",
         }
@@ -421,10 +425,13 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.knowledge_orchestration",
         }
     ),
-    "search_service": frozenset({"config"}),
     "source_retirement": frozenset({"services.sync_analysis"}),
-    "source_selection": frozenset({"config"}),
-    "source_snapshot": frozenset({"config", "extractors.common"}),
+    "source_snapshot": frozenset(
+        {
+            "extractors.common",
+            "services.extractor_registry",
+        }
+    ),
     "storage_receipts": frozenset(
         {
             "services.knowledge_packs",
@@ -440,11 +447,10 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.sync_analysis",
         }
     ),
-    "task_compact_delivery": frozenset({"config", "services.analysis_compatibility"}),
-    "task_context": frozenset({"config", "services.analysis_capture"}),
+    "task_compact_delivery": frozenset({"services.analysis_compatibility"}),
+    "task_context": frozenset({"services.analysis_capture"}),
     "task_context_v2": frozenset(
         {
-            "config",
             "services.dependencies",
             "services.extraction_service",
             "services.implementation_evidence",
@@ -470,48 +476,32 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
 }
 
 # Product and adapter imports from analysis modules that exist today. Packs must
-# reach configuration and plugins through the engine. Entries may only be removed.
+# reach plugins and product services through the engine. Entries may only be removed.
 ANALYSIS_UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     "analysis_targets": frozenset({"services.health_policy"}),
     "capability_diagnostics": frozenset(
         {
-            "config",
             "services.doctor_service",
             "services.plugins",
         }
     ),
-    "dependencies": frozenset({"config"}),
-    "dependency_versions": frozenset({"config"}),
     "diagrams": frozenset({"services.plugins"}),
     "entrypoints": frozenset({"services.plugins"}),
     "extraction_service": frozenset(
         {
-            "config",
             "services.plugins",
             "services.resource_diagnostics",
         }
     ),
-    "extractors.common": frozenset({"config"}),
-    "extractors.python_extractor": frozenset({"config"}),
-    "helper_runtime": frozenset({"config"}),
     "impact": frozenset({"services.review_service"}),
-    "imports": frozenset({"config"}),
     "inventory_cache": frozenset(
         {
-            "config",
             "llm_wiki_cli",
             "services.plugins",
         }
     ),
-    "packages": frozenset({"config"}),
-    "source_path_diagnostics": frozenset({"config"}),
     "sync_analysis": frozenset({"services.bootstrap_runtime"}),
-    "sync_analysis_cache": frozenset(
-        {
-            "config",
-            "services.knowledge_generation",
-        }
-    ),
+    "sync_analysis_cache": frozenset({"services.knowledge_generation"}),
 }
 
 # Ambient side effects in engine layers today. Entries may only be removed; the
