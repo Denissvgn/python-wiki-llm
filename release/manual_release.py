@@ -179,6 +179,19 @@ def source(root: Path) -> dict:
             "version": q._project_version(root)}
 
 
+def verified_preflight(root: Path, candidate: str, path: Path) -> dict:
+    from release import preflight
+
+    path = safe(path if path.is_absolute() else root / path)
+    receipt = preflight.read_document(path)
+    verified = preflight.verify_receipt(path)
+    require(verified["ok"] and verified["status"] in {"local-ready-hosted-required", "target-runtime-unknown"}
+            and receipt["plan"]["candidate_sha"] == candidate and Path(receipt["plan"]["root"]) == root,
+            "Preparation receipt is partial, failed or belongs to another candidate")
+    return {"path": str(path), "sha256": digest(path.read_bytes()), "plan_hash": receipt["plan"]["plan_hash"],
+            "work": receipt["work"], "status": verified["status"]}
+
+
 class Store:
     def __init__(self, root: Path, work: Path):
         self.root, self.work = safe(root), safe(work)
@@ -228,6 +241,20 @@ class Store:
                     for k in ("candidate_sha", "candidate_tree"))
                 and type(value.get("revision")) is int and value["revision"] > 0,
                 "Invalid session source or revision")
+        preparation = value.get("preparation")
+        if preparation is not None:
+            require(isinstance(preparation, dict)
+                    and isinstance(preparation.get("status"), str)
+                    and preparation["status"] in {"pending", "running", "interrupted", "failed", "verified"}
+                    and isinstance(preparation.get("plan"), str)
+                    and isinstance(preparation.get("plan_hash"), str)
+                    and re.fullmatch(r"[0-9a-f]{64}", preparation["plan_hash"]) is not None
+                    and isinstance(preparation.get("attempts"), list), "Invalid local preparation record")
+            for attempt in preparation["attempts"]:
+                require(isinstance(attempt, dict) and isinstance(attempt.get("id"), str)
+                        and re.fullmatch(r"[0-9a-f]{32}", attempt["id"]) is not None
+                        and attempt.get("work") == str(self.work / ("preflight-" + attempt["id"])),
+                        "Invalid local preparation operation")
         return value
 
     def save(self, state: dict, event: str) -> dict:
@@ -235,6 +262,8 @@ class Store:
         state["updated_at"] = now()
         record = {"revision": state["revision"], "time": state["updated_at"],
                   "event": event, "phase": state["phase"], "pending": state.get("pending")}
+        if "preparation" in state:
+            record["preparation"] = state["preparation"]
         events = safe(self.work / "events.jsonl")
         with events.open("ab") as stream:
             stream.write(json.dumps(record, sort_keys=True).encode() + b"\n")
@@ -264,7 +293,7 @@ class Controller:
         self.store, self.backend = store, backend
 
     def initialize(self, repository: str, candidate: str, *, receipt: Path | None = None,
-                   authorize: tuple[str, ...] = ()) -> dict:
+                   authorize: tuple[str, ...] = (), plan: Path | None = None) -> dict:
         require(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository), "Invalid repository")
         require(set(authorize) <= set(ACTIONS), "Unknown authorization")
         with self.store.lock():
@@ -272,6 +301,12 @@ class Controller:
                 state = self.store.load()
                 require(state["repository"] == repository and state["candidate_sha"] == candidate,
                         "Existing session is bound to another candidate")
+                if plan:
+                    require(state.get("preparation", {}).get("plan") == str(safe(self.store.root / plan)),
+                            "Existing session is bound to another preparation plan")
+                if receipt:
+                    require(state.get("preflight_receipt") == str(safe(self.store.root / receipt)),
+                            "Existing session is bound to another preparation receipt")
                 if state["phase"] not in FINISHED:
                     self.store.claim(state)
                 else:
@@ -281,16 +316,96 @@ class Controller:
                     "A new session requires a fresh ignored work directory")
             identity = source(self.store.root)
             require(identity["candidate_sha"] == candidate, "Candidate differs from checkout")
+            require(not (plan and receipt), "Choose a preparation plan or an existing receipt")
+            preparation = None
+            if plan:
+                from release import preflight
+
+                plan = preflight._destination(self.store.root, self.store.root / plan)
+                document = preflight.read_document(plan)
+                preflight.validate_plan(document, self.store.root)
+                require(document["candidate_sha"] == candidate, "Preparation plan differs from candidate")
+                preparation = {"plan": str(plan), "plan_hash": document["plan_hash"],
+                               "status": "pending", "attempts": []}
             state = {"schema_version": SCHEMA, "session_id": uuid.uuid4().hex,
                      "root": str(self.store.root), "work": str(self.store.work),
                      "repository": repository, **identity, "phase": "prepared",
-                     "preflight_receipt": str(safe(receipt)) if receipt else None,
+                     "preflight_receipt": str(safe(self.store.root / receipt)) if receipt else None,
                      "authorizations": sorted(set(authorize)), "pending": None,
                      "revision": 0, "created_at": now()}
+            if preparation:
+                state["preparation"] = preparation
+            require(not self.store.lease.exists(),
+                    "Another release candidate owns the session lease; resume or explicitly supersede it")
             ensure_directory(self.store.work)
             self.store.save(state, "initialized")
             self.store.claim(state)
             return state
+
+    def _prepare(self, state: dict) -> bool:
+        from release import preflight
+
+        preparation = state["preparation"]
+        if state["preflight_receipt"] or preparation["status"] == "failed":
+            return bool(state["preflight_receipt"])
+        plan = preflight._destination(self.store.root, Path(preparation["plan"]))
+        document = preflight.read_document(plan)
+        require(document["plan_hash"] == preparation["plan_hash"], "Preparation plan changed")
+        preflight.validate_plan(document, self.store.root)
+        require(document["candidate_sha"] == state["candidate_sha"], "Preparation candidate changed")
+        attempts = preparation["attempts"]
+        receipt = None
+        if attempts:
+            attempt = attempts[-1]
+            work = safe(Path(attempt["work"]))
+            require(work.parent == self.store.work and work.name == "preflight-" + attempt["id"],
+                    "Preparation work differs from session")
+            if (work / ".execution-lock").exists():
+                preparation["reason"] = "A retained local execution lock requires its original producer to finish or be reconciled"
+                self.store.save(state, "preparation-awaiting-producer")
+                return False
+            receipts = sorted((work / "receipts").glob("*.json"))
+            require(len(receipts) <= 1, "Preparation work has ambiguous receipts")
+            if receipts:
+                receipt = receipts[0]
+        if receipt is None:
+            identifier = uuid.uuid4().hex
+            work = self.store.work / ("preflight-" + identifier)
+            attempt = {"id": identifier, "work": str(work), "status": "running", "started_at": now()}
+            attempts.append(attempt)
+            preparation.update(status="running", stage=None)
+            preparation.pop("reason", None)
+            self.store.save(state, "preparation-started")
+
+            def progress(stage: str, status: str) -> None:
+                preparation["stage"] = stage
+                attempt.update(stage=stage, status=status)
+                self.store.save(state, "local-" + stage + "-" + status)
+
+            try:
+                result = preflight.run_plan(plan, work, progress=progress)
+                receipt = safe(Path(result["receipt_path"]))
+            except BaseException as exc:
+                preparation.update(status="interrupted", reason=type(exc).__name__)
+                self.store.save(state, "preparation-interrupted")
+                raise
+        attempt = attempts[-1]
+        work = safe(Path(attempt["work"]))
+        require(receipt.parent == work / "receipts", "Preparation receipt escaped its operation")
+        preparation["receipt"] = str(receipt)
+        try:
+            verified = verified_preflight(self.store.root, state["candidate_sha"], receipt)
+            require(verified["plan_hash"] == preparation["plan_hash"] and verified["work"] == str(work),
+                    "Preparation receipt belongs to another plan or operation")
+        except (OSError, ValueError, KeyError) as exc:
+            preparation.update(status="failed", reason=str(exc))
+            self.store.save(state, "preparation-failed")
+            return False
+        state["preflight_receipt"] = verified["path"]
+        attempt["status"] = "verified"
+        preparation.update(status="verified", receipt_sha256=verified["sha256"], completed_at=now())
+        self.store.save(state, "preparation-verified")
+        return True
 
     def advance(self, authorize: tuple[str, ...] = (), receipt: Path | None = None) -> dict:
         require(set(authorize) <= set(ACTIONS), "Unknown authorization")
@@ -309,14 +424,14 @@ class Controller:
                 if receipt:
                     require(state["phase"] == "prepared" and not state["pending"],
                             "Cannot replace preparation evidence after dispatch")
-                    state["preflight_receipt"] = str(safe(receipt))
+                    state["preflight_receipt"] = str(safe(self.store.root / receipt))
                 self.store.save(state, "authorization-or-preparation-updated")
             if state["pending"]:
                 result = self.backend.reconcile(state, state["pending"])
                 if result is None:
                     return {**state, "observation": "awaiting_remote_visibility_or_completion"}
                 if result.get("pending"):
-                    return {**state, "observation": "remote-running", "remote": result}
+                    return {**state, "observation": result.get("observation", "remote-running"), "remote": result}
                 if result.get("failed"):
                     if state["pending"].get("failure") != result:
                         state["pending"]["failure"] = result
@@ -345,10 +460,25 @@ class Controller:
                 observation = "awaiting_authorization" if state["phase"] == "prepared" else "authorized-scope-complete"
                 return {**state, "observation": observation, "next_action": action}
             if action == "qualify":
-                state["admission"] = self.backend.admit(state)
-                if state["admission"].get("admitted") is not True:
-                    self.store.save(state, "preparation-blocked")
-                    return {**state, "observation": "preparation-blocked"}
+                if state.get("preparation"):
+                    try:
+                        prepared = self._prepare(state)
+                    except (OSError, ValueError, KeyError) as exc:
+                        state["preparation"].update(status="failed", reason=str(exc))
+                        self.store.save(state, "preparation-failed")
+                        prepared = False
+                    if not prepared:
+                        return {**state, "observation": "preparation-blocked"}
+                admission = self.backend.admit(state)
+                if admission != state.get("admission"):
+                    state["admission"] = admission
+                    self.store.save(state, "preparation-admission")
+                if admission.get("admitted") is not True:
+                    ci_wait = (admission.get("ci") or {}).get("status") in {"pending", "missing"}
+                    only_ci = bool(admission.get("blockers")) and all(
+                        isinstance(b, dict) and b.get("capability") == "main-ci" for b in admission["blockers"]
+                    )
+                    return {**state, "observation": "awaiting-main-ci" if ci_wait and only_ci else "preparation-blocked"}
             else:
                 self.backend.check_bundle(state)
             return self._effect(state, action)
@@ -451,20 +581,13 @@ class GitHubBackend:
         self.token = token
 
     def admit(self, state: dict) -> dict:
-        from release import preflight, readiness
+        from release import readiness
         capabilities = readiness.inspect(self.root, check_availability=True)
         blockers = list(capabilities.get("blockers", []))
         receipt_hash = None
         try:
             require(state.get("preflight_receipt"), "A complete local preflight receipt is required")
-            path = Path(state["preflight_receipt"])
-            receipt = preflight.read_document(path)
-            verified = preflight.verify_receipt(path)
-            require(verified["ok"] and verified["status"] in {"local-ready-hosted-required", "target-runtime-unknown"}
-                    and receipt["plan"]["candidate_sha"] == state["candidate_sha"]
-                    and Path(receipt["plan"]["root"]).resolve() == self.root.resolve(),
-                    "Preparation receipt is partial, failed or belongs to another candidate")
-            receipt_hash = digest(path.read_bytes())
+            receipt_hash = verified_preflight(self.root, state["candidate_sha"], Path(state["preflight_receipt"]))["sha256"]
         except (OSError, ValueError, KeyError) as exc:
             blockers.append({"capability": "local-preflight", "reason": str(exc)})
         eligibility = q.release_eligibility(self.root, check_registry=True)
@@ -483,13 +606,14 @@ class GitHubBackend:
                 automation.maintenance.policy(raw, implementation_hash=actual)
         except (OSError, ValueError, KeyError) as exc:
             blockers.append({"capability": "knowledge-policy", "reason": str(exc)})
+        ci = None
         try:
-            require(automation.Coordinator(self.root, self.repository, self.client).ci_success(state["candidate_sha"]),
-                    "Current exact-source main CI has not succeeded")
+            ci = automation.Coordinator(self.root, self.repository, self.client).ci_status(state["candidate_sha"])
+            require(ci["status"] == "success", "Current exact-source main CI has not succeeded: " + ci["status"])
         except (OSError, ValueError, KeyError) as exc:
             blockers.append({"capability": "main-ci", "reason": str(exc)})
         return {"admitted": not blockers, "receipt_sha256": receipt_hash,
-                "capabilities": capabilities, "eligibility": eligibility, "blockers": blockers}
+                "capabilities": capabilities, "eligibility": eligibility, "blockers": blockers, "ci": ci}
 
     def _main(self, state: dict) -> None:
         ref = self.client.get("/git/ref/heads/main")
@@ -712,14 +836,20 @@ class GitHubBackend:
             if set(assets) != set(expected):
                 return {"retry_safe": True}
             return {"verified": True, "candidate_sha": state["candidate_sha"], "release_id": release["id"], "url": release["html_url"]}
-        run = self._run(state, action, pending)
-        if run is None:
-            return None
-        if run["status"] != "completed":
-            jobs = self.client.list(f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs", "jobs")
-            return {"pending": True, "run_id": run["id"], "attempt": run["run_attempt"],
-                    "status": run["status"], "active_jobs": [j["name"] for j in jobs if j["status"] != "completed"],
-                    "failed_jobs": [j["name"] for j in jobs if j["conclusion"] == "failure"]}
+        try:
+            run = self._run(state, action, pending)
+            if run is None:
+                return None
+            if run["status"] != "completed":
+                jobs = self.client.list(f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs", "jobs")
+                return {"pending": True, "run_id": run["id"], "attempt": run["run_attempt"],
+                        "status": run["status"], "active_jobs": [j["name"] for j in jobs if j["status"] != "completed"],
+                        "failed_jobs": [j["name"] for j in jobs if j["conclusion"] == "failure"]}
+        except automation.APIError as exc:
+            if exc.status not in {502, 503, 504}:
+                raise
+            # Only the run and jobs reads are retried, at the existing watch interval.
+            return {"pending": True, "observation": "remote-observation-unavailable", "http_status": exc.status}
         if run["conclusion"] != "success":
             return {"failed": True, "run_id": run["id"], "attempt": run["run_attempt"],
                     "candidate_sha": state["candidate_sha"], "conclusion": run["conclusion"]}
@@ -935,7 +1065,7 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("init", "status", "advance", "resume", "watch", "supersede"):
+    for name in ("start", "init", "status", "advance", "resume", "watch", "supersede"):
         command = commands.add_parser(name)
         command.add_argument("--root", type=Path, default=Path.cwd())
         command.add_argument("--work", type=Path, required=True)
@@ -943,12 +1073,16 @@ def main(argv: list[str] | None = None) -> int:
             command.add_argument("--authorize", action="append", choices=ACTIONS, default=[])
         if name in {"init", "advance", "resume", "watch"}:
             command.add_argument("--preflight-receipt", type=Path)
-        if name == "init":
+        if name == "start":
+            preparation = command.add_mutually_exclusive_group(required=True)
+            preparation.add_argument("--preflight-plan", type=Path, help="Run the reviewed plan and attach its verified receipt")
+            preparation.add_argument("--preflight-receipt", type=Path, help="Continue from an existing complete local receipt")
+        if name in {"init", "start"}:
             command.add_argument("--repository", default="Denissvgn/python-wiki-llm")
             command.add_argument("--candidate-sha", required=True)
         if name == "supersede":
             command.add_argument("--reason", required=True)
-        if name == "watch":
+        if name in {"watch", "start"}:
             command.add_argument("--interval", type=bounded_integer(5, 60), default=30,
                                  help="Seconds between observations (5–60; default: 30)")
             command.add_argument("--max-polls", type=bounded_integer(1, 2880), default=720,
@@ -959,10 +1093,14 @@ def main(argv: list[str] | None = None) -> int:
         work = args.work if args.work.is_absolute() else root / args.work
         store = Store(root, work)
         controller = Controller(store)
-        if args.command == "init":
+        if args.command in {"init", "start"}:
             value = controller.initialize(args.repository, args.candidate_sha, receipt=args.preflight_receipt,
-                                          authorize=tuple(args.authorize))
-        elif args.command == "status":
+                                          authorize=tuple(args.authorize), plan=getattr(args, "preflight_plan", None))
+            if args.command == "init":
+                print(json.dumps(value, sort_keys=True))
+                return 0
+            print(json.dumps(value, sort_keys=True), flush=True)
+        if args.command == "status":
             value = store.load()
         elif args.command == "supersede":
             value = controller.supersede(args.reason)
@@ -980,14 +1118,16 @@ def main(argv: list[str] | None = None) -> int:
             require(token, "Existing Actions-read/release authorization credential is required")
             os.environ["GITHUB_TOKEN"] = token
             controller.backend = GitHubBackend(store.root, store.work, state["repository"], token)
-            polls = args.max_polls if args.command == "watch" else 1
-            interval = args.interval if args.command == "watch" else 0
+            watching = args.command in {"watch", "start"}
+            polls = args.max_polls if watching else 1
+            interval = args.interval if watching else 0
             require(1 <= polls <= 2880 and 0 <= interval <= 60, "Observation bounds exceeded")
-            require(args.command != "watch" or interval >= 5, "Watch interval must be at least five seconds")
+            require(not watching or interval >= 5, "Watch interval must be at least five seconds")
             previous = None
             finished = False
             for index in range(polls):
-                value = controller.advance(tuple(args.authorize), args.preflight_receipt if index == 0 else None)
+                receipt = args.preflight_receipt if index == 0 and args.command != "start" else None
+                value = controller.advance(tuple(args.authorize), receipt)
                 stamp = (value["revision"], value.get("observation"), value.get("remote"))
                 if stamp != previous:
                     print(json.dumps(value, sort_keys=True), flush=True)
@@ -997,7 +1137,7 @@ def main(argv: list[str] | None = None) -> int:
                     break
                 if index + 1 < polls:
                     time.sleep(interval)
-            if args.command == "watch" and not finished:
+            if watching and not finished:
                 print(json.dumps({**value, "observation": "observation-budget-exhausted"}, sort_keys=True))
             return 2 if value.get("observation") in {"remote-failed", "preparation-blocked"} else 0
         print(json.dumps(value, sort_keys=True))

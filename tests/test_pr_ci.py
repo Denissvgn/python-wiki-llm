@@ -725,6 +725,32 @@ def test_public_behavior_contract_owners_include_installed_and_review_consumers(
         assert "tests/test_package_metadata.py" in selection["lanes"]["minimum-python"]["selectors"]
 
 
+def test_integrity_action_change_selects_fast_native_contracts_and_real_action():
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests,
+                       [changed("integrations/wiki-integrity/action.yml")], None, {"entries": []}, imports_index={})
+    contracts = {
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_has_bounded_portable_inputs",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_isolates_python_modules_from_candidate_source",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence",
+    }
+    assert contracts <= set(result["lanes"]["ubuntu"]["selectors"])
+    assert contracts <= set(result["lanes"]["windows"]["selectors"])
+    assert "action" in result["jobs"]
+
+
+@pytest.mark.parametrize("path", ["release/core_coverage.py", "release/contract_canary.py", "release/preflight_runner.py"])
+def test_release_producer_change_keeps_windows_fixtures_and_ubuntu_coverage_owners(path):
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    allowlist = json.loads((ROOT / "release/skip-allowlist.json").read_bytes())
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None, allowlist, imports_index={})
+    expected = {"tests/test_core_shard_runner.py", "tests/test_preflight_runner.py", "tests/test_preflight_contracts.py"}
+    assert expected <= set(result["lanes"]["windows"]["selectors"])
+    assert expected <= set(result["lanes"]["ubuntu"]["selectors"])
+    assert result["skip_edges"]
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):

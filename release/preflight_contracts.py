@@ -77,6 +77,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_core_shard_runner.py",
         "tests/test_release_readiness.py",
         "tests/test_measurement_canary.py",
+        "tests/test_contract_canary.py",
         "tests/test_manual_release.py",
     ),
     "portability": (
@@ -476,8 +477,12 @@ def validate_workflow_contracts(repository_root: Path) -> list[str]:
             row = expected.get(name, {})
             if "admission" not in row.get("needs", []) or "needs.admission.result == 'success'" not in row.get("condition", ""):
                 errors.append(f"qualification producer {name} bypasses release admission")
-        if set(expected.get("admission", {}).get("needs", [])) != {"readiness", "windows-canary", "smoke-parity"}:
-            errors.append("release admission must join runtime, native consumer and literal artifact parity")
+        if set(expected.get("admission", {}).get("needs", [])) != {"readiness", "contract-canary", "windows-canary", "smoke-parity", "knowledge-maintenance"}:
+            errors.append("release admission must join runtime, frozen contracts, native consumer, literal artifact parity and knowledge maintenance")
+        if expected.get("action", {}).get("needs") != ["freeze", "readiness"]:
+            errors.append("hosted Action must precede release admission")
+        if expected.get("knowledge-maintenance", {}).get("needs") != ["freeze", "action", "readiness"]:
+            errors.append("knowledge maintenance must consume the early hosted Action")
         if "windows-native" not in expected.get("core-windows", {}).get("needs", []) or "core-windows-shards" in expected.get("windows-native", {}).get("needs", []):
             errors.append("native Windows evidence must run independently and join the core gate")
         if "core-ubuntu" not in expected.get("bundle", {}).get("needs", []):

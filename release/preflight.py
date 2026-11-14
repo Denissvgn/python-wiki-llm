@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
@@ -799,7 +800,8 @@ def _outcome(
 
 
 def _execute(
-    plan_path: Path, work: Path, operation: str, stages: tuple[str, ...]
+    plan_path: Path, work: Path, operation: str, stages: tuple[str, ...],
+    progress: Callable[[str, str], None] | None = None,
 ) -> dict:
     from release import preflight_runner as runner
 
@@ -846,6 +848,8 @@ def _execute(
         ]
     else:
         for stage in stages:
+            if progress:
+                progress(stage, "running")
             attempt = runner.execute_stage(
                 stage,
                 repo=root,
@@ -855,6 +859,8 @@ def _execute(
                 version=plan["readiness"]["version"],
             )
             attempts.append(attempt)
+            if progress:
+                progress(stage, attempt["status"])
             if attempt["status"] != "passed":
                 break
     if operation == "run":
@@ -903,9 +909,10 @@ def prepare(plan_path: Path, work: Path) -> dict:
 
 
 def run_plan(
-    plan_path: Path, work: Path, stages: tuple[str, ...] | None = None
+    plan_path: Path, work: Path, stages: tuple[str, ...] | None = None,
+    *, progress: Callable[[str, str], None] | None = None,
 ) -> dict:
-    return _execute(plan_path, work, "run", stages or STAGES)
+    return _execute(plan_path, work, "run", stages or STAGES, progress)
 
 
 def verify_receipt(path: Path) -> dict:

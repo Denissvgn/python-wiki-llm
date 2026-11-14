@@ -566,8 +566,6 @@ def stage_commands(
             "--check-registry",
         ),
     )
-    if stage == "freeze":
-        return commands
     # Archive hash and epoch are read only after the maintained freeze succeeded.
     # Dynamic arguments are restricted internal references, resolved by _materialize.
     archive = frozen / "candidate-source.tar"
@@ -590,6 +588,27 @@ def stage_commands(
             ),
         )
         return candidate
+
+    def contract_check(candidate, environment):
+        from release.readiness import helper_cache_base
+
+        env_python = str(_python(environment))
+        command("early-release-contracts", (
+            env_python, "-I", repo / "release/contract_canary.py", "run", "--root", candidate,
+            "--archive", archive, "--identity", frozen / "identity.json", "--source-sha", candidate_sha,
+            "--expected-prefix", environment, "--helper-cache-dir", helper_cache_base(repo),
+            "--output", scratch / "contract-canary",
+        ), cwd=candidate, expected_prefix=environment, timeout=600)
+
+    if stage == "freeze":
+        candidate = extract("contract-source")
+        environment = scratch / "contract-environment"
+        env_python = str(_python(environment))
+        command("create-contract-environment", (py, "-I", qualification, "create-venv", "--path", environment))
+        command("install-contract-source", (env_python, "-m", "pip", "install", "--no-cache-dir", str(candidate) + "[dev,tokens]"),
+                expected_prefix=environment, timeout=1200)
+        contract_check(candidate, environment)
+        return commands
 
     if stage in {"host-core", "rehearsal"}:
         candidate = extract("host-source")
@@ -629,6 +648,8 @@ def stage_commands(
             "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive),
             "LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo)),
         }
+        if stage == "rehearsal":
+            contract_check(candidate, environment)
         command(
             "collect-host-core",
             (env_python, "-I", repo / "release/core_shard_runner.py", "worker",
@@ -1264,6 +1285,7 @@ def evidence_paths(attempt: dict) -> list[Path]:
         "wheel-smoke-mcp-probes",
         "sdist-smoke-mcp-probes",
         "archive-budget",
+        "contract-canary",
     ):
         root = scratch / name
         _safe(root)

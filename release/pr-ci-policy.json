@@ -608,7 +608,26 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "integrity-action-contracts": {
+      "tests": [
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_has_bounded_portable_inputs",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_isolates_python_modules_from_candidate_source",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence"
       ],
       "lanes": [
         "ubuntu",
@@ -1059,10 +1078,27 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py",
+        "release/contract_canary.py",
+        "release/preflight_runner.py",
+        "release/preflight_contracts.py",
+        "release/core_coverage.py",
+        "release/core_shard_runner.py"
       ],
       "groups": [
         "release-fixtures-native"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/wiki-integrity/**",
+        "tests/test_wiki_integrity_action.py"
+      ],
+      "groups": [
+        "integrity-action-contracts"
       ]
     }
   ],
