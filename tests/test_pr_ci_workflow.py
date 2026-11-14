@@ -113,7 +113,12 @@ def test_base_policy_is_loaded_without_a_candidate_bootstrap_or_write_token():
 def test_selected_execution_and_aggregate_authenticate_the_driver_before_use():
     jobs = workflow("ci.yml")["jobs"]
     execution = jobs["test"]
-    assert execution["if"] == "${{ needs.plan.outputs.has-tests == 'true' }}"
+    assert execution["needs"] == ["plan", "typescript-ownership"]
+    assert " ".join(execution["if"].split()) == (
+        "${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.has-tests == 'true' "
+        "&& (needs.typescript-ownership.result == 'success' || (needs.plan.outputs.typescript-ownership != 'true' "
+        "&& needs.typescript-ownership.result == 'skipped')) }}"
+    )
     assert (
         execution["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
     )

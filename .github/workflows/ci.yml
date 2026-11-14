@@ -189,7 +189,7 @@ jobs:
         python -I reader/release/helper_ownership.py freeze --checkout candidate \
           --plan incoming/pr-ci/plan.json --plan-sha256 "${PLAN_SHA256}" \
           --source-sha "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --output "${RUNNER_TEMP}/owner-input"
-        python -I "${RUNNER_TEMP}/owner-input/source/release/preflight_contracts.py" check --repo "${RUNNER_TEMP}/owner-input/source"
+        python -I reader/release/preflight_contracts.py check --repo "${RUNNER_TEMP}/owner-input/source"
         python -I reader/release/qualification.py create-venv --path "${RUNNER_TEMP}/owner-venv"
     - name: Install the exact frozen provider
       run: python -m pip install "${RUNNER_TEMP}/owner-input/source[dev,tokens]"
@@ -279,8 +279,11 @@ jobs:
     if: ${{ needs.plan.outputs.typecheck == 'true' }}
   test:
     name: Selected tests (${{ matrix.lane }})
-    needs: plan
-    if: ${{ needs.plan.outputs.has-tests == 'true' }}
+    needs: [plan, typescript-ownership]
+    if: >-
+      ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.has-tests == 'true'
+          && (needs.typescript-ownership.result == 'success'
+              || (needs.plan.outputs.typescript-ownership != 'true' && needs.typescript-ownership.result == 'skipped')) }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     permissions:

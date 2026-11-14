@@ -1508,7 +1508,8 @@ def test_release_runners_and_ci_runners_are_explicit() -> None:
 def test_core_qualification_preserves_the_supported_cross_platform_contract() -> None:
     ci = _yaml("ci.yml")
     assert ci["jobs"]["test"]["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
-    assert ci["jobs"]["test"]["if"] == "${{ needs.plan.outputs.has-tests == 'true' }}"
+    assert "needs.plan.outputs.has-tests == 'true'" in ci["jobs"]["test"]["if"]
+    assert ci["jobs"]["test"]["needs"] == ["plan", "typescript-ownership"]
     qualification = _yaml("release-qualification.yml")
     core = qualification["jobs"]["core"]
     assert core["strategy"]["matrix"]["include"] == [
@@ -1583,7 +1584,7 @@ def test_routine_ci_runs_only_validated_selected_contracts() -> None:
     job = workflow["jobs"]["test"]
     assert job["name"] == "Selected tests (${{ matrix.lane }})"
     assert job["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
-    assert job["needs"] == "plan"
+    assert job["needs"] == ["plan", "typescript-ownership"]
     install = _named_step(job, "Install exact candidate noneditably")
     assert 'pip install ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
     assert install["env"]["PR_CI_PROFILE"] == "${{ matrix.profile }}"
