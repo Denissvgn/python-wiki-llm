@@ -1,6 +1,7 @@
 """Integration boundaries for the conditional release owner and its PR trigger."""
 
 from pathlib import Path
+import tomllib
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -124,11 +125,12 @@ def test_metadata_check_finds_historical_stale_version_links_and_residue(tmp_pat
     for name in ("CHANGELOG.md", "pyproject.toml", "tests/test_package_metadata.py"):
         (tmp_path / name).write_bytes((ROOT / name).read_bytes())
     assert contracts.release_input_errors(tmp_path) == []
+    version = tomllib.loads((tmp_path / "pyproject.toml").read_text())["project"]["version"]
     file = tmp_path / "tests/test_package_metadata.py"
-    file.write_text(file.read_text().replace('== "4.1.1"', '== "4.1.0"'))
+    file.write_text(file.read_text().replace(f'== "{version}"', '== "0.0.0"'))
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text(
-        changelog.read_text().replace("v4.1.1...HEAD", "v4.1.0...HEAD")
+        changelog.read_text().replace(f"v{version}...HEAD", "v0.0.0...HEAD")
     )
     (tmp_path / "build").mkdir()
     issues = contracts.release_input_errors(tmp_path)

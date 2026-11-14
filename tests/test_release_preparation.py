@@ -192,8 +192,9 @@ def test_policy_status_uses_comparator_digest_and_preserves_historical_proof(
     assert changed["configuration"]["mode"] == "required"
 
 
+@pytest.mark.parametrize("residue", [False, True])
 def test_plan_dependency_order_places_capture_merge_before_policy_and_final_rehearsal(
-    monkeypatch,
+    tmp_path, monkeypatch, residue,
 ):
     proof = preparation.capture_prerequisite(ROOT)
     proof = deepcopy(proof)
@@ -211,9 +212,16 @@ def test_plan_dependency_order_places_capture_merge_before_policy_and_final_rehe
     monkeypatch.setattr(preparation, "capture_prerequisite", lambda _: proof)
     monkeypatch.setattr(preflight, "_environment", lambda _: {"status": "observed"})
     monkeypatch.setattr(preflight, "_helper", lambda *_: {"status": "ready"})
-    result = preparation.inspect(ROOT)
+    (tmp_path / "tests").mkdir()
+    for name in ("pyproject.toml", "CHANGELOG.md", "tests/test_package_metadata.py"):
+        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+    if residue:
+        (tmp_path / "build").mkdir()
+    result = preparation.inspect(tmp_path)
     steps = {row["id"]: row for row in result["steps"]}
-    assert result["next_action"] == "wiki-preview"
+    assert result["next_action"] == ("finish-release-inputs" if residue else "wiki-preview")
+    assert steps["wiki-preview"]["requires"] == ["release-inputs"]
+    assert steps["release-inputs"]["status"] == ("blocked" if residue else "passed")
     assert steps["policy-evaluate"]["requires"] == ["wiki-commit-and-merge"]
     assert steps["policy-evaluate"]["status"] == "waiting-wiki"
     assert steps["final-plan"]["requires"] == [
