@@ -11,7 +11,6 @@ from collections import Counter
 from collections.abc import Mapping
 import hashlib
 import io
-import json
 import math
 from pathlib import PurePosixPath
 import platform
@@ -19,6 +18,8 @@ import re
 import sys
 import tokenize
 from typing import Any
+
+from .canonical_json import compact_line_bytes
 
 SCHEMA = "llm-wiki-implementation-observations/v1"
 EVIDENCE_SCHEMA = "llm-wiki-implementation-evidence/v1"
@@ -43,17 +44,7 @@ _DECLARATIONS = (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
 _LOCATIONS = frozenset({"lineno", "col_offset", "end_lineno", "end_col_offset"})
 
 
-def canonical_bytes(value: Any) -> bytes:
-    return (
-        json.dumps(
-            value,
-            sort_keys=True,
-            ensure_ascii=False,
-            separators=(",", ":"),
-            allow_nan=False,
-        )
-        + "\n"
-    ).encode("utf-8")
+canonical_bytes = compact_line_bytes
 
 
 def _digest(value: Any) -> str:

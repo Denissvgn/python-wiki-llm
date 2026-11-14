@@ -11,7 +11,8 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import wraps
 from typing import Callable, ParamSpec, TypeVar
-import hashlib
+
+from .canonical_json import ascii_compact_bytes, sha256_digest
 import json
 import re
 
@@ -26,9 +27,7 @@ _FIELDS = frozenset({"schema_version", "component", "contract", "implementation"
 
 
 def digest(value: object) -> str:
-    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
-                     allow_nan=False).encode("utf-8")
-    return "sha256:" + hashlib.sha256(raw).hexdigest()
+    return sha256_digest(ascii_compact_bytes(value))
 
 
 def selected_policy(value: str | None = None) -> str:

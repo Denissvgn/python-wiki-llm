@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .dependencies import *
+from ..canonical_json import ascii_compact_bytes, sha256_digest
 
 if TYPE_CHECKING:
     from .packet import _render_packet_markdown
@@ -1101,8 +1102,8 @@ def _new_run_id() -> str:
 
 
 def _sha256_json(payload: Mapping[str, Any]) -> str:
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+    # Run contracts are ASCII-escaped and, unlike storage, accept NaN.
+    return sha256_digest(ascii_compact_bytes(payload, allow_nan=True))
 
 __all__ = (
     'RUN_CONTROL_DIR',

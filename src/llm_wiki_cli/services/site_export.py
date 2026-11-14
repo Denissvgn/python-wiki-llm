@@ -22,6 +22,7 @@ from urllib.parse import unquote
 
 from . import wiki_surface
 from .filesystem_guard import fresh_no_follow_stat
+from .canonical_json import compact_bytes
 from .io import read_md, write_md
 from .knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
 from .knowledge_projection import (
@@ -275,12 +276,7 @@ class HubWikiSource:
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
+    return compact_bytes(value, allow_nan=True)
 
 
 def _opaque_digest(value: Any) -> str:

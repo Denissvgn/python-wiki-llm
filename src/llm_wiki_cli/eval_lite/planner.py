@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
+from llm_wiki_cli.services.canonical_json import compact_bytes
 from llm_wiki_cli.services.contracts import (
     EVAL_LITE_PLAN_SCHEMA_VERSION,
     EVAL_LITE_TASK_SCHEMA_VERSION,
@@ -948,14 +949,7 @@ def _validate_json_tree(value: Any, field: str, *, depth: int = 0) -> None:
     raise EvaluationPlanError(field, f"contains unsupported value {type(value).__name__}")
 
 
-def _canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-        allow_nan=False,
-    ).encode("utf-8")
+_canonical_json_bytes = compact_bytes
 
 
 def _domain_digest(domain: bytes, value: bytes) -> str:

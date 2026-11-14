@@ -9,6 +9,7 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
 
+from .canonical_json import compact_line_bytes
 from .request_json import load_request
 
 PROFILE_SCHEMA = "llm-wiki-workflow-profile/v1"
@@ -36,9 +37,7 @@ class WorkflowRequestError(ValueError):
         super().__init__(f"{field}: {message}")
 
 
-def canonical_json(value: Any) -> bytes:
-    return (json.dumps(value, ensure_ascii=False, sort_keys=True,
-                       separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
+canonical_json = compact_line_bytes
 
 
 def content_id(domain: str, value: Any) -> str:

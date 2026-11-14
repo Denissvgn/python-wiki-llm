@@ -32,6 +32,7 @@ from .knowledge_consumption import (
     KnowledgeReadView,
     _validated_artifacts_for_view,
 )
+from .canonical_json import compact_text
 from .immutable import freeze
 from .knowledge_artifacts import (
     ValidatedKnowledgeArtifacts,
@@ -593,12 +594,7 @@ def _wire_value(value: object) -> object:
 
 
 def _canonical_json(value: object) -> str:
-    return json.dumps(
-        _jsonable(value),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    )
+    return compact_text(_jsonable(value), allow_nan=True)
 
 
 def _raw_evidence_byte_bound(value: object) -> dict[str, int | bool]:

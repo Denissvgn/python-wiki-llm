@@ -1,11 +1,21 @@
-"""Bounded canonical JSON chunks and exact scalar sizes.
+"""Named canonical JSON encodings, bounded chunks and exact scalar sizes.
 
 Only immutable JSON syntax is handled here. There is no filesystem or validity
-cache, and emitted bytes retain the existing compact UTF-8 encoding.
+cache. Persisted digests depend on each encoding byte for byte:
+
+- ``compact``: sorted keys, ``,``/``:`` separators, UTF-8, no trailing LF.
+- ``compact_line``: ``compact`` plus one LF; the storage and maintenance form,
+  also emitted by :func:`canonical_chunks`.
+- ``ascii_compact``: ``compact`` with non-ASCII escaped.
+- ``indented_line``: two-space indent, sorted keys, UTF-8, one trailing LF.
+
+Encoders reject NaN and infinities unless ``allow_nan=True`` is passed for a
+format that already accepts them.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -16,6 +26,34 @@ from typing import Any
 _ESCAPED = re.compile(r'["\\\x00-\x1f]')
 _SHORT = frozenset('"\\\b\f\n\r\t')
 CHUNK_BYTES = 65_536
+
+
+def compact_text(value: Any, *, allow_nan: bool = False) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True,
+                      separators=(",", ":"), allow_nan=allow_nan)
+
+
+def compact_bytes(value: Any, *, allow_nan: bool = False) -> bytes:
+    return compact_text(value, allow_nan=allow_nan).encode("utf-8")
+
+
+def compact_line_bytes(value: Any) -> bytes:
+    return (compact_text(value) + "\n").encode("utf-8")
+
+
+def ascii_compact_bytes(value: Any, *, allow_nan: bool = False) -> bytes:
+    return json.dumps(value, ensure_ascii=True, sort_keys=True,
+                      separators=(",", ":"), allow_nan=allow_nan).encode("utf-8")
+
+
+def indented_line_text(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True,
+                      allow_nan=False) + "\n"
+
+
+def sha256_digest(data: bytes) -> str:
+    """The ``sha256:<hex>`` wire form of a digest over raw bytes."""
+    return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
 class CanonicalArray:

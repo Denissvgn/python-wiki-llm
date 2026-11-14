@@ -7,7 +7,6 @@ live freshness, or write artifacts.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import re
@@ -16,6 +15,7 @@ from dataclasses import dataclass, field as dataclass_field
 from pathlib import Path
 from typing import Any
 
+from .canonical_json import compact_bytes, compact_text, indented_line_text, sha256_digest
 from .normalization_diagnostics import MISSING_VALUE, NormalizationDiagnostic
 
 from .validation import (
@@ -176,37 +176,11 @@ def is_valid_sha256(value: object) -> bool:
     return isinstance(value, str) and _SHA256_RE.fullmatch(value) is not None
 
 
-def canonical_json_text(value: Any) -> str:
-    """Encode *value* as compact canonical JSON for hashing and ordering."""
-
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-        allow_nan=False,
-    )
-
-
-def canonical_json_bytes(value: Any) -> bytes:
-    """Return the UTF-8 bytes of :func:`canonical_json_text`."""
-
-    return canonical_json_text(value).encode("utf-8")
-
-
-def formatted_json_text(value: Any) -> str:
-    """Encode deterministic human-readable JSON with one trailing newline."""
-
-    return (
-        json.dumps(
-            value,
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-            allow_nan=False,
-        )
-        + "\n"
-    )
+# Compact canonical JSON without a trailing LF, for hashing and ordering.
+canonical_json_text = compact_text
+canonical_json_bytes = compact_bytes
+# Deterministic human-readable JSON with one trailing LF.
+formatted_json_text = indented_line_text
 
 
 def formatted_json_bytes(value: Any) -> bytes:
@@ -215,10 +189,7 @@ def formatted_json_bytes(value: Any) -> bytes:
     return formatted_json_text(value).encode("utf-8")
 
 
-def sha256_bytes(value: bytes) -> str:
-    """Return the canonical SHA-256 wire value for *value*."""
-
-    return f"sha256:{hashlib.sha256(value).hexdigest()}"
+sha256_bytes = sha256_digest
 
 
 def hash_json(value: Any) -> str:

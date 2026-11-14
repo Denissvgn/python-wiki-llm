@@ -46,6 +46,7 @@ from ..contracts import (
     P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION,
     P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION,
 )
+from ..canonical_json import compact_line_bytes
 from ..filesystem_guard import atomic_write_private_bytes
 from ..redaction import (
     LIKELY_SECRET_RE as _LIKELY_SECRET_RE,
@@ -2015,16 +2016,7 @@ def canonical_result_json_bytes(payload: Mapping[str, Any]) -> bytes:
     if not isinstance(payload, Mapping):
         raise OciBrokerError("Agent result must be a JSON object.")
     try:
-        return (
-            json.dumps(
-                payload,
-                allow_nan=False,
-                ensure_ascii=False,
-                separators=(",", ":"),
-                sort_keys=True,
-            )
-            + "\n"
-        ).encode("utf-8")
+        return compact_line_bytes(payload)
     except (TypeError, ValueError) as exc:
         raise OciBrokerError("Agent result is not canonical JSON.") from exc
 

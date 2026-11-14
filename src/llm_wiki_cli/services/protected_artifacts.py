@@ -28,6 +28,7 @@ from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Iterator, Mapping, Sequence, cast
 
+from .canonical_json import compact_line_bytes
 from .filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsDurabilityError,
@@ -132,18 +133,11 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
             "Protected JSON artifacts must contain an object."
         )
     try:
-        serialized = json.dumps(
-            payload,
-            ensure_ascii=False,
-            allow_nan=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
+        return compact_line_bytes(payload)
     except (TypeError, ValueError) as exc:
         raise ProtectedArtifactIntegrityError(
             f"Protected artifact is not canonical JSON: {exc}"
         ) from exc
-    return (serialized + "\n").encode("utf-8")
 
 
 class ProtectedArtifactStore:

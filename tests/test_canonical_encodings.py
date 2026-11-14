@@ -1,8 +1,9 @@
 """Exact bytes and digests of every canonical JSON helper.
 
-Stored artifacts and receipts persist these digests, so consolidating the
-helpers must keep each encoding byte-for-byte. Four encodings exist today:
-compact, compact with a trailing LF, compact ASCII-escaped, and indented.
+Stored artifacts and receipts persist these digests, so every helper must keep
+its encoding byte for byte. The named encodings live in ``canonical_json``:
+compact, compact with a trailing LF, compact ASCII-escaped, and indented;
+module helpers are pinned too because callers and stored digests use them.
 """
 
 from __future__ import annotations
@@ -75,6 +76,8 @@ def test_golden_bytes_match_golden_digests() -> None:
 @pytest.mark.parametrize(
     "encode",
     [
+        canonical_json.compact_bytes,
+        lambda value: canonical_json.compact_text(value).encode("utf-8"),
         knowledge_evidence.canonical_json_bytes,
         lambda value: knowledge_evidence.canonical_json_text(value).encode("utf-8"),
         site_export._canonical_json_bytes,
@@ -83,6 +86,8 @@ def test_golden_bytes_match_golden_digests() -> None:
         lambda value: knowledge_graph._canonical_json(value).encode("utf-8"),
     ],
     ids=[
+        "canonical_json.compact_bytes",
+        "canonical_json.compact_text",
         "knowledge_evidence.canonical_json_bytes",
         "knowledge_evidence.canonical_json_text",
         "site_export._canonical_json_bytes",
@@ -98,6 +103,7 @@ def test_compact_encoders(encode) -> None:
 @pytest.mark.parametrize(
     "encode",
     [
+        canonical_json.compact_line_bytes,
         knowledge_storage.canonical_bytes,
         python_implementation.canonical_bytes,
         workflow_profile.canonical_json,
@@ -108,6 +114,7 @@ def test_compact_encoders(encode) -> None:
         lambda value: b"".join(canonical_json.canonical_chunks(value, chunk_bytes=64)),
     ],
     ids=[
+        "canonical_json.compact_line_bytes",
         "knowledge_storage.canonical_bytes",
         "python_implementation.canonical_bytes",
         "workflow_profile.canonical_json",
@@ -121,8 +128,20 @@ def test_compact_lf_encoders(encode) -> None:
     assert encode(SAMPLE) == COMPACT_LF
 
 
-def test_indented_encoder() -> None:
-    encoded = knowledge_evidence.formatted_json_bytes(SAMPLE)
+def test_ascii_encoder() -> None:
+    assert canonical_json.ascii_compact_bytes(SAMPLE) == COMPACT_ASCII
+
+
+@pytest.mark.parametrize(
+    "encode",
+    [
+        knowledge_evidence.formatted_json_bytes,
+        lambda value: canonical_json.indented_line_text(value).encode("utf-8"),
+    ],
+    ids=["knowledge_evidence.formatted_json_bytes", "canonical_json.indented_line_text"],
+)
+def test_indented_encoder(encode) -> None:
+    encoded = encode(SAMPLE)
 
     assert encoded.startswith(b'{\n  "Mid": 12345678901234567890,\n')
     assert _sha256(encoded) == INDENTED_LF_DIGEST
@@ -162,6 +181,7 @@ def test_json_digests(compute, expected) -> None:
 
 
 def test_raw_byte_digests() -> None:
+    assert canonical_json.sha256_digest(COMPACT) == COMPACT_DIGEST
     assert knowledge_evidence.sha256_bytes(COMPACT) == COMPACT_DIGEST
     assert knowledge_storage.digest(COMPACT_LF) == COMPACT_LF_DIGEST
     assert health_policy.digest(COMPACT_ASCII) == COMPACT_ASCII_DIGEST
@@ -173,6 +193,10 @@ NAN_SAMPLE = {"value": float("nan")}
 @pytest.mark.parametrize(
     "encode",
     [
+        canonical_json.compact_bytes,
+        canonical_json.compact_line_bytes,
+        canonical_json.ascii_compact_bytes,
+        canonical_json.indented_line_text,
         knowledge_evidence.canonical_json_bytes,
         knowledge_evidence.formatted_json_bytes,
         knowledge_storage.canonical_bytes,
@@ -184,6 +208,10 @@ NAN_SAMPLE = {"value": float("nan")}
         lambda value: b"".join(canonical_json.canonical_chunks(value)),
     ],
     ids=[
+        "canonical_json.compact_bytes",
+        "canonical_json.compact_line_bytes",
+        "canonical_json.ascii_compact_bytes",
+        "canonical_json.indented_line_text",
         "knowledge_evidence.canonical_json_bytes",
         "knowledge_evidence.formatted_json_bytes",
         "knowledge_storage.canonical_bytes",
@@ -208,11 +236,15 @@ def test_protected_artifact_encoder_rejects_non_finite_numbers() -> None:
 @pytest.mark.parametrize(
     ("compute", "expected"),
     [
+        (lambda value: canonical_json.compact_bytes(value, allow_nan=True), b'{"value":NaN}'),
+        (lambda value: canonical_json.ascii_compact_bytes(value, allow_nan=True), b'{"value":NaN}'),
         (site_export._canonical_json_bytes, b'{"value":NaN}'),
         (lambda value: documentation_queries._canonical_json(value).encode("utf-8"), b'{"value":NaN}'),
         (run_contracts._sha256_json, _sha256(b'{"value":NaN}')),
     ],
     ids=[
+        "canonical_json.compact_bytes-lenient",
+        "canonical_json.ascii_compact_bytes-lenient",
         "site_export._canonical_json_bytes",
         "documentation_queries._canonical_json",
         "documentation_run.contracts._sha256_json",

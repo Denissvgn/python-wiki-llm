@@ -16,7 +16,7 @@ import re
 from typing import Any, NoReturn
 
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
-from .canonical_json import canonical_chunks, scalar_size
+from .canonical_json import canonical_chunks, compact_line_bytes, scalar_size, sha256_digest
 
 STORE_SCHEMA = "llm-wiki-knowledge/v2"
 OBJECT_SCHEMA = "llm-wiki-knowledge-object/v1"
@@ -52,14 +52,12 @@ class KnowledgeStorageError(ValueError):
 
 def canonical_bytes(value: Any) -> bytes:
     try:
-        return (json.dumps(value, sort_keys=True, ensure_ascii=False,
-                           separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
+        return compact_line_bytes(value)
     except (ValueError, TypeError, RecursionError, UnicodeError) as exc:
         raise KnowledgeStorageError("json", "must be finite UTF-8 JSON") from exc
 
 
-def digest(data: bytes) -> str:
-    return "sha256:" + hashlib.sha256(data).hexdigest()
+digest = sha256_digest
 
 
 def logical_digest(value: Any) -> str:
