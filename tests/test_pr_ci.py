@@ -751,6 +751,16 @@ def test_release_producer_change_keeps_windows_fixtures_and_ubuntu_coverage_owne
     assert result["skip_edges"]
 
 
+@pytest.mark.parametrize("path", ["release/session_report.py", "release/release_resources.py", "release/manual_release.py", "release/preflight_runner.py"])
+def test_release_recovery_changes_keep_native_readers_and_guarded_cleanup_consumers(path):
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None, {"entries": []}, imports_index={})
+    expected = {"tests/test_session_report.py", "tests/test_release_startup_recovery.py", "tests/test_release_resources.py", "tests/test_manual_release.py", "tests/test_preflight_runner.py"}
+    for lane in ("ubuntu", "windows", "macos"):
+        assert expected <= set(result["lanes"][lane]["selectors"])
+    assert "typecheck" in result["jobs"]
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):

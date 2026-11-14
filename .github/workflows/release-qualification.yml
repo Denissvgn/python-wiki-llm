@@ -257,6 +257,8 @@ jobs:
             release/contract_canary.py \
             release/pr_ci_pytest.py \
             release/core-shard-timings.json \
+            release/core-shard-windows-trial.json \
+            release/core_schedule.py \
             release/ubuntu_suites.py \
             release/ubuntu_shadow.py \
             release/ubuntu-suites.json \

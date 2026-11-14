@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from types import SimpleNamespace
 import subprocess
+import sys
 import venv
 import uuid
 import zipfile
@@ -22,6 +23,29 @@ from release import preflight_runner as runner
 ROOT = Path(__file__).parents[1]
 BINDING = {"repository_root": str(ROOT), "kind": "local-pre-release-work/v1"}
 SHA = "a" * 40
+
+
+def test_created_environment_allocation_is_retained_in_attempt_evidence(tmp_path, monkeypatch):
+    from release import release_resources
+
+    work = runner.claim_work(tmp_path / "work", BINDING)
+    monkeypatch.setattr(runner, "launcher_probe", lambda *a, **kw: {"prefix": "isolated"})
+
+    def commands(stage, repo, scratch, **kwargs):
+        code = "from pathlib import Path; import sys; p=Path(sys.argv[-1]); p.mkdir(); (p/'pyvenv.cfg').write_text('home = base\\n')"
+        return [runner.Command("create-owned-environment", (sys.executable, "-c", code, "create-venv", "--path", str(scratch / "environment")), ROOT)]
+
+    monkeypatch.setattr(runner, "stage_commands", commands)
+    attempt = runner.execute_stage("contracts", repo=ROOT, work=work, binding=BINDING, candidate_sha=SHA, version="9.0.0")
+    assert attempt["status"] == "passed"
+    catalog_path = Path(attempt["scratch"]) / "resources.json"
+    catalog = json.loads(catalog_path.read_bytes())
+    record = catalog["resources"][0]
+    assert record["status"] == "allocated" and record["outcome"] == "passed"
+    assert record["path"] == str(catalog_path.parent / "environment")
+    assert record["marker_sha256"] == hashlib.sha256((Path(record["path"]) / release_resources.MARKER).read_bytes()).hexdigest()
+    assert catalog_path in runner.evidence_paths(attempt)
+    assert runner.verify_attempt(attempt, repo=ROOT, work=work, binding=BINDING)["status"] == "verified"
 
 
 @pytest.fixture

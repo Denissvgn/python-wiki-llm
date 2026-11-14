@@ -126,6 +126,10 @@
         "tests/test_knowledge_maintenance.py",
         "tests/test_policy_activation.py",
         "tests/test_policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py",
+        "tests/test_reviewed_wiki_capture.py",
+        "tests/test_wiki_review_snapshot.py",
         "tests/test_qualification_automation.py",
         "tests/test_hosted_evidence.py",
         "tests/test_core_shards.py",
@@ -134,7 +138,10 @@
         "tests/test_static_quality_architecture.py",
         "tests/test_release_readiness.py",
         "tests/test_measurement_canary.py",
-        "tests/test_manual_release.py"
+        "tests/test_manual_release.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
       ],
       "lanes": [
         "ubuntu"
@@ -637,6 +644,63 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "release-preparation-native": {
+      "tests": [
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "native-scheduling": {
+      "tests": [
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_documentation_calibration_host_broker.py",
+        "tests/test_publication_impact.py",
+        "tests/test_publication_candidate.py",
+        "tests/test_sync_analysis_cache.py",
+        "tests/test_core_shards.py",
+        "tests/test_core_shard_runner.py",
+        "tests/test_core_shard_workflow.py",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "release-recovery-native": {
+      "tests": [
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py",
+        "tests/test_manual_release.py",
+        "tests/test_preflight_runner.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
     }
   },
   "rules": [
@@ -831,6 +895,10 @@
         "release/analysis_conformance.py",
         "release/hosted_evidence.py",
         "release/knowledge_maintenance.py",
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
         "release/knowledge-maintenance.json",
         "release/action-runtimes.json",
         "release/*policy*.json",
@@ -845,7 +913,12 @@
         "release/readiness.py",
         "release/runtime-policy.json",
         "release/measurement_canary.py",
-        "release/core_coverage.py"
+        "release/core_coverage.py",
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json",
+        "release/session_report.py",
+        "release/release_resources.py"
       ],
       "groups": [
         "release",
@@ -1099,6 +1172,51 @@
       ],
       "groups": [
         "integrity-action-contracts"
+      ]
+    },
+    {
+      "paths": [
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "groups": [
+        "release-preparation-native"
+      ]
+    },
+    {
+      "paths": [
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json",
+        "tests/prepared_workspaces.py",
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_publication_impact.py",
+        "tests/test_sync_analysis_cache.py",
+        ".github/workflows/core-shard-shadow.yml",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "groups": [
+        "native-scheduling"
+      ]
+    },
+    {
+      "paths": [
+        "release/session_report.py",
+        "release/release_resources.py",
+        "release/manual_release.py",
+        "release/preflight_runner.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
+      ],
+      "groups": [
+        "release-recovery-native"
       ]
     }
   ],

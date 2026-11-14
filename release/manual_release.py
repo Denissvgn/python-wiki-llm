@@ -261,7 +261,11 @@ class Store:
         state["revision"] += 1
         state["updated_at"] = now()
         record = {"revision": state["revision"], "time": state["updated_at"],
-                  "event": event, "phase": state["phase"], "pending": state.get("pending")}
+                  "event": event, "phase": state["phase"], "pending": state.get("pending"),
+                  **{key: state[key] for key in ("session_id", "candidate_sha", "candidate_tree", "repository")},
+                  "results": {action: state[key] for action, key in (
+                      ("qualify", "qualification"), ("dry-run", "dry_run"), ("tag", "tag"),
+                      ("publish", "publication"), ("github-release", "github_release")) if key in state}}
         if "preparation" in state:
             record["preparation"] = state["preparation"]
         events = safe(self.work / "events.jsonl")
@@ -489,6 +493,8 @@ class Controller:
         previous = state.get("pending")
         state["pending"] = {"action": action, "started_at": now(), "before": prepared,
                             "operation_id": uuid.uuid4().hex, "repair": repair}
+        if action == "qualify" and state.get("startup_retry"):
+            state["pending"]["retry_from"] = dict(state["startup_retry"])
         try:
             self.store.save(state, "intent-" + action)
             validate = getattr(self.backend, "validate_submission", None)
@@ -508,8 +514,10 @@ class Controller:
             # response means it is safe to submit the same POST again.
             state["pending"]["outcome_unknown"] = True
             state["pending"]["error_type"] = type(exc).__name__
+            state.pop("startup_retry", None)
             return self.store.save(state, "unknown-outcome-" + action)
         state["pending"]["response"] = result
+        state.pop("startup_retry", None)
         if previous:
             state["pending"]["previous_operation_id"] = previous["operation_id"]
         return self.store.save(state, "submitted-" + action)
@@ -518,6 +526,35 @@ class Controller:
         identity = source(self.store.root)
         require(identity == {key: state[key] for key in identity},
                 "Candidate source changed before submission")
+
+    def resolve_startup(self, operation_id: str, run_id: int, attempt: int, reason: str) -> dict:
+        """Dispose one proved zero-job qualification failure; never dispatch here."""
+        require(bool(reason.strip()), "Startup disposition requires a reason")
+        with self.store.lock():
+            state = self.store.load()
+            pending = state.get("pending")
+            require(state["phase"] == "prepared" and isinstance(pending, dict)
+                    and pending.get("action") == "qualify" and pending.get("operation_id") == operation_id,
+                    "Startup disposition does not identify the active qualification operation")
+            self.store.claim(state)
+            self._same_source(state)
+            evidence = self.backend.startup_failure(state, pending, run_id, attempt)
+            require(evidence.get("confirmed") is True and evidence.get("operation_id") == operation_id
+                    and evidence.get("candidate_sha") == state["candidate_sha"]
+                    and evidence.get("run_id") == run_id and evidence.get("attempt") == attempt,
+                    "Provider startup evidence differs from the active operation")
+            require(state.get("preflight_receipt"), "Current exact-source local receipt is required for startup recovery")
+            receipt = verified_preflight(self.store.root, state["candidate_sha"], Path(state["preflight_receipt"]))
+            self.backend._main(state)
+            self._same_source(state)
+            disposition = {"operation_id": operation_id, "candidate_sha": state["candidate_sha"],
+                           "run_id": run_id, "attempt": attempt, "reason": reason.strip(),
+                           "evidence": evidence, "receipt": receipt, "recorded_at": now(),
+                           "next_action": "re-admit-qualification", "dispatch_performed": False}
+            state.setdefault("recoveries", []).append(disposition)
+            state["startup_retry"] = {"operation_id": operation_id, "run_id": run_id, "attempt": attempt}
+            state["pending"] = None
+            return self.store.save(state, "qualification-startup-failure-disposed")
 
     @staticmethod
     def _accept(state: dict, action: str, result: dict) -> None:
@@ -716,7 +753,7 @@ class GitHubBackend:
         require(result.returncode == 0, "GitHub release write outcome requires reconciliation")
         return {}
 
-    def _run(self, state: dict, action: str, pending: dict) -> dict | None:
+    def _run(self, state: dict, action: str, pending: dict, *, persist: bool = True) -> dict | None:
         workflow, name = WORKFLOWS[action]
         started = hosted.timestamp(pending["started_at"]).replace(microsecond=0)
         returned = pending.get("response", {}).get("workflow_run_id")
@@ -751,7 +788,8 @@ class GitHubBackend:
                 "Observed dispatch identity differs")
         if run["status"] != "completed":
             return run
-        atomic(self.work / f"observed-run-{run['id']}-{run['run_attempt']}.json", run)
+        if persist:
+            atomic(self.work / f"observed-run-{run['id']}-{run['run_attempt']}.json", run)
         if run["conclusion"] != "success":
             return run
         q.validate_workflow_run(run, repository=self.repository, workflow_path=".github/workflows/" + workflow,
@@ -815,6 +853,31 @@ class GitHubBackend:
             sync_artifact_cache(folder, inventory)
         sync_directory(folder.parent)
         return folder / "files"
+
+    def startup_failure(self, state: dict, pending: dict, run_id: int, attempt: int) -> dict:
+        require(pending.get("action") == "qualify" and type(run_id) is int and run_id > 0
+                and type(attempt) is int and attempt == 1, "Only one original qualification attempt can be disposed")
+        run = self._run(state, "qualify", pending, persist=False)
+        require(run is not None and run["id"] == run_id and run["run_attempt"] == attempt
+                and run.get("status") == "completed" and run.get("conclusion") == "startup_failure",
+                "The original operation has no confirmed provider startup failure")
+        assert run is not None
+        jobs = self.client.list(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
+        require(jobs == [], "A run with any job cannot use zero-job startup recovery")
+        suite_id = run.get("check_suite_id")
+        require(type(suite_id) is int and suite_id > 0, "Provider check-suite identity is missing")
+        suite = self.client.get(f"/check-suites/{suite_id}")
+        checks = self.client.list(f"/check-suites/{suite_id}/check-runs", "check_runs")
+        require(suite.get("id") == suite_id and suite.get("head_sha") == state["candidate_sha"]
+                and suite.get("head_branch") == "main" and suite.get("status") == "completed"
+                and suite.get("conclusion") == "startup_failure" and suite.get("app", {}).get("slug") == "github-actions"
+                and suite.get("repository", {}).get("full_name") == self.repository
+                and checks == [], "Provider check suite does not prove an empty startup failure")
+        return {"schema_version": "agent-wiki-qualification-startup-failure/v1", "confirmed": True,
+                "candidate_sha": state["candidate_sha"], "operation_id": pending["operation_id"],
+                "run_id": run_id, "attempt": attempt, "check_suite_id": suite_id,
+                "run_sha256": digest(canonical(run)), "jobs_sha256": digest(canonical(jobs)),
+                "check_suite_sha256": digest(canonical(suite)), "check_runs_sha256": digest(canonical(checks))}
 
     def reconcile(self, state: dict, pending: dict) -> dict | None:
         action = pending["action"]
@@ -1065,12 +1128,14 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("start", "init", "status", "advance", "resume", "watch", "supersede"):
+    for name in ("start", "init", "status", "advance", "resume", "watch", "supersede", "resolve-startup"):
         command = commands.add_parser(name)
         command.add_argument("--root", type=Path, default=Path.cwd())
         command.add_argument("--work", type=Path, required=True)
-        if name != "status":
+        if name not in {"status", "resolve-startup"}:
             command.add_argument("--authorize", action="append", choices=ACTIONS, default=[])
+        if name == "resolve-startup":
+            command.set_defaults(authorize=[])
         if name in {"init", "advance", "resume", "watch"}:
             command.add_argument("--preflight-receipt", type=Path)
         if name == "start":
@@ -1080,8 +1145,12 @@ def main(argv: list[str] | None = None) -> int:
         if name in {"init", "start"}:
             command.add_argument("--repository", default="Denissvgn/python-wiki-llm")
             command.add_argument("--candidate-sha", required=True)
-        if name == "supersede":
+        if name in {"supersede", "resolve-startup"}:
             command.add_argument("--reason", required=True)
+        if name == "resolve-startup":
+            command.add_argument("--operation-id", required=True)
+            command.add_argument("--run-id", type=bounded_integer(1, 2**63 - 1), required=True)
+            command.add_argument("--attempt", type=bounded_integer(1, 1), default=1)
         if name in {"watch", "start"}:
             command.add_argument("--interval", type=bounded_integer(5, 60), default=30,
                                  help="Seconds between observations (5–60; default: 30)")
@@ -1107,8 +1176,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             state = store.load()
             granted = set(state["authorizations"]) | set(args.authorize)
-            if state["phase"] in FINISHED or (not state["pending"] and state["phase"] in NEXT
-                                              and NEXT[state["phase"]] not in granted):
+            if args.command != "resolve-startup" and (state["phase"] in FINISHED or (not state["pending"] and state["phase"] in NEXT
+                                              and NEXT[state["phase"]] not in granted)):
                 value = controller.advance(tuple(args.authorize), args.preflight_receipt)
                 print(json.dumps(value, sort_keys=True))
                 return 0
@@ -1118,6 +1187,10 @@ def main(argv: list[str] | None = None) -> int:
             require(token, "Existing Actions-read/release authorization credential is required")
             os.environ["GITHUB_TOKEN"] = token
             controller.backend = GitHubBackend(store.root, store.work, state["repository"], token)
+            if args.command == "resolve-startup":
+                value = controller.resolve_startup(args.operation_id, args.run_id, args.attempt, args.reason)
+                print(json.dumps(value, sort_keys=True))
+                return 0
             watching = args.command in {"watch", "start"}
             polls = args.max_polls if watching else 1
             interval = args.interval if watching else 0

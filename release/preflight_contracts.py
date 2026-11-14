@@ -79,6 +79,9 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_measurement_canary.py",
         "tests/test_contract_canary.py",
         "tests/test_manual_release.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py",
     ),
     "portability": (
         "tests/test_readonly_subprocess_stdin.py",
