@@ -1120,8 +1120,7 @@ def test_watch_continues_after_unavailable_workflow_read(
     monkeypatch.setattr(client, "list", jobs)
     monkeypatch.setattr(manual, "GitHubBackend", lambda *args: controller.backend)
     monkeypatch.setenv("GITHUB_TOKEN", "test")
-    pauses = []
-    monkeypatch.setattr(manual.time, "sleep", pauses.append)
+    pauses = skip_watch_pauses(monkeypatch)
     assert manual.main(["watch", "--root", str(project), "--work", str(controller.store.work),
                         "--interval", "5", "--max-polls", "2"]) == 0
     first, recovered, bounded = map(json.loads, capsys.readouterr().out.splitlines())
@@ -1407,15 +1406,7 @@ def start_arguments(root, plan, name="handoff", source="--preflight-plan"):
 
 def skip_watch_pauses(monkeypatch):
     pauses = []
-    sleep = manual.time.sleep
-
-    def pause(seconds):
-        if seconds == 5:
-            pauses.append(seconds)
-        else:
-            sleep(seconds)
-
-    monkeypatch.setattr(manual.time, "sleep", pause)
+    monkeypatch.setattr(manual, "sleep", pauses.append)
     return pauses
 
 

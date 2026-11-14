@@ -17,7 +17,7 @@ import re
 import stat
 import subprocess
 import sys
-import time
+from time import sleep
 from typing import Any
 import urllib.error
 import urllib.parse
@@ -1225,7 +1225,7 @@ def main(argv: list[str] | None = None) -> int:
                 # A reconciled phase can advance immediately. A pending write or
                 # remote observation still uses the bounded polling interval.
                 if index + 1 < polls and (value.get("pending") or value.get("observation")):
-                    time.sleep(interval)
+                    sleep(interval)
             if watching and not finished:
                 print(json.dumps({**value, "observation": "observation-budget-exhausted"}, sort_keys=True))
             return 2 if value.get("observation") in {"remote-failed", "preparation-blocked"} else 0
