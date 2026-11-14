@@ -10,6 +10,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import publication_snapshot as snapshot
+from llm_wiki_cli.services.host import Host
 from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
@@ -56,12 +57,10 @@ def test_complete_deterministic_native_snapshot_is_read_only(tmp_path, storage_f
 def test_current_packed_indexed_snapshot_retains_full_native_page_set(
     tmp_path, monkeypatch
 ):
-    from llm_wiki_cli.services import bootstrap_runtime
-
     monkeypatch.chdir(tmp_path)
     clock = Mock()
     clock.today.return_value = date(2020, 1, 2)
-    monkeypatch.setattr(bootstrap_runtime, "date", clock)
+    monkeypatch.setattr(Host, "today", lambda self: clock.today())
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "app.py").write_text("class Application:\n    pass\n")
     api.bootstrap_wiki("src", "wiki")

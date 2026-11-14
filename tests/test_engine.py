@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import threading
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -129,10 +130,18 @@ def test_engine_bootstrap_creates_a_wiki_through_its_host(tmp_path: Path, monkey
     (tmp_path / "src" / "billing.py").write_text("class Invoice:\n    total: int\n", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", os.fspath(tmp_path.parent))
-    engine = Engine(host=NoProcessHost(stdout=io.StringIO(), stderr=io.StringIO()))
+
+    class PinnedCalendar(NoProcessHost):
+        def today(self) -> date:
+            return date(2001, 2, 3)
+
+    out = io.StringIO()
+    engine = Engine(host=PinnedCalendar(stdout=out, stderr=io.StringIO()))
 
     result = engine.bootstrap(BootstrapRequest(source_root="src", wiki_root="wiki"))
 
     assert result.created_files and (tmp_path / "wiki" / "index.md").is_file()
+    assert "## 2001-02-03" in (tmp_path / "wiki" / "log.md").read_text(encoding="utf-8")
+    assert out.getvalue()
     with pytest.raises(BootstrapRequestError):
         engine.bootstrap(BootstrapRequest(source_root="src", wiki_root="other", overwrite=True))

@@ -16,6 +16,7 @@ import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services import knowledge_orchestration, lint_service
+from llm_wiki_cli.services.host import Host
 from llm_wiki_cli.services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
@@ -373,13 +374,8 @@ def test_bootstrap_matches_v1_4_0_markdown_and_surface_v1_goldens(
     wiki_dir = project / "wiki"
     expected_wiki = _LEGACY_BOOTSTRAP_FIXTURE / "wiki"
 
-    class FrozenDate(date):
-        @classmethod
-        def today(cls):
-            return _LEGACY_BOOTSTRAP_DATE
-
     monkeypatch.chdir(project)
-    monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
+    monkeypatch.setattr(Host, "today", lambda self: _LEGACY_BOOTSTRAP_DATE)
     source_snapshot = bootstrap_cmd.build_source_snapshot(project)
     bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 

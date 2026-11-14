@@ -12,7 +12,6 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
-from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -181,6 +180,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
+from .host import current_host, emit
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 _INDEX_FLOW_LABEL = "Entry-point flows"
@@ -4859,8 +4859,8 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         include_tests=getattr(args, "include_tests", None),
         trust_source_plugins=True,
         source_selection=getattr(args, "source_selection", None),
-        progress_stream=sys.stderr if json_mode else sys.stdout,
-        diagnostic_stream=sys.stderr,
+        progress_stream=current_host().stderr if json_mode else current_host().stdout,  # type: ignore[arg-type]
+        diagnostic_stream=current_host().stderr,  # type: ignore[arg-type]
         knowledge_format=getattr(args, "knowledge_format", None),
     )
 
@@ -5869,7 +5869,7 @@ def _append_bootstrap_log(
         # full log participates in review across checkouts and dates.
         heading, source_label = "Source snapshot", "."
     else:
-        heading = date.today().isoformat()
+        heading = current_host().today().isoformat()
         source_label = portable_source_root_label(state.options.src_dir_for_scan)
     log_entry = (
         f"\n## {heading}\n\n"
@@ -6720,7 +6720,7 @@ def _execute_bootstrap_options(
     if state.completion_message is not None:
         _emit_bootstrap(state, state.completion_message)
     if options.json_mode:
-        print(json.dumps(result.summary, indent=2))
+        emit(json.dumps(result.summary, indent=2))
     return result
 
 
@@ -6864,7 +6864,7 @@ def run(args):
     except BootstrapExtractionError:
         raise SystemExit(1)
     except BootstrapContractError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        emit(f"Error: {exc}", stream="stderr")
         raise SystemExit(2) from exc
 
 

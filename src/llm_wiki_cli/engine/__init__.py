@@ -176,7 +176,7 @@ class Engine:
         from ..services.bootstrap_runtime import execute_bootstrap
 
         with self.operation():
-            return execute_bootstrap(request)
+            return execute_bootstrap(request, progress_stream=self._host.stdout)  # type: ignore[arg-type]
 
     def lint(self, request: LintRequest) -> LintReport:
         """Check a wiki against its source; ``report.passed`` is the verdict.

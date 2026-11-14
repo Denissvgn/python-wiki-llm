@@ -12,6 +12,7 @@ import pytest
 
 from llm_wiki_cli.services import publication_candidate as candidate
 from llm_wiki_cli.services import publication_impact as impact
+from llm_wiki_cli.services.host import Host
 from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
 from tests.test_publication_impact import consumer as consumer
 
@@ -254,8 +255,6 @@ def test_artifact_only_source_bootstrap_needs_no_target_or_html(consumer):
 def test_source_only_approval_survives_a_later_date_and_different_cwd(
     consumer, monkeypatch
 ):
-    from llm_wiki_cli.services import bootstrap_runtime
-
     policy = configure(consumer)
     policy["content"].pop("adoptions")
     policy["architecture"] = {"baseline": "bootstrap-source", "root": "src"}
@@ -264,7 +263,7 @@ def test_source_only_approval_survives_a_later_date_and_different_cwd(
     (consumer / ".llm-wiki/publication.json").write_text(json.dumps(policy))
     clock = Mock()
     clock.today.return_value = date(2020, 1, 1)
-    monkeypatch.setattr(bootstrap_runtime, "date", clock)
+    monkeypatch.setattr(Host, "today", lambda self: clock.today())
     monkeypatch.chdir(consumer)
     receipt = candidate.export_publication_candidate(consumer, output_dir="reports/new")
     approval = candidate.review_publication_candidate(

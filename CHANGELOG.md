@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Engine` runs each call against a `Host` that supplies processes,
   environment, working directory, clock and output streams; `NoProcessHost`
   refuses subprocesses, and helper preparation stays off unless granted.
+  The date bootstrap and sync write to the wiki log comes from the host's
+  calendar (`Host.today()`).
 - `api.sync_wiki()` and `Engine.sync()` run an incremental sync without the
   CLI. The API call is silent and returns a `SyncOutcome` with page counts;
   `Engine.sync()` writes progress to the host's streams. Source plugins load

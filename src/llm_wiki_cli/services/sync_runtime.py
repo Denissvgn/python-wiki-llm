@@ -29,7 +29,6 @@ import tempfile
 from collections import Counter
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
-from datetime import date
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Optional
 
@@ -246,7 +245,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
-from .host import discarding_stdout, emit, recording_errors
+from .host import current_host, discarding_stdout, emit, recording_errors
 from .sync_service import (
     SYNC_PAGE_COUNTERS,
     SyncError,
@@ -6454,7 +6453,7 @@ def _append_log(
     infrastructure_changes_applied: bool = True,
 ) -> None:
     log_path = wiki_dir / "log.md"
-    today = date.today().isoformat()
+    today = current_host().today().isoformat()
     moved_str = (
         ", ".join(
             f"`{cls}` ({old} → {new})"

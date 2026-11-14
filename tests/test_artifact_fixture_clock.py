@@ -8,8 +8,7 @@ import sys
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import bootstrap_runtime
+from llm_wiki_cli.services.host import Host
 from tests import artifact_fixture_clock, release_artifact_smoke as smoke
 
 
@@ -19,18 +18,15 @@ def _dated_fixture(root, monkeypatch, days, *, controlled, changed=False):
     source, wiki = smoke._write_fixture(root)
 
     def run(arguments, day):
-        class WallDate(date):
-            @classmethod
-            def today(cls):
-                return cls.fromisoformat(day)
+        def wall_today(host):
+            return date.fromisoformat(day)
 
         with monkeypatch.context() as clock:
-            clock.setattr(bootstrap_runtime, "date", WallDate)
-            clock.setattr(sync_cmd, "date", WallDate)
+            clock.setattr(Host, "today", wall_today)
             prefix = ["fixture-clock", "-m", "llm_wiki_cli.cli"] if controlled else ["llm-wiki"]
             clock.setattr(sys, "argv", [*prefix, *arguments])
             (artifact_fixture_clock.main if controlled else cli.main)()
-            assert bootstrap_runtime.date is WallDate and sync_cmd.date is WallDate
+            assert Host.today is wall_today
 
     common = ["--src-dir", str(source), "--wiki-dir", str(wiki)]
     run(["bootstrap", *common, "--skip-workflows", "--skip-flows", "--skip-dependencies"], days[0])
@@ -91,7 +87,7 @@ def test_fixture_clock_controls_isolated_cli_and_api_writers(tmp_path, writer):
             "assert sys.argv[1:] == ['prepare', 'space and unicode: café', '--option']\n"
             "assert __name__ == '__main__'\n"
             "assert globals() is vars(__main__)\n"
-            "assert 'FixtureDate' not in globals()\n"
+            "assert 'fixture_today' not in globals()\n"
             "if sys.argv[0] == '-c':\n    assert '__file__' not in globals()\n"
             "api.bootstrap_wiki('fixture', 'wiki')\n"
         )
@@ -121,7 +117,7 @@ def test_fixture_inline_preserves_process_failures(tmp_path, code, exit_code, me
 
 def test_fixture_inline_restores_caller_state_on_exit(monkeypatch):
     original_main = sys.modules["__main__"]
-    original_dates = bootstrap_runtime.date, sync_cmd.date
+    original_today = Host.today
     arguments = ["fixture-clock", "-c", "raise SystemExit(7)", "remaining"]
     monkeypatch.setattr(sys, "argv", arguments)
     with pytest.raises(SystemExit) as error:
@@ -129,7 +125,7 @@ def test_fixture_inline_restores_caller_state_on_exit(monkeypatch):
     assert error.value.code == 7
     assert sys.argv is arguments
     assert sys.modules["__main__"] is original_main
-    assert (bootstrap_runtime.date, sync_cmd.date) == original_dates
+    assert Host.today is original_today
 
 
 def test_fixture_inline_requires_code(tmp_path):
