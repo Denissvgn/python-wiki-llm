@@ -236,6 +236,7 @@ PRODUCT_SERVICES = frozenset(
         "knowledge_orchestration",
         "knowledge_projection",
         "legacy_hooks",
+        "lint_request",
         "lint_service",
         "mcp_server",
         "metrics",

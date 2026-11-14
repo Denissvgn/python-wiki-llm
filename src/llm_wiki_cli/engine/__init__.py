@@ -11,7 +11,8 @@ caller grants ``helper_preparation="auto"``. Importing this module loads
 neither the CLI, command modules nor the public API.
 
 Use cases run directly on the engine and write progress to the host's
-streams, for example :meth:`Engine.sync`.
+streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync` and :meth:`Engine.lint`.
+They take a typed request, return a typed result and never exit the process.
 
     from llm_wiki_cli import api
     from llm_wiki_cli.engine import Engine, NoProcessHost
@@ -26,7 +27,7 @@ from collections.abc import Callable, Iterator
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Literal, ParamSpec, TypeVar
 
 from ..services.host import (
     ALL_CAPABILITIES,
@@ -36,13 +37,31 @@ from ..services.host import (
     current_host,
     using_host,
 )
+from ..services.bootstrap_service import (
+    BootstrapContractError,
+    BootstrapRequest,
+    BootstrapRequestError,
+    BootstrapResult,
+    BootstrapServiceError,
+)
+from ..services.lint_request import LintRequest, LintRequestError
 from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
+
+if TYPE_CHECKING:
+    from ..services.lint_service import LintReport
 
 __all__ = [
     "ALL_CAPABILITIES",
+    "BootstrapContractError",
+    "BootstrapRequest",
+    "BootstrapRequestError",
+    "BootstrapResult",
+    "BootstrapServiceError",
     "Engine",
     "Host",
     "HostCapabilityError",
+    "LintRequest",
+    "LintRequestError",
     "NoProcessHost",
     "Operation",
     "SyncError",
@@ -136,3 +155,25 @@ class Engine:
 
         with self.operation():
             return execute_sync(request)
+
+    def bootstrap(self, request: BootstrapRequest) -> BootstrapResult:
+        """Create a first-use wiki; progress goes to the host's streams.
+
+        Raises :class:`BootstrapRequestError` for invalid options and
+        :class:`BootstrapServiceError` when bootstrap cannot complete.
+        """
+        from ..services.bootstrap_runtime import execute_bootstrap
+
+        with self.operation():
+            return execute_bootstrap(request)
+
+    def lint(self, request: LintRequest) -> LintReport:
+        """Check a wiki against its source; ``report.passed`` is the verdict.
+
+        Extractor failures are report issues. Raises :class:`LintRequestError`
+        when a path breaks the workspace policy.
+        """
+        from ..services.lint_service import execute_lint
+
+        with self.operation():
+            return execute_lint(request)

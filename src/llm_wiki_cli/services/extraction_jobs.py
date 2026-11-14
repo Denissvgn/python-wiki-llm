@@ -73,15 +73,23 @@ class ExtractionJobPlan:
         }
 
 
+def extraction_job_request_for(
+    jobs: int | None, requested_jobs: int | str | None = None
+) -> ExtractionJobRequest:
+    """Build a request from resolved ``jobs`` and the raw request, if any."""
+
+    resolved_jobs = max(1, int(jobs or 1))
+    raw_request = resolved_jobs if requested_jobs is None else requested_jobs
+    requested: RequestedJobs = "auto" if raw_request == "auto" else int(raw_request)
+    return ExtractionJobRequest(requested, resolved_jobs)
+
+
 def extraction_job_request_from_args(args) -> ExtractionJobRequest:
     """Build a request from an argparse-compatible namespace."""
 
-    resolved_jobs = max(1, int(getattr(args, "jobs", 1) or 1))
-    raw_request = getattr(args, "requested_jobs", resolved_jobs)
-    requested_jobs: RequestedJobs = (
-        "auto" if raw_request == "auto" else int(raw_request)
+    return extraction_job_request_for(
+        getattr(args, "jobs", 1), getattr(args, "requested_jobs", None)
     )
-    return ExtractionJobRequest(requested_jobs, resolved_jobs)
 
 
 def format_extraction_job_plan(plan: ExtractionJobPlan) -> str:

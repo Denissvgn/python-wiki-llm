@@ -118,3 +118,21 @@ def test_sandboxed_engine_bootstraps_and_searches_without_any_process(tmp_path: 
     assert started == []
     assert (tmp_path / "wiki" / "index.md").is_file()
     assert hits["query"] == "Invoice" and hits["results"]
+
+
+def test_engine_bootstrap_creates_a_wiki_through_its_host(tmp_path: Path, monkeypatch) -> None:
+    import io
+
+    from llm_wiki_cli.engine import BootstrapRequest, BootstrapRequestError
+
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "billing.py").write_text("class Invoice:\n    total: int\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", os.fspath(tmp_path.parent))
+    engine = Engine(host=NoProcessHost(stdout=io.StringIO(), stderr=io.StringIO()))
+
+    result = engine.bootstrap(BootstrapRequest(source_root="src", wiki_root="wiki"))
+
+    assert result.created_files and (tmp_path / "wiki" / "index.md").is_file()
+    with pytest.raises(BootstrapRequestError):
+        engine.bootstrap(BootstrapRequest(source_root="src", wiki_root="other", overwrite=True))

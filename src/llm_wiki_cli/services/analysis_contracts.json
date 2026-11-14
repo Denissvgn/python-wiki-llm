@@ -202,6 +202,7 @@
     "services/knowledge_stream_audit.py",
     "services/knowledge_verification.py",
     "services/legacy_hooks.py",
+    "services/lint_request.py",
     "services/lint_service.py",
     "services/lockfile.py",
     "services/maintenance_evidence.py",

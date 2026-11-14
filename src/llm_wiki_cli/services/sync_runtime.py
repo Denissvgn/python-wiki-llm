@@ -65,6 +65,7 @@ from .entrypoints import (
 from .extraction_jobs import (
     ExtractionJobPlan,
     ExtractionJobRequest,
+    extraction_job_request_for,
     print_extraction_job_plan,
 )
 from .inventory_cache import (
@@ -2532,9 +2533,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
 
 
 def _job_request(request: SyncRequest) -> ExtractionJobRequest:
-    resolved = max(1, int(request.jobs or 1))
-    raw = resolved if request.requested_jobs is None else request.requested_jobs
-    return ExtractionJobRequest("auto" if raw == "auto" else int(raw), resolved)
+    return extraction_job_request_for(request.jobs, request.requested_jobs)
 
 
 def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:

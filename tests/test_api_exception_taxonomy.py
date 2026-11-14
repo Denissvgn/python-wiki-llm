@@ -33,6 +33,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "adopt_documentation_wiki_snapshot",
     "bootstrap_wiki",
     "sync_wiki",
+    "lint_wiki",
     "build_calibration_agent_packet",
     "build_budgeted_context",
     "build_context",
@@ -164,6 +165,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "validate_behavior_facts",
         "validate_documentation_model_selection",
         "sync_wiki",
+        "lint_wiki",
     }
 )
 _WORKSPACE_STATE_FAILURES = frozenset(
@@ -363,6 +365,7 @@ def _failure_cases(tmp_path: Path):
         "sync_wiki": lambda: api.sync_wiki(
             ".", "docs/llm_wiki", openapi_file="openapi.yaml", clear_openapi_file=True,
         ),
+        "lint_wiki": lambda: api.lint_wiki("../outside", "docs/llm_wiki"),
         "extract_source": lambda: api.extract_source(str(missing_source)),
         "build_budgeted_context": lambda: api.build_budgeted_context(
             ".", request={"budget_tokens": 0}

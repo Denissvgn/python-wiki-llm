@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -32,7 +33,7 @@ from .entrypoints import (
 from .extraction_jobs import (
     ExtractionJobPlan,
     ExtractionJobRequest,
-    extraction_job_request_from_args,
+    extraction_job_request_for,
     print_extraction_job_plan,
 )
 from .infrastructure_inventory import (
@@ -46,11 +47,13 @@ from .infrastructure_sync import (
 )
 from .inventory_cache import (
     InventoryCacheOptions,
-    cache_options_from_args,
+    cache_options_for,
     prepare_cache_options,
     InventoryCacheStats,
     format_cache_stats,
 )
+from .lint_request import LintRequest, LintRequestError
+from .path_policy import DEFAULT_WIKI_DIR, PathValidationError
 from .progress import phase as progress_phase
 from .io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
@@ -3337,43 +3340,88 @@ def render_markdown(report: LintReport, *, health: Mapping | None = None) -> str
     return render_validation_markdown(report_to_dict(report), health=health)
 
 
-def run(args):
-    wiki_dir = Path(args.wiki_dir)
-    src_dir = getattr(args, "src_dir", ".")
-    knowledge_drift_report = bool(getattr(args, "knowledge_drift_report", False))
-    strict = bool(getattr(args, "strict", False) or knowledge_drift_report)
-    profile = bool(getattr(args, "profile", False))
-    cache_stats = bool(getattr(args, "cache_stats", False))
-    allow_external_src = bool(getattr(args, "allow_external_src", False))
-    source_selection = getattr(args, "source_selection", None)
+def lint_request_from_args(args) -> LintRequest:
+    """Translate parsed ``lint`` arguments into a :class:`LintRequest`."""
+    return LintRequest(
+        wiki_root=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
+        source_root=getattr(args, "src_dir", "."),
+        strict=bool(getattr(args, "strict", False)),
+        knowledge_drift_report=bool(getattr(args, "knowledge_drift_report", False)),
+        allow_external_source=bool(getattr(args, "allow_external_src", False)),
+        source_selection=getattr(args, "source_selection", None),
+        include_tests=getattr(args, "include_tests", None),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
+        media_size_warn_bytes=getattr(args, "media_size_warn_bytes", None),
+        jobs=getattr(args, "jobs", 1),
+        requested_jobs=getattr(args, "requested_jobs", None),
+        cache=not bool(getattr(args, "no_cache", False)),
+        rebuild_cache=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        cache_stats=bool(getattr(args, "cache_stats", False)),
+    )
+
+
+def _build_requested_report(
+    request: LintRequest, profiler: _LintProfiler | None = None
+) -> LintReport:
+    """Validate the request's paths and build its report; paths may raise."""
+    wiki_dir = Path(request.wiki_root)
+    src_dir = os.fspath(request.source_root)
     validate_path(str(wiki_dir), "--wiki-dir")
     src_root = validate_source_root(
-        src_dir, "--src-dir", allow_external=allow_external_src
+        src_dir, "--src-dir", allow_external=request.allow_external_source
     )
-    if allow_external_src:
+    if request.allow_external_source:
         src_dir = str(src_root)
-
-    profiler = _LintProfiler() if profile else None
-    cache_options = cache_options_from_args(args)
-    job_request = extraction_job_request_from_args(args)
-    report = build_report(
+    return build_report(
         wiki_dir,
         src_dir,
-        strict=strict,
-        knowledge_drift_report=knowledge_drift_report,
+        strict=bool(request.strict or request.knowledge_drift_report),
+        knowledge_drift_report=request.knowledge_drift_report,
         profiler=profiler,
-        cache_options=cache_options,
-        parallel_jobs=getattr(args, "jobs", 1),
-        helper_cache_dir=getattr(args, "helper_cache_dir", None),
-        include_tests=getattr(args, "include_tests", None),
-        media_size_warn_bytes=(
-            getattr(args, "media_size_warn_bytes", None)
-            or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
+        cache_options=cache_options_for(
+            disabled=not request.cache,
+            rebuild=request.rebuild_cache,
+            cache_dir=None if request.cache_dir is None else os.fspath(request.cache_dir),
+            stats_enabled=request.cache_stats,
         ),
-        job_request=job_request,
+        parallel_jobs=request.jobs,
+        helper_cache_dir=(
+            None if request.helper_cache_dir is None else os.fspath(request.helper_cache_dir)
+        ),
+        include_tests=request.include_tests,
+        media_size_warn_bytes=(
+            request.media_size_warn_bytes or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
+        ),
+        job_request=extraction_job_request_for(request.jobs, request.requested_jobs),
         plan_reporter=print_extraction_job_plan,
-        source_selection=source_selection,
+        include_plugins=request.plugins,
+        source_selection=request.source_selection,
     )
+
+
+def execute_lint(request: LintRequest) -> LintReport:
+    """Lint without exiting; the report says whether the wiki passed.
+
+    Extractor failures are issues in the report. Raises
+    :class:`LintRequestError` when a path breaks the workspace policy.
+    """
+    if not isinstance(request, LintRequest):
+        raise TypeError("request must be a LintRequest")
+    try:
+        return _build_requested_report(request)
+    except PathValidationError as exc:
+        raise LintRequestError(str(exc)) from exc
+
+
+def run(args):
+    request = lint_request_from_args(args)
+    strict = bool(request.strict or request.knowledge_drift_report)
+    profile = bool(getattr(args, "profile", False))
+    cache_stats = request.cache_stats
+
+    profiler = _LintProfiler() if profile else None
+    report = _build_requested_report(request, profiler)
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):
             emit(f"Error: {issue.message}", stream="stderr")
@@ -3399,8 +3447,8 @@ def run(args):
                 issue_count=report.issue_count,
                 strict=True,
                 duration_ms=None,
-                wiki_dir=str(wiki_dir),
-                src_dir=src_dir,
+                wiki_dir=str(Path(request.wiki_root)),
+                src_dir=report.src_dir,
                 knowledge_summary=(
                     None
                     if report.knowledge_summary is None

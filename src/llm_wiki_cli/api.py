@@ -118,6 +118,7 @@ from .services.bootstrap_service import (
     BootstrapResult,
     BootstrapServiceError,
 )
+from .services.lint_request import LintRequest, LintRequestError
 from .services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 from .services.dependencies import analyze_dependencies
 from .services.doctor_service import build_doctor_report
@@ -1291,6 +1292,50 @@ def sync_wiki(
         raise InvalidRequestError(str(exc)) from exc
     except SyncError as exc:
         raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def lint_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    strict: bool = False,
+    knowledge_drift_report: bool = False,
+    include_tests: list[str] | None = None,
+    helper_cache_dir: str | None = None,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+    media_size_warn_bytes: int | None = None,
+) -> dict[str, Any]:
+    """Check a wiki against its source tree and return the lint report.
+
+    Runs the same checks as ``llm-wiki lint`` without its console output and
+    returns the JSON-ready report: ``ok``, ``issue_count``, ``issues`` and
+    ``diagnostics``. A failing lint is a result, not an error. Project plugins
+    run only when ``trust_source_plugins`` is true. Paths outside the
+    workspace raise :class:`InvalidRequestError`.
+    """
+
+    from .services.host import discarding_output
+    from .services.lint_service import execute_lint, report_to_dict
+
+    request = LintRequest(
+        wiki_root=wiki_root,
+        source_root=source_root,
+        strict=strict,
+        plugins=trust_source_plugins,
+        knowledge_drift_report=knowledge_drift_report,
+        include_tests=include_tests,
+        helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
+        media_size_warn_bytes=media_size_warn_bytes,
+    )
+    try:
+        with discarding_output():
+            report = execute_lint(request)
+    except LintRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    return report_to_dict(report)
 
 
 @_api_boundary
@@ -4208,6 +4253,7 @@ __all__ = [
     "TokenCounter",
     "bootstrap_wiki",
     "sync_wiki",
+    "lint_wiki",
     "build_documentation_query_service",
     "callees",
     "callers",

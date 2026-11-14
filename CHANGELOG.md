@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CLI. The API call is silent and returns a `SyncOutcome` with page counts;
   `Engine.sync()` writes progress to the host's streams. Source plugins load
   through the API only with `trust_source_plugins=True`.
+- `api.lint_wiki()` and `Engine.lint()` run lint without the CLI. The API
+  call is silent and returns the JSON-ready lint report; `Engine.lint()`
+  returns the report object. A failing lint is a result, not an exception.
+  `Engine.bootstrap()` runs a first-use bootstrap the same way.
 
 ### Changed
 
