@@ -545,9 +545,9 @@ def capabilities(
         or len(stages) != len(set(stages))
     ):
         raise ReadinessError("Invalid selected local stages")
-    environment = (
-        environment if environment is not None else preflight._environment(root)
-    )
+    if environment is None:
+        explicit_owner = "go" in (native_languages or ()) or os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1"
+        environment = preflight._environment(root, qualification_go=True) if explicit_owner else preflight._environment(root)
     helper = helper if helper is not None else preflight._helper(root, environment)
     rows, blockers, pending = [], [], []
     if native_languages is None:

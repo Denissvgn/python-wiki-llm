@@ -185,9 +185,12 @@ def inspect(root: Path, *, base_ref: str | None = None) -> dict:
     targets = prerequisite["target_runtime"]
     capture = prerequisite["required"]
     approval = policy["status"] == "approval-required"
+    from release import preflight_contracts
+    input_errors = preflight_contracts.release_input_errors(root)
     steps = [
         {"id": "source-review", "requires": [], "status": "committed", "sha": identity["candidate_sha"]},
-        {"id": "wiki-preview", "requires": ["source-review"], "status": "required" if capture else "source-current",
+        {"id": "release-inputs", "requires": ["source-review"], "status": "blocked" if input_errors else "passed", "errors": input_errors},
+        {"id": "wiki-preview", "requires": ["release-inputs"], "status": "required" if capture else "source-current",
          "workflow": "reviewed-wiki-capture.yml", "inputs": {"operation": "preview", "candidate-sha": identity["candidate_sha"]}},
         {"id": "wiki-capture", "requires": ["wiki-preview"], "status": "awaiting-reviewed-preview" if capture else "source-current",
          "workflow": "reviewed-wiki-capture.yml", "approval": "approved-preview-sha256"},
@@ -204,7 +207,7 @@ def inspect(root: Path, *, base_ref: str | None = None) -> dict:
     ]
     return {"schema_version": SCHEMA, **identity, "version_diff": version_diff, "wiki": sources, "policy": policy,
             "target_runtime": targets, "active_environment": environment, "helper": helper, "steps": steps,
-            "next_action": "wiki-preview" if capture else "policy-evaluate" if approval else "final-plan",
+            "next_action": "finish-release-inputs" if input_errors else "wiki-preview" if capture else "policy-evaluate" if approval else "final-plan",
             "publication_authority": False,
             "normal_qualification": "Fresh native Action, knowledge maintenance and release qualification remain required."}
 

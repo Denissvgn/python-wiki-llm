@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 import time
 from typing import Any
 
@@ -19,7 +20,9 @@ from release import measurement_canary as canary
 from release import pr_ci_pytest
 
 SCHEMA = "agent-wiki-release-contract-canary/v1"
+PUBLICATION_CASE = "tests/test_publication_portability_adoption.py::test_managed_native_wiki_custom_paths_stale_evidence_and_recovery[retired]"
 FIXTURES = (
+    PUBLICATION_CASE,
     "tests/test_preflight_runner.py::test_prepare_only_has_locked_setup_and_readiness_without_wiki_write",
     "tests/test_preflight_runner.py::test_full_driver_keeps_maintained_owners_and_strict_full_suite",
     "tests/test_preflight_runner.py::test_shared_driver_environment_skip_stays_blocked",
@@ -45,6 +48,14 @@ COVERAGE = (
     "tests/test_core_shard_runner.py::test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line",
     "tests/test_core_shard_runner.py::test_coverage_report_probe_preserves_active_configured_outputs",
 )
+
+
+def profile_selectors(profile: str):
+    if profile == "fixtures":
+        if sys.platform != "win32":
+            return (*FIXTURES, "tests/test_ci_toolchain_setup.py::test_routine_local_setup_uses_lock_and_writes_sourceable_environment")
+        return FIXTURES
+    return COVERAGE
 
 
 def verify_candidate(args) -> dict:
@@ -82,7 +93,7 @@ def validate_results(selectors, collection, started, cases) -> dict:
 
 
 def verify_profile(output: Path, profile: str, source_sha: str) -> dict:
-    selectors = FIXTURES if profile == "fixtures" else COVERAGE
+    selectors = profile_selectors(profile)
     path = canary.safe(output / "started.jsonl")
     canary.require(path.stat().st_size <= 4 * 1024 * 1024, "Contract started inventory exceeds bound")
     started = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
@@ -93,39 +104,56 @@ def verify_profile(output: Path, profile: str, source_sha: str) -> dict:
     return counts
 
 
-def worker(args) -> int:
+def execute_tests(root: Path, selectors, out: Path, *, collect_only=False, installed_only=False) -> int:
+    """Run once in a fresh worker, retaining collection, starts, status and raw JUnit."""
     import pytest
 
-    expected = verify_candidate(args)
-    selectors = FIXTURES if args.profile == "fixtures" else COVERAGE
-    canary.require(args.profile != "coverage" or sys.platform != "win32", "Coverage producer requires a POSIX owner")
-    out = canary.safe(args.output)
-    canary.require(not out.is_relative_to(args.root.absolute()), "Contract evidence must be outside candidate source")
-    out.mkdir(parents=True, exist_ok=False)
     os.environ["PR_CI_COLLECTION"] = str(out / "collection.json")
     os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
-    started = []
-
     class Started:
         @pytest.hookimpl
         def pytest_runtest_logstart(self, nodeid, location):
-            started.append(nodeid)
             with (out / "started.jsonl").open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(nodeid) + "\n")
 
     command = [*selectors, "-q", "-o", "addopts=", "-p", "no:cacheprovider", "--strict-config", "--strict-markers",
-               "-W", "error", "-o", "xfail_strict=true", "--basetemp=" + str(out / "tmp"),
+               "-W", "error", "-o", "xfail_strict=true",
                "--junitxml=" + str(out / "junit.xml")]
+    if collect_only:
+        command.append("--collect-only")
+    if installed_only:
+        canary.save(out, "installed-provider.json", canary._observe_installed_provider(canary.provider_files(root)))
+        command.extend(["-o", "pythonpath="])
+    temporary_parent = os.environ.get("RELEASE_CONTRACT_TEMP")
     previous = Path.cwd()
-    os.chdir(args.root)
+    os.chdir(root)
     start = time.monotonic()
     try:
-        code = int(pytest.main(command, plugins=[pr_ci_pytest, Started()]))
+        # Consumers may discover Git governance locks by walking their parents.
+        # Keep mutable inputs outside any checkout even when reports live under it.
+        with tempfile.TemporaryDirectory(prefix="release-contract-", dir=temporary_parent) as scratch:
+            base = Path(scratch).resolve()
+            canary.require(not any((p / ".git").exists() for p in (base, *base.parents)),
+                           "Provide an OS temporary directory outside Git for contract inputs")
+            code = int(pytest.main([*command, "--basetemp=" + str(base / "tests")],
+                                   plugins=[pr_ci_pytest, Started()]))
     finally:
         os.chdir(previous)
     canary.save(out, "execution.json", {"exit_code": code, "seconds": time.monotonic() - start})
+    return code
+
+
+def worker(args) -> int:
+    expected = verify_candidate(args)
+    selectors = profile_selectors(args.profile)
+    canary.require(args.profile != "coverage" or sys.platform != "win32", "Coverage producer requires a POSIX owner")
+    out = canary.safe(args.output)
+    canary.require(not out.is_relative_to(args.root.absolute()), "Contract evidence must be outside candidate source")
+    out.mkdir(parents=True, exist_ok=False)
+    code = execute_tests(args.root, selectors, out)
     canary.require(code == 0, "Contract canary cases failed")
-    counts = validate_results(selectors, runner.q.load_json(out / "collection.json"), started,
+    starts = [json.loads(line) for line in (out / "started.jsonl").read_text().splitlines()]
+    counts = validate_results(selectors, runner.q.load_json(out / "collection.json"), starts,
                               core_shards.junit(out / "junit.xml"))
     canary.require(verify_candidate(args) == expected, "Contract canary provider changed")
     canary.save(out, "result.json", {"schema_version": SCHEMA, "profile": args.profile,
@@ -150,7 +178,9 @@ def run(args) -> int:
         for profile, mode in profiles:
             target = out / (profile + "-" + mode)
             env = runner.child_environment(out / (target.name + "-state"), out / (target.name + "-temp"), args.archive)
+            env.pop("LLM_WIKI_GO", None)
             env["PYTHONDONTWRITEBYTECODE"] = "1"
+            env["RELEASE_CONTRACT_TEMP"] = tempfile.gettempdir()
             if mode == "inherited":
                 cache = canary.safe(args.helper_cache_dir or out / "helper-cache")
                 canary.require(not cache.is_relative_to(args.root.absolute()), "Helper cache must be outside candidate source")
@@ -175,6 +205,19 @@ def run(args) -> int:
             runner.q.write_json(out / "result.json", report)
             if code:
                 return 1
+        verify_candidate(args)
+        ownership = out / "typescript-ownership"
+        command = [sys.executable, "-I", str(Path(__file__).with_name("helper_ownership.py")), "probe",
+                   "--all-families", "--root", str(args.root), "--archive", str(args.archive),
+                   "--identity", str(args.identity), "--source-sha", args.source_sha, "--output", str(ownership)]
+        if args.helper_cache_dir:
+            command.extend(["--helper-cache-dir", str(args.helper_cache_dir)])
+        else:
+            command.append("--cold-only")
+        result = runner.invoke(command, args.root, os.environ.copy(), out / "typescript-ownership.log", timeout=600)
+        report["typescript_ownership"] = result
+        canary.require(result["exit_code"] == 0 and runner.q.load_json(ownership / "result.json")["status"] == "passed",
+                       "TypeScript ownership failed; see typescript-ownership/result.json")
         verify_candidate(args)
         report["status"] = "passed"
         runner.q.write_json(out / "result.json", report)

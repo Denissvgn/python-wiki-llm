@@ -429,7 +429,9 @@ def test_missing_arm64_go_lock_refusal_precedes_cache_or_environment_writes(fake
 def test_routine_local_setup_uses_lock_and_writes_sourceable_environment(
     fake_lock: Path,
     setup_harness: SetupHarness,
+    monkeypatch,
 ) -> None:
+    monkeypatch.setenv("LLM_WIKI_GO", "/previous/qualification/go")
     payload = json.loads(fake_lock.read_text(encoding="utf-8"))
     payload["toolchains"]["go"]["artifact"]["url"] = "file:///not-requested-go"
     payload["toolchains"]["go"]["platform_artifacts"]["darwin_arm64"][

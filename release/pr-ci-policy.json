@@ -701,6 +701,18 @@
         "typecheck"
       ],
       "helpers": []
+    },
+    "publication-retirement": {
+      "tests": [
+        "tests/test_publication_portability_adoption.py::test_managed_native_wiki_custom_paths_stale_evidence_and_recovery[retired]"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [],
+      "helpers": []
     }
   },
   "rules": [
@@ -1218,6 +1230,27 @@
       "groups": [
         "release-recovery-native"
       ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/source_retirement.py",
+        "src/llm_wiki_cli/services/knowledge_freshness.py",
+        "src/llm_wiki_cli/services/knowledge_coverage.py",
+        "src/llm_wiki_cli/services/documentation_native.py"
+      ],
+      "groups": [
+        "publication-retirement"
+      ]
+    },
+    {
+      "paths": [
+        "release/helper_ownership.py",
+        "release/pr_evidence.py"
+      ],
+      "groups": [
+        "release",
+        "ci-policy"
+      ]
     }
   ],
   "owners": {
@@ -1288,6 +1321,9 @@
       "go"
     ],
     "tests/test_verified_bug_migrations.py": [
+      "typescript"
+    ],
+    "tests/test_retired_member_freshness.py": [
       "typescript"
     ]
   },

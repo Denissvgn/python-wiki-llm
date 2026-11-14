@@ -1046,6 +1046,9 @@ def execute_stage(
                 "launcher_probe": consumer_probe,
             }
             child_env = dict(os.environ)
+            # Routine commands resolve the locked Go on PATH. An explicit command
+            # profile may opt back into the qualification override below.
+            child_env.pop("LLM_WIKI_GO", None)
             child_env.update(
                 {
                     "CI": "1",

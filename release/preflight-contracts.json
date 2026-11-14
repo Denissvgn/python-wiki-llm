@@ -323,7 +323,7 @@
       ],
       "condition": "",
       "cost": "moderate",
-      "declaration_sha256": "e92bfbabdfb7cfc23ebdb219e023bb3f787361c9ca175dd56d95e3a66017dc56",
+      "declaration_sha256": "501bf3854a86c7e90cb2a0462ba90fc56ef863dc338d6ea297ea3965b1300289",
       "environments": [
         "ubuntu-24.04"
       ],

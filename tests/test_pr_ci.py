@@ -1087,3 +1087,44 @@ def test_a_new_run_during_download_invalidates_an_old_success(monkeypatch):
     client.get = get
     with pytest.raises(ci.SelectionError, match="newer PR run"):
         ci.reuse_main(ROOT, ROOT / "release", "f" * 40, "owner/repo", 200, 1, client)
+
+
+def test_trusted_base_selects_new_helper_family_on_exact_merge(tmp_path, policy, sources):
+    root, trusted, event, _ = fixture_repository(tmp_path, policy, sources)
+    git(root, "switch", "codex/fixture")
+    (root/"tests/test_new_consumer.py").write_text(
+        "def test_new(require_prepared_diagnostics_helper):\n"
+        "    require_prepared_diagnostics_helper('typescript')\n"
+    )
+    head = commit(root, "introduce helper consumer without any owner entry")
+    git(root, "switch", "main")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=ci@example.invalid",
+        "merge", "--no-ff", "-qm", "current PR test merge", head)
+    candidate = git(root, "rev-parse", "HEAD")
+    event["pull_request"]["base"]["sha"], event["pull_request"]["head"]["sha"] = git(root,"rev-parse",candidate+"^1"), head
+    plan = ci.make_plan(root, trusted, event, candidate, "owner/repo", 11, 1)
+    assert plan["typescript_families"] == ["tests/test_new_consumer.py::test_new"]
+    assert "typescript-ownership" in plan["jobs"]
+    assert plan["head_sha"] == head and plan["candidate_sha"] == candidate
+
+
+@pytest.mark.parametrize("changed", ["mode", "blob", "parents", "truncated"])
+def test_pr_source_evidence_requires_actual_tree_and_both_parents(tmp_path, policy, sources, changed):
+    from release import pr_evidence
+
+    root, trusted, event, candidate = fixture_repository(tmp_path, policy, sources)
+    plan = ci.make_plan(root, trusted, event, candidate, "owner/repo", 21, 1)
+    head = event["pull_request"]["head"]["sha"]
+    local = dict(plan, candidate_sha=head)
+    tree = {"sha":plan["candidate_tree"],"truncated":False,"tree":[
+        {"path":p,"mode":m,"type":"blob","sha":sha} for p,(m,sha) in ci.tree(root,head).items()]}
+    merge = {"sha":candidate,"parents":[{"sha":plan["base_sha"]},{"sha":head}],"tree":{"sha":tree["sha"]}}
+    assert pr_evidence.compare(root,local,plan,merge,tree)["selection_verified"] is True
+    if changed == "parents":
+        merge["parents"].reverse()
+    elif changed == "truncated":
+        tree["truncated"] = True
+    else:
+        tree["tree"][0]["sha" if changed == "blob" else "mode"] = "0"*40 if changed == "blob" else "100777"
+    with pytest.raises(ValueError):
+        pr_evidence.compare(root,local,plan,merge,tree)

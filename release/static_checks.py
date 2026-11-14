@@ -260,6 +260,8 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
                 "release/pr_ci_pytest.py",
                 "release/pr_ci_impact.py",
                 "release/contract_canary.py",
+                "release/helper_ownership.py",
+                "release/pr_evidence.py",
             ),
         ),
         Check(

@@ -249,7 +249,7 @@ def _runtime_hash(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _environment(root: Path) -> dict:
+def _environment(root: Path, *, qualification_go: bool = False) -> dict:
     # Launcher spelling is deliberately retained: resolving a venv symlink changes isolation.
     try:
         import llm_wiki_cli as provider
@@ -271,13 +271,15 @@ def _environment(root: Path) -> dict:
         "prefix": sys.prefix,
         "base_prefix": sys.base_prefix,
         "provider": installed,
+        "ignored_routine_overrides": ["LLM_WIKI_GO"] if not qualification_go and "LLM_WIKI_GO" in os.environ else [],
+        "go_resolution": "explicit-qualification" if qualification_go and os.environ.get("LLM_WIKI_GO") else "PATH",
         "tools": {
             name: _version(command, root)
             for name, command in {
                 "node": ["node", "--version"],
                 "npm": ["npm", "--version"],
                 "actionlint": ["actionlint", "--version"],
-                "go": [os.environ.get("LLM_WIKI_GO", "go"), "version"],
+                "go": [os.environ.get("LLM_WIKI_GO", "go") if qualification_go else "go", "version"],
                 "rust": ["rustc", "--version"],
                 "cargo": ["cargo", "--version"],
                 "haskell": [os.environ.get("LLM_WIKI_GHC", "ghc"), "--numeric-version"],

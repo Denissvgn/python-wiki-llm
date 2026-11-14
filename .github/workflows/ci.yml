@@ -74,6 +74,7 @@ jobs:
       policy-sha256: ${{ steps.select.outputs.policy-sha256 }}
       has-tests: ${{ steps.select.outputs.has-tests }}
       matrix: ${{ steps.select.outputs.matrix }}
+      typescript-ownership: ${{ steps.select.outputs.typescript-ownership }}
       typecheck: ${{ steps.select.outputs.typecheck }}
       mcp-sdk: ${{ steps.select.outputs.mcp-sdk }}
       p0-oci-integration: ${{ steps.select.outputs.p0-oci-integration }}
@@ -142,6 +143,84 @@ jobs:
         path: ${{ runner.temp }}/pr-ci/
         if-no-files-found: error
         retention-days: 14
+  typescript-ownership:
+    name: TypeScript conditional ownership (${{ matrix.os }}, ${{ matrix.python }})
+    needs: plan
+    if: ${{ needs.plan.outputs.typescript-ownership == 'true' }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, python: '3.11', profile: core}
+          - {os: ubuntu-24.04, python: '3.13', profile: prepared}
+          - {os: macos-15, python: '3.14', profile: core}
+          - {os: windows-2025, python: '3.13.17', profile: core}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        path: candidate
+        fetch-depth: 2
+        ref: ${{ github.sha }}
+        persist-credentials: false
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        path: reader
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: pr-ci-plan-${{ github.run_attempt }}
+        path: incoming/pr-ci
+        digest-mismatch: error
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Bind the reviewed-base selection and freeze the candidate
+      env:
+        PLAN_SHA256: ${{ needs.plan.outputs.plan-sha256 }}
+      run: |
+        python -I reader/release/helper_ownership.py freeze --checkout candidate \
+          --plan incoming/pr-ci/plan.json --plan-sha256 "${PLAN_SHA256}" \
+          --source-sha "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --output "${RUNNER_TEMP}/owner-input"
+        python -I "${RUNNER_TEMP}/owner-input/source/release/preflight_contracts.py" check --repo "${RUNNER_TEMP}/owner-input/source"
+        python -I reader/release/qualification.py create-venv --path "${RUNNER_TEMP}/owner-venv"
+    - name: Install the exact frozen provider
+      run: python -m pip install "${RUNNER_TEMP}/owner-input/source[dev,tokens]"
+    - name: Install locked Node and npm for the prepared owner
+      if: ${{ matrix.profile == 'prepared' }}
+      run: bash reader/.github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine --install-root "${RUNNER_TEMP}/owner-node"
+    - name: Check conditional skips and executable owner membership
+      env:
+        PROFILE: ${{ matrix.profile }}
+      run: |
+        args=()
+        if [[ "${PROFILE}" == core ]]; then args+=(--cold-only); fi
+        python -I reader/release/helper_ownership.py probe --root "${RUNNER_TEMP}/owner-input/source" \
+          --archive "${RUNNER_TEMP}/owner-input/candidate-source.tar" --identity "${RUNNER_TEMP}/owner-input/identity.json" \
+          --source-sha "${GITHUB_SHA}" --families-file "${RUNNER_TEMP}/owner-input/families.json" \
+          --output "${RUNNER_TEMP}/owner-proof" "${args[@]}"
+    - name: Retain each profile and its raw evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: pr-typescript-ownership-${{ matrix.os }}-${{ matrix.profile }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/owner-input/identity.json
+          ${{ runner.temp }}/owner-input/families.json
+          ${{ runner.temp }}/owner-proof/*.json
+          ${{ runner.temp }}/owner-proof/*.log
+          ${{ runner.temp }}/owner-proof/*/*.json*
+          ${{ runner.temp }}/owner-proof/*/*.xml
+          ${{ runner.temp }}/owner-proof/*/*.log
+        if-no-files-found: error
+        retention-days: 14
   typecheck:
     name: Python type checks
     runs-on: ubuntu-24.04
@@ -156,7 +235,9 @@ jobs:
       with:
         python-version: '3.13'
     - name: Check shared local and hosted producer contracts
-      run: python -I release/preflight_contracts.py check --repo .
+      run: |
+        python -I release/preflight_contracts.py inputs --repo .
+        python -I release/preflight_contracts.py check --repo .
     - name: Install release typing dependencies
       run: |
         python -m pip install ".[dev,mcp,tokens]"
@@ -177,7 +258,7 @@ jobs:
       run: '"${{ steps.python.outputs.python-path }}" -m ruff check src tests examples integrations/github-action/render_summary.py
         release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py release/pr_ci_impact.py
         release/manual_release.py release/session_report.py release/release_resources.py release/preparation.py release/wiki_capture.py release/policy_activation.py release/policy_renewal.py
-        release/contract_canary.py release/readiness.py release/measurement_canary.py release/core_coverage.py release/core_schedule.py release/native_bottlenecks.py release/core_shards.py release/core_shard_runner.py release/qualification.py release/hosted_evidence.py release/qualification_automation.py
+        release/contract_canary.py release/helper_ownership.py release/pr_evidence.py release/readiness.py release/measurement_canary.py release/core_coverage.py release/core_schedule.py release/native_bottlenecks.py release/core_shards.py release/core_shard_runner.py release/qualification.py release/hosted_evidence.py release/qualification_automation.py
         | tee ruff.log'
     - name: Upload typing diagnostics
       if: always()
@@ -716,6 +797,7 @@ jobs:
     needs:
     - activation-proof
     - plan
+    - typescript-ownership
     - typecheck
     - test
     - mcp-sdk

@@ -255,6 +255,8 @@ jobs:
             release/runtime-policy.json \
             release/measurement_canary.py \
             release/contract_canary.py \
+            release/helper_ownership.py \
+            release/pr_ci.py \
             release/pr_ci_pytest.py \
             release/core-shard-timings.json \
             release/core-shard-windows-trial.json \
