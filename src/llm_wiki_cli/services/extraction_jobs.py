@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 from dataclasses import dataclass
 from typing import Literal, TextIO
+
+from .host import emit
 
 
 RequestedJobs = int | Literal["auto"]
@@ -102,8 +103,8 @@ def format_extraction_job_plan(plan: ExtractionJobPlan) -> str:
 def print_extraction_job_plan(
     plan: ExtractionJobPlan, *, file: TextIO | None = None
 ) -> None:
-    print(
-        format_extraction_job_plan(plan),
-        file=file or sys.stderr,
-        flush=True,
-    )
+    if file is None:
+        emit(format_extraction_job_plan(plan), stream="stderr", flush=True)
+    else:
+        file.write(format_extraction_job_plan(plan) + "\n")
+        file.flush()

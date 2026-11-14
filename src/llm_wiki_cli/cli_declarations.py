@@ -10,6 +10,7 @@ import argparse
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 from .services.contracts import (
     BOOTSTRAP_SKIP_DATA_FLOW_FLAG,
+    INITIALIZABLE_SURFACES,
     SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
 )
 from .services.extraction_jobs import ExtractionJobsAction
@@ -30,7 +31,6 @@ from .services.site_html_check import SUPPORTED_LINK_MODES
 from . import __version__
 
 # Values shared with the command implementations, which import them from here.
-INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
 DEFAULT_MAX_PROMPT_BYTES = 2_000_000
 CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
 SITE_FORMAT_CHOICES = sorted(SUPPORTED_SITE_FORMATS)

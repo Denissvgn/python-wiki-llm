@@ -278,6 +278,8 @@
     "services/sync_manifest.py",
     "services/sync_recovery.py",
     "services/sync_retained_links.py",
+    "services/sync_runtime.py",
+    "services/sync_service.py",
     "services/sync_transition_execution.py",
     "services/sync_transitions.py",
     "services/task_compact.py",

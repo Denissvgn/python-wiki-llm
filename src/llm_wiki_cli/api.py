@@ -118,6 +118,7 @@ from .services.bootstrap_service import (
     BootstrapResult,
     BootstrapServiceError,
 )
+from .services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 from .services.dependencies import analyze_dependencies
 from .services.doctor_service import build_doctor_report
 from .services.documentation_queries import (
@@ -1230,6 +1231,65 @@ def bootstrap_wiki(
     except BootstrapContractError as exc:
         raise WorkspaceStateError(str(exc)) from exc
     except BootstrapServiceError as exc:
+        raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def sync_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    dry_run: bool = False,
+    force: bool = False,
+    preserve_semantic: bool = True,
+    initialize_surfaces: list[str] | None = None,
+    flow_categories: list[str] | None = None,
+    exclude_tests: bool = False,
+    include_tests: list[str] | None = None,
+    openapi_file: str | None = None,
+    clear_openapi_file: bool = False,
+    helper_cache_dir: str | None = None,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+    knowledge_format: str | None = None,
+    rebuild_knowledge: bool = False,
+) -> SyncOutcome:
+    """Incrementally update a managed wiki from its source tree.
+
+    Runs the same sync as ``llm-wiki sync`` without its console output.
+    Source plugins load only when ``trust_source_plugins`` is true. A wiki
+    that sync cannot update (for example one without a manifest) raises
+    :class:`WorkspaceStateError`; contradictory options raise
+    :class:`InvalidRequestError`.
+    """
+
+    from .services.host import discarding_output
+    from .services.sync_runtime import execute_sync
+
+    request = SyncRequest(
+        source_root=source_root,
+        wiki_root=wiki_root,
+        dry_run=dry_run,
+        force=force,
+        plugins=trust_source_plugins,
+        preserve_semantic=preserve_semantic,
+        initialize_surfaces=initialize_surfaces,
+        flow_categories=flow_categories,
+        exclude_tests=exclude_tests,
+        include_tests=include_tests,
+        openapi_file=openapi_file,
+        clear_openapi_file=clear_openapi_file,
+        helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
+        knowledge_format=knowledge_format,
+        rebuild_knowledge=rebuild_knowledge,
+    )
+    try:
+        with discarding_output():
+            return execute_sync(request)
+    except SyncRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    except SyncError as exc:
         raise WorkspaceStateError(str(exc)) from exc
 
 
@@ -4039,6 +4099,8 @@ __all__ = [
     "BootstrapError",
     "BootstrapRequest",
     "BootstrapResult",
+    "SyncOutcome",
+    "SyncRequest",
     "BootstrapServiceError",
     "CalleesResult",
     "CallersResult",
@@ -4145,6 +4207,7 @@ __all__ = [
     "BudgetedContext",
     "TokenCounter",
     "bootstrap_wiki",
+    "sync_wiki",
     "build_documentation_query_service",
     "callees",
     "callers",

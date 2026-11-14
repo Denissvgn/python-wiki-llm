@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 import json
 from pathlib import Path, PurePosixPath
 import re
-import sys
 import tempfile
 from typing import Any
 from uuid import UUID, uuid4
@@ -25,6 +24,7 @@ from .maintenance_protocol import governance_writer_lock, storage_writer_lock
 from .request_json import _pairs, _constant
 from .source_snapshot import SourceSnapshot
 from .wiki_write_basis import ACTIVE_SYNC_JOURNAL
+from .host import emit
 
 MAX_BYTES = 64 * 1024 * 1024
 MAX_FILE = 8 * 1024 * 1024
@@ -290,7 +290,7 @@ def capture_new_sync_pages(wiki_dir, snapshot, manifest=None):
                 journal._persist()
                 assert journal.directory is not None
                 expected = digest(canonical_bytes(journal.record))
-                print(
+                emit(
                     json.dumps(
                         {
                             "new_page_recovery": {
@@ -312,10 +312,10 @@ def capture_new_sync_pages(wiki_dir, snapshot, manifest=None):
                         },
                         ensure_ascii=False,
                     ),
-                    file=sys.stderr,
+                    stream="stderr",
                 )
             except (ValueError, OSError) as exc:
-                print(f"New-page recovery journal unavailable: {exc}", file=sys.stderr)
+                emit(f"New-page recovery journal unavailable: {exc}", stream="stderr")
         raise
     else:
         if journal.record["pages"]:
@@ -324,9 +324,9 @@ def capture_new_sync_pages(wiki_dir, snapshot, manifest=None):
                 journal._persist()
                 journal.discard_committed()
             except (ValueError, OSError) as exc:
-                print(
+                emit(
                     f"Sync completed; private new-page scratch retained: {exc}",
-                    file=sys.stderr,
+                    stream="stderr",
                 )
     finally:
         ACTIVE_SYNC_JOURNAL.reset(token)

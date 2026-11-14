@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import os
-import sys
 import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+
+from .host import emit
 
 
 class RuntimeOutputError(ValueError):
@@ -20,7 +21,7 @@ WarningSink = Callable[[str], None]
 def stderr_warning(message: str) -> None:
     """Warnings do not interfere with machine-readable stdout or computation."""
     try:
-        print(f"Warning: {message}", file=sys.stderr, flush=True)
+        emit(f"Warning: {message}", stream="stderr", flush=True)
     except (OSError, ValueError):
         pass
 

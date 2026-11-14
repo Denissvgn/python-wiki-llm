@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `llm_wiki_cli.engine` embeds wiki operations in another application. An
+  `Engine` runs each call against a `Host` that supplies processes,
+  environment, working directory, clock and output streams; `NoProcessHost`
+  refuses subprocesses, and helper preparation stays off unless granted.
+- `api.sync_wiki()` and `Engine.sync()` run an incremental sync without the
+  CLI. The API call is silent and returns a `SyncOutcome` with page counts;
+  `Engine.sync()` writes progress to the host's streams. Source plugins load
+  through the API only with `trust_source_plugins=True`.
+
 ### Changed
 
 - `llm-wiki reference cli` and `api.get_cli_contract()` describe the CLI

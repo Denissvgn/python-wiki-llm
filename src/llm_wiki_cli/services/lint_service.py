@@ -162,6 +162,7 @@ from .extraction_service import (
     get_inventory_result,
     resolve_call_edges,
 )
+from .host import emit
 
 MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
@@ -3375,10 +3376,10 @@ def run(args):
     )
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):
-            print(f"Error: {issue.message}", file=sys.stderr)
+            emit(f"Error: {issue.message}", stream="stderr")
         sys.exit(1)
     if profile and profiler is not None:
-        print(
+        emit(
             json.dumps(
                 _profile_report_to_dict(report, profiler, include_cache=cache_stats),
                 indent=2,
@@ -3386,7 +3387,7 @@ def run(args):
             )
         )
     else:
-        print(render_text(report), end="")
+        emit(render_text(report), end="")
 
     if strict:
         try:

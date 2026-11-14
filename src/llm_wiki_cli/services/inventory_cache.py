@@ -314,9 +314,19 @@ def resolve_inventory_cache_path(
 
 
 def cache_options_from_args(args) -> InventoryCacheOptions:
-    disabled = bool(getattr(args, "no_cache", False))
-    rebuild = bool(getattr(args, "rebuild_cache", False))
-    cache_dir = getattr(args, "cache_dir", None)
+    return cache_options_for(
+        disabled=bool(getattr(args, "no_cache", False)),
+        rebuild=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        stats_enabled=bool(getattr(args, "cache_stats", False)),
+    )
+
+
+def cache_options_for(
+    *, disabled: bool = False, rebuild: bool = False, cache_dir: str | None = None,
+    stats_enabled: bool = False,
+) -> InventoryCacheOptions:
+    """Validated inventory cache options for one run."""
     if cache_dir is not None and not str(cache_dir).strip():
         raise RuntimeOutputError("--cache-dir must be a non-empty directory path")
     if disabled and (rebuild or cache_dir is not None):
@@ -327,7 +337,7 @@ def cache_options_from_args(args) -> InventoryCacheOptions:
         enabled=not disabled,
         rebuild=rebuild,
         cache_dir=cache_dir,
-        stats_enabled=bool(getattr(args, "cache_stats", False)),
+        stats_enabled=stats_enabled,
         warning=stderr_warning,
     )
 

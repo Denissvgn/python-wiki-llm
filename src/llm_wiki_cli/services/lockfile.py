@@ -5,6 +5,8 @@ import sys
 import time
 from pathlib import Path
 
+from .host import emit
+
 
 _LOCK_SIZE = 4096
 _LOCK_RETRY_INTERVAL_SECONDS = 0.05
@@ -109,9 +111,9 @@ class WikiLock:
                         fd.seek(0)
                         msvcrt.locking(fd.fileno(), msvcrt.LK_UNLCK, _LOCK_SIZE)
                     except OSError:
-                        print(
+                        emit(
                             "Warning: failed to release wiki lock file.",
-                            file=sys.stderr,
+                            stream="stderr",
                         )
                 else:
                     import fcntl
@@ -119,9 +121,9 @@ class WikiLock:
                     try:
                         fcntl.flock(fd, fcntl.LOCK_UN)
                     except OSError:
-                        print(
+                        emit(
                             "Warning: failed to release wiki lock file.",
-                            file=sys.stderr,
+                            stream="stderr",
                         )
             finally:
                 fd.close()

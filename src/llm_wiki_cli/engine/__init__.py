@@ -10,6 +10,9 @@ Unlike the CLI and the public API, an engine never prepares helpers unless the
 caller grants ``helper_preparation="auto"``. Importing this module loads
 neither the CLI, command modules nor the public API.
 
+Use cases run directly on the engine and write progress to the host's
+streams, for example :meth:`Engine.sync`.
+
     from llm_wiki_cli import api
     from llm_wiki_cli.engine import Engine, NoProcessHost
 
@@ -33,6 +36,7 @@ from ..services.host import (
     current_host,
     using_host,
 )
+from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 
 __all__ = [
     "ALL_CAPABILITIES",
@@ -41,6 +45,10 @@ __all__ = [
     "HostCapabilityError",
     "NoProcessHost",
     "Operation",
+    "SyncError",
+    "SyncOutcome",
+    "SyncRequest",
+    "SyncRequestError",
     "current_host",
 ]
 
@@ -118,3 +126,13 @@ class Engine:
         """Run ``function`` (typically from :mod:`llm_wiki_cli.api`) in one operation."""
         with self.operation():
             return function(*args, **kwargs)
+
+    def sync(self, request: SyncRequest) -> SyncOutcome:
+        """Incrementally update a managed wiki; progress goes to the host's streams.
+
+        Raises :class:`SyncError` (or :class:`SyncRequestError`) when sync stops.
+        """
+        from ..services.sync_runtime import execute_sync
+
+        with self.operation():
+            return execute_sync(request)

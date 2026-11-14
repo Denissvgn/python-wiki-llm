@@ -31,7 +31,15 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, TextIO
+from typing import Any, Literal, Protocol
+
+
+class TextSink(Protocol):
+    """A writable text stream, such as ``sys.stdout`` or ``io.StringIO``."""
+
+    def write(self, text: str, /) -> object: ...
+
+    def flush(self) -> object: ...
 
 
 class HostCapabilityError(PermissionError):
@@ -53,24 +61,24 @@ class Host:
     capabilities: frozenset[str] = ALL_CAPABILITIES
 
     # Class-level defaults keep subclasses that skip ``__init__`` working.
-    _stdout: TextIO | None = None
-    _stderr: TextIO | None = None
+    _stdout: TextSink | None = None
+    _stderr: TextSink | None = None
 
-    def __init__(self, *, stdout: TextIO | None = None, stderr: TextIO | None = None) -> None:
+    def __init__(self, *, stdout: TextSink | None = None, stderr: TextSink | None = None) -> None:
         self._stdout = stdout
         self._stderr = stderr
 
     @property
-    def stdout(self) -> TextIO:
+    def stdout(self) -> TextSink:
         """Where progress and results are written."""
         return sys.stdout if self._stdout is None else self._stdout
 
     @property
-    def stderr(self) -> TextIO:
+    def stderr(self) -> TextSink:
         """Where warnings and errors are written."""
         return sys.stderr if self._stderr is None else self._stderr
 
-    def with_output(self, *, stdout: TextIO | None = None, stderr: TextIO | None = None) -> Host:
+    def with_output(self, *, stdout: TextSink | None = None, stderr: TextSink | None = None) -> Host:
         """A copy of this host whose given streams replace the current ones."""
         clone = copy.copy(self)
         if stdout is not None:
@@ -163,4 +171,11 @@ class _Discard(io.TextIOBase):
 def discarding_stdout() -> Iterator[Host]:
     """Run the enclosed work with the active host's stdout discarded."""
     with using_host(current_host().with_output(stdout=_Discard())) as host:
+        yield host
+
+
+@contextmanager
+def discarding_output() -> Iterator[Host]:
+    """Run the enclosed work with the active host's stdout and stderr discarded."""
+    with using_host(current_host().with_output(stdout=_Discard(), stderr=_Discard())) as host:
         yield host

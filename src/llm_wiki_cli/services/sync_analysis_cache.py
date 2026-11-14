@@ -16,6 +16,7 @@ from .knowledge_storage_io import read_guarded
 from .progress import observed_phase, record_counts
 from .runtime_output import warn
 from . import sync_analysis_storage
+from .host import emit
 
 SCHEMA = "llm-wiki-sync-analysis/v2"
 EXTENSION = "llm-wiki/sync-analysis-v2"
@@ -69,7 +70,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     if not active <= set(analysis):
         diagnostic = analysis_diagnostics(analysis)
         if diagnostic is not None:
-            print("Analysis input preflight: " + json.dumps(diagnostic, ensure_ascii=True, sort_keys=True), flush=True)
+            emit("Analysis input preflight: " + json.dumps(diagnostic, ensure_ascii=True, sort_keys=True), flush=True)
         return skipped("unqualified-analysis")
     if implementation is None:
         return skipped("unqualified-implementation")
@@ -136,7 +137,7 @@ def report_capture(options, status, reason, *, payload_bytes=None, over_budget=F
     size = "unavailable" if payload_bytes is None else str(payload_bytes)
     if over_budget:
         size = f">{MAX_CAPTURE_BYTES}"
-    print(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
+    emit(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
           f"payload_bytes={size}; limit_bytes={MAX_CAPTURE_BYTES}", flush=True)
 
 
@@ -197,7 +198,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
             payload = None
             reason = "wiki-structure-changed"
     coverage = f"; coverage={payload['coverage']}" if payload is not None else ""
-    print(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason}){coverage}", flush=True)
+    emit(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason}){coverage}", flush=True)
     if payload is not None:
         record_counts(reused_source_files=len(payload["inventory"]), reused_graph_observations=int(payload["coverage"] == "full"))
     return payload

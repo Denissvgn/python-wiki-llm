@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .host import current_host
+from .host import emit
 
 MAX_CONSECUTIVE_FAILURES = 3
 DEFAULT_BREAKER_TTL_SECONDS = 3600
@@ -111,25 +112,25 @@ def record_failure(git_dir: Path) -> None:
     state["probe_started_ts"] = None
     if failed_probe or state["consecutive_failures"] >= MAX_CONSECUTIVE_FAILURES:
         state["state"] = "open"
-        print(
+        emit(
             f"Circuit breaker OPEN after {state['consecutive_failures']} consecutive failures."
         )
         ttl_seconds = breaker_ttl_seconds()
         if ttl_seconds == 0:
-            print(
+            emit(
                 "Manual trigger-agent sync is disabled; automatic recovery is "
                 "configured off."
             )
-            print(
+            emit(
                 f"Enable auto-recovery with {BREAKER_TTL_ENV}>0, or re-enable now: "
                 "llm-wiki trigger-agent --reset-breaker"
             )
         else:
-            print(
+            emit(
                 "Manual trigger-agent sync is temporarily disabled until "
                 "auto-recovery permits a retry."
             )
-            print(
+            emit(
                 "Auto-recovery permits one retry after "
                 f"{ttl_seconds:g} seconds; to re-enable immediately: "
                 "llm-wiki trigger-agent --reset-breaker"

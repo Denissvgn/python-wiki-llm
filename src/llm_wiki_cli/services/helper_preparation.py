@@ -5,10 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING
-import sys
 
 from . import extractor_helpers as helpers
 from .source_snapshot import SourceSnapshot, build_source_snapshot
+from .host import emit
 
 if TYPE_CHECKING:
     from .helper_runtime import PreparedHelperHandle
@@ -24,7 +24,7 @@ def _helper_progress(message: str) -> None:
     if current_progress() is not None:
         return
     try:
-        print("llm-wiki: " + message, file=sys.stderr, flush=True)
+        emit("llm-wiki: " + message, stream="stderr", flush=True)
     except (OSError, ValueError):
         pass
 

@@ -260,6 +260,8 @@ PRODUCT_SERVICES = frozenset(
         "site_html_check",
         "skills",
         "sync_generated_sections",
+        "sync_runtime",
+        "sync_service",
         "team",
         "wiki_git_delivery",
         "wiki_git_policy",
@@ -504,18 +506,9 @@ ANALYSIS_UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     "sync_analysis_cache": frozenset({"services.knowledge_generation"}),
 }
 
-# Ambient side effects in engine layers today. Entries may only be removed; the
-# host should supply output as events, like it supplies processes, environment
-# and the working directory.
-SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {
-    "circuit_breaker": frozenset({"print"}),
-    "context_budget": frozenset({"print"}),
-    "context_service": frozenset({"print"}),
-    "lockfile": frozenset({"print"}),
-    "runtime_output": frozenset({"print"}),
-    "sync_recovery": frozenset({"print"}),
-    "sync_transition_execution": frozenset({"print"}),
-}
+# Ambient side effects in engine layers today. Entries may only be removed;
+# output, processes, environment, working directory and clock come from the host.
+SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {}
 
 # The host module is the one boundary that touches the machine on the engine's
 # behalf; everything else asks ``host.current_host()``.

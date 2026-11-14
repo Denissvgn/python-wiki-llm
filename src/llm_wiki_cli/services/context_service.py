@@ -110,6 +110,7 @@ from .extraction_service import (
     read_console_scripts,
     resolve_call_edges,
 )
+from .host import emit
 
 PROTOCOL_VERSION = CONTEXT_PROTOCOL_VERSION
 KNOWLEDGE_PROTOCOL_VERSION = CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
@@ -1380,7 +1381,7 @@ def _protocol_error_payload(error: ProtocolRequestError) -> dict:
 
 
 def _emit_protocol_error(error: ProtocolRequestError) -> None:
-    print(json.dumps(_protocol_error_payload(error), indent=2))
+    emit(json.dumps(_protocol_error_payload(error), indent=2))
     raise SystemExit(1)
 
 
@@ -3421,7 +3422,7 @@ def _emit_context_warnings(warnings: list[str], *, enabled: bool) -> None:
     if not enabled:
         return
     for warning in warnings:
-        print(f"Warning: {warning}", file=sys.stderr, flush=True)
+        emit(f"Warning: {warning}", stream="stderr", flush=True)
 
 
 def _protocol_success_payload(
@@ -3558,7 +3559,7 @@ def _run_protocol(args) -> None:
         _emit_protocol_error(exc)
         return
     except KnowledgeRequiredUnavailableError as exc:
-        print(json.dumps(exc.details, indent=2))
+        emit(json.dumps(exc.details, indent=2))
         raise SystemExit(1) from exc
 
     assert request is not None
@@ -3567,9 +3568,9 @@ def _run_protocol(args) -> None:
     )
     if output_path:
         write_text_output(output_path, rendered + "\n")
-        print(f"Context output written to: {output_path}", file=sys.stderr)
+        emit(f"Context output written to: {output_path}", stream="stderr")
     else:
-        print(rendered)
+        emit(rendered)
 
 
 def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION) -> None:
@@ -3589,7 +3590,7 @@ def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION
                 **failure["details"],
             },
         }
-    print(json.dumps(payload, sort_keys=True), file=sys.stderr)
+    emit(json.dumps(payload, sort_keys=True), stream="stderr")
     raise SystemExit(1) from error
 
 
@@ -3654,7 +3655,7 @@ def _run_packet_output(
     rendered = packet.to_bytes().decode("utf-8")
     if output_path:
         write_text_output(output_path, rendered)
-        print(f"Context output written to: {output_path}", file=sys.stderr)
+        emit(f"Context output written to: {output_path}", stream="stderr")
     else:
         write_utf8_stdout(rendered)
 
@@ -3680,10 +3681,10 @@ def run(args) -> None:
     source_selection = getattr(args, "source_selection", None)
 
     if budget is None:
-        print("Error: --budget is required unless --request is used.", file=sys.stderr)
+        emit("Error: --budget is required unless --request is used.", stream="stderr")
         raise SystemExit(2)
     if budget < 1:
-        print("Error: --budget must be greater than zero.", file=sys.stderr)
+        emit("Error: --budget must be greater than zero.", stream="stderr")
         raise SystemExit(2)
 
     from .change_selection import changes_from_args
@@ -3727,19 +3728,19 @@ def run(args) -> None:
             knowledge_mode=knowledge_mode,
         )
     except ProtocolRequestError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        emit(f"Error: {exc}", stream="stderr")
         raise SystemExit(1)
     except KnowledgeRequiredUnavailableError as exc:
-        print(f"Error [{exc.code}]: {exc.reason}", file=sys.stderr)
+        emit(f"Error [{exc.code}]: {exc.reason}", stream="stderr")
         raise SystemExit(1) from exc
 
     if not payload["files"] and knowledge_mode is None:
         rendered = "{}" if fmt == "json" else "No source files found."
         if output_path:
             write_text_output(output_path, rendered + "\n")
-            print(f"Context output written to: {output_path}", file=sys.stderr)
+            emit(f"Context output written to: {output_path}", stream="stderr")
         else:
-            print(rendered)
+            emit(rendered)
         return
 
     if fmt == "markdown":
@@ -3748,9 +3749,9 @@ def run(args) -> None:
         rendered = json.dumps(payload, indent=2)
     if output_path:
         write_text_output(output_path, rendered + "\n")
-        print(f"Context output written to: {output_path}", file=sys.stderr)
+        emit(f"Context output written to: {output_path}", stream="stderr")
     else:
-        print(rendered)
+        emit(rendered)
 
 
 def _normalise_changed_paths(changed: list[str], inventory: dict) -> list[str]:

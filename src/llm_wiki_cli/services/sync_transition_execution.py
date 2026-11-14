@@ -6,7 +6,6 @@ import hashlib
 import json
 from pathlib import Path
 import stat
-import sys
 import uuid
 
 from .filesystem_guard import (
@@ -23,6 +22,7 @@ from .markdown_sections import normalize_markdown
 from .protected_artifacts import ProtectedArtifactStore
 from .sync_transitions import PageTransitionError, PageTransitionPlan
 from .validation import portable_path_key
+from .host import emit
 
 
 RECOVERY_PREFIX = ".llm-wiki-page-moves-"
@@ -78,16 +78,16 @@ class PageTransitionExecution:
                     self._journal("committed")
                     self._cleanup()
                 except (OSError, KnowledgeStorageError, PageTransitionError) as error:
-                    print(f"Page transition recovery data retained at {self.recovery_dir}", file=sys.stderr)
+                    emit(f"Page transition recovery data retained at {self.recovery_dir}", stream="stderr")
                     raise PageTransitionError(
                         f"Page transition completed, but recovery cleanup failed at {self.recovery_dir}: {error}"
                     ) from error
             elif self.preview:
-                print("Page transition preview failed; the original wiki was not modified.", file=sys.stderr)
+                emit("Page transition preview failed; the original wiki was not modified.", stream="stderr")
             else:
-                print(
+                emit(
                     f"Page transition recovery data retained at {self.recovery_dir}",
-                    file=sys.stderr,
+                    stream="stderr",
                 )
         return False
 
@@ -200,7 +200,7 @@ class PageTransitionExecution:
                     )
                     self.expected[move.final_path] = data
                     kind = "entity" if move.final_path.startswith("entities/") else "module"
-                    print(f"  RENAME {kind}: {Path(move.source_path).stem} -> {Path(move.final_path).stem}")
+                    emit(f"  RENAME {kind}: {Path(move.source_path).stem} -> {Path(move.final_path).stem}")
                 self._journal("applied")
             self.applied = True
         except (OSError, KnowledgeStorageError) as exc:

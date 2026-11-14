@@ -263,6 +263,9 @@ CALIBRATION_CONTROLLER_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 OCI_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 
 # Knowledge disclosure modes a documentation run accepts.
+#: Generated surfaces sync can initialize on request.
+INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
+
 SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES = frozenset(
     {"off", "public-portable", "internal"}
 )

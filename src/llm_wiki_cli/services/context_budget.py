@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import sys
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from typing import Any, Mapping
@@ -21,6 +20,7 @@ from .change_selection import (
     select_changes,
     validate_changes,
 )
+from .host import emit
 
 
 @dataclass(frozen=True)
@@ -597,7 +597,7 @@ def run(args, request=None):
         context._emit_packet_error(exc, protocol=CONTEXT_BUDGET_PROTOCOL_VERSION)
         raise
     if not result.ok:
-        print(
+        emit(
             json.dumps(
                 {
                     "protocol": CONTEXT_BUDGET_PROTOCOL_VERSION,
@@ -607,7 +607,7 @@ def run(args, request=None):
                     "diagnostics": result.diagnostics,
                 }
             ),
-            file=sys.stderr,
+            stream="stderr",
         )
         raise SystemExit(3)
     if getattr(args, "output", None):

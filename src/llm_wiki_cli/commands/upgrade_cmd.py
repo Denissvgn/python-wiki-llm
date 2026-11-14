@@ -581,19 +581,29 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     )
 
 
+def _legacy_seed_sync_request(src_dir, wiki_dir, *, helper_cache_dir=None, source_selection=None):
+    """The forced, plugin-free current-format sync that seeds a legacy wiki."""
+    from ..services.current_contracts import CURRENT_KNOWLEDGE_FORMAT
+    from ..services.sync_service import SyncRequest
+
+    return SyncRequest(
+        source_root=str(src_dir),
+        wiki_root=str(wiki_dir),
+        force=True,
+        plugins=False,
+        knowledge_format=CURRENT_KNOWLEDGE_FORMAT,
+        source_selection=None if source_selection is None else str(source_selection),
+        helper_cache_dir=None if helper_cache_dir is None else str(helper_cache_dir),
+    )
+
+
 def _seed_legacy_for_current_defaults(src_dir, wiki_dir, *, helper_cache_dir=None, source_selection=None):
     """Keep legacy owning-command dispatch out of the storage service layer."""
-    from ..cli_declarations import _build_parser
-    from . import sync_cmd
-    from ..services.current_contracts import CURRENT_KNOWLEDGE_FORMAT
+    from ..services.sync_runtime import run_request
 
-    arguments = ["sync", "--src-dir", str(src_dir), "--wiki-dir", str(wiki_dir), "--force", "--no-plugins",
-                 "--knowledge-format", CURRENT_KNOWLEDGE_FORMAT]
-    if source_selection is not None:
-        arguments.extend(["--source-selection", str(source_selection)])
-    if helper_cache_dir is not None:
-        arguments.extend(["--helper-cache-dir", str(helper_cache_dir)])
-    sync_cmd.run(_build_parser().parse_args(arguments))
+    run_request(_legacy_seed_sync_request(
+        src_dir, wiki_dir, helper_cache_dir=helper_cache_dir, source_selection=source_selection,
+    ))
 
 
 def run(args):

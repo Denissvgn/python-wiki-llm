@@ -107,6 +107,7 @@ from .source_snapshot import (
     unsupported_source_summary,
 )
 from .yaml_syntax import load_yaml_documents
+from .host import emit
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -258,10 +259,12 @@ def _extractor_failure_message(result: InventoryResult) -> str:
 
 def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
     """Print extractor failures in a consistent form."""
-    stream = file or sys.stderr
     for status in result.failed:
         detail = f": {status.message}" if status.message else ""
-        print(f"Error: {status.language} extraction failed{detail}", file=stream)
+        if file is None:
+            emit(f"Error: {status.language} extraction failed{detail}", stream="stderr")
+        else:
+            file.write(f"Error: {status.language} extraction failed{detail}\n")
 
 
 @dataclass(frozen=True)
@@ -2598,15 +2601,15 @@ def run(args):
     source_selection = getattr(args, "source_selection", None)
 
     if changed and paths:
-        print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
+        emit("Error: --changed and --paths are mutually exclusive.", stream="stderr")
         sys.exit(2)
 
     if changed:
-        print("Extracting changed file(s)...", file=sys.stderr)
+        emit("Extracting changed file(s)...", stream="stderr")
     elif paths:
-        print(f"Extracting {len(paths)} specified path(s)...", file=sys.stderr)
+        emit(f"Extracting {len(paths)} specified path(s)...", stream="stderr")
     else:
-        print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
+        emit(f"Extracting inventory from {src_dir}...", stream="stderr")
 
     try:
         result = build_extract_payload(
@@ -2632,51 +2635,51 @@ def run(args):
     except ValueError as exc:
         message = str(exc)
         if message.startswith("No files found for package"):
-            print(message, file=sys.stderr)
+            emit(message, stream="stderr")
             sys.exit(1)
-        print(f"Error: {message}", file=sys.stderr)
+        emit(f"Error: {message}", stream="stderr")
         sys.exit(2)
 
     if changed:
         if result.no_changed_files:
-            print("No files changed in the last commit.", file=sys.stderr)
+            emit("No files changed in the last commit.", stream="stderr")
             if not output_path:
                 return
         elif result.changed_file_count is None:
-            print(
+            emit(
                 "Warning: Could not get changed files from git. Falling back to full scan.",
-                file=sys.stderr,
+                stream="stderr",
             )
         else:
-            print(
+            emit(
                 f"Extracting {result.changed_file_count} changed file(s)...",
-                file=sys.stderr,
+                stream="stderr",
             )
 
     rendered = json.dumps(result.payload, indent=2)
     if output_path:
         write_text_output(output_path, rendered + "\n")
-        print(f"Extract output written to: {output_path}", file=sys.stderr)
+        emit(f"Extract output written to: {output_path}", stream="stderr")
     else:
-        print(rendered)
+        emit(rendered)
 
     for warning in result.payload.get("warnings", []):
-        print(f"Warning: {warning}", file=sys.stderr)
+        emit(f"Warning: {warning}", stream="stderr")
 
     unsupported_message = format_unsupported_source_summary(
         result.payload.get("unsupported_sources", {})
     )
     if unsupported_message:
-        print(unsupported_message, file=sys.stderr)
+        emit(unsupported_message, stream="stderr")
 
-    print(
+    emit(
         f"Extracted {result.inventory_count} files with tracked inventory.",
-        file=sys.stderr,
+        stream="stderr",
     )
     if result.docker_count:
-        print(f"Docker inventory: {result.docker_count} file(s).", file=sys.stderr)
+        emit(f"Docker inventory: {result.docker_count} file(s).", stream="stderr")
     else:
-        print("No Docker/Compose files found.", file=sys.stderr)
+        emit("No Docker/Compose files found.", stream="stderr")
 
 
 # ── Call-graph extraction for workflow detection ──────────────────────

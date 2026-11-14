@@ -22,6 +22,7 @@ for how installed annotations are discovered.
 | Public operation | Scope and result | Workspace and cache effects |
 |---|---|---|
 | `bootstrap_wiki(source_root, wiki_root)` | Creates initial deterministic Markdown and native projections; always uses source-adapter behavior | Explicit wiki creation; managed helper setup may occur; no agent setup |
+| `sync_wiki(source_root, wiki_root)` | Incrementally updates a managed wiki and returns page counts; `dry_run=True` reports without writing | Writes changed pages and native projections; source plugins only when trusted; managed helper setup may occur |
 | `extract_source(..., deep=True, read_only=True)` | Source inventory with declared extraction scope | No implicit preparation or source edits |
 | `inspect_concept(..., live=False)` | One exact concept, typed edges, sections and coverage from a committed snapshot | None |
 | `inspect_concept(..., live=True)` | The same bounded result with one live full source capture and final input checks | Workspace unchanged; managed helper setup may occur |
