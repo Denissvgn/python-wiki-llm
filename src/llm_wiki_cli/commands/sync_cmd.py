@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Mapping, Optional
 
 from .. import __version__
+from ..cli_declarations import INITIALIZABLE_SURFACES
 from ..config import validate_path, validate_source_root
 from ..services.api_contracts import (
     ApiContractError,
@@ -257,7 +258,6 @@ MIN_SOURCES_FOR_RATIO_GUARD = 10
 MAX_INFRASTRUCTURE_AFFECTED_FILES = MAX_SYNC_AFFECTED_FILES
 MAX_INFRASTRUCTURE_AFFECTED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_INFRASTRUCTURE_SOURCES_FOR_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
-INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
 _SURFACE_POLICY_KEYS = {
     "flows": "flows",
     "dependencies": "dependencies",

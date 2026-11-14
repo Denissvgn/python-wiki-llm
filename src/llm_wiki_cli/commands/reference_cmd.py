@@ -13,28 +13,6 @@ from ..services.filesystem_guard import (
 from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
 
 
-def add_commands(subparsers):
-    parser = subparsers.add_parser(
-        "reference", help="Export deterministic command and behavior reference data"
-    )
-    actions = parser.add_subparsers(dest="reference_action", required=True)
-    export = actions.add_parser(
-        "cli", help="Export the installed llm-wiki command contract"
-    )
-    behavior = actions.add_parser(
-        "behavior",
-        help="Export installed package, setup, storage, task and skill declarations",
-    )
-    behavior.add_argument("--input", help="Render a saved behavior facts contract")
-    render = actions.add_parser(
-        "render", help="Validate and render a saved CLI contract without running it"
-    )
-    render.add_argument("--input", required=True, help="Versioned CLI contract JSON")
-    for action in (export, render, behavior):
-        action.add_argument("--format", choices=("json", "markdown"), default="json")
-        action.add_argument("--output", help="Explicit reference artifact destination")
-
-
 def _reference(args):
     if args.reference_action == "behavior":
         from ..services.behavior_reference import (

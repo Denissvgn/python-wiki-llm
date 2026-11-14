@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `llm-wiki reference cli` and `api.get_cli_contract()` describe the CLI
+  without loading command implementations or the Python API. Custom option
+  types and actions in the contract are now named under
+  `llm_wiki_cli.cli_declarations` instead of `llm_wiki_cli.cli`, so contracts
+  saved by earlier versions have a different `contract_id`.
+
 ## [4.1.1] - 2026-11-13
 
 ### Fixed

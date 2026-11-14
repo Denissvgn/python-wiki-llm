@@ -30,10 +30,10 @@ from ..services.source_snapshot import (
 )
 from ..services.sync_manifest import SyncManifest
 from ..services.team import TeamConfigError, team_prompt_template_default
+from ..cli_declarations import DEFAULT_MAX_PROMPT_BYTES
 from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact
 
 GIT_DIR = Path(".git")
-DEFAULT_MAX_PROMPT_BYTES = 2_000_000
 
 
 class TriggerFailure(RuntimeError):

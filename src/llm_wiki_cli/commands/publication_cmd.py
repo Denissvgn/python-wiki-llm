@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import argparse
 from os import sep
 from pathlib import Path
 import sys
@@ -39,62 +38,6 @@ def _normalize_consumer_paths(args):
         value = getattr(args, name, None)
         if isinstance(value, str):
             setattr(args, name, value.replace(sep, "/"))
-
-
-def _common(parser, *, child=False):
-    parser.add_argument(
-        "--config", default=argparse.SUPPRESS if child else ".llm-wiki/publication.json"
-    )
-    parser.add_argument("--consumer-root", default=argparse.SUPPRESS if child else ".")
-    parser.add_argument(
-        "--target-dir",
-        default=argparse.SUPPRESS if child else None,
-        help="Consumer-relative local sibling wiki checkout or pinned copy",
-    )
-    parser.add_argument(
-        "--baseline",
-        default=argparse.SUPPRESS if child else None,
-        help="Explicit accepted publication basis JSON",
-    )
-
-
-def add_impact_command(docs_sub):
-    parser = docs_sub.add_parser(
-        "impact", help="Report architecture changes affecting sibling wiki topics"
-    )
-    _common(parser)
-    parser.add_argument(
-        "--reviews",
-        help="Accepted review ledger supplied under repository review policy",
-    )
-    parser.add_argument("--output", help="Write machine-readable impact JSON")
-    parser.add_argument("--format", choices=("json", "markdown"), default="json")
-    actions = parser.add_subparsers(dest="impact_action")
-    snapshot = actions.add_parser(
-        "snapshot", help="Capture a publication basis without advancing review state"
-    )
-    _common(snapshot, child=True)
-    snapshot.add_argument("--output", required=True)
-    snapshot.add_argument(
-        "--replace",
-        action="store_true",
-        help="Explicitly replace a checkpoint after review",
-    )
-    resolve = actions.add_parser(
-        "resolve", help="Prepare a still-current decision for repository review"
-    )
-    _common(resolve, child=True)
-    resolve.add_argument("--report", required=True)
-    resolve.add_argument("--finding", required=True)
-    resolve.add_argument(
-        "--decision", choices=("still-current", "retired"), required=True
-    )
-    resolve.add_argument("--reviewer", required=True)
-    resolve.add_argument("--reason", required=True)
-    resolve.add_argument("--reviews", default=argparse.SUPPRESS)
-    resolve.add_argument(
-        "--output", required=True, help="Proposed review ledger output"
-    )
 
 
 def _artifact_path(args, value):

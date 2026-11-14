@@ -810,6 +810,35 @@ def test_analysis_layer_adds_no_product_or_adapter_imports() -> None:
     assert fixed == {}, "delete fixed entries from ANALYSIS_UPWARD_IMPORT_BASELINE"
 
 
+def _import_closure(start: str, package_root: Path = PACKAGE_ROOT) -> set[str]:
+    paths = {_module_name(path, package_root): path for path in _source_paths(package_root)}
+    modules = set(paths)
+    seen, pending = set(), [start]
+    while pending:
+        module = pending.pop()
+        if module in seen or module not in paths:
+            continue
+        seen.add(module)
+        pending.extend(_imported_modules(paths[module], package_root, modules))
+        # Importing a submodule runs its parent packages first.
+        parent = module.rpartition(".")[0]
+        if parent:
+            pending.append(parent)
+    return seen
+
+
+def test_cli_declarations_reach_no_commands_cli_or_public_api() -> None:
+    """The CLI reference reads declarations without loading the application."""
+    closure = _import_closure("llm_wiki_cli.cli_declarations")
+    forbidden = sorted(
+        module for module in closure
+        if module in {"llm_wiki_cli.cli", "llm_wiki_cli.api", "llm_wiki_cli.services.mcp_server"}
+        or module == "llm_wiki_cli.commands" or module.startswith("llm_wiki_cli.commands.")
+    )
+
+    assert forbidden == []
+
+
 def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Path) -> None:
     package_root = tmp_path / "llm_wiki_cli"
     files = {

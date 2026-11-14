@@ -31,7 +31,6 @@ from ..services.wiki_git_policy import (
 )
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
-CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
 
 _DEPENDENCY_FILES = {
     "requirements.txt",

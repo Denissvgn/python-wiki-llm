@@ -262,6 +262,11 @@ CALIBRATION_MAX_PACKET_BYTES = 16 * 1024 * 1024
 CALIBRATION_CONTROLLER_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 OCI_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 
+# Knowledge disclosure modes a documentation run accepts.
+SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES = frozenset(
+    {"off", "public-portable", "internal"}
+)
+
 EXTRACT_ADDITIVE_FIELDS = {
     "call_bindings",
     "main_block_call_bindings",

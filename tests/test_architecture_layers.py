@@ -1095,7 +1095,6 @@ def test_command_import_guard_allows_service_relative_imports(tmp_path: Path) ->
 # Services that still reach the CLI parser or the public facade. Entries may
 # only be removed; reusable services must not depend on entry adapters.
 ENTRY_ADAPTER_IMPORT_ALLOWLIST = {
-    "cli_reference.py": ["llm_wiki_cli.cli"],
     "mcp_server.py": ["llm_wiki_cli", "llm_wiki_cli.api"],
 }
 

@@ -583,7 +583,7 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
 
 def _seed_legacy_for_current_defaults(src_dir, wiki_dir, *, helper_cache_dir=None, source_selection=None):
     """Keep legacy owning-command dispatch out of the storage service layer."""
-    from ..cli import _build_parser
+    from ..cli_declarations import _build_parser
     from . import sync_cmd
     from ..services.current_contracts import CURRENT_KNOWLEDGE_FORMAT
 

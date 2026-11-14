@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from .dependencies import *
 from ..canonical_json import ascii_compact_bytes, sha256_digest
+from ..contracts import SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES
 
 if TYPE_CHECKING:
     from .packet import _render_packet_markdown
@@ -120,9 +121,6 @@ SUPPORTED_FRESHNESS_POLICIES = frozenset(
     {"require-current", "refresh-snapshot", "allow-unverified"}
 )
 
-SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES = frozenset(
-    {"off", "public-portable", "internal"}
-)
 
 DEFAULT_DOCUMENTATION_SKILLS = (
     "agent-docs",

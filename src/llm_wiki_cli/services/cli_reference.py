@@ -267,8 +267,8 @@ def build_cli_contract(
 
 
 def get_cli_contract() -> dict[str, Any]:
-    """Describe the installed llm-wiki CLI through its public parser owner."""
-    from ..cli import build_cli_parser
+    """Describe the installed llm-wiki CLI from its declarations, without loading commands."""
+    from ..cli_declarations import build_cli_parser
 
     return build_cli_contract(
         build_cli_parser(), package=_provider_package_identity(), program="llm-wiki"

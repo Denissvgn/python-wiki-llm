@@ -21,6 +21,7 @@
     "api.py",
     "api_types.py",
     "cli.py",
+    "cli_declarations.py",
     "commands/__init__.py",
     "commands/api_diff_cmd.py",
     "commands/bootstrap_cmd.py",
