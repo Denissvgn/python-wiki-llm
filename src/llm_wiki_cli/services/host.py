@@ -15,6 +15,10 @@ to the host's ``stdout`` or ``stderr``. A host built with its own streams
 captures that output; the default resolves ``sys.stdout``/``sys.stderr`` on
 every write, so redirection and test capture keep working.
 
+A host built with ``events=`` also receives structured
+:class:`~llm_wiki_cli.services.engine_events.EngineEvent` objects for each
+engine operation, including one ``message`` event per line written.
+
 This is the only engine module that touches ``subprocess``, ``os.environ``,
 the current directory, the clock and the standard streams directly.
 """
@@ -32,6 +36,8 @@ from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, Protocol
+
+from .engine_events import EngineEvent, EventSink, current_operation
 
 
 class TextSink(Protocol):
@@ -63,10 +69,20 @@ class Host:
     # Class-level defaults keep subclasses that skip ``__init__`` working.
     _stdout: TextSink | None = None
     _stderr: TextSink | None = None
+    _events: EventSink | None = None
 
-    def __init__(self, *, stdout: TextSink | None = None, stderr: TextSink | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        stdout: TextSink | None = None,
+        stderr: TextSink | None = None,
+        events: EventSink | None = None,
+    ) -> None:
+        if events is not None and not callable(events):
+            raise TypeError("events must be a callable that accepts an EngineEvent")
         self._stdout = stdout
         self._stderr = stderr
+        self._events = events
 
     @property
     def stdout(self) -> TextSink:
@@ -78,8 +94,21 @@ class Host:
         """Where warnings and errors are written."""
         return sys.stderr if self._stderr is None else self._stderr
 
+    @property
+    def reports_events(self) -> bool:
+        """Whether this host receives structured engine events."""
+        return self._events is not None
+
+    def publish(self, event: EngineEvent) -> None:
+        """Hand one engine event to this host's event sink, if it has one."""
+        if self._events is not None:
+            self._events(event)
+
     def with_output(self, *, stdout: TextSink | None = None, stderr: TextSink | None = None) -> Host:
-        """A copy of this host whose given streams replace the current ones."""
+        """A copy of this host whose given streams replace the current ones.
+
+        The copy keeps this host's event sink.
+        """
         clone = copy.copy(self)
         if stdout is not None:
             clone._stdout = stdout
@@ -157,6 +186,52 @@ def emit(*values: object, stream: Stream = "stdout", sep: str = " ", end: str = 
     host = current_host()
     target = host.stderr if stream == "stderr" else host.stdout
     print(*values, sep=sep, end=end, file=target, flush=flush)
+    if host.reports_events and not isinstance(target, _Discard):
+        text = sep.join(str(value) for value in values) + end
+        for line in text.splitlines():
+            _publish_message(host, stream, line)
+
+
+def _publish_message(host: Host, stream: Stream, line: str) -> None:
+    operation = current_operation()
+    if operation is not None:
+        host.publish(EngineEvent(
+            "message", operation.name, operation.operation_id, {"stream": stream, "text": line},
+        ))
+
+
+class MessageStream:
+    """A stream that writes to the active host and reports each line as an event.
+
+    For code that writes to a stream object rather than calling :func:`emit`.
+    A trailing partial line is reported by :meth:`close`.
+    """
+
+    def __init__(self, stream: Stream = "stdout") -> None:
+        self._stream: Stream = stream
+        self._pending = ""
+
+    def _target(self) -> tuple[Host, TextSink]:
+        host = current_host()
+        return host, host.stderr if self._stream == "stderr" else host.stdout
+
+    def write(self, text: str, /) -> int:
+        host, target = self._target()
+        target.write(text)
+        if host.reports_events and not isinstance(target, _Discard):
+            *lines, self._pending = (self._pending + text).split("\n")
+            for line in lines:
+                _publish_message(host, self._stream, line.removesuffix("\r"))
+        return len(text)
+
+    def flush(self) -> None:
+        self._target()[1].flush()
+
+    def close(self) -> None:
+        pending, self._pending = self._pending, ""
+        host = current_host()
+        if pending and host.reports_events:
+            _publish_message(host, self._stream, pending)
 
 
 class _Discard(io.TextIOBase):

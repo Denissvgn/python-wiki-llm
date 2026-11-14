@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Engine.upgrade()` refreshes the managed agent schema, skills and wiki
   layout from an `UpgradeRequest` and returns an `UpgradeOutcome`; stops
   raise `UpgradeError` instead of exiting.
+- A `Host` built with `events=` receives an `EngineEvent` for each engine
+  use case: `operation.started`, one `message` per line written to the host's
+  streams, then `operation.finished` with the JSON-ready result or
+  `operation.failed` with the error. Events of one call share an
+  `operation_id`, so one event sink can serve several engines.
 
 ### Changed
 

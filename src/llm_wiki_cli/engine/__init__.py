@@ -14,6 +14,9 @@ Use cases run directly on the engine and write progress to the host's
 streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync`, :meth:`Engine.lint`,
 :meth:`Engine.migrate` and :meth:`Engine.upgrade`.
 They take a typed request, return a typed result and never exit the process.
+A host built with ``events=`` also receives structured
+:class:`EngineEvent` objects for each use-case call: started, one
+``message`` per line written, then finished or failed.
 
     from llm_wiki_cli import api
     from llm_wiki_cli.engine import Engine, NoProcessHost
@@ -24,16 +27,20 @@ They take a typed request, return a typed result and never exit the process.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+import os
+import uuid
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar
 
+from ..services.engine_events import EVENT_KINDS, EngineEvent, EventKind, EventSink, operation_identity
 from ..services.host import (
     ALL_CAPABILITIES,
     Host,
     HostCapabilityError,
+    MessageStream,
     NoProcessHost,
     current_host,
     using_host,
@@ -60,7 +67,10 @@ __all__ = [
     "BootstrapRequestError",
     "BootstrapResult",
     "BootstrapServiceError",
+    "EVENT_KINDS",
     "Engine",
+    "EngineEvent",
+    "EventSink",
     "Host",
     "HostCapabilityError",
     "LintRequest",
@@ -153,9 +163,38 @@ class Engine:
             )
 
     def call(self, function: Callable[_P, _R], /, *args: _P.args, **kwargs: _P.kwargs) -> _R:
-        """Run ``function`` (typically from :mod:`llm_wiki_cli.api`) in one operation."""
+        """Run ``function`` (typically from :mod:`llm_wiki_cli.api`) in one operation.
+
+        Unlike the use-case methods, this reports no events.
+        """
         with self.operation():
             return function(*args, **kwargs)
+
+    def _run(
+        self,
+        name: str,
+        request: object,
+        execute: Callable[[], _R],
+        describe: Callable[[_R], Mapping[str, Any]],
+    ) -> _R:
+        """Run one use case in an operation, reporting its lifecycle to the host."""
+        operation_id = uuid.uuid4().hex
+        with self.operation(), operation_identity(name, operation_id):
+            self._report("operation.started", name, operation_id, lambda: _request_data(request))
+            try:
+                result = execute()
+            except BaseException as error:
+                failure = _error_data(error)
+                self._report("operation.failed", name, operation_id, lambda: failure)
+                raise
+            self._report("operation.finished", name, operation_id, lambda: {"result": dict(describe(result))})
+            return result
+
+    def _report(
+        self, kind: EventKind, name: str, operation_id: str, data: Callable[[], Mapping[str, Any]],
+    ) -> None:
+        if self._host.reports_events:
+            self._host.publish(EngineEvent(kind, name, operation_id, data()))
 
     def sync(self, request: SyncRequest) -> SyncOutcome:
         """Incrementally update a managed wiki; progress goes to the host's streams.
@@ -164,8 +203,7 @@ class Engine:
         """
         from ..services.sync_runtime import execute_sync
 
-        with self.operation():
-            return execute_sync(request)
+        return self._run("sync", request, lambda: execute_sync(request), _to_dict)
 
     def bootstrap(self, request: BootstrapRequest) -> BootstrapResult:
         """Create a first-use wiki; progress goes to the host's streams.
@@ -175,8 +213,14 @@ class Engine:
         """
         from ..services.bootstrap_runtime import execute_bootstrap
 
-        with self.operation():
-            return execute_bootstrap(request, progress_stream=self._host.stdout)  # type: ignore[arg-type]
+        def run() -> BootstrapResult:
+            progress = MessageStream("stdout")
+            try:
+                return execute_bootstrap(request, progress_stream=progress)  # type: ignore[arg-type]
+            finally:
+                progress.close()
+
+        return self._run("bootstrap", request, run, _to_dict)
 
     def lint(self, request: LintRequest) -> LintReport:
         """Check a wiki against its source; ``report.passed`` is the verdict.
@@ -186,8 +230,10 @@ class Engine:
         """
         from ..services.lint_service import execute_lint
 
-        with self.operation():
-            return execute_lint(request)
+        return self._run(
+            "lint", request, lambda: execute_lint(request),
+            lambda report: {"passed": report.passed, "issue_count": report.issue_count},
+        )
 
     def migrate(self, request: MigrateRequest) -> MigrateOutcome:
         """Bring an older wiki to current page naming; progress goes to the host.
@@ -197,8 +243,7 @@ class Engine:
         """
         from ..services.migrate_runtime import execute_migrate
 
-        with self.operation():
-            return execute_migrate(request)
+        return self._run("migrate", request, lambda: execute_migrate(request), _to_dict)
 
     def upgrade(self, request: UpgradeRequest) -> UpgradeOutcome:
         """Refresh the managed agent schema, skills and wiki layout in place.
@@ -210,5 +255,25 @@ class Engine:
         """
         from ..services.upgrade_runtime import execute_upgrade
 
-        with self.operation():
-            return execute_upgrade(request)
+        return self._run("upgrade", request, lambda: execute_upgrade(request), _to_dict)
+
+
+def _to_dict(result: Any) -> Mapping[str, Any]:
+    return result.to_dict()
+
+
+def _request_data(request: object) -> dict[str, str]:
+    data: dict[str, str] = {}
+    for name in ("source_root", "wiki_root"):
+        value = getattr(request, name, None)
+        if isinstance(value, (str, os.PathLike)):
+            data[name] = os.fspath(value)
+    return data
+
+
+def _error_data(error: BaseException) -> dict[str, object]:
+    data: dict[str, object] = {"error": type(error).__name__, "message": str(error)}
+    exit_code = getattr(error, "exit_code", None)
+    if isinstance(exit_code, int) and not isinstance(exit_code, bool):
+        data["exit_code"] = exit_code
+    return data

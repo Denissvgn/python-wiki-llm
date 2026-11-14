@@ -26,6 +26,7 @@ PRIMITIVE_SERVICES = frozenset(
         "canonical_json",
         "circuit_breaker",
         "contracts",
+        "engine_events",
         "filesystem_guard",
         "freshness_wording",
         "gitignore",

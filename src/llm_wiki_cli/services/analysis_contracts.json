@@ -144,6 +144,7 @@
     "services/documentation_run/workspace.py",
     "services/documentation_wiki_input.py",
     "services/documentation_worklist.py",
+    "services/engine_events.py",
     "services/entrypoints.py",
     "services/evidence_diagnostics.py",
     "services/evidence_explanation.py",
