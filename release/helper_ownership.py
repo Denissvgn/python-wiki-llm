@@ -193,7 +193,22 @@ def run_cases(root, folder, selectors, env, *, collect=False):
     ]
     if collect:
         command.append("--collect-only")
-    result = runner.invoke(command, root, env, folder / "pytest.log", timeout=600)
+    # Durable reports can live on a Docker Desktop bind mount. Pytest's fd
+    # capture truncates an unlinked tempfile, which requires a local scratch FS.
+    with tempfile.TemporaryDirectory(prefix="owner-worker-") as temporary:
+        scratch = Path(temporary).resolve()
+        canary.require(
+            not any((p / ".git").exists() for p in (scratch, *scratch.parents)),
+            "Put owner worker scratch outside Git checkouts",
+        )
+        child = dict(
+            env,
+            TMPDIR=temporary,
+            TMP=temporary,
+            TEMP=temporary,
+            RELEASE_CONTRACT_TEMP=temporary,
+        )
+        result = runner.invoke(command, root, child, folder / "pytest.log", timeout=600)
     canary.save(folder, "process.json", result)
     canary.require(
         not result.get("error"), f"Ownership worker failed to finish: {folder}"

@@ -189,7 +189,9 @@ def run(args) -> int:
                        "--archive", str(args.archive), "--identity", str(args.identity), "--source-sha", args.source_sha,
                        "--expected-prefix", str(args.expected_prefix), "--output", str(target), "--profile", profile]
             started = time.monotonic()
-            execution = runner.invoke(command, args.root, env, out / (target.name + ".log"), timeout=180)
+            with tempfile.TemporaryDirectory(prefix="contract-worker-") as temporary:
+                env.update(TMPDIR=temporary, TEMP=temporary, TMP=temporary, RELEASE_CONTRACT_TEMP=temporary)
+                execution = runner.invoke(command, args.root, env, out / (target.name + ".log"), timeout=180)
             code = execution["exit_code"]
             result: dict[str, Any] = {"profile": profile, "cache_mode": mode, "exit_code": code, "seconds": time.monotonic() - started}
             if execution["error"]:
