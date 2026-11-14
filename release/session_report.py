@@ -14,6 +14,9 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import io
+import tempfile
+import zipfile
 import sys
 
 if __package__ in {None, ""}:
@@ -283,6 +286,50 @@ def _public_job(job: dict) -> dict:
     return row
 
 
+def handoff(store, state, rows, local):
+    """Project one sealed session; terminal sessions cannot propose another write."""
+    public = state.get("public_verification") or {}
+    phase = state["phase"]
+    if phase == "complete":
+        require(local["host_stages"]["complete"] and local.get("sha256") == (state.get("admission") or {}).get("receipt_sha256"),
+                "Completed release receipt differs from admitted preparation")
+        require(public.get("verified") is True and public.get("candidate_sha") == state["candidate_sha"],
+                "Public verification belongs to another source")
+        proof = manual.read(store.work / "public-verification.json")
+        require(proof["tag"]["source_sha"] == state["candidate_sha"] and proof["tag"]["repository"] == state["repository"]
+                and proof["release"]["html_url"] == public["release_url"]
+                and proof["registry"]["info"]["version"] == state["version"], "Public record differs from sealed release")
+        hosted.timestamp(proof["verified_at"])
+    pending = state.get("pending") or {}
+    next_action = None if phase in manual.FINISHED else (
+        "reconcile-" + pending["action"] if pending else manual.NEXT.get(phase, "verify-public"))
+    active = next((row for row in rows if row["operation_id"] == pending.get("operation_id")), {})
+    observation = active.get("observation") or {}
+    jobs = observation.get("jobs", [])
+    active_names = [j["name"] for j in jobs if j["status"] != "completed"]
+    failed_names = [j["name"] for j in jobs if j.get("conclusion") == "failure"]
+    seen_at = observation.get("observed_at")
+    status = observation.get("status", "not-observed")
+    cache = store.work / "progress.json"
+    if next_action and pending and status == "not-observed" and cache.exists():
+        saved = manual.read(cache)
+        if all(saved.get(key) == state[key] for key in ("session_id", "candidate_sha", "revision")) and (
+                saved.get("operation_id") == pending.get("operation_id")):
+            seen_at = hosted.timestamp(saved["observed_at"]).isoformat()
+            active_names, failed_names = saved["active_jobs"], saved["failed_jobs"]
+            status = "last-controller-observation"
+    return {
+        "candidate_sha": state["candidate_sha"], "session_id": state["session_id"], "phase": phase,
+        "next_action": next_action, "historical": phase == "superseded",
+        "pending_operation_id": pending.get("operation_id") if next_action else None,
+        "passed_stages": [row["stage"] for row in local["host_stages"].get("stages", []) if row["status"] == "passed"],
+        "receipt_integrity": local.get("integrity"), "qualification_run_id": (state.get("qualification") or {}).get("run_id"),
+        "active_jobs": active_names, "failed_jobs": failed_names,
+        "observation_status": status, "observed_at": seen_at,
+        "public_verification": public if phase == "complete" else None,
+    }
+
+
 def timeline(store: manual.Store, *, client=None, retained: dict | None = None, verify_local: bool = False) -> dict:
     captured = snapshot(store)
     state = captured["state"]
@@ -297,6 +344,7 @@ def timeline(store: manual.Store, *, client=None, retained: dict | None = None, 
             elif client is not None and row["action"] in manual.WORKFLOWS:
                 evidence = observe(state, row, client)
                 evidence["observation_scope"] = "current-read-only-api"
+                evidence["observed_at"] = manual.now()
             if evidence and evidence.get("status") == "observed":
                 source = declaration(store.root, state["candidate_sha"], row["action"])
                 row.update(run_id=evidence["run"]["id"], attempt=evidence["run"]["run_attempt"],
@@ -321,16 +369,76 @@ def timeline(store: manual.Store, *, client=None, retained: dict | None = None, 
         row.pop("pending", None)
         row.pop("accepted_result", None)
     public = state.get("phase") == "complete" and state.get("public_verification", {}).get("verified") is True
-    return {"schema_version": SCHEMA, "session": {k: state[k] for k in ("session_id", "repository", "candidate_sha", "candidate_tree", "version", "phase", "revision", "created_at")},
+    local = local_preparation(state, verify=verify_local)
+    return {"handoff": handoff(store, state, rows, local), "schema_version": SCHEMA, "session": {k: state[k] for k in ("session_id", "repository", "candidate_sha", "candidate_tree", "version", "phase", "revision", "created_at")},
             "snapshot": captured["inputs"], "warnings": captured["warnings"], "operations": rows,
             "events": [{k: r.get(k) for k in ("revision", "time", "event", "phase", "line", "sha256", "binding", "ahead_of_state")} for r in captured["events"]],
-            "local_preparation": local_preparation(state, verify=verify_local),
+            "local_preparation": local,
             "completion": {"state_authority": "maintained-controller", "recorded_public_verification": public,
                            "superseded": state["phase"] == "superseded", "fresh_public_observation_performed": False},
             "publication_authority": False}
 
 
-def packet(root: Path, output: Path, report: dict, operation_id: str) -> dict:
+def diagnostic_artifacts(root, output, session, operation, roles, client):
+    """Retain byte-verified artifacts of a recorded qualification for offline diagnosis."""
+    from release import core_shards
+
+    require(operation["action"] == "qualify" and bool(operation["run_id"]), "Qualification operation required")
+    require(0 < len(roles) <= 8 and len(set(roles)) == len(roles), "Invalid diagnostic artifact selection")
+    contract = hosted.artifact_contract("union", "platform-sharded")
+    require(all(role in contract for role in roles), "Unknown diagnostic evidence role")
+    run_id, attempt = operation["run_id"], operation["attempt"]
+    run = client.get(f"/actions/runs/{run_id}/attempts/{attempt}")
+    jobs = client.list(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
+    bind_observation(session, operation, run, jobs)
+    artifacts = client.list(f"/actions/runs/{run_id}/artifacts", "artifacts")
+    retained = []
+    total = 0
+    for role in roles:
+        name, job_name, members = contract[role]
+        producers = [j for j in jobs if j["name"] == job_name]
+        rows = [a for a in artifacts if a["name"] == name and not a["expired"]]
+        require(len(producers) == len(rows) == 1, "Missing or ambiguous diagnostic producer/artifact: " + role)
+        producer, artifact = producers[0], rows[0]
+        require(producer["status"] == "completed" and producer["conclusion"] in {"success", "failure"},
+                "Diagnostic producer has no eligible terminal result")
+        binding = artifact["workflow_run"]
+        require(binding["id"] == run_id and binding["head_sha"] == session["candidate_sha"]
+                and binding["repository_id"] == run["repository"]["id"]
+                and binding["head_repository_id"] == run["head_repository"]["id"], "Artifact source or repository differs")
+        require(hosted.timestamp(producer["started_at"]) <= hosted.timestamp(artifact["created_at"])
+                <= hosted.timestamp(artifact["updated_at"]) <= hosted.timestamp(producer["completed_at"]),
+                "Diagnostic artifact outside attempt interval")
+        size = artifact["size_in_bytes"]
+        require(type(size) is int and 0 < size <= hosted.MAX_ARCHIVE, "Invalid artifact transport size")
+        total += size
+        require(total <= hosted.MAX_EXPANDED, "Diagnostic transport budget exceeded")
+        raw = client.archive(artifact["id"])
+        require(len(raw) == size and "sha256:" + hosted.sha256(raw) == artifact["digest"], "Diagnostic digest differs")
+        inventory = hosted.zip_inventory(raw)
+        with (output / (name+".zip")).open("xb") as stream:
+            stream.write(raw)
+        item = {"role": role, "artifact_id": artifact["id"], "digest": artifact["digest"],
+                "producer_id": producer["id"], "conclusion": producer["conclusion"],
+                "missing_members": sorted(set(members)-set(inventory)), "inventory": inventory}
+        core = {"RD-01:ubuntu": "core-ubuntu-3.11", "RD-01:windows": "core-windows-3.13",
+                "RD-01:macos": "core-macos-3.14"}.get(role)
+        if core and core+".xml" in inventory:
+            baseline = hosted._json(manual.git(root, "show", session["candidate_sha"] + ":release/skip-allowlist.json").stdout.encode())
+            expected = {(r["node_id"], r["reason"]) for r in baseline["entries"] if r["lane"] == core}
+            with tempfile.TemporaryDirectory() as temp, zipfile.ZipFile(io.BytesIO(raw)) as zipped:
+                junit = Path(temp)/"junit.xml"
+                junit.write_bytes(zipped.read(core+".xml"))
+                cases = core_shards.junit(junit)
+            actual = {(node, skip.get("message", "")) for node, case in cases.items()
+                      if (skip := case.find("skipped")) is not None}
+            item.update(unexpected_skips=sorted(actual-expected), missing_skips=sorted(expected-actual),
+                        failures=[n for n, c in cases.items() if c.find("failure") is not None or c.find("error") is not None])
+        retained.append(item)
+    return retained
+
+
+def packet(root: Path, output: Path, report: dict, operation_id: str, *, artifact_roles=(), client=None) -> dict:
     rows = [r for r in report["operations"] if r["operation_id"] == operation_id]
     require(len(rows) == 1, "Choose one recorded operation for the diagnostic packet")
     row = rows[0]
@@ -344,11 +452,17 @@ def packet(root: Path, output: Path, report: dict, operation_id: str) -> dict:
                "warnings": report["warnings"], "publication_authority": False}
     output.mkdir(parents=True)
     try:
+        if artifact_roles:
+            require(client is not None, "Artifact transport requires a read-only observation client")
+            payload["artifacts"] = diagnostic_artifacts(root, output, report["session"], row, artifact_roles, client)
         for name, value in (("diagnostic.json", payload), ("timeline.json", report)):
             with (output / name).open("x") as stream:
                 json.dump(value, stream, indent=2, sort_keys=True, allow_nan=False)
                 stream.write("\n")
         manifest = {name: {"sha256": hosted.sha256(_bytes(output / name)), "bytes": (output / name).stat().st_size} for name in ("diagnostic.json", "timeline.json")}
+        for item in payload.get("artifacts", []):
+            name = hosted.artifact_contract("union", "platform-sharded")[item["role"]][0] + ".zip"
+            manifest[name] = {"sha256": item["digest"].removeprefix("sha256:"), "bytes": (output/name).stat().st_size}
         with (output / "manifest.json").open("x") as stream:
             json.dump({"schema_version": PACKET_SCHEMA, "key": key, "packet_id": identifier, "files": manifest}, stream, indent=2, sort_keys=True)
             stream.write("\n")
@@ -366,10 +480,12 @@ def main(argv=None) -> int:
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--operation-id")
+    parser.add_argument("--artifact-role", action="append", default=[], help="Retain the selected qualification producer archive in a diagnostic packet")
     parser.add_argument("--observe", action="store_true", help="Use only GET/list metadata reads; never advance or reconcile the controller")
     parser.add_argument("--verify-local", action="store_true", help="Verify retained receipt evidence without running stages")
     args = parser.parse_args(argv)
     try:
+        require(not args.artifact_role or (args.observe and args.operation == "packet"), "Artifact roles require an observed packet")
         root = manual.safe(args.root)
         store = manual.Store(root, root / args.work)
         client = None
@@ -384,7 +500,7 @@ def main(argv=None) -> int:
             result = {"session": report["session"], "operations": len(report["operations"]), "output": str(args.output)}
         else:
             require(args.operation_id is not None, "An operation ID is required for a diagnostic packet")
-            result = packet(root, args.output, report, args.operation_id)
+            result = packet(root, args.output, report, args.operation_id, artifact_roles=args.artifact_role, client=client)
         print(json.dumps(result, sort_keys=True))
         return 0
     except (ValueError, OSError, KeyError, subprocess.SubprocessError) as exc:

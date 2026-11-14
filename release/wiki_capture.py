@@ -233,7 +233,11 @@ def authenticate(root: Path, request: dict, *, client, retained_archive: bytes |
                                             source=source, tree=basis["source_tree"], run_id=run_id, attempt=attempt, epoch=basis["epoch"])
     report = {"request": request, "source_tree": basis["source_tree"], **transport, "preview_sha256": digest,
               "snapshot_archive_sha256": sha(files["wiki-review-snapshot.tar"]) if captured else None,
-              "snapshot_files": len(captured), "publication_authority": False}
+              "snapshot_files": len(captured), "publication_authority": False,
+              "writer_status": "succeeded" if operation == "apply" else "preview",
+              "authenticated_snapshot_available": bool(captured),
+              "drift": (bool(files["wiki-status-after.txt"]) if operation == "apply" else None),
+              "next_action": "review-import-plan" if operation == "apply" else "review-preview"}
     return {"report": report, "archive": raw, "files": files, "snapshot": captured, "records": records}
 
 

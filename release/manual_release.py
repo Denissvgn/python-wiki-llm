@@ -203,6 +203,18 @@ class Store:
         self.common = safe(common if common.is_absolute() else self.root / common)
         self.lease = self.common / "manual-release-active.json"
 
+    def record_progress(self, value: dict) -> None:
+        """Persist a bounded display-only observation alongside the sealed journal."""
+        pending = value.get("pending") or {}
+        remote = value.get("remote") or {}
+        row = {"session_id": value["session_id"], "candidate_sha": value["candidate_sha"],
+               "revision": value["revision"], "operation_id": pending.get("operation_id"),
+               "run_id": remote.get("run_id"), "attempt": remote.get("attempt"),
+               "status": value.get("observation"), "observed_at": now(),
+               "active_jobs": remote.get("active_jobs", []), "failed_jobs": remote.get("failed_jobs", []),
+               "publication_authority": False}
+        atomic(self.work / "progress.json", row)
+
     @contextmanager
     def lock(self):
         lock = safe(self.common / "manual-release.lock")
@@ -1203,12 +1215,16 @@ def main(argv: list[str] | None = None) -> int:
                 value = controller.advance(tuple(args.authorize), receipt)
                 stamp = (value["revision"], value.get("observation"), value.get("remote"))
                 if stamp != previous:
+                    if watching:
+                        store.record_progress(value)
                     print(json.dumps(value, sort_keys=True), flush=True)
                     previous = stamp
                 if value["phase"] in FINISHED or value.get("observation") in {"awaiting_authorization", "authorized-scope-complete", "remote-failed", "preparation-blocked"}:
                     finished = True
                     break
-                if index + 1 < polls:
+                # A reconciled phase can advance immediately. A pending write or
+                # remote observation still uses the bounded polling interval.
+                if index + 1 < polls and (value.get("pending") or value.get("observation")):
                     time.sleep(interval)
             if watching and not finished:
                 print(json.dumps({**value, "observation": "observation-budget-exhausted"}, sort_keys=True))

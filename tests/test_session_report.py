@@ -351,3 +351,19 @@ def test_host_completion_does_not_establish_unknown_native_targets(local_receipt
         result["integrity"] == "sealed-record-only"
         and result["target_proof"]["fresh_native_proof_required"] is True
     )
+
+
+def test_progress_cache_is_read_only_and_session_revision_bound(recorded):
+    controller, _, state, *_ = recorded
+    current = controller.store.load()
+    controller.store.record_progress({
+        **current, "observation": "remote-running",
+        "remote": {"run_id":42,"attempt":1,"active_jobs":["native core"],"failed_jobs":[]},
+    })
+    first = report.timeline(controller.store)["handoff"]
+    assert first["active_jobs"] == ["native core"] and first["observed_at"]
+    assert first["pending_operation_id"] == current["pending"]["operation_id"]
+    cache = controller.store.work / "progress.json"
+    value = json.loads(cache.read_bytes())
+    cache.write_text(json.dumps({**value, "revision":current["revision"]-1}))
+    assert report.timeline(controller.store)["handoff"]["observation_status"] == "not-observed"

@@ -1429,7 +1429,7 @@ def test_start_runs_bound_rehearsal_and_dispatches_without_another_command(rehea
     states = list(map(json.loads, capsys.readouterr().out.splitlines()))
     final = states[-1]
     assert final["phase"] == "qualified" and final["observation"] == "authorized-scope-complete"
-    assert remote.writes == [("qualify", final["candidate_sha"])] and pauses == [5, 5]
+    assert remote.writes == [("qualify", final["candidate_sha"])] and pauses == [5]
     assert final["preparation"]["status"] == "verified" and final["preparation"]["stage"] == "artifacts"
     path = Path(final["preflight_receipt"])
     receipt = preflight.read_document(path)
@@ -1672,7 +1672,7 @@ def test_start_waits_for_ci_then_continues_with_one_receipt_and_dispatch(rehears
     states = list(map(json.loads, capsys.readouterr().out.splitlines()))
     waiting = next(s for s in states if s.get("observation") == "awaiting-main-ci")
     assert states[-1]["phase"] == "qualified" and states[-1]["preflight_receipt"] == waiting["preflight_receipt"]
-    assert len(remote.writes) == 1 and pauses == [5, 5, 5]
+    assert len(remote.writes) == 1 and pauses == [5, 5]
     assert len(states[-1]["preparation"]["attempts"]) == 1
 
 
