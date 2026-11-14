@@ -380,15 +380,38 @@ def _resolve_dynamic_module(
     )
 
 
+def _is_entry_adapter_module(module: str) -> bool:
+    return any(
+        module == name or module.startswith(name + ".")
+        for name in ("llm_wiki_cli.cli", "llm_wiki_cli.api")
+    )
+
+
 def _command_imports(
     path: Path, *, services_root: Path = SERVICES_ROOT
+) -> list[tuple[int, str]]:
+    return _matching_imports(
+        path, services_root=services_root, matches=_is_command_module
+    )
+
+
+def _entry_adapter_imports(
+    path: Path, *, services_root: Path = SERVICES_ROOT
+) -> list[tuple[int, str]]:
+    return _matching_imports(
+        path, services_root=services_root, matches=_is_entry_adapter_module
+    )
+
+
+def _matching_imports(
+    path: Path, *, services_root: Path, matches
 ) -> list[tuple[int, str]]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     violations: list[tuple[int, str]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if _is_command_module(alias.name):
+                if matches(alias.name):
                     violations.append((node.lineno, alias.name))
         elif isinstance(node, ast.ImportFrom):
             module = _resolve_relative_module(
@@ -404,7 +427,7 @@ def _command_imports(
                     for alias in node.names
                 ),
             )
-            if any(_is_command_module(candidate) for candidate in imported):
+            if any(matches(candidate) for candidate in imported):
                 violations.append((node.lineno, module or "<relative>"))
         elif isinstance(node, ast.Call):
             literal = _literal_dynamic_import(node)
@@ -415,7 +438,7 @@ def _command_imports(
                 services_root=services_root,
                 module=literal,
             )
-            if _is_command_module(module):
+            if matches(module):
                 violations.append((node.lineno, f"dynamic:{literal}"))
     return violations
 
@@ -1067,6 +1090,58 @@ def test_command_import_guard_allows_service_relative_imports(tmp_path: Path) ->
     )
 
     assert _command_imports(path, services_root=services_root) == []
+
+
+# Services that still reach the CLI parser or the public facade. Entries may
+# only be removed; reusable services must not depend on entry adapters.
+ENTRY_ADAPTER_IMPORT_ALLOWLIST = {
+    "cli_reference.py": ["llm_wiki_cli.cli"],
+    "mcp_server.py": ["llm_wiki_cli", "llm_wiki_cli.api"],
+}
+
+
+def test_services_do_not_import_cli_or_public_api() -> None:
+    violations = {
+        path.relative_to(SERVICES_ROOT).as_posix(): sorted(
+            {name for _line, name in imports}
+        )
+        for path in sorted(SERVICES_ROOT.rglob("*.py"))
+        if (imports := _entry_adapter_imports(path))
+    }
+
+    assert violations == ENTRY_ADAPTER_IMPORT_ALLOWLIST
+
+
+def test_entry_adapter_guard_covers_cli_and_api_import_forms(tmp_path: Path) -> None:
+    services_root = tmp_path / "llm_wiki_cli" / "services"
+    cases = {
+        "parser.py": "def f():\n    from ..cli import build_cli_parser\n",
+        "facade.py": "from .. import api\n",
+        "absolute.py": "from llm_wiki_cli.api import query_documentation\n",
+        "plain.py": "import llm_wiki_cli.cli\n",
+        "nested/parent.py": "from ... import cli\n",
+        "dynamic.py": "import importlib\nimportlib.import_module('llm_wiki_cli.cli')\n",
+    }
+    for relative, source in cases.items():
+        path = services_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source, encoding="utf-8")
+        assert _entry_adapter_imports(path, services_root=services_root), relative
+
+
+def test_entry_adapter_guard_allows_types_and_service_modules(tmp_path: Path) -> None:
+    services_root = tmp_path / "llm_wiki_cli" / "services"
+    path = services_root / "service.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "from .. import api_types, config\n"
+        "from ..api_types import KnowledgeMode\n"
+        "from . import client\n"
+        "argv = ['python', '-m', 'llm_wiki_cli.cli']\n",
+        encoding="utf-8",
+    )
+
+    assert _entry_adapter_imports(path, services_root=services_root) == []
 
 
 def test_shared_validation_adapters_remain_thin() -> None:
