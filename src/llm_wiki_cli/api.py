@@ -119,6 +119,7 @@ from .services.bootstrap_service import (
     BootstrapServiceError,
 )
 from .services.lint_request import LintRequest, LintRequestError
+from .services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 from .services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 from .services.dependencies import analyze_dependencies
 from .services.doctor_service import build_doctor_report
@@ -1291,6 +1292,50 @@ def sync_wiki(
     except SyncRequestError as exc:
         raise InvalidRequestError(str(exc)) from exc
     except SyncError as exc:
+        raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def migrate_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    dry_run: bool = False,
+    chunk_size: int | None = None,
+    chunk: int | None = None,
+    plan_chunks: bool = False,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+) -> MigrateOutcome:
+    """Bring a wiki written by an older llm-wiki to the current page naming.
+
+    Runs the same migration as ``llm-wiki migrate`` without its console
+    output. ``chunk_size`` splits the work into reviewable chunks and
+    ``chunk`` applies one of them. Project plugins load only when
+    ``trust_source_plugins`` is true. A wiki the migration cannot read raises
+    :class:`WorkspaceStateError`; invalid options raise
+    :class:`InvalidRequestError`.
+    """
+
+    from .services.host import discarding_output
+    from .services.migrate_runtime import execute_migrate
+
+    request = MigrateRequest(
+        source_root=source_root,
+        wiki_root=wiki_root,
+        dry_run=dry_run,
+        chunk_size=chunk_size,
+        chunk=chunk,
+        plan_chunks=plan_chunks,
+        plugins=trust_source_plugins,
+        source_selection=source_selection,
+    )
+    try:
+        with discarding_output():
+            return execute_migrate(request)
+    except MigrateRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    except MigrateError as exc:
         raise WorkspaceStateError(str(exc)) from exc
 
 
@@ -4144,6 +4189,7 @@ __all__ = [
     "BootstrapError",
     "BootstrapRequest",
     "BootstrapResult",
+    "MigrateOutcome",
     "SyncOutcome",
     "SyncRequest",
     "BootstrapServiceError",
@@ -4254,6 +4300,7 @@ __all__ = [
     "bootstrap_wiki",
     "sync_wiki",
     "lint_wiki",
+    "migrate_wiki",
     "build_documentation_query_service",
     "callees",
     "callers",

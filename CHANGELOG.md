@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   call is silent and returns the JSON-ready lint report; `Engine.lint()`
   returns the report object. A failing lint is a result, not an exception.
   `Engine.bootstrap()` runs a first-use bootstrap the same way.
+- `api.migrate_wiki()` and `Engine.migrate()` run a legacy wiki migration,
+  including chunked migration, without the CLI and return a `MigrateOutcome`
+  with page totals. Migration archive names use the host's clock.
 
 ### Changed
 

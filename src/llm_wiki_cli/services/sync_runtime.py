@@ -35,7 +35,7 @@ from typing import Callable, Iterable, Mapping, Optional
 
 from .. import __version__
 from .contracts import INITIALIZABLE_SURFACES
-from ..config import validate_path, validate_source_root
+from ..config import PathValidationError, validate_path, validate_source_root
 from .api_contracts import (
     ApiContractError,
     attach_routes_to_entry_points,
@@ -5556,6 +5556,8 @@ def execute_sync(request: SyncRequest) -> SyncOutcome:
     try:
         with using_host(current_host().with_output(stderr=errors)):
             run_request(request)
+    except PathValidationError as exc:
+        raise SyncRequestError(str(exc), exit_code=1) from exc
     except SyncRequestAborted as exc:
         raise SyncRequestError(errors.error_text() or "invalid sync request", exit_code=_exit_code(exc)) from exc
     except SyncAborted as exc:

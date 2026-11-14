@@ -11,7 +11,8 @@ caller grants ``helper_preparation="auto"``. Importing this module loads
 neither the CLI, command modules nor the public API.
 
 Use cases run directly on the engine and write progress to the host's
-streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync` and :meth:`Engine.lint`.
+streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync`, :meth:`Engine.lint`
+and :meth:`Engine.migrate`.
 They take a typed request, return a typed result and never exit the process.
 
     from llm_wiki_cli import api
@@ -45,6 +46,7 @@ from ..services.bootstrap_service import (
     BootstrapServiceError,
 )
 from ..services.lint_request import LintRequest, LintRequestError
+from ..services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 
 if TYPE_CHECKING:
@@ -62,6 +64,10 @@ __all__ = [
     "HostCapabilityError",
     "LintRequest",
     "LintRequestError",
+    "MigrateError",
+    "MigrateOutcome",
+    "MigrateRequest",
+    "MigrateRequestError",
     "NoProcessHost",
     "Operation",
     "SyncError",
@@ -177,3 +183,14 @@ class Engine:
 
         with self.operation():
             return execute_lint(request)
+
+    def migrate(self, request: MigrateRequest) -> MigrateOutcome:
+        """Bring an older wiki to current page naming; progress goes to the host.
+
+        Raises :class:`MigrateError` (or :class:`MigrateRequestError`) when the
+        migration stops.
+        """
+        from ..services.migrate_runtime import execute_migrate
+
+        with self.operation():
+            return execute_migrate(request)

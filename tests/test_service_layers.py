@@ -240,6 +240,8 @@ PRODUCT_SERVICES = frozenset(
         "lint_service",
         "mcp_server",
         "metrics",
+        "migrate_runtime",
+        "migrate_service",
         "native_inspection",
         "obsidian",
         "plugin_samples",
