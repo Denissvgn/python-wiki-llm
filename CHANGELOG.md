@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `api.migrate_wiki()` and `Engine.migrate()` run a legacy wiki migration,
   including chunked migration, without the CLI and return a `MigrateOutcome`
   with page totals. Migration archive names use the host's clock.
+- `Engine.upgrade()` refreshes the managed agent schema, skills and wiki
+  layout from an `UpgradeRequest` and returns an `UpgradeOutcome`; stops
+  raise `UpgradeError` instead of exiting.
 
 ### Changed
 

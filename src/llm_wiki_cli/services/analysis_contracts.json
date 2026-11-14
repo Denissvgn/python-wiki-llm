@@ -296,6 +296,8 @@
     "services/team.py",
     "services/token_counting.py",
     "services/typescript_helper_identity.py",
+    "services/upgrade_runtime.py",
+    "services/upgrade_service.py",
     "services/validation.py",
     "services/verification_contracts.py",
     "services/versioning.py",

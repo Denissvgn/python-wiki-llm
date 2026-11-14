@@ -246,7 +246,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
-from .host import current_host, discarding_stdout, emit, using_host
+from .host import discarding_stdout, emit, recording_errors
 from .sync_service import (
     SYNC_PAGE_COUNTERS,
     SyncError,
@@ -291,27 +291,6 @@ def _record_outcome(status: SyncStatus, result: object = None) -> None:
     if recorder is not None:
         recorder.status = status
         recorder.result = result if isinstance(result, SyncResult) else None
-
-
-class _RecordingStream:
-    """Forward writes to a host's stderr while keeping a copy for errors."""
-
-    def __init__(self, host) -> None:
-        self._host = host
-        self._parts: list[str] = []
-
-    def write(self, text: str) -> int:
-        self._parts.append(text)
-        self._host.stderr.write(text)
-        return len(text)
-
-    def flush(self) -> None:
-        self._host.stderr.flush()
-
-    def error_text(self) -> str:
-        lines = "".join(self._parts).splitlines()
-        errors = [line for line in lines if line.startswith("Error:")]
-        return "\n".join(errors or lines).strip()
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -5551,18 +5530,18 @@ def execute_sync(request: SyncRequest) -> SyncOutcome:
     if not isinstance(request, SyncRequest):
         raise TypeError("request must be a SyncRequest")
     recorder = _OutcomeRecorder()
-    errors = _RecordingStream(current_host())
     token = _OUTCOME.set(recorder)
     try:
-        with using_host(current_host().with_output(stderr=errors)):
-            run_request(request)
-    except PathValidationError as exc:
-        raise SyncRequestError(str(exc), exit_code=1) from exc
-    except SyncRequestAborted as exc:
-        raise SyncRequestError(errors.error_text() or "invalid sync request", exit_code=_exit_code(exc)) from exc
-    except SyncAborted as exc:
-        code = _exit_code(exc)
-        raise SyncError(errors.error_text() or f"sync stopped with status {code}", exit_code=code) from exc
+        with recording_errors() as errors:
+            try:
+                run_request(request)
+            except PathValidationError as exc:
+                raise SyncRequestError(str(exc), exit_code=1) from exc
+            except SyncRequestAborted as exc:
+                raise SyncRequestError(errors.error_text() or "invalid sync request", exit_code=_exit_code(exc)) from exc
+            except SyncAborted as exc:
+                code = _exit_code(exc)
+                raise SyncError(errors.error_text() or f"sync stopped with status {code}", exit_code=code) from exc
     finally:
         _OUTCOME.reset(token)
     result = recorder.result

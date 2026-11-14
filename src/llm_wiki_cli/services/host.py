@@ -179,3 +179,34 @@ def discarding_output() -> Iterator[Host]:
     """Run the enclosed work with the active host's stdout and stderr discarded."""
     with using_host(current_host().with_output(stdout=_Discard(), stderr=_Discard())) as host:
         yield host
+
+
+class ErrorRecorder:
+    """Forwards writes to a host's stderr and keeps a copy for error messages."""
+
+    def __init__(self, host: Host) -> None:
+        self._host = host
+        self._parts: list[str] = []
+
+    def write(self, text: str, /) -> int:
+        self._parts.append(text)
+        self._host.stderr.write(text)
+        return len(text)
+
+    def flush(self) -> None:
+        self._host.stderr.flush()
+
+    def error_text(self) -> str:
+        """The ``Error:`` lines written so far, or every line if there are none."""
+        lines = "".join(self._parts).splitlines()
+        errors = [line for line in lines if line.startswith("Error:")]
+        return "\n".join(errors or lines).strip()
+
+
+@contextmanager
+def recording_errors() -> Iterator[ErrorRecorder]:
+    """Run the enclosed work with stderr still written, and recorded."""
+    host = current_host()
+    recorder = ErrorRecorder(host)
+    with using_host(host.with_output(stderr=recorder)):
+        yield recorder

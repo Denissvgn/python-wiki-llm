@@ -11,8 +11,8 @@ caller grants ``helper_preparation="auto"``. Importing this module loads
 neither the CLI, command modules nor the public API.
 
 Use cases run directly on the engine and write progress to the host's
-streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync`, :meth:`Engine.lint`
-and :meth:`Engine.migrate`.
+streams: :meth:`Engine.bootstrap`, :meth:`Engine.sync`, :meth:`Engine.lint`,
+:meth:`Engine.migrate` and :meth:`Engine.upgrade`.
 They take a typed request, return a typed result and never exit the process.
 
     from llm_wiki_cli import api
@@ -48,6 +48,7 @@ from ..services.bootstrap_service import (
 from ..services.lint_request import LintRequest, LintRequestError
 from ..services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
+from ..services.upgrade_service import UpgradeError, UpgradeOutcome, UpgradeRequest, UpgradeRequestError
 
 if TYPE_CHECKING:
     from ..services.lint_service import LintReport
@@ -74,6 +75,10 @@ __all__ = [
     "SyncOutcome",
     "SyncRequest",
     "SyncRequestError",
+    "UpgradeError",
+    "UpgradeOutcome",
+    "UpgradeRequest",
+    "UpgradeRequestError",
     "current_host",
 ]
 
@@ -194,3 +199,16 @@ class Engine:
 
         with self.operation():
             return execute_migrate(request)
+
+    def upgrade(self, request: UpgradeRequest) -> UpgradeOutcome:
+        """Refresh the managed agent schema, skills and wiki layout in place.
+
+        Unlike the other use cases this changes the repository's agent setup:
+        it rewrites the agent instruction file, refreshes managed skills and
+        removes retired git hooks. Raises :class:`UpgradeError` when the
+        upgrade stops.
+        """
+        from ..services.upgrade_runtime import execute_upgrade
+
+        with self.operation():
+            return execute_upgrade(request)

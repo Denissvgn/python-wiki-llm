@@ -266,6 +266,8 @@ PRODUCT_SERVICES = frozenset(
         "sync_runtime",
         "sync_service",
         "team",
+        "upgrade_runtime",
+        "upgrade_service",
         "wiki_git_delivery",
         "wiki_git_policy",
         "wiki_scaffold",
