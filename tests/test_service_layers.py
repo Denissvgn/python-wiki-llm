@@ -1,8 +1,10 @@
-"""Service layer map and a shrink-only baseline of upward imports.
+"""Service layer map and shrink-only baselines of upward imports.
 
 Engine layers (primitive, kernel) must not depend on analysis, product or
-adapter modules. Existing exceptions are pinned exactly: fixing one requires
-deleting its baseline entry, and a new one fails. Imports inside functions
+adapter modules, and analysis modules (services and extractors, the future
+domain packs) must not depend on product or adapter modules. Existing
+exceptions are pinned exactly: fixing one requires deleting its baseline
+entry, and a new one fails. Imports inside functions
 count because they hide import cycles; TYPE_CHECKING imports do not.
 Every service module must be classified, so a new module states its layer.
 """
@@ -464,6 +466,51 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
 }
 
+# Product and adapter imports from analysis modules that exist today. Packs must
+# reach configuration and plugins through the engine. Entries may only be removed.
+ANALYSIS_UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
+    "analysis_targets": frozenset({"services.health_policy"}),
+    "capability_diagnostics": frozenset(
+        {
+            "config",
+            "services.doctor_service",
+            "services.plugins",
+        }
+    ),
+    "dependencies": frozenset({"config"}),
+    "dependency_versions": frozenset({"config"}),
+    "diagrams": frozenset({"services.plugins"}),
+    "entrypoints": frozenset({"services.plugins"}),
+    "extraction_service": frozenset(
+        {
+            "config",
+            "services.plugins",
+            "services.resource_diagnostics",
+        }
+    ),
+    "extractors.common": frozenset({"config"}),
+    "extractors.python_extractor": frozenset({"config"}),
+    "helper_runtime": frozenset({"config"}),
+    "impact": frozenset({"services.review_service"}),
+    "imports": frozenset({"config"}),
+    "inventory_cache": frozenset(
+        {
+            "config",
+            "llm_wiki_cli",
+            "services.plugins",
+        }
+    ),
+    "packages": frozenset({"config"}),
+    "source_path_diagnostics": frozenset({"config"}),
+    "sync_analysis": frozenset({"services.bootstrap_runtime"}),
+    "sync_analysis_cache": frozenset(
+        {
+            "config",
+            "services.knowledge_generation",
+        }
+    ),
+}
+
 # Ambient side effects in engine layers today. Entries may only be removed; the
 # host should supply processes, output, environment and the workspace root.
 SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {
@@ -553,20 +600,30 @@ def _imported_modules(path: Path, package_root: Path, modules: set[str]) -> set[
     return found
 
 
+def _baseline_key(module: str) -> str:
+    return module.removeprefix("llm_wiki_cli.").removeprefix("services.")
+
+
 def _upward_imports(
     package_root: Path = PACKAGE_ROOT,
     service_layers: dict[str, str] = _SERVICE_LAYERS,
+    source_layers: frozenset[str] = ENGINE_LAYERS,
 ) -> dict[str, frozenset[str]]:
+    """Map each service or extractor module in ``source_layers`` to higher-layer imports.
+
+    Keys drop the ``llm_wiki_cli.services.`` prefix (extractors keep
+    ``extractors.``); targets are relative to ``llm_wiki_cli``.
+    """
     paths = _source_paths(package_root)
     modules = {_module_name(path, package_root) for path in paths}
     rank: dict[str | None, int] = {layer: index for index, layer in enumerate(LAYER_ORDER)}
     result: dict[str, frozenset[str]] = {}
     for path in paths:
         source = _module_name(path, package_root)
-        if not source.startswith(_SERVICES + "."):
+        if not source.startswith((_SERVICES + ".", "llm_wiki_cli.extractors")):
             continue
         layer = _module_layer(source, service_layers)
-        if layer not in ENGINE_LAYERS:
+        if layer not in source_layers:
             continue
         upward = {
             target.removeprefix("llm_wiki_cli.")
@@ -574,8 +631,24 @@ def _upward_imports(
             if rank.get(_module_layer(target, service_layers), -1) > rank[layer]
         }
         if upward:
-            result[source.removeprefix(_SERVICES + ".")] = frozenset(upward)
+            result[_baseline_key(source)] = frozenset(upward)
     return result
+
+
+def _baseline_drift(
+    actual: dict[str, frozenset[str]], baseline: dict[str, frozenset[str]]
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    added = {
+        source: sorted(targets - baseline.get(source, frozenset()))
+        for source, targets in actual.items()
+        if targets - baseline.get(source, frozenset())
+    }
+    fixed = {
+        source: sorted(targets - actual.get(source, frozenset()))
+        for source, targets in baseline.items()
+        if targets - actual.get(source, frozenset())
+    }
+    return added, fixed
 
 
 _SIDE_EFFECT_CALLS = {
@@ -723,20 +796,18 @@ def test_every_service_module_has_exactly_one_layer() -> None:
 
 
 def test_engine_layers_add_no_upward_imports() -> None:
-    actual = _upward_imports()
-    added = {
-        source: sorted(targets - UPWARD_IMPORT_BASELINE.get(source, frozenset()))
-        for source, targets in actual.items()
-        if targets - UPWARD_IMPORT_BASELINE.get(source, frozenset())
-    }
-    fixed = {
-        source: sorted(targets - actual.get(source, frozenset()))
-        for source, targets in UPWARD_IMPORT_BASELINE.items()
-        if targets - actual.get(source, frozenset())
-    }
+    added, fixed = _baseline_drift(_upward_imports(), UPWARD_IMPORT_BASELINE)
 
     assert added == {}, "engine layers must not import analysis, product or adapter modules"
     assert fixed == {}, "delete fixed entries from UPWARD_IMPORT_BASELINE"
+
+
+def test_analysis_layer_adds_no_product_or_adapter_imports() -> None:
+    actual = _upward_imports(source_layers=frozenset({"analysis"}))
+    added, fixed = _baseline_drift(actual, ANALYSIS_UPWARD_IMPORT_BASELINE)
+
+    assert added == {}, "analysis modules must not import product or adapter modules"
+    assert fixed == {}, "delete fixed entries from ANALYSIS_UPWARD_IMPORT_BASELINE"
 
 
 def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Path) -> None:
@@ -755,6 +826,9 @@ def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Pat
         ),
         "services/kernel_two.py": "try:\n    from .analyzer import value\nexcept ImportError:\n    pass\n",
         "services/product.py": "from . import analyzer\n",
+        "services/pack.py": "from . import kernel_one\ndef run():\n    from . import product\n",
+        "extractors/__init__.py": "",
+        "extractors/common.py": "from .. import cli\nfrom ..services import analyzer\n",
     }
     for relative, source in files.items():
         path = package_root / relative
@@ -765,9 +839,14 @@ def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Pat
         "kernel_one": "kernel",
         "kernel_two": "kernel",
         "product": "product",
+        "pack": "analysis",
     }
 
     assert _upward_imports(package_root, layers) == {
         "kernel_one": frozenset({"cli"}),
         "kernel_two": frozenset({"services.analyzer"}),
+    }
+    assert _upward_imports(package_root, layers, frozenset({"analysis"})) == {
+        "pack": frozenset({"services.product"}),
+        "extractors.common": frozenset({"cli"}),
     }
