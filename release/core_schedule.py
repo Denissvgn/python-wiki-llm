@@ -112,7 +112,18 @@ def capture(root: Path, work: Path, repository: str, run_id: int, attempt: int, 
         elapsed = sum(Decimal(case.get("time", "0")) for case in shard_cases.values())
         require(float(elapsed) <= receipt["seconds"] + 1, "case durations exceed their actual producer duration")
         producer_id = transports["windows-shard-" + str(index)]["artifact"]["id"]
-        observations.append({"index": index, "worker_seconds": receipt["seconds"], "case_seconds": float(elapsed),
+        files = plan["shards"][index]["files"]
+        per_file = {name: {"estimated_ms": plan["weights_ms"][name], "case_ms": times[name]} for name in files}
+        fresh = set(plan["fresh_history_files"])
+        stale = set(plan["stale_history_files"])
+        estimates = {}
+        for category, selected in (("fresh", fresh), ("stale", stale),
+                                   ("fallback", set(files) - fresh - stale)):
+            group = sorted(set(files) & selected)
+            estimates[category] = {"files": len(group),
+                                   "estimated_ms": sum(plan["weights_ms"][f] for f in group),
+                                   "observed_case_ms": sum(times[f] for f in group)}
+        observations.append({"index": index, "weight_contributions": estimates, "file_comparison": per_file, "worker_seconds": receipt["seconds"], "case_seconds": float(elapsed),
                              "artifact_id": producer_id, "nodes": sorted(shard_cases)})
     audit = {"schema_version": "agent-wiki-native-timing-capture/v1", "qualifying": False,
              "repository": repository, "run": run, "jobs": jobs, "context": context,
