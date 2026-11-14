@@ -89,7 +89,7 @@ def check_breaker(git_dir: Path) -> bool:
     # WikiLock normally serializes callers, while the lock-free breaker-state
     # race remains an accepted same-user limitation.
     state["state"] = "half-open"
-    state["probe_started_ts"] = datetime.now(timezone.utc).isoformat()
+    state["probe_started_ts"] = current_host().now().isoformat()
     save_state(git_dir, state)
     return False
 
@@ -107,7 +107,7 @@ def record_failure(git_dir: Path) -> None:
     state = load_state(git_dir)
     failed_probe = state.get("state") == "half-open"
     state["consecutive_failures"] = state.get("consecutive_failures", 0) + 1
-    state["last_failure_ts"] = datetime.now(timezone.utc).isoformat()
+    state["last_failure_ts"] = current_host().now().isoformat()
     state["probe_started_ts"] = None
     if failed_probe or state["consecutive_failures"] >= MAX_CONSECUTIVE_FAILURES:
         state["state"] = "open"
@@ -164,7 +164,7 @@ def _timestamp_expired(value: object, *, ttl_seconds: float) -> bool:
         if failed_at.tzinfo is None or failed_at.utcoffset() is None:
             return True
         elapsed = (
-            datetime.now(timezone.utc) - failed_at.astimezone(timezone.utc)
+            current_host().now() - failed_at.astimezone(timezone.utc)
         ).total_seconds()
     except (OverflowError, TypeError, ValueError):
         return True

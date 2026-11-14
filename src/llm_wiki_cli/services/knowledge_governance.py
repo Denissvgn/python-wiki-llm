@@ -31,6 +31,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
 
+from .host import current_host
 from .contracts import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_HASH_EXTENSION_KEY,
@@ -1437,7 +1438,7 @@ def add_review_event(
 def authored_event_time(value: object = None) -> str:
     """Return a canonical real UTC authored-event time."""
 
-    selected = datetime.now(timezone.utc) if value is None else value
+    selected = current_host().now() if value is None else value
     if isinstance(selected, str):
         raw = selected
         try:

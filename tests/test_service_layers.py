@@ -14,6 +14,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+import pytest
+
 PACKAGE_ROOT = Path(__file__).resolve().parents[1] / "src" / "llm_wiki_cli"
 LAYER_ORDER = ("primitive", "kernel", "analysis", "product", "adapter")
 ENGINE_LAYERS = frozenset({"primitive", "kernel"})
@@ -528,7 +530,7 @@ SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {
 # The host module is the one boundary that touches the machine on the engine's
 # behalf; everything else asks ``host.current_host()``.
 HOST_BOUNDARY: dict[str, frozenset[str]] = {
-    "host": frozenset({"subprocess", "environ", "cwd"}),
+    "host": frozenset({"subprocess", "environ", "cwd", "clock"}),
 }
 
 _SERVICE_LAYERS = {
@@ -663,6 +665,12 @@ _SIDE_EFFECT_CALLS = {
     "cwd": frozenset({"os.getcwd", "os.chdir", "pathlib.Path.cwd"}),
     "sys.path": frozenset(
         {"sys.path.insert", "sys.path.append", "sys.path.extend", "sys.path.remove"}
+    ),
+    "clock": frozenset(
+        {
+            "datetime.datetime.now", "datetime.datetime.utcnow", "datetime.date.today",
+            "datetime.datetime.today",
+        }
     ),
     "network": frozenset(
         {
@@ -826,9 +834,10 @@ def _import_closure(start: str, package_root: Path = PACKAGE_ROOT) -> set[str]:
     return seen
 
 
-def test_cli_declarations_reach_no_commands_cli_or_public_api() -> None:
-    """The CLI reference reads declarations without loading the application."""
-    closure = _import_closure("llm_wiki_cli.cli_declarations")
+@pytest.mark.parametrize("start", ["llm_wiki_cli.cli_declarations", "llm_wiki_cli.engine"])
+def test_entry_points_reach_no_commands_cli_or_public_api(start: str) -> None:
+    """The CLI reference and the engine work without loading the CLI or the facade."""
+    closure = _import_closure(start)
     forbidden = sorted(
         module for module in closure
         if module in {"llm_wiki_cli.cli", "llm_wiki_cli.api", "llm_wiki_cli.services.mcp_server"}

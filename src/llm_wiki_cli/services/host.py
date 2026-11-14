@@ -10,8 +10,8 @@ environment or to refuse subprocesses with :class:`NoProcessHost`, and runs
 engine work inside :func:`using_host`. The choice is scoped to the current
 context, so concurrent operations can use different hosts.
 
-This is the only engine module that touches ``subprocess``, ``os.environ``
-and the current directory directly.
+This is the only engine module that touches ``subprocess``, ``os.environ``,
+the current directory and the clock directly.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import subprocess
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -34,8 +34,15 @@ class HostCapabilityError(PermissionError):
     """
 
 
+#: Every capability the default host grants.
+ALL_CAPABILITIES = frozenset({"subprocess", "environment", "cwd", "clock"})
+
+
 class Host:
     """This machine: real processes, live environment and cwd, wall clock."""
+
+    #: Capabilities this host grants; engines report and check them.
+    capabilities: frozenset[str] = ALL_CAPABILITIES
 
     def run(self, args: Any, **options: Any) -> subprocess.CompletedProcess:
         # Resolved on every call so process-wide patches of subprocess apply.
@@ -52,11 +59,18 @@ class Host:
         return Path.cwd()
 
     def now(self) -> datetime:
+        """The current UTC time."""
         return datetime.now(timezone.utc)
+
+    def today(self) -> date:
+        """The local calendar date."""
+        return date.today()
 
 
 class NoProcessHost(Host):
     """A host that grants no subprocesses; everything else is local."""
+
+    capabilities = ALL_CAPABILITIES - {"subprocess"}
 
     def run(self, args: Any, **options: Any) -> subprocess.CompletedProcess:
         raise HostCapabilityError(f"subprocess not granted by host: {_program(args)}")

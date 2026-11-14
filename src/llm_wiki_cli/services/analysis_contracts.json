@@ -64,6 +64,7 @@
     "commands/uninstall_cmd.py",
     "commands/upgrade_cmd.py",
     "config.py",
+    "engine/__init__.py",
     "eval_lite/__init__.py",
     "eval_lite/planner.py",
     "examples/plugins/documentation-hooks/detectors.py",
