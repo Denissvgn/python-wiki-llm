@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   streams, then `operation.finished` with the JSON-ready result or
   `operation.failed` with the error. Events of one call share an
   `operation_id`, so one event sink can serve several engines.
+- Knowledge index validation runs through a `ValidatorRegistry`. An embedding
+  application can add a `ModelValidator` with `with_validator()` and pass the
+  registry as `Engine(validators=...)`; earlier validation results are not
+  reused under a different registry.
 
 ### Changed
 

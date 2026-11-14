@@ -2,7 +2,8 @@
 
 An :class:`Engine` holds what the caller grants: a :class:`Host` (processes,
 environment, working directory, clock), whether bundled analysis helpers may
-be prepared automatically, and the analysis comparison policy. Every call runs
+be prepared automatically, the analysis comparison policy and the
+:class:`ValidatorRegistry` every knowledge index must pass. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -52,6 +53,7 @@ from ..services.bootstrap_service import (
     BootstrapResult,
     BootstrapServiceError,
 )
+from ..services.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
 from ..services.lint_request import LintRequest, LintRequestError
 from ..services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
@@ -67,6 +69,7 @@ __all__ = [
     "BootstrapRequestError",
     "BootstrapResult",
     "BootstrapServiceError",
+    "DEFAULT_VALIDATORS",
     "EVENT_KINDS",
     "Engine",
     "EngineEvent",
@@ -79,6 +82,7 @@ __all__ = [
     "MigrateOutcome",
     "MigrateRequest",
     "MigrateRequestError",
+    "ModelValidator",
     "NoProcessHost",
     "Operation",
     "SyncError",
@@ -89,6 +93,7 @@ __all__ = [
     "UpgradeOutcome",
     "UpgradeRequest",
     "UpgradeRequestError",
+    "ValidatorRegistry",
     "current_host",
 ]
 
@@ -105,6 +110,7 @@ class Operation:
     helper_preparation: HelperPreparation
     helper_cache_dir: str | None
     comparison_policy: str
+    validators: ValidatorRegistry = DEFAULT_VALIDATORS
 
 
 class Engine:
@@ -117,6 +123,7 @@ class Engine:
         helper_preparation: HelperPreparation = "never",
         helper_cache_dir: str | Path | None = None,
         comparison_policy: str = "auto",
+        validators: ValidatorRegistry = DEFAULT_VALIDATORS,
     ) -> None:
         from ..services.analysis_compatibility import selected_policy
 
@@ -129,10 +136,13 @@ class Engine:
             raise ValueError("automatic helper preparation requires a host that grants subprocess")
         if helper_cache_dir is not None and not isinstance(helper_cache_dir, (str, Path)):
             raise TypeError("helper_cache_dir must be a path")
+        if not isinstance(validators, ValidatorRegistry):
+            raise TypeError("validators must be a ValidatorRegistry")
         self._host = host
         self._helper_preparation: HelperPreparation = helper_preparation
         self._helper_cache_dir = None if helper_cache_dir is None else str(helper_cache_dir)
         self._comparison_policy = selected_policy(comparison_policy)
+        self._validators = validators
 
     @property
     def host(self) -> Host:
@@ -145,6 +155,7 @@ class Engine:
             "missing": sorted(ALL_CAPABILITIES - self._host.capabilities),
             "helper_preparation": self._helper_preparation,
             "comparison_policy": self._comparison_policy,
+            "validators": list(self._validators.names),
         }
 
     @contextmanager
@@ -152,14 +163,17 @@ class Engine:
         """Apply this engine's grants to all work inside the block."""
         from ..services.analysis_compatibility import comparison_scope
         from ..services.helper_runtime import helper_operation, helper_policy
+        from ..services.knowledge_validators import using_validators
 
         with ExitStack() as stack:
             stack.enter_context(using_host(self._host))
             stack.enter_context(comparison_scope(self._comparison_policy))
             stack.enter_context(helper_policy(self._helper_preparation, cache_dir=self._helper_cache_dir))
             stack.enter_context(helper_operation(fresh=True))
+            stack.enter_context(using_validators(self._validators))
             yield Operation(
                 self._host, self._helper_preparation, self._helper_cache_dir, self._comparison_policy,
+                self._validators,
             )
 
     def call(self, function: Callable[_P, _R], /, *args: _P.args, **kwargs: _P.kwargs) -> _R:

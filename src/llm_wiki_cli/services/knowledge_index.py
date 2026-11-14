@@ -364,30 +364,16 @@ def _has_validation_operation(wiki_root: Path) -> bool:
 
 
 def _validator_identity() -> tuple:
-    from . import (
-        analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
-        knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
-        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
-        maintenance_state, markdown_sections, python_implementation,
-        section_ownership, source_retirement, validation,
-        wiki_media, wiki_surface,
-    )
+    # The active validator registry names the modules whose functions and
+    # policy values define acceptance; snapshot policy values, not
+    # successful-validation/runtime caches.
+    from . import maintenance_state
+    from .knowledge_validators import current_validators
 
-    # Parsers dispatch through module globals and reserved-extension validators.
-    # A stamp of only their entry points misses changed lower-level acceptance
-    # rules. Snapshot policy values, not successful-validation/runtime caches.
-    modules = (
-        analysis_compatibility, concept_identity, contracts, implementation_evidence, immutable,
-        knowledge_evidence, knowledge_governance, knowledge_graph, knowledge_links,
-        knowledge_index, knowledge_model, knowledge_reuse, maintenance_projection, maintenance_shapes,
-        maintenance_state, markdown_sections, python_implementation,
-        section_ownership, source_retirement, validation,
-        wiki_media, wiki_surface,
-    )
     core = maintenance_state.maintenance_core()
     return (
         KNOWLEDGE_SCHEMA_VERSION,
-        tuple(_validation_module_identity(module) for module in modules),
+        current_validators().identity(),
         tuple((name, _validation_callable_identity(getattr(core, name)))
               for name, value in sorted(type(core).__dict__.items()) if inspect.isfunction(value)),
         _validation_callable_identity(core.evidence_validator),

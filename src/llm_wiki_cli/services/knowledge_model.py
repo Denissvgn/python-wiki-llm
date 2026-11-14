@@ -581,34 +581,9 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         relationships=relationships,
         extensions=extensions,
     )
-    from .implementation_evidence import validate_implementation_collection
+    from .knowledge_validators import current_validators
 
-    try:
-        validate_implementation_collection(concepts, producer=bundle.producer)
-    except (ValueError, TypeError, KeyError) as exc:
-        raise KnowledgeModelError("concepts.extensions", str(exc)) from exc
-    from .maintenance_projection import validate_maintenance_projection
-
-    try:
-        validate_maintenance_projection(model)
-    except (ValueError, TypeError, KeyError) as exc:
-        raise KnowledgeModelError("maintenance", str(exc)) from exc
-    # Governance is an independently versioned projection whose authority is
-    # the separate ledger.  Validate its core lifecycle/UID/alias/event parity
-    # only after the enclosing model and the other reserved extensions exist.
-    from .knowledge_governance import validate_governance_projection
-
-    try:
-        validate_governance_projection(model)
-    except ValueError as exc:
-        field = getattr(exc, "field", "extensions")
-        message = getattr(exc, "message", str(exc))
-        code = getattr(exc, "code", None)
-        raise KnowledgeModelError(
-            str(field),
-            str(message),
-            code=str(code) if isinstance(code, str) else None,
-        ) from exc
+    current_validators().run(model)
     return model
 
 

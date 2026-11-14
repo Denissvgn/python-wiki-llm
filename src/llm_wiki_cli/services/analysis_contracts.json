@@ -201,6 +201,7 @@
     "services/knowledge_storage_io.py",
     "services/knowledge_storage_lifecycle.py",
     "services/knowledge_stream_audit.py",
+    "services/knowledge_validators.py",
     "services/knowledge_verification.py",
     "services/legacy_hooks.py",
     "services/lint_request.py",

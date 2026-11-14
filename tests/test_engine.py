@@ -71,6 +71,7 @@ def test_engine_rejects_grants_its_host_cannot_honor() -> None:
         "missing": ["subprocess"],
         "helper_preparation": "never",
         "comparison_policy": "auto",
+        "validators": ["implementation-evidence", "maintenance-projection", "governance-projection"],
     }
 
 

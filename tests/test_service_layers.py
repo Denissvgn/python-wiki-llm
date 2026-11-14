@@ -87,6 +87,7 @@ KERNEL_SERVICES = frozenset(
         "knowledge_storage_io",
         "knowledge_storage_lifecycle",
         "knowledge_stream_audit",
+        "knowledge_validators",
         "knowledge_verification",
         "maintenance_evidence",
         "maintenance_projection",
@@ -352,13 +353,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
     "knowledge_consumption": frozenset({"services.implementation_evidence"}),
     "knowledge_freshness": frozenset({"services.analysis_compatibility"}),
-    "knowledge_index": frozenset(
-        {
-            "services.analysis_compatibility",
-            "services.implementation_evidence",
-            "services.python_implementation",
-        }
-    ),
     "knowledge_maintenance": frozenset(
         {
             "extractors.common",
@@ -377,6 +371,7 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.implementation_evidence",
         }
     ),
+    "knowledge_validators": frozenset({"services.implementation_evidence"}),
     "knowledge_reuse": frozenset(
         {
             "llm_wiki_cli",
