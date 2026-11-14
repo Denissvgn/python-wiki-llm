@@ -1,8 +1,11 @@
-"""End-to-end byte snapshots of bootstrap and sync on the python-basic tutorial.
+"""End-to-end byte snapshots of bootstrap, sync and upgrade on python-basic.
 
 Moving sync behind a library entry point must not change what it writes. The
-scenario follows the tutorial: initialize and bootstrap, sync unchanged input,
-then add an authored sentence and a source field and sync again.
+first scenario follows the tutorial: initialize and bootstrap, sync unchanged
+input, then add an authored sentence and a source field and sync again. The
+second covers the route where upgrade drives sync itself: a canonical wiki with
+no native knowledge, manifest or surface roots is seeded by upgrade, and the
+next sync applies the edits made before the upgrade.
 
 Generated pages, the surface index, agent files and edited sources are pinned
 byte for byte. Content-addressed knowledge, manifest and recovery stores embed
@@ -24,7 +27,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "examples" / "python-basic" / "project"
-FIXTURE = ROOT / "tests" / "fixtures" / "sync-snapshots" / "python-basic.json"
+FIXTURES = ROOT / "tests" / "fixtures" / "sync-snapshots"
+FIXTURE = FIXTURES / "python-basic.json"
+UPGRADE_FIXTURE = FIXTURES / "python-basic-upgrade.json"
+NATIVE_ROOTS = (".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ".llm-wiki-surface.json")
 UPDATE_ENV = "LLM_WIKI_UPDATE_SYNC_SNAPSHOTS"
 MACHINE_STORES = (
     "wiki/.llm-wiki-knowledge/",
@@ -67,11 +73,15 @@ def _pinned(tree: dict[str, bytes]) -> dict[str, str]:
 def _cli(project: Path, *args: str) -> None:
     environment = os.environ.copy()
     environment.pop("LLM_WIKI_CACHE_DIR", None)
+    temporary = project.parent / "tmp"
+    temporary.mkdir(exist_ok=True)
     environment.update(
         PYTHONPATH=str(ROOT / "src"),
         PYTHONUTF8="1",
         PYTHONIOENCODING="utf-8",
         GIT_CEILING_DIRECTORIES=str(project.parent),
+        # Upgrade keeps recovery copies under the temporary directory.
+        TMPDIR=str(temporary),
     )
     result = subprocess.run(
         [sys.executable, "-m", "llm_wiki_cli.cli", *args],
@@ -103,14 +113,33 @@ def _edit_task_and_model(project: Path) -> None:
     )
 
 
-def test_python_basic_bootstrap_and_sync_bytes(tmp_path: Path) -> None:
+def _copy_project(tmp_path: Path) -> Path:
     project = tmp_path / "python-basic"
     shutil.copytree(
         PROJECT, project,
         ignore=shutil.ignore_patterns("wiki", ".llm-wiki", "AGENTS.md", "__pycache__"),
     )
-
     _cli(project, "init", "--agent", "generic", "--no-skills", "--wiki-dir", "wiki")
+    return project
+
+
+def _assert_matches_fixture(fixture: Path, actual: dict[str, dict[str, str]]) -> None:
+    if os.environ.get(UPDATE_ENV) == "1":
+        fixture.parent.mkdir(parents=True, exist_ok=True)
+        fixture.write_text(
+            json.dumps(actual, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    expected = json.loads(fixture.read_text(encoding="utf-8"))
+    assert sorted(actual) == sorted(expected)
+    for stage in expected:
+        assert sorted(actual[stage]) == sorted(expected[stage]), stage
+        for path, content in expected[stage].items():
+            assert actual[stage][path] == content, f"{stage}: {path}"
+
+
+def test_python_basic_bootstrap_and_sync_bytes(tmp_path: Path) -> None:
+    project = _copy_project(tmp_path)
     _cli(project, "bootstrap", "--src-dir", ".", "--wiki-dir", "wiki")
     bootstrapped = _tree(project)
     _sync(project)
@@ -123,15 +152,37 @@ def test_python_basic_bootstrap_and_sync_bytes(tmp_path: Path) -> None:
     assert AUTHORED_SENTENCE in task and "priority" in task
     assert all(any(path.startswith(store) for path in changed) for store in MACHINE_STORES)
 
-    actual = {"bootstrap": _pinned(bootstrapped), "source-change": _pinned(changed)}
-    if os.environ.get(UPDATE_ENV) == "1":
-        FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-        FIXTURE.write_text(
-            json.dumps(actual, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-    expected = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    for stage in ("bootstrap", "source-change"):
-        assert sorted(actual[stage]) == sorted(expected[stage]), stage
-        for path, content in expected[stage].items():
-            assert actual[stage][path] == content, f"{stage}: {path}"
+    _assert_matches_fixture(
+        FIXTURE, {"bootstrap": _pinned(bootstrapped), "source-change": _pinned(changed)}
+    )
+
+
+def test_python_basic_upgrade_seeds_legacy_wiki_through_sync(tmp_path: Path) -> None:
+    project = _copy_project(tmp_path)
+    _cli(project, "bootstrap", "--src-dir", ".", "--wiki-dir", "wiki", "--knowledge-format", "v1")
+    # Older canonical wikis carry pages but no native authority.
+    for name in NATIVE_ROOTS:
+        (project / "wiki" / name).unlink()
+    _edit_task_and_model(project)
+    legacy = _tree(project)
+
+    _cli(project, "upgrade", "--wiki-dir", "wiki", "--src-dir", ".")
+    upgraded = _tree(project)
+    assert list((tmp_path / "tmp" / "llm-wiki-upgrade-recovery").glob("*/legacy")), (
+        "upgrade must take the legacy seed route"
+    )
+    assert _pinned(upgraded) == {
+        **_pinned(legacy),
+        "wiki/.llm-wiki-surface.json": upgraded["wiki/.llm-wiki-surface.json"].decode("utf-8"),
+    }, "seeding through sync must leave existing pages untouched"
+
+    _sync(project)
+    synced = _tree(project)
+    task = synced["wiki/entities/Task.md"].decode("utf-8")
+    assert AUTHORED_SENTENCE in task and "priority" in task
+    _sync(project)
+    assert _tree(project) == synced, "sync after the applied edits must not rewrite any file"
+
+    _assert_matches_fixture(
+        UPGRADE_FIXTURE, {"upgrade": _pinned(upgraded), "post-upgrade-sync": _pinned(synced)}
+    )
