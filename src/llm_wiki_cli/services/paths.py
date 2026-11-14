@@ -5,6 +5,8 @@ from __future__ import annotations
 import shlex
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
+from .host import current_host
+
 
 _TEST_DIRECTORY_NAMES = frozenset({"test", "tests", "__tests__"})
 _TEST_FILE_STEMS = frozenset({"conftest"})
@@ -75,7 +77,7 @@ def display_project_path(path: Path) -> str:
     """Render a checkout-local path with stable POSIX separators."""
 
     try:
-        return path.relative_to(Path.cwd()).as_posix()
+        return path.relative_to(current_host().cwd()).as_posix()
     except ValueError:
         return path.as_posix()
 
@@ -93,7 +95,7 @@ def portable_source_root_label(
     if not candidate.is_absolute():
         if PurePosixPath(raw_value).is_absolute() or foreign_windows.drive:
             return "<external-source-root>"
-    anchor = Path.cwd() if base is None else Path(base).expanduser()
+    anchor = current_host().cwd() if base is None else Path(base).expanduser()
     try:
         relative = candidate.resolve().relative_to(anchor.resolve())
     except (OSError, RuntimeError, ValueError):

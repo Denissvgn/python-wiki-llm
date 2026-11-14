@@ -9,6 +9,7 @@ step whose result is inert input to the builder.
 
 from __future__ import annotations
 
+from .host import current_host
 from .progress import observed_phase
 
 import math
@@ -1199,14 +1200,14 @@ def _run_git_result(
     preserve_output: bool = False,
 ) -> _GitCommandResult:
     git_environment = {
-        key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+        key: value for key, value in current_host().environ.items() if not key.startswith("GIT_")
     }
     git_environment["LC_ALL"] = "C"
     git_environment["GIT_CONFIG_GLOBAL"] = os.devnull
     git_environment["GIT_CONFIG_NOSYSTEM"] = "1"
     git_environment["GIT_OPTIONAL_LOCKS"] = "0"
     try:
-        result = subprocess.run(
+        result = current_host().run(
             ["git", "-C", str(root), *args],
             # A stdio host may already be reading this pipe on another thread.
             # Git metadata reads must not inherit the host's protocol channel.
@@ -1260,7 +1261,7 @@ def _run_effective_git_config(
             return selected
         selected_value = selected.output
     git_environment = {
-        name: value for name, value in os.environ.items() if not name.startswith("GIT_")
+        name: value for name, value in current_host().environ.items() if not name.startswith("GIT_")
     }
     git_environment["LC_ALL"] = "C"
     git_environment["GIT_OPTIONAL_LOCKS"] = "0"
@@ -1270,7 +1271,7 @@ def _run_effective_git_config(
     # by the selected literal value first; never reinterpret it with our parser.
     value_arguments = () if selected_value is None else ("--fixed-value",)
     try:
-        result = subprocess.run(
+        result = current_host().run(
             [
                 "git",
                 "--no-pager",

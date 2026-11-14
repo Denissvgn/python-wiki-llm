@@ -27,6 +27,7 @@ from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Any, Literal, overload
 
+from .host import current_host
 from ..config import (
     DEFAULT_WIKI_DIR,
     PathValidationError,
@@ -1913,8 +1914,8 @@ def _capture_protocol_enrichment_session(
                 None
                 if source_snapshot is not None
                 and source_snapshot.source_selection_policy is not None
-                and src_root.resolve() != Path.cwd().resolve()
-                else Path.cwd()
+                and src_root.resolve() != current_host().cwd().resolve()
+                else current_host().cwd()
             ),
             include_plugins=(
                 include_plugins

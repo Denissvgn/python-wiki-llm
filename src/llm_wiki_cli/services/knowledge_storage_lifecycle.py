@@ -10,6 +10,7 @@ import re
 import subprocess
 from typing import Any
 
+from .host import current_host
 from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
 from .knowledge_artifacts import (
     ArtifactWriteState, KnowledgeCommitPlan, PlannedArtifactWrite,
@@ -87,7 +88,7 @@ def _committed_inputs(wiki_dir: str | Path):
 
 def _default_recovery_directory(root: Path, root_hash: str) -> Path | None:
     try:
-        result = subprocess.run(["git", "-C", str(root), "rev-parse", "--absolute-git-dir"],
+        result = current_host().run(["git", "-C", str(root), "rev-parse", "--absolute-git-dir"],
                                 capture_output=True, text=True, timeout=10, check=False)
     except (OSError, subprocess.TimeoutExpired):
         return None

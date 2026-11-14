@@ -6,13 +6,13 @@ import json
 import base64
 import binascii
 import heapq
-import os
 from pathlib import Path
 import re
 import subprocess
 from threading import Event, Thread
 from typing import Any
 
+from .host import current_host
 from .knowledge_artifacts import validated_artifact_bytes
 from .knowledge_loader import load_knowledge_state
 from .knowledge_index import _model_to_payload
@@ -36,13 +36,13 @@ from .wiki_surface_index import SURFACE_INDEX_FILENAME
 def _git(root: Path, arguments: list[str], *, input_bytes: bytes | None = None,
          maximum: int = 16_777_216, environment: dict[str, str] | None = None) -> tuple[int, bytes]:
     """Drain both pipes with hard byte/time bounds; never invoke a shell."""
-    env = {**(os.environ if environment is None else environment), "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0",
+    env = {**(current_host().environ if environment is None else environment), "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0",
            "GIT_NO_LAZY_FETCH": "1", "GIT_PAGER": "cat"}
     command = ["git", "--no-pager", "-c", "core.fsmonitor=false", "-C", str(root), *arguments]
     buffers = [bytearray(), bytearray()]
     exceeded = Event()
     try:
-        with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        with current_host().popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, env=env) as process:
             assert process.stdout is not None and process.stderr is not None and process.stdin is not None
             stdin = process.stdin

@@ -26,6 +26,7 @@ PRIMITIVE_SERVICES = frozenset(
         "contracts",
         "filesystem_guard",
         "freshness_wording",
+        "host",
         "immutable",
         "io",
         "lockfile",
@@ -512,25 +513,22 @@ ANALYSIS_UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
 }
 
 # Ambient side effects in engine layers today. Entries may only be removed; the
-# host should supply processes, output, environment and the workspace root.
+# host should supply output as events, like it supplies processes, environment
+# and the working directory.
 SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {
-    "change_selection": frozenset({"subprocess"}),
-    "circuit_breaker": frozenset({"environ", "print"}),
+    "circuit_breaker": frozenset({"print"}),
     "context_budget": frozenset({"print"}),
-    "context_service": frozenset({"cwd", "print"}),
-    "context_session": frozenset({"cwd", "environ", "subprocess"}),
-    "io": frozenset({"cwd"}),
-    "knowledge_envelope": frozenset({"environ", "subprocess"}),
-    "knowledge_maintenance": frozenset({"subprocess"}),
-    "knowledge_reuse": frozenset({"cwd"}),
-    "knowledge_storage_diagnostics": frozenset({"environ", "subprocess"}),
-    "knowledge_storage_lifecycle": frozenset({"subprocess"}),
+    "context_service": frozenset({"print"}),
     "lockfile": frozenset({"print"}),
-    "paths": frozenset({"cwd"}),
     "runtime_output": frozenset({"print"}),
     "sync_recovery": frozenset({"print"}),
     "sync_transition_execution": frozenset({"print"}),
-    "wiki_lifecycle": frozenset({"cwd"}),
+}
+
+# The host module is the one boundary that touches the machine on the engine's
+# behalf; everything else asks ``host.current_host()``.
+HOST_BOUNDARY: dict[str, frozenset[str]] = {
+    "host": frozenset({"subprocess", "environ", "cwd"}),
 }
 
 _SERVICE_LAYERS = {
@@ -733,6 +731,7 @@ def _engine_side_effects(
 
 def test_engine_layers_add_no_ambient_side_effects() -> None:
     actual = _engine_side_effects()
+    assert {name: actual.pop(name, frozenset()) for name in HOST_BOUNDARY} == HOST_BOUNDARY
     added = {
         module: sorted(effects - SIDE_EFFECT_BASELINE.get(module, frozenset()))
         for module, effects in actual.items()

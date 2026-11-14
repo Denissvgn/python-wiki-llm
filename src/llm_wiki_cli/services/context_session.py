@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .host import current_host
 from . import analysis_compatibility as ac
 
 from collections import OrderedDict
@@ -70,9 +71,9 @@ def _git_identity(root, metrics=None):
         if metrics is not None:
             metrics["git_queries"] = metrics.get("git_queries", 0) + 1
         try:
-            result = subprocess.run(["git", "-C", str(root), *args], capture_output=True,
+            result = current_host().run(["git", "-C", str(root), *args], capture_output=True,
                                     stdin=subprocess.DEVNULL, timeout=5, check=False,
-                                    env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"})
+                                    env={**current_host().environ, "GIT_OPTIONAL_LOCKS": "0"})
         except (OSError, subprocess.TimeoutExpired):
             return None
         return result.stdout.strip() if result.returncode == 0 else None
@@ -117,7 +118,7 @@ def _producer_identity(metrics=None):
         if metrics is not None:
             metrics["producer_files"] = metrics.get("producer_files", 0) + 1
             metrics["producer_bytes"] = metrics.get("producer_bytes", 0) + len(raw)
-    environment = {key: value for key, value in os.environ.items() if key.startswith("LLM_WIKI_")}
+    environment = {key: value for key, value in current_host().environ.items() if key.startswith("LLM_WIKI_")}
     return content_id("llm-wiki-workflow-producer/v1", {"provider": __version__, "python": sys.version,
                                                        "files": files, "environment": environment})
 
@@ -232,7 +233,7 @@ class ContextSession:
         if (isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, (int, float))
                 or not math.isfinite(ttl_seconds) or not 0 < ttl_seconds <= 86400):
             raise WorkflowRequestError("ttl_seconds", "must be finite and between 0 and 86400")
-        self._cwd = Path.cwd().resolve()
+        self._cwd = current_host().cwd().resolve()
         self._source = validate_source_root(src_dir, "--src-dir", allow_external=allow_external_src)
         self._wiki = validate_path(wiki_dir, "--wiki-dir")
         self._source_stamp = _root_stamp(self._source)
@@ -256,7 +257,7 @@ class ContextSession:
         self._validation_work = {}
 
     def _roots_current(self):
-        if Path.cwd().resolve() != self._cwd:
+        if current_host().cwd().resolve() != self._cwd:
             raise WorkflowRequestError("workspace", "session cannot follow a changed working directory")
         if _root_stamp(self._source) != self._source_stamp:
             raise WorkflowRequestError("workspace", "source root object changed; create a new session")

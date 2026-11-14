@@ -9,6 +9,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, replace
 from pathlib import Path
 
+from .host import current_host
 from .. import __version__
 from .contracts import KNOWLEDGE_REUSE_SCHEMA_VERSION
 from .knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
@@ -236,7 +237,7 @@ def build_reuse_input_basis(
         return None
     if include_plugins and any(
         (root / ".llm-wiki/plugins.lock.json").exists()
-        for root in (Path.cwd(), source_snapshot.root)
+        for root in (current_host().cwd(), source_snapshot.root)
     ):
         return None
     implementation = implementation_hash()

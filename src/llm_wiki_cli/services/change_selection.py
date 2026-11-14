@@ -9,6 +9,7 @@ import re
 import subprocess
 from typing import Mapping
 
+from .host import current_host
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,
@@ -81,7 +82,7 @@ def changes_from_args(args) -> dict | None:
 
 def _git(root, *arguments) -> str:
     try:
-        return subprocess.run(
+        return current_host().run(
             ["git", *arguments],
             input="",
             cwd=root,

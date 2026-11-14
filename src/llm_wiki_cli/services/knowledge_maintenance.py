@@ -13,6 +13,7 @@ import tarfile
 from typing import Any
 
 import llm_wiki_cli
+from .host import current_host
 from ..config import EXTRACTOR_REGISTRY, validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
 from . import extractor_helpers, analysis_compatibility as ac
@@ -65,7 +66,7 @@ def project_version(root: Path) -> str:
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
+    return current_host().run(
         ["git", "-C", str(root), *args],
         stdin=subprocess.DEVNULL,
         capture_output=True,

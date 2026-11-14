@@ -19,6 +19,7 @@ from collections.abc import Callable, Set
 from pathlib import Path
 from typing import Any
 
+from .host import current_host
 from .knowledge_evidence import formatted_json_bytes
 
 
@@ -63,7 +64,7 @@ def first_unsafe_path_component(
         # inspected, rather than collapsed before the walk.
         absolute = lexical
     else:
-        absolute = Path.cwd() / lexical
+        absolute = current_host().cwd() / lexical
     current = Path(absolute.anchor)
     pending_parts = list(absolute.parts[1:])
     followed_link_count = 0

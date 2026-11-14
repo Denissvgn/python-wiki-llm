@@ -5,6 +5,8 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .host import current_host
+
 MAX_CONSECUTIVE_FAILURES = 3
 DEFAULT_BREAKER_TTL_SECONDS = 3600
 BREAKER_TTL_ENV = "LLM_WIKI_BREAKER_TTL_SECONDS"
@@ -142,7 +144,7 @@ def reset_breaker(git_dir: Path) -> None:
 def breaker_ttl_seconds() -> float:
     """Return the configured non-negative automatic-recovery TTL."""
 
-    raw = os.environ.get(BREAKER_TTL_ENV)
+    raw = current_host().environ.get(BREAKER_TTL_ENV)
     if raw is None:
         return float(DEFAULT_BREAKER_TTL_SECONDS)
     try:

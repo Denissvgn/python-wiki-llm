@@ -11,6 +11,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 
+from .host import current_host
 from ..config import AGENT_CHOICES
 from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
 from .io import first_unsafe_path_component, formatted_json_bytes
@@ -83,7 +84,7 @@ def provision_wiki_scaffold(wiki_dir: Union[str, Path]) -> WikiScaffoldProvision
     created_files: list[str] = []
 
     def absolute(path: Path) -> Path:
-        return path if path.is_absolute() else Path.cwd().resolve() / path
+        return path if path.is_absolute() else current_host().cwd().resolve() / path
 
     try:
         for directory in directories:
