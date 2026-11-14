@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import os
 import subprocess
 import sys
@@ -16,6 +17,8 @@ from llm_wiki_cli.services.host import (
     HostCapabilityError,
     NoProcessHost,
     current_host,
+    discarding_stdout,
+    emit,
     using_host,
 )
 
@@ -94,3 +97,31 @@ def test_no_process_host_refuses_and_engine_degrades_like_missing_git(tmp_path: 
         with pytest.raises(ValueError, match="Git changes"):
             change_selection._git(tmp_path, "rev-parse", "HEAD")
     assert os.environ is current_host().environ
+
+
+def test_emit_writes_to_the_host_streams_and_defaults_follow_redirection(capsys) -> None:
+    out, err = io.StringIO(), io.StringIO()
+
+    with using_host(Host(stdout=out, stderr=err)):
+        emit("progress", 3)
+        emit("Error: bad", stream="stderr")
+    emit("live")
+
+    assert (out.getvalue(), err.getvalue()) == ("progress 3\n", "Error: bad\n")
+    assert capsys.readouterr().out == "live\n"
+
+
+def test_with_output_keeps_host_behaviour_and_discarding_drops_only_stdout() -> None:
+    out, err = io.StringIO(), io.StringIO()
+    host = NoProcessHost(stdout=out, stderr=err)
+    pinned = PinnedHost(cwd=Path("/pinned")).with_output(stdout=out)
+
+    assert isinstance(host.with_output(stderr=io.StringIO()), NoProcessHost)
+    assert pinned.cwd() == Path("/pinned") and pinned.stdout is out
+    with using_host(host):
+        with discarding_stdout() as quiet:
+            emit("hidden")
+            emit("kept", stream="stderr")
+            assert isinstance(quiet, NoProcessHost)
+        emit("shown")
+    assert (out.getvalue(), err.getvalue()) == ("shown\n", "kept\n")

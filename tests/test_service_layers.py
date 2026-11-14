@@ -520,7 +520,7 @@ SIDE_EFFECT_BASELINE: dict[str, frozenset[str]] = {
 # The host module is the one boundary that touches the machine on the engine's
 # behalf; everything else asks ``host.current_host()``.
 HOST_BOUNDARY: dict[str, frozenset[str]] = {
-    "host": frozenset({"subprocess", "environ", "cwd", "clock"}),
+    "host": frozenset({"subprocess", "environ", "cwd", "clock", "print"}),
 }
 
 _SERVICE_LAYERS = {
