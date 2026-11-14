@@ -73,6 +73,8 @@ def evaluate(
     root: Path, repository: str, client, *, apply: bool, correlation: str
 ) -> dict:
     sha = main_identity(root, client)
+    from release.preparation import require_capture_current
+    require_capture_current(root)
     identifier = hashlib.sha256(
         canonical({"source": sha, "renewal": correlation})
     ).hexdigest()
@@ -104,6 +106,8 @@ def prepare(
     verifier=policy_activation.verify_shadow,
 ) -> dict:
     base = main_identity(root, client)
+    from release.preparation import require_capture_current
+    require_capture_current(root)
     run = client.get(f"/actions/runs/{run_id}")
     source = run.get("head_sha")
     require(

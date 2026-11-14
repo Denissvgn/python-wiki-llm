@@ -64,6 +64,32 @@ jobs:
         id: python
         with:
           python-version: "3.13.18"
+      - name: Verify the publication consumer before preview or apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -I release/preflight_contracts.py inputs --repo .
+          python -I release/preflight_contracts.py check --repo .
+          input="${RUNNER_TEMP}/publication-input"
+          envdir="${RUNNER_TEMP}/publication-venv"
+          python -I release/helper_ownership.py freeze --checkout . --source-sha "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --output "${input}"
+          python -m venv "${envdir}"
+          "${envdir}/bin/python" -m pip install "${input}/source[dev,tokens]"
+          "${envdir}/bin/python" -I release/helper_ownership.py probe --root "${input}/source" \
+            --archive "${input}/candidate-source.tar" --identity "${input}/identity.json" --source-sha "${GITHUB_SHA}" \
+            --publication-only --output "${RUNNER_TEMP}/publication-consumer"
+      - name: Retain publication consumer outcome
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: publication-consumer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/publication-consumer/result.json
+            ${{ runner.temp }}/publication-consumer/publication/*.json*
+            ${{ runner.temp }}/publication-consumer/publication/*.log
+            ${{ runner.temp }}/publication-consumer/publication/*.xml
+          if-no-files-found: warn
       - name: Install the candidate with locked validation tools
         run: |
           "${{ steps.python.outputs.python-path }}" -m venv .venv

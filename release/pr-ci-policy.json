@@ -126,6 +126,10 @@
         "tests/test_knowledge_maintenance.py",
         "tests/test_policy_activation.py",
         "tests/test_policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py",
+        "tests/test_reviewed_wiki_capture.py",
+        "tests/test_wiki_review_snapshot.py",
         "tests/test_qualification_automation.py",
         "tests/test_hosted_evidence.py",
         "tests/test_core_shards.py",
@@ -134,7 +138,10 @@
         "tests/test_static_quality_architecture.py",
         "tests/test_release_readiness.py",
         "tests/test_measurement_canary.py",
-        "tests/test_manual_release.py"
+        "tests/test_manual_release.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
       ],
       "lanes": [
         "ubuntu"
@@ -608,7 +615,10 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py"
       ],
       "lanes": [
         "ubuntu",
@@ -617,6 +627,91 @@
       "jobs": [
         "typecheck"
       ],
+      "helpers": []
+    },
+    "integrity-action-contracts": {
+      "tests": [
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_has_bounded_portable_inputs",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_isolates_python_modules_from_candidate_source",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "release-preparation-native": {
+      "tests": [
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "native-scheduling": {
+      "tests": [
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_documentation_calibration_host_broker.py",
+        "tests/test_publication_impact.py",
+        "tests/test_publication_candidate.py",
+        "tests/test_sync_analysis_cache.py",
+        "tests/test_core_shards.py",
+        "tests/test_core_shard_runner.py",
+        "tests/test_core_shard_workflow.py",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "release-recovery-native": {
+      "tests": [
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py",
+        "tests/test_manual_release.py",
+        "tests/test_preflight_runner.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "publication-retirement": {
+      "tests": [
+        "tests/test_publication_portability_adoption.py::test_managed_native_wiki_custom_paths_stale_evidence_and_recovery[retired]"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [],
       "helpers": []
     }
   },
@@ -812,6 +907,10 @@
         "release/analysis_conformance.py",
         "release/hosted_evidence.py",
         "release/knowledge_maintenance.py",
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
         "release/knowledge-maintenance.json",
         "release/action-runtimes.json",
         "release/*policy*.json",
@@ -821,13 +920,17 @@
         "release/skip-allowlist.json",
         "release/core_shard*.py",
         "release/core-shard-timings.json",
-        "release/core-shard-windows-trial.json",
         "release/toolchain-lock.json",
         "release/manual_release.py",
         "release/readiness.py",
         "release/runtime-policy.json",
         "release/measurement_canary.py",
-        "release/core_coverage.py"
+        "release/core_coverage.py",
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json",
+        "release/session_report.py",
+        "release/release_resources.py"
       ],
       "groups": [
         "release",
@@ -1060,10 +1163,93 @@
         "tests/test_evidence_explanation_query.py",
         "tests/test_helper_cache.py",
         "tests/test_manual_release.py",
-        "tests/test_wiki_candidate_checkout.py"
+        "tests/test_wiki_candidate_checkout.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_contract_canary.py",
+        "release/contract_canary.py",
+        "release/preflight_runner.py",
+        "release/preflight_contracts.py",
+        "release/core_coverage.py",
+        "release/core_shard_runner.py"
       ],
       "groups": [
         "release-fixtures-native"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/wiki-integrity/**",
+        "tests/test_wiki_integrity_action.py"
+      ],
+      "groups": [
+        "integrity-action-contracts"
+      ]
+    },
+    {
+      "paths": [
+        "release/preparation.py",
+        "release/wiki_capture.py",
+        "release/policy_activation.py",
+        "release/policy_renewal.py",
+        "tests/test_release_preparation.py",
+        "tests/test_wiki_capture_import.py"
+      ],
+      "groups": [
+        "release-preparation-native"
+      ]
+    },
+    {
+      "paths": [
+        "release/core_schedule.py",
+        "release/native_bottlenecks.py",
+        "release/core-shard-windows-trial.json",
+        "tests/prepared_workspaces.py",
+        "tests/test_core_schedule.py",
+        "tests/test_prepared_workspaces.py",
+        "tests/test_documentation_calibration_controller.py",
+        "tests/test_publication_impact.py",
+        "tests/test_sync_analysis_cache.py",
+        ".github/workflows/core-shard-shadow.yml",
+        "tests/test_native_bottlenecks.py"
+      ],
+      "groups": [
+        "native-scheduling"
+      ]
+    },
+    {
+      "paths": [
+        "release/session_report.py",
+        "release/release_resources.py",
+        "release/manual_release.py",
+        "release/preflight_runner.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py"
+      ],
+      "groups": [
+        "release-recovery-native"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/source_retirement.py",
+        "src/llm_wiki_cli/services/knowledge_freshness.py",
+        "src/llm_wiki_cli/services/knowledge_coverage.py",
+        "src/llm_wiki_cli/services/documentation_native.py"
+      ],
+      "groups": [
+        "publication-retirement"
+      ]
+    },
+    {
+      "paths": [
+        "release/helper_ownership.py",
+        "release/pr_evidence.py"
+      ],
+      "groups": [
+        "release",
+        "ci-policy"
       ]
     }
   ],
@@ -1135,6 +1321,9 @@
       "go"
     ],
     "tests/test_verified_bug_migrations.py": [
+      "typescript"
+    ],
+    "tests/test_retired_member_freshness.py": [
       "typescript"
     ]
   },

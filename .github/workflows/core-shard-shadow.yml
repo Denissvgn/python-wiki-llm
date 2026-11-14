@@ -1,5 +1,6 @@
 # Nonqualifying native equivalence evidence; qualifying shards use separate receipts.
 name: Core shard shadow
+run-name: Core shadow (${{ inputs.scope || 'windows' }}, Windows ${{ inputs.windows-shards || '2' }}, prepared ${{ inputs.prepared-workspaces || false }})
 'on':
   workflow_dispatch:
     inputs:
@@ -7,8 +8,28 @@ name: Core shard shadow
         description: Full pushed branch-tip SHA (leave empty to use this branch tip)
         required: false
         type: string
+      scope:
+        description: Native lanes to exercise
+        type: choice
+        options: [windows, all]
+        default: windows
+      windows-shards:
+        description: Experimental Windows runner count; qualification remains two
+        type: choice
+        options: ['2', '3']
+        default: '2'
+      history:
+        description: Reviewed advisory weights for Windows
+        type: choice
+        options: [committed, windows-trained]
+        default: committed
+      prepared-workspaces:
+        description: Trial pristine prepared fixtures on shards; reference always builds fresh
+        type: boolean
+        default: false
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -26,6 +47,9 @@ jobs:
     outputs:
       source-sha256: ${{ steps.freeze.outputs.source-sha256 }}
       harness-sha256: ${{ steps.freeze.outputs.harness-sha256 }}
+      reference-matrix: ${{ steps.schedule.outputs.reference-matrix }}
+      shards-matrix: ${{ steps.schedule.outputs.shards-matrix }}
+      compare-matrix: ${{ steps.schedule.outputs.compare-matrix }}
     steps:
     - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       with:
@@ -49,6 +73,19 @@ jobs:
         python -I release/core_shard_runner.py freeze --root . \
           --candidate-sha "${CANDIDATE_SHA}" --repository "${GITHUB_REPOSITORY}" \
           --output "${RUNNER_TEMP}/core-shard-inputs"
+    - name: Plan the bounded native experiment
+      id: schedule
+      env:
+        SCOPE: ${{ inputs.scope || 'windows' }}
+        WINDOWS_SHARDS: ${{ inputs.windows-shards || '2' }}
+        HISTORY: ${{ inputs.history || 'committed' }}
+        PREPARED: ${{ inputs.prepared-workspaces && 'true' || 'false' }}
+      run: |
+        fixture_flags=()
+        if [[ "${PREPARED}" == "true" ]]; then fixture_flags+=(--prepared-workspaces); fi
+        python -I release/core_schedule.py matrix --root . --scope "${SCOPE}" \
+          --windows-shards "${WINDOWS_SHARDS}" --history "${HISTORY}" \
+          "${fixture_flags[@]}" --output "${RUNNER_TEMP}/core-shard-inputs/shadow-options.json"
     - name: Upload immutable shadow inputs
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -66,17 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 3
-      matrix:
-        include:
-        - lane: core-windows-3.13
-          os: windows-2025
-          python: '3.13'
-        - lane: core-ubuntu-3.11
-          os: ubuntu-24.04
-          python: '3.11'
-        - lane: core-macos-3.14
-          os: macos-15
-          python: '3.14'
+      matrix: ${{ fromJSON(needs.freeze.outputs.reference-matrix) }}
     defaults:
       run:
         shell: bash
@@ -106,17 +133,31 @@ jobs:
     - name: Create a fresh job environment
       run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
     - name: Install the candidate noneditably
-      run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+      env:
+        HISTORY_PROFILE: ${{ matrix.history }}
+      run: |
+        if [[ "${HISTORY_PROFILE}" == "windows-trained" ]]; then
+          python -I incoming/tools/release/core_schedule.py constraints --root incoming/tools --output incoming/training-constraints.txt
+          python -m pip install --no-cache-dir --constraint incoming/training-constraints.txt --requirement incoming/training-constraints.txt "./candidate[dev,tokens]"
+        else
+          python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        fi
     - name: Collect a complete plan and execute the unsharded reference
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
         LANE: ${{ matrix.lane }}
+        SHARD_COUNT: ${{ matrix.shards }}
+        HISTORY_PROFILE: ${{ matrix.history }}
+        LLM_WIKI_TEST_PREPARED_WORKSPACES: '0'
+        LLM_WIKI_TEST_PREPARED_WORKSPACE_REPORT: ${{ github.workspace }}/evidence/reference/workspace-profile.json
       run: |
+        history_flags=()
+        if [[ "${HISTORY_PROFILE}" == "windows-trained" ]]; then history_flags+=(--history incoming/tools/release/core-shard-windows-trial.json); fi
         python -I incoming/tools/release/core_shard_runner.py execute \
           --root candidate --identity incoming/identity.json --archive incoming/candidate-source.tar \
           --harness incoming/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}" \
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}" \
-          --shards 2 --output evidence/reference
+          --shards "${SHARD_COUNT}" "${history_flags[@]}" --output evidence/reference
     - name: Retain complete or partial shadow evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -137,32 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 3
-      matrix:
-        include:
-        - lane: core-windows-3.13
-          os: windows-2025
-          python: '3.13'
-          shard: 0
-        - lane: core-windows-3.13
-          os: windows-2025
-          python: '3.13'
-          shard: 1
-        - lane: core-ubuntu-3.11
-          os: ubuntu-24.04
-          python: '3.11'
-          shard: 0
-        - lane: core-ubuntu-3.11
-          os: ubuntu-24.04
-          python: '3.11'
-          shard: 1
-        - lane: core-macos-3.14
-          os: macos-15
-          python: '3.14'
-          shard: 0
-        - lane: core-macos-3.14
-          os: macos-15
-          python: '3.14'
-          shard: 1
+      matrix: ${{ fromJSON(needs.freeze.outputs.shards-matrix) }}
     defaults:
       run:
         shell: bash
@@ -213,6 +229,8 @@ jobs:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
         LANE: ${{ matrix.lane }}
         SHARD: ${{ matrix.shard }}
+        LLM_WIKI_TEST_PREPARED_WORKSPACES: ${{ inputs.prepared-workspaces && '1' || '0' }}
+        LLM_WIKI_TEST_PREPARED_WORKSPACE_REPORT: ${{ github.workspace }}/evidence/shard/workspace-profile.json
       run: |
         python -I incoming/tools/release/core_shard_runner.py execute \
           --root candidate --identity incoming/identity.json --archive incoming/candidate-source.tar \
@@ -241,17 +259,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 3
-      matrix:
-        include:
-        - lane: core-windows-3.13
-          os: windows-2025
-          python: '3.13'
-        - lane: core-ubuntu-3.11
-          os: ubuntu-24.04
-          python: '3.11'
-        - lane: core-macos-3.14
-          os: macos-15
-          python: '3.14'
+      matrix: ${{ fromJSON(needs.freeze.outputs.compare-matrix) }}
     defaults:
       run:
         shell: bash
@@ -316,6 +324,14 @@ jobs:
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}" \
           --plan incoming/reference/plan.json --reference incoming/reference \
           --shards-root incoming/shards --output evidence/comparison
+    - name: Record actual queue, runner and failure clocks
+      if: ${{ always() }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        python -I incoming/tools/release/core_schedule.py metrics --root candidate \
+          --repository "${GITHUB_REPOSITORY}" --run-id "${GITHUB_RUN_ID}" \
+          --attempt "${GITHUB_RUN_ATTEMPT}" --output evidence/comparison/native-clocks.json
     - name: Retain complete or partial shadow evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

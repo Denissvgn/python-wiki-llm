@@ -16,6 +16,8 @@ import pytest
 import yaml
 
 from release import manual_release as manual
+from release import preflight
+from tests.test_preflight import _review_record, local_receipt as local_receipt, planned_project as planned_project
 
 
 def git(root, *args):
@@ -40,7 +42,7 @@ class Remote:
     def __init__(self):
         self.writes = []
         self.results = {}
-        self.lose_after_accept = None
+        self.lose_after_accept: str | None = None
         self.lose_before_accept = False
         self.public_ready = True
         self.admitted = True
@@ -1087,6 +1089,75 @@ def dispatch_session(project, monkeypatch, action):
     return controller, client
 
 
+@pytest.mark.parametrize(("action", "http_status", "fail_jobs"), [
+    ("qualify", 502, True), ("dry-run", 503, False), ("publish", 504, True),
+])
+def test_watch_continues_after_unavailable_workflow_read(
+        project, monkeypatch, capsys, action, http_status, fail_jobs):
+    controller, client = dispatch_session(project, monkeypatch, action)
+    submitted = controller.advance()
+    pending = submitted["pending"]
+    workflow, name = manual.WORKFLOWS[action]
+    run = {"id": 42, "created_at": pending["started_at"], "run_attempt": 1,
+           "head_sha": submitted["candidate_sha"], "head_branch": "main", "event": "workflow_dispatch",
+           "path": ".github/workflows/" + workflow, "name": name, "status": "in_progress",
+           "repository": {"full_name": "example/agent-wiki"}, "head_repository": {"full_name": "example/agent-wiki"}}
+    failures = [http_status]
+
+    def get(path):
+        assert path == "/actions/runs/42"
+        if failures and not fail_jobs:
+            raise manual.automation.APIError(failures.pop(), "Run read unavailable")
+        return run
+
+    def jobs(path, key):
+        assert (path, key) == ("/actions/runs/42/attempts/1/jobs", "jobs")
+        if failures:
+            raise manual.automation.APIError(failures.pop(), "Jobs read unavailable")
+        return [{"name": "Native suite", "status": "in_progress", "conclusion": None}]
+
+    monkeypatch.setattr(client, "get", get)
+    monkeypatch.setattr(client, "list", jobs)
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: controller.backend)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    pauses = skip_watch_pauses(monkeypatch)
+    assert manual.main(["watch", "--root", str(project), "--work", str(controller.store.work),
+                        "--interval", "5", "--max-polls", "2"]) == 0
+    first, recovered, bounded = map(json.loads, capsys.readouterr().out.splitlines())
+    assert first["observation"] == "remote-observation-unavailable" and first["remote"]["http_status"] == http_status
+    assert recovered["observation"] == "remote-running" and recovered["remote"]["run_id"] == 42
+    assert bounded["observation"] == "observation-budget-exhausted" and pauses == [5]
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
+def test_pending_workflow_read_permission_failure_remains_visible(project, monkeypatch):
+    controller, client = dispatch_session(project, monkeypatch, "qualify")
+    submitted = controller.advance()
+
+    def forbidden(path):
+        raise manual.automation.APIError(403, "Run read forbidden")
+
+    monkeypatch.setattr(client, "get", forbidden)
+    with pytest.raises(manual.automation.APIError, match="Run read forbidden"):
+        controller.advance()
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
+def test_gateway_error_submitting_workflow_stays_an_unknown_write(project, monkeypatch):
+    controller, client = dispatch_session(project, monkeypatch, "qualify")
+
+    def lost_response(method, path, payload):
+        assert method == "POST"
+        client.posts.append(payload)
+        raise manual.automation.APIError(502, "Dispatch response unavailable")
+
+    monkeypatch.setattr(client, "request", lost_response)
+    submitted = controller.advance()
+    assert submitted["pending"]["outcome_unknown"] is True
+    assert controller.advance()["observation"] == "awaiting_remote_visibility_or_completion"
+    assert controller.store.load() == submitted and len(client.posts) == 1
+
+
 @pytest.mark.parametrize("when", ["prepare", "after-intent"])
 @pytest.mark.parametrize("mutation", ["absent", "lightweight", "wrong-source", "retargeted-object"])
 def test_published_tag_is_revalidated_before_publisher_dispatch(project, monkeypatch, when, mutation):
@@ -1314,3 +1385,298 @@ def test_new_session_directory_ancestors_are_flushed(project, monkeypatch):
     store = manual.Store(project, project / "private/nested/session")
     manual.Controller(store).initialize("example/agent-wiki", git(project, "rev-parse", "HEAD"))
     assert project in calls and project / "private" in calls and project / "private/nested" in calls
+
+
+@pytest.fixture
+def rehearsal(local_receipt):
+    root, _, _, previous = local_receipt
+    review = root / "private/handoff-review.json"
+    preflight.write_document(review, _review_record(previous["plan"]["candidate_sha"]), root=root)
+    plan = preflight.create_plan(root, previous["plan"]["candidate_sha"], review_file=review)
+    path = root / "private/handoff-plan.json"
+    preflight.write_document(path, plan, root=root)
+    return root, path, plan
+
+
+def start_arguments(root, plan, name="handoff", source="--preflight-plan"):
+    return ["start", "--root", str(root), "--work", str(root / "private" / name),
+            "--repository", "example/agent-wiki", "--candidate-sha", git(root, "rev-parse", "HEAD"),
+            source, str(plan), "--authorize", "qualify", "--interval", "5", "--max-polls", "4"]
+
+
+def skip_watch_pauses(monkeypatch):
+    pauses = []
+    monkeypatch.setattr(manual, "sleep", pauses.append)
+    return pauses
+
+
+def test_start_runs_bound_rehearsal_and_dispatches_without_another_command(rehearsal, monkeypatch, capsys):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: remote)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    pauses = skip_watch_pauses(monkeypatch)
+    assert manual.main(start_arguments(root, plan)) == 0
+    states = list(map(json.loads, capsys.readouterr().out.splitlines()))
+    final = states[-1]
+    assert final["phase"] == "qualified" and final["observation"] == "authorized-scope-complete"
+    assert remote.writes == [("qualify", final["candidate_sha"])] and pauses == [5]
+    assert final["preparation"]["status"] == "verified" and final["preparation"]["stage"] == "artifacts"
+    path = Path(final["preflight_receipt"])
+    receipt = preflight.read_document(path)
+    assert preflight.verify_receipt(path)["ok"] and receipt["requested_stages"] == list(preflight.STAGES)
+    assert [a["stage"] for a in receipt["attempts"]] == list(preflight.STAGES)
+    assert final["preparation"]["receipt_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+    records = list(map(json.loads, (root / "private/handoff/events.jsonl").read_text().splitlines()))
+    local = [r for r in records if r["event"].startswith("local-")]
+    assert [r["preparation"]["stage"] for r in local] == [s for s in preflight.STAGES for _ in range(2)]
+
+
+def test_start_from_verified_receipt_reuses_local_evidence(rehearsal, monkeypatch, capsys):
+    root, plan, _ = rehearsal
+    result = preflight.run_plan(plan, root / "private/existing-preflight")
+    receipt = Path(result["receipt_path"])
+    remote = Remote()
+
+    def admit(state):
+        manual.verified_preflight(root, state["candidate_sha"], Path(state["preflight_receipt"]))
+        return {"admitted": True}
+
+    monkeypatch.setattr(remote, "admit", admit)
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: remote)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    skip_watch_pauses(monkeypatch)
+    monkeypatch.setattr(preflight, "run_plan", lambda *args, **kwargs: pytest.fail("A complete receipt already exists"))
+    assert manual.main(start_arguments(root, receipt, source="--preflight-receipt")) == 0
+    final = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert final["preflight_receipt"] == str(receipt) and len(remote.writes) == 1
+
+
+@pytest.mark.parametrize("emitted", [False, True])
+def test_rehearsal_interruption_retains_results_and_resumes_once(rehearsal, monkeypatch, emitted):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    store = manual.Store(root, root / "private/resumable")
+    controller = manual.Controller(store, remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan, authorize=("qualify",))
+    original = preflight.run_plan
+    paths = []
+
+    def interrupted(*args, **kwargs):
+        if emitted:
+            paths.append(original(*args, **kwargs)["receipt_path"])
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(preflight, "run_plan", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        controller.advance()
+    interrupted_state = store.load()
+    assert interrupted_state["preparation"]["status"] == "interrupted" and not remote.writes
+    assert interrupted_state["preflight_receipt"] is None
+    monkeypatch.setattr(preflight, "run_plan", original)
+    submitted = controller.advance()
+    assert len(remote.writes) == 1 and submitted["pending"]["action"] == "qualify"
+    assert len(submitted["preparation"]["attempts"]) == (1 if emitted else 2)
+    if emitted:
+        assert submitted["preflight_receipt"] == paths[0]
+    controller.advance()
+    assert controller.advance()["observation"] == "authorized-scope-complete" and len(remote.writes) == 1
+
+
+def test_interrupted_local_producer_lock_prevents_competing_execution(rehearsal, monkeypatch):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    store = manual.Store(root, root / "private/held-producer")
+    controller = manual.Controller(store, remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan, authorize=("qualify",))
+
+    def interrupted(plan, work, **kwargs):
+        work.mkdir()
+        (work / ".execution-lock").write_bytes(b"retained producer lock")
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(preflight, "run_plan", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        controller.advance()
+    result = controller.advance()
+    assert result["observation"] == "preparation-blocked" and len(result["preparation"]["attempts"]) == 1
+    assert "original producer" in result["preparation"]["reason"] and not remote.writes
+
+
+@pytest.mark.parametrize("ci_state", ["missing", "pending", "failed"])
+def test_local_receipt_waits_for_exact_ci_and_does_not_rerun(rehearsal, monkeypatch, ci_state):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    store = manual.Store(root, root / "private/ci-wait")
+    controller = manual.Controller(store, remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan, authorize=("qualify",))
+    monkeypatch.setattr(remote, "admit", lambda state: {
+        "admitted": False, "ci": {"status": ci_state, "run_id": 43},
+        "blockers": [{"capability": "main-ci", "reason": "Exact CI " + ci_state}],
+    })
+    waiting = controller.advance()
+    assert waiting["observation"] == ("preparation-blocked" if ci_state == "failed" else "awaiting-main-ci")
+    receipt = waiting["preflight_receipt"]
+    assert receipt and not remote.writes and waiting["admission"]["ci"]["run_id"] == 43
+    monkeypatch.setattr(preflight, "run_plan", lambda *args, **kwargs: pytest.fail("Local work must be reused"))
+    monkeypatch.setattr(remote, "admit", lambda state: {"admitted": True, "ci": {"status": "success", "run_id": 43}})
+    submitted = controller.advance()
+    assert submitted["preflight_receipt"] == receipt and len(remote.writes) == 1
+
+
+def test_repeated_start_reconciles_lost_dispatch_before_local_or_hosted_retry(rehearsal, monkeypatch, capsys):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    remote.lose_after_accept = "qualify"
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: remote)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    skip_watch_pauses(monkeypatch)
+    args = start_arguments(root, plan)
+    args[-1] = "1"
+    assert manual.main(args) == 0
+    unknown = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert unknown["pending"]["outcome_unknown"]
+    monkeypatch.setattr(preflight, "run_plan", lambda *a, **kw: pytest.fail("Resume must reconcile its operation"))
+    args[-1] = "4"
+    assert manual.main(args) == 0
+    final = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert final["session_id"] == unknown["session_id"] and final["phase"] == "qualified"
+    assert len(remote.writes) == 1 and len(final["preparation"]["attempts"]) == 1
+
+
+def test_local_failure_retains_receipt_and_never_dispatches(rehearsal, monkeypatch):
+    from release import preflight_runner
+
+    root, plan, _ = rehearsal
+    remote = Remote()
+    controller = manual.Controller(manual.Store(root, root / "private/local-failure"), remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan, authorize=("qualify",))
+    original = preflight_runner.stage_commands
+
+    def failing(stage, repo, scratch, **kwargs):
+        if stage == "static":
+            return [preflight_runner.Command("failing-local-gate", (sys.executable, "-c", "raise SystemExit(7)"), repo)]
+        return original(stage, repo, scratch, **kwargs)
+
+    monkeypatch.setattr(preflight_runner, "stage_commands", failing)
+    result = controller.advance()
+    assert result["observation"] == "preparation-blocked" and result["preflight_receipt"] is None
+    assert result["preparation"]["status"] == "failed"
+    receipt = preflight.read_document(Path(result["preparation"]["receipt"]))
+    assert receipt["status"] == "failed" and receipt["attempts"][-1]["stage"] == "static"
+    assert receipt["attempts"][-1]["commands"][0]["returncode"] == 7
+    again = controller.advance()
+    assert len(again["preparation"]["attempts"]) == 1 and not remote.writes
+
+
+@pytest.mark.parametrize("invalid", ["partial", "tampered", "wrong-candidate", "expired"])
+def test_invalid_receipt_cannot_reach_qualification(rehearsal, monkeypatch, capsys, invalid):
+    from datetime import datetime, timedelta
+
+    root, plan, _ = rehearsal
+    stages = ("contracts",) if invalid == "partial" else None
+    result = preflight.run_plan(plan, root / "private/refused-receipt", stages)
+    receipt = Path(result["receipt_path"])
+    remote = Remote()
+    if invalid == "tampered":
+        value = preflight.read_document(receipt)
+        path = next(iter(value["evidence"]))
+        (Path(value["work"]) / path).write_bytes(b"changed retained evidence")
+    if invalid == "expired":
+        class Later(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return datetime.now(tz) + timedelta(days=2)
+        monkeypatch.setattr(preflight, "datetime", Later)
+
+    def admit(state):
+        candidate = "a" * 40 if invalid == "wrong-candidate" else state["candidate_sha"]
+        try:
+            manual.verified_preflight(root, candidate, Path(state["preflight_receipt"]))
+        except ValueError as error:
+            return {"admitted": False, "blockers": [{"capability": "local-preflight", "reason": str(error)}]}
+        pytest.fail("An invalid receipt was accepted")
+
+    monkeypatch.setattr(remote, "admit", admit)
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: remote)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    assert manual.main(start_arguments(root, receipt, source="--preflight-receipt")) == 2
+    final = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert final["observation"] == "preparation-blocked" and not remote.writes
+
+
+def test_status_remains_readable_while_second_observer_is_excluded(rehearsal, monkeypatch):
+    root, plan, _ = rehearsal
+    store = manual.Store(root, root / "private/concurrent")
+    remote = Remote()
+    controller = manual.Controller(store, remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan, authorize=("qualify",))
+    original = preflight.run_plan
+    code = """
+import json, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from release import manual_release as manual
+store=manual.Store(Path(sys.argv[2]), Path(sys.argv[3]))
+assert store.load()['preparation']['status']=='running'
+try:
+    with store.lock():
+        raise AssertionError('A competing observer acquired the lease')
+except manual.SessionError as error:
+    assert 'active' in str(error)
+"""
+
+    def inspect(plan, work, **kwargs):
+        subprocess.run([sys.executable, "-I", "-c", code, str(Path(manual.__file__).parents[1]),
+                        str(root), str(store.work)], check=True)
+        return original(plan, work, **kwargs)
+
+    monkeypatch.setattr(preflight, "run_plan", inspect)
+    controller.advance()
+    assert len(remote.writes) == 1
+
+
+def test_start_without_scope_does_not_run_or_read_credentials(rehearsal, monkeypatch, capsys):
+    root, plan, _ = rehearsal
+    args = start_arguments(root, plan)
+    position = args.index("--authorize")
+    del args[position:position + 2]
+    monkeypatch.setattr(preflight, "run_plan", lambda *a, **kw: pytest.fail("Preparation was not authorized"))
+    monkeypatch.setattr(manual.subprocess, "check_output", lambda *a, **kw: pytest.fail("Credentials were not needed"))
+    assert manual.main(args) == 0
+    assert json.loads(capsys.readouterr().out.splitlines()[-1])["observation"] == "awaiting_authorization"
+
+
+def test_start_waits_for_ci_then_continues_with_one_receipt_and_dispatch(rehearsal, monkeypatch, capsys):
+    root, plan, _ = rehearsal
+    remote = Remote()
+    admissions = iter([
+        {"admitted": False, "ci": {"status": "pending", "run_id": 43},
+         "blockers": [{"capability": "main-ci", "reason": "CI in progress"}]},
+        {"admitted": True, "ci": {"status": "success", "run_id": 43}},
+    ])
+    monkeypatch.setattr(remote, "admit", lambda state: next(admissions))
+    monkeypatch.setattr(manual, "GitHubBackend", lambda *args: remote)
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    pauses = skip_watch_pauses(monkeypatch)
+    assert manual.main(start_arguments(root, plan)) == 0
+    states = list(map(json.loads, capsys.readouterr().out.splitlines()))
+    waiting = next(s for s in states if s.get("observation") == "awaiting-main-ci")
+    assert states[-1]["phase"] == "qualified" and states[-1]["preflight_receipt"] == waiting["preflight_receipt"]
+    assert len(remote.writes) == 1 and pauses == [5, 5]
+    assert len(states[-1]["preparation"]["attempts"]) == 1
+
+
+def test_altered_plan_is_refused_before_local_execution(rehearsal, monkeypatch):
+    root, plan_path, plan = rehearsal
+    remote = Remote()
+    store = manual.Store(root, root / "private/changed-plan")
+    controller = manual.Controller(store, remote)
+    controller.initialize("example/agent-wiki", git(root, "rev-parse", "HEAD"), plan=plan_path, authorize=("qualify",))
+    changed = deepcopy(plan)
+    changed["gates"] = []
+    plan_path.write_text(json.dumps(changed))
+    monkeypatch.setattr(preflight, "run_plan", lambda *a, **kw: pytest.fail("Changed plan ran"))
+    result = controller.advance()
+    assert result["observation"] == "preparation-blocked" and result["preparation"]["status"] == "failed"
+    assert "changed" in result["preparation"]["reason"].lower() and not remote.writes

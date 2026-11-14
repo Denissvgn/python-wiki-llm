@@ -74,7 +74,11 @@
       "tests/test_core_shard_runner.py",
       "tests/test_release_readiness.py",
       "tests/test_measurement_canary.py",
-      "tests/test_manual_release.py"
+      "tests/test_contract_canary.py",
+      "tests/test_manual_release.py",
+      "tests/test_session_report.py",
+      "tests/test_release_startup_recovery.py",
+      "tests/test_release_resources.py"
     ],
     "sdk": [
       "tests/test_mcp_sdk.py",
@@ -319,7 +323,7 @@
       ],
       "condition": "",
       "cost": "moderate",
-      "declaration_sha256": "9cba0ebaefb5fd1e6c608bee3b14d4960defb622f177ea1805894af7ba987765",
+      "declaration_sha256": "501bf3854a86c7e90cb2a0462ba90fc56ef863dc338d6ea297ea3965b1300289",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -427,16 +431,47 @@
         "python",
         "git",
         "hosted-actions",
+        "dependency-registry",
+        "native-linux"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "cheap",
+      "declaration_sha256": "e500fba0ef82a3c61c77c1e11edc1462f99135341d9fc87af001d9d3e8119659",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-release-contracts"
+      ],
+      "gates": [
+        "RD-01"
+      ],
+      "id": "contract-canary",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/contract_canary.py",
+      "timeout_minutes": 15
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions",
         "native-windows"
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "18309c1eaff4d5eaff16f4b260584c601129864fa36436cac03d2ce4120405ca",
+      "declaration_sha256": "31bc32f93197b01851bc0639905b60c6fd501a91789f5ea4a49f93cf6e881492",
       "environments": [
         "windows-2025"
       ],
       "expected_evidence": [
-        "evidence-windows-canary"
+        "evidence-windows-canary",
+        "evidence-windows-contracts"
       ],
       "gates": [
         "RD-00"
@@ -459,7 +494,7 @@
       ],
       "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
       "cost": "cheap",
-      "declaration_sha256": "23f4ed4c1b068cb760cd76fb31e41a76f44f07b265c8347962f5011215dcb1f6",
+      "declaration_sha256": "91c8a9de98981b40d2bc6673a0d3ddf6ff1622e3fdbcc028d1b7676d1ed0f7f7",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -473,8 +508,10 @@
       "matrix": {},
       "needs": [
         "readiness",
+        "contract-canary",
         "windows-canary",
-        "smoke-parity"
+        "smoke-parity",
+        "knowledge-maintenance"
       ],
       "normal_required": true,
       "owner": "release/readiness.py",
@@ -1024,9 +1061,9 @@
         "haskell",
         "native-linux-x86_64"
       ],
-      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
+      "condition": "${{ !cancelled() && (!inputs.discovery-mode && !inputs.bandit-parity-verification ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.readiness.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "8b16d3bc68eab9e2909c486a15b0703fb68f665440f648bc28407a2968b1fc57",
+      "declaration_sha256": "b11f518513a10f75caaa1bec08229a1a86af0fd38098a76811de36ed5f430e73",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1040,7 +1077,7 @@
       "matrix": {},
       "needs": [
         "freeze",
-        "admission"
+        "readiness"
       ],
       "normal_required": true,
       "owner": "integrations/github-action/action.yml",
@@ -1052,9 +1089,9 @@
         "authenticated-hosted-policy",
         "native-linux-runtime-basis"
       ],
-      "condition": "${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
+      "condition": "${{ !cancelled() && (always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.readiness.result == 'success') }}",
       "cost": "hosted",
-      "declaration_sha256": "94a167b5ecec875a6523f88467b62ad0d3ecd9ce8512e7e83dd07ad154ee601a",
+      "declaration_sha256": "5b6757da1aa03194f07bc0a6dfb771289306d471d757f0a291a19c8330b64961",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1067,7 +1104,7 @@
       "needs": [
         "freeze",
         "action",
-        "admission"
+        "readiness"
       ],
       "normal_required": true,
       "owner": "release/knowledge_maintenance.py",

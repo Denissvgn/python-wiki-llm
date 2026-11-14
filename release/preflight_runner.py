@@ -566,8 +566,6 @@ def stage_commands(
             "--check-registry",
         ),
     )
-    if stage == "freeze":
-        return commands
     # Archive hash and epoch are read only after the maintained freeze succeeded.
     # Dynamic arguments are restricted internal references, resolved by _materialize.
     archive = frozen / "candidate-source.tar"
@@ -590,6 +588,27 @@ def stage_commands(
             ),
         )
         return candidate
+
+    def contract_check(candidate, environment):
+        from release.readiness import helper_cache_base
+
+        env_python = str(_python(environment))
+        command("early-release-contracts", (
+            env_python, "-I", repo / "release/contract_canary.py", "run", "--root", candidate,
+            "--archive", archive, "--identity", frozen / "identity.json", "--source-sha", candidate_sha,
+            "--expected-prefix", environment, "--helper-cache-dir", helper_cache_base(repo),
+            "--output", scratch / "contract-canary",
+        ), cwd=candidate, expected_prefix=environment, timeout=600)
+
+    if stage == "freeze":
+        candidate = extract("contract-source")
+        environment = scratch / "contract-environment"
+        env_python = str(_python(environment))
+        command("create-contract-environment", (py, "-I", qualification, "create-venv", "--path", environment))
+        command("install-contract-source", (env_python, "-m", "pip", "install", "--no-cache-dir", str(candidate) + "[dev,tokens]"),
+                expected_prefix=environment, timeout=1200)
+        contract_check(candidate, environment)
+        return commands
 
     if stage in {"host-core", "rehearsal"}:
         candidate = extract("host-source")
@@ -629,6 +648,8 @@ def stage_commands(
             "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive),
             "LLM_WIKI_CACHE_DIR": str(helper_cache_base(repo)),
         }
+        if stage == "rehearsal":
+            contract_check(candidate, environment)
         command(
             "collect-host-core",
             (env_python, "-I", repo / "release/core_shard_runner.py", "worker",
@@ -1004,6 +1025,14 @@ def execute_stage(
                         "destructive smoke harness destination is unexpectedly occupied"
                     )
             log = scratch / (f"{index:02d}-" + command.name + ".log")
+            resource_ticket = None
+            if "create-venv" in argv and "--path" in argv:
+                from release import release_resources
+
+                resource_ticket = release_resources.begin_allocation(
+                    scratch, work=work, binding=binding, candidate_sha=candidate_sha,
+                    attempt_id=attempt_id, role=command.name, path=Path(argv[argv.index("--path") + 1]),
+                )
             elapsed = time.monotonic()
             row = {
                 "name": command.name,
@@ -1017,6 +1046,9 @@ def execute_stage(
                 "launcher_probe": consumer_probe,
             }
             child_env = dict(os.environ)
+            # Routine commands resolve the locked Go on PATH. An explicit command
+            # profile may opt back into the qualification override below.
+            child_env.pop("LLM_WIKI_GO", None)
             child_env.update(
                 {
                     "CI": "1",
@@ -1071,6 +1103,8 @@ def execute_stage(
             row["log_sha256"] = (
                 hashlib.sha256(log.read_bytes()).hexdigest() if log.exists() else None
             )
+            if resource_ticket is not None:
+                release_resources.finish_allocation(resource_ticket, outcome=row["status"], runtime=observed_launcher)
             result["commands"].append(row)
             (scratch / "attempt.json").write_bytes(_canonical(result) + b"\n")
             if row["status"] != "passed":
@@ -1234,6 +1268,8 @@ def evidence_paths(attempt: dict) -> list[Path]:
     scratch = Path(attempt["scratch"])
     _safe(scratch)
     files = {scratch / "attempt.json"}
+    if (scratch / "resources.json").exists():
+        files.add(scratch / "resources.json")
     for row in attempt["commands"]:
         files.add(Path(row["log"]))
     for name in (
@@ -1264,6 +1300,7 @@ def evidence_paths(attempt: dict) -> list[Path]:
         "wheel-smoke-mcp-probes",
         "sdist-smoke-mcp-probes",
         "archive-budget",
+        "contract-canary",
     ):
         root = scratch / name
         _safe(root)

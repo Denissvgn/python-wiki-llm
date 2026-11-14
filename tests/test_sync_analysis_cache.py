@@ -38,11 +38,24 @@ def edit(wiki="wiki", text="Authored description."):
 
 @pytest.fixture(params=(("v1", "full"), ("packed-v4-deflate", "full"),
                         ("v1", "inventory"), ("packed-v4-deflate", "inventory")))
-def primed(tmp_path, monkeypatch, request):
+def primed(tmp_path, monkeypatch, request, prepared_workspace):
+    storage_format, coverage = request.param
+    if prepared_workspace.enabled:
+        lease = prepared_workspace("sync-analysis-primer/v1/" + storage_format + "/" + coverage)
+        monkeypatch.chdir(lease.root)
+        lease.populate(lambda root: _prime(root, storage_format, coverage))
+        if coverage == "inventory":
+            monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", lease.metadata["capture_limit"])
+        return lease.root
     monkeypatch.chdir(tmp_path)
+    _prime(tmp_path, storage_format, coverage, monkeypatch)
+    return tmp_path
+
+
+def _prime(tmp_path, storage_format, coverage, monkeypatch=None):
+    capture_limit = None
     Path("src").mkdir()
     Path("src/app.py").write_text('class Item:\n    pass\ndef compute(value=3):\n    return value + 1\ndef run():\n    return compute()\n')
-    storage_format, coverage = request.param
     bootstrap_cmd.run(SimpleNamespace(src_dir="src", wiki_dir="wiki", depth="full",
                                      overwrite=False, source_adapter=True, knowledge_format=storage_format))
     edit()
@@ -50,14 +63,17 @@ def primed(tmp_path, monkeypatch, request):
     assert Path("cache", sync_analysis_cache.FILENAME).exists()
     if coverage == "inventory":
         data = Path("cache", sync_analysis_cache.FILENAME).read_bytes()
-        monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", len(data) - 1)
-        edit(text="Prime qualified partial reuse.")
-        sync()
+        capture_limit = len(data) - 1
+        with patch.object(sync_analysis_cache, "MAX_CAPTURE_BYTES", len(data) - 1):
+            edit(text="Prime qualified partial reuse.")
+            sync()
+        if monkeypatch is not None:
+            monkeypatch.setattr(sync_analysis_cache, "MAX_CAPTURE_BYTES", len(data) - 1)
         assert json.loads(Path("cache", sync_analysis_cache.FILENAME).read_bytes())["coverage"] == "inventory"
     state = load_knowledge_state("wiki")
     assert state.knowledge is not None
     assert sync_analysis_cache.EXTENSION in state.knowledge.extensions
-    return tmp_path
+    return {"capture_limit": capture_limit}
 
 
 def test_markdown_edit_reuses_static_inputs_but_completes_actual_commit(primed, monkeypatch, capsys):

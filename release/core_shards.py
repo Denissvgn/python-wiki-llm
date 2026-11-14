@@ -40,6 +40,7 @@ UBUNTU_LANE = "core-ubuntu-3.11"
 QUALIFYING_LANES = {WINDOWS_LANE, UBUNTU_LANE}
 HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v1"
 HASHED_HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v2"
+NATIVE_HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v3"
 PLANNER = "file-lpt-ms-v1"
 ENVIRONMENT_POLICY = "exact-profile-with-recorded-runner-image/v1"
 FLAGS = [
@@ -274,7 +275,7 @@ def plan(
             "timing history",
         )
         require(
-            history["schema_version"] in {HISTORY_SCHEMA, HASHED_HISTORY_SCHEMA}, "unsupported timing history"
+            history["schema_version"] in {HISTORY_SCHEMA, HASHED_HISTORY_SCHEMA, NATIVE_HISTORY_SCHEMA}, "unsupported timing history"
         )
         q._require_sha(history["source_sha"], "history source")
         positive(history["run_id"], "history run ID")
@@ -283,9 +284,15 @@ def plan(
         lane = context["environment"]["profile"]["lane"]
         previous = history["lanes"].get(lane)
         if previous is not None:
-            hashed = history["schema_version"] == HASHED_HISTORY_SCHEMA
+            native = history["schema_version"] == NATIVE_HISTORY_SCHEMA
+            hashed = history["schema_version"] in {HASHED_HISTORY_SCHEMA, NATIVE_HISTORY_SCHEMA}
             names = {"profile", "files_ms", "files_sha256"} if hashed else {"profile", "files_ms"}
+            if native:
+                names.add("environment")
             fields(previous, names, "lane timings")
+            if native:
+                validate_environment(previous["environment"], lane)
+                require(previous["environment"]["profile"] == previous["profile"], "native timing profile differs")
             if hashed:
                 require(isinstance(previous["files_sha256"], dict) and set(previous["files_sha256"]) == set(previous["files_ms"]), "timing source membership differs")
                 for source_hash in previous["files_sha256"].values():
@@ -300,7 +307,11 @@ def plan(
                 positive(weight, "historical file weight")
             # Old timing affects balance only. A stale profile or deleted file
             # never changes collection or eligibility of any current test.
-            if previous["profile"] == context["environment"]["profile"]:
+            def runtime_key(environment):
+                return {k: environment[k] for k in ("profile", "python", "machine")} | {
+                    "packages": {k: v for k, v in environment["packages"].items() if k != "agent-wiki-cli"}}
+            if (previous["profile"] == context["environment"]["profile"]
+                    and (not native or runtime_key(previous["environment"]) == runtime_key(context["environment"]))):
                 timings = {
                     name: weight
                     for name, weight in previous["files_ms"].items()

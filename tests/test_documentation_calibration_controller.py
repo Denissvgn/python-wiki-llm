@@ -7,6 +7,7 @@ import json
 import os
 import uuid
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -49,6 +50,20 @@ from llm_wiki_cli.services.protected_artifacts import (
 
 
 _HASH_A = "sha256:" + "a" * 64
+_CONTROL_LEASE: ContextVar = ContextVar("calibration_test_controls", default=None)
+
+
+@pytest.fixture
+def tmp_path(tmp_path, prepared_workspace):
+    if not prepared_workspace.enabled:
+        yield tmp_path
+        return
+    lease = prepared_workspace("calibration-controls/v1")
+    token = _CONTROL_LEASE.set(lease)
+    try:
+        yield lease.root
+    finally:
+        _CONTROL_LEASE.reset(token)
 
 
 class _HostBrokerAuthenticator:
@@ -330,6 +345,14 @@ def _prepare_controls(
     readme_text: str | None = None,
     app_text: str | None = None,
 ) -> tuple[Path, Path, Path]:
+    lease = _CONTROL_LEASE.get()
+    if lease is not None and lease.root == tmp_path and readme_text is None and app_text is None:
+        lease.populate(_build_controls)
+        return tmp_path / "source", tmp_path / "control-a", tmp_path / "control-b"
+    return _build_controls(tmp_path, readme_text=readme_text, app_text=app_text)
+
+
+def _build_controls(tmp_path, *, readme_text=None, app_text=None):
     source = tmp_path / "source"
     source.mkdir()
     (source / "README.md").write_text(
