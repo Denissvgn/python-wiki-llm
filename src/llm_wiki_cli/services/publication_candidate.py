@@ -15,6 +15,7 @@ import stat
 from typing import Any, Mapping
 
 from .. import __version__
+from .domain_pack import current_pack
 from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
 from .knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
@@ -32,6 +33,7 @@ from .publication_contracts import (
 )
 from .publication_impact import capture_publication_basis, compare_publication_impact
 from .publication_targets import current_publication_targets, publication_target
+from .reference_providers import reference_providers_identity
 from .validation import portable_path_key, require_portable_relative_path
 
 
@@ -222,6 +224,9 @@ def _provider():
     targets = current_publication_targets().identity()
     if targets is not None:
         fingerprinted["targets"] = targets
+    references = reference_providers_identity(current_pack().reference_providers)
+    if references is not None:
+        fingerprinted["reference_providers"] = references
     return {
         "name": "agent-wiki-cli",
         "version": __version__,
@@ -627,7 +632,7 @@ def _output_path(root, name, config, target, basis, config_path):
     inputs.update(
         root / reference["configuration"]["path"]
         for reference in basis.get("references", {}).values()
-        if reference["configuration"]["kind"] == "contract-file"
+        if "path" in reference["configuration"]
     )
     inputs.update(publication_input_controls(root, config, config_path))
     for item in inputs:

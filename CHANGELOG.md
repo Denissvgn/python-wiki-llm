@@ -67,6 +67,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names the built-in ranking. Pass a pack as `Engine(pack=...)`; built-in
   extractors only read the files the pack classifies for their language.
   `CODE_DOCS_PACK` is the default and keeps current behavior.
+- Domain packs contribute the reference providers a publication policy may
+  declare (`DomainPack.reference_providers`). A `ReferenceProvider` serves one
+  `kind`: it reads a repository JSON file (`reads_file`, configuration
+  `{"kind", "path"}`) or captures its contract from the installation,
+  normalizes the selectors topics use to depend on part of it, checks stored
+  contracts and commits the selected part. The code-documentation pack keeps
+  `llm-wiki-cli`, `llm-wiki-behavior` and `contract-file`; add more with
+  `DomainPack.with_reference_provider()`. Custom providers change the
+  candidate provider fingerprint. Existing policies and evidence are
+  unchanged.
 - A `PublicationTarget` serves one `target.kind` of a publication policy:
   it validates repository names, prepares each owned page for publishing
   and checks the composed candidate tree. `GitHubWikiTarget`

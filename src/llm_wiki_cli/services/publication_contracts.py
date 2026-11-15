@@ -16,6 +16,11 @@ from .publication_config import (
     PUBLICATION_CONFIG_SCHEMA_VERSION,
     validate_publication_config,
 )
+from .reference_providers import (
+    ReferenceContractError,
+    current_reference_providers,
+    reference_provider,
+)
 from .sync_manifest import ManifestPageSource
 from .validation import (
     portable_path_key,
@@ -533,27 +538,18 @@ def _references(value: object, config: Mapping[str, Any]) -> None:
                 "reference identity does not match its provider and configuration",
             )
         if reference["contract"] is None:
-            if configuration["kind"] != "contract-file":
+            if "path" not in configuration:
                 _fail(
                     field + ".contract",
-                    "only a contract-file provider may record known missing input",
+                    "only a file provider may record known missing input",
                 )
-        elif configuration["kind"] == "llm-wiki-behavior":
-            from .behavior_reference import validate_behavior_facts
-
-            validate_behavior_facts(reference["contract"])
         else:
-            from .cli_reference import validate_cli_contract
-
-            validate_cli_contract(reference["contract"])
-            if configuration["kind"] == "llm-wiki-cli" and (
-                reference["contract"]["program"] != "llm-wiki"
-                or reference["contract"]["package"]["name"] != "agent-wiki-cli"
-            ):
-                _fail(
-                    field + ".contract",
-                    "built-in provider identity must be agent-wiki-cli/llm-wiki",
+            try:
+                reference_provider(configuration["kind"]).validate_contract(
+                    reference["contract"]
                 )
+            except ReferenceContractError as exc:
+                _fail(field + ".contract", str(exc))
     for provider, configuration in config.get("reference_providers", {}).items():
         identity = hash_json({"provider": provider, "configuration": configuration})
         if identity not in references:
@@ -656,11 +652,19 @@ def _dependency(value: object, field: str) -> Mapping[str, Any]:
         ],
     }
     if isinstance(value, Mapping) and "reference" in value:
-        provider = _topic_id(value["reference"], field + ".reference")
-        # Reasons may contain the normalized selector without its provider.
-        # Both CLI provider kinds normalize every selection to a command list.
-        kind = "llm-wiki-cli" if "command" in value else "llm-wiki-behavior"
-        config["reference_providers"] = {provider: {"kind": kind}}
+        _topic_id(value["reference"], field + ".reference")
+        # Reasons may contain the normalized selector without its provider:
+        # accept it when some provider of the active pack keeps it unchanged.
+        failure: ValueError | None = None
+        for provider in current_reference_providers().values():
+            try:
+                if provider.normalize_selector(value, field) == value:
+                    return dict(value)
+            except ValueError as exc:
+                failure = failure or exc
+        if failure is not None:
+            raise failure
+        _fail(field, "dependency must have normalized fields")
     dependency = validate_publication_config(config, consumer_root=None)["topics"][0][
         "depends_on"
     ][0]
@@ -682,8 +686,16 @@ def _input(value: object, field: str) -> None:
         configuration = _provider_configuration(
             evidence["provider"], dependency["reference"], field + ".hash.provider"
         )
-        expects_command = configuration["kind"] in {"llm-wiki-cli", "contract-file"}
-        if ("command" in dependency) != expects_command:
+        try:
+            matches = (
+                reference_provider(configuration["kind"]).normalize_selector(
+                    dependency, field + ".dependency"
+                )
+                == dependency
+            )
+        except ValueError:
+            matches = False
+        if not matches:
             _fail(
                 field + ".dependency",
                 "selector differs from its reference provider kind",

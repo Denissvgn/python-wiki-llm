@@ -20,6 +20,11 @@ from urllib.parse import quote, unquote, urlsplit
 
 from .concept_identity import ConceptIdentityError, validate_locator
 from .publication_targets import PublicationTarget, current_publication_targets
+from .reference_providers import (
+    ReferenceSelectorError,
+    current_reference_providers,
+    reference_provider,
+)
 from .source_selection import (
     SOURCE_SELECTION_PATH,
     SourceSelectionError,
@@ -318,20 +323,19 @@ def _dependency(
     spellings: dict[tuple[str, ...], tuple[str, ...]],
     reference_providers: Mapping[str, Any],
 ) -> dict[str, Any]:
-    data = _object(
-        value,
-        field,
-        set(),
-        {
-            "architecture_page",
-            "source_file",
-            "reference",
-            "command",
-            "fact",
-            "section",
-            "facets",
-        },
-    )
+    accepted = {
+        "architecture_page",
+        "source_file",
+        "reference",
+        "command",
+        "fact",
+        "section",
+        "facets",
+    }
+    if isinstance(value, Mapping) and "reference" in value:
+        # The reference provider checks its own selector fields.
+        accepted |= {key for key in value if type(key) is str}
+    data = _object(value, field, set(), accepted)
     kinds = {"architecture_page", "source_file", "reference"} & set(data)
     if len(kinds) != 1:
         raise PublicationConfigError(
@@ -345,31 +349,15 @@ def _dependency(
             raise PublicationConfigError(
                 f"{field}.reference", "must name a declared reference provider"
             )
-        if reference_providers[provider]["kind"] == "llm-wiki-behavior":
-            from .behavior_reference import BEHAVIOR_FACT_GROUPS
-
-            _object(data, field, {"reference"}, {"fact"})
-            if "fact" in data:
-                return {
-                    "reference": provider,
-                    "fact": _choice(
-                        data["fact"], f"{field}.fact", set(BEHAVIOR_FACT_GROUPS)
-                    ),
-                }
-            return {"reference": provider}
-        _object(data, field, {"reference"}, {"command"})
-        command = []
-        for index, raw_token in enumerate(
-            _array(data.get("command", []), f"{field}.command", _MAX_COMMAND_TOKENS)
-        ):
-            token_field = f"{field}.command[{index}]"
-            token = _text(raw_token, token_field, 128)
-            if not _IDENTIFIER.fullmatch(token):
-                raise PublicationConfigError(
-                    token_field, "must be a literal portable command token"
-                )
-            command.append(token)
-        return {"reference": provider, "command": command}
+        reference = reference_provider(reference_providers[provider]["kind"])
+        try:
+            return reference.normalize_selector(data, field)
+        except ReferenceSelectorError as exc:
+            raise PublicationConfigError(exc.field, exc.message) from exc
+        except PublicationConfigError:
+            raise
+        except ValueError as exc:
+            raise PublicationConfigError(field, str(exc)) from exc
     for selector in ("command", "fact"):
         if selector in data:
             raise PublicationConfigError(
@@ -444,12 +432,9 @@ def _reference_providers(
             )
         ids.add(identity.casefold())
         provider = _object(raw, field, {"kind"}, {"path"})
-        kind = _choice(
-            provider["kind"],
-            field + ".kind",
-            {"llm-wiki-cli", "llm-wiki-behavior", "contract-file"},
-        )
-        if kind != "contract-file":
+        available = current_reference_providers()
+        kind = _choice(provider["kind"], field + ".kind", set(available))
+        if not available[kind].reads_file:
             _object(provider, field, {"kind"})
             result[identity] = {"kind": kind}
         else:
@@ -860,9 +845,12 @@ def validate_publication_config(
                 if key in dependency
             )
             scope = (
-                tuple(dependency["command"])
-                if "command" in dependency
-                else dependency.get("fact", dependency.get("section"))
+                json.dumps(
+                    {k: v for k, v in dependency.items() if k != "reference"},
+                    sort_keys=True,
+                )
+                if dep_kind == "reference"
+                else dependency.get("section")
             )
             dep_key = (dep_kind, dependency[dep_kind], scope)
             if dep_key in seen_dependencies:

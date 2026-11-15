@@ -42,7 +42,7 @@ def _basis_files(basis):
     yield from basis.get("files", {})
     for reference in basis.get("references", {}).values():
         configuration = reference["configuration"]
-        if configuration["kind"] == "contract-file":
+        if "path" in configuration:
             yield configuration["path"]
 
 

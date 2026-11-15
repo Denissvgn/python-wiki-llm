@@ -255,6 +255,7 @@
     "services/python_observations.py",
     "services/python_stdlib.py",
     "services/redaction.py",
+    "services/reference_providers.py",
     "services/relationships.py",
     "services/rendering_lifecycle.py",
     "services/request_json.py",

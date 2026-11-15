@@ -12,7 +12,10 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
   built-in Markdown, so a renderer can adjust it instead of starting over;
 * a :class:`ContextSource` decides which sources are related to a changed
   one and how much of each source budgeted context shows at each detail
-  level.
+  level;
+* :class:`~.reference_providers.ReferenceProvider` values serve the
+  reference kinds a publication policy may declare, so public documentation
+  can depend on the pack's contracts.
 
 :data:`CODE_DOCS_PACK` is today's code-documentation behavior and the default.
 A host chooses another pack with :func:`using_pack` or ``Engine(pack=...)``;
@@ -48,6 +51,11 @@ from pathlib import PurePath
 from types import MappingProxyType
 from typing import Any, Literal, Protocol, runtime_checkable
 
+from .reference_providers import (
+    BUILTIN_REFERENCE_PROVIDERS,
+    ReferenceProvider,
+    check_reference_providers,
+)
 from .validation import portable_page_component, portable_path_key
 from .wiki_surface import PageKind
 
@@ -639,13 +647,14 @@ def _qualified_type_name(value: object) -> str:
 
 @dataclass(frozen=True)
 class DomainPack:
-    """A named set of domain decisions: classification, naming, rendering, context."""
+    """A named set of domain decisions: classification, naming, rendering, context, references."""
 
     name: str
     classifier: SourceClassifier
     page_namer: PageNamer = field(default_factory=StemPageNamer)
     page_renderer: PageRenderer = field(default_factory=BuiltInPageRenderer)
     context_source: ContextSource = field(default_factory=CodeContextSource)
+    reference_providers: tuple[ReferenceProvider, ...] = BUILTIN_REFERENCE_PROVIDERS
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -658,6 +667,9 @@ class DomainPack:
             raise TypeError("page_renderer must implement PageRenderer")
         if not isinstance(self.context_source, ContextSource):
             raise TypeError("context_source must implement ContextSource")
+        object.__setattr__(
+            self, "reference_providers", check_reference_providers(self.reference_providers)
+        )
 
     def with_classifier(self, classifier: SourceClassifier) -> DomainPack:
         """A copy of this pack that classifies sources with ``classifier``."""
@@ -675,6 +687,11 @@ class DomainPack:
         """A copy of this pack that builds budgeted context with ``context_source``."""
         return replace(self, context_source=context_source)
 
+    def with_reference_provider(self, provider: ReferenceProvider) -> DomainPack:
+        """A copy of this pack that also serves ``provider``, replacing one of the same kind."""
+        kept = tuple(item for item in self.reference_providers if item.kind != provider.kind)
+        return replace(self, reference_providers=(*kept, provider))
+
     def describe(self) -> dict[str, Any]:
         """A JSON-ready summary of the pack."""
         return {
@@ -687,6 +704,7 @@ class DomainPack:
             "page_namer": _qualified_type_name(self.page_namer),
             "page_renderer": _qualified_type_name(self.page_renderer),
             "context_source": _qualified_type_name(self.context_source),
+            "reference_providers": [provider.kind for provider in self.reference_providers],
         }
 
 

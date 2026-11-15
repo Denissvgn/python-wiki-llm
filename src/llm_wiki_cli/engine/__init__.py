@@ -6,7 +6,8 @@ be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
 it declares, the :class:`DomainPack` that classifies sources, names
-pages, renders them and builds budgeted context, and the
+pages, renders them, builds budgeted context and serves publication
+reference kinds, and the
 :class:`PublicationTargetRegistry` of places a reviewed documentation
 candidate may be published to. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
@@ -76,6 +77,13 @@ from ..services.domain_pack import (
 from ..services.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
 from ..services.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
 from ..services.lint_request import LintRequest, LintRequestError
+from ..services.reference_providers import (
+    BUILTIN_REFERENCE_PROVIDERS,
+    BehaviorFactsProvider,
+    CliContractProvider,
+    ContractFileProvider,
+    ReferenceProvider,
+)
 from ..services.publication_targets import (
     DEFAULT_PUBLICATION_TARGETS,
     GitHubWikiTarget,
@@ -91,6 +99,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "ALL_CAPABILITIES",
+    "BUILTIN_REFERENCE_PROVIDERS",
+    "BehaviorFactsProvider",
     "BootstrapContractError",
     "BootstrapRequest",
     "BootstrapRequestError",
@@ -98,9 +108,11 @@ __all__ = [
     "BootstrapServiceError",
     "BuiltInPageRenderer",
     "CODE_DOCS_PACK",
+    "CliContractProvider",
     "CodeContextSource",
     "ConceptKindSpec",
     "ContextSource",
+    "ContractFileProvider",
     "DEFAULT_KINDS",
     "DEFAULT_PUBLICATION_TARGETS",
     "DEFAULT_VALIDATORS",
@@ -130,6 +142,7 @@ __all__ = [
     "PageRequest",
     "PublicationTarget",
     "PublicationTargetRegistry",
+    "ReferenceProvider",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",

@@ -702,7 +702,11 @@ def _reason_label(reason):
     record = reason["after"] or reason["before"]
     dep = record["dependency"]
     if "reference" in dep:
-        scope = dep.get("fact") or " ".join(dep.get("command", []))
+        scope = " ".join(
+            value if isinstance(value, str) else " ".join(map(str, value))
+            for key, value in dep.items()
+            if key != "reference"
+        )
         return " ".join(part for part in (dep["reference"], scope) if part)
     if "source_file" in dep:
         return dep["source_file"]

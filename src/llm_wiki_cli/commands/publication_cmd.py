@@ -61,7 +61,7 @@ def _declared_files(config):
     for asset in config.get("content", {}).get("assets", []):
         yield asset["source_document"]
     for provider in config.get("reference_providers", {}).values():
-        if provider["kind"] == "contract-file":
+        if "path" in provider:
             yield provider["path"]
     for topic in config["topics"]:
         if topic.get("source_document"):
@@ -161,7 +161,7 @@ def _write(
             file_inputs.update(
                 reference["configuration"]["path"]
                 for reference in basis.get("references", {}).values()
-                if reference["configuration"]["kind"] == "contract-file"
+                if "path" in reference["configuration"]
             )
     if any(
         publication_control_overlap(destination, root / source)
