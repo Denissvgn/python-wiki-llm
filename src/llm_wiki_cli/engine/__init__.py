@@ -5,8 +5,10 @@ environment, working directory, clock), whether bundled analysis helpers may
 be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
-it declares, and the :class:`DomainPack` that classifies sources, names
-pages, renders them and builds budgeted context. Every call runs
+it declares, the :class:`DomainPack` that classifies sources, names
+pages, renders them and builds budgeted context, and the
+:class:`PublicationTargetRegistry` of places a reviewed documentation
+candidate may be published to. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -74,6 +76,12 @@ from ..services.domain_pack import (
 from ..services.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
 from ..services.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
 from ..services.lint_request import LintRequest, LintRequestError
+from ..services.publication_targets import (
+    DEFAULT_PUBLICATION_TARGETS,
+    GitHubWikiTarget,
+    PublicationTarget,
+    PublicationTargetRegistry,
+)
 from ..services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 from ..services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 from ..services.upgrade_service import UpgradeError, UpgradeOutcome, UpgradeRequest, UpgradeRequestError
@@ -94,6 +102,7 @@ __all__ = [
     "ConceptKindSpec",
     "ContextSource",
     "DEFAULT_KINDS",
+    "DEFAULT_PUBLICATION_TARGETS",
     "DEFAULT_VALIDATORS",
     "DomainPack",
     "EVENT_KINDS",
@@ -102,6 +111,7 @@ __all__ = [
     "EntityPageRequest",
     "EventSink",
     "ExtensionSourceClassifier",
+    "GitHubWikiTarget",
     "Host",
     "HostCapabilityError",
     "KindRegistry",
@@ -118,6 +128,8 @@ __all__ = [
     "PageNamer",
     "PageRenderer",
     "PageRequest",
+    "PublicationTarget",
+    "PublicationTargetRegistry",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",
@@ -149,6 +161,7 @@ class Operation:
     validators: ValidatorRegistry = DEFAULT_VALIDATORS
     kinds: KindRegistry = DEFAULT_KINDS
     pack: DomainPack = CODE_DOCS_PACK
+    publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS
 
 
 class Engine:
@@ -164,6 +177,7 @@ class Engine:
         validators: ValidatorRegistry = DEFAULT_VALIDATORS,
         kinds: KindRegistry = DEFAULT_KINDS,
         pack: DomainPack = CODE_DOCS_PACK,
+        publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS,
     ) -> None:
         from ..services.analysis_compatibility import selected_policy
 
@@ -182,6 +196,8 @@ class Engine:
             raise TypeError("kinds must be a KindRegistry")
         if not isinstance(pack, DomainPack):
             raise TypeError("pack must be a DomainPack")
+        if not isinstance(publication_targets, PublicationTargetRegistry):
+            raise TypeError("publication_targets must be a PublicationTargetRegistry")
         self._host = host
         self._helper_preparation: HelperPreparation = helper_preparation
         self._helper_cache_dir = None if helper_cache_dir is None else str(helper_cache_dir)
@@ -189,6 +205,7 @@ class Engine:
         self._validators = validators
         self._kinds = kinds
         self._pack = pack
+        self._publication_targets = publication_targets
 
     @property
     def host(self) -> Host:
@@ -204,6 +221,7 @@ class Engine:
             "validators": list(self._validators.names),
             "kinds": self._kinds.describe(),
             "pack": self._pack.describe(),
+            "publication_targets": self._publication_targets.describe(),
         }
 
     @contextmanager
@@ -214,6 +232,7 @@ class Engine:
         from ..services.helper_runtime import helper_operation, helper_policy
         from ..services.knowledge_kinds import using_kinds
         from ..services.knowledge_validators import using_validators
+        from ..services.publication_targets import using_publication_targets
 
         with ExitStack() as stack:
             stack.enter_context(using_host(self._host))
@@ -223,9 +242,10 @@ class Engine:
             stack.enter_context(using_validators(self._validators))
             stack.enter_context(using_kinds(self._kinds))
             stack.enter_context(using_pack(self._pack))
+            stack.enter_context(using_publication_targets(self._publication_targets))
             yield Operation(
                 self._host, self._helper_preparation, self._helper_cache_dir, self._comparison_policy,
-                self._validators, self._kinds, self._pack,
+                self._validators, self._kinds, self._pack, self._publication_targets,
             )
 
     def call(self, function: Callable[_P, _R], /, *args: _P.args, **kwargs: _P.kwargs) -> _R:

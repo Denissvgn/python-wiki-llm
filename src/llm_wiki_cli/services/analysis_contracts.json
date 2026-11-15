@@ -248,6 +248,7 @@
     "services/publication_maintenance.py",
     "services/publication_references.py",
     "services/publication_snapshot.py",
+    "services/publication_targets.py",
     "services/python_calls.py",
     "services/python_implementation.py",
     "services/python_imports.py",

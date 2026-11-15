@@ -1,4 +1,8 @@
-"""Portable, review-bound GitHub wiki candidates without remote mutation."""
+"""Portable, review-bound publication candidates without remote mutation.
+
+The policy's :mod:`publication target <.publication_targets>` prepares each
+owned page and checks the composed tree; GitHub wiki is the built-in target.
+"""
 
 from __future__ import annotations
 
@@ -27,6 +31,7 @@ from .publication_contracts import (
     validate_publication_report,
 )
 from .publication_impact import capture_publication_basis, compare_publication_impact
+from .publication_targets import current_publication_targets, publication_target
 from .validation import portable_path_key, require_portable_relative_path
 
 
@@ -213,11 +218,15 @@ def _provider():
         parser_version = metadata.version("markdown-it-py")
     except metadata.PackageNotFoundError:
         parser_version = None
+    fingerprinted: dict[str, Any] = {"files": files, "parser_version": parser_version}
+    targets = current_publication_targets().identity()
+    if targets is not None:
+        fingerprinted["targets"] = targets
     return {
         "name": "agent-wiki-cli",
         "version": __version__,
         "parser_version": parser_version,
-        "fingerprint": hash_json({"files": files, "parser_version": parser_version}),
+        "fingerprint": hash_json(fingerprinted),
     }
 
 
@@ -641,7 +650,6 @@ def _prepare(
     source_revision,
     target_revision,
 ):
-    from .publication_links import check_github_wiki, prepare_wiki_markdown
     from .publication_impact import project_publication_targets
 
     root = _absolute_path(Path(consumer_root))
@@ -685,6 +693,7 @@ def _prepare(
                 raise ValueError(
                     "Target snapshot includes source or architecture inputs"
                 )
+    destination = publication_target(config["target"]["kind"])
     provider = _provider()
     before = {} if target is None else _read_tree(target, target_snapshot=True)
     basis = capture_publication_basis(
@@ -747,7 +756,7 @@ def _prepare(
                 raise ValueError("Authored content changed after evidence capture")
             if owner["kind"] == "page":
                 text = raw.decode("utf-8")
-                authored[path] = prepare_wiki_markdown(
+                authored[path] = destination.prepare_page(
                     text,
                     source_path=source,
                     source_pages=pages,
@@ -829,7 +838,7 @@ def _prepare(
         or sum(map(len, output.values())) > MAX_TREE_BYTES
     ):
         raise ValueError("Composed candidate exceeds the public file or byte limit")
-    checks = check_github_wiki(output)
+    checks = destination.check(output)
     projected = project_publication_targets(basis, output, baseline=baseline)
     impact = compare_publication_impact(projected, baseline, reviews=reviews)
     session.recheck()
@@ -1034,9 +1043,8 @@ def _validate_candidate_files(
     """Check public file bytes against a previously validated candidate receipt."""
     if _hashes(files) != receipt["files"]:
         raise ValueError("Candidate files differ from the supplied receipt")
-    from .publication_links import check_github_wiki
-
-    if check_github_wiki(files) != receipt["checks"]:
+    target = publication_target(receipt["basis"]["config"]["target"]["kind"])
+    if target.check(files) != receipt["checks"]:
         raise ValueError("Candidate checks differ from its actual public content")
     from .publication_impact import publication_target_observation
 

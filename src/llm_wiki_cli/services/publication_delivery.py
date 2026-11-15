@@ -1,4 +1,8 @@
-"""Pure validation and composition of a reviewed GitHub wiki delivery or rollback."""
+"""Pure validation and composition of a reviewed publication delivery or rollback.
+
+The policy's publication target validates repository names and the restored
+tree of a rollback.
+"""
 
 from __future__ import annotations
 
@@ -25,10 +29,10 @@ from .publication_config import (
     DELIVERY_CHECKPOINT_PATH as CHECKPOINT_PATH,
     DELIVERY_CONFIG_SCHEMA_VERSION,
     publication_ref_name,
-    publication_repository,
+    target_repository as _target_repository,
     validate_publication_config,
 )
-from .publication_links import check_github_wiki
+from .publication_targets import current_publication_targets, publication_target
 
 CHECKPOINT_SCHEMA = "llm-wiki-publication-checkpoint/v1"
 ROLLBACK_SCHEMA = "llm-wiki-publication-rollback/v1"
@@ -141,6 +145,23 @@ def _checkpoint_bytes(checkpoint: Mapping[str, Any]) -> bytes:
     return raw
 
 
+def _registered_repository(value: object, field: str) -> None:
+    """Accept a repository name that some registered publication target accepts.
+
+    A checkpoint does not record its target kind; delivery then matches the
+    checkpoint's scope against the repositories the policy's target validated.
+    """
+    failure: ValueError | None = None
+    for target in current_publication_targets().targets:
+        try:
+            _target_repository(target, value, field)
+            return
+        except ValueError as exc:
+            failure = failure or exc
+    assert failure is not None
+    raise failure
+
+
 def _validated_checkpoint(raw: bytes, observed: Mapping[str, str]) -> dict[str, Any]:
     if type(raw) is not bytes or len(raw) > MAX_FILE_BYTES:
         raise ValueError("Invalid delivery checkpoint size")
@@ -158,8 +179,8 @@ def _validated_checkpoint(raw: bytes, observed: Mapping[str, str]) -> dict[str, 
         "checkpoint_id"
     ] != hash_json({k: v for k, v in state.items() if k != "checkpoint_id"}):
         raise ValueError("Delivery checkpoint identity mismatch")
-    publication_repository(state["source_repository"], "source_repository")
-    publication_repository(state["target_repository"], "target_repository")
+    _registered_repository(state["source_repository"], "source_repository")
+    _registered_repository(state["target_repository"], "target_repository")
     publication_ref_name(state["target_branch"], "target_branch")
     if state["source_policy"] not in ("default-branch", "release"):
         raise ValueError("Invalid checkpoint source policy")
@@ -218,8 +239,9 @@ def _scope(policy, source_repository, target_repository, target_branch):
         raise ValueError(
             "Delivery requires an explicitly enabled publication/v2 policy"
         )
-    source = publication_repository(source_repository, "source_repository").lower()
-    target = publication_repository(target_repository, "target_repository").lower()
+    destination = publication_target(config["target"]["kind"])
+    source = _target_repository(destination, source_repository, "source_repository").lower()
+    target = _target_repository(destination, target_repository, "target_repository").lower()
     declared = config["target"]["repository"]
     if target != (source if declared == "self" else declared.lower()):
         raise ValueError(
@@ -417,7 +439,7 @@ def plan_rollback(
         else:
             desired.pop(path, None)
     hashes = _public_hashes(desired)
-    if not check_github_wiki(desired)["ok"]:
+    if not publication_target(config["target"]["kind"]).check(desired)["ok"]:
         raise ValueError(
             "Rollback output fails public wiki checks; prepare a fresh reviewed candidate"
         )

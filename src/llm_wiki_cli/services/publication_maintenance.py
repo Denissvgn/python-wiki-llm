@@ -30,7 +30,7 @@ from .publication_config import (
     publication_control_overlap,
     publication_path,
 )
-from .publication_links import check_github_wiki, prepare_wiki_markdown
+from .publication_targets import publication_target
 from .source_selection import resolve_source_selection
 
 
@@ -241,8 +241,9 @@ def _checked_preview(candidate: Path, checked, edited):
     for output, owner in checked["ownership"].items():
         mappings = pages if owner["kind"] == "page" else assets
         mappings[owner["source_document"]] = output
+    target = publication_target(checked["basis"]["config"]["target"]["kind"])
     for source, raw in edited.items():
-        files[pages[source]] = prepare_wiki_markdown(
+        files[pages[source]] = target.prepare_page(
             raw.decode("utf-8"),
             source_path=source,
             source_pages=pages,
@@ -250,7 +251,7 @@ def _checked_preview(candidate: Path, checked, edited):
             repository_url=checked["basis"]["config"]["content"].get("repository_url"),
             source_revision=checked["context"]["source_revision"],
         ).encode("utf-8")
-    checks = check_github_wiki(files)
+    checks = target.check(files)
     if not checks["ok"]:
         first = checks["findings"][0]
         raise ValueError(

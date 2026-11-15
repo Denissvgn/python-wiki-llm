@@ -67,6 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names the built-in ranking. Pass a pack as `Engine(pack=...)`; built-in
   extractors only read the files the pack classifies for their language.
   `CODE_DOCS_PACK` is the default and keeps current behavior.
+- A `PublicationTarget` serves one `target.kind` of a publication policy:
+  it validates repository names, prepares each owned page for publishing
+  and checks the composed candidate tree. `GitHubWikiTarget`
+  (`"github-wiki"`) is built in. Add targets with
+  `PublicationTargetRegistry.with_target()` and pass the registry as
+  `Engine(publication_targets=...)`; a policy may then name the new kind.
+  A candidate prepared with custom targets has a different provider
+  fingerprint, so it is only rechecked and delivered under the same
+  targets. Candidates and deliveries to a GitHub wiki are unchanged.
 
 ### Changed
 

@@ -19,6 +19,7 @@ import unicodedata
 from urllib.parse import quote, unquote, urlsplit
 
 from .concept_identity import ConceptIdentityError, validate_locator
+from .publication_targets import PublicationTarget, current_publication_targets
 from .source_selection import (
     SOURCE_SELECTION_PATH,
     SourceSelectionError,
@@ -74,6 +75,16 @@ def publication_repository(value: object, field: str) -> str:
             field, "must be a GitHub owner/repository identifier"
         )
     return name
+
+
+def target_repository(target: PublicationTarget, value: object, field: str) -> str:
+    """Validate a repository identifier with the rules of ``target``."""
+    try:
+        return target.check_repository(value, field)
+    except PublicationConfigError:
+        raise
+    except ValueError as exc:
+        raise PublicationConfigError(field, str(exc)) from exc
 
 
 class PublicationConfigError(ValueError):
@@ -745,10 +756,11 @@ def validate_publication_config(
         {"kind", "repository"},
         {"branch"} if delivery_policy else set(),
     )
-    kind = _choice(target["kind"], "target.kind", {"github-wiki"})
+    registry = current_publication_targets()
+    kind = _choice(target["kind"], "target.kind", set(registry.kinds))
     repository = _text(target["repository"], "target.repository", 140)
     if repository != "self":
-        publication_repository(repository, "target.repository")
+        target_repository(registry.get(kind), repository, "target.repository")
     source_policy = _choice(
         data.get("source_policy", "default-branch"),
         "source_policy",

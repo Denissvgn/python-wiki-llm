@@ -12,7 +12,15 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.engine import CODE_DOCS_PACK, DEFAULT_KINDS, Engine, Host, NoProcessHost, current_host
+from llm_wiki_cli.engine import (
+    CODE_DOCS_PACK,
+    DEFAULT_KINDS,
+    DEFAULT_PUBLICATION_TARGETS,
+    Engine,
+    Host,
+    NoProcessHost,
+    current_host,
+)
 from llm_wiki_cli.services.analysis_compatibility import selected_policy
 from llm_wiki_cli.services.helper_runtime import current_helper_operation
 
@@ -74,6 +82,7 @@ def test_engine_rejects_grants_its_host_cannot_honor() -> None:
         "validators": ["implementation-evidence", "maintenance-projection", "governance-projection"],
         "kinds": DEFAULT_KINDS.describe(),
         "pack": CODE_DOCS_PACK.describe(),
+        "publication_targets": DEFAULT_PUBLICATION_TARGETS.describe(),
     }
 
 

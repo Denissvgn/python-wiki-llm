@@ -263,6 +263,7 @@ PRODUCT_SERVICES = frozenset(
         "publication_maintenance",
         "publication_references",
         "publication_snapshot",
+        "publication_targets",
         "rendering_lifecycle",
         "resource_diagnostics",
         "review_service",
