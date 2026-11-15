@@ -77,6 +77,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DomainPack.with_reference_provider()`. Custom providers change the
   candidate provider fingerprint. Existing policies and evidence are
   unchanged.
+- A domain pack's `HelperToolchain` names the analysis helpers a source tree
+  needs and prepares them before extraction. The code-documentation pack uses
+  `BundledHelperToolchain` (today's bundled helpers and helper cache);
+  `NoHelperToolchain` prepares none. Replace it with
+  `DomainPack.with_helper_toolchain()`.
 - A `PublicationTarget` serves one `target.kind` of a publication policy:
   it validates repository names, prepares each owned page for publishing
   and checks the composed candidate tree. `GitHubWikiTarget`
@@ -89,6 +94,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Bundled analysis helpers are built, probed and run through the engine's
+  host. Under a `NoProcessHost` a helper is reported as unavailable instead
+  of being started.
 - Checking a qualified context packet's format no longer loads the source
   analyzers or the packet builders. `services.context_packet` now holds only
   the packet wire format and `validate_context_packet`, and the new

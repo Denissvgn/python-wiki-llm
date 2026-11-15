@@ -6,8 +6,8 @@ be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
 it declares, the :class:`DomainPack` that classifies sources, names
-pages, renders them, builds budgeted context and serves publication
-reference kinds, and the
+pages, renders them, builds budgeted context, serves publication
+reference kinds and prepares analysis helpers, and the
 :class:`PublicationTargetRegistry` of places a reviewed documentation
 candidate may be published to. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
@@ -62,12 +62,15 @@ from ..services.bootstrap_service import (
 from ..services.domain_pack import (
     CODE_DOCS_PACK,
     BuiltInPageRenderer,
+    BundledHelperToolchain,
     CodeContextSource,
     ContextSource,
     DomainPack,
     EntityPageRequest,
     ExtensionSourceClassifier,
+    HelperToolchain,
     ModulePageRequest,
+    NoHelperToolchain,
     PageNamer,
     PageRenderer,
     PageRequest,
@@ -107,6 +110,7 @@ __all__ = [
     "BootstrapResult",
     "BootstrapServiceError",
     "BuiltInPageRenderer",
+    "BundledHelperToolchain",
     "CODE_DOCS_PACK",
     "CliContractProvider",
     "CodeContextSource",
@@ -125,6 +129,7 @@ __all__ = [
     "ExtensionSourceClassifier",
     "GitHubWikiTarget",
     "Host",
+    "HelperToolchain",
     "HostCapabilityError",
     "KindRegistry",
     "LintRequest",
@@ -135,6 +140,7 @@ __all__ = [
     "MigrateRequestError",
     "ModelValidator",
     "ModulePageRequest",
+    "NoHelperToolchain",
     "NoProcessHost",
     "Operation",
     "PageNamer",

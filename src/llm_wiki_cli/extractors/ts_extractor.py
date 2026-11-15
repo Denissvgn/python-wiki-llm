@@ -18,6 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ..services.host import HostCapabilityError, current_host
 from .common import (
     TYPESCRIPT_FAMILY_EXTENSIONS,
     chunk_source_files_for_cli,
@@ -201,7 +202,7 @@ class TypeScriptExtractor:
     ) -> subprocess.CompletedProcess | None:
         timeout_seconds = extractor_timeout_seconds()
         try:
-            return subprocess.run(
+            return current_host().run(
                 cmd,
                 input="",
                 capture_output=True,
@@ -210,6 +211,10 @@ class TypeScriptExtractor:
                 timeout=timeout_seconds,
                 cwd=helper_root,
             )
+        except HostCapabilityError:
+            # A host that grants no subprocesses leaves the helper unavailable.
+            self.last_error = "the host does not grant subprocesses"
+            return None
         except subprocess.CalledProcessError as exc:
             self.last_error = "extraction failed"
             print(

@@ -842,8 +842,7 @@ def _prepare_inventory_build_context(
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
     source_file_by_path = _source_files_by_path(source_snapshot)
-    from .helper_preparation import prepare_operation_helpers
-    prepare_operation_helpers(
+    current_pack().helper_toolchain.prepare(
         source_snapshot, registry, only_files=request.only_files,
         cache_dir=request.helper_cache_dir,
     )

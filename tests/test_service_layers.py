@@ -380,7 +380,11 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
         }
     ),
     "knowledge_validators": frozenset({"services.implementation_evidence"}),
-    "domain_pack": frozenset({"extractors.common"}),
+    # The code-docs pack reaches its extractors and bundled helper toolchain on
+    # demand (function-level imports).
+    "domain_pack": frozenset(
+        {"extractors.common", "services.helper_preparation", "services.helper_runtime"}
+    ),
     # The code-docs pack's built-in reference providers capture the installed
     # CLI contract and behavior facts on demand (function-level imports).
     "reference_providers": frozenset({"services.behavior_reference", "services.cli_reference"}),

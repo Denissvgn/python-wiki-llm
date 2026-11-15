@@ -233,12 +233,12 @@ def build_inventory_cache_key(
     """Return a cache key only if all selected bundled helpers were observed."""
     from .analysis_capture import capture_analysis
     from .analysis_compatibility import digest
-    from .helper_runtime import required_helper_languages
+    from .domain_pack import current_pack
 
     languages = {language for language, files in source_snapshot.files_by_language.items() if files}
     analysis = capture_analysis(extractor_registry, source_root=source_snapshot.root,
                                 helper_cache_dir=helper_cache_dir, languages=languages)
-    for language in required_helper_languages(source_snapshot, extractor_registry):
+    for language in current_pack().helper_toolchain.languages(source_snapshot, extractor_registry):
         if not analysis or "llm-wiki/extractor/" + language not in analysis:
             # Partial observations cannot distinguish an unqualified runtime
             # that produced data from a missing helper that cannot execute.

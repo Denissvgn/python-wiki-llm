@@ -15,7 +15,11 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
   level;
 * :class:`~.reference_providers.ReferenceProvider` values serve the
   reference kinds a publication policy may declare, so public documentation
-  can depend on the pack's contracts.
+  can depend on the pack's contracts;
+* a :class:`HelperToolchain` names the analysis helpers a source tree needs
+  and prepares (builds or reuses from its cache) the ones an operation may
+  use. Helper builds and runs are subprocesses, so they need a host that
+  grants them.
 
 :data:`CODE_DOCS_PACK` is today's code-documentation behavior and the default.
 A host chooses another pack with :func:`using_pack` or ``Engine(pack=...)``;
@@ -49,7 +53,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import PurePath
 from types import MappingProxyType
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 from .reference_providers import (
     BUILTIN_REFERENCE_PROVIDERS,
@@ -58,6 +62,10 @@ from .reference_providers import (
 )
 from .validation import portable_page_component, portable_path_key
 from .wiki_surface import PageKind
+
+if TYPE_CHECKING:
+    from .helper_runtime import PreparedHelperHandle
+    from .source_snapshot import SourceSnapshot
 
 #: ``(entity name, source path, one-based occurrence in that source)``.
 EntityOccurrenceKey = tuple[str, str, int]
@@ -640,6 +648,74 @@ class StemPageNamer:
         return f"{type(self).__name__}()"
 
 
+class HelperToolchain:
+    """Which analysis helpers a source tree needs, and how they are prepared.
+
+    :meth:`languages` lists the source kinds whose extraction needs a
+    prepared helper. :meth:`prepare` runs before extraction inside a helper
+    operation: it resolves each needed helper under the operation's policy
+    (``"never"`` only reuses prepared artifacts, ``"auto"`` may build them),
+    binds what it found to the operation and returns those handles.
+    """
+
+    def languages(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None,
+    ) -> tuple[str, ...]:
+        raise NotImplementedError
+
+    def prepare(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None, cache_dir: str | None = None,
+    ) -> tuple[PreparedHelperHandle, ...]:
+        raise NotImplementedError
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}()"
+
+
+class BundledHelperToolchain(HelperToolchain):
+    """The bundled Go, Rust, TypeScript and Haskell helpers and their cache."""
+
+    def languages(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None,
+    ) -> tuple[str, ...]:
+        from .helper_runtime import required_helper_languages
+
+        return required_helper_languages(snapshot, registry, only_files=only_files)
+
+    def prepare(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None, cache_dir: str | None = None,
+    ) -> tuple[PreparedHelperHandle, ...]:
+        from .helper_preparation import prepare_operation_helpers
+
+        return prepare_operation_helpers(
+            snapshot, registry, only_files=only_files, cache_dir=cache_dir
+        )
+
+
+class NoHelperToolchain(HelperToolchain):
+    """Needs and prepares no helpers.
+
+    A pack using it should classify only sources that in-process extractors
+    handle; a source kind whose extractor needs a helper still fails without one.
+    """
+
+    def languages(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None,
+    ) -> tuple[str, ...]:
+        return ()
+
+    def prepare(
+        self, snapshot: SourceSnapshot, registry: Mapping[str, str],
+        *, only_files: Iterable[str] | None = None, cache_dir: str | None = None,
+    ) -> tuple[PreparedHelperHandle, ...]:
+        return ()
+
+
 def _qualified_type_name(value: object) -> str:
     kind = type(value)
     return f"{kind.__module__}.{kind.__qualname__}"
@@ -647,7 +723,8 @@ def _qualified_type_name(value: object) -> str:
 
 @dataclass(frozen=True)
 class DomainPack:
-    """A named set of domain decisions: classification, naming, rendering, context, references."""
+    """A named set of domain decisions: classification, naming, rendering, context,
+    references and analysis helpers."""
 
     name: str
     classifier: SourceClassifier
@@ -655,6 +732,7 @@ class DomainPack:
     page_renderer: PageRenderer = field(default_factory=BuiltInPageRenderer)
     context_source: ContextSource = field(default_factory=CodeContextSource)
     reference_providers: tuple[ReferenceProvider, ...] = BUILTIN_REFERENCE_PROVIDERS
+    helper_toolchain: HelperToolchain = field(default_factory=BundledHelperToolchain)
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -667,6 +745,8 @@ class DomainPack:
             raise TypeError("page_renderer must implement PageRenderer")
         if not isinstance(self.context_source, ContextSource):
             raise TypeError("context_source must implement ContextSource")
+        if not isinstance(self.helper_toolchain, HelperToolchain):
+            raise TypeError("helper_toolchain must be a HelperToolchain")
         object.__setattr__(
             self, "reference_providers", check_reference_providers(self.reference_providers)
         )
@@ -692,6 +772,10 @@ class DomainPack:
         kept = tuple(item for item in self.reference_providers if item.kind != provider.kind)
         return replace(self, reference_providers=(*kept, provider))
 
+    def with_helper_toolchain(self, helper_toolchain: HelperToolchain) -> DomainPack:
+        """A copy of this pack that prepares analysis helpers with ``helper_toolchain``."""
+        return replace(self, helper_toolchain=helper_toolchain)
+
     def describe(self) -> dict[str, Any]:
         """A JSON-ready summary of the pack."""
         return {
@@ -705,17 +789,20 @@ class DomainPack:
             "page_renderer": _qualified_type_name(self.page_renderer),
             "context_source": _qualified_type_name(self.context_source),
             "reference_providers": [provider.kind for provider in self.reference_providers],
+            "helper_toolchain": _qualified_type_name(self.helper_toolchain),
         }
 
 
 #: Today's code-documentation behavior: built-in languages, stem page names,
-#: built-in page Markdown and code context.
+#: built-in page Markdown, code context, the built-in reference providers and
+#: the bundled analysis helpers.
 CODE_DOCS_PACK = DomainPack(
     "agent-wiki-cli/code-docs",
     CodeSourceClassifier(),
     StemPageNamer(),
     BuiltInPageRenderer(),
     CodeContextSource(),
+    helper_toolchain=BundledHelperToolchain(),
 )
 
 _ACTIVE_PACK: ContextVar[DomainPack | None] = ContextVar("llm_wiki_domain_pack", default=None)
@@ -750,6 +837,7 @@ __all__ = [
     "CODE_DOCS_PACK",
     "BuiltInPageRenderer",
     "CodeContextSource",
+    "BundledHelperToolchain",
     "CodeSourceClassifier",
     "ContextDetail",
     "ContextSource",
@@ -757,7 +845,9 @@ __all__ = [
     "EntityOccurrenceKey",
     "EntityPageRequest",
     "ExtensionSourceClassifier",
+    "HelperToolchain",
     "ModulePageRequest",
+    "NoHelperToolchain",
     "PageNamer",
     "PAGE_REQUEST_KINDS",
     "PageRenderer",
