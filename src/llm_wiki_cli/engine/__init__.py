@@ -6,7 +6,7 @@ be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
 it declares, and the :class:`DomainPack` that classifies sources, names
-pages and renders them. Every call runs
+pages, renders them and builds budgeted context. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -59,6 +59,8 @@ from ..services.bootstrap_service import (
 from ..services.domain_pack import (
     CODE_DOCS_PACK,
     BuiltInPageRenderer,
+    CodeContextSource,
+    ContextSource,
     DomainPack,
     EntityPageRequest,
     ExtensionSourceClassifier,
@@ -87,7 +89,9 @@ __all__ = [
     "BootstrapServiceError",
     "BuiltInPageRenderer",
     "CODE_DOCS_PACK",
+    "CodeContextSource",
     "ConceptKindSpec",
+    "ContextSource",
     "DEFAULT_KINDS",
     "DEFAULT_VALIDATORS",
     "DomainPack",

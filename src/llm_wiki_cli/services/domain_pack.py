@@ -8,7 +8,10 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
   inventory. Page kinds themselves are fixed by the knowledge format;
 * a :class:`PageRenderer` writes the Markdown of those module and entity
   pages. Each request carries the built-in Markdown, so a renderer can adjust
-  it instead of starting over.
+  it instead of starting over;
+* a :class:`ContextSource` decides which sources are related to a changed
+  one and how much of each source budgeted context shows at each detail
+  level.
 
 :data:`CODE_DOCS_PACK` is today's code-documentation behavior and the default.
 A host chooses another pack with :func:`using_pack` or ``Engine(pack=...)``;
@@ -21,6 +24,10 @@ its ``Description`` section and in the description cells of its
 ``Attributes``, ``Methods``, ``Classes`` and ``Functions`` tables, and takes
 everything else from the renderer. A renderer that wants people to write
 there keeps those headings; any section it adds stays current with sources.
+
+Qualified context packets (and task context, which seals one) need the
+built-in :class:`CodeContextSource`: a packet's policy digest names that
+ranking, so packets refuse to seal under a pack that replaces it.
 """
 
 from __future__ import annotations
@@ -32,7 +39,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import PurePath
 from types import MappingProxyType
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from .validation import portable_page_component, portable_path_key
 
@@ -152,6 +159,149 @@ def render_with_pack(request: ModulePageRequest | EntityPageRequest) -> str:
             f"page renderer {_qualified_type_name(renderer)} must return Markdown text"
         )
     return markdown
+
+
+ContextDetail = Literal["deep", "slim", "summary"]
+
+
+@runtime_checkable
+class ContextSource(Protocol):
+    """How sources relate and appear in budgeted context."""
+
+    def related_sources(
+        self, inventory: Mapping[str, Mapping[str, Any]]
+    ) -> Mapping[str, Iterable[str]]:
+        """Return ``{source path: related source paths}``.
+
+        Sources related to a changed source get medium priority.
+        """
+        ...
+
+    def entry(self, data: Mapping[str, Any], detail: ContextDetail) -> Mapping[str, Any]:
+        """Return the context entry of one source at ``detail``.
+
+        ``data`` is the source's inventory record, or an entry this method
+        returned at a higher detail level when budgeting shrinks it.
+        """
+        ...
+
+
+class CodeContextSource:
+    """Code context: import neighbors, then classes and functions by detail."""
+
+    @staticmethod
+    def module_for_path(filepath: str) -> str | None:
+        """Convert ``"src/llm_wiki_cli/config.py"`` to ``"llm_wiki_cli.config"``.
+
+        Strips a leading ``src/`` directory and the ``.py`` suffix, then
+        converts path separators to dots.  Returns None for non-Python files.
+        """
+        p = PurePath(filepath)
+        if p.suffix != ".py":
+            return None
+        parts = list(p.with_suffix("").parts)
+        # Strip leading "src" directory (common in Python projects)
+        if parts and parts[0] == "src":
+            parts = parts[1:]
+        # Strip __init__ (package init files map to the package itself)
+        if parts and parts[-1] == "__init__":
+            parts = parts[:-1]
+        return ".".join(parts) if parts else None
+
+    def related_sources(self, inventory: Mapping[str, Mapping[str, Any]]) -> dict[str, set[str]]:
+        """A bidirectional import adjacency map of the inventory.
+
+        For each file A that imports a symbol from file B (both present in
+        *inventory*), adds edges A→B and B→A.  External / stdlib imports are
+        silently skipped.  Every key appears even if it has no neighbors.
+        """
+        module_to_file: dict[str, str] = {}
+        for filepath in inventory:
+            mod = self.module_for_path(filepath)
+            if mod:
+                module_to_file[mod] = filepath
+
+        graph: dict[str, set[str]] = {fp: set() for fp in inventory}
+        for filepath, file_data in inventory.items():
+            for imp in file_data.get("imports", []):
+                imp_module = imp.get("module", "")
+                if not imp_module:
+                    continue
+                # Try exact match, then parent module (for ``from pkg.mod import X``)
+                target = module_to_file.get(imp_module)
+                if target is None:
+                    parts = imp_module.split(".")
+                    for i in range(len(parts) - 1, 0, -1):
+                        target = module_to_file.get(".".join(parts[:i]))
+                        if target is not None:
+                            break
+                if target is not None and target != filepath:
+                    graph[filepath].add(target)
+                    graph[target].add(filepath)
+        return graph
+
+    @staticmethod
+    def deep_entry(file_data: Mapping[str, Any]) -> dict[str, Any]:
+        """Full detail: classes with methods, params, docstrings, imports."""
+        return {k: v for k, v in file_data.items() if k != "language"}
+
+    @staticmethod
+    def slim_entry(file_data: Mapping[str, Any]) -> dict[str, Any]:
+        """Slim detail: class names/bases/line, function names/lines."""
+        return {
+            "classes": [
+                {"name": c["name"], "bases": c.get("bases", []), "line": c.get("line")}
+                for c in file_data.get("classes", [])
+            ],
+            "functions": [
+                {"name": f["name"], "line": f.get("line")}
+                for f in file_data.get("functions", [])
+            ],
+        }
+
+    @staticmethod
+    def summary_entry(file_data: Mapping[str, Any]) -> dict[str, Any]:
+        """Names only: lists of class names and function names."""
+        entry: dict[str, list[str]] = {}
+        cls_names = [c["name"] for c in file_data.get("classes", [])]
+        fn_names = [f["name"] for f in file_data.get("functions", [])]
+        if cls_names:
+            entry["classes"] = cls_names
+        if fn_names:
+            entry["functions"] = fn_names
+        return entry
+
+    def entry(self, data: Mapping[str, Any], detail: ContextDetail) -> dict[str, Any]:
+        if detail == "deep":
+            return self.deep_entry(data)
+        if detail == "slim":
+            return self.slim_entry(data)
+        return self.summary_entry(data)
+
+
+def context_related_sources(inventory: Mapping[str, Mapping[str, Any]]) -> Mapping[str, Iterable[str]]:
+    """Related sources from the current pack's context source."""
+    source = current_pack().context_source
+    related = source.related_sources(inventory)
+    if not isinstance(related, Mapping):
+        raise TypeError(
+            f"context source {_qualified_type_name(source)} must return a mapping of related sources"
+        )
+    return related
+
+
+def context_entry(data: Mapping[str, Any], detail: ContextDetail) -> dict[str, Any]:
+    """One source's context entry from the current pack's context source."""
+    source = current_pack().context_source
+    entry = source.entry(data, detail)
+    if not isinstance(entry, Mapping):
+        raise TypeError(f"context source {_qualified_type_name(source)} must return a mapping entry")
+    return dict(entry)
+
+
+def uses_builtin_context_source() -> bool:
+    """Whether this context ranks and shows sources with :class:`CodeContextSource`."""
+    return type(current_pack().context_source) is CodeContextSource
 
 
 def _suffixes(value: object, field_name: str) -> tuple[str, ...]:
@@ -419,12 +569,13 @@ def _qualified_type_name(value: object) -> str:
 
 @dataclass(frozen=True)
 class DomainPack:
-    """A named set of domain decisions: classification, page naming and rendering."""
+    """A named set of domain decisions: classification, naming, rendering, context."""
 
     name: str
     classifier: SourceClassifier
     page_namer: PageNamer = field(default_factory=StemPageNamer)
     page_renderer: PageRenderer = field(default_factory=BuiltInPageRenderer)
+    context_source: ContextSource = field(default_factory=CodeContextSource)
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -435,6 +586,8 @@ class DomainPack:
             raise TypeError("page_namer must implement PageNamer")
         if not isinstance(self.page_renderer, PageRenderer):
             raise TypeError("page_renderer must implement PageRenderer")
+        if not isinstance(self.context_source, ContextSource):
+            raise TypeError("context_source must implement ContextSource")
 
     def with_classifier(self, classifier: SourceClassifier) -> DomainPack:
         """A copy of this pack that classifies sources with ``classifier``."""
@@ -448,6 +601,10 @@ class DomainPack:
         """A copy of this pack that writes pages with ``page_renderer``."""
         return replace(self, page_renderer=page_renderer)
 
+    def with_context_source(self, context_source: ContextSource) -> DomainPack:
+        """A copy of this pack that builds budgeted context with ``context_source``."""
+        return replace(self, context_source=context_source)
+
     def describe(self) -> dict[str, Any]:
         """A JSON-ready summary of the pack."""
         return {
@@ -459,13 +616,18 @@ class DomainPack:
             "classifier": _qualified_type_name(self.classifier),
             "page_namer": _qualified_type_name(self.page_namer),
             "page_renderer": _qualified_type_name(self.page_renderer),
+            "context_source": _qualified_type_name(self.context_source),
         }
 
 
-#: Today's code-documentation behavior: built-in languages, stem page names
-#: and built-in page Markdown.
+#: Today's code-documentation behavior: built-in languages, stem page names,
+#: built-in page Markdown and code context.
 CODE_DOCS_PACK = DomainPack(
-    "agent-wiki-cli/code-docs", CodeSourceClassifier(), StemPageNamer(), BuiltInPageRenderer()
+    "agent-wiki-cli/code-docs",
+    CodeSourceClassifier(),
+    StemPageNamer(),
+    BuiltInPageRenderer(),
+    CodeContextSource(),
 )
 
 _ACTIVE_PACK: ContextVar[DomainPack | None] = ContextVar("llm_wiki_domain_pack", default=None)
@@ -486,7 +648,7 @@ def uses_default_pack() -> bool:
 
 @contextmanager
 def using_pack(pack: DomainPack) -> Iterator[DomainPack]:
-    """Classify sources, name pages and render them inside the block with ``pack``."""
+    """Classify, name, render and build context inside the block with ``pack``."""
     if not isinstance(pack, DomainPack):
         raise TypeError("pack must be a DomainPack")
     token = _ACTIVE_PACK.set(pack)
@@ -499,7 +661,10 @@ def using_pack(pack: DomainPack) -> Iterator[DomainPack]:
 __all__ = [
     "CODE_DOCS_PACK",
     "BuiltInPageRenderer",
+    "CodeContextSource",
     "CodeSourceClassifier",
+    "ContextDetail",
+    "ContextSource",
     "DomainPack",
     "EntityOccurrenceKey",
     "EntityPageRequest",
@@ -509,8 +674,11 @@ __all__ = [
     "PageRenderer",
     "SourceClassifier",
     "StemPageNamer",
+    "context_entry",
+    "context_related_sources",
     "current_pack",
     "render_with_pack",
+    "uses_builtin_context_source",
     "uses_default_pack",
     "using_pack",
 ]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path, PurePath
 
 import pytest
@@ -11,6 +12,8 @@ from llm_wiki_cli import api
 from llm_wiki_cli.engine import (
     CODE_DOCS_PACK,
     BuiltInPageRenderer,
+    CodeContextSource,
+    ContextSource,
     DomainPack,
     Engine,
     EntityPageRequest,
@@ -20,6 +23,7 @@ from llm_wiki_cli.engine import (
     StemPageNamer,
 )
 from llm_wiki_cli.extractors.common import LANGUAGE_EXTENSIONS
+
 from llm_wiki_cli.services import bootstrap_runtime, sync_manifest
 from llm_wiki_cli.services.domain_pack import current_pack, uses_default_pack, using_pack
 from llm_wiki_cli.services.source_snapshot import SourceSnapshotError, build_source_snapshot
@@ -201,6 +205,101 @@ def test_a_page_renderer_must_return_markdown_text() -> None:
         bootstrap_runtime._generate_entity_md({"name": "Invoice"}, "billing.py", {})
 
 
+class FolderContextSource(CodeContextSource):
+    """Relates sources in one folder and counts their classes."""
+
+    def related_sources(self, inventory):
+        return {
+            path: {other for other in inventory if other != path and PurePath(other).parent == PurePath(path).parent}
+            for path in inventory
+        }
+
+    def entry(self, data, detail):
+        return {**super().entry(data, detail), "class_count": len(data.get("classes", []))}
+
+
+FOLDERS = CODE_DOCS_PACK.with_context_source(FolderContextSource())
+
+
+def _git(root: Path, *args: str) -> None:
+    subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+        cwd=root, check=True, capture_output=True,
+    )
+
+
+def _context_project(tmp_path: Path, monkeypatch) -> None:
+    _write(tmp_path / "pkg/a.py", "class Account:\n    total: int\n")
+    _write(tmp_path / "pkg/b.py", "class Budget:\n    limit: int\n")
+    _write(tmp_path / "other/c.py", "from pkg.a import Account\n\nclass Cart:\n    owner: Account\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", os.fspath(tmp_path.parent))
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-qm", "start")
+    _write(tmp_path / "pkg/a.py", "class Account:\n    total: int\n    tax: int\n")
+    _git(tmp_path, "commit", "-qam", "change")
+
+
+def test_the_code_context_source_relates_sources_by_imports() -> None:
+    source = CODE_DOCS_PACK.context_source
+    inventory = {"src/pkg/a.py": {}, "src/pkg/b.py": {"imports": [{"module": "pkg.a"}]}, "notes.md": {}}
+
+    assert isinstance(source, ContextSource)
+    assert source.related_sources(inventory) == {
+        "src/pkg/a.py": {"src/pkg/b.py"}, "src/pkg/b.py": {"src/pkg/a.py"}, "notes.md": set(),
+    }
+    data = {"language": "python", "classes": [{"name": "A", "line": 1, "doc": "x"}], "functions": []}
+    assert source.entry(data, "summary") == {"classes": ["A"]}
+    assert source.entry(data, "slim") == {"classes": [{"name": "A", "bases": [], "line": 1}], "functions": []}
+    assert source.entry(data, "deep") == {"classes": data["classes"], "functions": []}
+
+
+def test_a_pack_context_source_ranks_and_shows_budgeted_context(tmp_path, monkeypatch) -> None:
+    _context_project(tmp_path, monkeypatch)
+
+    default = api.build_context(".", focus=["changed", "neighbors"])
+    with using_pack(FOLDERS):
+        folders = api.build_context(".", focus=["changed", "neighbors"])
+
+    def priorities(payload):
+        return {path: entry["priority"] for path, entry in payload["files"].items()}
+
+    assert priorities(default) == {"pkg/a.py": "high", "other/c.py": "medium", "pkg/b.py": "low"}
+    assert priorities(folders) == {"pkg/a.py": "high", "pkg/b.py": "medium", "other/c.py": "low"}
+    assert folders["files"]["pkg/b.py"]["class_count"] == 1
+    assert "class_count" not in default["files"]["pkg/b.py"]
+
+
+def test_qualified_packets_need_the_built_in_context_source(tmp_path, monkeypatch) -> None:
+    _context_project(tmp_path, monkeypatch)
+
+    assert api.build_qualified_context(".").to_payload()["schema_version"]
+    with using_pack(FOLDERS), pytest.raises(api.WorkspaceStateError) as refused:
+        api.build_qualified_context(".")
+    assert refused.value.details == {"field": "context_source"}
+    assert "built-in context source" in str(refused.value.__cause__)
+    with using_pack(NOTES):
+        assert api.build_qualified_context(".").to_payload()["schema_version"]
+
+
+def test_a_context_source_must_return_mappings() -> None:
+    class Broken(CodeContextSource):
+        def related_sources(self, inventory):
+            return None
+
+        def entry(self, data, detail):
+            return None
+
+    from llm_wiki_cli.services import context_service
+
+    with using_pack(CODE_DOCS_PACK.with_context_source(Broken())):  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="mapping of related sources"):
+            context_service._build_import_graph({})
+        with pytest.raises(TypeError, match="mapping entry"):
+            context_service._build_entry({}, "high", "deep")
+
+
 def test_pack_values_are_checked() -> None:
     with pytest.raises(ValueError, match="non-empty mapping"):
         ExtensionSourceClassifier({})
@@ -218,6 +317,8 @@ def test_pack_values_are_checked() -> None:
         NOTES.with_page_namer(object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="PageRenderer"):
         NOTES.with_page_renderer(object())  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="ContextSource"):
+        NOTES.with_context_source(object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="DomainPack"):
         Engine(pack=object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="DomainPack"), using_pack(object()):  # type: ignore[arg-type]
@@ -228,4 +329,5 @@ def test_pack_values_are_checked() -> None:
         "classifier": "llm_wiki_cli.services.domain_pack.ExtensionSourceClassifier",
         "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
         "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+        "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
     }

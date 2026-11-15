@@ -20,13 +20,14 @@ import json
 import re
 import shlex
 import sys
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 from typing import Any, Literal, overload
 
+from .domain_pack import CodeContextSource, context_entry, context_related_sources
 from .host import current_host
 from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from . import wiki_surface
@@ -367,71 +368,16 @@ def _estimate_tokens(text: str) -> int:
 # ── Import graph ──────────────────────────────────────────────────────
 
 
-def _build_import_graph(inventory: dict) -> dict[str, set[str]]:
-    """Build a bidirectional import adjacency map from a deep inventory.
+def _build_import_graph(inventory: dict) -> Mapping[str, Iterable[str]]:
+    """Related sources from the current pack's context source.
 
-    For each file A that imports a symbol from file B (both present in *inventory*),
-    adds edges A→B and B→A.  External / stdlib imports are silently skipped.
-
-    Returns ``{filepath: {neighbor_filepaths}}`` with every key appearing
-    even if it has no neighbors.
+    For code this is the bidirectional import adjacency map:
+    ``{filepath: {neighbor_filepaths}}`` with every key present.
     """
-    # Build a lookup: dotted module path → inventory filepath
-    # e.g.  "llm_wiki_cli.config" → "src/llm_wiki_cli/config.py"
-    module_to_file: dict[str, str] = {}
-    for filepath in inventory:
-        # Convert filepath to dotted module path
-        mod = _filepath_to_module(filepath)
-        if mod:
-            module_to_file[mod] = filepath
-
-    graph: dict[str, set[str]] = {fp: set() for fp in inventory}
-
-    for filepath, file_data in inventory.items():
-        for imp in file_data.get("imports", []):
-            imp_module = imp.get("module", "")
-            if not imp_module:
-                continue
-
-            # Try exact match, then parent module (for ``from pkg.mod import X``)
-            target = module_to_file.get(imp_module)
-            if target is None:
-                # Try progressively shorter prefixes
-                parts = imp_module.split(".")
-                for i in range(len(parts) - 1, 0, -1):
-                    candidate = ".".join(parts[:i])
-                    target = module_to_file.get(candidate)
-                    if target is not None:
-                        break
-
-            if target is not None and target != filepath:
-                graph[filepath].add(target)
-                graph[target].add(filepath)
-
-    return graph
+    return context_related_sources(inventory)
 
 
-def _filepath_to_module(filepath: str) -> str | None:
-    """Convert ``"src/llm_wiki_cli/config.py"`` → ``"llm_wiki_cli.config"``.
-
-    Strips a leading ``src/`` directory and the ``.py`` suffix, then
-    converts path separators to dots.  Returns None for non-Python files.
-    """
-    p = Path(filepath)
-    if p.suffix != ".py":
-        return None
-
-    parts = list(p.with_suffix("").parts)
-
-    # Strip leading "src" directory (common in Python projects)
-    if parts and parts[0] == "src":
-        parts = parts[1:]
-
-    # Strip __init__ (package init files map to the package itself)
-    if parts and parts[-1] == "__init__":
-        parts = parts[:-1]
-
-    return ".".join(parts) if parts else None
+_filepath_to_module = CodeContextSource.module_for_path
 
 
 # ── Classification ────────────────────────────────────────────────────
@@ -440,7 +386,7 @@ def _filepath_to_module(filepath: str) -> str | None:
 def _classify_files(
     all_files: list[str],
     changed: list[str] | None,
-    import_graph: dict[str, set[str]],
+    import_graph: Mapping[str, Iterable[str]],
     focus: str,
     include_neighbors: bool = True,
 ) -> dict[str, str]:
@@ -477,35 +423,9 @@ def _classify_files(
 # ── Detail-level serializers ──────────────────────────────────────────
 
 
-def _deep_entry(file_data: dict) -> dict:
-    """Full detail: classes with methods, params, docstrings, imports."""
-    return {k: v for k, v in file_data.items() if k != "language"}
-
-
-def _slim_entry(file_data: dict) -> dict:
-    """Slim detail: class names/bases/line, function names/lines."""
-    return {
-        "classes": [
-            {"name": c["name"], "bases": c.get("bases", []), "line": c.get("line")}
-            for c in file_data.get("classes", [])
-        ],
-        "functions": [
-            {"name": f["name"], "line": f.get("line")}
-            for f in file_data.get("functions", [])
-        ],
-    }
-
-
-def _summary_entry(file_data: dict) -> dict:
-    """Names only: lists of class names and function names."""
-    entry: dict[str, list[str]] = {}
-    cls_names = [c["name"] for c in file_data.get("classes", [])]
-    fn_names = [f["name"] for f in file_data.get("functions", [])]
-    if cls_names:
-        entry["classes"] = cls_names
-    if fn_names:
-        entry["functions"] = fn_names
-    return entry
+_deep_entry = CodeContextSource.deep_entry
+_slim_entry = CodeContextSource.slim_entry
+_summary_entry = CodeContextSource.summary_entry
 
 
 _DETAIL_SERIALIZERS = {
@@ -654,8 +574,8 @@ def _bounds_metadata(*, total: int, returned: int) -> dict[str, int | bool]:
 
 
 def _build_entry(file_data: dict, priority: str, detail: str) -> dict:
-    """Serialize one file at a specific detail level."""
-    entry = _DETAIL_SERIALIZERS[detail](file_data)
+    """Serialize one file at a specific detail level with the pack's context source."""
+    entry = context_entry(file_data, detail)  # type: ignore[arg-type]
     entry["priority"] = priority
     entry["detail"] = detail
     return entry

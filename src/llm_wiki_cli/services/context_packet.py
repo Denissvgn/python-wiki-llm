@@ -40,6 +40,7 @@ from .contracts import (
     TYPED_GRAPH_SCHEMA_VERSION,
 )
 from .dependencies import analyze_dependencies
+from .domain_pack import uses_builtin_context_source
 from .documentation_queries import (
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
     CONTEXT_COVERAGE_LIMITATION_LIMIT,
@@ -386,6 +387,7 @@ def describe_context_packet_error(error: BaseException) -> dict[str, Any]:
         "source_selection", "protocol", "knowledge_mode", "read_only",
         "budget_tokens", "focus", "format", "filters", "prefer_fresh",
         "if_packet_id", "counter_id", "budget_mode", "changes", "allow_external_src",
+        "context_source",
     }
     if field is None and isinstance(error, (TypeError, ValueError)):
         candidate = re.match(r"^([a-z_]+)\b", str(error))
@@ -1555,6 +1557,13 @@ def packet_from_captured_response(
     response: Mapping[str, Any],
 ) -> QualifiedContextPacket:
     """Seal and validate a selected response against its unchanged captured basis."""
+    if not uses_builtin_context_source():
+        # The packet policy digest names the built-in source ranking.
+        raise ContextPacketUnavailableError(
+            "qualified context packets need the built-in context source; "
+            "the active domain pack replaces it",
+            field="context_source",
+        )
     packet_contract = _packet_contract_for_request(normalized)
     body = _packet_body(captured, normalized, response, packet_contract)
 

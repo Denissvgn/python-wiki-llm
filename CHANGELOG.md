@@ -45,7 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
   kind is still accepted, and page kinds stay those of the knowledge format.
 - A `DomainPack` decides which repository files are sources and how
-  generated module and entity pages are named and written. A pack combines a
+  generated module and entity pages are named and written, and what budgeted
+  context shows. A pack combines a
   `SourceClassifier` (for example an `ExtensionSourceClassifier` mapping
   source kinds to file extensions) with a `PageNamer` (by default
   `StemPageNamer`, today's names) and a `PageRenderer` that writes the
@@ -53,7 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pages: each `ModulePageRequest` or `EntityPageRequest` carries the source
   data and the built-in Markdown. Sync keeps what people wrote in the
   `Description` section and table description cells and takes the rest of
-  the page from the renderer. Pass a pack as `Engine(pack=...)`; built-in
+  the page from the renderer. A `ContextSource` decides which sources are
+  related to a changed one and what budgeted context shows of each source
+  at each detail level; `CodeContextSource` keeps today's import neighbors
+  and class/function entries. Qualified context packets, and task context
+  that seals them, refuse a replaced context source because their policy
+  names the built-in ranking. Pass a pack as `Engine(pack=...)`; built-in
   extractors only read the files the pack classifies for their language.
   `CODE_DOCS_PACK` is the default and keeps current behavior.
 
