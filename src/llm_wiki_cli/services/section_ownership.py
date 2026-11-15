@@ -1180,6 +1180,10 @@ def merge_semantic_markdown(
             (old_table_descriptions or {}).get(heading),
         )
         preserved += table_preserved
+    if generated.endswith("\n") and not merged.endswith("\n"):
+        # Section splices drop the final newline when the page's last
+        # section is not one of them.
+        merged += "\n"
     return SemanticMergeResult(merged, preserved)
 
 

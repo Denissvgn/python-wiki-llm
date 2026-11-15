@@ -556,3 +556,15 @@ def test_unmarked_overload_guidance_survives_regeneration_and_removal(merge):
     removed = apply(first.text, '# Example\n\n## Description\n\n_Auto-generated from `Example`._\n')
     assert authored in removed.text
     assert 'llm-wiki-generated:overloads' not in removed.text
+
+
+def test_semantic_merge_keeps_the_final_newline_after_a_preserved_description() -> None:
+    from llm_wiki_cli.services.section_ownership import merge_entity_semantics
+
+    generated = "# Box\n\n## Description\n\n_Auto-generated._\n\n## Owner\n\nTeam\n"
+    existing = generated.replace("_Auto-generated._", "Holds one item.")
+
+    merged = merge_entity_semantics(existing, generated)
+
+    assert merged.preserved == 1
+    assert merged.text == existing

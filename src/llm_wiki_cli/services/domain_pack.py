@@ -5,19 +5,28 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
 * a :class:`SourceClassifier` decides which repository files are sources and
   which source kind (for code: language) each one is;
 * a :class:`PageNamer` names the module and entity pages generated from an
-  inventory. Page kinds themselves are fixed by the knowledge format.
+  inventory. Page kinds themselves are fixed by the knowledge format;
+* a :class:`PageRenderer` writes the Markdown of those module and entity
+  pages. Each request carries the built-in Markdown, so a renderer can adjust
+  it instead of starting over.
 
 :data:`CODE_DOCS_PACK` is today's code-documentation behavior and the default.
 A host chooses another pack with :func:`using_pack` or ``Engine(pack=...)``;
 every call that classifies sources or names pages inside that block uses it.
 Pages named by one pack are not renamed by another, so a wiki should keep
 using the pack that generated it.
+
+When sync refreshes a module or entity page it keeps what people wrote in
+its ``Description`` section and in the description cells of its
+``Attributes``, ``Methods``, ``Classes`` and ``Functions`` tables, and takes
+everything else from the renderer. A renderer that wants people to write
+there keeps those headings; any section it adds stays current with sources.
 """
 
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
@@ -70,6 +79,79 @@ class PageNamer(Protocol):
     ) -> dict[EntityOccurrenceKey, str]:
         """Return ``{(name, source path, occurrence): entity page name}``."""
         ...
+
+
+@dataclass(frozen=True)
+class ModulePageRequest:
+    """Everything a renderer gets for one module page."""
+
+    source_path: str
+    file_data: Mapping[str, Any]
+    entity_pages: Mapping[str, str]
+    module_pages: Mapping[str, str]
+    entity_occurrence_pages: Mapping[EntityOccurrenceKey, str]
+    module_dependencies: Mapping[str, Any] | None
+    diagram_style: Mapping[str, Any] | None
+    _builtin: Callable[[], str] = field(repr=False, compare=False)
+
+    def builtin_markdown(self) -> str:
+        """The Markdown the built-in renderer writes for this page."""
+        return self._builtin()
+
+
+@dataclass(frozen=True)
+class EntityPageRequest:
+    """Everything a renderer gets for one entity page."""
+
+    entity: Mapping[str, Any]
+    source_path: str
+    module_page: str | None
+    relationships: Mapping[str, Any]
+    relationship_summary: Mapping[str, Any]
+    module_pages: Mapping[str, str]
+    diagram_style: Mapping[str, Any] | None
+    _builtin: Callable[[], str] = field(repr=False, compare=False)
+
+    def builtin_markdown(self) -> str:
+        """The Markdown the built-in renderer writes for this page."""
+        return self._builtin()
+
+
+@runtime_checkable
+class PageRenderer(Protocol):
+    """Writes the Markdown of generated module and entity pages."""
+
+    def render_module(self, request: ModulePageRequest) -> str:
+        """Return the Markdown of one module page."""
+        ...
+
+    def render_entity(self, request: EntityPageRequest) -> str:
+        """Return the Markdown of one entity page."""
+        ...
+
+
+class BuiltInPageRenderer:
+    """Today's code-documentation pages; subclass it to adjust them."""
+
+    def render_module(self, request: ModulePageRequest) -> str:
+        return request.builtin_markdown()
+
+    def render_entity(self, request: EntityPageRequest) -> str:
+        return request.builtin_markdown()
+
+
+def render_with_pack(request: ModulePageRequest | EntityPageRequest) -> str:
+    """Render ``request`` with the current pack's page renderer."""
+    renderer = current_pack().page_renderer
+    if isinstance(request, ModulePageRequest):
+        markdown = renderer.render_module(request)
+    else:
+        markdown = renderer.render_entity(request)
+    if not isinstance(markdown, str):
+        raise TypeError(
+            f"page renderer {_qualified_type_name(renderer)} must return Markdown text"
+        )
+    return markdown
 
 
 def _suffixes(value: object, field_name: str) -> tuple[str, ...]:
@@ -337,11 +419,12 @@ def _qualified_type_name(value: object) -> str:
 
 @dataclass(frozen=True)
 class DomainPack:
-    """A named set of domain decisions: source classification and page naming."""
+    """A named set of domain decisions: classification, page naming and rendering."""
 
     name: str
     classifier: SourceClassifier
     page_namer: PageNamer = field(default_factory=StemPageNamer)
+    page_renderer: PageRenderer = field(default_factory=BuiltInPageRenderer)
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -350,6 +433,8 @@ class DomainPack:
             raise TypeError("classifier must implement SourceClassifier")
         if not isinstance(self.page_namer, PageNamer):
             raise TypeError("page_namer must implement PageNamer")
+        if not isinstance(self.page_renderer, PageRenderer):
+            raise TypeError("page_renderer must implement PageRenderer")
 
     def with_classifier(self, classifier: SourceClassifier) -> DomainPack:
         """A copy of this pack that classifies sources with ``classifier``."""
@@ -358,6 +443,10 @@ class DomainPack:
     def with_page_namer(self, page_namer: PageNamer) -> DomainPack:
         """A copy of this pack that names pages with ``page_namer``."""
         return replace(self, page_namer=page_namer)
+
+    def with_page_renderer(self, page_renderer: PageRenderer) -> DomainPack:
+        """A copy of this pack that writes pages with ``page_renderer``."""
+        return replace(self, page_renderer=page_renderer)
 
     def describe(self) -> dict[str, Any]:
         """A JSON-ready summary of the pack."""
@@ -369,11 +458,15 @@ class DomainPack:
             },
             "classifier": _qualified_type_name(self.classifier),
             "page_namer": _qualified_type_name(self.page_namer),
+            "page_renderer": _qualified_type_name(self.page_renderer),
         }
 
 
-#: Today's code-documentation behavior: built-in languages and stem page names.
-CODE_DOCS_PACK = DomainPack("agent-wiki-cli/code-docs", CodeSourceClassifier(), StemPageNamer())
+#: Today's code-documentation behavior: built-in languages, stem page names
+#: and built-in page Markdown.
+CODE_DOCS_PACK = DomainPack(
+    "agent-wiki-cli/code-docs", CodeSourceClassifier(), StemPageNamer(), BuiltInPageRenderer()
+)
 
 _ACTIVE_PACK: ContextVar[DomainPack | None] = ContextVar("llm_wiki_domain_pack", default=None)
 
@@ -393,7 +486,7 @@ def uses_default_pack() -> bool:
 
 @contextmanager
 def using_pack(pack: DomainPack) -> Iterator[DomainPack]:
-    """Classify sources and name pages inside the block with ``pack``."""
+    """Classify sources, name pages and render them inside the block with ``pack``."""
     if not isinstance(pack, DomainPack):
         raise TypeError("pack must be a DomainPack")
     token = _ACTIVE_PACK.set(pack)
@@ -405,14 +498,19 @@ def using_pack(pack: DomainPack) -> Iterator[DomainPack]:
 
 __all__ = [
     "CODE_DOCS_PACK",
+    "BuiltInPageRenderer",
     "CodeSourceClassifier",
     "DomainPack",
     "EntityOccurrenceKey",
+    "EntityPageRequest",
     "ExtensionSourceClassifier",
+    "ModulePageRequest",
     "PageNamer",
+    "PageRenderer",
     "SourceClassifier",
     "StemPageNamer",
     "current_pack",
+    "render_with_pack",
     "uses_default_pack",
     "using_pack",
 ]

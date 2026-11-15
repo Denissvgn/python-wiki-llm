@@ -12,7 +12,9 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
+from functools import partial
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, TextIO
 
 from .. import __version__
@@ -180,7 +182,13 @@ from .extraction_service import (
     resolve_call_edges,
 )
 from .host import current_host, emit
-from .domain_pack import EntityOccurrenceKey, current_pack
+from .domain_pack import (
+    EntityOccurrenceKey,
+    EntityPageRequest,
+    ModulePageRequest,
+    current_pack,
+    render_with_pack,
+)
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 _INDEX_FLOW_LABEL = "Entry-point flows"
@@ -1808,7 +1816,7 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
     lines.append("")
 
 
-def _generate_entity_md(
+def _builtin_entity_md(
     class_info: dict,
     filepath: str,
     relationships: dict,
@@ -1818,7 +1826,7 @@ def _generate_entity_md(
     module_page_map: Mapping[str, str] | None = None,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
-    """Generate comprehensive markdown for a class entity."""
+    """The built-in markdown for a class entity."""
     if _is_haskell_filepath(filepath):
         return _generate_haskell_entity_md(
             class_info,
@@ -1920,7 +1928,7 @@ def _generate_entity_md(
     return "\n".join(lines)
 
 
-def _generate_module_md(
+def _builtin_module_md(
     filepath: str,
     file_data: dict,
     entity_page_map: dict | None = None,
@@ -1930,7 +1938,7 @@ def _generate_module_md(
     entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
-    """Generate comprehensive markdown for a module page."""
+    """The built-in markdown for a module page."""
     is_haskell = _is_haskell_file_data(file_data)
     declared_haskell_module = _haskell_module_name(file_data)
     mod_name = _display_module_name(filepath, file_data)
@@ -2133,6 +2141,77 @@ def _append_surface_overview(
             ),
             "",
         ]
+    )
+
+
+_EMPTY_MAPPING: Mapping[Any, Any] = MappingProxyType({})
+
+
+def _generate_entity_md(
+    class_info: dict,
+    filepath: str,
+    relationships: dict,
+    mod_page_name: str | None = None,
+    *,
+    relationship_summary: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render a class entity page with the current pack's page renderer."""
+    return render_with_pack(
+        EntityPageRequest(
+            entity=class_info,
+            source_path=filepath,
+            module_page=mod_page_name,
+            relationships=relationships or _EMPTY_MAPPING,
+            relationship_summary=relationship_summary or _EMPTY_MAPPING,
+            module_pages=module_page_map or _EMPTY_MAPPING,
+            diagram_style=diagram_style,
+            _builtin=partial(
+                _builtin_entity_md,
+                class_info,
+                filepath,
+                relationships,
+                mod_page_name,
+                relationship_summary=relationship_summary,
+                module_page_map=module_page_map,
+                diagram_style=diagram_style,
+            ),
+        )
+    )
+
+
+def _generate_module_md(
+    filepath: str,
+    file_data: dict,
+    entity_page_map: dict | None = None,
+    *,
+    module_dependency_map: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render a module page with the current pack's page renderer."""
+    return render_with_pack(
+        ModulePageRequest(
+            source_path=filepath,
+            file_data=file_data,
+            entity_pages=entity_page_map or _EMPTY_MAPPING,
+            module_pages=module_page_map or _EMPTY_MAPPING,
+            entity_occurrence_pages=entity_occurrence_page_map or _EMPTY_MAPPING,
+            module_dependencies=module_dependency_map,
+            diagram_style=diagram_style,
+            _builtin=partial(
+                _builtin_module_md,
+                filepath,
+                file_data,
+                entity_page_map,
+                module_dependency_map=module_dependency_map,
+                module_page_map=module_page_map,
+                entity_occurrence_page_map=entity_occurrence_page_map,
+                diagram_style=diagram_style,
+            ),
+        )
     )
 
 

@@ -10,9 +10,12 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.engine import (
     CODE_DOCS_PACK,
+    BuiltInPageRenderer,
     DomainPack,
     Engine,
+    EntityPageRequest,
     ExtensionSourceClassifier,
+    ModulePageRequest,
     NoProcessHost,
     StemPageNamer,
 )
@@ -33,6 +36,22 @@ class PrefixedPageNamer(StemPageNamer):
 
 
 PREFIXED = CODE_DOCS_PACK.with_page_namer(PrefixedPageNamer())
+
+
+class OwnerRenderer(BuiltInPageRenderer):
+    def __init__(self, team: str) -> None:
+        self.team = team
+        self.requests: list[ModulePageRequest | EntityPageRequest] = []
+
+    def _with_owner(self, request) -> str:
+        self.requests.append(request)
+        return request.builtin_markdown().rstrip("\n") + f"\n\n## Owner\n\n{self.team}\n"
+
+    def render_module(self, request):
+        return self._with_owner(request)
+
+    def render_entity(self, request):
+        return self._with_owner(request)
 
 
 def _write(path: Path, text: str) -> None:
@@ -123,6 +142,65 @@ def test_an_engine_generates_and_syncs_pages_with_its_pack(tmp_path, monkeypatch
         assert operation.pack is current_pack() is PREFIXED
 
 
+def test_the_pack_page_renderer_writes_every_module_and_entity_page() -> None:
+    renderer = OwnerRenderer("Billing team")
+    info = {"name": "Invoice", "line": 1, "attributes": [{"name": "total", "type": "int"}]}
+    file_data = {"classes": [info], "functions": []}
+    builtin_entity = bootstrap_runtime._generate_entity_md(info, "billing.py", {}, "billing")
+    builtin_module = bootstrap_runtime._generate_module_md("billing.py", file_data, {"Invoice": "Invoice"})
+
+    with using_pack(CODE_DOCS_PACK.with_page_renderer(renderer)):
+        entity = bootstrap_runtime._generate_entity_md(info, "billing.py", {}, "billing")
+        module = bootstrap_runtime._generate_module_md("billing.py", file_data, {"Invoice": "Invoice"})
+
+    assert entity == builtin_entity.rstrip("\n") + "\n\n## Owner\n\nBilling team\n"
+    assert module == builtin_module.rstrip("\n") + "\n\n## Owner\n\nBilling team\n"
+    entity_request, module_request = renderer.requests
+    assert isinstance(entity_request, EntityPageRequest)
+    assert (entity_request.entity, entity_request.source_path, entity_request.module_page) == (
+        info, "billing.py", "billing",
+    )
+    assert isinstance(module_request, ModulePageRequest)
+    assert (module_request.source_path, dict(module_request.entity_pages)) == ("billing.py", {"Invoice": "Invoice"})
+    assert module_request.module_dependencies is None and dict(module_request.module_pages) == {}
+
+
+def test_sync_keeps_descriptions_and_refreshes_rendered_sections(tmp_path, monkeypatch) -> None:
+    _write(tmp_path / "src/billing.py", "class Invoice:\n    total: int\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", os.fspath(tmp_path.parent))
+    page = tmp_path / "wiki/entities/Invoice.md"
+
+    Engine(host=NoProcessHost(), pack=CODE_DOCS_PACK.with_page_renderer(OwnerRenderer("Team A"))).call(
+        api.bootstrap_wiki, "src", "wiki"
+    )
+    assert page.read_text(encoding="utf-8").endswith("## Owner\n\nTeam A\n")
+    text = page.read_text(encoding="utf-8")
+    page.write_text(text.replace(
+        "_Auto-generated from `Invoice` in `billing.py`._", "Invoices are issued monthly."
+    ), encoding="utf-8")
+    _write(tmp_path / "src/billing.py", "class Invoice:\n    total: int\n    tax: int\n")
+
+    engine = Engine(host=NoProcessHost(), pack=CODE_DOCS_PACK.with_page_renderer(OwnerRenderer("Team B")))
+    engine.call(api.sync_wiki, "src", "wiki")
+
+    text = page.read_text(encoding="utf-8")
+    assert "Invoices are issued monthly." in text and "| `tax` | `int` |" in text
+    assert text.endswith("## Owner\n\nTeam B\n")
+    assert (tmp_path / "wiki/modules/billing.md").read_text(encoding="utf-8").endswith("## Owner\n\nTeam B\n")
+    assert engine.call(api.lint_wiki, "src", "wiki")["ok"]
+
+
+def test_a_page_renderer_must_return_markdown_text() -> None:
+    class Broken(BuiltInPageRenderer):
+        def render_entity(self, request):
+            return None
+
+    broken = CODE_DOCS_PACK.with_page_renderer(Broken())  # type: ignore[arg-type]
+    with using_pack(broken), pytest.raises(TypeError, match="Markdown text"):
+        bootstrap_runtime._generate_entity_md({"name": "Invoice"}, "billing.py", {})
+
+
 def test_pack_values_are_checked() -> None:
     with pytest.raises(ValueError, match="non-empty mapping"):
         ExtensionSourceClassifier({})
@@ -138,6 +216,8 @@ def test_pack_values_are_checked() -> None:
         DomainPack("team/notes", object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="PageNamer"):
         NOTES.with_page_namer(object())  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="PageRenderer"):
+        NOTES.with_page_renderer(object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="DomainPack"):
         Engine(pack=object())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="DomainPack"), using_pack(object()):  # type: ignore[arg-type]
@@ -147,4 +227,5 @@ def test_pack_values_are_checked() -> None:
         "source_kinds": {"notes": [".md", ".txt"]},
         "classifier": "llm_wiki_cli.services.domain_pack.ExtensionSourceClassifier",
         "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+        "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
     }

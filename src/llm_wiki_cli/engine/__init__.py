@@ -5,8 +5,8 @@ environment, working directory, clock), whether bundled analysis helpers may
 be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
-it declares, and the :class:`DomainPack` that classifies sources and names
-pages. Every call runs
+it declares, and the :class:`DomainPack` that classifies sources, names
+pages and renders them. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -58,9 +58,13 @@ from ..services.bootstrap_service import (
 )
 from ..services.domain_pack import (
     CODE_DOCS_PACK,
+    BuiltInPageRenderer,
     DomainPack,
+    EntityPageRequest,
     ExtensionSourceClassifier,
+    ModulePageRequest,
     PageNamer,
+    PageRenderer,
     SourceClassifier,
     StemPageNamer,
 )
@@ -81,6 +85,7 @@ __all__ = [
     "BootstrapRequestError",
     "BootstrapResult",
     "BootstrapServiceError",
+    "BuiltInPageRenderer",
     "CODE_DOCS_PACK",
     "ConceptKindSpec",
     "DEFAULT_KINDS",
@@ -89,6 +94,7 @@ __all__ = [
     "EVENT_KINDS",
     "Engine",
     "EngineEvent",
+    "EntityPageRequest",
     "EventSink",
     "ExtensionSourceClassifier",
     "Host",
@@ -101,9 +107,11 @@ __all__ = [
     "MigrateRequest",
     "MigrateRequestError",
     "ModelValidator",
+    "ModulePageRequest",
     "NoProcessHost",
     "Operation",
     "PageNamer",
+    "PageRenderer",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",

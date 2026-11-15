@@ -45,10 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
   kind is still accepted, and page kinds stay those of the knowledge format.
 - A `DomainPack` decides which repository files are sources and how
-  generated module and entity pages are named. A pack combines a
+  generated module and entity pages are named and written. A pack combines a
   `SourceClassifier` (for example an `ExtensionSourceClassifier` mapping
   source kinds to file extensions) with a `PageNamer` (by default
-  `StemPageNamer`, today's names). Pass it as `Engine(pack=...)`; built-in
+  `StemPageNamer`, today's names) and a `PageRenderer` that writes the
+  Markdown of those pages. Subclass `BuiltInPageRenderer` to adjust today's
+  pages: each `ModulePageRequest` or `EntityPageRequest` carries the source
+  data and the built-in Markdown. Sync keeps what people wrote in the
+  `Description` section and table description cells and takes the rest of
+  the page from the renderer. Pass a pack as `Engine(pack=...)`; built-in
   extractors only read the files the pack classifies for their language.
   `CODE_DOCS_PACK` is the default and keeps current behavior.
 
@@ -65,6 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module that imports a sibling by bare name (`import helpers`) must switch
   to a relative import (`from . import helpers`). The unused
   `plugins.activate_plugin_paths()` helper is removed.
+
+### Fixed
+
+- When sync kept a hand-written entity or module description, it wrote the
+  page without its final newline and then rewrote it to restore it, so the
+  wiki log could count the page as updated twice.
 
 ## [4.1.1] - 2026-11-13
 
