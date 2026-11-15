@@ -9,7 +9,8 @@ from typing import Any
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import context_packet as packets, context_service
+from llm_wiki_cli.services import context_service
+from llm_wiki_cli.services import context_packet_builder as packet_builder
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
 
 
@@ -162,7 +163,7 @@ def test_request_conflicts_fail_before_capture(packet_project, monkeypatch, caps
     request.write_bytes(canonical({"protocol": "llm-wiki-context/v1", "budget_tokens": 32000}))
     def forbidden(*args, **kwargs):
         raise AssertionError("conflicting requests must not read source/wiki")
-    monkeypatch.setattr(packets, "capture_context_read", forbidden)
+    monkeypatch.setattr(packet_builder, "capture_context_read", forbidden)
     monkeypatch.setattr(context_service, "_build_context", forbidden)
     args = cli._build_parser().parse_args(["context", "--request", str(request), "--format", "packet", *options])
     with pytest.raises(SystemExit) as error:
@@ -176,7 +177,7 @@ def test_request_conflicts_fail_before_capture(packet_project, monkeypatch, caps
 def test_v3_request_does_not_silently_change_delivery(packet_project, monkeypatch, capsys):
     request = packet_project / "request.json"
     request.write_bytes(canonical({"protocol": "llm-wiki-context/v3", "budget_tokens": 32000, "budget_mode": "estimated", "format": "json"}))
-    monkeypatch.setattr(packets, "capture_context_read", lambda *a, **k: pytest.fail("unexpected capture"))
+    monkeypatch.setattr(packet_builder, "capture_context_read", lambda *a, **k: pytest.fail("unexpected capture"))
     args = cli._build_parser().parse_args(["context", "--request", str(request), "--format", "packet"])
     with pytest.raises(SystemExit):
         context_service.run(args)
@@ -283,8 +284,8 @@ def test_mutation_is_distinct_and_never_returns_cached_success(packet_project, m
     service = McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
     old = service.get_context_packet()
     def mutated(*args, **kwargs):
-        raise packets.ContextPacketSourceMutationError("source")
-    monkeypatch.setattr(packets, "_assert_source_unchanged", mutated)
+        raise packet_builder.ContextPacketSourceMutationError("source")
+    monkeypatch.setattr(packet_builder, "_assert_source_unchanged", mutated)
     with pytest.raises(api.WorkspaceStateError) as raised:
         api.build_qualified_context()
     assert raised.value.code == "context-read-mutated"

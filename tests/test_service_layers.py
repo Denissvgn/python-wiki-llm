@@ -12,6 +12,8 @@ Every service module must be classified, so a new module states its layer.
 from __future__ import annotations
 
 import ast
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -60,6 +62,8 @@ KERNEL_SERVICES = frozenset(
         "context_budget",
         "context_knowledge_contract",
         "context_packet",
+        "context_packet_builder",
+        "context_request_format",
         "context_service",
         "context_session",
         "documentation_queries",
@@ -292,7 +296,8 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.extraction_service",
         }
     ),
-    "context_packet": frozenset(
+    "context_packet": frozenset({"services.implementation_evidence"}),
+    "context_packet_builder": frozenset(
         {
             "llm_wiki_cli",
             "services.dependencies",
@@ -300,7 +305,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.extraction_service",
             "services.extractor_helpers",
             "services.helper_cache",
-            "services.implementation_evidence",
             "services.plugins",
         }
     ),
@@ -873,3 +877,28 @@ def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Pat
         "pack": frozenset({"services.product"}),
         "extractors.common": frozenset({"cli"}),
     }
+
+
+# Format checks stay importable without the builders or the analysis stack.
+FORMAT_MODULES = ("context_packet", "context_request_format")
+# Stdlib-only release policy module that knowledge freshness wording reads.
+FORMAT_ANALYSIS_ALLOWANCE = frozenset({"analysis_compatibility"})
+
+
+@pytest.mark.parametrize("module", FORMAT_MODULES)
+def test_format_modules_load_no_builders_or_analyzers(module: str) -> None:
+    src = Path(__file__).resolve().parents[1] / "src"
+    probe = (
+        f"import sys; sys.path.insert(0, {str(src)!r}); "
+        f"import llm_wiki_cli.services.{module}; "
+        "print('\\n'.join(sorted(m for m in sys.modules if m.startswith('llm_wiki_cli.'))))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True
+    )
+    loaded = set(result.stdout.split())
+    services = {name.removeprefix(f"{_SERVICES}.") for name in loaded if name.startswith(f"{_SERVICES}.")}
+
+    assert not {name for name in loaded if name.startswith("llm_wiki_cli.extractors")}
+    assert services <= PRIMITIVE_SERVICES | KERNEL_SERVICES | FORMAT_ANALYSIS_ALLOWANCE
+    assert not services & {"context_packet_builder", "context_service", "context_budget", "change_selection"}

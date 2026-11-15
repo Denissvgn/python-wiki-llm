@@ -405,7 +405,8 @@ def test_import_alias_selection_and_cached_restart_cannot_borrow_excluded_author
 def test_producer_incompatibility_does_not_upgrade_snapshot_or_borrow_old_call_edges(
     owned_project, monkeypatch, capsys
 ):
-    from llm_wiki_cli.services import analysis_capture, context_packet
+    from llm_wiki_cli.services import analysis_capture
+    from llm_wiki_cli.services import context_packet_builder
 
     root = owned_project("library")
     target = "llm-wiki://modules/client"
@@ -435,7 +436,7 @@ def test_producer_incompatibility_does_not_upgrade_snapshot_or_borrow_old_call_e
             ("client.py", "assigned_values"),
         }, name
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "capture_context_read",
         lambda *args, **kwargs: pytest.fail(
             "snapshot read captured application source"

@@ -666,7 +666,7 @@ def test_qualified_context_protocol_fields_follow_context_taxonomy(
         raise internal_error
 
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         function_name,
         fail,
     )

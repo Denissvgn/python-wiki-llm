@@ -154,7 +154,9 @@ def test_existing_page_provenance_wins_over_narrow_inventory_names(
 
 def test_context_rejects_staged_selection_mutation(tmp_path, monkeypatch):
     from llm_wiki_cli.services import context_budget
-    from llm_wiki_cli.services.context_packet import ContextPacketSourceMutationError
+    from llm_wiki_cli.services.context_packet_builder import (
+        ContextPacketSourceMutationError,
+    )
 
     monkeypatch.chdir(tmp_path)
     git(tmp_path, "init", "-q")

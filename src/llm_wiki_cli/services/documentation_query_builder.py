@@ -436,7 +436,7 @@ def build_snapshot_documentation_query_service(
     limit: int,
 ) -> DocumentationGraphQueryService:
     """Build a snapshot-only service without source extraction."""
-    from .context_packet import _assert_wiki_unchanged, _wiki_anchor
+    from .context_packet_builder import _assert_wiki_unchanged, _wiki_anchor
 
     anchor = _wiki_anchor(wiki_root)
     view = load_knowledge_read_view(
@@ -489,7 +489,7 @@ def build_live_documentation_query_service(
     # Keep heavyweight extraction/context modules out of this builder's import
     # path until a live query service is requested.
     from . import context_service, extraction_service
-    from .context_packet import (
+    from .context_packet_builder import (
         _assert_source_unchanged,
         _assert_wiki_unchanged,
         _source_anchor,

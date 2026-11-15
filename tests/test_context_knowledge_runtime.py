@@ -647,7 +647,7 @@ def test_invalid_projection_surface_has_consistent_read_only_fallbacks(
         _materialize_ready_project,
         _request,
     )
-    from llm_wiki_cli.services.context_packet import build_qualified_context
+    from llm_wiki_cli.services.context_packet_builder import build_qualified_context
 
     tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
     rejected_payload_sentinel = "projection-only-untrusted-detail"

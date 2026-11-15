@@ -21,7 +21,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
 
 from llm_wiki_cli import api
 from llm_wiki_cli.commands import init_cmd, status_cmd, uninstall_cmd, upgrade_cmd
-from llm_wiki_cli.services.context_packet import build_qualified_context
+from llm_wiki_cli.services.context_packet_builder import build_qualified_context
 from llm_wiki_cli.services.knowledge_artifacts import (
     KnowledgeCommitResult,
     commit_knowledge_artifacts,

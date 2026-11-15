@@ -70,6 +70,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Checking a qualified context packet's format no longer loads the source
+  analyzers or the packet builders. `services.context_packet` now holds only
+  the packet wire format and `validate_context_packet`, and the new
+  `services.context_request_format` holds the context, budget and
+  change-selection request checks. Building and reconciling packets moved to
+  `services.context_packet_builder`; the builder names stay importable from
+  `services.context_packet`, and the moved request checks from their old
+  modules.
 - `llm-wiki reference cli` and `api.get_cli_contract()` describe the CLI
   without loading command implementations or the Python API. Custom option
   types and actions in the contract are now named under

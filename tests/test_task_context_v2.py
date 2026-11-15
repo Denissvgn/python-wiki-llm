@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import context_packet
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.context_session import build_delta, apply_task_delta
 from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
 from llm_wiki_cli.services.io import decode_markdown_bytes
@@ -38,7 +38,7 @@ def request(**options):
 
 
 def test_live_source_receipt_uses_existing_independent_contract_observer(project, monkeypatch):
-    monkeypatch.setattr(context_packet, "_wiki_anchor", lambda *a, **kw: pytest.fail("scoped task hashed the whole wiki"))
+    monkeypatch.setattr(context_packet_builder, "_wiki_anchor", lambda *a, **kw: pytest.fail("scoped task hashed the whole wiki"))
     req = request(options={"knowledge_mode": "off"})
     result = api.build_task_context(req)
     payload = api.validate_task_context(result.rendered, req)
@@ -56,7 +56,7 @@ def test_native_scoped_fact_and_md_binding_without_whole_wiki_walk(project, monk
     wiki.mkdir()
     _, _, plan = migrate_plan(wiki)
     commit_knowledge_artifacts(plan)
-    monkeypatch.setattr(context_packet, "_wiki_anchor", lambda *a, **kw: pytest.fail("whole-wiki anchor"))
+    monkeypatch.setattr(context_packet_builder, "_wiki_anchor", lambda *a, **kw: pytest.fail("whole-wiki anchor"))
     req = {"schema_version": TASK_REQUEST_SCHEMA_V2, "options": {"read_scope": "snapshot", "knowledge_mode": "required"},
            "requirements": [{"id": "concept", "facet": "concept", "selector": "entities/AccountService.md"}]}
     result = api.build_task_context(req, wiki_dir="wiki")
@@ -247,7 +247,7 @@ def test_scoped_session_revalidates_and_supports_schema_bound_deltas(project, mo
     session = api.open_context_session()
     first = session.read(req)
     assert first.context is not None
-    monkeypatch.setattr(context_packet, "_wiki_anchor", lambda *a, **kw: pytest.fail("whole wiki on scoped session"))
+    monkeypatch.setattr(context_packet_builder, "_wiki_anchor", lambda *a, **kw: pytest.fail("whole wiki on scoped session"))
     warm = session.read(req, if_result_id=first.result_id)
     assert warm.state == "unchanged" and warm.metadata()["reuse"]["rendering"]
     path = project / "app.py"

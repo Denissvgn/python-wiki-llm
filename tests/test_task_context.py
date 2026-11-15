@@ -80,7 +80,7 @@ def test_ambiguous_owner_missing_and_behavior_are_distinct(project):
 
 
 def test_no_source_scan_for_empty_or_out_of_scope_request(project, monkeypatch):
-    monkeypatch.setattr(task_context.packets, "capture_context_read", lambda *a, **k: pytest.fail("unauthorized inventory"))
+    monkeypatch.setattr(task_context.packet_builder, "capture_context_read", lambda *a, **k: pytest.fail("unauthorized inventory"))
     result = api.build_task_context(request("limit")).to_payload()
     assert result["coverage"][0]["reason"] == "broader-scope-required"
     empty = api.build_task_context({"schema_version": TASK_REQUEST_SCHEMA,
@@ -102,7 +102,7 @@ def test_full_inventory_requires_both_request_and_host_policy(project):
     {"requirements": [{"id": "bad", "facet": "source-contract", "selector": "../outside.py:limit"}]},
     {"schema_version": "future"}])
 def test_invalid_task_rejected_before_capture(project, monkeypatch, patch):
-    monkeypatch.setattr(task_context.packets, "capture_context_read", lambda *a, **k: pytest.fail("source read"))
+    monkeypatch.setattr(task_context.packet_builder, "capture_context_read", lambda *a, **k: pytest.fail("source read"))
     with pytest.raises(api.InvalidRequestError):
         api.build_task_context({**request(), **patch})
 
@@ -231,7 +231,7 @@ def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project,
     modified = original.replace("= 3", "= 4")
     stat_capture = source_snapshot._captured_file_integrity
     selected_changes = task_context.context._selected_git_changed_files
-    capture_read = task_context.packets.capture_context_read
+    capture_read = task_context.packet_builder.capture_context_read
     changed = False
     capture_active = False
     restore_outcomes = []
@@ -270,7 +270,7 @@ def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project,
             restore_outcomes.append((capture_active, "restored"))
         return selected_changes(*args, **kwargs)
 
-    monkeypatch.setattr(task_context.packets, "capture_context_read", capture)
+    monkeypatch.setattr(task_context.packet_builder, "capture_context_read", capture)
     monkeypatch.setattr(source_snapshot, "_captured_file_integrity", change_between_hash_and_stat)
     monkeypatch.setattr(task_context.context, "_selected_git_changed_files", restore_after_extraction)
     try:

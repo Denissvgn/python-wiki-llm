@@ -13,7 +13,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import analysis_capture
-from llm_wiki_cli.services.context_packet import capture_context_read
+from llm_wiki_cli.services.context_packet_builder import capture_context_read
 from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
 from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
@@ -471,7 +471,7 @@ def test_snapshot_reads_disclose_noncurrent_review_without_source_analysis(
     _acknowledge_all()
     before = _files(owned)
     monkeypatch.setattr(
-        "llm_wiki_cli.services.context_packet.capture_context_read",
+        "llm_wiki_cli.services.context_packet_builder.capture_context_read",
         lambda *args, **kwargs: pytest.fail("snapshot performed live source analysis"),
     )
     status = api.get_maintenance_status("src", "wiki", live=False)

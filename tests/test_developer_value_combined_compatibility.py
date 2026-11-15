@@ -14,7 +14,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import knowledge_orchestration, task_context_v2
-from llm_wiki_cli.services.context_packet import ContextPacketUnavailableError
+from llm_wiki_cli.services.context_packet_builder import ContextPacketUnavailableError
 from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
 from llm_wiki_cli.services.knowledge_governance import load_governance
 from llm_wiki_cli.services.knowledge_storage import canonical_bytes

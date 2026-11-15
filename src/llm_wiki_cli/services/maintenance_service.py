@@ -19,7 +19,7 @@ from .wiki_write_basis import ACTIVE_WRITE_BASIS
 
 
 def _capture(src_dir, wiki_dir, *, require_ready=True, **options):
-    from .context_packet import capture_context_read
+    from .context_packet_builder import capture_context_read
 
     captured = capture_context_read(src_dir, str(wiki_dir), read_only=True,
         capture_implementation_observations=True, **options)

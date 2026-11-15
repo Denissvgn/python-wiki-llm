@@ -31,10 +31,35 @@ from .domain_pack import CodeContextSource, context_entry, context_related_sourc
 from .host import current_host
 from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from . import wiki_surface
-from .contracts import (
-    CONTEXT_BUDGET_PROTOCOL_VERSION,
-    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
-    CONTEXT_PROTOCOL_VERSION,
+from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
+from .context_request_format import (  # re-exported: format checks live there
+    _CONCEPT_FILTER_KEYS as _CONCEPT_FILTER_KEYS,
+    _CONTEXT_QUERY_LIMIT as _CONTEXT_QUERY_LIMIT,
+    _EVIDENCE_FILTER_VALUES as _EVIDENCE_FILTER_VALUES,
+    _FILTER_KEYS as _FILTER_KEYS,
+    _FOCUS_VALUES as _FOCUS_VALUES,
+    _FORMATS as _FORMATS,
+    _FRESHNESS_FILTER_VALUES as _FRESHNESS_FILTER_VALUES,
+    _KNOWLEDGE_REFINEMENT_KEYS as _KNOWLEDGE_REFINEMENT_KEYS,
+    _normalise_protocol_filters as _normalise_protocol_filters,
+    _normalise_protocol_focus as _normalise_protocol_focus,
+    _PROTOCOL_REQUEST_KEYS as _PROTOCOL_REQUEST_KEYS,
+    _QUALIFIED_RELATIONSHIP_KIND_RE as _QUALIFIED_RELATIONSHIP_KIND_RE,
+    _RELATIONSHIP_DIRECTIONS as _RELATIONSHIP_DIRECTIONS,
+    _RELATIONSHIP_REFINEMENT_KEYS as _RELATIONSHIP_REFINEMENT_KEYS,
+    _V1_REQUEST_KEYS as _V1_REQUEST_KEYS,
+    _V2_REQUEST_KEYS as _V2_REQUEST_KEYS,
+    _validate_enum_filter as _validate_enum_filter,
+    _validate_protocol_request as _validate_protocol_request,
+    _validate_protocol_request_impl as _validate_protocol_request_impl,
+    _validate_relationship_kind_filter as _validate_relationship_kind_filter,
+    _validate_surface_filter as _validate_surface_filter,
+    CONTEXT_KNOWLEDGE_CONCEPT_LIMIT as CONTEXT_KNOWLEDGE_CONCEPT_LIMIT,
+    CONTEXT_KNOWLEDGE_PAGE_LIMIT as CONTEXT_KNOWLEDGE_PAGE_LIMIT,
+    CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT as CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT,
+    KNOWLEDGE_PROTOCOL_VERSION as KNOWLEDGE_PROTOCOL_VERSION,
+    PROTOCOL_VERSION as PROTOCOL_VERSION,
+    ProtocolRequestError as ProtocolRequestError,
 )
 from .context_knowledge_contract import KNOWLEDGE_MODE_VALUES
 from .dependencies import analyze_dependencies
@@ -56,11 +81,6 @@ from .knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     build_knowledge_read_view,
-)
-from .knowledge_graph import (
-    CORE_RELATIONSHIP_KINDS,
-    GRAPH_ORIGINS,
-    GRAPH_RESOLUTIONS,
 )
 from .knowledge_loader import (
     KnowledgeLoadResult,
@@ -113,60 +133,9 @@ from .extraction_service import (
 )
 from .host import emit
 
-PROTOCOL_VERSION = CONTEXT_PROTOCOL_VERSION
-KNOWLEDGE_PROTOCOL_VERSION = CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
 
-CONTEXT_KNOWLEDGE_CONCEPT_LIMIT = 20
-CONTEXT_KNOWLEDGE_PAGE_LIMIT = 20
-CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT = 40
 CONTEXT_KNOWLEDGE_SERIALIZED_BYTE_LIMIT = 2 * 1024 * 1024
 
-_V1_REQUEST_KEYS = {
-    "protocol",
-    "budget_tokens",
-    "focus",
-    "format",
-    "filters",
-    "prefer_fresh",
-}
-_V2_REQUEST_KEYS = {*_V1_REQUEST_KEYS, "knowledge_mode"}
-# The budgeted protocol owns its validator; legacy versions share field rules.
-# This registry also owns supported-version diagnostics and error identities.
-_PROTOCOL_REQUEST_KEYS = {
-    PROTOCOL_VERSION: _V1_REQUEST_KEYS,
-    KNOWLEDGE_PROTOCOL_VERSION: _V2_REQUEST_KEYS,
-    CONTEXT_BUDGET_PROTOCOL_VERSION: None,
-}
-_FILTER_KEYS = {
-    "language",
-    "module",
-    "symbol",
-    "entrypoint",
-    "surface",
-    "freshness",
-    "evidence",
-    "relationship_kind",
-    "relationship_origin",
-    "relationship_resolution",
-    "relationship_direction",
-}
-_FOCUS_VALUES = {"changed", "neighbors", "all"}
-_FORMATS = {"json", "markdown"}
-_CONTEXT_QUERY_LIMIT = 20
-_CONCEPT_FILTER_KEYS = {"surface", "symbol"}
-_KNOWLEDGE_REFINEMENT_KEYS = {"freshness", "evidence"}
-_RELATIONSHIP_REFINEMENT_KEYS = {
-    "relationship_kind",
-    "relationship_origin",
-    "relationship_resolution",
-    "relationship_direction",
-}
-_RELATIONSHIP_DIRECTIONS = ("incoming", "outgoing", "both")
-_QUALIFIED_RELATIONSHIP_KIND_RE = re.compile(
-    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
-)
-_FRESHNESS_FILTER_VALUES = {item.value for item in ComputedFreshness}
-_EVIDENCE_FILTER_VALUES = {item.value for item in EvidenceState}
 _FRESHNESS_ORDER = {
     ComputedFreshness.CURRENT.value: 0,
     ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value: 1,
@@ -181,21 +150,6 @@ _STALE_OR_UNKNOWN_FRESHNESS = {
     ComputedFreshness.SOURCE_MISSING.value,
     ComputedFreshness.BASIS_INCOMPATIBLE.value,
 }
-
-
-class ProtocolRequestError(ValueError):
-    """Validation error for Wiki-as-Context protocol requests."""
-
-    def __init__(
-        self,
-        message: str,
-        field: str | None = None,
-        *,
-        protocol: str = PROTOCOL_VERSION,
-    ):
-        super().__init__(message)
-        self.field = field
-        self.protocol = protocol
 
 
 class KnowledgeRequiredUnavailableError(RuntimeError):
@@ -1031,259 +985,10 @@ def _read_protocol_request(source: str, *, packet_defaults: bool = False) -> dic
         raise ProtocolRequestError(f"Invalid JSON: {exc.msg}", "request") from exc
 
     if packet_defaults and isinstance(data, dict) and "protocol" not in data:
-        from .context_packet import _normalized_request
+        from .context_packet_builder import _normalized_request
 
         return _normalized_request(data)
     return _validate_protocol_request(data)
-
-
-def _validate_protocol_request(data: object) -> dict:
-    """Return a normalised protocol request or raise ``ProtocolRequestError``."""
-
-    protocol = data.get("protocol") if isinstance(data, dict) else PROTOCOL_VERSION
-    try:
-        return _validate_protocol_request_impl(data)
-    except ProtocolRequestError as exc:
-        if isinstance(protocol, str) and protocol in _PROTOCOL_REQUEST_KEYS:
-            exc.protocol = protocol
-        raise
-
-
-def _validate_protocol_request_impl(data: object) -> dict:
-    if not isinstance(data, dict):
-        raise ProtocolRequestError("Request must be a JSON object.", "request")
-    if any(not isinstance(key, str) for key in data):
-        raise ProtocolRequestError(
-            "Request field names must be strings.",
-            "request",
-        )
-
-    protocol = data.get("protocol")
-    if not isinstance(protocol, str) or protocol not in _PROTOCOL_REQUEST_KEYS:
-        choices = ", ".join(repr(version) for version in _PROTOCOL_REQUEST_KEYS)
-        raise ProtocolRequestError(
-            f"Unsupported protocol: {protocol!r}. Expected one of {choices}.",
-            "protocol",
-        )
-    if protocol == CONTEXT_BUDGET_PROTOCOL_VERSION:
-        from .context_budget import validate_request
-
-        return validate_request(data)
-    request_keys = _PROTOCOL_REQUEST_KEYS[protocol]
-    assert request_keys is not None
-
-    unknown = sorted(set(data) - request_keys)
-    if unknown:
-        raise ProtocolRequestError(
-            f"Unknown request field: {unknown[0]}",
-            unknown[0],
-            protocol=protocol,
-        )
-
-    if "budget_tokens" not in data:
-        raise ProtocolRequestError(
-            "Missing required field: budget_tokens", "budget_tokens"
-        )
-    budget = data["budget_tokens"]
-    if isinstance(budget, bool) or not isinstance(budget, int) or budget < 1:
-        raise ProtocolRequestError(
-            "budget_tokens must be a positive integer.", "budget_tokens"
-        )
-
-    fmt = data.get("format", "json")
-    if not isinstance(fmt, str) or fmt not in _FORMATS:
-        raise ProtocolRequestError("format must be 'json' or 'markdown'.", "format")
-
-    focus = _normalise_protocol_focus(data.get("focus", ["changed", "neighbors"]))
-    filters = _normalise_protocol_filters(data.get("filters", {}))
-    prefer_fresh = data.get("prefer_fresh", False)
-    if not isinstance(prefer_fresh, bool):
-        raise ProtocolRequestError(
-            "prefer_fresh must be a boolean.",
-            "prefer_fresh",
-        )
-
-    normalized = {
-        "protocol": protocol,
-        "budget_tokens": budget,
-        "focus": focus,
-        "format": fmt,
-        "filters": filters,
-        "prefer_fresh": prefer_fresh,
-    }
-    if protocol == KNOWLEDGE_PROTOCOL_VERSION:
-        if "knowledge_mode" not in data:
-            raise ProtocolRequestError(
-                "Missing required field: knowledge_mode",
-                "knowledge_mode",
-                protocol=protocol,
-            )
-        knowledge_mode = data["knowledge_mode"]
-        if not isinstance(knowledge_mode, str) or knowledge_mode not in (
-            KNOWLEDGE_MODE_VALUES
-        ):
-            choices = ", ".join(repr(value) for value in KNOWLEDGE_MODE_VALUES)
-            raise ProtocolRequestError(
-                f"knowledge_mode must be one of {choices}.",
-                "knowledge_mode",
-                protocol=protocol,
-            )
-        normalized["knowledge_mode"] = knowledge_mode
-    return normalized
-
-
-def _normalise_protocol_focus(raw_focus: object) -> list[str]:
-    if not isinstance(raw_focus, list) or not raw_focus:
-        raise ProtocolRequestError("focus must be a non-empty list.", "focus")
-
-    if any(not isinstance(item, str) for item in raw_focus):
-        raise ProtocolRequestError("focus values must be strings.", "focus")
-
-    unknown = sorted(set(raw_focus) - _FOCUS_VALUES)
-    if unknown:
-        raise ProtocolRequestError(f"Unknown focus value: {unknown[0]}", "focus")
-
-    if len(set(raw_focus)) != len(raw_focus):
-        raise ProtocolRequestError("focus values must not be duplicated.", "focus")
-
-    focus_set = set(raw_focus)
-    if "all" in focus_set and len(focus_set) > 1:
-        raise ProtocolRequestError(
-            "focus 'all' cannot be combined with other values.", "focus"
-        )
-
-    if "neighbors" in focus_set and "changed" not in focus_set:
-        raise ProtocolRequestError("focus 'neighbors' requires 'changed'.", "focus")
-
-    if "all" in focus_set:
-        return ["all"]
-
-    ordered = ["changed"] if "changed" in focus_set else []
-    if "neighbors" in focus_set:
-        ordered.append("neighbors")
-    return ordered
-
-
-def _normalise_protocol_filters(raw_filters: object) -> dict:
-    if raw_filters is None:
-        return {}
-    if not isinstance(raw_filters, dict):
-        raise ProtocolRequestError("filters must be a JSON object.", "filters")
-    if any(not isinstance(key, str) for key in raw_filters):
-        raise ProtocolRequestError(
-            "filter field names must be strings.",
-            "filters",
-        )
-
-    unknown = sorted(set(raw_filters) - _FILTER_KEYS)
-    if unknown:
-        raise ProtocolRequestError(
-            f"Unknown filter field: {unknown[0]}", f"filters.{unknown[0]}"
-        )
-
-    filters: dict[str, str] = {}
-    for key in (
-        "language",
-        "module",
-        "symbol",
-        "entrypoint",
-        "surface",
-        "freshness",
-        "evidence",
-        "relationship_kind",
-        "relationship_origin",
-        "relationship_resolution",
-        "relationship_direction",
-    ):
-        if key not in raw_filters:
-            continue
-        value = raw_filters[key]
-        if not isinstance(value, str) or not value:
-            raise ProtocolRequestError(
-                f"filters.{key} must be a non-empty string.", f"filters.{key}"
-            )
-        if key == "surface":
-            _validate_surface_filter(value)
-        elif key == "freshness":
-            _validate_enum_filter(
-                key,
-                value,
-                _FRESHNESS_FILTER_VALUES,
-            )
-        elif key == "evidence":
-            _validate_enum_filter(
-                key,
-                value,
-                _EVIDENCE_FILTER_VALUES,
-            )
-        elif key == "relationship_kind":
-            _validate_relationship_kind_filter(value)
-        elif key == "relationship_origin":
-            _validate_enum_filter(key, value, set(GRAPH_ORIGINS))
-        elif key == "relationship_resolution":
-            _validate_enum_filter(key, value, set(GRAPH_RESOLUTIONS))
-        elif key == "relationship_direction":
-            _validate_enum_filter(
-                key,
-                value,
-                set(_RELATIONSHIP_DIRECTIONS),
-            )
-        filters[key] = value
-
-    filter_keys = set(filters)
-    refinements = _KNOWLEDGE_REFINEMENT_KEYS & filter_keys
-    if refinements and not (_CONCEPT_FILTER_KEYS & filter_keys):
-        field = next(key for key in ("freshness", "evidence") if key in refinements)
-        raise ProtocolRequestError(
-            f"filters.{field} requires filters.surface or filters.symbol.",
-            f"filters.{field}",
-        )
-    relationship_refinements = _RELATIONSHIP_REFINEMENT_KEYS & filter_keys
-    if relationship_refinements and not (_CONCEPT_FILTER_KEYS & filter_keys):
-        field = next(
-            key
-            for key in (
-                "relationship_kind",
-                "relationship_origin",
-                "relationship_resolution",
-                "relationship_direction",
-            )
-            if key in relationship_refinements
-        )
-        raise ProtocolRequestError(
-            f"filters.{field} requires filters.surface or filters.symbol.",
-            f"filters.{field}",
-        )
-    return filters
-
-
-def _validate_surface_filter(value: str) -> None:
-    known = {entry.kind.value for entry in wiki_surface.iter_page_kinds()}
-    if value not in known:
-        raise ProtocolRequestError(
-            f"filters.surface must be one of: {', '.join(sorted(known))}.",
-            "filters.surface",
-        )
-
-
-def _validate_enum_filter(key: str, value: str, known: set[str]) -> None:
-    if value not in known:
-        raise ProtocolRequestError(
-            f"filters.{key} must be one of: {', '.join(sorted(known))}.",
-            f"filters.{key}",
-        )
-
-
-def _validate_relationship_kind_filter(value: str) -> None:
-    if (
-        value not in CORE_RELATIONSHIP_KINDS
-        and _QUALIFIED_RELATIONSHIP_KIND_RE.fullmatch(value) is None
-    ):
-        raise ProtocolRequestError(
-            "filters.relationship_kind must be a core relationship kind or "
-            "a qualified plugin kind such as 'vendor.plugin/relationship'.",
-            "filters.relationship_kind",
-        )
 
 
 def _protocol_error_payload(error: ProtocolRequestError) -> dict:
@@ -2810,7 +2515,7 @@ def _build_context_knowledge_view(
         return _knowledge_error_view(surface_evaluation.payload, exc)
 
     if any(issue.code.startswith("maintenance-") for issue in load_result.issues):
-        from .context_packet import ContextPacketAuthorityError
+        from .context_packet_builder import ContextPacketAuthorityError
 
         raise ContextPacketAuthorityError(load_result.issues) from KnowledgeStateLoadError(load_result.status, load_result.issues)
 
@@ -3495,7 +3200,7 @@ def _run_protocol(args) -> None:
 
 def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION) -> None:
     """Keep stdout empty on packet failure and emit bounded structured details."""
-    from .context_packet import describe_context_packet_error
+    from .context_packet_builder import describe_context_packet_error
 
     if isinstance(error, KnowledgeRequiredUnavailableError):
         payload = error.details
@@ -3542,7 +3247,8 @@ def _run_packet_output(
 ) -> None:
     """Build and emit canonical QCP bytes for the CLI-only packet format."""
 
-    from .context_packet import ContextPacketError, build_qualified_context
+    from .context_packet import ContextPacketError
+    from .context_packet_builder import build_qualified_context
 
     if request is None:
         request = {

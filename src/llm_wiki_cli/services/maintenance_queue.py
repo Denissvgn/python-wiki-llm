@@ -8,7 +8,7 @@ from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
 
-from .context_packet import (
+from .context_packet_builder import (
     capture_context_read,
     _assert_source_unchanged,
     _assert_wiki_unchanged,

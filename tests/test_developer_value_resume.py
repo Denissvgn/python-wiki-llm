@@ -10,7 +10,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import task_context_v2
-from llm_wiki_cli.services.context_packet import ContextPacketUnavailableError
+from llm_wiki_cli.services.context_packet_builder import ContextPacketUnavailableError
 from tests.developer_value.workflow_fixtures import (
     BODY_PROSE, VIEW, WorkflowProject, mutate_source, prepare_workflow, sync_workflow,
     record_workflow_trace, task_request, write_description,

@@ -20,6 +20,10 @@ from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from .context_request_format import (  # re-exported: format checks live there
+    CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH as CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
+    CONTEXT_COVERAGE_LIMITATION_LIMIT as CONTEXT_COVERAGE_LIMITATION_LIMIT,
+)
 from .dependencies import (
     build_dependency_graph,
     dependency_metrics,
@@ -71,8 +75,6 @@ _SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
 _NOT_EVALUATED_REASON = "not-evaluated"
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 _MAX_NORMALIZED_CONTEXT_TARGET_LENGTH = 2048
-CONTEXT_COVERAGE_LIMITATION_LIMIT = 16
-CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH = 128
 RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_TEXT_BYTE_LIMIT = 4 * 1024

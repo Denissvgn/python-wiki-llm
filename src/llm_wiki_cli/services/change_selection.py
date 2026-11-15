@@ -9,6 +9,10 @@ import re
 import subprocess
 from typing import Mapping
 
+from .context_request_format import (  # re-exported: format checks live there
+    portable_path as portable_path,
+    validate_changes as validate_changes,
+)
 from .host import current_host
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
@@ -16,54 +20,6 @@ from .bootstrap_runtime import (
     build_module_page_map,
 )
 from .extraction_service import _git_name_status_paths, _partition_snapshot_git_changes
-
-
-def portable_path(value: str) -> str:
-    if not isinstance(value, str):
-        raise ValueError("Changed paths must be strings")
-    value = value.replace("\\", "/")
-    if value.startswith("./"):
-        value = value[2:]
-    if (
-        not value
-        or value.startswith("/")
-        or re.match(r"^[A-Za-z]:", value)
-        or any(part in {"", ".", ".."} for part in value.split("/"))
-        or any(ord(char) < 32 or ord(char) == 127 for char in value)
-    ):
-        raise ValueError("Changed paths must be normalized source-relative paths")
-    return value
-
-
-def validate_changes(value: object) -> dict:
-    if not isinstance(value, dict):
-        raise ValueError("changes must be an object")
-    mode = value.get("mode")
-    fields = {
-        "paths": {"mode", "paths"},
-        "range": {"mode", "base", "head"},
-        "staged": {"mode"},
-    }
-    if not isinstance(mode, str) or mode not in fields or set(value) != fields[mode]:
-        raise ValueError("changes must specify paths, staged, or a base/head range")
-    if mode == "paths":
-        if not isinstance(value["paths"], list):
-            raise ValueError("changes.paths must be an array")
-        return {
-            "mode": mode,
-            "paths": sorted({portable_path(p) for p in value["paths"]}),
-        }
-    if mode == "range":
-        for field in ("base", "head"):
-            ref = value[field]
-            if (
-                not isinstance(ref, str)
-                or not ref
-                or ref.startswith("-")
-                or any(ord(c) < 32 for c in ref)
-            ):
-                raise ValueError(f"changes.{field} must be a Git revision")
-    return dict(value)
 
 
 def changes_from_args(args) -> dict | None:

@@ -1241,7 +1241,7 @@ def test_qualified_context_api_build_validate_and_reconcile_are_typed(
         current=True,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "build_qualified_context",
         fake_build,
     )
@@ -1251,12 +1251,12 @@ def test_qualified_context_api_build_validate_and_reconcile_are_typed(
         lambda _raw: validation,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "compare_context_packet_basis",
         lambda _raw, _basis: comparison,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "reconcile_context_packet",
         lambda *_args, **_kwargs: reconciliation,
     )

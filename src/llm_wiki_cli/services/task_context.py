@@ -11,6 +11,7 @@ from typing import Any
 
 from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets, context_service as context
+from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render, fit_payload, validate_request as budget_request
 from .documentation_query_builder import build_documentation_query_service_from_view, normalize_supplied_paths
@@ -49,7 +50,7 @@ class TaskRead:
 
     normalized: dict[str, Any]
     profile: WorkflowProfile
-    captured: packets.CapturedContextRead | None
+    captured: packet_builder.CapturedContextRead | None
     wiki_root: Path
     wiki_anchor: str
     result: TaskContext
@@ -184,7 +185,7 @@ def build_task_read(
     policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
     allow_external_src: bool = False, source_selection: str | Path | None = None,
     helper_cache_dir: str | None = None, cancelled: Callable[[], bool] | None = None,
-    _reused_capture: packets.CapturedContextRead | None = None,
+    _reused_capture: packet_builder.CapturedContextRead | None = None,
     _defer_scoped_validation: bool = False,
     _wiki_byte_budget: int | None = None,
 ) -> TaskRead:
@@ -209,18 +210,18 @@ def build_task_read(
             return _read_once(normalized, effective, counter, source_root, wiki_root,
                               allow_external_src, source_selection, helper_cache_dir, cancelled, attempt,
                               _reused_capture if attempt == 0 else None)
-        except packets.ContextPacketSourceMutationError as exc:
+        except packet_builder.ContextPacketSourceMutationError as exc:
             last_mutation = exc
     assert last_mutation is not None
     raise last_mutation
 
 
-@packets._guarded_capture
+@packet_builder._guarded_capture
 def _read_once(request, profile, counter, source_root, wiki_root, allow_external,
                source_selection, helper_cache, cancelled, attempt, reused_capture=None):
     settings = profile.settings
     wiki_integrity = {}
-    wiki_anchor = packets._wiki_anchor(wiki_root, reject_all_symlinks=True,
+    wiki_anchor = packet_builder._wiki_anchor(wiki_root, reject_all_symlinks=True,
         max_bytes=settings["max_wiki_bytes"], integrity_out=wiki_integrity, guard_windows=True)
     paths, selected_changes, live, scope = plan_source_read(request, settings, source_root)
     anchors = [{**anchor, "reason": "explicit-caller-selection"} for anchor in request["anchors"]]
@@ -241,7 +242,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
             "source_byte_measure": "unique-captured-inputs; excludes parser and validation rereads"}
     try:
         if live:
-            captured = reused_capture or packets.capture_context_read(
+            captured = reused_capture or packet_builder.capture_context_read(
                 str(source_root), str(wiki_root), allow_external_src=allow_external,
                 read_only=True, source_selection=source_selection, allow_selection_mismatch=True,
                 strict_wiki_symlinks=True, helper_cache_dir=helper_cache,
@@ -251,11 +252,11 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
                 capture_implementation_observations=settings["knowledge_mode"] != "off",
             )
             if captured.wiki_anchor != wiki_anchor:
-                raise packets.ContextPacketSourceMutationError("wiki")
+                raise packet_builder.ContextPacketSourceMutationError("wiki")
             if selected_changes is not None:
                 bound_changes = select_changes(source_root, request["changes"], snapshot=captured.source_snapshot)
                 if bound_changes["request"] != selected_changes["request"]:
-                    raise packets.ContextPacketSourceMutationError("changes")
+                    raise packet_builder.ContextPacketSourceMutationError("changes")
                 captured = replace(captured, changed_files=tuple(bound_changes["paths"]),
                                    explicit_changes=True, change_selection=bound_changes)
             service = query_service(captured, settings["max_graph_items"])
@@ -274,7 +275,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
                         knowledge_view=view, limit=settings["max_graph_items"], surface_index=view.surface)
             evidence_capture = SimpleNamespace(surface_evaluation=surface, wiki_anchor=wiki_anchor,
                                                source_snapshot=None)
-    except (SourceSnapshotError, packets.ContextPacketUnavailableError) as exc:
+    except (SourceSnapshotError, packet_builder.ContextPacketUnavailableError) as exc:
         unavailable = "work-limit-exceeded" if getattr(exc, "field", "").startswith("max_") else "source-capability-unavailable"
     except KnowledgeStateLoadError:
         if settings["knowledge_mode"] == "required":
@@ -366,7 +367,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
         legacy = {key: value for key, value in request_v3.items() if key in context._V2_REQUEST_KEYS}
         legacy.update(protocol=context.KNOWLEDGE_PROTOCOL_VERSION, format="json", budget_tokens=2**63 - 1)
         freshness_ranks = {}
-        payload, warnings = packets.build_context_from_captured_read(captured, legacy,
+        payload, warnings = packet_builder.build_context_from_captured_read(captured, legacy,
                                                                    freshness_ranking_out=freshness_ranks)
         packet_cache = {}
 
@@ -374,7 +375,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
             key = content_id("task-packet-render/v1", {"request": selected_request, "response": response})
             if key not in packet_cache:
                 packet_cache.clear()
-                packet_cache[key] = packets.packet_from_captured_response(captured, selected_request, response).to_payload()
+                packet_cache[key] = packet_builder.packet_from_captured_response(captured, selected_request, response).to_payload()
             return packet_cache[key]
 
         def envelope_renderer(value):
@@ -401,13 +402,13 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
         output = _empty_render(request, profile, counter, basis, plan, anchors, work, observations, facts, implementation_bindings)
     _cancel(cancelled)
     if captured is not None:
-        packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
-        packets._assert_selection_unchanged(captured)
+        packet_builder._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
+        packet_builder._assert_selection_unchanged(captured)
     if selected_changes is not None:
         current = select_changes(source_root, request["changes"])
         if current != selected_changes:
-            raise packets.ContextPacketSourceMutationError("changes")
-    packets._assert_wiki_unchanged(wiki_root, wiki_anchor, reject_all_symlinks=True,
+            raise packet_builder.ContextPacketSourceMutationError("changes")
+    packet_builder._assert_wiki_unchanged(wiki_root, wiki_anchor, reject_all_symlinks=True,
                                   max_bytes=settings["max_wiki_bytes"], expected_integrity=wiki_integrity)
     return TaskRead(request, profile, captured, wiki_root, wiki_anchor, output, wiki_integrity)
 
@@ -423,7 +424,7 @@ def reconcile_task_context(rendered: str, request: Mapping[str, Any], **options)
     payload = current.to_payload()
     packet_report = None
     if current.ok and previous["packet"] is not None and payload["packet"] is not None:
-        packet_report = packets._reconcile_packet_views(previous["packet"], payload["packet"]).to_payload()
+        packet_report = packet_builder._reconcile_packet_views(previous["packet"], payload["packet"]).to_payload()
     return {"schema_version": "llm-wiki-task-reconciliation/v1",
             "basis_matches": previous["basis"] == payload["basis"] if current.ok else None,
             "previous_result_id": previous["result_id"], "current_result_id": current.result_id,

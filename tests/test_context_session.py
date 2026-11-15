@@ -53,14 +53,14 @@ def test_warm_unchanged_is_validated_and_cache_off_matches_cold(project, monkeyp
     cold = session.read(request())
     assert cold.state == "full" and not cold.metadata()["reuse"]["capture"]
     calls = 0
-    original = context_session.packets._assert_source_unchanged
+    original = context_session.packet_builder._assert_source_unchanged
 
     def observe(*args, **kwargs):
         nonlocal calls
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(context_session.packets, "_assert_source_unchanged", observe)
+    monkeypatch.setattr(context_session.packet_builder, "_assert_source_unchanged", observe)
     warm = session.read(request(), if_result_id=cold.result_id)
     assert warm.state == "unchanged" and warm.context is None
     assert warm.metadata()["reuse"]["rendering"] and calls >= 2
@@ -249,7 +249,7 @@ def test_capture_reuse_replans_new_intent_without_reextracting(project, monkeypa
     session.read(request())
     changed = request(text="inspect again with a different intent", options={"budget_tokens": 16000})
     expected = api.build_task_context(changed)
-    monkeypatch.setattr(context_session.packets, "capture_context_read", lambda *a, **k: pytest.fail("duplicate extraction"))
+    monkeypatch.setattr(context_session.packet_builder, "capture_context_read", lambda *a, **k: pytest.fail("duplicate extraction"))
     result = session.read(changed)
     assert result.metadata()["reuse"] == {"capture": True, "selection": False, "rendering": False}
     assert _full(result).rendered == expected.rendered

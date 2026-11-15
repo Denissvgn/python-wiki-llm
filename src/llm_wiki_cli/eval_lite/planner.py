@@ -378,7 +378,7 @@ def materialize_evaluation_plan(
 ) -> EvaluationPlan:
     """Materialize both packets through the read-only QCP builder, then plan."""
 
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_cli.services.context_packet_builder import (
         build_qualified_context,
         reconcile_context_packet,
     )
@@ -593,16 +593,16 @@ def _reconciliation_receipt(
             "basis": "not-provided",
             "limitations": ["live-reconciliation-not-performed"],
         }
-    from llm_wiki_cli.services import context_packet
+    from llm_wiki_cli.services import context_packet_builder
 
-    if type(value) is not context_packet.ContextPacketReconciliation:
+    if type(value) is not context_packet_builder.ContextPacketReconciliation:
         raise EvaluationPlanError(
             field,
             "must be an official ContextPacketReconciliation returned by "
             "reconcile_context_packet, or None",
         )
     try:
-        context_packet._validate_reconciliation_contract(
+        context_packet_builder._validate_reconciliation_contract(
             packet_id=value.packet_id,
             policy=value.policy,
             state=value.state,

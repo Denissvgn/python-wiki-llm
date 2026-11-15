@@ -6,7 +6,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_service, lint_service
-from llm_wiki_cli.services.context_packet import capture_context_read
+from llm_wiki_cli.services.context_packet_builder import capture_context_read
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
 from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
@@ -158,7 +158,7 @@ def test_selected_v8_task_discloses_partial_ledger_and_no_ack_inference(owned):
 
 
 def _context(captured):
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_cli.services.context_packet_builder import (
         build_context_from_captured_read,
         _normalized_request,
         packet_from_captured_response,

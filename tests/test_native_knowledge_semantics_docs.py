@@ -135,13 +135,13 @@ def test_every_complete_command_in_native_context_docs_parses() -> None:
             assert f"`{args.request}`" in preceding
             blocks = re.findall(r"```json\s*\n(.*?)\n```", preceding, flags=re.DOTALL)
             assert blocks, example.location.label
-            from llm_wiki_cli.services.context_packet import _normalized_request
+            from llm_wiki_cli.services.context_packet_builder import _normalized_request
 
             request = _normalized_request(json.loads(blocks[-1]))
             assert request["protocol"] == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
             context_modes.add(request["knowledge_mode"])
         elif args.format == "packet":
-            from llm_wiki_cli.services.context_packet import _normalized_request
+            from llm_wiki_cli.services.context_packet_builder import _normalized_request
 
             raw = {"budget_tokens": args.budget}
             if args.knowledge_mode is not None:

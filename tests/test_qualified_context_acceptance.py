@@ -17,6 +17,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_packet as packets, plugins
+from llm_wiki_cli.services import context_packet_builder as packet_builder
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from tests.test_context_integration import canonical, cli_context, tree_state
 from tests.test_context_integration import packet_project as packet_project
@@ -148,13 +149,13 @@ def test_availability_loss_is_stale_not_an_unchanged_success(managed_packet_proj
     "modules/accounts.md",
 ])
 def test_each_wiki_anchor_mutation_aborts_packet_return(managed_packet_project, monkeypatch, name):
-    original = packets.build_context_from_captured_read
+    original = packet_builder.build_context_from_captured_read
     def mutate_after_read(captured, request, *args, **kwargs):
         result = original(captured, request, *args, **kwargs)
         target = captured.wiki_root / name
         target.write_bytes((target.read_bytes() if target.exists() else b"{}") + b"\n")
         return result
-    monkeypatch.setattr(packets, "build_context_from_captured_read", mutate_after_read)
+    monkeypatch.setattr(packet_builder, "build_context_from_captured_read", mutate_after_read)
     with pytest.raises(api.WorkspaceStateError) as raised:
         _managed_packet()
     assert raised.value.code == "context-read-mutated"

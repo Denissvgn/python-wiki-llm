@@ -16,9 +16,7 @@ from llm_wiki_cli.api_types import KnowledgeMode
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
-from llm_wiki_cli.services import (
-    context_packet as context_packet_service,
-)
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import (
     knowledge_consumption,
     mcp_server,
@@ -497,7 +495,7 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(context_cmd, "_build_context", fake_context_builder)
         monkeypatch.setattr(
-            context_packet_service,
+            context_packet_builder,
             "build_qualified_context",
             fake_packet_builder,
         )
@@ -1273,7 +1271,7 @@ class TestMcpWikiService:
             )
             return Packet()
 
-        monkeypatch.setattr(context_packet, "build_qualified_context", fake_build)
+        monkeypatch.setattr(context_packet_builder, "build_qualified_context", fake_build)
         wiki_dir = tmp_path / "wiki"
         service = mcp_server.McpWikiService(
             src_dir="source-root",
@@ -1312,7 +1310,6 @@ class TestMcpWikiService:
         tmp_path,
         monkeypatch,
     ):
-        from llm_wiki_cli.services import context_packet
 
         monkeypatch.chdir(tmp_path)
         calls: dict[str, object] = {"queries": []}
@@ -1352,7 +1349,7 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             fake_build_packet,
         )
@@ -1380,7 +1377,7 @@ class TestMcpWikiService:
         tmp_path,
         monkeypatch,
     ):
-        from llm_wiki_cli.services import context_packet
+        from llm_wiki_cli.services import context_packet_builder
 
         packet_ids = iter(("sha256:" + "a" * 64, "sha256:" + "b" * 64))
 
@@ -1392,7 +1389,7 @@ class TestMcpWikiService:
                 return {"packet_id": self.packet_id}
 
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             lambda *_args, **_kwargs: Packet(next(packet_ids)),
         )

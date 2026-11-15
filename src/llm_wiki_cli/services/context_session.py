@@ -21,7 +21,7 @@ from typing import Any
 
 from .. import __version__
 from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from . import context_packet as packets
+from . import context_packet_builder as packet_builder
 from .immutable import freeze
 from .io import first_unsafe_path_component
 from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
@@ -336,15 +336,15 @@ class ContextSession:
                 self._environment(), request, profile, counter, cold=True,
                 after_portable=lambda: self._publication_cancelled(cancelled)):
             self._clear()
-            raise packets.ContextPacketSourceMutationError("session-inputs")
+            raise packet_builder.ContextPacketSourceMutationError("session-inputs")
         if (self._closed or self._unsaved or counter_basis != (counter.identity, counter.exact)
                 or environment != self._environment()):
             self._clear()
-            raise packets.ContextPacketSourceMutationError("session-environment")
+            raise packet_builder.ContextPacketSourceMutationError("session-environment")
         try:
             self._roots_current()
             if roots != (_root_stamp(self._source), _root_stamp(self._wiki)):
-                raise packets.ContextPacketSourceMutationError("session-roots")
+                raise packet_builder.ContextPacketSourceMutationError("session-roots")
         except (ValueError, OSError, RuntimeError):
             self._clear()
             raise
@@ -420,9 +420,9 @@ class ContextSession:
                 state.revalidate(settings, source_metrics=source_work, wiki_metrics=wiki_work)
                 return True
             if captured is not None:
-                packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor, metrics=source_work)
-                packets._assert_selection_unchanged(captured)
-            packets._assert_wiki_unchanged(self._wiki, read.wiki_anchor, reject_all_symlinks=True,
+                packet_builder._assert_source_unchanged(captured.source_snapshot, captured.source_anchor, metrics=source_work)
+                packet_builder._assert_selection_unchanged(captured)
+            packet_builder._assert_wiki_unchanged(self._wiki, read.wiki_anchor, reject_all_symlinks=True,
                                          max_bytes=profile.settings["max_wiki_bytes"], metrics=wiki_work,
                                          expected_integrity=read.wiki_integrity)
         except (ValueError, OSError, RuntimeError):

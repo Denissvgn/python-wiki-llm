@@ -188,7 +188,7 @@ def _api_mcp_error(exc: LlmWikiApiError) -> McpWikiError:
 
 
 def _path_validation_mcp_error(exc: PathValidationError) -> McpWikiError:
-    from .context_packet import describe_context_packet_error
+    from .context_packet_builder import describe_context_packet_error
 
     failure = describe_context_packet_error(exc)
     return McpWikiError(
@@ -1015,8 +1015,8 @@ class McpWikiService:
     ) -> dict:
         """Return a fresh qualified packet or an unchanged cache marker."""
 
-        from .context_packet import (
-            ContextPacketError,
+        from .context_packet import ContextPacketError
+        from .context_packet_builder import (
             build_qualified_context,
             describe_context_packet_error,
         )

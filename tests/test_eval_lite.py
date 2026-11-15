@@ -19,6 +19,7 @@ from llm_wiki_cli.eval_lite import (
 )
 from llm_wiki_cli.eval_lite import planner
 from llm_wiki_cli.services import context_packet, extraction_service
+from llm_wiki_cli.services import context_packet_builder
 
 
 def _manifest(**overrides):
@@ -164,7 +165,7 @@ def _reconciliation(packet_id, *, state="current"):
             "state": "current",
             "reason": "live-facet-matches-packet",
         }
-        for name in context_packet._RECONCILIATION_FACETS
+        for name in context_packet_builder._RECONCILIATION_FACETS
     }
     current = True
     if state == "stale":
@@ -183,9 +184,9 @@ def _reconciliation(packet_id, *, state="current"):
             "reason": "freshness-currentness-not-evaluated",
         }
         current = None
-    return context_packet.ContextPacketReconciliation._from_official_read(
+    return context_packet_builder.ContextPacketReconciliation._from_official_read(
         packet_id=packet_id,
-        policy=context_packet.CONTEXT_PACKET_RECONCILIATION_POLICY,
+        policy=context_packet_builder.CONTEXT_PACKET_RECONCILIATION_POLICY,
         state=state,
         current=current,
         facets=facets,
@@ -414,7 +415,7 @@ def test_serialized_or_fabricated_reconciliation_cannot_assert_currentness(
     _install_packet_validator(monkeypatch, baseline, treatment)
     forged = {
         "packet_id": baseline["packet_id"],
-        "policy": context_packet.CONTEXT_PACKET_RECONCILIATION_POLICY,
+        "policy": context_packet_builder.CONTEXT_PACKET_RECONCILIATION_POLICY,
         "state": "current",
         "current": True,
         "facets": {},
@@ -566,12 +567,12 @@ def test_materializer_uses_read_only_qcp_builder_and_never_runs_an_arm(monkeypat
     reconcile_calls = []
 
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "build_qualified_context",
         fake_packet_builder,
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "reconcile_context_packet",
         fake_reconcile,
     )
@@ -609,8 +610,8 @@ def test_materializer_rejects_manifest_before_any_source_read(monkeypatch):
         calls.append((args, kwargs))
         raise AssertionError("invalid manifests must fail before source reads")
 
-    monkeypatch.setattr(context_packet, "build_qualified_context", unexpected)
-    monkeypatch.setattr(context_packet, "reconcile_context_packet", unexpected)
+    monkeypatch.setattr(context_packet_builder, "build_qualified_context", unexpected)
+    monkeypatch.setattr(context_packet_builder, "reconcile_context_packet", unexpected)
 
     with pytest.raises(EvaluationPlanError) as caught:
         materialize_evaluation_plan(
@@ -654,7 +655,7 @@ def test_real_packet_materialization_is_plugin_free_and_write_free(
         "format": "json",
         "filters": {},
     }
-    seed_packet = context_packet.build_qualified_context(
+    seed_packet = context_packet_builder.build_qualified_context(
         ".",
         "docs/llm_wiki",
         request,

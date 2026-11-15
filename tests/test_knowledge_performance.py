@@ -171,7 +171,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
     real_inventory = api.extract_cmd.get_inventory_result
     real_extract_payload = api.extract_cmd.build_extract_payload
     real_walk = source_snapshot.os.walk
-    real_recheck = api.context_packet_service._assert_source_unchanged
+    real_recheck = api.context_packet_builder._assert_source_unchanged
 
     def counted_recheck(snapshot, anchor):
         calls["source_recheck"] += 1
@@ -231,7 +231,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
         return built_service
 
     monkeypatch.setattr(source_snapshot.os, "walk", counted_walk)
-    monkeypatch.setattr(api.context_packet_service, "_assert_source_unchanged", counted_recheck)
+    monkeypatch.setattr(api.context_packet_builder, "_assert_source_unchanged", counted_recheck)
     monkeypatch.setattr(api.extract_cmd, "build_source_snapshot", counted_snapshot)
     monkeypatch.setattr(api.extract_cmd, "get_inventory_result", counted_inventory)
     monkeypatch.setattr(

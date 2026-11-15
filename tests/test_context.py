@@ -16,7 +16,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services import context_packet as context_packet_service
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.knowledge_artifacts import (
@@ -834,7 +834,7 @@ class TestContextSourceSelectionBoundary:
             )
         ).save(wiki)
         monkeypatch.setattr(
-            context_packet_service,
+            context_packet_builder,
             "_wiki_anchor",
             lambda *_args, **_kwargs: pytest.fail(
                 "wiki content must not be read before selection validation"
@@ -842,7 +842,7 @@ class TestContextSourceSelectionBoundary:
         )
 
         with pytest.raises(context_cmd.ProtocolRequestError, match="llm-wiki sync"):
-            context_packet_service.capture_context_read(
+            context_packet_builder.capture_context_read(
                 ".",
                 wiki.as_posix(),
                 source_selection=profile_b.as_posix(),
@@ -2531,7 +2531,7 @@ class TestProtocolRun:
         monkeypatch,
         capsys,
     ):
-        from llm_wiki_cli.services import context_packet
+        from llm_wiki_cli.services import context_packet_builder
 
         canonical = b'{"packet_id":"sha256:' + b"a" * 64 + b'"}\n'
         seen = {}
@@ -2553,7 +2553,7 @@ class TestProtocolRun:
             return Packet()
 
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             fake_builder,
         )

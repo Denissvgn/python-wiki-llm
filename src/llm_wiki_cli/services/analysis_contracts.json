@@ -108,6 +108,8 @@
     "services/context_budget.py",
     "services/context_knowledge_contract.py",
     "services/context_packet.py",
+    "services/context_packet_builder.py",
+    "services/context_request_format.py",
     "services/context_service.py",
     "services/context_session.py",
     "services/contracts.py",

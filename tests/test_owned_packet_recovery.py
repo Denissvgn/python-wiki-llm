@@ -84,7 +84,7 @@ def public_refusals():
     assert cli_details == api_error.details
     assert_diagnostic(body["error"]["code"], cli_details)
     cause = api_error.__cause__
-    from llm_wiki_cli.services.context_packet import ContextPacketAuthorityError
+    from llm_wiki_cli.services.context_packet_builder import ContextPacketAuthorityError
     assert isinstance(cause, ContextPacketAuthorityError)
     assert isinstance(cause.__cause__, (KnowledgeStateLoadError, MaintenanceProtocolError))
     assert cause.issues[0].code == "maintenance-owner-missing"
