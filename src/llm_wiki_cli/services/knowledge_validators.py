@@ -170,7 +170,7 @@ DEFAULT_VALIDATORS = ValidatorRegistry(
     # lower-level acceptance rules.
     core_modules=tuple(_module(name) for name in (
         "analysis_compatibility", "concept_identity", "contracts", "immutable",
-        "knowledge_evidence", "knowledge_graph", "knowledge_index", "knowledge_links",
+        "knowledge_evidence", "knowledge_graph", "knowledge_index", "knowledge_kinds", "knowledge_links",
         "knowledge_model", "knowledge_reuse", "knowledge_validators", "markdown_sections",
         "section_ownership", "source_retirement", "validation", "wiki_media", "wiki_surface",
     )),

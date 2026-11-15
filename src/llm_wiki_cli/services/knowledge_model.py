@@ -581,9 +581,11 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         relationships=relationships,
         extensions=extensions,
     )
+    from .knowledge_kinds import current_kinds
     from .knowledge_validators import current_validators
 
     current_validators().run(model)
+    current_kinds().check(model)
     return model
 
 

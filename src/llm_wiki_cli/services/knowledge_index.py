@@ -368,12 +368,14 @@ def _validator_identity() -> tuple:
     # policy values define acceptance; snapshot policy values, not
     # successful-validation/runtime caches.
     from . import maintenance_state
+    from .knowledge_kinds import current_kinds
     from .knowledge_validators import current_validators
 
     core = maintenance_state.maintenance_core()
     return (
         KNOWLEDGE_SCHEMA_VERSION,
         current_validators().identity(),
+        current_kinds().identity(),
         tuple((name, _validation_callable_identity(getattr(core, name)))
               for name, value in sorted(type(core).__dict__.items()) if inspect.isfunction(value)),
         _validation_callable_identity(core.evidence_validator),

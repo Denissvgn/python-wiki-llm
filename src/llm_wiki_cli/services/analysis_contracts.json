@@ -186,6 +186,7 @@
     "services/knowledge_governance.py",
     "services/knowledge_graph.py",
     "services/knowledge_index.py",
+    "services/knowledge_kinds.py",
     "services/knowledge_links.py",
     "services/knowledge_loader.py",
     "services/knowledge_maintenance.py",

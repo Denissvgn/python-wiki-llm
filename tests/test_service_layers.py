@@ -74,6 +74,7 @@ KERNEL_SERVICES = frozenset(
         "knowledge_governance",
         "knowledge_graph",
         "knowledge_index",
+        "knowledge_kinds",
         "knowledge_links",
         "knowledge_loader",
         "knowledge_maintenance",

@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   application can add a `ModelValidator` with `with_validator()` and pass the
   registry as `Engine(validators=...)`; earlier validation results are not
   reused under a different registry.
+- A `KindRegistry` declares the custom concept, relationship and typed-graph
+  edge kinds (`namespace/name`) a knowledge index may use. A declared concept
+  kind names the page kinds it may appear on and can be document-only;
+  `rejecting_undeclared()` refuses custom kinds the registry does not
+  declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
+  kind is still accepted, and page kinds stay those of the knowledge format.
 
 ### Changed
 
