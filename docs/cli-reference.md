@@ -1832,7 +1832,11 @@ prompt templates, lint rules, and agent skill blocks. Plugin references are
 resolved from project-local paths or `.llm-wiki/catalog.json`. Extractor,
 lint-rule, entry-point detector, and diagram-style entry points must resolve to
 Python files inside the plugin directory; installed entry points are checked
-again before runtime import. Extractor components may set `"parallel_safe": true`
+again before runtime import. Each installed plugin is imported as its own
+package, so plugins never share module names with each other or with the host
+and nothing is added to `sys.path`. Reach a sibling module of the same plugin
+with a relative import such as `from . import helpers`; a bare `import helpers`
+does not look inside the plugin directory. Extractor components may set `"parallel_safe": true`
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 

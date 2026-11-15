@@ -830,6 +830,88 @@ class TestPluginRuntimeIntegration:
         assert "Keep wiki edits focused." in content
 
 
+def _install_rule_plugin(root: Path, plugin_id: str, files: dict[str, str]) -> Path:
+    plugin_dir = _write_plugin(
+        root / "vendor" / plugin_id,
+        plugin_id=plugin_id,
+        components=[{"type": "lint_rule", "id": "rule", "entry_point": "rule:check"}],
+        extra_files=files,
+    )
+    plugins.install_plugin(str(plugin_dir), yes=True)
+    return plugins.plugin_store() / plugin_id
+
+
+class TestPluginModuleIsolation:
+    def test_plugins_with_the_same_module_names_load_side_by_side(self, tmp_project):
+        path_before = list(sys.path)
+        first = _install_rule_plugin(tmp_project, "first", {"rule.py": "def check(*a):\n    return 'first'\n"})
+        second = _install_rule_plugin(tmp_project, "second", {"rule.py": "def check(*a):\n    return 'second'\n"})
+        lock = plugins.read_lock()
+        lock["plugins"]["second"]["components"][0]["entry_point"] = "rule:check_second"
+        plugins.write_lock(lock)
+        (second / "rule.py").write_text("def check_second(*a):\n    return 'second'\n", encoding="utf-8")
+
+        assert plugins.load_entry_point("rule:check")() == "first"
+        assert plugins.load_entry_point("rule:check_second")() == "second"
+        assert sys.path == path_before
+        assert "rule" not in sys.modules
+        assert plugins.plugin_package_name(first) != plugins.plugin_package_name(second)
+        assert sys.modules[f"{plugins.plugin_package_name(first)}.rule"].__file__ == str(
+            (first / "rule.py").resolve()
+        )
+
+    def test_siblings_are_reached_by_relative_imports_only(self, tmp_project):
+        _install_rule_plugin(tmp_project, "relative", {
+            "helpers.py": "VALUE = 'from sibling'\n",
+            "rule.py": "from . import helpers\n\ndef check(*a):\n    return helpers.VALUE\n",
+        })
+        assert plugins.load_entry_point("rule:check")() == "from sibling"
+        assert "helpers" not in sys.modules
+
+    def test_bare_sibling_imports_do_not_resolve_inside_the_plugin(self, tmp_project):
+        _install_rule_plugin(tmp_project, "bare", {
+            "bare_sibling_helper.py": "VALUE = 1\n",
+            "rule.py": "import bare_sibling_helper\n\ndef check(*a):\n    return 1\n",
+        })
+        with pytest.raises(ModuleNotFoundError, match="bare_sibling_helper"):
+            plugins.load_entry_point("rule:check")
+
+    def test_a_plugin_module_may_share_a_name_with_a_host_module(self, tmp_project):
+        import json as host_json
+
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "shadow",
+            plugin_id="shadow",
+            components=[{"type": "lint_rule", "id": "rule", "entry_point": "json:check"}],
+            extra_files={"json.py": "def check(*a):\n    return 'plugin json'\n"},
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        assert plugins.load_entry_point("json:check")() == "plugin json"
+        assert sys.modules["json"] is host_json
+
+    def test_changed_plugin_code_is_imported_again(self, tmp_project):
+        installed = _install_rule_plugin(tmp_project, "changing", {
+            "helpers.py": "VALUE = 'old'\n",
+            "rule.py": "from .helpers import VALUE\n\ndef check(*a):\n    return VALUE\n",
+        })
+        assert plugins.load_entry_point("rule:check")() == "old"
+
+        (installed / "helpers.py").write_text("VALUE = 'new'\n", encoding="utf-8")
+
+        assert plugins.load_entry_point("rule:check")() == "new"
+
+    def test_a_package_bound_elsewhere_is_refused(self, tmp_project):
+        installed = _install_rule_plugin(tmp_project, "bound", {"rule.py": "def check(*a):\n    return 1\n"})
+        name = plugins.plugin_package_name(installed)
+        sys.modules[name] = types.ModuleType(name)
+        try:
+            with pytest.raises(plugins.PluginError, match="not bound"):
+                plugins.load_entry_point("rule:check")
+        finally:
+            sys.modules.pop(name, None)
+
+
 class TestPluginCliSmoke:
     def test_cli_validate_install_list(self, tmp_project, capsys, monkeypatch):
         plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")

@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   types and actions in the contract are now named under
   `llm_wiki_cli.cli_declarations` instead of `llm_wiki_cli.cli`, so contracts
   saved by earlier versions have a different `contract_id`.
+- **Breaking for plugin authors:** each installed plugin is imported as its
+  own package instead of being added to `sys.path`. Plugins can now reuse
+  module names already taken by other plugins or by the host, but a plugin
+  module that imports a sibling by bare name (`import helpers`) must switch
+  to a relative import (`from . import helpers`). The unused
+  `plugins.activate_plugin_paths()` helper is removed.
 
 ## [4.1.1] - 2026-11-13
 
