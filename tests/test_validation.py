@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import pytest
 
 from llm_wiki_cli.services import bootstrap_runtime
+from llm_wiki_cli.services.domain_pack import StemPageNamer
 from llm_wiki_cli.services import (
     documentation_calibration_controller as calibration_controller,
 )
@@ -1177,9 +1178,9 @@ def test_wiki_page_ids_reject_reserved_or_nonportable_components(
 )
 def test_page_component_generators_share_portable_output(value: str) -> None:
     bootstrap_value = bootstrap_runtime._safe_page_component(value)
-    manifest_value = sync_manifest._safe_page_component(value)
+    pack_value = StemPageNamer().entity_pages({"a.py": {"classes": [{"name": value}]}}, {"a.py": "a"})
 
-    assert bootstrap_value == manifest_value
+    assert pack_value == {(value, "a.py", 1): bootstrap_value}
     assert wiki_surface.is_safe_page_id(bootstrap_value) is True
 
 

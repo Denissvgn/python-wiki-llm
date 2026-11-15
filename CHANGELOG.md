@@ -44,6 +44,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `rejecting_undeclared()` refuses custom kinds the registry does not
   declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
   kind is still accepted, and page kinds stay those of the knowledge format.
+- A `DomainPack` decides which repository files are sources and how
+  generated module and entity pages are named. A pack combines a
+  `SourceClassifier` (for example an `ExtensionSourceClassifier` mapping
+  source kinds to file extensions) with a `PageNamer` (by default
+  `StemPageNamer`, today's names). Pass it as `Engine(pack=...)`; built-in
+  extractors only read the files the pack classifies for their language.
+  `CODE_DOCS_PACK` is the default and keeps current behavior.
 
 ### Changed
 

@@ -117,6 +117,7 @@
     "services/dependency_versions.py",
     "services/diagrams.py",
     "services/dockerfile_parser.py",
+    "services/domain_pack.py",
     "services/doctor_service.py",
     "services/documentation_calibration.py",
     "services/documentation_calibration_broker.py",

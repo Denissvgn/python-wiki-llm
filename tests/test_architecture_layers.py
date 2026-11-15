@@ -283,7 +283,6 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
     "sync_manifest": frozenset(
         {
             "_mapping_value",
-            "_safe_page_component",
             "_validate_exact_keys",
             "_validate_repository_path",
         }

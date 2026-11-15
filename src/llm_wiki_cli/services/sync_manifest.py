@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import json
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from ..extractors.common import LANGUAGE_EXTENSIONS, inventory_language_for_path
+from .domain_pack import current_pack
 from .io import write_json_atomic
 from .knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
@@ -30,8 +30,6 @@ from .source_selection import (
     source_selection_inputs_from_generation_inputs,
 )
 from .validation import (
-    portable_page_component,
-    portable_path_key,
     require_exact_fields,
     require_mapping,
     require_repository_relative_path,
@@ -518,11 +516,7 @@ class ManifestArtifactHashes:
 
 
 def _infer_language_from_path(filepath: str) -> str | None:
-    suffix = Path(filepath).suffix
-    for language, extensions in LANGUAGE_EXTENSIONS.items():
-        if suffix in extensions:
-            return inventory_language_for_path(language, filepath)
-    return None
+    return current_pack().classifier.inventory_language(filepath)
 
 
 def _first_doc_line(info: Mapping[str, Any]) -> str:
@@ -530,149 +524,21 @@ def _first_doc_line(info: Mapping[str, Any]) -> str:
     return docstring.split("\n")[0] if docstring else "—"
 
 
-def _safe_page_component(value: object, *, fallback: str = "page") -> str:
-    return portable_page_component(value, fallback=fallback)
-
-
-def _page_name_with_extension(filepath: str) -> str:
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    extension = path.suffix.lower().lstrip(".") or "file"
-    return f"{base}_{extension.replace('.', '_')}"
-
-
-def _page_name_from_source_path(filepath: str) -> str:
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    return _safe_page_component(base, fallback=path.stem)
-
-
-def _disambiguate_module_paths(filepaths: list[str], stem: str) -> dict[str, str]:
-    max_depth = max(len(Path(filepath).parts) for filepath in filepaths)
-    for depth in range(1, max_depth):
-        candidates: dict[str, str] = {}
-        for filepath in filepaths:
-            directory_parts = Path(filepath).parts[:-1]
-            prefix_parts = (
-                directory_parts[-depth:]
-                if len(directory_parts) >= depth
-                else directory_parts
-            )
-            candidates[filepath] = "_".join(prefix_parts) + "_" + stem
-        if len(set(candidates.values())) == len(filepaths):
-            return candidates
-
-    candidates = {
-        filepath: _page_name_with_extension(filepath) for filepath in filepaths
-    }
-    if len(set(candidates.values())) == len(filepaths):
-        return candidates
-
-    seen: defaultdict[str, int] = defaultdict(int)
-    unique: dict[str, str] = {}
-    for filepath in sorted(filepaths):
-        name = candidates[filepath]
-        seen[name] += 1
-        unique[filepath] = name if seen[name] == 1 else f"{name}_{seen[name]}"
-    return unique
-
-
 def _build_module_page_map(
     inventory: Mapping[str, Mapping[str, Any]],
 ) -> dict[str, str]:
-    stem_groups: defaultdict[str, list[str]] = defaultdict(list)
-    for filepath in inventory:
-        stem_groups[Path(filepath).stem].append(filepath)
-
-    page_map: dict[str, str] = {}
-    for stem, filepaths in stem_groups.items():
-        if len(filepaths) == 1:
-            page_map[filepaths[0]] = stem
-        else:
-            page_map.update(_disambiguate_module_paths(filepaths, stem))
-
-    page_counts = Counter(portable_path_key(page) for page in page_map.values())
-    colliding_pages = {page for page, count in page_counts.items() if count > 1}
-    if not colliding_pages:
-        return page_map
-
-    resolved = dict(page_map)
-    used = {
-        portable_path_key(page) for page in page_map.values()
-        if portable_path_key(page) not in colliding_pages
-    }
-    for filepath in sorted(page_map):
-        if portable_path_key(page_map[filepath]) not in colliding_pages:
-            continue
-        base = _page_name_from_source_path(filepath)
-        candidates = [base, _page_name_with_extension(filepath)]
-        candidate = next(
-            (item for item in candidates if portable_path_key(item) not in used), base
-        )
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{base}_{suffix}"
-            suffix += 1
-        resolved[filepath] = candidate
-        used.add(portable_path_key(candidate))
-    return resolved
+    return current_pack().page_namer.module_pages(inventory)
 
 
 def _build_entity_occurrence_page_map(
     inventory: Mapping[str, Mapping[str, Any]],
     module_page_map: Mapping[str, str],
 ) -> dict[tuple[str, str, int], str]:
-    """Preserve the legacy occurrence-map fallback without command imports."""
-
-    occurrences: list[tuple[tuple[str, str, int], Mapping[str, Any]]] = []
-    for filepath, file_data in inventory.items():
-        seen_names: defaultdict[str, int] = defaultdict(int)
-        for cls_info in file_data.get("classes", []):
-            name = cls_info.get("name")
-            if not name:
-                continue
-            name_text = str(name)
-            seen_names[name_text] += 1
-            occurrences.append(((name_text, filepath, seen_names[name_text]), cls_info))
-
-    name_counts = Counter(key[0] for key, _ in occurrences)
-    files_by_name: defaultdict[str, set[str]] = defaultdict(set)
-    for (name, filepath, _occurrence), _ in occurrences:
-        files_by_name[name].add(filepath)
-
+    """Name entity pages with the active pack without command imports."""
     effective_module_page_map = dict(
         module_page_map or _build_module_page_map(inventory)
     )
-    proposed_pages: list[tuple[tuple[str, str, int], str, str]] = []
-    for key, _ in occurrences:
-        name, filepath, occurrence = key
-        safe_name = _safe_page_component(name, fallback="entity")
-        if name_counts[name] > 1 and len(files_by_name[name]) > 1:
-            page_name = _safe_page_component(
-                f"{effective_module_page_map[filepath]}_{safe_name}"
-            )
-        else:
-            page_name = safe_name
-        if occurrence > 1:
-            page_name = _safe_page_component(f"{page_name}_{occurrence}")
-        proposed_pages.append((key, page_name, effective_module_page_map[filepath]))
-
-    page_counts = Counter(portable_path_key(page) for _, page, _ in proposed_pages)
-    used: set[str] = set()
-    page_map: dict[tuple[str, str, int], str] = {}
-    for key, page_name, module_page in proposed_pages:
-        candidate = page_name
-        if page_counts[portable_path_key(page_name)] > 1:
-            candidate = _safe_page_component(f"{module_page}_{page_name}")
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{page_name}_{suffix}"
-            suffix += 1
-        page_map[key] = candidate
-        used.add(portable_path_key(candidate))
-    return page_map
+    return current_pack().page_namer.entity_pages(inventory, effective_module_page_map)
 
 
 def generated_semantics_for_file(

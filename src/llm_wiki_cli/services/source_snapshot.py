@@ -14,12 +14,12 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
+from .domain_pack import current_pack
 from .extractor_registry import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
 from .gitignore import GitIgnoreMatcher, _GitignoreRule, _parse_gitignore_text
 from .path_policy import EXCLUDED_DIRS, is_agent_worktree_path
 from ..extractors.common import (
     GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE,
-    LANGUAGE_EXTENSIONS,
     is_bundled_helper_implementation_path,
     is_generated_javascript_bundle_path,
     normalize_include_tests,
@@ -480,7 +480,7 @@ def _new_snapshot_buckets(
     coherent: bool = False,
 ) -> _SnapshotBuckets:
     return _SnapshotBuckets(
-        files_by_language={language: [] for language in LANGUAGE_EXTENSIONS},
+        files_by_language={language: [] for language in current_pack().classifier.source_kinds()},
         dockerfile_candidates=[],
         compose_candidates=[],
         yaml_candidates=[],
@@ -545,19 +545,14 @@ def _normalize_only_files(
 def _language_selection_for_path(
     path: Path, include_tests: frozenset[str]
 ) -> tuple[str | None, str | None]:
-    """Return recognized language and any language test-policy exclusion."""
-    suffix = path.suffix
-    for language, extensions in LANGUAGE_EXTENSIONS.items():
-        if suffix not in extensions:
-            continue
-        if (
-            language == "go"
-            and path.name.endswith("_test.go")
-            and "go" not in include_tests
-        ):
-            return language, "go-tests-excluded"
-        return language, None
-    return None, None
+    """Return the active pack's source kind and any test-policy exclusion."""
+    classifier = current_pack().classifier
+    language, exclusion = classifier.classify(path, include_tests)
+    if language is not None and language not in classifier.source_kinds():
+        raise SourceSnapshotError(
+            path.as_posix(), f"source classifier returned undeclared source kind {language!r}"
+        )
+    return language, exclusion
 
 
 def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
@@ -789,7 +784,7 @@ def _empty_source_snapshot(
 ) -> SourceSnapshot:
     return SourceSnapshot(
         root=root,
-        files_by_language={language: () for language in LANGUAGE_EXTENSIONS},
+        files_by_language={language: () for language in current_pack().classifier.source_kinds()},
         dockerfile_candidates=(),
         compose_candidates=(),
         yaml_candidates=(),

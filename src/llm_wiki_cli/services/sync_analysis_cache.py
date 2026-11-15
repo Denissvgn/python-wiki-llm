@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 import json
 
+from .domain_pack import uses_default_pack
 from .extractor_registry import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
@@ -57,6 +58,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         (any((root / ".llm-wiki/plugins.lock.json").exists()
              for root in (Path.cwd(), snapshot.root)), "plugin-lock-present"),
         ((options.wiki_dir / ".llm-wiki-governance.json").exists(), "governance-present"),
+        (not uses_default_pack(), "domain-pack"),
     ):
         if excluded:
             return skipped(reason)

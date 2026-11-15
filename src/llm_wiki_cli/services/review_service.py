@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR
-from ..extractors.common import LANGUAGE_EXTENSIONS
+from .domain_pack import current_pack
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,
@@ -51,9 +51,15 @@ from .change_selection import (
     source_relative_paths,
 )
 
-_SOURCE_EXTS = tuple(
-    ext for extensions in LANGUAGE_EXTENSIONS.values() for ext in extensions
-)
+def _source_extensions() -> tuple[str, ...]:
+    """Every file extension the active domain pack classifies as a source."""
+    return tuple(
+        ext
+        for extensions in current_pack().classifier.source_kinds().values()
+        for ext in extensions
+    )
+
+
 _DEPENDENCY_FILES = {
     "requirements.txt",
     "requirements-dev.txt",
@@ -660,12 +666,13 @@ def build_analysis(
     }
 
     findings: list[ReviewFinding] = []
+    source_extensions = _source_extensions()
 
     for path in changed:
         normalized = path.replace("\\", "/")
         if normalized.startswith(f"{wiki_path.as_posix()}/"):
             continue
-        if not normalized.endswith(_SOURCE_EXTS):
+        if not normalized.endswith(source_extensions):
             continue
 
         pages = page_map.get(normalized, [])
@@ -730,7 +737,7 @@ def build_analysis(
     for path, imported_modules in imports_by_file.items():
         normalized = path.replace("\\", "/")
         if normalized.startswith(f"{wiki_path.as_posix()}/") or not normalized.endswith(
-            _SOURCE_EXTS
+            source_extensions
         ):
             continue
         source_stem = Path(normalized).stem

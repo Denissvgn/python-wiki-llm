@@ -63,6 +63,7 @@ KERNEL_SERVICES = frozenset(
         "context_service",
         "context_session",
         "documentation_queries",
+        "domain_pack",
         "documentation_query_builder",
         "knowledge_artifacts",
         "knowledge_audit",
@@ -373,6 +374,7 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
         }
     ),
     "knowledge_validators": frozenset({"services.implementation_evidence"}),
+    "domain_pack": frozenset({"extractors.common"}),
     "knowledge_reuse": frozenset(
         {
             "llm_wiki_cli",
@@ -444,7 +446,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     ),
     "storage_sort": frozenset({"services.knowledge_storage"}),
     "storage_spool": frozenset({"services.knowledge_storage"}),
-    "sync_manifest": frozenset({"extractors.common"}),
     "sync_transitions": frozenset(
         {
             "services.bootstrap_runtime",

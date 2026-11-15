@@ -23,11 +23,11 @@ from typing import Callable, Iterable
 from .extractor_registry import EXTRACTOR_REGISTRY
 from .path_policy import PathValidationError, validate_source_paths, validate_source_root
 from ..extractors.common import (
-    LANGUAGE_EXTENSIONS,
+    LANGUAGE_EXTENSIONS,  # noqa: F401 - re-exported through commands.extract_cmd
     filter_bundled_source_inventory,
-    inventory_language_for_path,
     normalize_include_tests,
 )
+from .domain_pack import current_pack, uses_default_pack
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.haskell_extractor import HaskellExtractionRequest
 
@@ -1089,7 +1089,11 @@ def _plan_language_extraction(
     status_by_language: dict[str, ExtractorStatus],
     cached_by_language: dict[str, dict],
 ) -> _ExtractionPlan | None:
-    extensions = LANGUAGE_EXTENSIONS.get(language)
+    extensions = current_pack().classifier.source_kinds().get(language)
+    if extensions is None and entry_point == EXTRACTOR_REGISTRY.get(language):
+        # A built-in extractor only reads files the active pack classifies.
+        status_by_language[language] = ExtractorStatus(language, "skipped", 0)
+        return None
     if extensions is not None:
         source_files = context.source_snapshot.language_paths(language)
         if context.request.only_files is not None:
@@ -1157,6 +1161,7 @@ def _plan_language_extraction(
 def _can_use_inventory_cache(context: _InventoryBuildContext, is_builtin: bool) -> bool:
     return (
         is_builtin
+        and uses_default_pack()
         and context.cache is not None
         and context.cache.enabled
         and context.cache_key is not None
@@ -1590,11 +1595,7 @@ def ensure_complete_inventory(result: InventoryResult) -> bool:
 
 
 def infer_language_from_path(filepath: str) -> str | None:
-    suffix = Path(filepath).suffix
-    for language, extensions in LANGUAGE_EXTENSIONS.items():
-        if suffix in extensions:
-            return inventory_language_for_path(language, filepath)
-    return None
+    return current_pack().classifier.inventory_language(filepath)
 
 
 def languages_with_source(

@@ -152,7 +152,6 @@ from .source_selection import (
 from .sync_manifest import SyncManifest, SyncManifestError
 from .validation import (
     portable_page_component,
-    portable_path_key,
     posix_path_text as shared_posix_path_text,
 )
 from .wiki_lifecycle import (
@@ -181,6 +180,7 @@ from .extraction_service import (
     resolve_call_edges,
 )
 from .host import current_host, emit
+from .domain_pack import EntityOccurrenceKey, current_pack
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 _INDEX_FLOW_LABEL = "Entry-point flows"
@@ -200,7 +200,6 @@ _HASKELL_FUNCTION_LABELS = {
     "value": "Value",
     "function": "Function",
 }
-EntityOccurrenceKey = tuple[str, str, int]
 
 
 def _preserve_source_doc_link(target: str) -> bool:
@@ -330,122 +329,16 @@ def _page_name_for_entity(cls_name: str) -> str:
 # ── Collision-aware page-name builders ────────────────────────────────
 
 
-def _disambiguate_paths(fps: list[str], stem: str) -> dict[str, str]:
-    """Given filepaths sharing *stem*, return ``{filepath: unique_name}``.
-
-    Progressively adds parent directory components until every name is
-    unique.  Falls back to the full path (sans extension) if needed.
-    """
-    max_depth = max(len(Path(fp).parts) for fp in fps)
-    for depth in range(1, max_depth):
-        candidates: dict[str, str] = {}
-        for fp in fps:
-            dir_parts = Path(fp).parts[:-1]  # directories only
-            prefix_parts = dir_parts[-depth:] if len(dir_parts) >= depth else dir_parts
-            candidates[fp] = "_".join(prefix_parts) + "_" + stem
-        if len(set(candidates.values())) == len(fps):
-            return candidates
-    # Fallback: full path plus extension, with a final numeric guard.
-    candidates = {fp: _page_name_with_extension(fp) for fp in fps}
-    if len(set(candidates.values())) == len(fps):
-        return candidates
-
-    seen: dict[str, int] = defaultdict(int)
-    unique: dict[str, str] = {}
-    for fp in sorted(fps):
-        name = candidates[fp]
-        seen[name] += 1
-        unique[fp] = name if seen[name] == 1 else f"{name}_{seen[name]}"
-    return unique
-
-
-def _page_name_with_extension(filepath: str) -> str:
-    """Return a page-safe path stem that includes the source extension."""
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    ext = path.suffix.lower().lstrip(".") or "file"
-    ext = ext.replace(".", "_")
-    return f"{base}_{ext}"
-
-
-def _page_name_from_source_path(filepath: str) -> str:
-    """Return a page-safe stem from the full source path without extension."""
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    return _safe_page_component(base, fallback=_page_name_for_module(filepath))
-
-
-def _globally_disambiguate_module_pages(page_map: dict[str, str]) -> dict[str, str]:
-    """Resolve portable filesystem collisions after stem-group disambiguation."""
-    from collections import Counter
-
-    page_counts = Counter(portable_path_key(page) for page in page_map.values())
-    colliding_pages = {page for page, count in page_counts.items() if count > 1}
-    if not colliding_pages:
-        return page_map
-
-    resolved = dict(page_map)
-    used = {
-        portable_path_key(page) for page in page_map.values()
-        if portable_path_key(page) not in colliding_pages
-    }
-    for filepath in sorted(page_map):
-        if portable_path_key(page_map[filepath]) not in colliding_pages:
-            continue
-        base = _page_name_from_source_path(filepath)
-        candidates = [base, _page_name_with_extension(filepath)]
-        candidate = next(
-            (item for item in candidates if portable_path_key(item) not in used), base
-        )
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{base}_{suffix}"
-            suffix += 1
-        resolved[filepath] = candidate
-        used.add(portable_path_key(candidate))
-    return resolved
-
-
 def build_module_page_map(inventory: dict) -> dict[str, str]:
-    """Return ``{filepath: page_stem}`` qualifying colliding stems.
+    """Return ``{filepath: page_stem}`` named by the active domain pack.
 
-    When two files share the same stem (e.g. ``pkg_a/cli.py`` and
-    ``pkg_b/cli.py``) parent directory components are prepended to
-    disambiguate.  A final global pass resolves collisions between already
-    qualified names and unrelated raw stems. Non-colliding stems keep their
-    short name.
+    The default pack qualifies colliding stems: when two files share the same
+    stem (e.g. ``pkg_a/cli.py`` and ``pkg_b/cli.py``) parent directory
+    components are prepended to disambiguate, and a final global pass
+    resolves collisions between already qualified names and unrelated raw
+    stems. Non-colliding stems keep their short name.
     """
-    from collections import defaultdict
-
-    stem_groups: defaultdict[str, list[str]] = defaultdict(list)
-    for fp in inventory:
-        stem_groups[Path(fp).stem].append(fp)
-
-    page_map: dict[str, str] = {}
-    for stem, fps in stem_groups.items():
-        if len(fps) == 1:
-            page_map[fps[0]] = stem
-        else:
-            page_map.update(_disambiguate_paths(fps, stem))
-    return _globally_disambiguate_module_pages(page_map)
-
-
-def _entity_occurrences(
-    inventory: Mapping[str, Mapping],
-) -> list[tuple[EntityOccurrenceKey, Mapping]]:
-    occurrences: list[tuple[EntityOccurrenceKey, Mapping]] = []
-    for fp, data in inventory.items():
-        seen_names: defaultdict[str, int] = defaultdict(int)
-        for cls in data.get("classes", []):
-            name = cls.get("name")
-            if not name:
-                continue
-            name_text = str(name)
-            seen_names[name_text] += 1
-            occurrences.append(((name_text, fp, seen_names[name_text]), cls))
-    return occurrences
+    return current_pack().page_namer.module_pages(inventory)
 
 
 def _legacy_entity_page_map(
@@ -465,43 +358,11 @@ def build_entity_occurrence_page_map(
 
     The occurrence value is one-based per class name within a file. This keeps
     duplicate class declarations in one source file addressable without
-    changing stable page names for non-colliding entities.
+    changing stable page names for non-colliding entities. The active domain
+    pack names the pages.
     """
-    from collections import Counter
-
-    occurrences = _entity_occurrences(inventory)
-    name_counts = Counter(key[0] for key, _cls in occurrences)
-    files_by_name: defaultdict[str, set[str]] = defaultdict(set)
-    for (name, filepath, _occurrence), _cls in occurrences:
-        files_by_name[name].add(filepath)
-
     mod_page_map = dict(module_page_map or build_module_page_map(inventory))
-    proposed_pages: list[tuple[EntityOccurrenceKey, str, str]] = []
-    for key, _cls in occurrences:
-        name, filepath, occurrence = key
-        safe_name = _page_name_for_entity(name)
-        if name_counts[name] > 1 and len(files_by_name[name]) > 1:
-            page_name = _safe_page_component(f"{mod_page_map[filepath]}_{safe_name}")
-        else:
-            page_name = safe_name
-        if occurrence > 1:
-            page_name = _safe_page_component(f"{page_name}_{occurrence}")
-        proposed_pages.append((key, page_name, mod_page_map[filepath]))
-
-    page_counts = Counter(portable_path_key(page) for _, page, _ in proposed_pages)
-    used: set[str] = set()
-    page_map: dict[EntityOccurrenceKey, str] = {}
-    for key, page_name, module_page in proposed_pages:
-        candidate = page_name
-        if page_counts[portable_path_key(page_name)] > 1:
-            candidate = _safe_page_component(f"{module_page}_{page_name}")
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{page_name}_{suffix}"
-            suffix += 1
-        page_map[key] = candidate
-        used.add(portable_path_key(candidate))
-    return page_map
+    return current_pack().page_namer.entity_pages(inventory, mod_page_map)
 
 
 def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:

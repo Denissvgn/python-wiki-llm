@@ -5,7 +5,8 @@ environment, working directory, clock), whether bundled analysis helpers may
 be prepared automatically, the analysis comparison policy, the
 :class:`ValidatorRegistry` every knowledge index must pass and the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
-it declares. Every call runs
+it declares, and the :class:`DomainPack` that classifies sources and names
+pages. Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -55,6 +56,14 @@ from ..services.bootstrap_service import (
     BootstrapResult,
     BootstrapServiceError,
 )
+from ..services.domain_pack import (
+    CODE_DOCS_PACK,
+    DomainPack,
+    ExtensionSourceClassifier,
+    PageNamer,
+    SourceClassifier,
+    StemPageNamer,
+)
 from ..services.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
 from ..services.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
 from ..services.lint_request import LintRequest, LintRequestError
@@ -72,13 +81,16 @@ __all__ = [
     "BootstrapRequestError",
     "BootstrapResult",
     "BootstrapServiceError",
+    "CODE_DOCS_PACK",
     "ConceptKindSpec",
     "DEFAULT_KINDS",
     "DEFAULT_VALIDATORS",
+    "DomainPack",
     "EVENT_KINDS",
     "Engine",
     "EngineEvent",
     "EventSink",
+    "ExtensionSourceClassifier",
     "Host",
     "HostCapabilityError",
     "KindRegistry",
@@ -91,7 +103,10 @@ __all__ = [
     "ModelValidator",
     "NoProcessHost",
     "Operation",
+    "PageNamer",
     "RelationshipKindSpec",
+    "SourceClassifier",
+    "StemPageNamer",
     "SyncError",
     "SyncOutcome",
     "SyncRequest",
@@ -119,6 +134,7 @@ class Operation:
     comparison_policy: str
     validators: ValidatorRegistry = DEFAULT_VALIDATORS
     kinds: KindRegistry = DEFAULT_KINDS
+    pack: DomainPack = CODE_DOCS_PACK
 
 
 class Engine:
@@ -133,6 +149,7 @@ class Engine:
         comparison_policy: str = "auto",
         validators: ValidatorRegistry = DEFAULT_VALIDATORS,
         kinds: KindRegistry = DEFAULT_KINDS,
+        pack: DomainPack = CODE_DOCS_PACK,
     ) -> None:
         from ..services.analysis_compatibility import selected_policy
 
@@ -149,12 +166,15 @@ class Engine:
             raise TypeError("validators must be a ValidatorRegistry")
         if not isinstance(kinds, KindRegistry):
             raise TypeError("kinds must be a KindRegistry")
+        if not isinstance(pack, DomainPack):
+            raise TypeError("pack must be a DomainPack")
         self._host = host
         self._helper_preparation: HelperPreparation = helper_preparation
         self._helper_cache_dir = None if helper_cache_dir is None else str(helper_cache_dir)
         self._comparison_policy = selected_policy(comparison_policy)
         self._validators = validators
         self._kinds = kinds
+        self._pack = pack
 
     @property
     def host(self) -> Host:
@@ -169,12 +189,14 @@ class Engine:
             "comparison_policy": self._comparison_policy,
             "validators": list(self._validators.names),
             "kinds": self._kinds.describe(),
+            "pack": self._pack.describe(),
         }
 
     @contextmanager
     def operation(self) -> Iterator[Operation]:
         """Apply this engine's grants to all work inside the block."""
         from ..services.analysis_compatibility import comparison_scope
+        from ..services.domain_pack import using_pack
         from ..services.helper_runtime import helper_operation, helper_policy
         from ..services.knowledge_kinds import using_kinds
         from ..services.knowledge_validators import using_validators
@@ -186,9 +208,10 @@ class Engine:
             stack.enter_context(helper_operation(fresh=True))
             stack.enter_context(using_validators(self._validators))
             stack.enter_context(using_kinds(self._kinds))
+            stack.enter_context(using_pack(self._pack))
             yield Operation(
                 self._host, self._helper_preparation, self._helper_cache_dir, self._comparison_policy,
-                self._validators, self._kinds,
+                self._validators, self._kinds, self._pack,
             )
 
     def call(self, function: Callable[_P, _R], /, *args: _P.args, **kwargs: _P.kwargs) -> _R:
