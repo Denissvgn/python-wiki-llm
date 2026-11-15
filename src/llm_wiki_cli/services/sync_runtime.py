@@ -41,7 +41,6 @@ from .api_contracts import (
     build_api_contracts,
     link_entry_point_flows,
     load_openapi_document,
-    render_api_contracts_markdown,
 )
 from .data_flow import (
     analyze_data_flow,
@@ -220,6 +219,7 @@ from .wiki_surface_index import (
 from .bootstrap_runtime import (
     _build_entity_relationship_summary_map,
     _build_relationships,
+    _generate_api_contracts_md,
     _generate_dependencies_md,
     _generate_entity_md,
     _generate_flow_md,
@@ -6332,7 +6332,7 @@ def _regenerate_api_contracts_page(
     ):
         return 0
     path = options.wiki_dir / f"{PageKind.API_CONTRACTS.value}.md"
-    new_md = render_api_contracts_markdown(
+    new_md = _generate_api_contracts_md(
         plan.api_contracts,
         module_page_map=page_maps.module_page_map,
         entity_page_map=page_maps.entity_page_cache,

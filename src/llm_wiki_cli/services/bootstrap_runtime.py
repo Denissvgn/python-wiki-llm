@@ -9,7 +9,7 @@ import re
 import shlex
 import sys
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from functools import partial
@@ -185,6 +185,7 @@ from .host import current_host, emit
 from .domain_pack import (
     EntityOccurrenceKey,
     EntityPageRequest,
+    PageRequest,
     ModulePageRequest,
     current_pack,
     render_with_pack,
@@ -2215,6 +2216,178 @@ def _generate_module_md(
     )
 
 
+def _render_page(page_kind: PageKind, builtin: Callable[[], str], **inputs: Any) -> str:
+    return render_with_pack(PageRequest(page_kind, inputs, builtin))
+
+
+def _generate_index_md(
+    entity_names: list[str],
+    module_entries: list[dict],
+    workflow_entries: list[dict] | None = None,
+    guide_entries: list[dict] | None = None,
+    infra_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
+    architecture_entries: list[dict] | None = None,
+    *,
+    retired_entity_pages: list[str] | None = None,
+    api_contracts_present: bool = False,
+    log_present: bool = True,
+) -> str:
+    """Render the index page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.INDEX,
+        partial(
+            _builtin_index_md,
+            entity_names,
+            module_entries,
+            workflow_entries,
+            guide_entries,
+            infra_entries,
+            flow_entries,
+            architecture_entries,
+            retired_entity_pages=retired_entity_pages,
+            api_contracts_present=api_contracts_present,
+            log_present=log_present,
+        ),
+        entity_names=entity_names,
+        module_entries=module_entries,
+        workflow_entries=workflow_entries,
+        guide_entries=guide_entries,
+        infra_entries=infra_entries,
+        flow_entries=flow_entries,
+        architecture_entries=architecture_entries,
+        retired_entity_pages=retired_entity_pages,
+        api_contracts_present=api_contracts_present,
+        log_present=log_present,
+    )
+
+
+def _generate_workflow_md(
+    name: str,
+    wf: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render a workflow page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.WORKFLOWS,
+        partial(_builtin_workflow_md, name, wf, module_page_map),
+        name=name,
+        workflow=wf,
+        module_pages=module_page_map,
+    )
+
+
+def _generate_flow_md(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    data_flow: Mapping | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+    api_contract_operations: Sequence[Mapping[str, Any]] | None = None,
+) -> str:
+    """Render a flow page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.FLOWS,
+        partial(
+            _builtin_flow_md,
+            flow,
+            module_page_map,
+            data_flow=data_flow,
+            diagram_style=diagram_style,
+            api_contract_operations=api_contract_operations,
+        ),
+        flow=flow,
+        module_pages=module_page_map,
+        data_flow=data_flow,
+        diagram_style=diagram_style,
+        api_contract_operations=api_contract_operations,
+    )
+
+
+def _generate_dependencies_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    detail: str = "auto",
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render the dependencies page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.DEPENDENCIES,
+        partial(
+            _builtin_dependencies_md,
+            analysis,
+            module_page_map,
+            detail=detail,
+            diagram_style=diagram_style,
+        ),
+        analysis=analysis,
+        module_pages=module_page_map,
+        detail=detail,
+        diagram_style=diagram_style,
+    )
+
+
+def _generate_load_order_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render the load-order page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.LOAD_ORDER,
+        partial(_builtin_load_order_md, analysis, module_page_map),
+        analysis=analysis,
+        module_pages=module_page_map,
+    )
+
+
+def _generate_infrastructure_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
+    *,
+    notes_placeholder: bool = True,
+) -> str:
+    """Render an infrastructure page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.INFRASTRUCTURE,
+        partial(
+            _builtin_infrastructure_md,
+            filename,
+            info,
+            module_links,
+            unsupported_sources,
+            notes_placeholder=notes_placeholder,
+        ),
+        source_path=filename,
+        info=info,
+        module_links=module_links,
+        unsupported_sources=unsupported_sources,
+    )
+
+
+def _generate_api_contracts_md(
+    contracts: Mapping[str, Any],
+    *,
+    module_page_map: Mapping[str, str] | None = None,
+    entity_page_map: Mapping[Any, str] | None = None,
+) -> str:
+    """Render the API contracts page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.API_CONTRACTS,
+        partial(
+            render_api_contracts_markdown,
+            contracts,
+            module_page_map=module_page_map,
+            entity_page_map=entity_page_map,
+        ),
+        contracts=contracts,
+        module_pages=module_page_map,
+        entity_pages=entity_page_map,
+    )
+
+
 def _append_index_entities(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] | None = None) -> None:
     if not entity_names and not retired_entity_pages:
         return
@@ -2382,7 +2555,7 @@ def _append_index_log(lines: list[str], *, log_present: bool) -> None:
     lines.append("")
 
 
-def _generate_index_md(
+def _builtin_index_md(
     entity_names: list[str],
     module_entries: list[dict],
     workflow_entries: list[dict] | None = None,
@@ -2454,7 +2627,7 @@ def _workflow_module_refs(
     return [(m, m) for m in wf.get("modules_touched", [])]
 
 
-def _generate_workflow_md(
+def _builtin_workflow_md(
     name: str,
     wf: dict,
     module_page_map: Mapping[str, str] | None = None,
@@ -3116,7 +3289,7 @@ def _generate_data_flow_section(
     return lines
 
 
-def _generate_flow_md(
+def _builtin_flow_md(
     flow: dict,
     module_page_map: Mapping[str, str] | None = None,
     *,
@@ -3461,7 +3634,7 @@ def _append_external_dependencies(lines: list[str], reconciliation: dict) -> Non
         lines.append("")
 
 
-def _generate_dependencies_md(
+def _builtin_dependencies_md(
     analysis: dict,
     module_page_map: Mapping[str, str] | None = None,
     *,
@@ -3609,7 +3782,7 @@ def _format_side_effect_call(call: Mapping) -> str:
     return f"{target} = {label}" if target else label
 
 
-def _generate_load_order_md(
+def _builtin_load_order_md(
     analysis: dict,
     module_page_map: Mapping[str, str] | None = None,
 ) -> str:
@@ -3893,11 +4066,13 @@ def _generate_docker_md(
     return _generate_compose_md(filename, info, module_links)
 
 
-def _generate_infrastructure_md(
+def _builtin_infrastructure_md(
     filename: str,
     info: dict,
     module_links: Mapping[str, str] | set[str] | None = None,
     unsupported_sources: dict[str, dict[str, object]] | None = None,
+    *,
+    notes_placeholder: bool = True,
 ) -> str:
     """Generate a wiki page for any supported infrastructure inventory entry."""
     if info["type"] in {"dockerfile", "compose"}:
@@ -3914,6 +4089,8 @@ def _generate_infrastructure_md(
         generated = _generate_runtime_config_md(filename, info)
     else:
         generated = _generate_unsupported_infrastructure_md(filename, info)
+    if not notes_placeholder:
+        return generated
     return _with_infrastructure_notes_placeholder(generated)
 
 
@@ -5325,7 +5502,7 @@ def _write_bootstrap_api_contract_page(
     if contracts is None:
         return _ApiContractResult(None, page_path.is_file(), 0)
 
-    generated = render_api_contracts_markdown(
+    generated = _generate_api_contracts_md(
         contracts,
         module_page_map=page_maps.module_page_map,
         entity_page_map=page_maps.entity_page_name_cache,

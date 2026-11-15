@@ -44,17 +44,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `rejecting_undeclared()` refuses custom kinds the registry does not
   declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
   kind is still accepted, and page kinds stay those of the knowledge format.
-- A `DomainPack` decides which repository files are sources and how
-  generated module and entity pages are named and written, and what budgeted
-  context shows. A pack combines a
+- A `DomainPack` decides which repository files are sources, how generated
+  module and entity pages are named, how every generated page is written,
+  and what budgeted context shows. A pack combines a
   `SourceClassifier` (for example an `ExtensionSourceClassifier` mapping
   source kinds to file extensions) with a `PageNamer` (by default
   `StemPageNamer`, today's names) and a `PageRenderer` that writes the
-  Markdown of those pages. Subclass `BuiltInPageRenderer` to adjust today's
-  pages: each `ModulePageRequest` or `EntityPageRequest` carries the source
-  data and the built-in Markdown. Sync keeps what people wrote in the
-  `Description` section and table description cells and takes the rest of
-  the page from the renderer. A `ContextSource` decides which sources are
+  Markdown of generated pages. Subclass `BuiltInPageRenderer` to adjust
+  today's pages: each `ModulePageRequest` or `EntityPageRequest` carries the
+  source data and the built-in Markdown, and a `PageRequest` does the same
+  for the index, workflow, flow, infrastructure, API contract, dependency
+  and load-order pages. Sync keeps what people wrote in each page kind's
+  reviewed sections (`Description` and table description cells on module
+  and entity pages, `Behavior` on workflows and flows, `Notes` on
+  infrastructure, API contract, dependency and load-order pages, custom
+  index sections) and takes the rest of the page from the renderer. A
+  `ContextSource` decides which sources are
   related to a changed one and what budgeted context shows of each source
   at each detail level; `CodeContextSource` keeps today's import neighbors
   and class/function entries. Qualified context packets, and task context

@@ -890,7 +890,7 @@ def _infrastructure_content(
     *,
     source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[str | None, str]:
-    from .bootstrap_runtime import _generate_docker_md, build_module_page_map
+    from .bootstrap_runtime import _generate_infrastructure_md, build_module_page_map
     from .extraction_service import get_docker_inventory
 
     docker_inventory = get_docker_inventory(
@@ -909,8 +909,11 @@ def _infrastructure_content(
             "infrastructure page does not map unambiguously to a live Docker/Compose file",
         )
     docker_file, docker_info = matches[0]
-    return _generate_docker_md(
-        docker_file, docker_info, build_module_page_map(inventory)
+    return _generate_infrastructure_md(
+        docker_file,
+        docker_info,
+        build_module_page_map(inventory),
+        notes_placeholder=False,
     ), "regenerated infrastructure page"
 
 

@@ -6,9 +6,10 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
   which source kind (for code: language) each one is;
 * a :class:`PageNamer` names the module and entity pages generated from an
   inventory. Page kinds themselves are fixed by the knowledge format;
-* a :class:`PageRenderer` writes the Markdown of those module and entity
-  pages. Each request carries the built-in Markdown, so a renderer can adjust
-  it instead of starting over;
+* a :class:`PageRenderer` writes the Markdown of every generated page: module
+  and entity pages, and the index, workflow, flow, infrastructure, API
+  contract, dependency and load-order pages. Each request carries the
+  built-in Markdown, so a renderer can adjust it instead of starting over;
 * a :class:`ContextSource` decides which sources are related to a changed
   one and how much of each source budgeted context shows at each detail
   level.
@@ -19,11 +20,17 @@ every call that classifies sources or names pages inside that block uses it.
 Pages named by one pack are not renamed by another, so a wiki should keep
 using the pack that generated it.
 
-When sync refreshes a module or entity page it keeps what people wrote in
-its ``Description`` section and in the description cells of its
-``Attributes``, ``Methods``, ``Classes`` and ``Functions`` tables, and takes
-everything else from the renderer. A renderer that wants people to write
-there keeps those headings; any section it adds stays current with sources.
+When sync refreshes a page it keeps what people wrote in that page kind's
+reviewed sections and takes everything else from the renderer:
+
+* module and entity pages: ``Description`` and the description cells of the
+  ``Attributes``, ``Methods``, ``Classes`` and ``Functions`` tables;
+* workflow and flow pages: ``Behavior``;
+* infrastructure, API contract, dependency and load-order pages: ``Notes``;
+* the index: level-two sections under headings it does not write itself.
+
+A renderer that wants people to write there keeps those headings; any section
+it adds stays current with sources.
 
 Qualified context packets (and task context, which seals one) need the
 built-in :class:`CodeContextSource`: a packet's policy digest names that
@@ -42,6 +49,7 @@ from types import MappingProxyType
 from typing import Any, Literal, Protocol, runtime_checkable
 
 from .validation import portable_page_component, portable_path_key
+from .wiki_surface import PageKind
 
 #: ``(entity name, source path, one-based occurrence in that source)``.
 EntityOccurrenceKey = tuple[str, str, int]
@@ -124,9 +132,62 @@ class EntityPageRequest:
         return self._builtin()
 
 
+#: The page kinds a :class:`PageRequest` describes.
+PAGE_REQUEST_KINDS = frozenset(
+    {
+        PageKind.INDEX,
+        PageKind.WORKFLOWS,
+        PageKind.FLOWS,
+        PageKind.INFRASTRUCTURE,
+        PageKind.API_CONTRACTS,
+        PageKind.DEPENDENCIES,
+        PageKind.LOAD_ORDER,
+    }
+)
+
+
+@dataclass(frozen=True)
+class PageRequest:
+    """Everything a renderer gets for one page that is not a module or entity.
+
+    ``inputs`` holds what the built-in page is generated from, by name:
+
+    * ``index``: ``entity_names``, ``module_entries``, ``workflow_entries``,
+      ``guide_entries``, ``infra_entries``, ``flow_entries``,
+      ``architecture_entries``, ``retired_entity_pages``,
+      ``api_contracts_present``, ``log_present``;
+    * ``workflows``: ``name``, ``workflow``, ``module_pages``;
+    * ``flows``: ``flow``, ``module_pages``, ``data_flow``,
+      ``diagram_style``, ``api_contract_operations``;
+    * ``infrastructure``: ``source_path``, ``info``, ``module_links``,
+      ``unsupported_sources``;
+    * ``api-contracts``: ``contracts``, ``module_pages``, ``entity_pages``;
+    * ``dependencies``: ``analysis``, ``module_pages``, ``detail``,
+      ``diagram_style``;
+    * ``load-order``: ``analysis``, ``module_pages``.
+
+    Absent optional inputs are ``None``.
+    """
+
+    page_kind: PageKind
+    inputs: Mapping[str, Any]
+    _builtin: Callable[[], str] = field(repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        page_kind = PageKind(self.page_kind)
+        if page_kind not in PAGE_REQUEST_KINDS:
+            raise ValueError(f"page kind {page_kind.value!r} has its own request type")
+        object.__setattr__(self, "page_kind", page_kind)
+        object.__setattr__(self, "inputs", MappingProxyType(dict(self.inputs)))
+
+    def builtin_markdown(self) -> str:
+        """The Markdown the built-in renderer writes for this page."""
+        return self._builtin()
+
+
 @runtime_checkable
 class PageRenderer(Protocol):
-    """Writes the Markdown of generated module and entity pages."""
+    """Writes the Markdown of generated pages."""
 
     def render_module(self, request: ModulePageRequest) -> str:
         """Return the Markdown of one module page."""
@@ -134,6 +195,10 @@ class PageRenderer(Protocol):
 
     def render_entity(self, request: EntityPageRequest) -> str:
         """Return the Markdown of one entity page."""
+        ...
+
+    def render_page(self, request: PageRequest) -> str:
+        """Return the Markdown of one other generated page."""
         ...
 
 
@@ -146,14 +211,19 @@ class BuiltInPageRenderer:
     def render_entity(self, request: EntityPageRequest) -> str:
         return request.builtin_markdown()
 
+    def render_page(self, request: PageRequest) -> str:
+        return request.builtin_markdown()
 
-def render_with_pack(request: ModulePageRequest | EntityPageRequest) -> str:
+
+def render_with_pack(request: ModulePageRequest | EntityPageRequest | PageRequest) -> str:
     """Render ``request`` with the current pack's page renderer."""
     renderer = current_pack().page_renderer
     if isinstance(request, ModulePageRequest):
         markdown = renderer.render_module(request)
-    else:
+    elif isinstance(request, EntityPageRequest):
         markdown = renderer.render_entity(request)
+    else:
+        markdown = renderer.render_page(request)
     if not isinstance(markdown, str):
         raise TypeError(
             f"page renderer {_qualified_type_name(renderer)} must return Markdown text"
@@ -671,7 +741,9 @@ __all__ = [
     "ExtensionSourceClassifier",
     "ModulePageRequest",
     "PageNamer",
+    "PAGE_REQUEST_KINDS",
     "PageRenderer",
+    "PageRequest",
     "SourceClassifier",
     "StemPageNamer",
     "context_entry",

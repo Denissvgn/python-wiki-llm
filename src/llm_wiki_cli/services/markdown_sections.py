@@ -809,11 +809,16 @@ def preserve_index_custom_sections(old_markdown: str, new_markdown: str) -> str:
     """
 
     old_lines = _markdown_lines(old_markdown)
+    # A heading the new index writes itself (built in or added by a page
+    # renderer) is generated, not custom.
+    generated_titles = _INDEX_GENERATED_HEADINGS | {
+        (_legacy_heading_title(heading) or "").casefold()
+        for heading, _ in _legacy_level_two_sections(_markdown_lines(new_markdown))
+    }
     custom_sections = [
         (heading, body)
         for heading, body in _legacy_level_two_sections(old_lines)
-        if (_legacy_heading_title(heading) or "").casefold()
-        not in _INDEX_GENERATED_HEADINGS
+        if (_legacy_heading_title(heading) or "").casefold() not in generated_titles
     ]
     intro = _index_intro_lines(old_lines)
     if tuple(intro) in _INDEX_GENERATED_INTROS:

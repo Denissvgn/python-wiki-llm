@@ -1,8 +1,9 @@
-"""A domain pack decides source classification and page naming for an operation."""
+"""A domain pack decides classification, naming, rendering and context for an operation."""
 
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path, PurePath
 
@@ -20,12 +21,15 @@ from llm_wiki_cli.engine import (
     ExtensionSourceClassifier,
     ModulePageRequest,
     NoProcessHost,
+    PageRequest,
     StemPageNamer,
 )
 from llm_wiki_cli.extractors.common import LANGUAGE_EXTENSIONS
 
-from llm_wiki_cli.services import bootstrap_runtime, sync_manifest
+from llm_wiki_cli.services import bootstrap_runtime, markdown_sections, sync_manifest
+from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.domain_pack import current_pack, uses_default_pack, using_pack
+from llm_wiki_cli.services.entrypoints import build_flow
 from llm_wiki_cli.services.source_snapshot import SourceSnapshotError, build_source_snapshot
 
 NOTES = DomainPack("team/notes", ExtensionSourceClassifier({"notes": (".md", ".txt")}))
@@ -45,7 +49,7 @@ PREFIXED = CODE_DOCS_PACK.with_page_namer(PrefixedPageNamer())
 class OwnerRenderer(BuiltInPageRenderer):
     def __init__(self, team: str) -> None:
         self.team = team
-        self.requests: list[ModulePageRequest | EntityPageRequest] = []
+        self.requests: list[ModulePageRequest | EntityPageRequest | PageRequest] = []
 
     def _with_owner(self, request) -> str:
         self.requests.append(request)
@@ -56,6 +60,13 @@ class OwnerRenderer(BuiltInPageRenderer):
 
     def render_entity(self, request):
         return self._with_owner(request)
+
+    def render_page(self, request):
+        return self._with_owner(request)
+
+
+def _owned(markdown: str, team: str) -> str:
+    return markdown.rstrip("\n") + f"\n\n## Owner\n\n{team}\n"
 
 
 def _write(path: Path, text: str) -> None:
@@ -157,8 +168,8 @@ def test_the_pack_page_renderer_writes_every_module_and_entity_page() -> None:
         entity = bootstrap_runtime._generate_entity_md(info, "billing.py", {}, "billing")
         module = bootstrap_runtime._generate_module_md("billing.py", file_data, {"Invoice": "Invoice"})
 
-    assert entity == builtin_entity.rstrip("\n") + "\n\n## Owner\n\nBilling team\n"
-    assert module == builtin_module.rstrip("\n") + "\n\n## Owner\n\nBilling team\n"
+    assert entity == _owned(builtin_entity, "Billing team")
+    assert module == _owned(builtin_module, "Billing team")
     entity_request, module_request = renderer.requests
     assert isinstance(entity_request, EntityPageRequest)
     assert (entity_request.entity, entity_request.source_path, entity_request.module_page) == (
@@ -203,6 +214,102 @@ def test_a_page_renderer_must_return_markdown_text() -> None:
     broken = CODE_DOCS_PACK.with_page_renderer(Broken())  # type: ignore[arg-type]
     with using_pack(broken), pytest.raises(TypeError, match="Markdown text"):
         bootstrap_runtime._generate_entity_md({"name": "Invoice"}, "billing.py", {})
+
+
+def test_the_pack_page_renderer_writes_every_other_page_kind(tmp_path) -> None:
+    module = {"language": "python", "imports": [], "classes": [], "functions": []}
+    analysis = analyze_dependencies({"billing.py": module}, str(tmp_path))
+    flow = build_flow(
+        {"id": "cli-main", "category": "cli", "file": "app.py", "symbol": "main", "label": "main"}, []
+    )
+    docker = {"type": "dockerfile", "stages": [], "base_images": [], "instructions": []}
+    pages = {
+        "index": lambda: bootstrap_runtime._generate_index_md(["Invoice"], []),
+        "workflows": lambda: bootstrap_runtime._generate_workflow_md(
+            "billing", {"entry": "app.bill", "modules_touched": ["app"], "chain": ["app.bill"]}
+        ),
+        "flows": lambda: bootstrap_runtime._generate_flow_md(flow),
+        "infrastructure": lambda: bootstrap_runtime._generate_infrastructure_md("Dockerfile", docker),
+        "api-contracts": lambda: bootstrap_runtime._generate_api_contracts_md({"operations": []}),
+        "dependencies": lambda: bootstrap_runtime._generate_dependencies_md(analysis),
+        "load-order": lambda: bootstrap_runtime._generate_load_order_md(analysis),
+    }
+    builtin = {kind: render() for kind, render in pages.items()}
+    renderer = OwnerRenderer("Platform")
+
+    with using_pack(CODE_DOCS_PACK.with_page_renderer(renderer)):
+        rendered = {kind: render() for kind, render in pages.items()}
+
+    assert rendered == {kind: _owned(markdown, "Platform") for kind, markdown in builtin.items()}
+    requests = [request for request in renderer.requests if isinstance(request, PageRequest)]
+    assert requests == renderer.requests
+    assert [request.page_kind.value for request in requests] == list(pages)
+    index, workflow, _, infrastructure, *_ = requests
+    assert index.inputs["entity_names"] == ["Invoice"] and index.inputs["log_present"] is True
+    assert (workflow.inputs["name"], workflow.inputs["module_pages"]) == ("billing", None)
+    assert (infrastructure.inputs["source_path"], infrastructure.inputs["info"]) == ("Dockerfile", docker)
+    with pytest.raises(TypeError):
+        index.inputs["log_present"] = False  # type: ignore[index]
+    with pytest.raises(ValueError, match="its own request type"):
+        PageRequest("modules", {}, lambda: "")  # type: ignore[arg-type]
+
+
+def _replace_section(page: Path, heading: str, body: str) -> None:
+    text = page.read_text(encoding="utf-8")
+    text, count = re.subn(
+        rf"(## {heading}\n\n).*?(?=\n## |\Z)", lambda match: f"{match.group(1)}{body}\n", text, count=1, flags=re.S
+    )
+    assert count == 1
+    page.write_text(text, encoding="utf-8")
+
+
+def test_sync_keeps_reviewed_sections_of_rendered_pages(tmp_path, monkeypatch) -> None:
+    _write(tmp_path / "src/billing.py", "class Invoice:\n    total: int\n")
+    _write(
+        tmp_path / "src/app.py",
+        "from flask import Flask\nfrom .billing import Invoice\n\napp = Flask(__name__)\n\n\n"
+        "@app.route('/invoices')\ndef list_invoices():\n    return [Invoice()]\n",
+    )
+    _write(tmp_path / "src/Dockerfile", "FROM python:3.12\nCOPY src /app\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", os.fspath(tmp_path.parent))
+    wiki = tmp_path / "wiki"
+    pages = ["index.md", "flows/http-list_invoices.md", "infrastructure/Dockerfile.md",
+             "dependencies.md", "load-order.md"]
+
+    Engine(host=NoProcessHost(), pack=CODE_DOCS_PACK.with_page_renderer(OwnerRenderer("Team A"))).call(
+        api.bootstrap_wiki, "src", "wiki"
+    )
+    assert all((wiki / page).read_text(encoding="utf-8").endswith("## Owner\n\nTeam A\n") for page in pages)
+    _replace_section(wiki / "flows/http-list_invoices.md", "Behavior", "Lists invoices for the dashboard.")
+    _replace_section(wiki / "infrastructure/Dockerfile.md", "Notes", "Reviewed by ops.")
+    _replace_section(wiki / "dependencies.md", "Notes", "Billing depends on nothing.")
+    index = wiki / "index.md"
+    index.write_text(index.read_text(encoding="utf-8") + "\n## Team links\n\nSee the handbook.\n", encoding="utf-8")
+    _write(tmp_path / "src/billing.py", "class Invoice:\n    total: int\n\n\nclass Refund:\n    amount: int\n")
+
+    engine = Engine(host=NoProcessHost(), pack=CODE_DOCS_PACK.with_page_renderer(OwnerRenderer("Team B")))
+    engine.call(api.sync_wiki, "src", "wiki")
+
+    text = {page: (wiki / page).read_text(encoding="utf-8") for page in pages}
+    assert all(t.count("## Owner") == 1 and "## Owner\n\nTeam B\n" in t for t in text.values())
+    assert "Lists invoices for the dashboard." in text["flows/http-list_invoices.md"]
+    assert "Reviewed by ops." in text["infrastructure/Dockerfile.md"]
+    assert "Billing depends on nothing." in text["dependencies.md"]
+    assert "[Refund]" in text["index.md"] and text["index.md"].endswith("## Team links\n\nSee the handbook.\n")
+    assert engine.call(api.lint_wiki, "src", "wiki")["ok"]
+
+
+def test_index_sections_the_new_index_writes_are_not_carried_forward() -> None:
+    old = "# Index\n\n## Modules\n\n- a\n\n## Owner\n\nTeam A\n\n## Team links\n\nhandbook\n"
+    new = "# Index\n\n## Modules\n\n- b\n\n## Owner\n\nTeam B\n"
+
+    assert markdown_sections.preserve_index_custom_sections(old, new) == (
+        "# Index\n\n## Modules\n\n- b\n\n## Owner\n\nTeam B\n\n## Team links\n\nhandbook\n"
+    )
+    assert markdown_sections.preserve_index_custom_sections(old, "# Index\n\n## Modules\n\n- b\n").endswith(
+        "## Owner\n\nTeam A\n\n## Team links\n\nhandbook\n"
+    )
 
 
 class FolderContextSource(CodeContextSource):

@@ -67,6 +67,7 @@ from ..services.domain_pack import (
     ModulePageRequest,
     PageNamer,
     PageRenderer,
+    PageRequest,
     SourceClassifier,
     StemPageNamer,
 )
@@ -116,6 +117,7 @@ __all__ = [
     "Operation",
     "PageNamer",
     "PageRenderer",
+    "PageRequest",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",

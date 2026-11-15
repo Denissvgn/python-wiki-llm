@@ -75,9 +75,9 @@ from .wiki_surface_index import (
 )
 from .bootstrap_runtime import (
     _build_relationships,
-    _generate_docker_md,
     _generate_entity_md,
     _generate_index_md,
+    _generate_infrastructure_md,
     _generate_module_md,
     build_entity_occurrence_page_map,
     build_module_page_map,
@@ -505,7 +505,9 @@ def _build_targets(
                 kind="infrastructure",
                 stem=page_name,
                 rel=f"infrastructure/{page_name}.md",
-                content=_generate_docker_md(docker_file, docker_info, module_page_map),
+                content=_generate_infrastructure_md(
+                    docker_file, docker_info, module_page_map, notes_placeholder=False
+                ),
                 source_path=docker_file,
             )
         )
