@@ -64,6 +64,7 @@ KERNEL_SERVICES = frozenset(
         "context_packet",
         "context_packet_builder",
         "context_request_format",
+        "context_response_format",
         "context_service",
         "context_session",
         "documentation_queries",
@@ -889,7 +890,7 @@ def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Pat
 
 
 # Format checks stay importable without the builders or the analysis stack.
-FORMAT_MODULES = ("context_packet", "context_request_format")
+FORMAT_MODULES = ("context_packet", "context_request_format", "context_response_format")
 # Stdlib-only release policy module that knowledge freshness wording reads.
 FORMAT_ANALYSIS_ALLOWANCE = frozenset({"analysis_compatibility"})
 

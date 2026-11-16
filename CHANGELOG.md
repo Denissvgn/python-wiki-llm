@@ -94,6 +94,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   policy receipt and cross-field consistency still need
   `validate_context_packet`. Their conformance cases mark documents that
   only those checks reject (`schema_valid: true`, `valid: false`).
+- Responses to `llm-wiki-context/v1` and `llm-wiki-context/v2` requests have
+  JSON Schemas: `llm-wiki-context-response-v1.schema.json` and
+  `llm-wiki-context-response-v2.schema.json`. Each covers the successful
+  budgeted context, which is the body a qualified packet carries as
+  `response`, and the error envelopes. `validate_context_response()` in
+  `llm_wiki_cli.engine` also checks what a schema cannot: the response
+  fields form a normalized request, `used_tokens` stays within the budget,
+  and version 2 knowledge follows the native selection rules.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also

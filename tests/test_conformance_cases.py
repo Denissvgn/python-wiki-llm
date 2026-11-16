@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import sys
 from collections.abc import Callable
 from importlib import resources
 from typing import Any
@@ -11,7 +12,7 @@ from typing import Any
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli import api
+from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_packet, context_request_format
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
@@ -19,6 +20,7 @@ from llm_wiki_cli.services.context_packet import (
     validate_context_packet,
 )
 from llm_wiki_cli.engine import (
+    CONTEXT_RESPONSE_PROTOCOLS,
     ENGINE_CAPABILITIES_SCHEMA_VERSION,
     ENGINE_EVENT_SCHEMA_VERSION,
     CODE_DOCS_PACK,
@@ -27,6 +29,7 @@ from llm_wiki_cli.engine import (
     Host,
     NoProcessHost,
     SyncRequest,
+    validate_context_response,
     validate_engine_event,
 )
 from tests.notes_pack import NOTES_PACK
@@ -46,6 +49,7 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     ENGINE_EVENT_SCHEMA_VERSION: validate_engine_event,
     CONTEXT_PACKET_SCHEMA_VERSION: _validate_packet_document,
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION: _validate_packet_document,
+    **{protocol: validate_context_response for protocol in CONTEXT_RESPONSE_PROTOCOLS},
 }
 
 
@@ -78,6 +82,8 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
         "llm-wiki-engine-capabilities-v1.cases.json",
         "llm-wiki-qualified-context-packet-v1.cases.json",
         "llm-wiki-qualified-context-packet-v2.cases.json",
+        "llm-wiki-context-response-v1.cases.json",
+        "llm-wiki-context-response-v2.cases.json",
     } <= set(files)
     cases_schema = Draft202012Validator(_schema("llm-wiki-conformance-cases-v1.schema.json"))
     for name in files:
@@ -85,7 +91,10 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
         cases_schema.validate(document)
         assert name == document["schema"].replace(".schema.json", ".cases.json")
         schema = _schema(document["schema"])
-        assert schema["properties"]["schema_version"]["const"] == document["format"]
+        # A format names its version in schema_version, or in protocol for
+        # the context protocol responses.
+        version_key = "schema_version" if "schema_version" in schema["properties"] else "protocol"
+        assert schema["properties"][version_key]["const"] == document["format"]
         assert schema["$id"].endswith("/" + document["schema"])
         names = [case["name"] for case in document["cases"]]
         assert len(names) == len(set(names)), name
@@ -192,3 +201,61 @@ def test_built_packets_match_their_schema(tmp_path, monkeypatch, request_overrid
         _schema(f"llm-wiki-qualified-context-packet-v{version}.schema.json")
     ).validate(payload)
     _validate_packet_document(payload)
+
+
+@pytest.mark.parametrize("version", [1, 2])
+def test_context_response_success_is_the_packet_response(version):
+    response = _schema(f"llm-wiki-context-response-v{version}.schema.json")
+    packet = _schema(f"llm-wiki-qualified-context-packet-v{version}.schema.json")
+    success = response["$defs"]["success"]
+    packet_response = packet["properties"]["response"]
+    assert success["properties"] == packet_response["properties"]
+    # A packet binds source priorities; a plain protocol response does not.
+    assert set(packet_response["required"]) - set(success["required"]) <= {"source_priorities"}
+    for name, definition in response["$defs"].items():
+        if name not in {"success", "error"}:
+            assert definition == packet["$defs"][name], name
+
+
+@pytest.mark.parametrize(
+    "request_overrides",
+    [
+        {"protocol": "llm-wiki-context/v1"},
+        {"protocol": "llm-wiki-context/v1", "format": "markdown", "prefer_fresh": True},
+        {"protocol": "llm-wiki-context/v1", "filters": {"symbol": "Account"}},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "off"},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "auto", "prefer_fresh": True},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "required", "format": "markdown"},
+        {"protocol": "llm-wiki-context/v1", "focus": ["bogus"]},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "auto", "budget_tokens": 0},
+    ],
+)
+def test_emitted_context_responses_match_their_schema(
+    tmp_path, monkeypatch, capsys, request_overrides
+):
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/accounts.py").write_text(
+        'class Account:\n    """A customer account."""\n\n    balance: int\n', encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    api.bootstrap_wiki("src", "docs/llm_wiki")
+    request = {"budget_tokens": 8000, "focus": ["all"], "format": "json", "filters": {}}
+    request.update(request_overrides)
+    (tmp_path / "request.json").write_text(json.dumps(request), encoding="utf-8")
+    capsys.readouterr()
+    monkeypatch.setattr(sys, "argv", [
+        "llm-wiki", "context", "--request", "request.json",
+        "--src-dir", "src", "--wiki-dir", "docs/llm_wiki",
+    ])
+
+    try:
+        cli.main()
+    except SystemExit:
+        pass
+
+    response = json.loads(capsys.readouterr().out)
+    version = 2 if request["protocol"].endswith("/v2") else 1
+    Draft202012Validator(_schema(f"llm-wiki-context-response-v{version}.schema.json")).validate(response)
+    validate_context_response(response)
+    assert response["ok"] is ("bogus" not in request["focus"] and request["budget_tokens"] > 0)

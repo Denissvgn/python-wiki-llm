@@ -1,0 +1,2187 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "schema": "llm-wiki-context-response-v1.schema.json",
+  "format": "llm-wiki-context/v1",
+  "cases": [
+    {
+      "name": "json-context",
+      "valid": true,
+      "description": "A JSON context for every source file.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "markdown-context-preferring-fresh",
+      "valid": true,
+      "description": "Markdown context with a symbol filter and freshness preference.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "markdown",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "symbol": "Account"
+        },
+        "prefer_fresh": true,
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "graphs": {
+          "symbol": {
+            "callers": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callers": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callers": []
+            },
+            "callees": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callees": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callees": []
+            },
+            "pages": {
+              "query": "Account",
+              "found": true,
+              "ambiguous": false,
+              "matches": [
+                {
+                  "name": "Account",
+                  "file": "accounts.py",
+                  "module": "accounts",
+                  "kind": "class"
+                }
+              ],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 1,
+                  "returned": 1,
+                  "truncated": false
+                },
+                "pages": {
+                  "total": 2,
+                  "returned": 2,
+                  "truncated": false
+                }
+              },
+              "symbol": {
+                "name": "Account",
+                "file": "accounts.py",
+                "module": "accounts",
+                "kind": "class"
+              },
+              "pages": [
+                {
+                  "kind": "entities",
+                  "id": "Account",
+                  "title": "Account",
+                  "canonical_path": "entities/Account.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://entities/Account",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "class",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "modules",
+                  "id": "accounts",
+                  "title": "accounts Module",
+                  "canonical_path": "modules/accounts.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://modules/accounts",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "module",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "knowledge_selection": {
+                "unfiltered_total": 2,
+                "filtered_total": 2,
+                "returned": 2,
+                "truncated": false
+              }
+            }
+          }
+        },
+        "knowledge": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true
+        },
+        "ranking_policy": {
+          "name": "relevance-then-current-freshness",
+          "prefer_fresh": true,
+          "scope": "within-relevance-tiers",
+          "freshness_evaluated": true,
+          "budget_pressure": false,
+          "applied": false,
+          "filters_stale_content": false
+        },
+        "content": "# Context Budget: 158 / 8000 tokens\n\nRanking policy: current freshness is preferred only within existing relevance tiers (inactive because the full context fit the budget).\n\n## Changed Files (High Priority)\n\n### `accounts.py`\n\n- class **Account**\n  > A customer account.\n\n## Knowledge\n\n- availability: ready\n- reason: all-projection-commitments-match\n- freshness evaluated: yes\n- freshness: evaluated (6 concepts)\n\n## Documentation Graphs\n\n### Symbol `Account`\n\n- callers: not found, 0 item(s)\n- callees: not found, 0 item(s)\n- pages: found, 2 item(s)\n"
+      }
+    },
+    {
+      "name": "invalid-request-error",
+      "valid": true,
+      "description": "A rejected request.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "invalid_request",
+          "message": "Unknown focus value: bogus",
+          "field": "focus"
+        }
+      }
+    },
+    {
+      "name": "error-without-field",
+      "valid": true,
+      "description": "An invalid request error need not name a field.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "invalid_request",
+          "message": "Unknown focus value: bogus"
+        }
+      }
+    },
+    {
+      "name": "missing-used-tokens",
+      "valid": false,
+      "description": "used_tokens is required.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "ok-not-boolean",
+      "valid": false,
+      "description": "ok is a boolean.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": "yes",
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "Responses have a closed field set.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        },
+        "extra": 1
+      }
+    },
+    {
+      "name": "other-protocol",
+      "valid": false,
+      "description": "The protocol names this version.",
+      "document": {
+        "protocol": "llm-wiki-context/v2",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "json-with-content",
+      "valid": false,
+      "description": "JSON context carries files, not content.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        },
+        "content": "# Context"
+      }
+    },
+    {
+      "name": "markdown-without-content",
+      "valid": false,
+      "description": "Markdown context carries content.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "markdown",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "symbol": "Account"
+        },
+        "prefer_fresh": true,
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "graphs": {
+          "symbol": {
+            "callers": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callers": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callers": []
+            },
+            "callees": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callees": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callees": []
+            },
+            "pages": {
+              "query": "Account",
+              "found": true,
+              "ambiguous": false,
+              "matches": [
+                {
+                  "name": "Account",
+                  "file": "accounts.py",
+                  "module": "accounts",
+                  "kind": "class"
+                }
+              ],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 1,
+                  "returned": 1,
+                  "truncated": false
+                },
+                "pages": {
+                  "total": 2,
+                  "returned": 2,
+                  "truncated": false
+                }
+              },
+              "symbol": {
+                "name": "Account",
+                "file": "accounts.py",
+                "module": "accounts",
+                "kind": "class"
+              },
+              "pages": [
+                {
+                  "kind": "entities",
+                  "id": "Account",
+                  "title": "Account",
+                  "canonical_path": "entities/Account.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://entities/Account",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "class",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "modules",
+                  "id": "accounts",
+                  "title": "accounts Module",
+                  "canonical_path": "modules/accounts.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://modules/accounts",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "module",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "knowledge_selection": {
+                "unfiltered_total": 2,
+                "filtered_total": 2,
+                "returned": 2,
+                "truncated": false
+              }
+            }
+          }
+        },
+        "knowledge": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true
+        },
+        "ranking_policy": {
+          "name": "relevance-then-current-freshness",
+          "prefer_fresh": true,
+          "scope": "within-relevance-tiers",
+          "freshness_evaluated": true,
+          "budget_pressure": false,
+          "applied": false,
+          "filters_stale_content": false
+        }
+      }
+    },
+    {
+      "name": "prefer-fresh-false",
+      "valid": false,
+      "description": "prefer_fresh appears only when true.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "markdown",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "symbol": "Account"
+        },
+        "prefer_fresh": false,
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "graphs": {
+          "symbol": {
+            "callers": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callers": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callers": []
+            },
+            "callees": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callees": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callees": []
+            },
+            "pages": {
+              "query": "Account",
+              "found": true,
+              "ambiguous": false,
+              "matches": [
+                {
+                  "name": "Account",
+                  "file": "accounts.py",
+                  "module": "accounts",
+                  "kind": "class"
+                }
+              ],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 1,
+                  "returned": 1,
+                  "truncated": false
+                },
+                "pages": {
+                  "total": 2,
+                  "returned": 2,
+                  "truncated": false
+                }
+              },
+              "symbol": {
+                "name": "Account",
+                "file": "accounts.py",
+                "module": "accounts",
+                "kind": "class"
+              },
+              "pages": [
+                {
+                  "kind": "entities",
+                  "id": "Account",
+                  "title": "Account",
+                  "canonical_path": "entities/Account.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://entities/Account",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "class",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "modules",
+                  "id": "accounts",
+                  "title": "accounts Module",
+                  "canonical_path": "modules/accounts.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://modules/accounts",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "module",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "knowledge_selection": {
+                "unfiltered_total": 2,
+                "filtered_total": 2,
+                "returned": 2,
+                "truncated": false
+              }
+            }
+          }
+        },
+        "knowledge": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true
+        },
+        "ranking_policy": {
+          "name": "relevance-then-current-freshness",
+          "prefer_fresh": true,
+          "scope": "within-relevance-tiers",
+          "freshness_evaluated": true,
+          "budget_pressure": false,
+          "applied": false,
+          "filters_stale_content": false
+        },
+        "content": "# Context Budget: 158 / 8000 tokens\n\nRanking policy: current freshness is preferred only within existing relevance tiers (inactive because the full context fit the budget).\n\n## Changed Files (High Priority)\n\n### `accounts.py`\n\n- class **Account**\n  > A customer account.\n\n## Knowledge\n\n- availability: ready\n- reason: all-projection-commitments-match\n- freshness evaluated: yes\n- freshness: evaluated (6 concepts)\n\n## Documentation Graphs\n\n### Symbol `Account`\n\n- callers: not found, 0 item(s)\n- callees: not found, 0 item(s)\n- pages: found, 2 item(s)\n"
+      }
+    },
+    {
+      "name": "prefer-fresh-without-policy",
+      "valid": false,
+      "description": "A freshness preference discloses its ranking policy.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "markdown",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "symbol": "Account"
+        },
+        "prefer_fresh": true,
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "graphs": {
+          "symbol": {
+            "callers": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callers": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callers": []
+            },
+            "callees": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callees": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callees": []
+            },
+            "pages": {
+              "query": "Account",
+              "found": true,
+              "ambiguous": false,
+              "matches": [
+                {
+                  "name": "Account",
+                  "file": "accounts.py",
+                  "module": "accounts",
+                  "kind": "class"
+                }
+              ],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 1,
+                  "returned": 1,
+                  "truncated": false
+                },
+                "pages": {
+                  "total": 2,
+                  "returned": 2,
+                  "truncated": false
+                }
+              },
+              "symbol": {
+                "name": "Account",
+                "file": "accounts.py",
+                "module": "accounts",
+                "kind": "class"
+              },
+              "pages": [
+                {
+                  "kind": "entities",
+                  "id": "Account",
+                  "title": "Account",
+                  "canonical_path": "entities/Account.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://entities/Account",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "class",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "modules",
+                  "id": "accounts",
+                  "title": "accounts Module",
+                  "canonical_path": "modules/accounts.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://modules/accounts",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "module",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "knowledge_selection": {
+                "unfiltered_total": 2,
+                "filtered_total": 2,
+                "returned": 2,
+                "truncated": false
+              }
+            }
+          }
+        },
+        "knowledge": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true
+        },
+        "content": "# Context Budget: 158 / 8000 tokens\n\nRanking policy: current freshness is preferred only within existing relevance tiers (inactive because the full context fit the budget).\n\n## Changed Files (High Priority)\n\n### `accounts.py`\n\n- class **Account**\n  > A customer account.\n\n## Knowledge\n\n- availability: ready\n- reason: all-projection-commitments-match\n- freshness evaluated: yes\n- freshness: evaluated (6 concepts)\n\n## Documentation Graphs\n\n### Symbol `Account`\n\n- callers: not found, 0 item(s)\n- callees: not found, 0 item(s)\n- pages: found, 2 item(s)\n"
+      }
+    },
+    {
+      "name": "policy-without-prefer-fresh",
+      "valid": false,
+      "description": "A ranking policy appears only with a freshness preference.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "markdown",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "symbol": "Account"
+        },
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "graphs": {
+          "symbol": {
+            "callers": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callers": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callers": []
+            },
+            "callees": {
+              "query": "Account",
+              "found": false,
+              "ambiguous": false,
+              "matches": [],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                },
+                "callees": {
+                  "total": 0,
+                  "returned": 0,
+                  "truncated": false
+                }
+              },
+              "callable": null,
+              "coverage": {
+                "schema_version": "llm-wiki-static-call-coverage/v1",
+                "analysis_scope": "full-inventory",
+                "runtime_completeness": false,
+                "limitations": [
+                  "static-call-resolution-does-not-claim-runtime-completeness"
+                ]
+              },
+              "callees": []
+            },
+            "pages": {
+              "query": "Account",
+              "found": true,
+              "ambiguous": false,
+              "matches": [
+                {
+                  "name": "Account",
+                  "file": "accounts.py",
+                  "module": "accounts",
+                  "kind": "class"
+                }
+              ],
+              "truncated": false,
+              "bounds": {
+                "matches": {
+                  "total": 1,
+                  "returned": 1,
+                  "truncated": false
+                },
+                "pages": {
+                  "total": 2,
+                  "returned": 2,
+                  "truncated": false
+                }
+              },
+              "symbol": {
+                "name": "Account",
+                "file": "accounts.py",
+                "module": "accounts",
+                "kind": "class"
+              },
+              "pages": [
+                {
+                  "kind": "entities",
+                  "id": "Account",
+                  "title": "Account",
+                  "canonical_path": "entities/Account.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://entities/Account",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "class",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "modules",
+                  "id": "accounts",
+                  "title": "accounts Module",
+                  "canonical_path": "modules/accounts.md",
+                  "source_path": "accounts.py",
+                  "role": "semantic",
+                  "mcp_uri": "llm-wiki://modules/accounts",
+                  "knowledge": {
+                    "availability": "ready",
+                    "reason": "all-projection-commitments-match",
+                    "freshness_disclosure": "evaluated (6 concepts)",
+                    "freshness_evaluated": true,
+                    "origin": "extracted",
+                    "evidence": "present",
+                    "verification": "untracked",
+                    "freshness": {
+                      "state": "current",
+                      "reason": "recorded-basis-matches-live-evaluation",
+                      "live_comparison_performed": true
+                    },
+                    "lifecycle": "unknown",
+                    "implementation": {
+                      "analysis_scope": "full-inventory",
+                      "documentation_changed": false,
+                      "limitations": [
+                        "captured-executable-syntax-only",
+                        "dependencies-and-runtime-behavior-not-evaluated",
+                        "authored-prose-correctness-not-evaluated"
+                      ],
+                      "live_comparison_performed": true,
+                      "reason": "matching-executable-syntax",
+                      "scope": "module",
+                      "source_changed": false,
+                      "state": "unchanged",
+                      "truncated": false
+                    },
+                    "maintenance": {
+                      "availability": "ready",
+                      "analysis_scope": "snapshot",
+                      "live_evaluation_performed": false,
+                      "native_prose_coherent": true,
+                      "requires_sync": false,
+                      "total": 1,
+                      "pending": 1,
+                      "acknowledged": 0,
+                      "unavailable": 1,
+                      "ambiguous": 0,
+                      "deleted": 0,
+                      "untracked": 0,
+                      "truncated": false,
+                      "limitations": [
+                        "ordinary-acknowledgment-is-not-human-governance-review",
+                        "captured-syntax-is-not-runtime-equivalence",
+                        "captured-prose-is-not-a-correctness-verdict",
+                        "snapshot-status-does-not-establish-current-acknowledgment"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "knowledge_selection": {
+                "unfiltered_total": 2,
+                "filtered_total": 2,
+                "returned": 2,
+                "truncated": false
+              }
+            }
+          }
+        },
+        "knowledge": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true
+        },
+        "ranking_policy": {
+          "name": "relevance-then-current-freshness",
+          "prefer_fresh": true,
+          "scope": "within-relevance-tiers",
+          "freshness_evaluated": true,
+          "budget_pressure": false,
+          "applied": false,
+          "filters_stale_content": false
+        },
+        "content": "# Context Budget: 158 / 8000 tokens\n\nRanking policy: current freshness is preferred only within existing relevance tiers (inactive because the full context fit the budget).\n\n## Changed Files (High Priority)\n\n### `accounts.py`\n\n- class **Account**\n  > A customer account.\n\n## Knowledge\n\n- availability: ready\n- reason: all-projection-commitments-match\n- freshness evaluated: yes\n- freshness: evaluated (6 concepts)\n\n## Documentation Graphs\n\n### Symbol `Account`\n\n- callers: not found, 0 item(s)\n- callees: not found, 0 item(s)\n- pages: found, 2 item(s)\n"
+      }
+    },
+    {
+      "name": "unknown-detail-level",
+      "valid": false,
+      "description": "Downgraded files name a supported detail level.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {
+          "accounts.py": "full"
+        },
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "neighbors-without-changed",
+      "valid": false,
+      "description": "Focus is in normalized form.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "neighbors"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "zero-budget",
+      "valid": false,
+      "description": "The budget is positive.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 0,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "used-over-budget",
+      "valid": false,
+      "description": "used_tokens never exceeds budget_tokens.",
+      "schema_valid": true,
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 9000,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {},
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "refinement-without-target",
+      "valid": false,
+      "description": "A freshness filter needs a surface or symbol filter.",
+      "schema_valid": true,
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": true,
+        "budget_tokens": 8000,
+        "used_tokens": 158,
+        "format": "json",
+        "focus": [
+          "all"
+        ],
+        "filters": {
+          "freshness": "current"
+        },
+        "truncated": false,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "bounds": {
+          "files": {
+            "total": 1,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "files": {
+          "accounts.py": {
+            "classes": [
+              {
+                "name": "Account",
+                "kind": "class",
+                "bases": [],
+                "line": 1,
+                "docstring": "A customer account.",
+                "decorators": [],
+                "attributes": [
+                  {
+                    "name": "balance",
+                    "line": 4,
+                    "type": "int",
+                    "required": true,
+                    "nullable": false
+                  }
+                ],
+                "methods": [],
+                "python_constructor_dispatch": {
+                  "schema_version": "llm-wiki-python-constructor-dispatch/v1",
+                  "eligible": true,
+                  "reasons": [],
+                  "blocked_members": []
+                }
+              }
+            ],
+            "functions": [],
+            "imports": [],
+            "python_bindings": {
+              "Account": {
+                "kind": "local",
+                "symbol": "Account"
+              }
+            },
+            "python_constructor_facts_version": 1,
+            "module_docstring": "",
+            "package": null,
+            "priority": "high",
+            "detail": "deep"
+          }
+        }
+      }
+    },
+    {
+      "name": "unknown-error-code",
+      "valid": false,
+      "description": "Errors use a published code.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "boom",
+          "message": "Unknown focus value: bogus",
+          "field": "focus"
+        }
+      }
+    },
+    {
+      "name": "error-without-message",
+      "valid": false,
+      "description": "An invalid request error has a message.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "invalid_request",
+          "field": "focus"
+        }
+      }
+    },
+    {
+      "name": "error-extra-field",
+      "valid": false,
+      "description": "Errors have a closed field set.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "invalid_request",
+          "message": "Unknown focus value: bogus",
+          "field": "focus",
+          "hint": "x"
+        }
+      }
+    },
+    {
+      "name": "knowledge-error-in-v1",
+      "valid": false,
+      "description": "Version 1 has no knowledge modes.",
+      "document": {
+        "protocol": "llm-wiki-context/v1",
+        "ok": false,
+        "error": {
+          "code": "knowledge-required-unavailable",
+          "field": "knowledge_mode",
+          "mode": "required",
+          "availability": "absent",
+          "reason": "knowledge-absent",
+          "fallback_evidence": [
+            "files"
+          ],
+          "recovery_command": "llm-wiki sync --src-dir src --wiki-dir docs/llm_wiki",
+          "mutation_permitted": false
+        }
+      }
+    }
+  ]
+}

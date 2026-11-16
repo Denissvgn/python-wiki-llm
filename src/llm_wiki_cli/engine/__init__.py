@@ -42,6 +42,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar
 
+from ..services.context_response_format import (
+    CONTEXT_RESPONSE_PROTOCOLS,
+    ContextResponseError,
+    validate_context_response,
+)
 from ..services.engine_events import (
     ENGINE_EVENT_SCHEMA_VERSION,
     EVENT_KINDS,
@@ -113,6 +118,7 @@ __all__ = [
     "ENGINE_CAPABILITIES_SCHEMA_VERSION",
     "ENGINE_EVENT_SCHEMA_VERSION",
     "BUILTIN_REFERENCE_PROVIDERS",
+    "CONTEXT_RESPONSE_PROTOCOLS",
     "BehaviorFactsProvider",
     "BootstrapContractError",
     "BootstrapRequest",
@@ -125,6 +131,7 @@ __all__ = [
     "CliContractProvider",
     "CodeContextSource",
     "ConceptKindSpec",
+    "ContextResponseError",
     "ContextSource",
     "ContractFileProvider",
     "DEFAULT_KINDS",
@@ -172,6 +179,7 @@ __all__ = [
     "UpgradeRequestError",
     "ValidatorRegistry",
     "current_host",
+    "validate_context_response",
     "validate_engine_event",
 ]
 

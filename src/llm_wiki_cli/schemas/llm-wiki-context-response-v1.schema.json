@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-context-response-v1.schema.json",
+  "title": "Context protocol response",
+  "description": "A response to an llm-wiki-context/v1 request: a successful budgeted context, or an error envelope. A response is valid only if it also passes checks a JSON Schema cannot express: its fields must form a valid normalized request, used_tokens must not exceed budget_tokens. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "const": "llm-wiki-context/v1"
+    },
+    "ok": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "ok",
+    "protocol"
+  ],
+  "if": {
+    "properties": {
+      "ok": {
+        "const": true
+      }
+    }
+  },
+  "then": {
+    "$ref": "#/$defs/success"
+  },
+  "else": {
+    "$ref": "#/$defs/error"
+  },
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "$ref": "#/$defs/text"
+        },
+        "module": {
+          "$ref": "#/$defs/text"
+        },
+        "symbol": {
+          "$ref": "#/$defs/text"
+        },
+        "entrypoint": {
+          "$ref": "#/$defs/text"
+        },
+        "surface": {
+          "$ref": "#/$defs/text"
+        },
+        "relationship_kind": {
+          "$ref": "#/$defs/text"
+        },
+        "freshness": {
+          "enum": [
+            "basis-incompatible",
+            "current",
+            "nonsemantic-source-change",
+            "source-changed",
+            "source-missing",
+            "unknown"
+          ]
+        },
+        "evidence": {
+          "enum": [
+            "invalid",
+            "missing",
+            "not-applicable",
+            "present",
+            "unknown"
+          ]
+        },
+        "relationship_origin": {
+          "enum": [
+            "extracted",
+            "governance",
+            "inferred",
+            "markdown"
+          ]
+        },
+        "relationship_resolution": {
+          "enum": [
+            "ambiguous",
+            "external",
+            "resolved",
+            "unresolved"
+          ]
+        },
+        "relationship_direction": {
+          "enum": [
+            "both",
+            "incoming",
+            "outgoing"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "focus": {
+      "enum": [
+        [
+          "all"
+        ],
+        [
+          "changed"
+        ],
+        [
+          "changed",
+          "neighbors"
+        ]
+      ]
+    },
+    "format": {
+      "enum": [
+        "json",
+        "markdown"
+      ]
+    },
+    "priority": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "success": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v1"
+        },
+        "ok": {
+          "const": true
+        },
+        "budget_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "used_tokens": {
+          "$ref": "#/$defs/count"
+        },
+        "format": {
+          "$ref": "#/$defs/format"
+        },
+        "focus": {
+          "$ref": "#/$defs/focus"
+        },
+        "filters": {
+          "$ref": "#/$defs/filters"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "omitted_files": {
+          "$ref": "#/$defs/strings"
+        },
+        "downgraded_files": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "deep",
+              "slim",
+              "summary"
+            ]
+          }
+        },
+        "bounds": {
+          "type": "object"
+        },
+        "warnings": {
+          "$ref": "#/$defs/strings"
+        },
+        "graphs": {
+          "type": "object"
+        },
+        "surface": {
+          "type": "object"
+        },
+        "knowledge": {
+          "type": "object"
+        },
+        "typed_graph": {
+          "type": "object"
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "content": {
+          "type": "string"
+        },
+        "prefer_fresh": {
+          "const": true
+        },
+        "ranking_policy": {
+          "type": "object"
+        },
+        "source_priorities": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/priority"
+          }
+        }
+      },
+      "required": [
+        "bounds",
+        "budget_tokens",
+        "downgraded_files",
+        "filters",
+        "focus",
+        "format",
+        "ok",
+        "omitted_files",
+        "protocol",
+        "truncated",
+        "used_tokens"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "json"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "files"
+            ],
+            "not": {
+              "required": [
+                "content"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "content"
+            ],
+            "not": {
+              "required": [
+                "files"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "prefer_fresh"
+            ]
+          },
+          "then": {
+            "required": [
+              "ranking_policy"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "ranking_policy"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v1"
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "invalid_request"
+            },
+            "message": {
+              "$ref": "#/$defs/text"
+            },
+            "field": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "error",
+        "ok",
+        "protocol"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
