@@ -395,7 +395,9 @@ def test_surface_index_schema_matches_the_page_registry(tmp_path):
     assert schema["$defs"]["page"]["properties"]["kind"]["enum"] == kinds
     assert list(schema["properties"]["counts"]["properties"]["by_kind"]["properties"]) == kinds
     media = schema["properties"]["counts"]["properties"]["assets"]["properties"]["by_media_type"]
-    assert set(media["properties"]) == set(build_asset_index(tmp_path).counts["by_media_type"])
+    media_types = build_asset_index(tmp_path).counts["by_media_type"]
+    assert isinstance(media_types, dict)
+    assert set(media["properties"]) == set(media_types)
     conditions = {
         rule["if"]["properties"]["kind"]["const"]: rule["then"]["properties"]
         for rule in schema["$defs"]["page"]["allOf"]
@@ -468,9 +470,10 @@ EXTRACT_PROJECT = {
 }
 
 
-def _check_extract_payload(payload):
+def _check_extract_payload(payload: object) -> dict[str, Any]:
     Draft202012Validator(_schema("llm-wiki-extract-v1.schema.json")).validate(payload)
     extract_format.validate_extract_payload(payload)
+    assert isinstance(payload, dict)
     return payload
 
 
