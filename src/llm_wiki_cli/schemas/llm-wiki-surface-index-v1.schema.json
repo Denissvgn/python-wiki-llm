@@ -1,0 +1,621 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-surface-index-v1.schema.json",
+  "title": "Wiki surface index",
+  "description": "The machine-readable index of a wiki's canonical pages, written as .llm-wiki-surface.json: each page's kind, coordinates, source file and internal links, plus page counts, media assets and user-flow entry points. An index is valid only if it also passes checks a JSON Schema cannot express: each page's canonical_path and mcp_uri follow from its kind and id, page ids are portable file names, pages follow kind order and then file name, links and asset pages name indexed pages, counts match the pages and assets they count, referenced assets are exactly those listed by page, and flows describe exactly the indexed flow pages in id order. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-surface-index/v1"
+    },
+    "source_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Digest of the source inventory and the rest of the index."
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "by_kind": {
+          "type": "object",
+          "properties": {
+            "index": {
+              "$ref": "#/$defs/count"
+            },
+            "log": {
+              "$ref": "#/$defs/count"
+            },
+            "entities": {
+              "$ref": "#/$defs/count"
+            },
+            "modules": {
+              "$ref": "#/$defs/count"
+            },
+            "workflows": {
+              "$ref": "#/$defs/count"
+            },
+            "guides": {
+              "$ref": "#/$defs/count"
+            },
+            "flows": {
+              "$ref": "#/$defs/count"
+            },
+            "infrastructure": {
+              "$ref": "#/$defs/count"
+            },
+            "api-contracts": {
+              "$ref": "#/$defs/count"
+            },
+            "dependencies": {
+              "$ref": "#/$defs/count"
+            },
+            "load-order": {
+              "$ref": "#/$defs/count"
+            }
+          },
+          "required": [
+            "api-contracts",
+            "dependencies",
+            "entities",
+            "flows",
+            "guides",
+            "index",
+            "infrastructure",
+            "load-order",
+            "log",
+            "modules",
+            "workflows"
+          ],
+          "additionalProperties": false
+        },
+        "dependency_architecture": {
+          "$ref": "#/$defs/count"
+        },
+        "assets": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "referenced": {
+              "$ref": "#/$defs/count"
+            },
+            "unreferenced": {
+              "$ref": "#/$defs/count"
+            },
+            "by_media_type": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "$ref": "#/$defs/count"
+                },
+                "video": {
+                  "$ref": "#/$defs/count"
+                },
+                "other": {
+                  "$ref": "#/$defs/count"
+                }
+              },
+              "required": [
+                "image",
+                "other",
+                "video"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "by_media_type",
+            "referenced",
+            "total",
+            "unreferenced"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "assets",
+        "by_kind",
+        "dependency_architecture",
+        "total"
+      ],
+      "additionalProperties": false
+    },
+    "dependency_pages": {
+      "type": "object",
+      "properties": {
+        "dependencies": {
+          "type": "boolean"
+        },
+        "load_order": {
+          "type": "boolean"
+        },
+        "count": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "count",
+        "dependencies",
+        "load_order"
+      ],
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "by_page": {
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/asset_paths"
+              },
+              {
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "referenced": {
+          "$ref": "#/$defs/asset_paths"
+        },
+        "unreferenced": {
+          "$ref": "#/$defs/asset_paths"
+        }
+      },
+      "required": [
+        "by_page",
+        "referenced",
+        "unreferenced"
+      ],
+      "additionalProperties": false
+    },
+    "flows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/flow"
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/page"
+      }
+    }
+  },
+  "required": [
+    "assets",
+    "counts",
+    "dependency_pages",
+    "flows",
+    "pages",
+    "schema_version",
+    "source_hash"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "path_or_null": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "asset_path": {
+      "type": "string",
+      "pattern": "^assets(?:/(?!\\.\\.?(?:/|$))[^/\\\\]+)+$"
+    },
+    "asset_paths": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset_path"
+      },
+      "uniqueItems": true
+    },
+    "page": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/text"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "canonical_path": {
+          "$ref": "#/$defs/text"
+        },
+        "source_path": {
+          "$ref": "#/$defs/path_or_null"
+        },
+        "role": {
+          "enum": [
+            "generated",
+            "mixed",
+            "semantic"
+          ]
+        },
+        "mcp_uri": {
+          "$ref": "#/$defs/text"
+        },
+        "outgoing_internal_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "canonical_path",
+        "id",
+        "kind",
+        "mcp_uri",
+        "outgoing_internal_links",
+        "role",
+        "source_path",
+        "title"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "index"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "const": "index"
+              },
+              "canonical_path": {
+                "const": "index.md"
+              },
+              "mcp_uri": {
+                "const": "llm-wiki://index"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "log"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "generated"
+              },
+              "id": {
+                "const": "log"
+              },
+              "canonical_path": {
+                "const": "log.md"
+              },
+              "mcp_uri": {
+                "const": "llm-wiki://log"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "entities"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "semantic"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^entities/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://entities/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "modules"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "semantic"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^modules/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://modules/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "workflows"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^workflows/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://workflows/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "guides"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "semantic"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^guides/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://guides/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "flows"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^flows/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://flows/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "infrastructure"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+              },
+              "canonical_path": {
+                "pattern": "^infrastructure/(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+\\.md$"
+              },
+              "mcp_uri": {
+                "pattern": "^llm-wiki://infrastructure/(?:[A-Za-z0-9_.-]|%2[89])+$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "api-contracts"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "const": "api-contracts"
+              },
+              "canonical_path": {
+                "const": "api-contracts.md"
+              },
+              "mcp_uri": {
+                "const": "llm-wiki://api-contracts"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "dependencies"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "const": "dependencies"
+              },
+              "canonical_path": {
+                "const": "dependencies.md"
+              },
+              "mcp_uri": {
+                "const": "llm-wiki://dependencies"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "load-order"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "mixed"
+              },
+              "id": {
+                "const": "load-order"
+              },
+              "canonical_path": {
+                "const": "load-order.md"
+              },
+              "mcp_uri": {
+                "const": "llm-wiki://load-order"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "flow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+        },
+        "category": {
+          "type": "string"
+        },
+        "entry_point": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source_path": {
+              "$ref": "#/$defs/path_or_null"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "label",
+            "source_path",
+            "symbol"
+          ],
+          "additionalProperties": false
+        },
+        "detector": {
+          "description": "Entry point detector, copied from the extraction."
+        },
+        "language": {
+          "description": "Source language, copied from the extraction."
+        },
+        "routes": {
+          "description": "Routes served by the entry point, copied from the extraction."
+        },
+        "evidence": {
+          "description": "Flow analysis evidence, copied from the extraction."
+        }
+      },
+      "required": [
+        "category",
+        "entry_point",
+        "id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

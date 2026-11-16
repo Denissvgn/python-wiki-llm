@@ -1,0 +1,5183 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-surface-index/v1",
+  "schema": "llm-wiki-surface-index-v1.schema.json",
+  "cases": [
+    {
+      "name": "module-wiki",
+      "valid": true,
+      "description": "A code wiki with module, dependency and load-order pages.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "guide-with-assets",
+      "valid": true,
+      "description": "A guide page with one referenced and two unreferenced assets.",
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "http-flow",
+      "valid": true,
+      "description": "An HTTP flow with routes, evidence and an API contracts page.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "entry_point": {
+              "label": "list_items",
+              "source_path": "app.py",
+              "symbol": "list_items"
+            },
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-list_items",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "flow-without-detector",
+      "valid": true,
+      "description": "A flow whose entry point carries no detector metadata.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 1,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 1,
+            "load-order": 1,
+            "log": 0,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 7
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [
+          {
+            "category": "cli",
+            "entry_point": {
+              "label": "cli-run",
+              "source_path": "pkg/core.py",
+              "symbol": "main"
+            },
+            "id": "cli-run"
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "flows/cli-run.md",
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "entities/User.md",
+            "id": "User",
+            "kind": "entities",
+            "mcp_uri": "llm-wiki://entities/User",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "pkg/core.py",
+            "title": "User"
+          },
+          {
+            "canonical_path": "modules/core.md",
+            "id": "core",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/core",
+            "outgoing_internal_links": [
+              "entities/User.md"
+            ],
+            "role": "semantic",
+            "source_path": "pkg/core.py",
+            "title": "core Module"
+          },
+          {
+            "canonical_path": "flows/cli-run.md",
+            "id": "cli-run",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/cli-run",
+            "outgoing_internal_links": [
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": "pkg/core.py",
+            "title": "cli-run"
+          },
+          {
+            "canonical_path": "infrastructure/Dockerfile.md",
+            "id": "Dockerfile",
+            "kind": "infrastructure",
+            "mcp_uri": "llm-wiki://infrastructure/Dockerfile",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": "Dockerfile",
+            "title": "Dockerfile"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:cd325505ce543404741653395ac03e94239ec421a392ba39a551b6ced2131147"
+      }
+    },
+    {
+      "name": "workflow-pages",
+      "valid": true,
+      "description": "Workflow pages and two entities that share a name.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 2,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 1
+          },
+          "dependency_architecture": 0,
+          "total": 6
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "entities/Parser.md",
+            "id": "Parser",
+            "kind": "entities",
+            "mcp_uri": "llm-wiki://entities/Parser",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "tests/test_parser.py",
+            "title": "Parser"
+          },
+          {
+            "canonical_path": "entities/Parser_2.md",
+            "id": "Parser_2",
+            "kind": "entities",
+            "mcp_uri": "llm-wiki://entities/Parser_2",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "tests/test_parser.py",
+            "title": "Parser_2"
+          },
+          {
+            "canonical_path": "modules/test_parser.md",
+            "id": "test_parser",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/test_parser",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "tests/test_parser.py",
+            "title": "test_parser Module"
+          },
+          {
+            "canonical_path": "workflows/onboarding.md",
+            "id": "onboarding",
+            "kind": "workflows",
+            "mcp_uri": "llm-wiki://workflows/onboarding",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "onboarding"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:7d2c7af5bbab46facd3f06b237f9e2deaf1675e4e38b865843297b16ef982af1"
+      }
+    },
+    {
+      "name": "index-only",
+      "valid": true,
+      "description": "A wiki with only its index page.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The index names this format.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v2",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "The index has a closed field set.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b",
+        "generated_at": "2026-11-16"
+      }
+    },
+    {
+      "name": "missing-source-hash",
+      "valid": false,
+      "description": "Every index commits its source inventory.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1"
+      }
+    },
+    {
+      "name": "short-source-hash",
+      "valid": false,
+      "description": "source_hash is a full sha256 digest.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:abc"
+      }
+    },
+    {
+      "name": "unknown-page-kind",
+      "valid": false,
+      "description": "Page kinds are the canonical registry.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "tests",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "wrong-page-role",
+      "valid": false,
+      "description": "A page's role follows from its kind.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "root-page-id",
+      "valid": false,
+      "description": "A root page's id is its kind.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "changes",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "root-page-path",
+      "valid": false,
+      "description": "A root page has a fixed path.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "history.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "page-extra-field",
+      "valid": false,
+      "description": "Pages have a closed field set.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module",
+            "summary": "x"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "page-missing-title",
+      "valid": false,
+      "description": "Every page has a title.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "empty-title",
+      "valid": false,
+      "description": "Titles are non-empty.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": ""
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "page-id-with-slash",
+      "valid": false,
+      "description": "Page ids are single file names.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/pkg/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/pkg/solo.md",
+            "id": "pkg/solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/pkg/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/pkg/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/pkg/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "hidden-page-id",
+      "valid": false,
+      "description": "Page ids do not start with a dot.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/.solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/.solo.md",
+            "id": ".solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/.solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/.solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/.solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "links-not-unique",
+      "valid": false,
+      "description": "Links are listed once.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "by-kind-missing-kind",
+      "valid": false,
+      "description": "by_kind counts every page kind.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "negative-count",
+      "valid": false,
+      "description": "Counts are non-negative.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": -1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "unknown-media-type",
+      "valid": false,
+      "description": "Media types are image, video and other.",
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0,
+              "audio": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "dependency-flag-not-boolean",
+      "valid": false,
+      "description": "Dependency page flags are booleans.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": 1
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "asset-outside-assets",
+      "valid": false,
+      "description": "Indexed assets live under assets/.",
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "images/home.png"
+            ]
+          },
+          "referenced": [
+            "images/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "asset-parent-segment",
+      "valid": false,
+      "description": "Asset paths have no parent segments.",
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/../notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "empty-asset-list",
+      "valid": false,
+      "description": "A page in by_page lists its assets.",
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": []
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "flow-extra-field",
+      "valid": false,
+      "description": "Flows have a closed field set.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "entry_point": {
+              "label": "list_items",
+              "source_path": "app.py",
+              "symbol": "list_items"
+            },
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-list_items",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ],
+            "owner": "team"
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "flow-missing-entry-point",
+      "valid": false,
+      "description": "Every flow names its entry point.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-list_items",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "entry-point-extra-field",
+      "valid": false,
+      "description": "Entry points have a closed field set.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "entry_point": {
+              "label": "list_items",
+              "source_path": "app.py",
+              "symbol": "list_items",
+              "file": "app.py"
+            },
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-list_items",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "entry-point-symbol-not-string",
+      "valid": false,
+      "description": "An entry point symbol is a string or null.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "entry_point": {
+              "label": "list_items",
+              "source_path": "app.py",
+              "symbol": 3
+            },
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-list_items",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "total-miscounted",
+      "valid": false,
+      "description": "counts.total counts the pages.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "kind-miscounted",
+      "valid": false,
+      "description": "by_kind counts each kind's pages.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 2,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "dependency-architecture-miscounted",
+      "valid": false,
+      "description": "dependency_architecture counts dependency and load-order pages.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 1,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 1,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "dependency-flag-wrong",
+      "valid": false,
+      "description": "A dependency page flag says whether the page is indexed.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "dependency-count-differs",
+      "valid": false,
+      "description": "dependency_pages.count repeats counts.dependency_architecture.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 1
+        },
+        "dependency_pages": {
+          "count": 1,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:74a3f3223b36ad1554e99a6dae0c0a6cbc3054967b6210acea9c0ac1e1d4c01b"
+      }
+    },
+    {
+      "name": "path-not-from-id",
+      "valid": false,
+      "description": "A page's path follows from its id.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/other.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "uri-not-from-id",
+      "valid": false,
+      "description": "A page's MCP URI follows from its id.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/other",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "reserved-page-id",
+      "valid": false,
+      "description": "Page ids are portable file names.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/CON.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/CON.md",
+            "id": "CON",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/CON",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/CON.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/CON.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "trailing-dot-page-id",
+      "valid": false,
+      "description": "Page ids do not end with a dot.",
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo..md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo..md",
+            "id": "solo.",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo.",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo..md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo..md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "source-path-not-portable",
+      "valid": false,
+      "description": "Source paths are portable repository-relative paths.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "pkg/../solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "pages-out-of-order",
+      "valid": false,
+      "description": "Pages follow kind order, then file name.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "link-to-unindexed-page",
+      "valid": false,
+      "description": "Links name indexed pages.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "dependencies.md",
+              "load-order.md",
+              "log.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/ghost.md",
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "links-unsorted",
+      "valid": false,
+      "description": "Links are sorted case-insensitively.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 0,
+            "flows": 0,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 1,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "modules/solo.md",
+              "log.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/solo.md",
+            "id": "solo",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/solo",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "solo.py",
+            "title": "solo Module"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [
+              "modules/solo.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:f7d0aaa845d20d61ebad12c9b811f0b89571a6421170ca5df39353705c42dc4f"
+      }
+    },
+    {
+      "name": "asset-total-miscounted",
+      "valid": false,
+      "description": "The asset total is referenced plus unreferenced.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 3,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 4,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "media-types-miscounted",
+      "valid": false,
+      "description": "Media type counts add up to the asset total.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 2,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "referenced-not-by-page",
+      "valid": false,
+      "description": "Referenced assets are exactly those listed by page.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/extra.png",
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "unreferenced-overlaps-referenced",
+      "valid": false,
+      "description": "An asset is referenced or unreferenced, not both.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/home.png",
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "unreferenced-miscounted",
+      "valid": false,
+      "description": "counts.assets.unreferenced counts the unreferenced assets.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 2,
+            "total": 3,
+            "unreferenced": 1
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "asset-page-not-indexed",
+      "valid": false,
+      "description": "Assets are listed under indexed pages.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/other.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/notes.txt",
+            "assets/guides/tour/README.md"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "assets-unsorted",
+      "valid": false,
+      "description": "Asset lists are sorted case-insensitively.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {
+            "guides/tour.md": [
+              "assets/guides/tour/home.png"
+            ]
+          },
+          "referenced": [
+            "assets/guides/tour/home.png"
+          ],
+          "unreferenced": [
+            "assets/guides/tour/README.md",
+            "assets/guides/tour/notes.txt"
+          ]
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 1,
+              "other": 2,
+              "video": 0
+            },
+            "referenced": 1,
+            "total": 3,
+            "unreferenced": 2
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 0,
+            "guides": 1,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 0,
+            "modules": 0,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 2
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "guides/tour.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Index"
+          },
+          {
+            "canonical_path": "guides/tour.md",
+            "id": "tour",
+            "kind": "guides",
+            "mcp_uri": "llm-wiki://guides/tour",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": null,
+            "title": "Tour"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:3947409f9817534e5f4c8fedd9e3c0fd16896ea367a9628af1f14b7c1c57200f"
+      }
+    },
+    {
+      "name": "flow-without-page",
+      "valid": false,
+      "description": "Each flow describes an indexed flow page.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [
+          {
+            "category": "http",
+            "detector": "builtin",
+            "entry_point": {
+              "label": "list_items",
+              "source_path": "app.py",
+              "symbol": "list_items"
+            },
+            "evidence": {
+              "data_flow": null,
+              "flow": {
+                "modules_touched": [
+                  "app.py"
+                ],
+                "step_count": 1,
+                "truncated": false
+              }
+            },
+            "id": "http-other",
+            "language": "python",
+            "routes": [
+              {
+                "method": "GET",
+                "operation_id": "listItems",
+                "path": "/items"
+              }
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "flow-page-without-flow",
+      "valid": false,
+      "description": "Every indexed flow page has a flow.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 1,
+            "dependencies": 0,
+            "entities": 0,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 0,
+            "load-order": 0,
+            "log": 1,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 0,
+          "total": 5
+        },
+        "dependency_pages": {
+          "count": 0,
+          "dependencies": false,
+          "load_order": false
+        },
+        "flows": [],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "flows/http-list_items.md",
+              "log.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "log.md",
+            "id": "log",
+            "kind": "log",
+            "mcp_uri": "llm-wiki://log",
+            "outgoing_internal_links": [],
+            "role": "generated",
+            "source_path": null,
+            "title": "Architectural Log"
+          },
+          {
+            "canonical_path": "modules/app.md",
+            "id": "app",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/app",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "app.py",
+            "title": "app Module"
+          },
+          {
+            "canonical_path": "flows/http-list_items.md",
+            "id": "http-list_items",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/http-list_items",
+            "outgoing_internal_links": [
+              "api-contracts.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": "app.py",
+            "title": "list_items"
+          },
+          {
+            "canonical_path": "api-contracts.md",
+            "id": "api-contracts",
+            "kind": "api-contracts",
+            "mcp_uri": "llm-wiki://api-contracts",
+            "outgoing_internal_links": [
+              "flows/http-list_items.md",
+              "modules/app.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "API contracts"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:fe9ebba6cfc5e6129b941b3cc1eb9bbe6539ff6a365ccf5d68e1fd832b30321e"
+      }
+    },
+    {
+      "name": "entry-point-source-not-portable",
+      "valid": false,
+      "description": "Entry point source paths are repository-relative.",
+      "schema_valid": true,
+      "document": {
+        "assets": {
+          "by_page": {},
+          "referenced": [],
+          "unreferenced": []
+        },
+        "counts": {
+          "assets": {
+            "by_media_type": {
+              "image": 0,
+              "other": 0,
+              "video": 0
+            },
+            "referenced": 0,
+            "total": 0,
+            "unreferenced": 0
+          },
+          "by_kind": {
+            "api-contracts": 0,
+            "dependencies": 1,
+            "entities": 1,
+            "flows": 1,
+            "guides": 0,
+            "index": 1,
+            "infrastructure": 1,
+            "load-order": 1,
+            "log": 0,
+            "modules": 1,
+            "workflows": 0
+          },
+          "dependency_architecture": 2,
+          "total": 7
+        },
+        "dependency_pages": {
+          "count": 2,
+          "dependencies": true,
+          "load_order": true
+        },
+        "flows": [
+          {
+            "category": "cli",
+            "entry_point": {
+              "label": "cli-run",
+              "source_path": "/abs/pkg/core.py",
+              "symbol": "main"
+            },
+            "id": "cli-run"
+          }
+        ],
+        "pages": [
+          {
+            "canonical_path": "index.md",
+            "id": "index",
+            "kind": "index",
+            "mcp_uri": "llm-wiki://index",
+            "outgoing_internal_links": [
+              "flows/cli-run.md",
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "LLM Wiki Index"
+          },
+          {
+            "canonical_path": "entities/User.md",
+            "id": "User",
+            "kind": "entities",
+            "mcp_uri": "llm-wiki://entities/User",
+            "outgoing_internal_links": [],
+            "role": "semantic",
+            "source_path": "pkg/core.py",
+            "title": "User"
+          },
+          {
+            "canonical_path": "modules/core.md",
+            "id": "core",
+            "kind": "modules",
+            "mcp_uri": "llm-wiki://modules/core",
+            "outgoing_internal_links": [
+              "entities/User.md"
+            ],
+            "role": "semantic",
+            "source_path": "pkg/core.py",
+            "title": "core Module"
+          },
+          {
+            "canonical_path": "flows/cli-run.md",
+            "id": "cli-run",
+            "kind": "flows",
+            "mcp_uri": "llm-wiki://flows/cli-run",
+            "outgoing_internal_links": [
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": "pkg/core.py",
+            "title": "cli-run"
+          },
+          {
+            "canonical_path": "infrastructure/Dockerfile.md",
+            "id": "Dockerfile",
+            "kind": "infrastructure",
+            "mcp_uri": "llm-wiki://infrastructure/Dockerfile",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": "Dockerfile",
+            "title": "Dockerfile"
+          },
+          {
+            "canonical_path": "dependencies.md",
+            "id": "dependencies",
+            "kind": "dependencies",
+            "mcp_uri": "llm-wiki://dependencies",
+            "outgoing_internal_links": [
+              "modules/core.md"
+            ],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Dependencies"
+          },
+          {
+            "canonical_path": "load-order.md",
+            "id": "load-order",
+            "kind": "load-order",
+            "mcp_uri": "llm-wiki://load-order",
+            "outgoing_internal_links": [],
+            "role": "mixed",
+            "source_path": null,
+            "title": "Load order"
+          }
+        ],
+        "schema_version": "llm-wiki-surface-index/v1",
+        "source_hash": "sha256:cd325505ce543404741653395ac03e94239ec421a392ba39a551b6ced2131147"
+      }
+    }
+  ]
+}

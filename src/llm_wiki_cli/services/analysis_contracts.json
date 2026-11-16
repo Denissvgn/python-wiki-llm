@@ -284,6 +284,7 @@
     "services/storage_receipts.py",
     "services/storage_sort.py",
     "services/storage_spool.py",
+    "services/surface_index_format.py",
     "services/sync_analysis.py",
     "services/sync_analysis_cache.py",
     "services/sync_analysis_storage.py",

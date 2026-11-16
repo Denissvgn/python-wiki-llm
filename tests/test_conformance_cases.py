@@ -21,7 +21,11 @@ from llm_wiki_cli.services import (
     search_lexical,
     search_rank,
     search_service,
+    surface_index_format,
+    wiki_surface,
+    wiki_surface_index,
 )
+from llm_wiki_cli.services.wiki_media import build_asset_index
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     CONTEXT_PACKET_SCHEMA_VERSION,
@@ -63,6 +67,7 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
         query_result_format.validate_documentation_query_result
     ),
     query_result_format.SEARCH_RESULT_SCHEMA_VERSION: query_result_format.validate_search_result,
+    surface_index_format.SURFACE_INDEX_SCHEMA_VERSION: surface_index_format.validate_surface_index,
 }
 
 
@@ -375,3 +380,55 @@ def test_source_indexed_search_matches_its_schema(orders_wiki):
     assert "source_indexing" in document
     Draft202012Validator(_schema("llm-wiki-search-result-v1.schema.json")).validate(document)
     query_result_format.validate_search_result(document)
+
+
+def test_surface_index_schema_matches_the_page_registry(tmp_path):
+    schema = _schema("llm-wiki-surface-index-v1.schema.json")
+    kinds = [entry.kind.value for entry in wiki_surface.iter_page_kinds()]
+
+    assert schema["properties"]["schema_version"]["const"] == wiki_surface_index.WIKI_SURFACE_INDEX_SCHEMA_VERSION
+    assert schema["$defs"]["page"]["properties"]["kind"]["enum"] == kinds
+    assert list(schema["properties"]["counts"]["properties"]["by_kind"]["properties"]) == kinds
+    media = schema["properties"]["counts"]["properties"]["assets"]["properties"]["by_media_type"]
+    assert set(media["properties"]) == set(build_asset_index(tmp_path).counts["by_media_type"])
+    conditions = {
+        rule["if"]["properties"]["kind"]["const"]: rule["then"]["properties"]
+        for rule in schema["$defs"]["page"]["allOf"]
+    }
+    assert list(conditions) == kinds
+    for entry in wiki_surface.iter_page_kinds():
+        rule = conditions[entry.kind.value]
+        assert rule["role"] == {"const": entry.role.value}
+        if entry.requires_page_id:
+            assert rule["canonical_path"]["pattern"].startswith(f"^{entry.directory}/")
+            assert rule["mcp_uri"]["pattern"].startswith(f"^llm-wiki://{entry.mcp_uri_kind}/")
+        else:
+            assert rule["canonical_path"] == {"const": wiki_surface.canonical_path(entry.kind)}
+            assert rule["mcp_uri"] == {"const": wiki_surface.mcp_uri(entry.kind)}
+
+
+def _check_surface_index(wiki):
+    document = json.loads((wiki / wiki_surface_index.SURFACE_INDEX_FILENAME).read_text(encoding="utf-8"))
+    Draft202012Validator(_schema("llm-wiki-surface-index-v1.schema.json")).validate(document)
+    surface_index_format.validate_surface_index(document)
+    return document
+
+
+def test_written_surface_indexes_match_their_schema(orders_wiki):
+    wiki = orders_wiki / "docs/llm_wiki"
+    bootstrapped = _check_surface_index(wiki)
+    assert {"entities/Order.md", "modules/orders.md"} <= {page["canonical_path"] for page in bootstrapped["pages"]}
+
+    (wiki / "guides").mkdir(exist_ok=True)
+    (wiki / "guides/tour.md").write_text("# Tour\n\n![Home](../assets/guides/tour/home.png)\n", encoding="utf-8")
+    (wiki / "assets/guides/tour").mkdir(parents=True)
+    (wiki / "assets/guides/tour/home.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (wiki / "assets/guides/tour/notes.txt").write_text("draft\n", encoding="utf-8")
+    (orders_wiki / "src/orders.py").write_text(ORDERS + "\n\nclass Refund:\n    amount: int\n", encoding="utf-8")
+    api.sync_wiki("src", "docs/llm_wiki")
+
+    synced = _check_surface_index(wiki)
+    assert synced["assets"]["by_page"] == {"guides/tour.md": ["assets/guides/tour/home.png"]}
+    assert synced["assets"]["unreferenced"] == ["assets/guides/tour/notes.txt"]
+    assert "entities/Refund.md" in {page["canonical_path"] for page in synced["pages"]}
+

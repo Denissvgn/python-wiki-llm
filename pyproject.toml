@@ -106,6 +106,7 @@ where = ["src"]
     "schemas/llm-wiki-context-response-v2.schema.json",
     "schemas/llm-wiki-documentation-query-v1.schema.json",
     "schemas/llm-wiki-search-result-v1.schema.json",
+    "schemas/llm-wiki-surface-index-v1.schema.json",
     "schemas/conformance/*.cases.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",

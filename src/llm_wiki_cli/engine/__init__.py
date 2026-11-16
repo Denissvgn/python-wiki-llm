@@ -54,6 +54,11 @@ from ..services.query_result_format import (
     validate_documentation_query_result,
     validate_search_result,
 )
+from ..services.surface_index_format import (
+    SURFACE_INDEX_SCHEMA_VERSION,
+    SurfaceIndexError,
+    validate_surface_index,
+)
 from ..services.engine_events import (
     ENGINE_EVENT_SCHEMA_VERSION,
     EVENT_KINDS,
@@ -176,6 +181,8 @@ __all__ = [
     "QueryResultError",
     "ReferenceProvider",
     "SEARCH_RESULT_SCHEMA_VERSION",
+    "SURFACE_INDEX_SCHEMA_VERSION",
+    "SurfaceIndexError",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",
@@ -193,6 +200,7 @@ __all__ = [
     "validate_documentation_query_result",
     "validate_engine_event",
     "validate_search_result",
+    "validate_surface_index",
 ]
 
 HelperPreparation = Literal["auto", "never"]

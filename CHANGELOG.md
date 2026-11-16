@@ -109,6 +109,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   payload field; the search schema covers each search mode.
   `validate_documentation_query_result()` and `validate_search_result()` in
   `llm_wiki_cli.engine` also check the bound arithmetic a schema cannot.
+- The wiki surface index (`.llm-wiki-surface.json`) has a JSON Schema:
+  `llm-wiki-surface-index-v1.schema.json`. `validate_surface_index()` in
+  `llm_wiki_cli.engine` also checks what a schema cannot: each page's path
+  and MCP URI follow from its kind and id, pages are in canonical order,
+  links and assets name indexed pages, counts match what they count, and
+  flows describe exactly the indexed flow pages.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also
