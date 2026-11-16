@@ -439,4 +439,5 @@ def test_pack_values_are_checked() -> None:
         "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
         "reference_providers": ["llm-wiki-cli", "llm-wiki-behavior", "contract-file"],
         "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+        "extractors": {},
     }

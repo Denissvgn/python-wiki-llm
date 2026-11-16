@@ -18,7 +18,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Any, Callable, Iterable
 
 from .extractor_registry import EXTRACTOR_REGISTRY
 from .path_policy import PathValidationError, validate_source_paths, validate_source_root
@@ -27,7 +27,7 @@ from ..extractors.common import (
     filter_bundled_source_inventory,
     normalize_include_tests,
 )
-from .domain_pack import current_pack, uses_default_pack
+from .domain_pack import current_pack, pack_extractor, uses_default_pack
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.haskell_extractor import HaskellExtractionRequest
 
@@ -107,7 +107,7 @@ from .source_snapshot import (
     unsupported_source_summary,
 )
 from .yaml_syntax import load_yaml_documents
-from .host import emit
+from .host import HostCapabilityError, current_host, emit
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -116,7 +116,13 @@ def _instantiate_extractor(entry_point: str):
     """Instantiate an extractor without using the shared instance cache."""
     module_path, class_name = entry_point.rsplit(":", 1)
     if entry_point not in EXTRACTOR_REGISTRY.values():
-        return load_entry_point(entry_point)()
+        if entry_point not in current_pack().extractors.values():
+            return load_entry_point(entry_point)()
+        # The host built the pack; its extractors are importable host code.
+        target: Any = importlib.import_module(module_path)
+        for attribute in class_name.split("."):
+            target = getattr(target, attribute)
+        return target()
     module = importlib.import_module(module_path)
     return getattr(module, class_name)()
 
@@ -841,6 +847,7 @@ def _prepare_inventory_build_context(
         plugin_lock_path = None
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
+    registry.update(current_pack().extractors)
     source_file_by_path = _source_files_by_path(source_snapshot)
     current_pack().helper_toolchain.prepare(
         source_snapshot, registry, only_files=request.only_files,
@@ -1288,6 +1295,9 @@ def _build_extraction_kwargs(
     }
     if is_builtin:
         kwargs = _build_builtin_extraction_kwargs(context, language, fresh_source_files)
+    elif pack_extractor(language, context.registry.get(language, "")):
+        # A pack extractor reads exactly the files the pack classified.
+        kwargs["only_files"] = list(fresh_source_files)
     if language == "python":
         kwargs["include_empty"] = context.request.include_empty
         if is_builtin:
@@ -1646,7 +1656,7 @@ def _git_changed_files(
     Returns None if git is unavailable or there are no commits.
     """
     try:
-        repository = subprocess.run(
+        repository = current_host().run(
             ["git", "rev-parse", "--show-toplevel"],
             input="",
             capture_output=True,
@@ -1670,7 +1680,7 @@ def _git_changed_files(
             if source_prefix_path.as_posix() == "."
             else source_prefix_path.as_posix()
         )
-        result = subprocess.run(
+        result = current_host().run(
             ["git", "diff", "--name-status", "-z", "HEAD~1..HEAD"],
             input="",
             capture_output=True,
@@ -1701,6 +1711,7 @@ def _git_changed_files(
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
         FileNotFoundError,
+        HostCapabilityError,
     ):
         return None
 
@@ -1809,7 +1820,7 @@ def filter_source_diff(
     source_prefix: str | None = None
     if source_snapshot is not None:
         try:
-            repository = subprocess.run(
+            repository = current_host().run(
                 ["git", "rev-parse", "--show-toplevel"],
                 input="",
                 capture_output=True,

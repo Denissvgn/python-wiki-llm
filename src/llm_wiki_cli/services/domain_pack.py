@@ -4,6 +4,9 @@ A :class:`DomainPack` bundles the domain decisions the engine asks about:
 
 * a :class:`SourceClassifier` decides which repository files are sources and
   which source kind (for code: language) each one is;
+* ``extractors`` name the extractor of each source kind the pack adds, as
+  ``"module:attribute"`` entry points the host can import. Built-in languages
+  keep their bundled extractors;
 * a :class:`PageNamer` names the module and entity pages generated from an
   inventory. Page kinds themselves are fixed by the knowledge format;
 * a :class:`PageRenderer` writes the Markdown of every generated page: module
@@ -46,6 +49,7 @@ ranking, so packets refuse to seal under a pack that replaces it.
 
 from __future__ import annotations
 
+import re
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
@@ -716,6 +720,32 @@ class NoHelperToolchain(HelperToolchain):
         return ()
 
 
+_ENTRY_POINT = re.compile(r"[A-Za-z_][\w.]*:[A-Za-z_][\w.]*")
+
+
+def _check_extractors(extractors: object, classifier: SourceClassifier) -> Mapping[str, str]:
+    if not isinstance(extractors, Mapping):
+        raise TypeError("extractors must map source kinds to entry points")
+    checked: dict[str, str] = {}
+    if not extractors:
+        # Declared kinds are only needed to check entries; asking a code
+        # classifier for them would load the extractors.
+        return MappingProxyType(checked)
+    declared = classifier.source_kinds()
+    for kind, entry_point in sorted(extractors.items()):
+        if kind not in declared:
+            raise ValueError(f"extractor source kind {kind!r} is not declared by the classifier")
+        if not isinstance(entry_point, str) or not _ENTRY_POINT.fullmatch(entry_point):
+            raise ValueError(f"extractor for {kind!r} must be a 'module:attribute' entry point")
+        checked[kind] = entry_point
+    return MappingProxyType(checked)
+
+
+def pack_extractor(source_kind: str, entry_point: str) -> bool:
+    """Whether the active pack extracts ``source_kind`` with ``entry_point``."""
+    return current_pack().extractors.get(source_kind) == entry_point
+
+
 def _qualified_type_name(value: object) -> str:
     kind = type(value)
     return f"{kind.__module__}.{kind.__qualname__}"
@@ -733,6 +763,7 @@ class DomainPack:
     context_source: ContextSource = field(default_factory=CodeContextSource)
     reference_providers: tuple[ReferenceProvider, ...] = BUILTIN_REFERENCE_PROVIDERS
     helper_toolchain: HelperToolchain = field(default_factory=BundledHelperToolchain)
+    extractors: Mapping[str, str] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -747,6 +778,7 @@ class DomainPack:
             raise TypeError("context_source must implement ContextSource")
         if not isinstance(self.helper_toolchain, HelperToolchain):
             raise TypeError("helper_toolchain must be a HelperToolchain")
+        object.__setattr__(self, "extractors", _check_extractors(self.extractors, self.classifier))
         object.__setattr__(
             self, "reference_providers", check_reference_providers(self.reference_providers)
         )
@@ -772,6 +804,10 @@ class DomainPack:
         kept = tuple(item for item in self.reference_providers if item.kind != provider.kind)
         return replace(self, reference_providers=(*kept, provider))
 
+    def with_extractor(self, source_kind: str, entry_point: str) -> DomainPack:
+        """A copy of this pack that extracts ``source_kind`` with ``entry_point``."""
+        return replace(self, extractors={**self.extractors, source_kind: entry_point})
+
     def with_helper_toolchain(self, helper_toolchain: HelperToolchain) -> DomainPack:
         """A copy of this pack that prepares analysis helpers with ``helper_toolchain``."""
         return replace(self, helper_toolchain=helper_toolchain)
@@ -790,6 +826,7 @@ class DomainPack:
             "context_source": _qualified_type_name(self.context_source),
             "reference_providers": [provider.kind for provider in self.reference_providers],
             "helper_toolchain": _qualified_type_name(self.helper_toolchain),
+            "extractors": dict(self.extractors),
         }
 
 
@@ -857,6 +894,7 @@ __all__ = [
     "context_entry",
     "context_related_sources",
     "current_pack",
+    "pack_extractor",
     "render_with_pack",
     "uses_builtin_context_source",
     "uses_default_pack",
