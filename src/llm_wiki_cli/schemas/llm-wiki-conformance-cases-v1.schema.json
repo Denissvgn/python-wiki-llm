@@ -28,6 +28,10 @@
           "valid": {
             "type": "boolean"
           },
+          "schema_valid": {
+            "type": "boolean",
+            "description": "Whether the format's JSON Schema accepts the document. Omitted, it equals valid. A case with valid false and schema_valid true is rejected only by checks a JSON Schema cannot express."
+          },
           "description": {
             "type": "string"
           },
@@ -38,7 +42,21 @@
           "name",
           "valid"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "not": {
+          "properties": {
+            "valid": {
+              "const": true
+            },
+            "schema_valid": {
+              "const": false
+            }
+          },
+          "required": [
+            "valid",
+            "schema_valid"
+          ]
+        }
       }
     }
   },
@@ -48,5 +66,6 @@
     "schema",
     "cases"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "description": "Valid and invalid example documents for one published format. Any validator of the format must accept exactly the cases with valid true."
 }

@@ -1,0 +1,3588 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-qualified-context-packet/v1",
+  "schema": "llm-wiki-qualified-context-packet-v1.schema.json",
+  "cases": [
+    {
+      "name": "json-without-knowledge",
+      "valid": true,
+      "description": "Snapshot-only JSON context without a native knowledge envelope.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "json-with-evaluated-freshness",
+      "valid": true,
+      "description": "JSON context bound to a recorded knowledge envelope with evaluated freshness.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "concept_count": 6,
+            "counts": {
+              "basis-incompatible": 0,
+              "current": 3,
+              "nonsemantic-source-change": 0,
+              "source-changed": 0,
+              "source-missing": 0,
+              "unknown": 3
+            },
+            "disclosure": "evaluated (6 concepts)",
+            "evaluated": true,
+            "evaluation_digest": "sha256:826c2bd3397f3330fffc24239ca644cf35a4f23b116c7597d9967fdcc71de27b",
+            "state": "evaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "ready",
+            "envelope_hash": "sha256:ff0542b63f06abf2fc60d332321693d790f1944413b62d4858e116414553ca9f",
+            "knowledge_index_hash": "sha256:ea21df79f99355014fb27b7c997c3f95769ec390bd6b3cfda8f086e3ef7beb18",
+            "reason": "all-projection-commitments-match",
+            "state": "recorded",
+            "surface_index_hash": "sha256:632e44fcc87ee5ae85ddc9cbf175dcda660dee9f31bee92c0cec0644c7638e52"
+          },
+          "repository": {
+            "evaluated_revision": "git:0123456789abcdef0123456789abcdef01234567",
+            "identity": "example.invalid/acme/knowledge-fixture",
+            "state": "recorded",
+            "working_tree": "clean"
+          },
+          "source_snapshot": {
+            "identity": "sha256:636170023b50cc4f8f4841dc6d4e9b0bb8505c0548bc6574662f2234e0090da5",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:bf5b2a47da0e915f05b8cdf6f502a70f101f36273affd75bb5c4e2a39d8df688",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 0,
+            "opaque_values": 84,
+            "portable_identities": 1,
+            "public_uris": 2,
+            "repository_relative_paths": 5
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 92,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {
+            "surface": "entities"
+          },
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "src/accounts.py": {
+              "classes": [
+                {
+                  "attributes": [],
+                  "bases": [],
+                  "decorators": [],
+                  "docstring": "A persisted account.",
+                  "kind": "class",
+                  "line": 3,
+                  "methods": [],
+                  "name": "User",
+                  "python_constructor_dispatch": {
+                    "blocked_members": [],
+                    "eligible": true,
+                    "reasons": [],
+                    "schema_version": "llm-wiki-python-constructor-dispatch/v1"
+                  }
+                },
+                {
+                  "attributes": [],
+                  "bases": [],
+                  "decorators": [],
+                  "docstring": "Coordinates account operations.",
+                  "kind": "class",
+                  "line": 6,
+                  "methods": [],
+                  "name": "AccountService",
+                  "python_constructor_dispatch": {
+                    "blocked_members": [],
+                    "eligible": true,
+                    "reasons": [],
+                    "schema_version": "llm-wiki-python-constructor-dispatch/v1"
+                  }
+                }
+              ],
+              "detail": "deep",
+              "functions": [],
+              "imports": [],
+              "module_docstring": "Account-domain fixture.",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "AccountService": {
+                  "kind": "local",
+                  "symbol": "AccountService"
+                },
+                "User": {
+                  "kind": "local",
+                  "symbol": "User"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {
+            "surface": "entities"
+          },
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "knowledge": {
+            "availability": "ready",
+            "freshness": "evaluated (6 concepts)",
+            "freshness_evaluated": true,
+            "reason": "all-projection-commitments-match"
+          },
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "surface": {
+            "bounds": {
+              "pages": {
+                "returned": 2,
+                "total": 2,
+                "truncated": false
+              }
+            },
+            "count": 2,
+            "kind": "entities",
+            "knowledge_selection": {
+              "filtered_total": 2,
+              "returned": 2,
+              "truncated": false,
+              "unfiltered_total": 2
+            },
+            "pages": [
+              {
+                "canonical_path": "entities/AccountService.md",
+                "id": "AccountService",
+                "kind": "entities",
+                "knowledge": {
+                  "availability": "ready",
+                  "evidence": "present",
+                  "freshness": {
+                    "live_comparison_performed": true,
+                    "reason": "recorded-basis-matches-live-evaluation",
+                    "state": "current"
+                  },
+                  "freshness_disclosure": "evaluated (6 concepts)",
+                  "freshness_evaluated": true,
+                  "implementation": {
+                    "analysis_scope": "full-inventory",
+                    "documentation_changed": null,
+                    "limitations": [
+                      "captured-executable-syntax-only",
+                      "dependencies-and-runtime-behavior-not-evaluated",
+                      "authored-prose-correctness-not-evaluated"
+                    ],
+                    "live_comparison_performed": false,
+                    "reason": "legacy-evidence-absent",
+                    "scope": null,
+                    "source_changed": null,
+                    "state": "unavailable",
+                    "truncated": false
+                  },
+                  "lifecycle": "unknown",
+                  "origin": "extracted",
+                  "reason": "all-projection-commitments-match",
+                  "verification": "untracked"
+                },
+                "mcp_uri": "llm-wiki://entities/AccountService",
+                "role": "semantic",
+                "source_path": "src/accounts.py",
+                "title": "AccountService"
+              },
+              {
+                "canonical_path": "entities/User.md",
+                "id": "User",
+                "kind": "entities",
+                "knowledge": {
+                  "availability": "ready",
+                  "evidence": "present",
+                  "freshness": {
+                    "live_comparison_performed": true,
+                    "reason": "recorded-basis-matches-live-evaluation",
+                    "state": "current"
+                  },
+                  "freshness_disclosure": "evaluated (6 concepts)",
+                  "freshness_evaluated": true,
+                  "implementation": {
+                    "analysis_scope": "full-inventory",
+                    "documentation_changed": null,
+                    "limitations": [
+                      "captured-executable-syntax-only",
+                      "dependencies-and-runtime-behavior-not-evaluated",
+                      "authored-prose-correctness-not-evaluated"
+                    ],
+                    "live_comparison_performed": false,
+                    "reason": "legacy-evidence-absent",
+                    "scope": null,
+                    "source_changed": null,
+                    "state": "unavailable",
+                    "truncated": false
+                  },
+                  "lifecycle": "unknown",
+                  "origin": "extracted",
+                  "reason": "all-projection-commitments-match",
+                  "verification": "untracked"
+                },
+                "mcp_uri": "llm-wiki://entities/User",
+                "role": "semantic",
+                "source_path": "src/accounts.py",
+                "title": "User"
+              }
+            ],
+            "returned": 2,
+            "total": 2,
+            "truncated": false
+          },
+          "truncated": false,
+          "used_tokens": 238
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "missing-path-policy",
+      "valid": false,
+      "description": "Every packet carries its path policy receipt.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "extra-top-level-field",
+      "valid": false,
+      "description": "Packets have no fields beyond the eight top-level ones.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1",
+        "signature": "x"
+      }
+    },
+    {
+      "name": "uppercase-packet-id",
+      "valid": false,
+      "description": "Digests are lowercase sha256:<hex>.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "SHA256:DE9FBCCA0F5643CAB9CE4CF27BC4FF3E9BFB59D157D555D42B725577B83661ED",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "other-assurance-scope",
+      "valid": false,
+      "description": "Assurance covers canonical packet content only.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "repository"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "focus-neighbors-alone",
+      "valid": false,
+      "description": "Normalized focus is all, changed, or changed then neighbors.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "neighbors"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "zero-token-budget",
+      "valid": false,
+      "description": "The token budget is a positive integer.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 0,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "unknown-filter",
+      "valid": false,
+      "description": "Only documented context filters are allowed.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {
+            "branch": "main"
+          },
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "failed-response",
+      "valid": false,
+      "description": "A packet holds a successful response.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": false,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "json-response-with-content",
+      "valid": false,
+      "description": "JSON responses carry files, not Markdown content.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110,
+          "content": "# Context"
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "fresh-ranking-not-requested",
+      "valid": false,
+      "description": "Freshness ranking appears only when requested.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110,
+          "prefer_fresh": true
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "other-generator",
+      "valid": false,
+      "description": "Packets are generated by agent-wiki-cli.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "other-tool",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "other-policy-digest",
+      "valid": false,
+      "description": "The generator binds this format's context policy digest.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "redacted-path-finding",
+      "valid": false,
+      "description": "A returned packet has no redacted path findings.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 1,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "quarantined",
+      "valid": false,
+      "description": "A returned packet is never quarantined.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": true
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "negative-input-count",
+      "valid": false,
+      "description": "Counts are non-negative integers.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": -1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "knowledge-mode-in-v1",
+      "valid": false,
+      "description": "Version 1 requests have no knowledge_mode.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1",
+          "knowledge_mode": "auto"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "v2-protocol",
+      "valid": false,
+      "description": "Version 1 packets use the llm-wiki-context/v1 protocol.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v2"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "packet-id-mismatch",
+      "valid": false,
+      "schema_valid": true,
+      "description": "packet_id must be the domain-separated digest of the canonical body.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "delivery-truncation-mismatch",
+      "valid": false,
+      "schema_valid": true,
+      "description": "Delivery must project the response truncation exactly.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": true,
+          "warnings": []
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "delivery-warning-mismatch",
+      "valid": false,
+      "schema_valid": true,
+      "description": "Delivery must project the response warnings exactly.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "disclosure": "unevaluated (snapshot-only read)",
+            "evaluated": false,
+            "reason": "snapshot-only-read",
+            "state": "unevaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "state": "unavailable"
+          },
+          "repository": {
+            "reason": "native-knowledge-envelope-unavailable",
+            "state": "unavailable"
+          },
+          "source_snapshot": {
+            "identity": "sha256:79714491318b90f734dec24a2a5fe36640b211ff4fcf145f9c30d49395faec2e",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [
+            "freshness-not-evaluated",
+            "knowledge-absent"
+          ],
+          "truncated": false,
+          "warnings": [
+            "unexpected warning"
+          ]
+        },
+        "packet_id": "sha256:de9fbcca0f5643cab9ce4cf27bc4ff3e9bfb59d157d555d42b725577b83661ed",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 2,
+            "opaque_values": 31,
+            "portable_identities": 0,
+            "public_uris": 0,
+            "repository_relative_paths": 1
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 34,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "app.py": {
+              "classes": [],
+              "detail": "deep",
+              "functions": [
+                {
+                  "data_effects": {
+                    "returns": [
+                      {
+                        "kind": "literal",
+                        "line": 2,
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  "decorators": [],
+                  "docstring": "",
+                  "is_async": false,
+                  "line": 1,
+                  "name": "changed",
+                  "params": [],
+                  "return_type": ""
+                }
+              ],
+              "imports": [],
+              "module_docstring": "",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "changed": {
+                  "kind": "local",
+                  "symbol": "changed"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {},
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "truncated": false,
+          "used_tokens": 110
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    },
+    {
+      "name": "freshness-counts-do-not-sum",
+      "valid": false,
+      "schema_valid": true,
+      "description": "Freshness state counts must sum to concept_count.",
+      "document": {
+        "assurance": {
+          "level": "content-integrity",
+          "scope": "canonical-packet-content"
+        },
+        "basis": {
+          "freshness": {
+            "concept_count": 6,
+            "counts": {
+              "basis-incompatible": 0,
+              "current": 4,
+              "nonsemantic-source-change": 0,
+              "source-changed": 0,
+              "source-missing": 0,
+              "unknown": 3
+            },
+            "disclosure": "evaluated (6 concepts)",
+            "evaluated": true,
+            "evaluation_digest": "sha256:826c2bd3397f3330fffc24239ca644cf35a4f23b116c7597d9967fdcc71de27b",
+            "state": "evaluated"
+          },
+          "generator": {
+            "component": "agent-wiki-cli",
+            "context_protocol": "llm-wiki-context/v1",
+            "policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+            "version": "4.1.1"
+          },
+          "knowledge": {
+            "availability": "ready",
+            "envelope_hash": "sha256:ff0542b63f06abf2fc60d332321693d790f1944413b62d4858e116414553ca9f",
+            "knowledge_index_hash": "sha256:ea21df79f99355014fb27b7c997c3f95769ec390bd6b3cfda8f086e3ef7beb18",
+            "reason": "all-projection-commitments-match",
+            "state": "recorded",
+            "surface_index_hash": "sha256:632e44fcc87ee5ae85ddc9cbf175dcda660dee9f31bee92c0cec0644c7638e52"
+          },
+          "repository": {
+            "evaluated_revision": "git:0123456789abcdef0123456789abcdef01234567",
+            "identity": "example.invalid/acme/knowledge-fixture",
+            "state": "recorded",
+            "working_tree": "clean"
+          },
+          "source_snapshot": {
+            "identity": "sha256:636170023b50cc4f8f4841dc6d4e9b0bb8505c0548bc6574662f2234e0090da5",
+            "input_count": 1
+          }
+        },
+        "delivery": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "limitations": [],
+          "truncated": false,
+          "warnings": []
+        },
+        "packet_id": "sha256:bf5b2a47da0e915f05b8cdf6f502a70f101f36273affd75bb5c4e2a39d8df688",
+        "path_policy": {
+          "field_counts": {
+            "free_text_values": 0,
+            "opaque_values": 84,
+            "portable_identities": 1,
+            "public_uris": 2,
+            "repository_relative_paths": 5
+          },
+          "final_scan": "passed",
+          "finding_counts": {
+            "accepted": 92,
+            "redacted": 0,
+            "rejected": 0
+          },
+          "limitations": [
+            "does-not-establish-absence-of-arbitrary-sensitive-content"
+          ],
+          "policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+          "policy_version": "qualified-context-path-policy-v1",
+          "quarantined": false
+        },
+        "request": {
+          "budget_tokens": 32000,
+          "filters": {
+            "surface": "entities"
+          },
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "prefer_fresh": false,
+          "protocol": "llm-wiki-context/v1"
+        },
+        "response": {
+          "bounds": {
+            "files": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "budget_tokens": 32000,
+          "downgraded_files": {},
+          "files": {
+            "src/accounts.py": {
+              "classes": [
+                {
+                  "attributes": [],
+                  "bases": [],
+                  "decorators": [],
+                  "docstring": "A persisted account.",
+                  "kind": "class",
+                  "line": 3,
+                  "methods": [],
+                  "name": "User",
+                  "python_constructor_dispatch": {
+                    "blocked_members": [],
+                    "eligible": true,
+                    "reasons": [],
+                    "schema_version": "llm-wiki-python-constructor-dispatch/v1"
+                  }
+                },
+                {
+                  "attributes": [],
+                  "bases": [],
+                  "decorators": [],
+                  "docstring": "Coordinates account operations.",
+                  "kind": "class",
+                  "line": 6,
+                  "methods": [],
+                  "name": "AccountService",
+                  "python_constructor_dispatch": {
+                    "blocked_members": [],
+                    "eligible": true,
+                    "reasons": [],
+                    "schema_version": "llm-wiki-python-constructor-dispatch/v1"
+                  }
+                }
+              ],
+              "detail": "deep",
+              "functions": [],
+              "imports": [],
+              "module_docstring": "Account-domain fixture.",
+              "package": null,
+              "priority": "high",
+              "python_bindings": {
+                "AccountService": {
+                  "kind": "local",
+                  "symbol": "AccountService"
+                },
+                "User": {
+                  "kind": "local",
+                  "symbol": "User"
+                }
+              },
+              "python_constructor_facts_version": 1
+            }
+          },
+          "filters": {
+            "surface": "entities"
+          },
+          "focus": [
+            "all"
+          ],
+          "format": "json",
+          "knowledge": {
+            "availability": "ready",
+            "freshness": "evaluated (6 concepts)",
+            "freshness_evaluated": true,
+            "reason": "all-projection-commitments-match"
+          },
+          "ok": true,
+          "omitted_files": [],
+          "protocol": "llm-wiki-context/v1",
+          "surface": {
+            "bounds": {
+              "pages": {
+                "returned": 2,
+                "total": 2,
+                "truncated": false
+              }
+            },
+            "count": 2,
+            "kind": "entities",
+            "knowledge_selection": {
+              "filtered_total": 2,
+              "returned": 2,
+              "truncated": false,
+              "unfiltered_total": 2
+            },
+            "pages": [
+              {
+                "canonical_path": "entities/AccountService.md",
+                "id": "AccountService",
+                "kind": "entities",
+                "knowledge": {
+                  "availability": "ready",
+                  "evidence": "present",
+                  "freshness": {
+                    "live_comparison_performed": true,
+                    "reason": "recorded-basis-matches-live-evaluation",
+                    "state": "current"
+                  },
+                  "freshness_disclosure": "evaluated (6 concepts)",
+                  "freshness_evaluated": true,
+                  "implementation": {
+                    "analysis_scope": "full-inventory",
+                    "documentation_changed": null,
+                    "limitations": [
+                      "captured-executable-syntax-only",
+                      "dependencies-and-runtime-behavior-not-evaluated",
+                      "authored-prose-correctness-not-evaluated"
+                    ],
+                    "live_comparison_performed": false,
+                    "reason": "legacy-evidence-absent",
+                    "scope": null,
+                    "source_changed": null,
+                    "state": "unavailable",
+                    "truncated": false
+                  },
+                  "lifecycle": "unknown",
+                  "origin": "extracted",
+                  "reason": "all-projection-commitments-match",
+                  "verification": "untracked"
+                },
+                "mcp_uri": "llm-wiki://entities/AccountService",
+                "role": "semantic",
+                "source_path": "src/accounts.py",
+                "title": "AccountService"
+              },
+              {
+                "canonical_path": "entities/User.md",
+                "id": "User",
+                "kind": "entities",
+                "knowledge": {
+                  "availability": "ready",
+                  "evidence": "present",
+                  "freshness": {
+                    "live_comparison_performed": true,
+                    "reason": "recorded-basis-matches-live-evaluation",
+                    "state": "current"
+                  },
+                  "freshness_disclosure": "evaluated (6 concepts)",
+                  "freshness_evaluated": true,
+                  "implementation": {
+                    "analysis_scope": "full-inventory",
+                    "documentation_changed": null,
+                    "limitations": [
+                      "captured-executable-syntax-only",
+                      "dependencies-and-runtime-behavior-not-evaluated",
+                      "authored-prose-correctness-not-evaluated"
+                    ],
+                    "live_comparison_performed": false,
+                    "reason": "legacy-evidence-absent",
+                    "scope": null,
+                    "source_changed": null,
+                    "state": "unavailable",
+                    "truncated": false
+                  },
+                  "lifecycle": "unknown",
+                  "origin": "extracted",
+                  "reason": "all-projection-commitments-match",
+                  "verification": "untracked"
+                },
+                "mcp_uri": "llm-wiki://entities/User",
+                "role": "semantic",
+                "source_path": "src/accounts.py",
+                "title": "User"
+              }
+            ],
+            "returned": 2,
+            "total": 2,
+            "truncated": false
+          },
+          "truncated": false,
+          "used_tokens": 238
+        },
+        "schema_version": "llm-wiki-qualified-context-packet/v1"
+      }
+    }
+  ]
+}

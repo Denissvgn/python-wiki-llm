@@ -12,6 +12,12 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from llm_wiki_cli import api
+from llm_wiki_cli.services import context_packet, context_request_format
+from llm_wiki_cli.services.context_packet import (
+    CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+    CONTEXT_PACKET_SCHEMA_VERSION,
+    validate_context_packet,
+)
 from llm_wiki_cli.engine import (
     ENGINE_CAPABILITIES_SCHEMA_VERSION,
     ENGINE_EVENT_SCHEMA_VERSION,
@@ -28,9 +34,18 @@ from tests.notes_pack import NOTES_PACK
 SCHEMAS = resources.files("llm_wiki_cli.schemas")
 CONFORMANCE = SCHEMAS.joinpath("conformance")
 
+def _validate_packet_document(document: object) -> None:
+    """Validate a packet document through its canonical bytes."""
+    if not isinstance(document, dict):
+        raise ValueError("a packet is a JSON object")
+    validate_context_packet(context_packet._encode_packet_payload(document))
+
+
 #: Python validators that must accept exactly the valid cases of a format.
 PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     ENGINE_EVENT_SCHEMA_VERSION: validate_engine_event,
+    CONTEXT_PACKET_SCHEMA_VERSION: _validate_packet_document,
+    CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION: _validate_packet_document,
 }
 
 
@@ -58,7 +73,12 @@ def _cases() -> list[tuple[str, dict[str, Any]]]:
 
 def test_every_case_file_is_well_formed_and_names_its_schema():
     files = _case_files()
-    assert {"llm-wiki-engine-event-v1.cases.json", "llm-wiki-engine-capabilities-v1.cases.json"} <= set(files)
+    assert {
+        "llm-wiki-engine-event-v1.cases.json",
+        "llm-wiki-engine-capabilities-v1.cases.json",
+        "llm-wiki-qualified-context-packet-v1.cases.json",
+        "llm-wiki-qualified-context-packet-v2.cases.json",
+    } <= set(files)
     cases_schema = Draft202012Validator(_schema("llm-wiki-conformance-cases-v1.schema.json"))
     for name in files:
         document = _json(CONFORMANCE.joinpath(name))
@@ -78,7 +98,7 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
 def test_schema_and_python_validators_agree_on_each_case(file_name, case):
     document = _json(CONFORMANCE.joinpath(file_name))
     validator = Draft202012Validator(_schema(document["schema"]))
-    assert validator.is_valid(case["document"]) is case["valid"]
+    assert validator.is_valid(case["document"]) is case.get("schema_valid", case["valid"])
     python = PYTHON_VALIDATORS.get(document["format"])
     if python is None:
         return
@@ -122,3 +142,53 @@ def test_reported_events_match_their_schema(tmp_path, monkeypatch):
         validator.validate(document)
         validate_engine_event(document)
         assert EngineEvent.from_dict(document) == event
+
+
+@pytest.mark.parametrize("version, schema_version, protocol", [
+    (1, CONTEXT_PACKET_SCHEMA_VERSION, context_request_format.PROTOCOL_VERSION),
+    (2, CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION, context_request_format.KNOWLEDGE_PROTOCOL_VERSION),
+])
+def test_packet_schemas_pin_the_current_policy_constants(version, schema_version, protocol):
+    schema = _schema(f"llm-wiki-qualified-context-packet-v{version}.schema.json")
+    properties = schema["properties"]
+    assert properties["schema_version"]["const"] == schema_version
+    assert properties["request"]["properties"]["protocol"]["const"] == protocol
+    generator = properties["basis"]["properties"]["generator"]["properties"]
+    assert generator["context_protocol"]["const"] == protocol
+    assert generator["policy_digest"]["const"] == context_packet._context_policy_digest(schema_version)
+    path_policy = properties["path_policy"]["properties"]
+    assert path_policy["policy_version"]["const"] == context_packet.CONTEXT_PACKET_PATH_POLICY_VERSION
+    assert path_policy["policy_digest"]["const"] == context_packet._path_policy_digest()
+    assert sorted(path_policy["field_counts"]["properties"]) == sorted(context_packet._PATH_COUNT_KEYS)
+    assert properties["assurance"]["properties"]["level"]["const"] == context_packet.CONTEXT_PACKET_ASSURANCE_LEVEL
+
+
+@pytest.mark.parametrize(
+    "request_overrides",
+    [
+        {"protocol": "llm-wiki-context/v1"},
+        {"protocol": "llm-wiki-context/v1", "format": "markdown", "prefer_fresh": True},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "off"},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "auto", "format": "markdown"},
+        {"protocol": "llm-wiki-context/v2", "knowledge_mode": "auto", "prefer_fresh": True},
+    ],
+)
+def test_built_packets_match_their_schema(tmp_path, monkeypatch, request_overrides):
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/accounts.py").write_text(
+        'class Account:\n    """A customer account."""\n\n    balance: int\n', encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    api.bootstrap_wiki("src", "docs/llm_wiki")
+    request = {"budget_tokens": 32_000, "focus": ["all"], "format": "json", "filters": {}}
+    request.update(request_overrides)
+
+    packet = api.build_qualified_context("src", "docs/llm_wiki", request)
+
+    payload = packet.to_payload()
+    version = 2 if request["protocol"].endswith("/v2") else 1
+    Draft202012Validator(
+        _schema(f"llm-wiki-qualified-context-packet-v{version}.schema.json")
+    ).validate(payload)
+    _validate_packet_document(payload)

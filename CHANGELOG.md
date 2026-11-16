@@ -87,6 +87,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   conformance cases for each format (`schemas/conformance/*.cases.json`,
   format `llm-wiki-conformance-cases/v1`) list valid and invalid documents
   so tools in any language can test their own validators.
+- Qualified context packets have JSON Schemas:
+  `llm-wiki-qualified-context-packet-v1.schema.json` and
+  `llm-wiki-qualified-context-packet-v2.schema.json`. They describe the
+  packet structure; the canonical encoding, the `packet_id` digest, the path
+  policy receipt and cross-field consistency still need
+  `validate_context_packet`. Their conformance cases mark documents that
+  only those checks reject (`schema_valid: true`, `valid: false`).
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also

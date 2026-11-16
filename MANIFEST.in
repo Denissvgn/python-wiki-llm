@@ -29,5 +29,7 @@ include src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-engine-event-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-engine-capabilities-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-conformance-cases-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v2.schema.json
 recursive-include src/llm_wiki_cli/schemas/conformance *.cases.json
 include docs/cli-reference-data.md
