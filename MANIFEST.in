@@ -33,5 +33,7 @@ include src/llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v1.schema.jso
 include src/llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v2.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-context-response-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-context-response-v2.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-documentation-query-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-search-result-v1.schema.json
 recursive-include src/llm_wiki_cli/schemas/conformance *.cases.json
 include docs/cli-reference-data.md

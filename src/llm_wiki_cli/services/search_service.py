@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .path_policy import validate_path, validate_source_root
+from .query_result_format import SEARCH_RESULT_SCHEMA_VERSION
 from . import wiki_surface
 from .documentation_query_builder import (
     normalize_documentation_query_limit,
@@ -151,7 +152,7 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             live_selection_inputs=snapshot.source_selection_inputs,
             operation="wiki search")
     if not guarded:
-        return search_records(page_records(wiki_root, kinds, reader=reader), query, limit=limit, mode=mode)
+        return _published(search_records(page_records(wiki_root, kinds, reader=reader), query, limit=limit, mode=mode))
     from .knowledge_storage import KnowledgeStorageError
     from .knowledge_storage_io import StorageReadSession
     from .search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
@@ -211,7 +212,7 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             ranked_pages, accounting = capture_source_index(original_pages, snapshot, wiki_reads, source_reads, manifest=manifest)
         else:
             ranked_pages = original_pages
-        result = search_records(ranked_pages, query, limit=limit, mode=mode)
+        result = _published(search_records(ranked_pages, query, limit=limit, mode=mode))
         if discovery is not None:
             from .search_discovery_capture import capture_discovery
             from .search_discovery import DiscoveryError, enrich_search
@@ -279,6 +280,11 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
         result["source_indexing"] = accounting
 
     return result
+
+
+def _published(result: dict[str, Any]) -> dict[str, Any]:
+    """Name the result format a search returns to its callers."""
+    return {"schema_version": SEARCH_RESULT_SCHEMA_VERSION, **result}
 
 
 def _page_membership(wiki_root: Path, kinds: set[str]) -> tuple[str, ...]:

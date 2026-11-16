@@ -2630,7 +2630,8 @@ a larger value is requested. Blank queries and invalid limits exit `2`, leave
 stdout empty, and print argument diagnostics to stderr in both output formats.
 A valid query with no matches exits `0` with empty results.
 
-JSON responses from both the CLI and MCP disclose `mode` (`ranked`,
+JSON responses from both the CLI and MCP name their format
+(`schema_version: "llm-wiki-search-result/v1"`) and disclose `mode` (`ranked`,
 `ranked-v1`, `ranked-v2` or `substring`), `total`, `returned`, and
 `bounds.results`, including truncation.
 Ranked scores and provenance remain specific to ranked mode.

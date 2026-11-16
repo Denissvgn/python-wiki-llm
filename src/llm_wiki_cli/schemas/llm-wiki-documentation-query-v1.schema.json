@@ -1,0 +1,463 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-documentation-query-v1.schema.json",
+  "title": "Documentation query result",
+  "description": "The result of one llm-wiki query request: the shared envelope and the payload fields an operation returns. A result is valid only if it also passes checks a JSON Schema cannot express: every bound's returned and truncated follow its total, bounds.matches counts the returned matches, and truncated is true exactly when some bound is truncated. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-documentation-query/v1"
+    },
+    "operation": {
+      "enum": [
+        "explain",
+        "concept",
+        "related",
+        "surface",
+        "typed",
+        "symbol",
+        "entrypoint",
+        "flow-segment",
+        "dependency",
+        "impact"
+      ]
+    },
+    "query": {},
+    "found": {
+      "type": "boolean"
+    },
+    "ambiguous": {
+      "type": "boolean"
+    },
+    "matches": {
+      "$ref": "#/$defs/objects"
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "matches": {
+          "$ref": "#/$defs/query_bound"
+        }
+      },
+      "required": [
+        "matches"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/query_bound"
+      }
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "cost": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "enum": [
+            "snapshot-index-only",
+            "targeted-extraction",
+            "full-inventory"
+          ]
+        },
+        "full_inventory_performed": {
+          "type": "boolean"
+        },
+        "supplied_paths": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "full_inventory_performed",
+        "scope",
+        "supplied_paths"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "scope": {
+            "const": "full-inventory"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "full_inventory_performed": {
+            "const": true
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "full_inventory_performed": {
+            "const": false
+          }
+        }
+      }
+    },
+    "basis": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "callable": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "callees": {
+      "$ref": "#/$defs/objects"
+    },
+    "callers": {
+      "$ref": "#/$defs/objects"
+    },
+    "concept": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "concepts": {
+      "$ref": "#/$defs/objects"
+    },
+    "coverage": {
+      "type": "object"
+    },
+    "cycle_groups": {
+      "$ref": "#/$defs/objects"
+    },
+    "data_flow": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "direction": {
+      "$ref": "#/$defs/text"
+    },
+    "edges": {
+      "$ref": "#/$defs/objects"
+    },
+    "evidence": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "external_targets": {
+      "$ref": "#/$defs/objects"
+    },
+    "flow": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "follow_up": {
+      "type": "object"
+    },
+    "impacted_paths": {
+      "$ref": "#/$defs/strings"
+    },
+    "inbound": {
+      "$ref": "#/$defs/strings"
+    },
+    "include_evidence": {
+      "type": "boolean"
+    },
+    "kinds": {
+      "$ref": "#/$defs/strings"
+    },
+    "knowledge": {
+      "type": "object"
+    },
+    "limitations": {
+      "$ref": "#/$defs/strings"
+    },
+    "load_order_index": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "maintenance": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "origins": {
+      "$ref": "#/$defs/strings"
+    },
+    "outbound": {
+      "$ref": "#/$defs/strings"
+    },
+    "owner": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "pages": {
+      "$ref": "#/$defs/objects"
+    },
+    "path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "raw_evidence": {
+      "$ref": "#/$defs/objects"
+    },
+    "related_concepts": {
+      "$ref": "#/$defs/objects"
+    },
+    "relationships": {
+      "$ref": "#/$defs/objects"
+    },
+    "resolutions": {
+      "$ref": "#/$defs/strings"
+    },
+    "result_omitted": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "const": "serialized-result-byte-limit"
+        },
+        "records_returned": {
+          "const": 0
+        }
+      },
+      "required": [
+        "reason",
+        "records_returned"
+      ],
+      "additionalProperties": false
+    },
+    "returned": {
+      "$ref": "#/$defs/count"
+    },
+    "sections": {
+      "$ref": "#/$defs/objects"
+    },
+    "segment_schema": {
+      "$ref": "#/$defs/text"
+    },
+    "steps": {
+      "$ref": "#/$defs/objects"
+    },
+    "symbol": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "total": {
+      "$ref": "#/$defs/count"
+    },
+    "typed_graph": {
+      "type": "object"
+    },
+    "unresolved_targets": {
+      "$ref": "#/$defs/objects"
+    },
+    "work": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "ambiguous",
+    "bounds",
+    "cost",
+    "found",
+    "matches",
+    "operation",
+    "query",
+    "schema_version",
+    "truncated"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "result_omitted"
+        ]
+      },
+      "then": {
+        "properties": {
+          "truncated": {
+            "const": true
+          },
+          "matches": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "concept"
+          }
+        },
+        "not": {
+          "required": [
+            "result_omitted"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "concept",
+          "knowledge"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "explain"
+          }
+        },
+        "not": {
+          "required": [
+            "result_omitted"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "concept",
+          "evidence",
+          "knowledge",
+          "returned",
+          "total"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "symbol"
+          }
+        },
+        "not": {
+          "required": [
+            "result_omitted"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "callees",
+          "callers",
+          "pages"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "impact"
+          }
+        },
+        "not": {
+          "required": [
+            "result_omitted"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "concepts",
+          "impacted_paths",
+          "knowledge",
+          "limitations",
+          "pages",
+          "relationships"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "bound": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "returned": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "returned",
+        "total",
+        "truncated"
+      ],
+      "additionalProperties": false
+    },
+    "query_bound": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "returned": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limit": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "returned",
+        "total",
+        "truncated"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

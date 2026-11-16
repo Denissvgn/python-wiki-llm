@@ -104,6 +104,8 @@ where = ["src"]
     "schemas/llm-wiki-qualified-context-packet-v2.schema.json",
     "schemas/llm-wiki-context-response-v1.schema.json",
     "schemas/llm-wiki-context-response-v2.schema.json",
+    "schemas/llm-wiki-documentation-query-v1.schema.json",
+    "schemas/llm-wiki-search-result-v1.schema.json",
     "schemas/conformance/*.cases.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",

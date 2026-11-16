@@ -13,7 +13,15 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import context_packet, context_request_format
+from llm_wiki_cli import api_types
+from llm_wiki_cli.services import (
+    context_packet,
+    context_request_format,
+    query_result_format,
+    search_lexical,
+    search_rank,
+    search_service,
+)
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     CONTEXT_PACKET_SCHEMA_VERSION,
@@ -28,6 +36,7 @@ from llm_wiki_cli.engine import (
     EngineEvent,
     Host,
     NoProcessHost,
+    SyncError,
     SyncRequest,
     validate_context_response,
     validate_engine_event,
@@ -50,6 +59,10 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     CONTEXT_PACKET_SCHEMA_VERSION: _validate_packet_document,
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION: _validate_packet_document,
     **{protocol: validate_context_response for protocol in CONTEXT_RESPONSE_PROTOCOLS},
+    query_result_format.DOCUMENTATION_QUERY_SCHEMA_VERSION: (
+        query_result_format.validate_documentation_query_result
+    ),
+    query_result_format.SEARCH_RESULT_SCHEMA_VERSION: query_result_format.validate_search_result,
 }
 
 
@@ -84,6 +97,8 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
         "llm-wiki-qualified-context-packet-v2.cases.json",
         "llm-wiki-context-response-v1.cases.json",
         "llm-wiki-context-response-v2.cases.json",
+        "llm-wiki-documentation-query-v1.cases.json",
+        "llm-wiki-search-result-v1.cases.json",
     } <= set(files)
     cases_schema = Draft202012Validator(_schema("llm-wiki-conformance-cases-v1.schema.json"))
     for name in files:
@@ -141,8 +156,9 @@ def test_reported_events_match_their_schema(tmp_path, monkeypatch):
     engine = Engine(host=host)
     engine.call(api.bootstrap_wiki, "src", "wiki")
     engine.sync(SyncRequest(source_root="src", wiki_root="wiki"))
-    with pytest.raises(Exception):
-        engine.sync(SyncRequest(source_root="missing", wiki_root="wiki"))
+    (tmp_path / "not-a-wiki").mkdir()
+    with pytest.raises(SyncError):
+        engine.sync(SyncRequest(source_root="src", wiki_root="not-a-wiki"))
 
     validator = Draft202012Validator(_schema("llm-wiki-engine-event-v1.schema.json"))
     assert {event.kind for event in events} >= {"operation.started", "operation.finished", "operation.failed"}
@@ -259,3 +275,103 @@ def test_emitted_context_responses_match_their_schema(
     Draft202012Validator(_schema(f"llm-wiki-context-response-v{version}.schema.json")).validate(response)
     validate_context_response(response)
     assert response["ok"] is ("bogus" not in request["focus"] and request["budget_tokens"] > 0)
+
+
+def test_query_formats_match_the_running_code():
+    formats = query_result_format
+    assert formats.DOCUMENTATION_QUERY_SCHEMA_VERSION == api.DOCUMENTATION_QUERY_SCHEMA_VERSION
+    assert set(formats.DOCUMENTATION_QUERY_OPERATIONS) == set(api._DOCUMENTATION_QUERY_FIELDS)
+    typed = set(api_types.DocumentationQueryResult.__annotations__)
+    assert typed <= formats._QUERY_ENVELOPE_FIELDS | formats.QUERY_PAYLOAD_FIELDS
+    assert set(formats.SEARCH_PAGE_KINDS) == set(search_service.SEARCH_KINDS)
+    assert formats.SEARCH_RANKINGS["ranked-v1"] == search_rank.RANKING_VERSION
+    assert formats.SEARCH_RANKINGS["ranked"] == search_lexical.RANKING_VERSION
+    assert formats.SEARCH_RANKINGS["ranked-v2"] == search_lexical.RANKING_VERSION
+    assert set(api_types.SearchResult.__annotations__) <= set(
+        _schema("llm-wiki-search-result-v1.schema.json")["properties"]
+    )
+
+    query = _schema("llm-wiki-documentation-query-v1.schema.json")
+    assert set(query["properties"]) == formats._QUERY_ENVELOPE_FIELDS | formats.QUERY_PAYLOAD_FIELDS
+    assert query["properties"]["operation"]["enum"] == list(formats.DOCUMENTATION_QUERY_OPERATIONS)
+    assert query["properties"]["cost"]["properties"]["scope"]["enum"] == list(formats.QUERY_COST_SCOPES)
+    search = _schema("llm-wiki-search-result-v1.schema.json")
+    assert search["properties"]["mode"]["enum"] == list(formats.SEARCH_MODES)
+    assert search["$defs"]["ranked_match"]["properties"]["kind"]["enum"] == list(formats.SEARCH_PAGE_KINDS)
+
+
+ORDERS = """class Order:
+    \"\"\"A customer order.\"\"\"
+
+    total: int
+
+    def submit(self) -> None:
+        self.validate()
+
+    def validate(self) -> None:
+        return None
+
+
+def checkout() -> Order:
+    order = Order()
+    order.submit()
+    return order
+"""
+
+
+@pytest.fixture
+def orders_wiki(tmp_path, monkeypatch):
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/orders.py").write_text(ORDERS, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    api.bootstrap_wiki("src", "docs/llm_wiki")
+    return tmp_path
+
+
+@pytest.mark.parametrize(
+    "request_body",
+    [
+        {"operation": "concept", "value": "llm-wiki://entities/Order"},
+        {"operation": "explain", "value": "llm-wiki://modules/orders"},
+        {"operation": "related", "value": "llm-wiki://entities/Order"},
+        {"operation": "surface", "value": "entities/Order.md"},
+        {"operation": "typed", "value": "llm-wiki://entities/Order"},
+        {"operation": "symbol", "value": "submit", "allow_full_inventory": True},
+        {"operation": "entrypoint", "value": "checkout", "allow_full_inventory": True},
+        {"operation": "dependency", "value": "orders.py", "allow_full_inventory": True},
+        {"operation": "impact", "paths": ["orders.py"]},
+        {"operation": "concept", "value": "llm-wiki://entities/Missing"},
+    ],
+    ids=lambda body: f"{body['operation']}:{body.get('value', body.get('paths'))}",
+)
+def test_documentation_query_results_match_their_schema(orders_wiki, request_body):
+    result = api.query_documentation(request_body, src_dir="src", wiki_dir="docs/llm_wiki")
+
+    document = json.loads(json.dumps(result))
+    Draft202012Validator(_schema("llm-wiki-documentation-query-v1.schema.json")).validate(document)
+    query_result_format.validate_documentation_query_result(document)
+    assert document["operation"] == request_body["operation"]
+
+
+@pytest.mark.parametrize("mode", ["ranked", "ranked-v1", "ranked-v2", "substring"])
+@pytest.mark.parametrize("options", [{}, {"discovery": "qualified-v1"}, {"limit": 1}])
+def test_search_results_match_their_schema(orders_wiki, mode, options):
+    result = api.search_wiki("order", src_dir="src", wiki_dir="docs/llm_wiki", mode=mode, **options)
+
+    document = json.loads(json.dumps(result))
+    assert document["schema_version"] == query_result_format.SEARCH_RESULT_SCHEMA_VERSION
+    Draft202012Validator(_schema("llm-wiki-search-result-v1.schema.json")).validate(document)
+    query_result_format.validate_search_result(document)
+    assert document["results"]
+
+
+def test_source_indexed_search_matches_its_schema(orders_wiki):
+    result = api.search_wiki(
+        "order", src_dir="src", wiki_dir="docs/llm_wiki", mode="ranked-v2", include_source=True
+    )
+
+    document = json.loads(json.dumps(result))
+    assert "source_indexing" in document
+    Draft202012Validator(_schema("llm-wiki-search-result-v1.schema.json")).validate(document)
+    query_result_format.validate_search_result(document)

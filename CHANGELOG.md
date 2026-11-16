@@ -102,6 +102,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `llm_wiki_cli.engine` also checks what a schema cannot: the response
   fields form a normalized request, `used_tokens` stays within the budget,
   and version 2 knowledge follows the native selection rules.
+- Documentation query results and wiki search results have JSON Schemas:
+  `llm-wiki-documentation-query-v1.schema.json` and
+  `llm-wiki-search-result-v1.schema.json`. The query schema covers the
+  shared envelope of every `llm-wiki query` operation and the type of each
+  payload field; the search schema covers each search mode.
+  `validate_documentation_query_result()` and `validate_search_result()` in
+  `llm_wiki_cli.engine` also check the bound arithmetic a schema cannot.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also
@@ -126,6 +133,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Wiki search results name their format: `llm-wiki search --format json`,
+  MCP `search_wiki` and `api.search_wiki()` return
+  `"schema_version": "llm-wiki-search-result/v1"`. The other fields are
+  unchanged.
 - Bundled analysis helpers are built, probed and run through the engine's
   host. Under a `NoProcessHost` a helper is reported as unavailable instead
   of being started. Changed-file selection for context asks the host for Git

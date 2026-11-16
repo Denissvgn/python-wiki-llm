@@ -47,6 +47,13 @@ from ..services.context_response_format import (
     ContextResponseError,
     validate_context_response,
 )
+from ..services.query_result_format import (
+    DOCUMENTATION_QUERY_SCHEMA_VERSION,
+    SEARCH_RESULT_SCHEMA_VERSION,
+    QueryResultError,
+    validate_documentation_query_result,
+    validate_search_result,
+)
 from ..services.engine_events import (
     ENGINE_EVENT_SCHEMA_VERSION,
     EVENT_KINDS,
@@ -135,6 +142,7 @@ __all__ = [
     "ContextSource",
     "ContractFileProvider",
     "DEFAULT_KINDS",
+    "DOCUMENTATION_QUERY_SCHEMA_VERSION",
     "DEFAULT_PUBLICATION_TARGETS",
     "DEFAULT_VALIDATORS",
     "DomainPack",
@@ -165,7 +173,9 @@ __all__ = [
     "PageRequest",
     "PublicationTarget",
     "PublicationTargetRegistry",
+    "QueryResultError",
     "ReferenceProvider",
+    "SEARCH_RESULT_SCHEMA_VERSION",
     "RelationshipKindSpec",
     "SourceClassifier",
     "StemPageNamer",
@@ -180,7 +190,9 @@ __all__ = [
     "ValidatorRegistry",
     "current_host",
     "validate_context_response",
+    "validate_documentation_query_result",
     "validate_engine_event",
+    "validate_search_result",
 ]
 
 HelperPreparation = Literal["auto", "never"]

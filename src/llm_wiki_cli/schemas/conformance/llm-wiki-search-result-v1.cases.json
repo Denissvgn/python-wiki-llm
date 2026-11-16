@@ -1,0 +1,2007 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-search-result/v1",
+  "schema": "llm-wiki-search-result-v1.schema.json",
+  "cases": [
+    {
+      "name": "substring",
+      "valid": true,
+      "description": "Substring mode.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "count": 1,
+        "mode": "substring",
+        "query": "Primary account",
+        "results": [
+          {
+            "id": "User",
+            "kind": "entities",
+            "path": "entities/User.md",
+            "snippet": "# User Primary account entity.",
+            "title": "User",
+            "uri": "llm-wiki://entities/User"
+          }
+        ],
+        "returned": 1,
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranked",
+      "valid": true,
+      "description": "Default ranked mode.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranked-v1",
+      "valid": true,
+      "description": "The earlier ranking policy.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:f1405d177a4e4c62dcd1a37a918b42a7d8a19217661b9ff806dc4385fe2fa648",
+        "count": 1,
+        "mode": "ranked-v1",
+        "query": "cobalt",
+        "ranking": "llm-wiki-search/lexical-v1",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "owner",
+            "kind": "modules",
+            "path": "modules/owner.md",
+            "provenance": {
+              "content_sha256": "3f1f1fa14b85ce9a67194f16123f188e2f5207a7de4d96ec5a4af0b49b728a18",
+              "ranking": "llm-wiki-search/lexical-v1"
+            },
+            "reasons": [
+              "lexical:cobalt",
+              "exact-phrase"
+            ],
+            "score": 322.721365,
+            "snippet": "------|-----------|------------|-------------| | `owner` | `()` | — | Cobalt selected ownership. |",
+            "title": "owner Module",
+            "uri": "llm-wiki://modules/owner"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 821,
+          "pages": 2
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranked-v2-with-source-indexing",
+      "valid": true,
+      "description": "Explicit source indexing.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:4a0b54ce7890b2072c215ec90d0ffed3ba9ebf94bc0f8076cb9a130c371844e4",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked-v2",
+        "query": "cobalt retention sentinel",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "owner",
+            "indexing": {
+              "indexed_content_sha256": "eca49efbab9d28c8ecbb722f8413a587ca4c1f3d44e67dfab022bd99ef2f6448",
+              "original_wiki_content_sha256": "7f154dcb7d20c89f1ef0a8582a5f3aa3604a35dd5e3d95107826e985a7bd6f16",
+              "runtime_behavior_evaluated": false,
+              "source_bytes": 306,
+              "source_path": "selected/owner.py",
+              "source_sha256": "b023d8c56a6f023f3338d26037c682738fd1f619cc336f5e5d855e0cfbe8df53",
+              "treatment": "uniform-selected-static-source/v1"
+            },
+            "kind": "modules",
+            "matched_section_locations": [
+              {
+                "end": 759,
+                "heading_path": [
+                  "owner Module",
+                  "Selected source indexing evidence"
+                ],
+                "locator": "llm-wiki://modules/owner#section/owner%20Module~1/Selected%20source%20indexing%20evidence~1",
+                "occurrence_path": [
+                  1,
+                  1
+                ],
+                "ordinal": 4,
+                "start": 376,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "owner Module",
+                "Selected source indexing evidence"
+              ]
+            ],
+            "path": "modules/owner.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "7f154dcb7d20c89f1ef0a8582a5f3aa3604a35dd5e3d95107826e985a7bd6f16",
+              "indexed_content_sha256": "eca49efbab9d28c8ecbb722f8413a587ca4c1f3d44e67dfab022bd99ef2f6448",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:cobalt,retention,sentinel",
+              "strict-informative-term-match",
+              "section:owner Module / Selected source indexing evidence"
+            ],
+            "score": 12.998387,
+            "snippet": "class OwnedBoundary: def inspect(self): raise ValueError('cobalt retention sentinel') ```",
+            "title": "owner Module",
+            "uri": "llm-wiki://modules/owner"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 763,
+          "pages": 1
+        },
+        "source_indexing": {
+          "final_source_validation": {
+            "bytes": 326,
+            "files": 2
+          },
+          "indexed_bytes": 763,
+          "max_source_bytes": 16777216,
+          "max_source_file_bytes": 1048576,
+          "read_work_scope": "unique indexed bytes exclude capture hashes and required rechecks",
+          "runtime_behavior_evaluated": false,
+          "schema_version": "llm-wiki-source-search-index/v1",
+          "source_bytes": 306,
+          "source_files": 1,
+          "source_read_bytes_including_rechecks": 612,
+          "source_selection_scope": "captured-selected-files",
+          "source_snapshot_captured_input_bytes": 417,
+          "treatment": "uniform-selected-static-source/v1",
+          "wiki_read_bytes_including_rechecks": 11026
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "qualified-discovery",
+      "valid": true,
+      "description": "Qualified discovery.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:bbef705b755eb996764953025c6f1061191d6c9d35f5803dfc5e44b03a59f2b1",
+        "count": 1,
+        "definitive_answer": false,
+        "discovery": {
+          "bounds": {
+            "groups": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            },
+            "members": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "capture_work": {
+            "guard_marker_bytes_through_metadata": 0,
+            "scope": "observed captures through metadata; excludes final independent publication rechecks",
+            "selected_native": null,
+            "source_snapshot_input_bytes": 0,
+            "wiki_capture_bytes_through_metadata": 16
+          },
+          "groups": [
+            {
+              "key": {
+                "kind": "page",
+                "value": "guides/intro.md"
+              },
+              "members": [
+                0
+              ]
+            }
+          ],
+          "identity_state": "candidate",
+          "limits": {
+            "narrative_sections_per_member": 8,
+            "native_expanded_bytes": 16777216,
+            "native_read_bytes": 8388608,
+            "native_records": 1000,
+            "native_root_bytes": 262144,
+            "native_selectors": 100,
+            "section_snippet_characters": 240,
+            "serialized_bytes": 262144,
+            "source_snapshot_bytes": 16777216,
+            "source_snapshot_files": 10000
+          },
+          "live_comparison_performed": false,
+          "members": [
+            {
+              "content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "identity_state": "candidate",
+              "native": {
+                "bounds": {
+                  "returned": 0,
+                  "total": null,
+                  "total_known": false,
+                  "truncated": true
+                },
+                "locator": null,
+                "matches": [],
+                "reason": "native-absent",
+                "recorded_lifecycle": null,
+                "recorded_verification": null,
+                "source_content_hash": null,
+                "state": "unavailable"
+              },
+              "next_read": {
+                "live": false,
+                "locator_or_exact_route": "guides/intro.md",
+                "operation": "inspect_concept",
+                "resolution_performed": false,
+                "selection_required": true
+              },
+              "owner": {
+                "mapping": null,
+                "source_path": null,
+                "state": "page-only"
+              },
+              "path": "guides/intro.md",
+              "qualification": {
+                "basis": "captured",
+                "implementation_comparison": "not-performed",
+                "recorded_source": null,
+                "runtime_behavior": "not-evaluated",
+                "semantic_correctness": "not-evaluated",
+                "source_comparison": "not-performed"
+              },
+              "recorded_review": {
+                "availability": "unadopted",
+                "basis": "snapshot",
+                "live_evaluation_performed": false,
+                "reason": "maintenance-not-adopted"
+              },
+              "result_index": 0,
+              "section_bounds": {
+                "returned": 1,
+                "total": 1,
+                "truncated": false
+              },
+              "section_scope": "useful-non-generated-narrative",
+              "sections": [
+                {
+                  "content_sha256": "sha256:6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+                  "heading_path": [
+                    "Intro"
+                  ],
+                  "locator": "llm-wiki://guides/intro#section/Intro~1",
+                  "occurrence_path": [
+                    1
+                  ],
+                  "ordinal": 0,
+                  "ownership": "semantic",
+                  "page_locator": "llm-wiki://guides/intro",
+                  "snippet": "# Intro Cobalt.",
+                  "snippet_bounds": {
+                    "returned": 15,
+                    "total": 15,
+                    "truncated": false
+                  }
+                }
+              ],
+              "uri": "llm-wiki://guides/intro"
+            }
+          ],
+          "native": {
+            "availability": "unavailable",
+            "lookup_complete": false,
+            "reason": "native-absent",
+            "root_hash": null,
+            "validation_scope": null,
+            "whole_store_validated": false
+          },
+          "recorded_review": {
+            "adoption_id": null,
+            "availability": "unadopted",
+            "basis": "snapshot",
+            "current_acknowledgment": "not-compared",
+            "live_evaluation_performed": false,
+            "reason": "maintenance-not-adopted",
+            "state_hash": null
+          },
+          "schema_version": "llm-wiki-discovery/v1",
+          "scope": "returned-search-candidates",
+          "selection": {
+            "excluded_source_pages": 0,
+            "identity": null,
+            "ownership_filter_complete": true,
+            "policy_active": false,
+            "scope": "captured-source-selection",
+            "unknown_source_ownership_pages": 0
+          }
+        },
+        "experimental": false,
+        "mode": "ranked",
+        "query": "cobalt",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "intro",
+            "kind": "guides",
+            "matched_section_locations": [
+              {
+                "end": 16,
+                "heading_path": [
+                  "Intro"
+                ],
+                "locator": "llm-wiki://guides/intro#section/Intro~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 8,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Intro"
+              ]
+            ],
+            "path": "guides/intro.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "indexed_content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:cobalt",
+              "strict-informative-term-match",
+              "section:Intro"
+            ],
+            "score": 12.693147,
+            "snippet": "Cobalt.",
+            "title": "Intro",
+            "uri": "llm-wiki://guides/intro"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 16,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "no-matches",
+      "valid": true,
+      "description": "A valid query with no matches.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "count": 0,
+        "mode": "substring",
+        "query": "no-such-needle",
+        "results": [],
+        "returned": 0,
+        "total": 0,
+        "truncated": false
+      }
+    },
+    {
+      "name": "missing-schema-version",
+      "valid": false,
+      "description": "The result names its format.",
+      "document": {
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The result names this format.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v2",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "unknown-mode",
+      "valid": false,
+      "description": "Modes are the published set.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "semantic",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "blank-query",
+      "valid": false,
+      "description": "The query has a non-whitespace character.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "   ",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "Results have a closed field set.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false,
+        "extra": 1
+      }
+    },
+    {
+      "name": "substring-with-ranking",
+      "valid": false,
+      "description": "Substring mode reports no ranking.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "count": 1,
+        "mode": "substring",
+        "query": "Primary account",
+        "results": [
+          {
+            "id": "User",
+            "kind": "entities",
+            "path": "entities/User.md",
+            "snippet": "# User Primary account entity.",
+            "title": "User",
+            "uri": "llm-wiki://entities/User"
+          }
+        ],
+        "returned": 1,
+        "total": 1,
+        "truncated": false,
+        "ranking": "llm-wiki-search/lexical-v2"
+      }
+    },
+    {
+      "name": "ranked-without-corpus",
+      "valid": false,
+      "description": "Ranked mode names its corpus.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranked-v1-current-flags",
+      "valid": false,
+      "description": "Only current ranking reports its qualification flags.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:f1405d177a4e4c62dcd1a37a918b42a7d8a19217661b9ff806dc4385fe2fa648",
+        "count": 1,
+        "mode": "ranked-v1",
+        "query": "cobalt",
+        "ranking": "llm-wiki-search/lexical-v1",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "owner",
+            "kind": "modules",
+            "path": "modules/owner.md",
+            "provenance": {
+              "content_sha256": "3f1f1fa14b85ce9a67194f16123f188e2f5207a7de4d96ec5a4af0b49b728a18",
+              "ranking": "llm-wiki-search/lexical-v1"
+            },
+            "reasons": [
+              "lexical:cobalt",
+              "exact-phrase"
+            ],
+            "score": 322.721365,
+            "snippet": "------|-----------|------------|-------------| | `owner` | `()` | — | Cobalt selected ownership. |",
+            "title": "owner Module",
+            "uri": "llm-wiki://modules/owner"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 821,
+          "pages": 2
+        },
+        "total": 1,
+        "truncated": false,
+        "experimental": false,
+        "definitive_answer": false
+      }
+    },
+    {
+      "name": "ranked-definitive",
+      "valid": false,
+      "description": "Ranked search is not a definitive answer.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": true,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranking-mismatch",
+      "valid": false,
+      "description": "Each ranked mode reports its ranking.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v1",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "ranked-match-without-score",
+      "valid": false,
+      "description": "Ranked matches carry a score.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "substring-match-with-score",
+      "valid": false,
+      "description": "Substring matches carry no score.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "count": 1,
+        "mode": "substring",
+        "query": "Primary account",
+        "results": [
+          {
+            "id": "User",
+            "kind": "entities",
+            "path": "entities/User.md",
+            "snippet": "# User Primary account entity.",
+            "title": "User",
+            "uri": "llm-wiki://entities/User",
+            "score": 1.0
+          }
+        ],
+        "returned": 1,
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "indexing-without-source-indexing",
+      "valid": false,
+      "description": "Match indexing appears only with source indexing.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log",
+            "indexing": {}
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "source-indexing-in-v1",
+      "valid": false,
+      "description": "Source indexing requires current ranked mode.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:f1405d177a4e4c62dcd1a37a918b42a7d8a19217661b9ff806dc4385fe2fa648",
+        "count": 1,
+        "mode": "ranked-v1",
+        "query": "cobalt",
+        "ranking": "llm-wiki-search/lexical-v1",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "owner",
+            "kind": "modules",
+            "path": "modules/owner.md",
+            "provenance": {
+              "content_sha256": "3f1f1fa14b85ce9a67194f16123f188e2f5207a7de4d96ec5a4af0b49b728a18",
+              "ranking": "llm-wiki-search/lexical-v1"
+            },
+            "reasons": [
+              "lexical:cobalt",
+              "exact-phrase"
+            ],
+            "score": 322.721365,
+            "snippet": "------|-----------|------------|-------------| | `owner` | `()` | — | Cobalt selected ownership. |",
+            "title": "owner Module",
+            "uri": "llm-wiki://modules/owner"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 821,
+          "pages": 2
+        },
+        "total": 1,
+        "truncated": false,
+        "source_indexing": {
+          "final_source_validation": {
+            "bytes": 326,
+            "files": 2
+          },
+          "indexed_bytes": 763,
+          "max_source_bytes": 16777216,
+          "max_source_file_bytes": 1048576,
+          "read_work_scope": "unique indexed bytes exclude capture hashes and required rechecks",
+          "runtime_behavior_evaluated": false,
+          "schema_version": "llm-wiki-source-search-index/v1",
+          "source_bytes": 306,
+          "source_files": 1,
+          "source_read_bytes_including_rechecks": 612,
+          "source_selection_scope": "captured-selected-files",
+          "source_snapshot_captured_input_bytes": 417,
+          "treatment": "uniform-selected-static-source/v1",
+          "wiki_read_bytes_including_rechecks": 11026
+        }
+      }
+    },
+    {
+      "name": "unknown-page-kind",
+      "valid": false,
+      "description": "Matches name a wiki page kind.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "count": 1,
+        "mode": "substring",
+        "query": "Primary account",
+        "results": [
+          {
+            "id": "User",
+            "kind": "notes",
+            "path": "entities/User.md",
+            "snippet": "# User Primary account entity.",
+            "title": "User",
+            "uri": "llm-wiki://entities/User"
+          }
+        ],
+        "returned": 1,
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "discovery-other-version",
+      "valid": false,
+      "description": "Discovery names its format.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:bbef705b755eb996764953025c6f1061191d6c9d35f5803dfc5e44b03a59f2b1",
+        "count": 1,
+        "definitive_answer": false,
+        "discovery": {
+          "bounds": {
+            "groups": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            },
+            "members": {
+              "returned": 1,
+              "total": 1,
+              "truncated": false
+            }
+          },
+          "capture_work": {
+            "guard_marker_bytes_through_metadata": 0,
+            "scope": "observed captures through metadata; excludes final independent publication rechecks",
+            "selected_native": null,
+            "source_snapshot_input_bytes": 0,
+            "wiki_capture_bytes_through_metadata": 16
+          },
+          "groups": [
+            {
+              "key": {
+                "kind": "page",
+                "value": "guides/intro.md"
+              },
+              "members": [
+                0
+              ]
+            }
+          ],
+          "identity_state": "candidate",
+          "limits": {
+            "narrative_sections_per_member": 8,
+            "native_expanded_bytes": 16777216,
+            "native_read_bytes": 8388608,
+            "native_records": 1000,
+            "native_root_bytes": 262144,
+            "native_selectors": 100,
+            "section_snippet_characters": 240,
+            "serialized_bytes": 262144,
+            "source_snapshot_bytes": 16777216,
+            "source_snapshot_files": 10000
+          },
+          "live_comparison_performed": false,
+          "members": [
+            {
+              "content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "identity_state": "candidate",
+              "native": {
+                "bounds": {
+                  "returned": 0,
+                  "total": null,
+                  "total_known": false,
+                  "truncated": true
+                },
+                "locator": null,
+                "matches": [],
+                "reason": "native-absent",
+                "recorded_lifecycle": null,
+                "recorded_verification": null,
+                "source_content_hash": null,
+                "state": "unavailable"
+              },
+              "next_read": {
+                "live": false,
+                "locator_or_exact_route": "guides/intro.md",
+                "operation": "inspect_concept",
+                "resolution_performed": false,
+                "selection_required": true
+              },
+              "owner": {
+                "mapping": null,
+                "source_path": null,
+                "state": "page-only"
+              },
+              "path": "guides/intro.md",
+              "qualification": {
+                "basis": "captured",
+                "implementation_comparison": "not-performed",
+                "recorded_source": null,
+                "runtime_behavior": "not-evaluated",
+                "semantic_correctness": "not-evaluated",
+                "source_comparison": "not-performed"
+              },
+              "recorded_review": {
+                "availability": "unadopted",
+                "basis": "snapshot",
+                "live_evaluation_performed": false,
+                "reason": "maintenance-not-adopted"
+              },
+              "result_index": 0,
+              "section_bounds": {
+                "returned": 1,
+                "total": 1,
+                "truncated": false
+              },
+              "section_scope": "useful-non-generated-narrative",
+              "sections": [
+                {
+                  "content_sha256": "sha256:6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+                  "heading_path": [
+                    "Intro"
+                  ],
+                  "locator": "llm-wiki://guides/intro#section/Intro~1",
+                  "occurrence_path": [
+                    1
+                  ],
+                  "ordinal": 0,
+                  "ownership": "semantic",
+                  "page_locator": "llm-wiki://guides/intro",
+                  "snippet": "# Intro Cobalt.",
+                  "snippet_bounds": {
+                    "returned": 15,
+                    "total": 15,
+                    "truncated": false
+                  }
+                }
+              ],
+              "uri": "llm-wiki://guides/intro"
+            }
+          ],
+          "native": {
+            "availability": "unavailable",
+            "lookup_complete": false,
+            "reason": "native-absent",
+            "root_hash": null,
+            "validation_scope": null,
+            "whole_store_validated": false
+          },
+          "recorded_review": {
+            "adoption_id": null,
+            "availability": "unadopted",
+            "basis": "snapshot",
+            "current_acknowledgment": "not-compared",
+            "live_evaluation_performed": false,
+            "reason": "maintenance-not-adopted",
+            "state_hash": null
+          },
+          "schema_version": "llm-wiki-discovery/v2",
+          "scope": "returned-search-candidates",
+          "selection": {
+            "excluded_source_pages": 0,
+            "identity": null,
+            "ownership_filter_complete": true,
+            "policy_active": false,
+            "scope": "captured-source-selection",
+            "unknown_source_ownership_pages": 0
+          }
+        },
+        "experimental": false,
+        "mode": "ranked",
+        "query": "cobalt",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "intro",
+            "kind": "guides",
+            "matched_section_locations": [
+              {
+                "end": 16,
+                "heading_path": [
+                  "Intro"
+                ],
+                "locator": "llm-wiki://guides/intro#section/Intro~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 8,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Intro"
+              ]
+            ],
+            "path": "guides/intro.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "indexed_content_sha256": "6b32ddbc315d219fce8da1558e33244c65d558585be4f438c5746efadb55f564",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:cobalt",
+              "strict-informative-term-match",
+              "section:Intro"
+            ],
+            "score": 12.693147,
+            "snippet": "Cobalt.",
+            "title": "Intro",
+            "uri": "llm-wiki://guides/intro"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 16,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "bounds-extra-collection",
+      "valid": false,
+      "description": "Bounds cover results only.",
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "pages": {
+            "total": 0,
+            "returned": 0,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "returned-not-counted",
+      "valid": false,
+      "description": "returned and count count the results.",
+      "schema_valid": true,
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": false
+      }
+    },
+    {
+      "name": "total-mismatch",
+      "valid": false,
+      "description": "total matches bounds.results.",
+      "schema_valid": true,
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 2,
+        "truncated": false
+      }
+    },
+    {
+      "name": "truncated-mismatch",
+      "valid": false,
+      "description": "truncated matches bounds.results.",
+      "schema_valid": true,
+      "document": {
+        "schema_version": "llm-wiki-search-result/v1",
+        "bounds": {
+          "results": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "corpus_id": "sha256:0c79b9d6f05ec6e877277f2ffd5b37240bb96df409aaa28f77592cbe56ac0186",
+        "count": 1,
+        "definitive_answer": false,
+        "experimental": false,
+        "mode": "ranked",
+        "query": "Created wiki",
+        "ranking": "llm-wiki-search/lexical-v2",
+        "resource_limits": {
+          "bytes": 67108864,
+          "pages": 10000
+        },
+        "results": [
+          {
+            "id": "log",
+            "kind": "log",
+            "matched_section_locations": [
+              {
+                "end": 22,
+                "heading_path": [
+                  "Log"
+                ],
+                "locator": "llm-wiki://log#section/Log~1",
+                "occurrence_path": [
+                  1
+                ],
+                "ordinal": 0,
+                "start": 6,
+                "text_scope": "normalized-indexed-text"
+              }
+            ],
+            "matched_sections": [
+              [
+                "Log"
+              ]
+            ],
+            "path": "log.md",
+            "provenance": {
+              "configuration": "idf-sections-local-prose-entry-links/v2",
+              "content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "indexed_content_sha256": "f583fe5a3194f0047025d87a9e03fadbbff7d57e9e4582d31efaf751cd94a509",
+              "qualification": "lexical-discovery-candidate; live comparison not performed",
+              "ranking": "llm-wiki-search/lexical-v2"
+            },
+            "reasons": [
+              "exact-phrase",
+              "lexical:creat,wiki",
+              "strict-informative-term-match",
+              "section:Log"
+            ],
+            "score": 13.023439,
+            "snippet": "- Created wiki",
+            "title": "Log",
+            "uri": "llm-wiki://log"
+          }
+        ],
+        "returned": 1,
+        "scanned": {
+          "bytes": 22,
+          "pages": 1
+        },
+        "total": 1,
+        "truncated": true
+      }
+    }
+  ]
+}

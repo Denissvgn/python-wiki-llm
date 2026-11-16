@@ -31,6 +31,7 @@ from .services.ci_installer import (
     install_documentation_ci_workflow as _install_documentation_ci_workflow,
 )
 from .services import context_service as context_cmd
+from .services import query_result_format
 from .services import extraction_service as extract_cmd
 from .api_types import (
     CalleesResult,
@@ -2827,7 +2828,7 @@ def explain_evidence(
     )
 
 
-DOCUMENTATION_QUERY_SCHEMA_VERSION = "llm-wiki-documentation-query/v1"
+DOCUMENTATION_QUERY_SCHEMA_VERSION = query_result_format.DOCUMENTATION_QUERY_SCHEMA_VERSION
 MAX_RAW_QUERY_EVIDENCE_BYTES = 64 * 1024
 _DOCUMENTATION_QUERY_FIELDS = {
     "explain": frozenset({"operation", "value", "source", "limit", "live", "allow_full_inventory"}),
