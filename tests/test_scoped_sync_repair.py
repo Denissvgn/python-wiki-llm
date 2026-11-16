@@ -492,6 +492,7 @@ def test_helper_mutation_at_publication_checkpoint_is_refused(tmp_path, monkeypa
 
 def test_preview_command_retains_scope_and_caller_bindings(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    (tmp_path / 'src').mkdir()
     arguments = _args('--repair-evidence=-a.py', '--repair-evidence', 'dir/a space.py', 'b.py', '--cache-dir', 'cache')
     arguments.no_cache = False
     options = sync_cmd._sync_run_options_from_args(arguments)
