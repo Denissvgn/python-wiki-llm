@@ -320,13 +320,32 @@ def _source_location(value: object, field: str, coordinate: Mapping[str, Any]) -
         raise MaintenanceStatusError(f"{field}.qualification: captured exactly when a line is known")
 
 
-def _check_summary(value: object, status: Mapping[str, Any]) -> None:
-    summary = _fields(value, "summary", SUMMARY_FIELDS)
-    _choice(summary["availability"], "summary.availability", SUMMARY_AVAILABILITY)
+def check_maintenance_summary(value: object, field: str = "summary") -> Mapping[str, Any]:
+    """Check a compact maintenance summary on its own and return it."""
+    summary = _fields(value, field, SUMMARY_FIELDS)
+    _choice(summary["availability"], f"{field}.availability", SUMMARY_AVAILABILITY)
+    _choice(summary["analysis_scope"], f"{field}.analysis_scope", ANALYSIS_SCOPES)
     for key in SUMMARY_FLAGS:
-        _flag(summary[key], f"summary.{key}")
+        _flag(summary[key], f"{field}.{key}")
     for key in SUMMARY_COUNTS:
-        _count(summary[key], f"summary.{key}")
+        _count(summary[key], f"{field}.{key}")
+    if summary["limitations"] != list(STATUS_LIMITATIONS):
+        raise MaintenanceStatusError(f"{field}.limitations: must list the status limitations in order")
+    if summary["requires_sync"] is summary["native_prose_coherent"]:
+        raise MaintenanceStatusError(f"{field}.requires_sync: must negate native_prose_coherent")
+    if summary["analysis_scope"] in SNAPSHOT_SCOPES and summary["live_evaluation_performed"]:
+        raise MaintenanceStatusError(f"{field}.live_evaluation_performed: a snapshot read evaluates nothing")
+    if summary["pending"] + summary["acknowledged"] > summary["total"] or any(
+        summary[key] > summary["total"] for key in SUMMARY_COUNTS[1:6]
+    ):
+        raise MaintenanceStatusError(f"{field}: subgroup counts stay within the total")
+    if not summary["live_evaluation_performed"] and summary["acknowledged"]:
+        raise MaintenanceStatusError(f"{field}.acknowledged: a snapshot establishes no current acknowledgment")
+    return summary
+
+
+def _check_summary(value: object, status: Mapping[str, Any]) -> None:
+    summary = check_maintenance_summary(value)
     for key in ("availability", "analysis_scope", "live_evaluation_performed",
                 "native_prose_coherent", "requires_sync", "limitations"):
         if summary[key] != status[key]:
@@ -334,12 +353,6 @@ def _check_summary(value: object, status: Mapping[str, Any]) -> None:
     bounds = status["bounds"]
     if summary["total"] != bounds["total"] or summary["truncated"] is not bounds["truncated"]:
         raise MaintenanceStatusError("summary: total and truncated follow the record bounds")
-    if summary["pending"] + summary["acknowledged"] > summary["total"] or any(
-        summary[key] > summary["total"] for key in SUMMARY_COUNTS[1:6]
-    ):
-        raise MaintenanceStatusError("summary: subgroup counts stay within the total")
-    if not summary["live_evaluation_performed"] and summary["acknowledged"]:
-        raise MaintenanceStatusError("summary.acknowledged: a snapshot establishes no current acknowledgment")
     if not bounds["truncated"]:
         counts = _summary_counts(status["records"])
         for key, count in counts.items():
@@ -382,6 +395,16 @@ def _issue(value: object, field: str) -> None:
         _choice(value["scope"], f"{field}.scope", BASIS_SCOPES)
     if "record_id" in value:
         _record_id(value["record_id"], f"{field}.record_id")
+
+
+def check_coordinate(value: object, field: str = "coordinate") -> None:
+    """Check a maintenance source coordinate."""
+    _coordinate(value, field)
+
+
+def check_target(value: object, field: str = "target") -> None:
+    """Check a maintenance semantic target."""
+    _target(value, field)
 
 
 def _coordinate(value: object, field: str) -> None:

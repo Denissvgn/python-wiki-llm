@@ -22,6 +22,7 @@ from llm_wiki_cli.services import (
     entrypoints,
     extract_format,
     maintenance_queue,
+    maintenance_queue_format,
     maintenance_status,
     maintenance_status_format,
     query_result_format,
@@ -79,6 +80,9 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     extract_format.EXTRACT_SCHEMA_VERSION: extract_format.validate_extract_payload,
     maintenance_status_format.MAINTENANCE_STATUS_SCHEMA_VERSION: (
         maintenance_status_format.validate_maintenance_status
+    ),
+    maintenance_queue_format.MAINTENANCE_QUEUE_SCHEMA_VERSION: (
+        maintenance_queue_format.validate_maintenance_queue
     ),
 }
 
@@ -600,3 +604,55 @@ def test_maintenance_status_payloads_match_their_schema(tmp_path, monkeypatch, c
     assert limited["bounds"]["truncated"] is (len(live["records"]) > 1)
     assert emitted == reviewed
     assert page["summary"]["total"] == page["bounds"]["total"] >= 1
+
+
+def test_maintenance_queue_schema_matches_the_running_code():
+    schema = _schema("llm-wiki-maintenance-queue-v1.schema.json")
+    status = _schema("llm-wiki-maintenance-status-v1.schema.json")
+    fmt = maintenance_queue_format
+
+    assert fmt.MAINTENANCE_QUEUE_SCHEMA_VERSION == maintenance_queue.QUEUE_SCHEMA
+    assert (fmt.MIN_QUEUE_LIMIT, fmt.MAX_QUEUE_LIMIT) == (
+        maintenance_queue.MIN_QUEUE_LIMIT, maintenance_queue.MAX_QUEUE_LIMIT,
+    )
+    assert set(fmt.FRESHNESS_STATES) == set(maintenance_queue._FRESHNESS_WEIGHT)
+    assert set(fmt.QUEUE_FIELDS) == set(api_types.MaintenanceQueueResult.__required_keys__)
+    assert (fmt.QUEUE_MAX_DETAILS, fmt.QUEUE_MAX_BYTES) == (
+        maintenance_status.MAX_RECORDS, maintenance_status.MAX_BYTES,
+    )
+    for name in ("coordinate", "target", "summary"):
+        expected = {key: value for key, value in status["$defs"][name].items() if key != "description"}
+        actual = {key: value for key, value in schema["$defs"][name].items() if key != "description"}
+        assert actual == expected, name
+
+
+def _check_maintenance_queue(payload: object) -> dict[str, Any]:
+    Draft202012Validator(_schema("llm-wiki-maintenance-queue-v1.schema.json")).validate(payload)
+    maintenance_queue_format.validate_maintenance_queue(payload)
+    assert isinstance(payload, dict)
+    return payload
+
+
+def test_maintenance_queue_reports_match_their_schema(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    unadopted = _check_maintenance_queue(api.build_maintenance_queue("src", "wiki"))
+    limited = _check_maintenance_queue(api.build_maintenance_queue("src", "wiki", limit=1))
+    api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
+    adopted = _check_maintenance_queue(api.build_maintenance_queue("src", "wiki"))
+    capsys.readouterr()
+    monkeypatch.setattr(
+        sys, "argv", ["llm-wiki", "queue", "--src-dir", "src", "--wiki-dir", "wiki", "--format", "json"]
+    )
+    cli.main()
+    emitted = _check_maintenance_queue(json.loads(capsys.readouterr().out))
+
+    custody = unadopted["qualification"]["ordinary_review_custody"]
+    assert custody["availability"] == "unadopted"
+    assert any("coverage_gaps" in item for item in unadopted["items"])
+    assert limited["returned"] == min(1, unadopted["total"])
+    assert adopted["qualification"]["ordinary_review_custody"]["durable_owner_available"]
+    assert any("maintenance" in item for item in adopted["items"])
+    assert emitted == adopted
