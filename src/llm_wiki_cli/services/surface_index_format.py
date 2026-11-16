@@ -258,12 +258,15 @@ def _asset_path(value: str, field: str) -> None:
 
 
 def _portable(value: object, field: str) -> None:
+    if _canonical_portable_path(value) != value:
+        raise SurfaceIndexError(f"{field}: must be a portable repository-relative path")
+
+
+def _canonical_portable_path(value: object) -> str | None:
     try:
-        if require_portable_relative_path(value) == value:
-            return
+        return require_portable_relative_path(value)
     except SharedValidationError:
-        pass
-    raise SurfaceIndexError(f"{field}: must be a portable repository-relative path")
+        return None
 
 
 def _count(value: object, field: str) -> int:
