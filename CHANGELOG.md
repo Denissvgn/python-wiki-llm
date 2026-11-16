@@ -166,6 +166,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When sync kept a hand-written entity or module description, it wrote the
   page without its final newline and then rewrote it to restore it, so the
   wiki log could count the page as updated twice.
+- `llm-wiki sync`, `api.sync_wiki()` and `Engine.sync()` now reject a
+  `--src-dir` that does not exist or is not a directory before reading the
+  wiki. Before, sync treated every page as removed, marked them stale and
+  rewrote the index and log, then failed with a misleading "directory changed
+  during missing-source confirmation" error.
 
 ## [4.1.1] - 2026-11-13
 

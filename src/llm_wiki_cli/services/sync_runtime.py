@@ -2572,6 +2572,13 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
     src_root = validate_source_root(
         src_dir, "--src-dir", allow_external=allow_external_src
     )
+    if not src_root.is_dir():
+        # A missing root would otherwise extract an empty inventory and
+        # deprecate every page before the snapshot checks notice.
+        raise PathValidationError(
+            f"Error: --src-dir '{src_dir}' resolves to '{src_root}', "
+            "which is not an existing directory."
+        )
     if allow_external_src:
         src_dir = str(src_root)
     validate_path(str(wiki_dir), "--wiki-dir")

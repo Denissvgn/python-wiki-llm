@@ -107,6 +107,42 @@ def test_engine_sync_raises_typed_errors_with_the_reported_reason(project: Path)
         engine.sync({"wiki_root": "wiki"})  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize("source_root", ["missing", "src/billing.py"])
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_engine_sync_rejects_a_source_root_that_is_not_a_directory(
+    project: Path, source_root: str, dry_run: bool,
+) -> None:
+    before = _wiki_digest(project)
+    engine = Engine(host=NoProcessHost(stdout=io.StringIO(), stderr=io.StringIO()))
+
+    with pytest.raises(SyncRequestError) as rejected:
+        engine.sync(SyncRequest(source_root=source_root, wiki_root="wiki", dry_run=dry_run))
+
+    assert rejected.value.exit_code == 1
+    assert f"--src-dir '{source_root}'" in str(rejected.value)
+    assert "not an existing directory" in str(rejected.value)
+    assert _wiki_digest(project) == before
+
+
+def test_cli_sync_rejects_a_missing_source_root_before_touching_pages(
+    project: Path, monkeypatch, capsys,
+) -> None:
+    from llm_wiki_cli import cli
+
+    before = _wiki_digest(project)
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--src-dir", "missing", "--wiki-dir", "wiki"])
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as stopped:
+        cli.main()
+
+    err = capsys.readouterr().err
+    assert stopped.value.code == 1
+    assert "--src-dir 'missing'" in err and "not an existing directory" in err
+    assert "missing-source confirmation" not in err
+    assert _wiki_digest(project) == before
+
+
 def test_cli_entry_point_still_exits_with_the_command_status(project: Path, capsys) -> None:
     args = argparse.Namespace(src_dir="src", wiki_dir="other-wiki", no_plugins=True)
 
