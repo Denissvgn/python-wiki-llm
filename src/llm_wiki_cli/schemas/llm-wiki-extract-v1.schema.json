@@ -1,0 +1,484 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-extract-v1.schema.json",
+  "title": "Source inventory (extract)",
+  "description": "The payload extract prints: a per-file source inventory and, with --deep, entry points, data flows, dependencies and API contracts. The format is additive, so consumers must accept fields this schema does not list; data_flow_details is versioned separately and strict. A payload is valid only if it also passes checks a JSON Schema cannot express: the deep blocks (api_contracts, dependencies, data_flows) appear together, entry points need them and have unique ids, data_flows follow the entry points in order, symbol lists hold either names (a summary) or records throughout, unsupported source counts match their paths, and data_flow_details agrees with the payload: its state, its coverage arithmetic, the flows it details, and the unsupported languages it names. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-extract/v1"
+    },
+    "inventory": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/portable_path"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/file_record"
+      }
+    },
+    "docker": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/portable_path"
+      },
+      "additionalProperties": {
+        "type": "object"
+      },
+      "description": "Dockerfile and compose records by path."
+    },
+    "unsupported_sources": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/portable_path"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "count",
+          "paths"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Source files no active extractor reads, by language."
+    },
+    "entrypoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/text"
+          },
+          "category": {
+            "type": "string"
+          },
+          "file": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "routes": {
+            "type": "array"
+          },
+          "related_modules": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "file",
+          "symbol",
+          "label"
+        ]
+      }
+    },
+    "data_flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/text"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "data_flow_details": {
+      "$ref": "#/$defs/data_flow_details"
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "edges": {
+          "type": "array"
+        },
+        "cycles": {
+          "type": "array"
+        },
+        "external": {
+          "type": "object"
+        },
+        "load_order": {
+          "type": "object"
+        },
+        "version_details": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "edges",
+        "cycles",
+        "external",
+        "load_order"
+      ]
+    },
+    "api_contracts": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "applications": {
+          "type": "array"
+        },
+        "operations": {
+          "type": "array"
+        },
+        "diagnostics": {
+          "type": "array"
+        },
+        "excluded_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/count"
+          }
+        }
+      },
+      "required": [
+        "source",
+        "applications",
+        "operations",
+        "diagnostics"
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "inventory"
+  ],
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "portable_path": {
+      "type": "string",
+      "pattern": "^(?!\\.\\.?(?:/|$))[^/\\\\\\x00-\\x1f]+(?:/(?!\\.\\.?(?:/|$))[^/\\\\\\x00-\\x1f]+)*$",
+      "description": "A repository-relative path with / separators."
+    },
+    "file_record": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "$ref": "#/$defs/text"
+        },
+        "package": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "$ref": "#/$defs/text"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            ]
+          }
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "$ref": "#/$defs/text"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            ]
+          }
+        },
+        "imports": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "constants": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "module_calls": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "exports": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        }
+      },
+      "required": [],
+      "description": "One source file's inventory. Languages and extractor plugins add their own fields; summary payloads list symbol names instead of records."
+    },
+    "data_flow_details": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-extract-data-flow-details/v1"
+        },
+        "state": {
+          "enum": [
+            "evaluated",
+            "not_evaluated",
+            "unsupported"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/text"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "observed": {
+              "$ref": "#/$defs/count"
+            },
+            "emitted": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncation_reason": {
+              "enum": [
+                "collection-limit",
+                null
+              ]
+            },
+            "upstream_analyzer_limitations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/text"
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "observed",
+            "emitted",
+            "omitted",
+            "limit",
+            "truncated",
+            "truncation_reason",
+            "upstream_analyzer_limitations"
+          ],
+          "additionalProperties": false
+        },
+        "effective_limits": {
+          "type": "object",
+          "properties": {
+            "flows_per_extract": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "flow_depth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "steps_per_flow": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "effects_per_kind_per_step": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "boundaries_per_flow": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "transfers_per_flow": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gaps_per_flow": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "flows_per_extract",
+            "flow_depth",
+            "steps_per_flow",
+            "effects_per_kind_per_step",
+            "boundaries_per_flow",
+            "transfers_per_flow",
+            "gaps_per_flow"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "state",
+        "reason",
+        "flows",
+        "coverage",
+        "effective_limits"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "evaluated"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "not_evaluated"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "const": "deep-analysis-disabled"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unsupported"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "const": "no-supported-language-analyzer"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

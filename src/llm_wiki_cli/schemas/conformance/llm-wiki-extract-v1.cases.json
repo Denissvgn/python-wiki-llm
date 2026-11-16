@@ -1,0 +1,5483 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-extract/v1",
+  "schema": "llm-wiki-extract-v1.schema.json",
+  "cases": [
+    {
+      "name": "shallow-python",
+      "valid": true,
+      "description": "One Python file's inventory without deep analysis.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "summary",
+      "valid": true,
+      "description": "A summary lists symbol names instead of records.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "visible.py": {
+            "classes": [
+              "Visible"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "deep-entry-point",
+      "valid": true,
+      "description": "Deep analysis with one entry point and its data flow.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "analysis": {
+                "callables": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "collector_observations": {
+                  "emitted": 1,
+                  "observed": 1,
+                  "omitted": 0
+                },
+                "collector_totals": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "effects": {
+                  "evaluated": 1,
+                  "partial": 0,
+                  "unavailable": 0
+                },
+                "limitations": [],
+                "non_source_steps": 0,
+                "schema_version": "llm-wiki-callable-effect-coverage/v1",
+                "source_steps": 1,
+                "state": "evaluated"
+              },
+              "boundaries": [],
+              "coverage": {
+                "boundaries": {
+                  "effective_limit": 8,
+                  "emitted": 0,
+                  "limit": 8,
+                  "limitations": [
+                    "boundary-detection-is-static"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "effects": {
+                  "by_kind": {
+                    "boundary_effects": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "inputs": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "reads": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "returns": {
+                      "effective_limit": 8,
+                      "emitted": 1,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 1,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "writes": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    }
+                  },
+                  "effective_limit": 40,
+                  "emitted": 1,
+                  "limit": 40,
+                  "limitations": [
+                    "limit-applies-per-effect-kind-per-emitted-step",
+                    "static-effects-do-not-claim-runtime-completeness"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "gaps": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "absence-of-a-gap-does-not-claim-runtime-completeness"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "steps": {
+                  "effective_limit": 12,
+                  "emitted": 1,
+                  "limit": 12,
+                  "limitations": [
+                    "flow-steps-are-statically-inferred"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "transfers": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "transfers-follow-the-bounded-static-flow"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                }
+              },
+              "entry": {
+                "category": "api",
+                "file": "api.py",
+                "id": "api-run",
+                "label": "run",
+                "symbol": "run"
+              },
+              "gaps": [],
+              "id": "api-run",
+              "schema_version": "llm-wiki-data-flow-observations/v1",
+              "steps": [
+                {
+                  "analysis": {
+                    "callable_record": "available",
+                    "collector_counts": {
+                      "emitted": 1,
+                      "observed": 1,
+                      "omitted": 0
+                    },
+                    "collector_totals": "available",
+                    "effect_analysis": "evaluated",
+                    "limitations": []
+                  },
+                  "boundary_effects": [],
+                  "depth": 0,
+                  "file": "api.py",
+                  "index": 1,
+                  "inputs": [],
+                  "kind": "entry",
+                  "reads": [],
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ],
+                  "symbol": "run",
+                  "writes": []
+                }
+              ],
+              "transfers": [],
+              "truncated": false
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "analysis": {
+              "callables": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "collector_observations": {
+                "emitted": 1,
+                "observed": 1,
+                "omitted": 0
+              },
+              "collector_totals": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "effects": {
+                "evaluated": 1,
+                "partial": 0,
+                "unavailable": 0
+              },
+              "limitations": [],
+              "non_source_steps": 0,
+              "schema_version": "llm-wiki-callable-effect-coverage/v1",
+              "source_steps": 1,
+              "state": "evaluated"
+            },
+            "boundaries": [],
+            "entry": {
+              "category": "api",
+              "file": "api.py",
+              "id": "api-run",
+              "label": "run",
+              "symbol": "run"
+            },
+            "gaps": [],
+            "id": "api-run",
+            "steps": [
+              {
+                "analysis": {
+                  "callable_record": "available",
+                  "collector_counts": {
+                    "emitted": 1,
+                    "observed": 1,
+                    "omitted": 0
+                  },
+                  "collector_totals": "available",
+                  "effect_analysis": "evaluated",
+                  "limitations": []
+                },
+                "boundary_effects": [],
+                "depth": 0,
+                "file": "api.py",
+                "index": 1,
+                "inputs": [],
+                "kind": "entry",
+                "reads": [],
+                "returns": [
+                  {
+                    "kind": "literal",
+                    "line": 5,
+                    "value": "1"
+                  }
+                ],
+                "symbol": "run",
+                "writes": []
+              }
+            ],
+            "transfers": [],
+            "truncated": false
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          },
+          "version_details": {
+            "coverage": {
+              "emitted": 0,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation"
+              ],
+              "observed": 0,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "truncated-flow-details",
+      "valid": true,
+      "description": "Three flows observed, two detailed at a limit of two.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 2,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 1,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "analysis": {
+                "callables": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "collector_observations": {
+                  "emitted": 1,
+                  "observed": 1,
+                  "omitted": 0
+                },
+                "collector_totals": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "effects": {
+                  "evaluated": 1,
+                  "partial": 0,
+                  "unavailable": 0
+                },
+                "limitations": [],
+                "non_source_steps": 0,
+                "schema_version": "llm-wiki-callable-effect-coverage/v1",
+                "source_steps": 1,
+                "state": "evaluated"
+              },
+              "boundaries": [],
+              "coverage": {
+                "boundaries": {
+                  "effective_limit": 8,
+                  "emitted": 0,
+                  "limit": 8,
+                  "limitations": [
+                    "boundary-detection-is-static"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "effects": {
+                  "by_kind": {
+                    "boundary_effects": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "inputs": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "reads": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "returns": {
+                      "effective_limit": 8,
+                      "emitted": 1,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 1,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "writes": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    }
+                  },
+                  "effective_limit": 40,
+                  "emitted": 1,
+                  "limit": 40,
+                  "limitations": [
+                    "limit-applies-per-effect-kind-per-emitted-step",
+                    "static-effects-do-not-claim-runtime-completeness"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "gaps": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "absence-of-a-gap-does-not-claim-runtime-completeness"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "steps": {
+                  "effective_limit": 12,
+                  "emitted": 1,
+                  "limit": 12,
+                  "limitations": [
+                    "flow-steps-are-statically-inferred"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "transfers": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "transfers-follow-the-bounded-static-flow"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                }
+              },
+              "entry": {
+                "category": "api",
+                "file": "api.py",
+                "id": "api-a",
+                "label": "a",
+                "symbol": "a"
+              },
+              "gaps": [],
+              "id": "api-a",
+              "schema_version": "llm-wiki-data-flow-observations/v1",
+              "steps": [
+                {
+                  "analysis": {
+                    "callable_record": "available",
+                    "collector_counts": {
+                      "emitted": 1,
+                      "observed": 1,
+                      "omitted": 0
+                    },
+                    "collector_totals": "available",
+                    "effect_analysis": "evaluated",
+                    "limitations": []
+                  },
+                  "boundary_effects": [],
+                  "depth": 0,
+                  "file": "api.py",
+                  "index": 1,
+                  "inputs": [],
+                  "kind": "entry",
+                  "reads": [],
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ],
+                  "symbol": "a",
+                  "writes": []
+                }
+              ],
+              "transfers": [],
+              "truncated": false
+            },
+            {
+              "analysis": {
+                "callables": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "collector_observations": {
+                  "emitted": 1,
+                  "observed": 1,
+                  "omitted": 0
+                },
+                "collector_totals": {
+                  "available": 1,
+                  "unavailable": 0
+                },
+                "effects": {
+                  "evaluated": 1,
+                  "partial": 0,
+                  "unavailable": 0
+                },
+                "limitations": [],
+                "non_source_steps": 0,
+                "schema_version": "llm-wiki-callable-effect-coverage/v1",
+                "source_steps": 1,
+                "state": "evaluated"
+              },
+              "boundaries": [],
+              "coverage": {
+                "boundaries": {
+                  "effective_limit": 8,
+                  "emitted": 0,
+                  "limit": 8,
+                  "limitations": [
+                    "boundary-detection-is-static"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "effects": {
+                  "by_kind": {
+                    "boundary_effects": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "inputs": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "reads": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "returns": {
+                      "effective_limit": 8,
+                      "emitted": 1,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 1,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    },
+                    "writes": {
+                      "effective_limit": 8,
+                      "emitted": 0,
+                      "limit": 8,
+                      "limitations": [
+                        "limit-applies-per-effect-kind-per-emitted-step",
+                        "static-effects-do-not-claim-runtime-completeness"
+                      ],
+                      "observed": 0,
+                      "omitted": 0,
+                      "truncated": false,
+                      "truncation_reason": null,
+                      "upstream_analyzer_limitations": []
+                    }
+                  },
+                  "effective_limit": 40,
+                  "emitted": 1,
+                  "limit": 40,
+                  "limitations": [
+                    "limit-applies-per-effect-kind-per-emitted-step",
+                    "static-effects-do-not-claim-runtime-completeness"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "gaps": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "absence-of-a-gap-does-not-claim-runtime-completeness"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "steps": {
+                  "effective_limit": 12,
+                  "emitted": 1,
+                  "limit": 12,
+                  "limitations": [
+                    "flow-steps-are-statically-inferred"
+                  ],
+                  "observed": 1,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                },
+                "transfers": {
+                  "effective_limit": 12,
+                  "emitted": 0,
+                  "limit": 12,
+                  "limitations": [
+                    "transfers-follow-the-bounded-static-flow"
+                  ],
+                  "observed": 0,
+                  "omitted": 0,
+                  "truncated": false,
+                  "truncation_reason": null,
+                  "upstream_analyzer_limitations": []
+                }
+              },
+              "entry": {
+                "category": "api",
+                "file": "api.py",
+                "id": "api-b",
+                "label": "b",
+                "symbol": "b"
+              },
+              "gaps": [],
+              "id": "api-b",
+              "schema_version": "llm-wiki-data-flow-observations/v1",
+              "steps": [
+                {
+                  "analysis": {
+                    "callable_record": "available",
+                    "collector_counts": {
+                      "emitted": 1,
+                      "observed": 1,
+                      "omitted": 0
+                    },
+                    "collector_totals": "available",
+                    "effect_analysis": "evaluated",
+                    "limitations": []
+                  },
+                  "boundary_effects": [],
+                  "depth": 0,
+                  "file": "api.py",
+                  "index": 1,
+                  "inputs": [],
+                  "kind": "entry",
+                  "reads": [],
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ],
+                  "symbol": "b",
+                  "writes": []
+                }
+              ],
+              "transfers": [],
+              "truncated": false
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "analysis": {
+              "callables": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "collector_observations": {
+                "emitted": 1,
+                "observed": 1,
+                "omitted": 0
+              },
+              "collector_totals": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "effects": {
+                "evaluated": 1,
+                "partial": 0,
+                "unavailable": 0
+              },
+              "limitations": [],
+              "non_source_steps": 0,
+              "schema_version": "llm-wiki-callable-effect-coverage/v1",
+              "source_steps": 1,
+              "state": "evaluated"
+            },
+            "boundaries": [],
+            "entry": {
+              "category": "api",
+              "file": "api.py",
+              "id": "api-a",
+              "label": "a",
+              "symbol": "a"
+            },
+            "gaps": [],
+            "id": "api-a",
+            "steps": [
+              {
+                "analysis": {
+                  "callable_record": "available",
+                  "collector_counts": {
+                    "emitted": 1,
+                    "observed": 1,
+                    "omitted": 0
+                  },
+                  "collector_totals": "available",
+                  "effect_analysis": "evaluated",
+                  "limitations": []
+                },
+                "boundary_effects": [],
+                "depth": 0,
+                "file": "api.py",
+                "index": 1,
+                "inputs": [],
+                "kind": "entry",
+                "reads": [],
+                "returns": [
+                  {
+                    "kind": "literal",
+                    "line": 4,
+                    "value": "1"
+                  }
+                ],
+                "symbol": "a",
+                "writes": []
+              }
+            ],
+            "transfers": [],
+            "truncated": false
+          },
+          {
+            "analysis": {
+              "callables": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "collector_observations": {
+                "emitted": 1,
+                "observed": 1,
+                "omitted": 0
+              },
+              "collector_totals": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "effects": {
+                "evaluated": 1,
+                "partial": 0,
+                "unavailable": 0
+              },
+              "limitations": [],
+              "non_source_steps": 0,
+              "schema_version": "llm-wiki-callable-effect-coverage/v1",
+              "source_steps": 1,
+              "state": "evaluated"
+            },
+            "boundaries": [],
+            "entry": {
+              "category": "api",
+              "file": "api.py",
+              "id": "api-b",
+              "label": "b",
+              "symbol": "b"
+            },
+            "gaps": [],
+            "id": "api-b",
+            "steps": [
+              {
+                "analysis": {
+                  "callable_record": "available",
+                  "collector_counts": {
+                    "emitted": 1,
+                    "observed": 1,
+                    "omitted": 0
+                  },
+                  "collector_totals": "available",
+                  "effect_analysis": "evaluated",
+                  "limitations": []
+                },
+                "boundary_effects": [],
+                "depth": 0,
+                "file": "api.py",
+                "index": 1,
+                "inputs": [],
+                "kind": "entry",
+                "reads": [],
+                "returns": [
+                  {
+                    "kind": "literal",
+                    "line": 7,
+                    "value": "2"
+                  }
+                ],
+                "symbol": "b",
+                "writes": []
+              }
+            ],
+            "transfers": [],
+            "truncated": false
+          },
+          {
+            "analysis": {
+              "callables": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "collector_observations": {
+                "emitted": 1,
+                "observed": 1,
+                "omitted": 0
+              },
+              "collector_totals": {
+                "available": 1,
+                "unavailable": 0
+              },
+              "effects": {
+                "evaluated": 1,
+                "partial": 0,
+                "unavailable": 0
+              },
+              "limitations": [],
+              "non_source_steps": 0,
+              "schema_version": "llm-wiki-callable-effect-coverage/v1",
+              "source_steps": 1,
+              "state": "evaluated"
+            },
+            "boundaries": [],
+            "entry": {
+              "category": "api",
+              "file": "api.py",
+              "id": "api-c",
+              "label": "c",
+              "symbol": "c"
+            },
+            "gaps": [],
+            "id": "api-c",
+            "steps": [
+              {
+                "analysis": {
+                  "callable_record": "available",
+                  "collector_counts": {
+                    "emitted": 1,
+                    "observed": 1,
+                    "omitted": 0
+                  },
+                  "collector_totals": "available",
+                  "effect_analysis": "evaluated",
+                  "limitations": []
+                },
+                "boundary_effects": [],
+                "depth": 0,
+                "file": "api.py",
+                "index": 1,
+                "inputs": [],
+                "kind": "entry",
+                "reads": [],
+                "returns": [
+                  {
+                    "kind": "literal",
+                    "line": 10,
+                    "value": "3"
+                  }
+                ],
+                "symbol": "c",
+                "writes": []
+              }
+            ],
+            "transfers": [],
+            "truncated": false
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          },
+          "version_details": {
+            "coverage": {
+              "emitted": 0,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation"
+              ],
+              "observed": 0,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-b",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "typescript",
+      "valid": true,
+      "description": "TypeScript imports, exports and constants.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [],
+        "dependencies": {
+          "cycles": [],
+          "edges": [
+            [
+              "a.ts",
+              "b.ts"
+            ],
+            [
+              "b.ts",
+              "a.ts"
+            ]
+          ],
+          "external": {},
+          "import_time_edges": [],
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "a.ts",
+              "b.ts"
+            ]
+          },
+          "type_cycles": [
+            [
+              "a.ts",
+              "b.ts"
+            ]
+          ],
+          "type_only_edges": [
+            [
+              "a.ts",
+              "b.ts"
+            ],
+            [
+              "b.ts",
+              "a.ts"
+            ]
+          ],
+          "version_details": {
+            "coverage": {
+              "emitted": 0,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation"
+              ],
+              "observed": 0,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "inventory": {
+          "a.ts": {
+            "classes": [
+              {
+                "attributes": [
+                  {
+                    "default": "",
+                    "name": "b",
+                    "optional": true,
+                    "type": "B"
+                  }
+                ],
+                "bases": [],
+                "decorators": [],
+                "docstring": "",
+                "kind": "interface",
+                "line": 1,
+                "methods": [],
+                "name": "A",
+                "type_params": []
+              }
+            ],
+            "exports": [
+              "A"
+            ],
+            "functions": [],
+            "imports": [
+              {
+                "alias": null,
+                "module": "./b",
+                "name": "B",
+                "runtime": "erased",
+                "type": "named",
+                "type_only": true,
+                "type_only_declaration": true
+              }
+            ],
+            "language": "typescript",
+            "module_docstring": "",
+            "package": null
+          },
+          "b.ts": {
+            "classes": [
+              {
+                "attributes": [
+                  {
+                    "default": "",
+                    "name": "a",
+                    "optional": true,
+                    "type": "A"
+                  }
+                ],
+                "bases": [],
+                "decorators": [],
+                "docstring": "",
+                "kind": "interface",
+                "line": 1,
+                "methods": [],
+                "name": "B",
+                "type_params": []
+              }
+            ],
+            "exports": [
+              "B"
+            ],
+            "functions": [],
+            "imports": [
+              {
+                "alias": null,
+                "module": "./a",
+                "name": "A",
+                "runtime": "erased",
+                "type": "named",
+                "type_only": true,
+                "type_only_declaration": true
+              }
+            ],
+            "language": "typescript",
+            "module_docstring": "",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "docker-and-dependency-versions",
+      "valid": true,
+      "description": "Dockerfile records and a declared dependency.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {
+            "python": {
+              "undeclared": [],
+              "unused": [],
+              "used": {}
+            }
+          },
+          "load_order": {
+            "cycle_groups": [],
+            "order": []
+          },
+          "version_details": {
+            "coverage": {
+              "emitted": 1,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation",
+                "unknown-selection-without-lock-evidence"
+              ],
+              "observed": 1,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [
+              {
+                "declaration": "required",
+                "declared_as": null,
+                "ecosystem": "python",
+                "package": "selected-dep",
+                "reach": "direct",
+                "scope": "app",
+                "selection_confidence": "declared",
+                "selection_state": "unknown",
+                "source_path": "app/pyproject.toml",
+                "source_semantics": "python-project-declaration",
+                "version": null,
+                "version_kind": "unknown"
+              }
+            ],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "docker": {
+          "app/infra.yaml": {
+            "networks": [],
+            "services": {
+              "selected": {
+                "build": "."
+              }
+            },
+            "type": "compose",
+            "volumes": []
+          }
+        },
+        "inventory": {},
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "only-unsupported-sources",
+      "valid": true,
+      "description": "Deep analysis with no supported source language.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "no-supported-language-analyzer",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "unsupported"
+        },
+        "data_flows": [],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": []
+          },
+          "version_details": {
+            "coverage": {
+              "emitted": 0,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation"
+              ],
+              "observed": 0,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "inventory": {},
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 1,
+            "paths": [
+              "run.sh"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "summary-with-unsupported-source",
+      "valid": true,
+      "description": "A summary that also reports a shell script.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 1,
+            "paths": [
+              "scripts/deploy.sh"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "nothing-changed",
+      "valid": true,
+      "description": "Deep analysis of a change set with no source files.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": []
+          }
+        },
+        "inventory": {},
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "additive-fields",
+      "valid": true,
+      "description": "Consumers accept fields the format does not list.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null,
+            "framework_hints": [
+              "django"
+            ]
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "generated_by": "plugin"
+      }
+    },
+    {
+      "name": "without-data-flow-details",
+      "valid": true,
+      "description": "Payloads from older producers carry no data_flow_details.",
+      "document": {
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The payload names this format.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v2"
+      }
+    },
+    {
+      "name": "missing-inventory",
+      "valid": false,
+      "description": "Every payload has an inventory.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "absolute-inventory-path",
+      "valid": false,
+      "description": "Inventory paths are repository-relative.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "/src/model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "parent-inventory-path",
+      "valid": false,
+      "description": "Inventory paths stay inside the repository.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "../model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "backslash-inventory-path",
+      "valid": false,
+      "description": "Inventory paths use / separators.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "src\\model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "file-record-not-object",
+      "valid": false,
+      "description": "Each file has a record.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": [
+            "Value"
+          ]
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "empty-language",
+      "valid": false,
+      "description": "A language is named.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "class-without-name",
+      "valid": false,
+      "description": "Class records name their class.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "symbol-list-not-array",
+      "valid": false,
+      "description": "Symbol lists are arrays.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": {},
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "docker-absolute-path",
+      "valid": false,
+      "description": "Docker records are keyed by relative path.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {
+            "python": {
+              "undeclared": [],
+              "unused": [],
+              "used": {}
+            }
+          },
+          "load_order": {
+            "cycle_groups": [],
+            "order": []
+          },
+          "version_details": {
+            "coverage": {
+              "emitted": 1,
+              "limit": null,
+              "limitations": [
+                "declarations-do-not-prove-a-selected-version",
+                "static-lock-analysis-does-not-claim-runtime-installation",
+                "unknown-selection-without-lock-evidence"
+              ],
+              "observed": 1,
+              "omitted": 0,
+              "truncated": false
+            },
+            "diagnostics": [],
+            "records": [
+              {
+                "declaration": "required",
+                "declared_as": null,
+                "ecosystem": "python",
+                "package": "selected-dep",
+                "reach": "direct",
+                "scope": "app",
+                "selection_confidence": "declared",
+                "selection_state": "unknown",
+                "source_path": "app/pyproject.toml",
+                "source_semantics": "python-project-declaration",
+                "version": null,
+                "version_kind": "unknown"
+              }
+            ],
+            "schema_version": "llm-wiki-dependency-version-details/v1"
+          }
+        },
+        "docker": {
+          "/Dockerfile": {
+            "networks": [],
+            "services": {
+              "selected": {
+                "build": "."
+              }
+            },
+            "type": "compose",
+            "volumes": []
+          }
+        },
+        "inventory": {},
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "unsupported-without-paths",
+      "valid": false,
+      "description": "An unsupported language lists its sources.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 0,
+            "paths": []
+          }
+        }
+      }
+    },
+    {
+      "name": "unsupported-extra-field",
+      "valid": false,
+      "description": "Unsupported source entries have a closed field set.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 1,
+            "paths": [
+              "scripts/deploy.sh"
+            ],
+            "reason": "x"
+          }
+        }
+      }
+    },
+    {
+      "name": "entry-point-missing-label",
+      "valid": false,
+      "description": "Entry points carry id, category, file, symbol and label.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "data-flow-missing-id",
+      "valid": false,
+      "description": "Data flows carry an id.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {}
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "dependencies-missing-edges",
+      "valid": false,
+      "description": "The dependency block lists its edges.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "api-contracts-missing-source",
+      "valid": false,
+      "description": "API contracts name their source.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": []
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "warning-not-text",
+      "valid": false,
+      "description": "Warnings are strings.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "warnings": [
+          {
+            "message": "x"
+          }
+        ]
+      }
+    },
+    {
+      "name": "flow-details-other-version",
+      "valid": false,
+      "description": "data_flow_details names its own format.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v2",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "flow-details-unknown-state",
+      "valid": false,
+      "description": "data_flow_details has three states.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "skipped"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "flow-details-reason-for-state",
+      "valid": false,
+      "description": "Each state carries its own reason.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "no-supported-language-analyzer",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "flow-details-extra-field",
+      "valid": false,
+      "description": "data_flow_details has a closed field set.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated",
+          "notes": []
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "coverage-extra-field",
+      "valid": false,
+      "description": "Coverage has a closed field set.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [],
+            "dropped": 0
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "negative-observed",
+      "valid": false,
+      "description": "Counts are non-negative.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": -1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "zero-flow-limit",
+      "valid": false,
+      "description": "Limits are positive.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 0,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 0,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "unknown-truncation-reason",
+      "valid": false,
+      "description": "Flows are truncated only at the collection limit.",
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 2,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 1,
+            "truncated": true,
+            "truncation_reason": "timeout",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-a"
+            },
+            {
+              "id": "api-b"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-a"
+          },
+          {
+            "id": "api-b"
+          },
+          {
+            "id": "api-c"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-b",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "effective-limit-missing",
+      "valid": false,
+      "description": "Every effective limit is stated.",
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "reserved-inventory-path",
+      "valid": false,
+      "description": "Inventory paths are portable file names.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "src/CON.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "partial-deep-blocks",
+      "valid": false,
+      "description": "The deep blocks appear together.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "entry-points-without-deep",
+      "valid": false,
+      "description": "Only deep analysis detects entry points.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-entry-point-ids",
+      "valid": false,
+      "description": "Entry point ids are unique.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 2,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 1,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-a"
+            },
+            {
+              "id": "api-b"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-a"
+          },
+          {
+            "id": "api-b"
+          },
+          {
+            "id": "api-c"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "data-flow-for-other-entry-point",
+      "valid": false,
+      "description": "Data flows follow the entry points in order.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-other"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "summary-mixed-with-records",
+      "valid": false,
+      "description": "Symbol lists hold names or records throughout.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "visible.py": {
+            "classes": [
+              "Visible"
+            ],
+            "language": "python"
+          },
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "unsupported-miscounted",
+      "valid": false,
+      "description": "An unsupported count counts its paths.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 2,
+            "paths": [
+              "scripts/deploy.sh"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "not-evaluated-with-deep-blocks",
+      "valid": false,
+      "description": "Deep payloads evaluate data flow details.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "evaluated-without-deep",
+      "valid": false,
+      "description": "Data flow details need deep analysis.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "unsupported-with-inventory",
+      "valid": false,
+      "description": "The unsupported state means no file was inventoried.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": "no-supported-language-analyzer",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "unsupported"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "emitted-miscounted",
+      "valid": false,
+      "description": "Emitted flows stop at the limit.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 3,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 0,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-a"
+            },
+            {
+              "id": "api-b"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-a"
+          },
+          {
+            "id": "api-b"
+          },
+          {
+            "id": "api-c"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-b",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "omitted-miscounted",
+      "valid": false,
+      "description": "Omitted flows are observed minus emitted.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 2,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 0,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-a"
+            },
+            {
+              "id": "api-b"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-a"
+          },
+          {
+            "id": "api-b"
+          },
+          {
+            "id": "api-c"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-b",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "truncated-flag-wrong",
+      "valid": false,
+      "description": "Truncation means omitted flows.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 100,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "limit-differs-from-effective-limit",
+      "valid": false,
+      "description": "The coverage limit is the flows_per_extract limit.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 50,
+            "observed": 1,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "observed-not-data-flows",
+      "valid": false,
+      "description": "Observed flows are the payload's data flows.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 1,
+            "limit": 1,
+            "observed": 2,
+            "omitted": 1,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 1,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-run"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-run"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-run",
+            "label": "run",
+            "symbol": "run"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "run"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 5,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 4,
+                "name": "run",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "run": {
+                "kind": "local",
+                "symbol": "run"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "detailed-flow-out-of-order",
+      "valid": false,
+      "description": "Detailed flows are the first data flows in order.",
+      "schema_valid": true,
+      "document": {
+        "api_contracts": {
+          "applications": [],
+          "diagnostics": [],
+          "excluded_counts": {
+            "conditional": 0,
+            "schema_excluded": 0,
+            "test_source": 0
+          },
+          "operations": [],
+          "source": "static"
+        },
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 2,
+            "limit": 2,
+            "observed": 3,
+            "omitted": 1,
+            "truncated": true,
+            "truncation_reason": "collection-limit",
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 2,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [
+            {
+              "id": "api-b"
+            },
+            {
+              "id": "api-a"
+            }
+          ],
+          "reason": null,
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "evaluated"
+        },
+        "data_flows": [
+          {
+            "id": "api-a"
+          },
+          {
+            "id": "api-b"
+          },
+          {
+            "id": "api-c"
+          }
+        ],
+        "dependencies": {
+          "cycles": [],
+          "edges": [],
+          "external": {},
+          "load_order": {
+            "cycle_groups": [],
+            "order": [
+              "api.py"
+            ]
+          }
+        },
+        "entrypoints": [
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-a",
+            "label": "a",
+            "symbol": "a"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-b",
+            "label": "b",
+            "symbol": "b"
+          },
+          {
+            "category": "api",
+            "file": "api.py",
+            "id": "api-c",
+            "label": "c",
+            "symbol": "c"
+          }
+        ],
+        "inventory": {
+          "api.py": {
+            "all_exports": [
+              "a",
+              "b",
+              "c"
+            ],
+            "classes": [],
+            "functions": [
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 4,
+                      "value": "1"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 3,
+                "name": "a",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 7,
+                      "value": "2"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 6,
+                "name": "b",
+                "params": [],
+                "return_type": ""
+              },
+              {
+                "data_effects": {
+                  "returns": [
+                    {
+                      "kind": "literal",
+                      "line": 10,
+                      "value": "3"
+                    }
+                  ]
+                },
+                "decorators": [],
+                "docstring": "",
+                "is_async": false,
+                "line": 9,
+                "name": "c",
+                "params": [],
+                "return_type": ""
+              }
+            ],
+            "has_all": true,
+            "imports": [],
+            "language": "python",
+            "module_docstring": "",
+            "package": null,
+            "python_bindings": {
+              "__all__": {
+                "kind": "unresolved"
+              },
+              "a": {
+                "kind": "local",
+                "symbol": "a"
+              },
+              "b": {
+                "kind": "local",
+                "symbol": "b"
+              },
+              "c": {
+                "kind": "local",
+                "symbol": "c"
+              }
+            },
+            "python_constructor_facts_version": 1
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    },
+    {
+      "name": "limitations-unsorted",
+      "valid": false,
+      "description": "Analyzer limitations are sorted.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell",
+              "unsupported-source-language:perl"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 1,
+            "paths": [
+              "scripts/deploy.sh"
+            ]
+          },
+          "perl": {
+            "count": 1,
+            "paths": [
+              "tools/run.pl"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "unsupported-language-not-named",
+      "valid": false,
+      "description": "Each unsupported language is named as a limitation.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": []
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "app.py": {
+            "functions": [
+              "main"
+            ],
+            "language": "python"
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1",
+        "unsupported_sources": {
+          "shell": {
+            "count": 1,
+            "paths": [
+              "scripts/deploy.sh"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "named-language-not-unsupported",
+      "valid": false,
+      "description": "Limitations name only unsupported languages.",
+      "schema_valid": true,
+      "document": {
+        "data_flow_details": {
+          "coverage": {
+            "emitted": 0,
+            "limit": 100,
+            "observed": 0,
+            "omitted": 0,
+            "truncated": false,
+            "truncation_reason": null,
+            "upstream_analyzer_limitations": [
+              "unsupported-source-language:shell"
+            ]
+          },
+          "effective_limits": {
+            "boundaries_per_flow": 8,
+            "effects_per_kind_per_step": 8,
+            "flow_depth": 6,
+            "flows_per_extract": 100,
+            "gaps_per_flow": 12,
+            "steps_per_flow": 12,
+            "transfers_per_flow": 12
+          },
+          "flows": [],
+          "reason": "deep-analysis-disabled",
+          "schema_version": "llm-wiki-extract-data-flow-details/v1",
+          "state": "not_evaluated"
+        },
+        "inventory": {
+          "model.py": {
+            "classes": [
+              {
+                "bases": [],
+                "kind": "class",
+                "line": 1,
+                "name": "Value"
+              }
+            ],
+            "functions": [],
+            "language": "python",
+            "package": null
+          }
+        },
+        "schema_version": "llm-wiki-extract/v1"
+      }
+    }
+  ]
+}

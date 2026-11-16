@@ -54,6 +54,11 @@ from ..services.query_result_format import (
     validate_documentation_query_result,
     validate_search_result,
 )
+from ..services.extract_format import (
+    EXTRACT_SCHEMA_VERSION,
+    ExtractPayloadError,
+    validate_extract_payload,
+)
 from ..services.surface_index_format import (
     SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexError,
@@ -179,6 +184,8 @@ __all__ = [
     "PublicationTarget",
     "PublicationTargetRegistry",
     "QueryResultError",
+    "EXTRACT_SCHEMA_VERSION",
+    "ExtractPayloadError",
     "ReferenceProvider",
     "SEARCH_RESULT_SCHEMA_VERSION",
     "SURFACE_INDEX_SCHEMA_VERSION",
@@ -199,6 +206,7 @@ __all__ = [
     "validate_context_response",
     "validate_documentation_query_result",
     "validate_engine_event",
+    "validate_extract_payload",
     "validate_search_result",
     "validate_surface_index",
 ]

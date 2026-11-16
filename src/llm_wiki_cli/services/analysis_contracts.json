@@ -152,6 +152,7 @@
     "services/entrypoints.py",
     "services/evidence_diagnostics.py",
     "services/evidence_explanation.py",
+    "services/extract_format.py",
     "services/extraction_jobs.py",
     "services/extraction_service.py",
     "services/extractor_helpers.py",

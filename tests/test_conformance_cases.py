@@ -17,6 +17,10 @@ from llm_wiki_cli import api_types
 from llm_wiki_cli.services import (
     context_packet,
     context_request_format,
+    contracts,
+    data_flow,
+    entrypoints,
+    extract_format,
     query_result_format,
     search_lexical,
     search_rank,
@@ -68,6 +72,7 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     ),
     query_result_format.SEARCH_RESULT_SCHEMA_VERSION: query_result_format.validate_search_result,
     surface_index_format.SURFACE_INDEX_SCHEMA_VERSION: surface_index_format.validate_surface_index,
+    extract_format.EXTRACT_SCHEMA_VERSION: extract_format.validate_extract_payload,
 }
 
 
@@ -432,3 +437,77 @@ def test_written_surface_indexes_match_their_schema(orders_wiki):
     assert synced["assets"]["unreferenced"] == ["assets/guides/tour/notes.txt"]
     assert "entities/Refund.md" in {page["canonical_path"] for page in synced["pages"]}
 
+
+def test_extract_schema_matches_the_running_code():
+    schema = _schema("llm-wiki-extract-v1.schema.json")
+    details = schema["$defs"]["data_flow_details"]
+    limits = data_flow.data_flow_effective_limits(flow_depth=entrypoints.DEFAULT_FLOW_DEPTH)
+
+    assert schema["properties"]["schema_version"]["const"] == contracts.EXTRACT_SCHEMA_VERSION
+    result = api_types.ExtractSourceResult
+    assert set(schema["properties"]) == result.__required_keys__ | result.__optional_keys__
+    assert details["properties"]["schema_version"]["const"] == contracts.EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION
+    assert list(details["properties"]) == list(extract_format.DATA_FLOW_DETAILS_FIELDS)
+    assert list(details["properties"]["coverage"]["properties"]) == list(
+        extract_format.DATA_FLOW_DETAILS_COVERAGE_FIELDS
+    )
+    assert list(details["properties"]["effective_limits"]["properties"]) == list(limits)
+    assert list(limits) == list(extract_format.DATA_FLOW_EFFECTIVE_LIMIT_FIELDS)
+    assert limits["flows_per_extract"] == data_flow.DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT
+    reasons = {
+        rule["if"]["properties"]["state"]["const"]: rule["then"]["properties"]["reason"]["const"]
+        for rule in details["allOf"]
+    }
+    assert reasons == extract_format.DATA_FLOW_DETAILS_STATES
+
+
+EXTRACT_PROJECT = {
+    "api.py": 'from repo import save\n\n__all__ = ["run"]\n\n\ndef run(payload):\n    return save(payload)\n',
+    "repo.py": "class Store:\n    pass\n\n\ndef save(payload):\n    return payload\n",
+    "scripts/deploy.sh": "#!/bin/sh\necho deploy\n",
+}
+
+
+def _check_extract_payload(payload):
+    Draft202012Validator(_schema("llm-wiki-extract-v1.schema.json")).validate(payload)
+    extract_format.validate_extract_payload(payload)
+    return payload
+
+
+@pytest.mark.parametrize(
+    ("files", "options", "state"),
+    [
+        (EXTRACT_PROJECT, {}, "not_evaluated"),
+        (EXTRACT_PROJECT, {"summary": True}, "not_evaluated"),
+        (EXTRACT_PROJECT, {"deep": True}, "evaluated"),
+        (EXTRACT_PROJECT, {"deep": True, "summary": True}, "evaluated"),
+        ({"scripts/deploy.sh": "#!/bin/sh\n"}, {"deep": True}, "unsupported"),
+    ],
+    ids=["shallow", "summary", "deep", "deep-summary", "unsupported"],
+)
+def test_extract_payloads_match_their_schema(tmp_path, monkeypatch, files, options, state):
+    for name, text in files.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    payload = _check_extract_payload(api.extract_source(".", **options))
+
+    assert payload["data_flow_details"]["state"] == state
+    assert payload["unsupported_sources"]["shell"]["paths"] == ["scripts/deploy.sh"]
+    if options.get("deep") and "api.py" in files:
+        assert [entry["id"] for entry in payload["entrypoints"]] == [flow["id"] for flow in payload["data_flows"]]
+
+
+def test_cli_extract_output_matches_its_schema(tmp_path, monkeypatch, capsys):
+    for name, text in EXTRACT_PROJECT.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    monkeypatch.setattr(sys, "argv", ["llm-wiki", "extract", "--deep", "--src-dir", "."])
+
+    cli.main()
+
+    payload = _check_extract_payload(json.loads(capsys.readouterr().out))
+    assert set(payload["inventory"]) == {"api.py", "repo.py"}

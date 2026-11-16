@@ -115,6 +115,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and MCP URI follow from its kind and id, pages are in canonical order,
   links and assets name indexed pages, counts match what they count, and
   flows describe exactly the indexed flow pages.
+- `extract` output has a JSON Schema: `llm-wiki-extract-v1.schema.json`. The
+  format is additive, so file records and analysis blocks accept fields the
+  schema does not list; `data_flow_details` is strict. `validate_extract_payload()`
+  in `llm_wiki_cli.engine` also checks that the `--deep` blocks appear
+  together, data flows follow the entry points, symbol lists are all names
+  (`--summary`) or all records, and `data_flow_details` agrees with the rest
+  of the payload.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also
