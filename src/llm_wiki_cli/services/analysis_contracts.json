@@ -222,6 +222,7 @@
     "services/maintenance_shapes.py",
     "services/maintenance_state.py",
     "services/maintenance_status.py",
+    "services/maintenance_status_format.py",
     "services/manifest_storage.py",
     "services/markdown_sections.py",
     "services/mcp_server.py",

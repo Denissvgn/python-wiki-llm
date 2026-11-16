@@ -124,6 +124,8 @@ _REQUIRED_HELPERS = {
     "llm_wiki_cli/schemas/conformance/llm-wiki-surface-index-v1.cases.json",
     "llm_wiki_cli/schemas/llm-wiki-extract-v1.schema.json",
     "llm_wiki_cli/schemas/conformance/llm-wiki-extract-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-maintenance-status-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-status-v1.cases.json",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",
     "llm_wiki_cli/extractors/haskell_scripts/Main.hs",

@@ -59,6 +59,11 @@ from ..services.extract_format import (
     ExtractPayloadError,
     validate_extract_payload,
 )
+from ..services.maintenance_status_format import (
+    MAINTENANCE_STATUS_SCHEMA_VERSION,
+    MaintenanceStatusError,
+    validate_maintenance_status,
+)
 from ..services.surface_index_format import (
     SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexError,
@@ -186,6 +191,8 @@ __all__ = [
     "QueryResultError",
     "EXTRACT_SCHEMA_VERSION",
     "ExtractPayloadError",
+    "MAINTENANCE_STATUS_SCHEMA_VERSION",
+    "MaintenanceStatusError",
     "ReferenceProvider",
     "SEARCH_RESULT_SCHEMA_VERSION",
     "SURFACE_INDEX_SCHEMA_VERSION",
@@ -207,6 +214,7 @@ __all__ = [
     "validate_documentation_query_result",
     "validate_engine_event",
     "validate_extract_payload",
+    "validate_maintenance_status",
     "validate_search_result",
     "validate_surface_index",
 ]

@@ -7,7 +7,7 @@ import json
 import sys
 from collections.abc import Callable
 from importlib import resources
-from typing import Any
+from typing import Any, get_args, get_type_hints
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -21,6 +21,9 @@ from llm_wiki_cli.services import (
     data_flow,
     entrypoints,
     extract_format,
+    maintenance_queue,
+    maintenance_status,
+    maintenance_status_format,
     query_result_format,
     search_lexical,
     search_rank,
@@ -49,6 +52,7 @@ from llm_wiki_cli.engine import (
     validate_context_response,
     validate_engine_event,
 )
+from tests.developer_value.fixtures import POLICY_SOURCE
 from tests.notes_pack import NOTES_PACK
 
 SCHEMAS = resources.files("llm_wiki_cli.schemas")
@@ -73,6 +77,9 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     query_result_format.SEARCH_RESULT_SCHEMA_VERSION: query_result_format.validate_search_result,
     surface_index_format.SURFACE_INDEX_SCHEMA_VERSION: surface_index_format.validate_surface_index,
     extract_format.EXTRACT_SCHEMA_VERSION: extract_format.validate_extract_payload,
+    maintenance_status_format.MAINTENANCE_STATUS_SCHEMA_VERSION: (
+        maintenance_status_format.validate_maintenance_status
+    ),
 }
 
 
@@ -514,3 +521,82 @@ def test_cli_extract_output_matches_its_schema(tmp_path, monkeypatch, capsys):
 
     payload = _check_extract_payload(json.loads(capsys.readouterr().out))
     assert set(payload["inventory"]) == {"api.py", "repo.py"}
+
+
+def test_maintenance_status_schema_matches_the_running_code():
+    schema = _schema("llm-wiki-maintenance-status-v1.schema.json")
+    state = _schema("llm-wiki-maintenance-state-v1.schema.json")
+    fmt = maintenance_status_format
+    observation = state["properties"]["observations"]["additionalProperties"]["properties"]
+    hints = get_type_hints(api_types.MaintenanceRecordResult)
+
+    assert fmt.MAINTENANCE_STATUS_SCHEMA_VERSION == maintenance_status.SCHEMA
+    assert (fmt.STATUS_MAX_BYTES, fmt.STATUS_MAX_RECORDS, fmt.STATUS_HISTORY_LIMIT) == (
+        maintenance_status.MAX_BYTES, maintenance_status.MAX_RECORDS, maintenance_status.HISTORY_LIMIT,
+    )
+    assert fmt.STATUS_LIMITATIONS == maintenance_status.LIMITATIONS
+    assert set(fmt.ANALYSIS_SCOPES) == maintenance_status.ANALYSIS_SCOPES
+    assert set(fmt.SUMMARY_FIELDS) == maintenance_status.SUMMARY_FIELDS
+    assert fmt.MAX_LIMIT == maintenance_queue.MAX_QUEUE_LIMIT
+    assert set(fmt.STATUS_FIELDS) == set(api_types.MaintenanceStatusResult.__required_keys__)
+    assert set(fmt.RECORD_FIELDS) == set(api_types.MaintenanceRecordResult.__required_keys__)
+    assert set(get_args(hints["qualification"])) == set(fmt.RECORD_QUALIFICATIONS)
+    assert set(get_args(hints["recorded_status"])) == set(fmt.RECORD_STATUSES)
+    assert list(schema["properties"]) == [*fmt.STATUS_FIELDS, *fmt.STATUS_OPTIONAL_FIELDS]
+    assert schema["$defs"]["coordinate"] == observation["coordinate"]
+    assert schema["$defs"]["target"] == observation["target"]
+    assert schema["properties"]["limitations"]["const"] == list(maintenance_status.LIMITATIONS)
+
+
+def _check_maintenance_status(payload: object) -> dict[str, Any]:
+    Draft202012Validator(_schema("llm-wiki-maintenance-status-v1.schema.json")).validate(payload)
+    maintenance_status_format.validate_maintenance_status(payload)
+    assert isinstance(payload, dict)
+    return payload
+
+
+def test_maintenance_status_payloads_match_their_schema(tmp_path, monkeypatch, capsys):
+    from llm_wiki_cli.services.sync_manifest import SyncManifest
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    unadopted = _check_maintenance_status(api.get_maintenance_status("src", "wiki"))
+    assert unadopted["availability"] == "unadopted"
+
+    api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
+    live = _check_maintenance_status(api.get_maintenance_status("src", "wiki"))
+    record = live["records"][0]
+    api.acknowledge_maintenance(
+        "src", "wiki", record_id=record["record_id"], expected_state_hash=live["state_hash"],
+        expected_basis=record["expected_basis"], actor_kind="agent", actor_id="review-agent",
+    )
+    reviewed = _check_maintenance_status(api.get_maintenance_status("src", "wiki"))
+    snapshot = _check_maintenance_status(api.get_maintenance_status("src", "wiki", live=False))
+    selected = _check_maintenance_status(
+        api.get_maintenance_status("src", "wiki", record_id=record["record_id"])
+    )
+    limited = _check_maintenance_status(api.get_maintenance_status("src", "wiki", limit=1))
+    capsys.readouterr()
+    monkeypatch.setattr(
+        sys, "argv", ["llm-wiki", "maintenance", "status", "--src-dir", "src", "--wiki-dir", "wiki", "--format", "json"]
+    )
+    cli.main()
+    emitted = _check_maintenance_status(json.loads(capsys.readouterr().out))
+    owner = SyncManifest.load(tmp_path / "wiki").maintenance_state
+    report = maintenance_status.build_maintenance_status(
+        owner, maintenance_status.marker_from_validated_state(owner)
+    )
+    page = _check_maintenance_status(report.for_path(record["target"]["canonical_path"]))
+
+    assert {row["qualification"] for row in live["records"]} == {"current-capture"}
+    acknowledged = {row["record_id"]: row for row in reviewed["records"]}[record["record_id"]]
+    assert acknowledged["effective_status"] == "acknowledged"
+    assert acknowledged["acknowledgment"]["actor"]["actor_id"] == "review-agent"
+    assert {row["qualification"] for row in snapshot["records"]} == {"snapshot"}
+    assert [row["record_id"] for row in selected["records"]] == [record["record_id"]]
+    assert limited["bounds"]["returned"] == 1
+    assert limited["bounds"]["truncated"] is (len(live["records"]) > 1)
+    assert emitted == reviewed
+    assert page["summary"]["total"] == page["bounds"]["total"] >= 1

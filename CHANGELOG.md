@@ -122,6 +122,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   together, data flows follow the entry points, symbol lists are all names
   (`--summary`) or all records, and `data_flow_details` agrees with the rest
   of the payload.
+- `maintenance status` output has a JSON Schema:
+  `llm-wiki-maintenance-status-v1.schema.json`, covering the per-page form
+  documentation queries embed. `validate_maintenance_status()` in
+  `llm_wiki_cli.engine` also checks that availability and evaluation match the
+  analysis scope, bounds count what they bound, each record's qualification
+  follows from what was evaluated, and a per-page summary counts its records.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also
