@@ -77,6 +77,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DomainPack.with_reference_provider()`. Custom providers change the
   candidate provider fingerprint. Existing policies and evidence are
   unchanged.
+- Engine events and capabilities are published formats.
+  `EngineEvent.to_dict()` writes `llm-wiki-engine-event/v1` and
+  `Engine.capabilities()` returns `llm-wiki-engine-capabilities/v1`; both
+  carry a `schema_version` and ship JSON Schemas
+  (`llm-wiki-engine-event-v1.schema.json`,
+  `llm-wiki-engine-capabilities-v1.schema.json`). `validate_engine_event()`
+  and `EngineEvent.from_dict()` check and read serialized events. Shared
+  conformance cases for each format (`schemas/conformance/*.cases.json`,
+  format `llm-wiki-conformance-cases/v1`) list valid and invalid documents
+  so tools in any language can test their own validators.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also

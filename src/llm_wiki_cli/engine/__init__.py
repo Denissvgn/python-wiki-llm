@@ -42,7 +42,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar
 
-from ..services.engine_events import EVENT_KINDS, EngineEvent, EventKind, EventSink, operation_identity
+from ..services.engine_events import (
+    ENGINE_EVENT_SCHEMA_VERSION,
+    EVENT_KINDS,
+    EngineEvent,
+    EventKind,
+    EventSink,
+    operation_identity,
+    validate_engine_event,
+)
 from ..services.host import (
     ALL_CAPABILITIES,
     Host,
@@ -102,6 +110,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "ALL_CAPABILITIES",
+    "ENGINE_CAPABILITIES_SCHEMA_VERSION",
+    "ENGINE_EVENT_SCHEMA_VERSION",
     "BUILTIN_REFERENCE_PROVIDERS",
     "BehaviorFactsProvider",
     "BootstrapContractError",
@@ -162,9 +172,13 @@ __all__ = [
     "UpgradeRequestError",
     "ValidatorRegistry",
     "current_host",
+    "validate_engine_event",
 ]
 
 HelperPreparation = Literal["auto", "never"]
+
+#: The format :meth:`Engine.capabilities` returns.
+ENGINE_CAPABILITIES_SCHEMA_VERSION = "llm-wiki-engine-capabilities/v1"
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
 
@@ -231,8 +245,13 @@ class Engine:
         return self._host
 
     def capabilities(self) -> dict[str, object]:
-        """What this engine may do, so a caller can explain a refused operation."""
+        """What this engine may do, so a caller can explain a refused operation.
+
+        The result is an ``llm-wiki-engine-capabilities/v1`` document (JSON
+        Schema ``llm-wiki-engine-capabilities-v1.schema.json``).
+        """
         return {
+            "schema_version": ENGINE_CAPABILITIES_SCHEMA_VERSION,
             "granted": sorted(self._host.capabilities),
             "missing": sorted(ALL_CAPABILITIES - self._host.capabilities),
             "helper_preparation": self._helper_preparation,

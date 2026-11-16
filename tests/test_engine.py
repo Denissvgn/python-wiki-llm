@@ -75,6 +75,7 @@ def test_engine_rejects_grants_its_host_cannot_honor() -> None:
     with pytest.raises(TypeError):
         Engine(host=object())  # type: ignore[arg-type]
     assert Engine(host=NoProcessHost()).capabilities() == {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
         "granted": ["clock", "cwd", "environment"],
         "missing": ["subprocess"],
         "helper_preparation": "never",

@@ -193,6 +193,7 @@ def test_event_values_are_checked_and_read_only() -> None:
     with pytest.raises(TypeError, match="events must be a callable"):
         NoProcessHost(events="log.txt")  # type: ignore[arg-type]
     assert event.to_dict() == {
+        "schema_version": "llm-wiki-engine-event/v1",
         "kind": "message", "operation": "sync", "operation_id": "id",
         "data": {"stream": "stdout", "text": "x"},
     }

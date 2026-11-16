@@ -26,4 +26,8 @@ include src/llm_wiki_cli/schemas/llm-wiki-manifest-v6.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-catalog-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-cli-contract-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-engine-event-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-engine-capabilities-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-conformance-cases-v1.schema.json
+recursive-include src/llm_wiki_cli/schemas/conformance *.cases.json
 include docs/cli-reference-data.md
