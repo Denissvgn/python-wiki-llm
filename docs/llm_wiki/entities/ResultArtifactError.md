@@ -1,6 +1,6 @@
 # _ResultArtifactError
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:2571`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:2563`
 **Kind:** Class
 **Bases:** `OciBrokerError`
 **Module:** [broker](../modules/broker.md)

@@ -1,6 +1,6 @@
 # WorkflowRequestError
 
-**Location:** `src/llm_wiki_cli/services/workflow_profile.py:28`
+**Location:** `src/llm_wiki_cli/services/workflow_profile.py:29`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [workflow_profile](../modules/workflow_profile.md)

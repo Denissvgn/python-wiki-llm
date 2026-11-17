@@ -27,19 +27,15 @@ and strict validation; help text grants no extra write or setup authority.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `__version__` |
-| `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `maintenance_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `publication_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `query_cmd`, `reference_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `task_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
-| `.config` | `AGENT_CHOICES`, `DEFAULT_WIKI_DIR`, `PathValidationError` |
+| `.cli_declarations` | `_build_parser`, `build_cli_parser` |
+| `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `maintenance_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `query_cmd`, `reference_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `task_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
+| `.config` | `PathValidationError` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.analysis_compatibility` | `comparison_scope` |
-| `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
-| `.services.extraction_jobs` | `ExtractionJobsAction` |
 | `.services.helper_runtime` | `current_helper_configuration`, `helper_operation` |
-| `.services.maintenance_queue` | `DEFAULT_QUEUE_LIMIT`, `MAX_QUEUE_LIMIT`, `MIN_QUEUE_LIMIT`, `validate_queue_limit` |
 | `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
 | `.services.runtime_output` | `RuntimeOutputError` |
-| `argparse` | `argparse` |
 | `contextlib` | `contextmanager` |
 | `os` | `os` |
 | `sys` | `sys` |
@@ -51,7 +47,6 @@ and strict validation; help text grants no extra write or setup authority.
 flowchart LR
     n0["src"]
     n1["src/llm_wiki_cli/cli.py"]
-    n0 --> n1
     n1 --> n0
     click n1 "../modules/cli.md"
 ```
@@ -62,78 +57,15 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (2) |
-| Outbound | `src` (47) |
+| Outbound | `src` (41) |
 
-> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
-
-## Classes
-
-| Class | Line | Bases | Description |
-|-------|------|-------|-------------|
-| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 63 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_positive_int` | `(value: str) -> int` | — | — |
-| `_nonnegative_int` | `(value: str) -> int` | — | — |
-| `_queue_limit` | `(value: str) -> int` | — | — |
-| `_nonblank_query` | `(value: str) -> str` | — | — |
-| `_surface_values` | `(value: str) -> tuple[str, ...]` | — | — |
-| `_add_helper_cache_argument` | `(parser)` | — | — |
-| `_add_include_tests_argument` | `(parser)` | — | — |
-| `_add_source_selection_argument` | `(parser)` | — | — |
-| `_add_jobs_argument` | `(parser)` | — | — |
-| `_add_queue_command` | `(subparsers)` | — | — |
-| `_add_maintenance_command` | `(subparsers)` | — | — |
-| `_build_parser` | `()` | — | — |
-| `build_cli_parser` | `() -> argparse.ArgumentParser` | — | Build the declared CLI without parsing arguments or running commands. |
-| `_add_helper_preparation_arguments` | `(parser)` | — | Accept the operation policy before or after nested command names. |
 | `_helper_preparation_policy` | `(args)` | — | — |
-| `_add_query_command` | `(subparsers)` | — | — |
-| `_add_task_context_command` | `(subparsers)` | — | — |
-| `_register_commands` | `(subparsers)` | — | — |
-| `_add_doctor_command` | `(subparsers)` | — | — |
-| `_add_init_command` | `(subparsers)` | — | — |
-| `_add_extract_command` | `(subparsers)` | — | — |
-| `_add_progress_arguments` | `(parser)` | — | — |
-| `_add_lint_command` | `(subparsers)` | — | — |
-| `_add_prepare_extractors_command` | `(subparsers)` | — | — |
-| `_add_ci_check_command` | `(subparsers)` | — | — |
-| `_add_install_ci_command` | `(subparsers)` | — | — |
-| `_add_install_command` | `(subparsers)` | — | — |
-| `_add_knowledge_wiki_argument` | `(parser)` | — | — |
-| `_add_knowledge_dry_run` | `(parser)` | — | — |
-| `_add_governance_actor_arguments` | `(parser)` | — | — |
-| `_add_lifecycle_arguments` | `(parser, *, reason: str, successor: bool = False)` | — | — |
-| `_add_knowledge_command` | `(subparsers)` | — | — |
-| `_add_plugins_command` | `(subparsers)` | — | — |
-| `_add_team_command` | `(subparsers)` | — | — |
-| `_add_trigger_agent_command` | `(subparsers)` | — | — |
-| `_add_bootstrap_command` | `(subparsers)` | — | — |
-| `_add_bump_command` | `(subparsers)` | — | — |
-| `_add_generate_prompt_command` | `(subparsers)` | — | — |
-| `_add_metrics_command` | `(subparsers)` | — | — |
-| `_add_api_diff_command` | `(subparsers)` | — | — |
-| `_add_search_command` | `(subparsers)` | — | — |
-| `_add_review_command` | `(subparsers)` | — | — |
-| `_add_uninstall_command` | `(subparsers)` | — | — |
-| `_add_status_command` | `(subparsers)` | — | — |
-| `_add_mcp_command` | `(subparsers)` | — | — |
-| `_add_obsidian_command` | `(subparsers)` | — | — |
-| `_add_site_command` | `(subparsers)` | — | — |
-| `_add_projection_metadata_arguments` | `(parser, *, public_identity_dest: str)` | — | — |
-| `_add_site_hub_arguments` | `(parser)` | — | — |
-| `_add_skills_command` | `(subparsers)` | — | — |
-| `_add_skills_selection_arguments` | `(parser)` | — | — |
-| `_add_release_command` | `(subparsers)` | — | — |
-| `_add_upgrade_command` | `(subparsers)` | — | — |
-| `_add_sync_command` | `(subparsers)` | — | — |
-| `_add_migrate_command` | `(subparsers)` | — | — |
-| `_add_context_command` | `(subparsers)` | — | — |
-| `_add_docs_command` | `(subparsers)` | — | — |
 | `_dispatch_command` | `(args)` | — | — |
 | `_print_exception_notes` | `(exc: BaseException) -> None` | — | — |
 | `_report_cli_errors` | `()` | `@contextmanager` | — |

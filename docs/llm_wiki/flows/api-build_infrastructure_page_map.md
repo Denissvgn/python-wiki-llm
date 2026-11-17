@@ -2,7 +2,14 @@
 
 **Entry point:** `build_infrastructure_page_map` (`api`)
 **Source:** [infrastructure_sync](../modules/infrastructure_sync.md)
-**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 1 more
+
+**Complete modules touched:**
+
+- [canonical_json](../modules/canonical_json.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -21,14 +28,14 @@ sequenceDiagram
     participant p7 as hash_json(…).removeprefix
     participant p8 as hash_json
     participant p9 as source_path.replace(…).replace(…).replace
-    participant p10 as sha256_bytes
+    participant p10 as sha256_digest
     participant p11 as source_path.replace(…).replace
-    participant p12 as canonical_json_bytes
+    participant p12 as compact_bytes
     participant p13 as source_path.replace
     participant p14 as hashlib.sha256(…).hexdigest
-    participant p15 as canonical_json_text(…).encode
+    participant p15 as compact_text(…).encode
     participant p16 as hashlib.sha256
-    participant p17 as canonical_json_text
+    participant p17 as compact_text
     participant p18 as json.dumps
     p0-->>p1: sorted(source_paths)
     p0->>p2: infrastructure_page_name
@@ -40,15 +47,15 @@ sequenceDiagram
     p0-->>p7: hash_json(…).removeprefix('sha256:')
     p0->>p8: hash_json
     p2-->>p9: source_path.replace(…).replace(…).replace('.', '_')
-    p8->>p10: sha256_bytes
+    p8->>p10: sha256_digest
     p2-->>p11: source_path.replace(…).replace('/', '_')
-    p8->>p12: canonical_json_bytes
+    p8->>p12: compact_bytes
     p2-->>p13: source_path.replace('\\', '/')
     p10-->>p14: hashlib.sha256(…).hexdigest
-    p12-->>p15: canonical_json_text(…).encode('utf-8')
-    p10-->>p16: hashlib.sha256(value)
-    p12->>p17: canonical_json_text
-    p17-->>p18: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
+    p12-->>p15: compact_text(…).encode('utf-8')
+    p10-->>p16: hashlib.sha256(data)
+    p12->>p17: compact_text
+    p17-->>p18: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)
 ```
 
 > Call sequence diagram shows 19 of 19 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -66,7 +73,7 @@ sequenceDiagram
 
 Source steps: 6; effect analysis evaluated: 6, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 6 source steps with known totals: observed: 13, emitted: 13, omitted: 0. Unavailable totals are excluded.
+Collector observations for 6 source steps with known totals: observed: 15, emitted: 15, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR

@@ -66,10 +66,12 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | Source | Symbols |
 |--------|---------|
 | `.` | `sync_analysis_storage` |
-| `..config` | `EXTRACTOR_REGISTRY` |
 | `.analysis_capture` | `capture_analysis`, `capture_operation`, `analysis_diagnostics` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.domain_pack` | `uses_default_pack` |
 | `.extraction_service` | `InventoryResult`, `ExtractorStatus` |
+| `.extractor_registry` | `EXTRACTOR_REGISTRY` |
+| `.host` | `emit` |
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options`, `resolve_inventory_cache_path` |
 | `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
 | `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
@@ -107,15 +109,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (17) |
+| Outbound | `src` (19) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 28 | `ValueError` | A matched static-input snapshot changed before publication. |
+| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 30 | `ValueError` | A matched static-input snapshot changed before publication. |
 
 ## Functions
 

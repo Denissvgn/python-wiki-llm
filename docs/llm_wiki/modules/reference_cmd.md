@@ -37,7 +37,6 @@ flowchart LR
     n1 --> n5
     n2 --> n3
     n2 --> n5
-    n3 --> n0
     n3 --> n5
     n5 --> n4
     click n0 "../modules/cli.md"
@@ -62,6 +61,5 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `add_commands` | `(subparsers)` | — | — |
 | `_reference` | `(args)` | — | — |
 | `run` | `(args)` | — | — |

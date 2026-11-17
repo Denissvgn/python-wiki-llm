@@ -35,6 +35,7 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 |--------|---------|
 | `.concept_identity` | `AliasType`, `ConceptAllocation`, `ConceptIdentityError`, `derive_concept_uid`, `identity_coordinate_key`, `natural_key_for`, `validate_alias_value`, `validate_bundle_id`, `validate_concept_kind`, `validate_concept_uid`, `validate_locator`, `validate_natural_key` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `GOVERNANCE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.host` | `current_host` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
@@ -82,30 +83,30 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (30) |
-| Outbound | `src` (11) |
+| Inbound | `src` (31) |
+| Outbound | `src` (12) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [GovernanceError](../entities/GovernanceError.md) | Class | 113 | `ValueError` | A field-specific governance validation or mutation failure. |
-| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 129 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
-| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 136 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
-| [GovernanceActor](../entities/GovernanceActor.md) | Class | 145 | — | Explicit event author; never inferred from Git metadata. |
-| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 156 | — | One authoritative stable concept allocation. |
-| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 173 | — | A historical locator or natural key owned by one UID. |
-| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 193 | — | One predecessor-linked lifecycle transition. |
-| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 222 | — | The explicit evidence basis to which a review was authored. |
-| [ReviewEvent](../entities/ReviewEvent.md) | Class | 240 | — | One section-scoped, digest-bound human review event. |
-| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 266 | — | Validated non-rebuildable governance authority. |
-| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 324 | — | — |
-| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 331 | — | — |
-| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 339 | — | Current generated concept coordinates used for reconciliation. |
-| [ReviewValidity](../entities/ReviewValidity.md) | Class | 348 | — | Computed review validity; this is never persisted in the ledger. |
-| [FaultInjector](../entities/FaultInjector.md) | Type alias | 360 | `Callable[[GovernanceWriteStage], None]` | — |
+| [GovernanceError](../entities/GovernanceError.md) | Class | 114 | `ValueError` | A field-specific governance validation or mutation failure. |
+| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 130 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
+| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 137 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
+| [GovernanceActor](../entities/GovernanceActor.md) | Class | 146 | — | Explicit event author; never inferred from Git metadata. |
+| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 157 | — | One authoritative stable concept allocation. |
+| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 174 | — | A historical locator or natural key owned by one UID. |
+| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 194 | — | One predecessor-linked lifecycle transition. |
+| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 223 | — | The explicit evidence basis to which a review was authored. |
+| [ReviewEvent](../entities/ReviewEvent.md) | Class | 241 | — | One section-scoped, digest-bound human review event. |
+| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 267 | — | Validated non-rebuildable governance authority. |
+| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 325 | — | — |
+| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 332 | — | — |
+| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 340 | — | Current generated concept coordinates used for reconciliation. |
+| [ReviewValidity](../entities/ReviewValidity.md) | Class | 349 | — | Computed review validity; this is never persisted in the ledger. |
+| [FaultInjector](../entities/FaultInjector.md) | Type alias | 361 | `Callable[[GovernanceWriteStage], None]` | — |
 
 ## Functions
 

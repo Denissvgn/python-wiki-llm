@@ -37,6 +37,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/request_json.py"]
     n6["src/llm_wiki_cli/services/sync_recovery.py"]
     n0 --> n4
+    n1 --> n2
     n1 --> n3
     n1 --> n4
     n2 --> n3

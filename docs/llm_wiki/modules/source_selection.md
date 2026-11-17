@@ -14,7 +14,7 @@ identity and input commitments. Resolution supports the default
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
+| `.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |

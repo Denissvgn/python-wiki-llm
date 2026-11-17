@@ -21,7 +21,7 @@ also selects exact retention paths for future lint and live native reads.
 
 | Source | Symbols |
 |--------|---------|
-| `..extractors.common` | `LANGUAGE_EXTENSIONS`, `inventory_language_for_path` |
+| `.domain_pack` | `current_pack` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.io` | `write_json_atomic` |
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
@@ -34,9 +34,9 @@ also selects exact retention paths for future lint and live native reads.
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `portable_page_component`, `portable_path_key`, `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
+| `.validation` | `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
-| `collections` | `Counter`, `defaultdict` |
+| `collections` | `Counter` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
@@ -72,13 +72,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncManifestError](../entities/SyncManifestError.md) | 62 | `ValueError` | Field-specific validation failure for decoded manifest state. |
-| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 73 | — | Manifest state removed because it falls outside a selected source set. |
-| [ManifestPageSource](../entities/ManifestPageSource.md) | 149 | — | Last observed source coordinate for one module or entity page. |
-| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 254 | — | Known or explicitly unknown evidence for one active concept page. |
-| [ManifestTombstone](../entities/ManifestTombstone.md) | 359 | — | Evidence retained for a stale module/entity page. |
-| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 448 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 993 | — | Operational state; maintenance is present only after explicit adoption. |
+| [SyncManifestError](../entities/SyncManifestError.md) | 60 | `ValueError` | Field-specific validation failure for decoded manifest state. |
+| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 71 | — | Manifest state removed because it falls outside a selected source set. |
+| [ManifestPageSource](../entities/ManifestPageSource.md) | 147 | — | Last observed source coordinate for one module or entity page. |
+| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 252 | — | Known or explicitly unknown evidence for one active concept page. |
+| [ManifestTombstone](../entities/ManifestTombstone.md) | 357 | — | Evidence retained for a stale module/entity page. |
+| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 446 | — | All-or-none exact-byte commitment to the generated artifact set. |
+| [SyncManifest](../entities/SyncManifest.md) | 859 | — | Operational state; maintenance is present only after explicit adoption. |
 
 ## Functions
 
@@ -92,12 +92,8 @@ flowchart LR
 | `_basis_from_payload` | `(value: object, field_name: str, *, unknown_reason: str \| None) -> ConceptObservationBasis` | — | — |
 | `_infer_language_from_path` | `(filepath: str) -> str \| None` | — | — |
 | `_first_doc_line` | `(info: Mapping[str, Any]) -> str` | — | — |
-| `_safe_page_component` | `(value: object, *, fallback: str = 'page') -> str` | — | — |
-| `_page_name_with_extension` | `(filepath: str) -> str` | — | — |
-| `_page_name_from_source_path` | `(filepath: str) -> str` | — | — |
-| `_disambiguate_module_paths` | `(filepaths: list[str], stem: str) -> dict[str, str]` | — | — |
 | `_build_module_page_map` | `(inventory: Mapping[str, Mapping[str, Any]]) -> dict[str, str]` | — | — |
-| `_build_entity_occurrence_page_map` | `(inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str]) -> dict[tuple[str, str, int], str]` | — | Preserve the legacy occurrence-map fallback without command imports. |
+| `_build_entity_occurrence_page_map` | `(inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str]) -> dict[tuple[str, str, int], str]` | — | Name entity pages with the active pack without command imports. |
 | `generated_semantics_for_file` | `(filepath: str, file_data: Mapping[str, Any]) -> dict[str, Any]` | — | Return generated description fields retained by current sync behavior. |
 | `retained_concept_page_paths` | `(wiki_dir: Path) -> tuple[str, ...]` | — | Return retained module/entity Markdown paths without reading page text. |
 | `_page_path` | `(scope: str, page_name: object, field_name: str) -> str` | — | — |

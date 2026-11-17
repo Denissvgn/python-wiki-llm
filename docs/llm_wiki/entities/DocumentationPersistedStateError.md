@@ -1,6 +1,6 @@
 # DocumentationPersistedStateError
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:314`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:313`
 **Kind:** Class
 **Bases:** `DocumentationIntegrityError`, `DocumentationSchemaError`
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

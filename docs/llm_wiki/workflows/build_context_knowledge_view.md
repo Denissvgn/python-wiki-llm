@@ -1,7 +1,7 @@
 # build_context_knowledge_view
 
 **Entry point:** `context_service._build_context_knowledge_view`
-**Modules involved:** [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_verification](../modules/knowledge_verification.md)
+**Modules involved:** [context_packet_builder](../modules/context_packet_builder.md), [context_service](../modules/context_service.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_verification](../modules/knowledge_verification.md)
 
 ## Sequence
 
@@ -9,7 +9,7 @@
 1. `knowledge_consumption.build_knowledge_read_view`
 2. `knowledge_loader.KnowledgeLoadResult`
 3. `knowledge_loader.load_knowledge_state`
-4. `context_packet.ContextPacketAuthorityError`
+4. `context_packet_builder.ContextPacketAuthorityError`
 5. `knowledge_loader.KnowledgeStateLoadError`
 6. `extraction_service.get_docker_inventory`
 7. `infrastructure_inventory.get_yaml_infrastructure_inventory`
@@ -21,7 +21,7 @@
 
 ## Touches
 
-- [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [context_service](../modules/context_service.md)
 - [extraction_service](../modules/extraction_service.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)

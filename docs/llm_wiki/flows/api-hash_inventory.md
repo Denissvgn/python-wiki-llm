@@ -2,7 +2,7 @@
 
 **Entry point:** `hash_inventory` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_envelope](../modules/knowledge_envelope.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -16,15 +16,15 @@ sequenceDiagram
     participant p2 as _hash_structured
     participant p3 as KnowledgeEnvelopeError
     participant p4 as require_repository_relative_path
-    participant p5 as canonical_json_bytes
+    participant p5 as compact_bytes
     participant p6 as require_portable_relative_path
     participant p7 as _default_path_error
     participant p8 as _check_path_collision
     participant p9 as require_portable_path_component
     participant p10 as _validate_json_tree
-    participant p11 as sha256_bytes
+    participant p11 as sha256_digest
     participant p12 as _syntax_key
-    participant p13 as canonical_json_text
+    participant p13 as compact_text
     participant p14 as _known_syntax
     participant p15 as _remember_syntax
     participant p16 as SharedValidationError
@@ -35,7 +35,7 @@ sequenceDiagram
     participant p21 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
     participant p22 as set
     participant p23 as hashlib.sha256(…).hexdigest
-    participant p24 as canonical_json_text(…).encode
+    participant p24 as compact_text(…).encode
     participant p25 as walk
     participant p26 as hashlib.sha256
     participant p27 as value.strip
@@ -45,15 +45,15 @@ sequenceDiagram
     p0->>p2: _hash_structured
     p0->>p3: KnowledgeEnvelopeError
     p1->>p4: require_repository_relative_path
-    p2->>p5: canonical_json_bytes
+    p2->>p5: compact_bytes
     p4->>p6: require_portable_relative_path
     p6->>p7: _default_path_error
     p6->>p8: _check_path_collision
     p6->>p9: require_portable_path_component
     p2->>p10: _validate_json_tree
-    p2->>p11: sha256_bytes
+    p2->>p11: sha256_digest
     p4->>p12: _syntax_key
-    p5->>p13: canonical_json_text
+    p5->>p13: compact_text
     p4->>p14: _known_syntax
     p4->>p15: _remember_syntax
     p7->>p16: SharedValidationError
@@ -65,9 +65,9 @@ sequenceDiagram
     p4-->>p21: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)
     p10-->>p22: set
     p11-->>p23: hashlib.sha256(…).hexdigest
-    p5-->>p24: canonical_json_text(…).encode('utf-8')
+    p5-->>p24: compact_text(…).encode('utf-8')
     p10-->>p25: walk(value, field_name)
-    p11-->>p26: hashlib.sha256(value)
+    p11-->>p26: hashlib.sha256(data)
     p4-->>p27: value.strip
     p4-->>p28: any (src/llm_wiki_cli/services…e_repository_relative_path)(...)
     p4-->>p29: ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)
@@ -102,7 +102,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 39; effect analysis evaluated: 23, partial: 3, unavailable: 13. Counts include steps omitted from the displayed trace.
 
-Collector observations for 26 source steps with known totals: observed: 121, emitted: 106, omitted: 15. Unavailable totals are excluded.
+Collector observations for 26 source steps with known totals: observed: 123, emitted: 108, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -177,13 +177,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 765 | `isinstance(inventory, Mapping)` |
-| hash_inventory | KnowledgeEnvelopeError | 766 | `KnowledgeEnvelopeError('inventory', 'must be an object')` |
-| hash_inventory | inventory.items | 768 | `inventory.items(data not statically known)` |
-| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 769 | `isinstance(source_path, str)` |
-| hash_inventory | KnowledgeEnvelopeError | 770 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
-| hash_inventory | _repository_relative_path | 771 | `_repository_relative_path(source_path, 'inventory.source_path')` |
-| _repository_relative_path | require_repository_relative_path | 1505 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
+| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 766 | `isinstance(inventory, Mapping)` |
+| hash_inventory | KnowledgeEnvelopeError | 767 | `KnowledgeEnvelopeError('inventory', 'must be an object')` |
+| hash_inventory | inventory.items | 769 | `inventory.items(data not statically known)` |
+| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 770 | `isinstance(source_path, str)` |
+| hash_inventory | KnowledgeEnvelopeError | 771 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
+| hash_inventory | _repository_relative_path | 772 | `_repository_relative_path(source_path, 'inventory.source_path')` |
+| _repository_relative_path | require_repository_relative_path | 1506 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
@@ -197,9 +197,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `hash_inventory` | `isinstance` | 765 |
-| unresolved_call | `hash_inventory` | `inventory.items` | 768 |
-| external_call | `hash_inventory` | `isinstance` | 769 |
+| external_call | `hash_inventory` | `isinstance` | 766 |
+| unresolved_call | `hash_inventory` | `inventory.items` | 769 |
+| external_call | `hash_inventory` | `isinstance` | 770 |
 | external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | external_call | `_syntax_key` | `type` | 54 |
 | step_limit | `hash_inventory` | `first 12 steps` | 0 |

@@ -1,6 +1,6 @@
 # ContextKnowledgeResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:236`
+**Location:** `src/llm_wiki_cli/api_types.py:237`
 **Kind:** Class
 **Bases:** `_ContextKnowledgeRequired`
 **Module:** [api_types](../modules/api_types.md)

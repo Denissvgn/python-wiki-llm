@@ -152,7 +152,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| replace_generated_section | section_body | 1260 | `section_body(existing, heading)` |
+| replace_generated_section | section_body | 1264 | `section_body(existing, heading)` |
 | section_body | _markdown_lines | 703 | `_markdown_lines(markdown)` |
 | _markdown_lines | re.findall | 218 | `re.findall('[^\\n]*\\n\|[^\\n]+$', normalize_markdown(...))` |
 | _markdown_lines | normalize_markdown | 218 | `normalize_markdown(markdown)` |

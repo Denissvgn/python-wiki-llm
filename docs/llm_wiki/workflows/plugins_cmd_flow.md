@@ -1,7 +1,7 @@
 # plugins_cmd_flow
 
 **Entry point:** `plugins_cmd.run`
-**Modules involved:** [config](../modules/config.md), [plugin_samples](../modules/plugin_samples.md), [plugins](../modules/plugins.md), [plugins_cmd](../modules/plugins_cmd.md), [services_schema](../modules/services_schema.md)
+**Modules involved:** [path_policy](../modules/path_policy.md), [plugin_samples](../modules/plugin_samples.md), [plugins](../modules/plugins.md), [plugins_cmd](../modules/plugins_cmd.md), [services_schema](../modules/services_schema.md)
 
 ## Sequence
 
@@ -10,14 +10,14 @@
 2. `plugin_samples.list_samples`
 3. `plugin_samples.export_sample`
 4. `plugins.validate_plugin`
-5. `config.validate_path`
+5. `path_policy.validate_path`
 6. `plugins.remove_plugin`
 7. `services_schema.strip_plugin_skill_blocks`
 8. `plugins.validate_plugin`
 
 ## Touches
 
-- [config](../modules/config.md)
+- [path_policy](../modules/path_policy.md)
 - [plugin_samples](../modules/plugin_samples.md)
 - [plugins](../modules/plugins.md)
 - [plugins_cmd](../modules/plugins_cmd.md)

@@ -171,17 +171,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 183 | `isinstance(content_hashes, Mapping)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 184 | `KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 185 | `isinstance(candidate_kinds, Mapping)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 186 | `KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 187 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 187 | `isinstance(path, str)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 188 | `KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 192 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 192 | `isinstance(path, str)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 193 | `KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | set (src/llm_wiki_cli/services…puts_from_captured_hashes) | 197 | `set(content_hashes)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 184 | `isinstance(content_hashes, Mapping)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 185 | `KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 186 | `isinstance(candidate_kinds, Mapping)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 187 | `KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')` |
+| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 188 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 188 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 189 | `KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')` |
+| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 193 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 193 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 194 | `KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')` |
+| consumed_inputs_from_captured_hashes | set (src/llm_wiki_cli/services…puts_from_captured_hashes) | 198 | `set(content_hashes)` |
 
 ### Boundary effects
 
@@ -191,12 +191,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 183 |
-| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 185 |
-| external_call | `consumed_inputs_from_captured_hashes` | `any` | 187 |
-| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 187 |
-| external_call | `consumed_inputs_from_captured_hashes` | `any` | 192 |
-| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 192 |
+| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 184 |
+| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 186 |
+| external_call | `consumed_inputs_from_captured_hashes` | `any` | 188 |
+| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 188 |
+| external_call | `consumed_inputs_from_captured_hashes` | `any` | 193 |
+| external_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 193 |
 | step_limit | `consumed_inputs_from_captured_hashes` | `first 12 steps` | 0 |
 
 ## Behavior

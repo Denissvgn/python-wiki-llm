@@ -2,14 +2,14 @@
 
 **Entry point:** `build_static_api_contracts` (`api`)
 **Source:** [api_contracts](../modules/api_contracts.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 3 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [imports](../modules/imports.md), [packages](../modules/packages.md), [path_policy](../modules/path_policy.md), and 3 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
-- [config](../modules/config.md)
 - [imports](../modules/imports.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [python_imports](../modules/python_imports.md)
 - [validation](../modules/validation.md)
@@ -219,10 +219,10 @@ flowchart LR
 | _framework_records | frameworks.get | 222 | `frameworks.get('fastapi')` |
 | _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 223 | `isinstance(fastapi, Mapping)` |
 | build_static_api_contracts | is_test_source_path | 744 | `is_test_source_path(filepath)` |
-| is_test_source_path | str(…).replace(…).strip | 41 | `str(value).replace('\\', '/').strip('/')` |
-| is_test_source_path | str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value).replace('\\', '/')` |
-| is_test_source_path | str (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value)` |
-| is_test_source_path | PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 44 | `PurePosixPath(normalized)` |
+| is_test_source_path | str(…).replace(…).strip | 43 | `str(value).replace('\\', '/').strip('/')` |
+| is_test_source_path | str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 43 | `str(value).replace('\\', '/')` |
+| is_test_source_path | str (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 43 | `str(value)` |
+| is_test_source_path | PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 46 | `PurePosixPath(normalized)` |
 
 ### Boundary effects
 
@@ -246,9 +246,9 @@ flowchart LR
 | external_call | `_framework_records` | `isinstance` | 222 |
 | unresolved_call | `_framework_records` | `frameworks.get` | 222 |
 | external_call | `_framework_records` | `isinstance` | 223 |
-| unresolved_call | `is_test_source_path` | `str(value).replace('\\', '/').strip` | 41 |
-| unresolved_call | `is_test_source_path` | `str(value).replace` | 41 |
-| external_call | `is_test_source_path` | `PurePosixPath` | 44 |
+| unresolved_call | `is_test_source_path` | `str(value).replace('\\', '/').strip` | 43 |
+| unresolved_call | `is_test_source_path` | `str(value).replace` | 43 |
+| external_call | `is_test_source_path` | `PurePosixPath` | 46 |
 | step_limit | `build_static_api_contracts` | `first 12 steps` | 0 |
 | truncated_flow | `build_static_api_contracts` | `depth limit` | 0 |
 

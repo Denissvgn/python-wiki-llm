@@ -51,8 +51,6 @@ flowchart LR
     n1 --> n6
     n4 --> n3
     n4 --> n6
-    n5 --> n2
-    n6 --> n2
     n6 --> n5
     click n0 "../modules/cli.md"
     click n1 "../modules/prepare_extractors_cmd.md"

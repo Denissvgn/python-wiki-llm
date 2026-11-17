@@ -1,7 +1,7 @@
 # collect_recovery_blobs
 
 **Entry point:** `maintenance_recovery._collect_recovery_blobs`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_recovery](../modules/maintenance_recovery.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_recovery](../modules/maintenance_recovery.md)
 
 ## Sequence
 
@@ -9,15 +9,15 @@
 1. `knowledge_storage_io._absolute_path`
 2. `knowledge_storage_io._absolute_path`
 3. `knowledge_storage_io.read_guarded`
-4. `knowledge_storage.digest`
+4. `canonical_json.sha256_digest`
 5. `knowledge_storage_io.read_guarded`
-6. `knowledge_storage.digest`
+6. `canonical_json.sha256_digest`
 7. `filesystem_guard.unlink_guarded_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)
 

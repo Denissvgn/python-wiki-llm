@@ -14,7 +14,7 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 
 | Source | Symbols |
 |--------|---------|
-| `.context_packet` | `capture_context_read` |
+| `.context_packet_builder` | `capture_context_read` |
 | `.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
 | `.io` | `decode_markdown_bytes`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `validated_artifact_bytes`, `validate_knowledge_artifacts`, `KnowledgeArtifactError` |

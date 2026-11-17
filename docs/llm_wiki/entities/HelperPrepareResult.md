@@ -1,6 +1,6 @@
 # HelperPrepareResult
 
-**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:56`
+**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:57`
 **Kind:** Class
 **Bases:** —
 **Module:** [extractor_helpers](../modules/extractor_helpers.md)
@@ -68,13 +68,13 @@ flowchart LR
 | `run` | call | [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md) | 1 |
 | `_publish_native_helper` | call | [extractor_helpers](../modules/extractor_helpers.md) | 2 |
 | `_publish_native_helper` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
-| `prepare_go` | call | [extractor_helpers](../modules/extractor_helpers.md) | 8 |
+| `prepare_go` | call | [extractor_helpers](../modules/extractor_helpers.md) | 9 |
 | `prepare_go` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
-| `prepare_haskell` | call | [extractor_helpers](../modules/extractor_helpers.md) | 9 |
+| `prepare_haskell` | call | [extractor_helpers](../modules/extractor_helpers.md) | 10 |
 | `prepare_haskell` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 | `prepare_helper` | call | [extractor_helpers](../modules/extractor_helpers.md) | 1 |
 | `prepare_helper` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
-| `prepare_rust` | call | [extractor_helpers](../modules/extractor_helpers.md) | 6 |
+| `prepare_rust` | call | [extractor_helpers](../modules/extractor_helpers.md) | 7 |
 | `prepare_rust` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 
 > References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

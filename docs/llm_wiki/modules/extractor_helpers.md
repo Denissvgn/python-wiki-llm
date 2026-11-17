@@ -41,6 +41,7 @@ helper, and the active Node runtime remains a separate requirement.
 | `.` | `typescript_helper_identity`, `helper_cache` |
 | `.helper_cache` | `_legacy_handle`, `cache_roots`, `user_helper_cache_root`, `cache_roots`, `lookup_helper`, `validate_handle`, `cache_roots`, `lookup_helper`, `validate_handle`, `_native_binary`, `_native_fingerprint` |
 | `.helper_runtime` | `current_helper_operation`, `pinned_helper`, `pinned_helper`, `pinned_helper`, `current_helper_operation`, `pinned_helper` |
+| `.host` | `HostCapabilityError`, `current_host` |
 | `.inventory_cache` | `ENV_CACHE_DIR` |
 | `.io` | `first_unsafe_path_component` |
 | `.paths` | `render_shell_command` |
@@ -77,15 +78,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (14) |
-| Outbound | `src` (6) |
+| Outbound | `src` (7) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 56 | — | — |
+| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 57 | — | — |
 
 ## Functions
 

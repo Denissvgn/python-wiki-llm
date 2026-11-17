@@ -1,6 +1,6 @@
 # RuntimeOutputError
 
-**Location:** `src/llm_wiki_cli/services/runtime_output.py:13`
+**Location:** `src/llm_wiki_cli/services/runtime_output.py:14`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [runtime_output](../modules/runtime_output.md)
@@ -27,7 +27,7 @@ flowchart LR
     n2["src/llm_wiki_cli/cli.py"]
     n3["_report_destination (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
     n4["run (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
-    n5["cache_options_from_args (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n5["cache_options_for (src/llm_wiki_cli/services/inventory_cache.py)"]
     n6["prepare_cache_options (src/llm_wiki_cli/services/inventory_cache.py)"]
     n7["prepare_destination (src/llm_wiki_cli/services/runtime_output.py)"]
     n0 --> n1
@@ -65,6 +65,6 @@ flowchart LR
 | `cli` | import | [cli](../modules/cli.md) | — |
 | `_report_destination` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 2 |
 | `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 2 |
-| `cache_options_from_args` | call | [inventory_cache](../modules/inventory_cache.md) | 2 |
+| `cache_options_for` | call | [inventory_cache](../modules/inventory_cache.md) | 2 |
 | `prepare_cache_options` | call | [inventory_cache](../modules/inventory_cache.md) | 1 |
 | `prepare_destination` | call | [runtime_output](../modules/runtime_output.md) | 1 |

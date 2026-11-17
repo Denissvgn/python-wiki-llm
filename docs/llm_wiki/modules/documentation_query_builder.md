@@ -12,7 +12,7 @@ Shared construction for supported documentation query services.
 |--------|---------|
 | `.` | `wiki_surface`, `context_service`, `extraction_service` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
-| `.context_packet` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
+| `.context_packet_builder` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT` |
 | `.entrypoints` | `build_flow` |

@@ -171,36 +171,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| plugin_producer_inputs | enumerate | 1015 | `enumerate(components)` |
-| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1016 | `isinstance(component, Mapping)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1017 | `KnowledgeEnvelopeError(..., 'must be an object')` |
-| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1021 | `component.get('plugin_id')` |
-| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1023 | `isinstance(plugin_id, str)` |
-| plugin_producer_inputs | _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1024 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1026 | `KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')` |
-| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1030 | `component.get('plugin_version')` |
-| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1031 | `isinstance(version, str)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1032 | `KnowledgeEnvelopeError(..., 'must be a string when available')` |
-| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1036 | `isinstance(version, str)` |
+| plugin_producer_inputs | enumerate | 1016 | `enumerate(components)` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1017 | `isinstance(component, Mapping)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1018 | `KnowledgeEnvelopeError(..., 'must be an object')` |
+| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1022 | `component.get('plugin_id')` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1024 | `isinstance(plugin_id, str)` |
+| plugin_producer_inputs | _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1025 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1027 | `KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')` |
+| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1031 | `component.get('plugin_version')` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1032 | `isinstance(version, str)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1033 | `KnowledgeEnvelopeError(..., 'must be a string when available')` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1037 | `isinstance(version, str)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `results.append` | `plugin_producer_inputs` | 1127 |
+| mutation | `results.append` | `plugin_producer_inputs` | 1128 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `plugin_producer_inputs` | `enumerate` | 1015 |
-| external_call | `plugin_producer_inputs` | `isinstance` | 1016 |
-| unresolved_call | `plugin_producer_inputs` | `component.get` | 1021 |
-| external_call | `plugin_producer_inputs` | `isinstance` | 1023 |
-| unresolved_call | `plugin_producer_inputs` | `_COMPONENT_ID_RE.fullmatch` | 1024 |
-| unresolved_call | `plugin_producer_inputs` | `component.get` | 1030 |
-| external_call | `plugin_producer_inputs` | `isinstance` | 1031 |
-| external_call | `plugin_producer_inputs` | `isinstance` | 1036 |
+| external_call | `plugin_producer_inputs` | `enumerate` | 1016 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1017 |
+| unresolved_call | `plugin_producer_inputs` | `component.get` | 1022 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1024 |
+| unresolved_call | `plugin_producer_inputs` | `_COMPONENT_ID_RE.fullmatch` | 1025 |
+| unresolved_call | `plugin_producer_inputs` | `component.get` | 1031 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1032 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1037 |
 | step_limit | `plugin_producer_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

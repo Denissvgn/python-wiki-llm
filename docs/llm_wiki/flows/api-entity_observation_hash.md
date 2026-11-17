@@ -2,7 +2,7 @@
 
 **Entry point:** `entity_observation_hash` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -20,7 +20,7 @@ sequenceDiagram
     participant p6 as _normalize_entity_observation
     participant p7 as require_nonempty_text
     participant p8 as _inventory_language
-    participant p9 as canonical_json_bytes
+    participant p9 as compact_bytes
     participant p10 as require_positive_int
     participant p11 as _record_array
     participant p12 as _record_name
@@ -50,7 +50,7 @@ sequenceDiagram
     p2->>p6: _normalize_entity_observation
     p4->>p7: require_nonempty_text
     p6->>p8: _inventory_language
-    p5->>p9: canonical_json_bytes
+    p5->>p9: compact_bytes
     p4->>p10: require_positive_int
     p6->>p11: _record_array
     p6->>p12: _record_name
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 16 | - | unresolved | 1 |
-> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 138; effect analysis evaluated: 137, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 137 source steps with known totals: observed: 625, emitted: 625, omitted: 0. Unavailable totals are excluded.
+Collector observations for 137 source steps with known totals: observed: 627, emitted: 627, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -180,13 +180,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| entity_observation_hash | _validate_inventory_complete | 294 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
+| entity_observation_hash | _validate_inventory_complete | 265 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 818 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 828 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
-| entity_observation_hash | normalize_entity_observation | 297 | `normalize_entity_observation(file_data, entity_name, occurrence)` |
-| normalize_entity_observation | _validate_entity_coordinate | 260 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 903 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| _validate_inventory_complete | TypeError | 820 | `TypeError('inventory_complete must be a boolean')` |
+| entity_observation_hash | normalize_entity_observation | 268 | `normalize_entity_observation(file_data, entity_name, occurrence)` |
+| normalize_entity_observation | _validate_entity_coordinate | 231 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 874 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -201,7 +201,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 828 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 849 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 820 |
 | external_call | `require_nonempty_text` | `isinstance` | 637 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

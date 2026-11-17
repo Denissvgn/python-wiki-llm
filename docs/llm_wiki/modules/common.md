@@ -20,7 +20,8 @@ context while retaining the legacy meaning of `present`.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `build_gitignore_matcher`, `is_agent_worktree_path` |
+| `..services.gitignore` | `GitIgnoreMatcher`, `build_gitignore_matcher` |
+| `..services.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `os` | `os` |
@@ -47,8 +48,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (20) |
-| Outbound | `src` (1) |
+| Inbound | `src` (19) |
+| Outbound | `src` (2) |
 
 > All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 

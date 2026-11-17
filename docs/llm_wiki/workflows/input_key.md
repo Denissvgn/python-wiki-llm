@@ -1,7 +1,7 @@
 # input_key
 
 **Entry point:** `sync_analysis_cache.input_key`
-**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [knowledge_reuse](../modules/knowledge_reuse.md), [maintenance_state](../modules/maintenance_state.md), [sync_analysis_cache](../modules/sync_analysis_cache.md)
+**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [domain_pack](../modules/domain_pack.md), [host](../modules/host.md), [knowledge_reuse](../modules/knowledge_reuse.md), [maintenance_state](../modules/maintenance_state.md), [sync_analysis_cache](../modules/sync_analysis_cache.md)
 
 > Bind source bytes, policy, schema, producer, helpers and generation options.
 
@@ -9,13 +9,17 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `maintenance_state._identity`
-2. `analysis_capture.capture_analysis`
-3. `knowledge_reuse.implementation_hash`
-4. `analysis_capture.analysis_diagnostics`
+2. `domain_pack.uses_default_pack`
+3. `analysis_capture.capture_analysis`
+4. `knowledge_reuse.implementation_hash`
+5. `analysis_capture.analysis_diagnostics`
+6. `host.emit`
 
 ## Touches
 
 - [analysis_capture](../modules/analysis_capture.md)
+- [domain_pack](../modules/domain_pack.md)
+- [host](../modules/host.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [sync_analysis_cache](../modules/sync_analysis_cache.md)

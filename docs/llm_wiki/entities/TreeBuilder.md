@@ -1,6 +1,6 @@
 # _TreeBuilder
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:238`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:236`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

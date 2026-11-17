@@ -1,6 +1,6 @@
 # ProtectedArtifactIntegrityError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:79`
+**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:80`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)

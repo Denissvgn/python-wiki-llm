@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [maintenance_cmd](../modules/maintenance_cmd.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 57 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 61 more
 
 **Complete modules touched:**
 
@@ -10,8 +10,9 @@
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
+- [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [documentation_queries](../modules/documentation_queries.md)
@@ -19,6 +20,8 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
@@ -51,6 +54,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
 - [request_json](../modules/request_json.md)
@@ -138,9 +142,9 @@ sequenceDiagram
     p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2646 interactions; 2616 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2648 interactions; 2618 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 812 (811 omitted); unresolved 1 of 593 (592 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 808 (807 omitted); unresolved 1 of 595 (594 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -149,12 +153,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:adopt_maintenance` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 6 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 666 groups; 658 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 681 groups; 673 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -167,9 +171,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1242; effect analysis evaluated: 844, partial: 57, unavailable: 341. Counts include steps omitted from the displayed trace.
+Source steps: 1246; effect analysis evaluated: 848, partial: 57, unavailable: 341. Counts include steps omitted from the displayed trace.
 
-Collector observations for 901 source steps with known totals: observed: 5453, emitted: 5199, omitted: 254. Unavailable totals are excluded.
+Collector observations for 905 source steps with known totals: observed: 5462, emitted: 5208, omitted: 254. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -266,16 +270,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | adopt_maintenance | 58 | `api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))` |
-| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1704 | `type(allow_external_src)` |
-| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1705 | `ValueError('Unsupported maintenance adoption options')` |
-| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1706 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
-| adopt_maintenance | adopt_maintenance_authority | 1706 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
+| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1856 | `type(allow_external_src)` |
+| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1857 | `ValueError('Unsupported maintenance adoption options')` |
+| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1858 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
+| adopt_maintenance | adopt_maintenance_authority | 1858 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
 | adopt_maintenance_authority | _absolute_path | 93 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `os.fspath(path)` |
 
 ### Boundary effects
 
@@ -287,17 +291,17 @@ flowchart LR
 | output | `print` | `run` | 136 |
 | mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 120 |
 | mutation | `extensions.pop` | `adopt_maintenance_authority` | 123 |
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `adopt_maintenance` | `type` | 1704 |
-| external_call | `adopt_maintenance` | `ValueError` | 1705 |
-| external_call | `adopt_maintenance` | `cast` | 1706 |
+| external_call | `adopt_maintenance` | `type` | 1856 |
+| external_call | `adopt_maintenance` | `ValueError` | 1857 |
+| external_call | `adopt_maintenance` | `cast` | 1858 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
-| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 52 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -32,9 +32,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/task_context_v2.py"]
     n6["src/llm_wiki_cli/services/task_evidence.py"]
     n7["src/llm_wiki_cli/services/workflow_profile.py"]
-    n0 --> n1
     n0 --> n2
-    n1 --> n0
     n4 --> n0
     n4 --> n1
     n4 --> n5

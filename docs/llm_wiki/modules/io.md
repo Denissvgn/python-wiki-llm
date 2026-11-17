@@ -18,6 +18,7 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 
 | Source | Symbols |
 |--------|---------|
+| `.host` | `current_host` |
 | `.knowledge_evidence` | `formatted_json_bytes` |
 | `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
@@ -47,10 +48,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (51) |
-| Outbound | `src` (2) |
+| Inbound | `src` (52) |
+| Outbound | `src` (3) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # ProtectedArtifactError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:75`
+**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:76`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)

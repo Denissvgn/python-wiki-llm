@@ -10,11 +10,12 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `context_packet` |
+| `.` | `analysis_compatibility`, `context_packet_builder` |
 | `..` | `__version__` |
-| `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `.host` | `current_host` |
 | `.immutable` | `freeze` |
 | `.io` | `first_unsafe_path_component` |
+| `.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.task_compact` | `CompactTaskContext`, `_CheckedCounter`, `normalize_view_options`, `render_compact_task_context` |
 | `.task_context` | `TaskCancelledError`, `TaskRead`, `_counter`, `build_task_read`, `plan_source_read`, `validate_task_context` |
 | `.task_context_v2` | `ScopedTaskState` |
@@ -55,20 +56,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (11) |
+| Outbound | `src` (12) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SessionReply](../entities/SessionReply.md) | 126 | — | Portable content and separate non-identity session work telemetry. |
-| [CompactSessionReply](../entities/CompactSessionReply.md) | 140 | — | — |
-| [CanonicalReceipt](../entities/CanonicalReceipt.md) | 154 | — | — |
-| [_Receipt](../entities/Receipt.md) | 166 | — | — |
-| [_Entry](../entities/Entry.md) | 179 | — | — |
-| [ContextSession](../entities/context_session_ContextSession.md) | 223 | — | A single trusted workspace. Methods serialize; events are hints only. |
+| [SessionReply](../entities/SessionReply.md) | 127 | — | Portable content and separate non-identity session work telemetry. |
+| [CompactSessionReply](../entities/CompactSessionReply.md) | 141 | — | — |
+| [CanonicalReceipt](../entities/CanonicalReceipt.md) | 155 | — | — |
+| [_Receipt](../entities/Receipt.md) | 167 | — | — |
+| [_Entry](../entities/Entry.md) | 180 | — | — |
+| [ContextSession](../entities/context_session_ContextSession.md) | 224 | — | A single trusted workspace. Methods serialize; events are hints only. |
 
 ## Functions
 

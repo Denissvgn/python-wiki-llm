@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:993`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:859`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -50,17 +50,17 @@ Operational state; maintenance is present only after explicit adoption.
 flowchart LR
     n0["SyncManifest (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n2["_manifest_needs_write (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n3["_manifest_payload (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n4["_apply_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n5["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n6["_build_apply_diff_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n7["_build_manifest_from_inventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n8["_build_surface_initialization_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n9["_compute_sync_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n10["_exit_if_large_unforced_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n11["_governance_moves_for_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n12["_invalid_manifest_hash_paths (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n2["_preflight_team_source_selection (src/llm_wiki_cli/commands/team_cmd.py)"]
+    n3["src/llm_wiki_cli/commands/trigger_cmd.py"]
+    n4["src/llm_wiki_cli/services/analysis_targets.py"]
+    n5["_bootstrap_manifest_generation_state (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n7["_governance_moves_for_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n8["_load_previous_bootstrap_manifest (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n9["canonical_generated_pages (src/llm_wiki_cli/services/canonical_pages.py)"]
+    n10["src/llm_wiki_cli/services/ci_installer.py"]
+    n11["src/llm_wiki_cli/services/context_service.py"]
+    n12["src/llm_wiki_cli/services/doctor_service.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -75,17 +75,17 @@ flowchart LR
     n12 --> n0
     click n0 "../modules/sync_manifest.md"
     click n1 "../modules/knowledge_cmd.md"
-    click n2 "../modules/migrate_cmd.md"
-    click n3 "../modules/migrate_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/sync_cmd.md"
-    click n6 "../modules/sync_cmd.md"
-    click n7 "../modules/sync_cmd.md"
-    click n8 "../modules/sync_cmd.md"
-    click n9 "../modules/sync_cmd.md"
-    click n10 "../modules/sync_cmd.md"
-    click n11 "../modules/sync_cmd.md"
-    click n12 "../modules/sync_cmd.md"
+    click n2 "../modules/team_cmd.md"
+    click n3 "../modules/trigger_cmd.md"
+    click n4 "../modules/analysis_targets.md"
+    click n5 "../modules/bootstrap_runtime.md"
+    click n6 "../modules/bootstrap_runtime.md"
+    click n7 "../modules/bootstrap_runtime.md"
+    click n8 "../modules/bootstrap_runtime.md"
+    click n9 "../modules/canonical_pages.md"
+    click n10 "../modules/ci_installer.md"
+    click n11 "../modules/context_service.md"
+    click n12 "../modules/doctor_service.md"
 ```
 
 ### Summary
@@ -99,16 +99,16 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
-| `_manifest_needs_write` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_manifest_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_build_manifest_from_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_invalid_manifest_hash_paths` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_preflight_team_source_selection` | type_reference | [team_cmd](../modules/team_cmd.md) | — |
+| `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `analysis_targets` | import | [analysis_targets](../modules/analysis_targets.md) | — |
+| `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_governance_moves_for_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_load_previous_bootstrap_manifest` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `canonical_generated_pages` | type_reference | [canonical_pages](../modules/canonical_pages.md) | — |
+| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 
 > References: showing 12 of 115 logical references; 103 omitted by the 12-row generated summary limit.

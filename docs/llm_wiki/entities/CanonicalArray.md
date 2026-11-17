@@ -1,6 +1,6 @@
 # CanonicalArray
 
-**Location:** `src/llm_wiki_cli/services/canonical_json.py:21`
+**Location:** `src/llm_wiki_cli/services/canonical_json.py:59`
 **Kind:** Class
 **Bases:** —
 **Module:** [canonical_json](../modules/canonical_json.md)

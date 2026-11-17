@@ -111,8 +111,6 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_common` | `(parser)` | — | — |
-| `add_commands` | `(docs_sub)` | — | — |
 | `_path` | `(args, value)` | — | — |
 | `_read` | `(args, value)` | — | — |
 | `_basis_files` | `(basis)` | — | — |

@@ -35,9 +35,9 @@ flowchart LR
     n3["src/llm_wiki_cli/commands/init_cmd.py"]
     n4["src/llm_wiki_cli/commands/status_cmd.py"]
     n5["src/llm_wiki_cli/commands/uninstall_cmd.py"]
-    n6["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n7["select_render_profile (src/llm_wiki_cli/services/rendering_lifecycle.py)"]
-    n8["_reference_verification (src/llm_wiki_cli/services/skills.py)"]
+    n6["select_render_profile (src/llm_wiki_cli/services/rendering_lifecycle.py)"]
+    n7["_reference_verification (src/llm_wiki_cli/services/skills.py)"]
+    n8["src/llm_wiki_cli/services/upgrade_runtime.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -50,9 +50,9 @@ flowchart LR
     click n3 "../modules/init_cmd.md"
     click n4 "../modules/status_cmd.md"
     click n5 "../modules/uninstall_cmd.md"
-    click n6 "../modules/upgrade_cmd.md"
-    click n7 "../modules/rendering_lifecycle.md"
-    click n8 "../modules/skills.md"
+    click n6 "../modules/rendering_lifecycle.md"
+    click n7 "../modules/skills.md"
+    click n8 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -75,6 +75,6 @@ flowchart LR
 | `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
 | `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
 | `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
 | `select_render_profile` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |
 | `_reference_verification` | type_reference | [skills](../modules/skills.md) | — |
+| `upgrade_runtime` | import | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

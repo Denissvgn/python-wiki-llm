@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 64 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 65 more
 
 **Complete modules touched:**
 
@@ -12,18 +12,19 @@
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
+- [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [flow_overview](../modules/flow_overview.md)
+- [gitignore](../modules/gitignore.md)
 - [helper_cache](../modules/helper_cache.md)
-- [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [host](../modules/host.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -52,9 +53,9 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_maps](../modules/module_maps.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
-- [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
@@ -84,83 +85,83 @@ sequenceDiagram
     participant p0 as run
     participant p1 as _bootstrap_run_options_from_args
     participant p2 as _execute_bootstrap_options
-    participant p3 as pending_bootstrap
-    participant p4 as validate_path
-    participant p5 as guard_maintenance_owner
-    participant p6 as _preflight_public_bootstrap
-    participant p7 as validate_source_root
-    participant p8 as maintenance_write_operation
-    participant p9 as bootstrap_write_operation
-    participant p10 as _preflight_bootstrap_analysis
-    participant p11 as _execute_bootstrap_options_locked
-    participant p12 as _load_record
-    participant p13 as _preflight_bootstrap_source_selection
-    participant p14 as _start_bootstrap
-    participant p15 as _first_use_guidance
-    participant p16 as _preflight_bootstrap_governance
-    participant p17 as _extract_bootstrap_inventory
-    participant p18 as guard_incomplete_bootstrap
-    participant p19 as _is_pristine_bootstrap_target
-    participant p20 as load_adoption_marker
-    participant p21 as governance_writer_lock
-    participant p22 as _finish_if_empty_bootstrap_inventory
-    participant p23 as SyncManifest.load
-    participant p24 as storage_writer_lock
-    participant p25 as _bootstrap_result
-    participant p26 as _recover
-    participant p27 as build_source_snapshot
-    participant p28 as _prepare_bootstrap_page_maps
+    participant p3 as emit
+    participant p4 as pending_bootstrap
+    participant p5 as validate_path
+    participant p6 as guard_maintenance_owner
+    participant p7 as _preflight_public_bootstrap
+    participant p8 as validate_source_root
+    participant p9 as maintenance_write_operation
+    participant p10 as bootstrap_write_operation
+    participant p11 as _preflight_bootstrap_analysis
+    participant p12 as _execute_bootstrap_options_locked
+    participant p13 as _load_record
+    participant p14 as _preflight_bootstrap_source_selection
+    participant p15 as _start_bootstrap
+    participant p16 as _first_use_guidance
+    participant p17 as _preflight_bootstrap_governance
+    participant p18 as _extract_bootstrap_inventory
+    participant p19 as guard_incomplete_bootstrap
+    participant p20 as _is_pristine_bootstrap_target
+    participant p21 as load_adoption_marker
+    participant p22 as governance_writer_lock
+    participant p23 as _finish_if_empty_bootstrap_inventory
+    participant p24 as SyncManifest.load
+    participant p25 as storage_writer_lock
+    participant p26 as _bootstrap_result
+    participant p27 as _recover
+    participant p28 as build_source_snapshot
     participant p29 as SystemExit
     participant p30 as (…).resolve
     p0->>p1: _bootstrap_run_options_from_args
     p0->>p2: _execute_bootstrap_options
-    p2->>p3: pending_bootstrap
-    p1->>p4: validate_path
-    p2->>p5: guard_maintenance_owner
-    p2->>p6: _preflight_public_bootstrap
-    p1->>p7: validate_source_root
-    p2->>p8: maintenance_write_operation
-    p2->>p9: bootstrap_write_operation
-    p2->>p10: _preflight_bootstrap_analysis
-    p2->>p11: _execute_bootstrap_options_locked
-    p3->>p12: _load_record
-    p10->>p13: _preflight_bootstrap_source_selection
-    p11->>p14: _start_bootstrap
-    p6->>p15: _first_use_guidance
-    p10->>p16: _preflight_bootstrap_governance
-    p11->>p17: _extract_bootstrap_inventory
-    p5->>p18: guard_incomplete_bootstrap
-    p6->>p19: _is_pristine_bootstrap_target
-    p5->>p20: load_adoption_marker
-    p8->>p21: governance_writer_lock
-    p11->>p22: _finish_if_empty_bootstrap_inventory
-    p5->>p23: SyncManifest.load
-    p8->>p24: storage_writer_lock
-    p11->>p25: _bootstrap_result
-    p9->>p26: _recover
-    p10->>p27: build_source_snapshot
-    p11->>p28: _prepare_bootstrap_page_maps
+    p0->>p3: emit
+    p2->>p4: pending_bootstrap
+    p1->>p5: validate_path
+    p2->>p6: guard_maintenance_owner
+    p2->>p7: _preflight_public_bootstrap
+    p1->>p8: validate_source_root
+    p2->>p9: maintenance_write_operation
+    p2->>p10: bootstrap_write_operation
+    p2->>p11: _preflight_bootstrap_analysis
+    p2->>p12: _execute_bootstrap_options_locked
+    p4->>p13: _load_record
+    p11->>p14: _preflight_bootstrap_source_selection
+    p12->>p15: _start_bootstrap
+    p7->>p16: _first_use_guidance
+    p11->>p17: _preflight_bootstrap_governance
+    p12->>p18: _extract_bootstrap_inventory
+    p6->>p19: guard_incomplete_bootstrap
+    p7->>p20: _is_pristine_bootstrap_target
+    p6->>p21: load_adoption_marker
+    p9->>p22: governance_writer_lock
+    p12->>p23: _finish_if_empty_bootstrap_inventory
+    p6->>p24: SyncManifest.load
+    p9->>p25: storage_writer_lock
+    p12->>p26: _bootstrap_result
+    p10->>p27: _recover
+    p11->>p28: build_source_snapshot
     p0-->>p29: SystemExit(1)
-    p4-->>p30: (…).resolve
+    p5-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 3909 interactions; 3879 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3509 interactions; 3479 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1232 (1231 omitted); unresolved 1 of 1170 (1169 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1171 (1170 omitted); unresolved 1 of 923 (922 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_args` | 2 | - | external | 19 |
-| `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 892 groups; 884 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 16 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 16 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 16 | - | external | 10 |
+> Omission summary shows 8 of 889 groups; 881 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -173,9 +174,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1508; effect analysis evaluated: 1129, partial: 79, unavailable: 300. Counts include steps omitted from the displayed trace.
+Source steps: 1416; effect analysis evaluated: 1054, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1208 source steps with known totals: observed: 7256, emitted: 6773, omitted: 483. Unavailable totals are excluded.
+Collector observations for 1119 source steps with known totals: observed: 6538, emitted: 6235, omitted: 303. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -183,18 +184,18 @@ Collector observations for 1208 source steps with known totals: observed: 7256, 
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `_bootstrap_run_options_from_args` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `run` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_bootstrap_run_options_from_args` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `str (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR
@@ -204,82 +205,77 @@ flowchart LR
     s4["4. validate_path"]
     s5["5. PathValidationError"]
     s6["6. (…).resolve"]
-    s7["7. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s8["8. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
-    s11["11. PathValidationError"]
-    s12["12. str (src/llm_wiki_cli/services…rap_run_options_from_args)"]
+    s7["7. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s8["8. current_host"]
+    s9["9. _ACTIVE.get"]
+    s10["10. current_host().cwd().resolve"]
+    s11["11. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s12["12. current_host"]
     s1 -->|"_bootstrap_run_options_from_args(args)"| s2
     s2 -. "Path (src/llm_wiki_cli/services…rap_run_options_from_args)(args.wiki_dir)" .-> s3
     s2 -->|"validate_path(str(...), '--wiki-dir')"| s4
     s4 -->|"PathValidationError(...)"| s5
     s4 -. "(…).resolve(data not statically known)" .-> s6
-    s4 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s7
-    s4 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s4 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
-    s4 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s10
-    s4 -->|"PathValidationError(...)"| s11
-    s2 -. "str (src/llm_wiki_cli/services…rap_run_options_from_args)(wiki_dir)" .-> s12
-    b0["output print"]
-    s1 -. "output print" .-> b0
+    s4 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s7
+    s4 -->|"current_host(data not statically known)"| s8
+    s8 -. "_ACTIVE.get(data not statically known)" .-> s9
+    s4 -. "current_host().cwd().resolve(data not statically known)" .-> s10
+    s4 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s11
+    s4 -->|"current_host(data not statically known)"| s12
     click s1 "../modules/bootstrap_runtime.md"
     click s2 "../modules/bootstrap_runtime.md"
-    click s4 "../modules/config.md"
-    click s5 "../modules/config.md"
-    click s11 "../modules/config.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
+    click s4 "../modules/path_policy.md"
+    click s5 "../modules/path_policy.md"
+    click s8 "../modules/host.md"
+    click s12 "../modules/host.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `BootstrapExtractionError`, `BootstrapContractError`, `sys` | - | - |
-| `_bootstrap_run_options_from_args` | `args` | `sys`, `sys` | - | `_BootstrapRunOptions(...)` |
+| `run` | `args` | `BootstrapExtractionError`, `BootstrapContractError` | - | - |
+| `_bootstrap_run_options_from_args` | `args` | - | - | `_BootstrapRunOptions(...)` |
 | `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
 | `(…).resolve` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `PathValidationError` | - | - | - | - |
-| `str (src/llm_wiki_cli/services…rap_run_options_from_args)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `current_host().cwd().resolve` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6861 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4831 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4832 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4832 | `str(wiki_dir)` |
+| run | _bootstrap_run_options_from_args | 6978 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4948 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4949 | `validate_path(str(...), '--wiki-dir')` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 102 | `current_host(data not statically known)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| output | `print` | `run` | 6867 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -10,6 +10,7 @@ Shared path normalization helpers.
 
 | Source | Symbols |
 |--------|---------|
+| `.host` | `current_host` |
 | `__future__` | `annotations` |
 | `pathlib` | `Path`, `PurePosixPath`, `PureWindowsPath` |
 | `shlex` | `shlex` |
@@ -22,6 +23,7 @@ flowchart LR
     n0["src"]
     n1["src/llm_wiki_cli/services/paths.py"]
     n0 --> n1
+    n1 --> n0
     click n1 "../modules/paths.md"
 ```
 
@@ -32,8 +34,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
+| Outbound | `src` (1) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

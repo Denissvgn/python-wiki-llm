@@ -10,8 +10,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service` |
-| `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `.` | `context_packet`, `context_service`, `context_packet_builder` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY` |
@@ -27,6 +26,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `.knowledge_storage_io` | `ReadObservation`, `StorageReadSession`, `range_batches` |
 | `.maintenance_status` | `LIMITATIONS`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `.markdown_sections` | `parse_markdown_document` |
+| `.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.python_implementation` | `analysis_identity` |
 | `.section_ownership` | `observe_page_sections` |
 | `.source_selection` | `validate_persisted_source_selection_identity` |
@@ -65,15 +65,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (29) |
+| Outbound | `src` (30) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 275 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 276 | — | — |
 
 ## Functions
 
@@ -87,5 +87,5 @@ flowchart LR
 | `_storage_receipt` | `(native: ScopedKnowledgeRead \| None, *, status: str, reason: str \| None, request = None) -> dict[str, Any]` | — | — |
 | `_edge_matches_concept` | `(edge: Mapping[str, Any], concept: Mapping[str, Any]) -> bool` | — | Match either native endpoint identity to the captured concept. |
 | `_native_observation` | `(native, requirement, snapshot, paths, scope, limit, implementation_report = None)` | — | — |
-| `build_scoped_task_read` | `(request, *, src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, profile = None, policy = None, counter = None, allow_external_src = False, source_selection = None, helper_cache_dir = None, cancelled = None, _defer_validation = False, _wiki_byte_budget = None)` | `@packets._guarded_capture` | — |
+| `build_scoped_task_read` | `(request, *, src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, profile = None, policy = None, counter = None, allow_external_src = False, source_selection = None, helper_cache_dir = None, cancelled = None, _defer_validation = False, _wiki_byte_budget = None)` | `@packet_builder._guarded_capture` | — |
 | `validate_scoped_bindings` | `(payload, normalized, profile)` | — | Validate portable scope and consumed-input bindings, without claiming authenticity. |

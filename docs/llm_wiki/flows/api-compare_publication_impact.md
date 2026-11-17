@@ -2,15 +2,17 @@
 
 **Entry point:** `compare_publication_impact` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication_contracts](../modules/publication_contracts.md), [publication_impact](../modules/publication_impact.md), and 1 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication_contracts](../modules/publication_contracts.md), and 3 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [publication_contracts](../modules/publication_contracts.md)
 - [publication_impact](../modules/publication_impact.md)
 - [publication_references](../modules/publication_references.md)
+- [reference_providers](../modules/reference_providers.md)
 
 ## Call sequence
 
@@ -34,13 +36,13 @@ sequenceDiagram
     participant p12 as hash_json
     participant p13 as reference_dependency_basis
     participant p14 as _fail
-    participant p15 as canonical_json_bytes
+    participant p15 as compact_bytes
     participant p16 as PublicationProtocolError
     participant p17 as _reviewable_target
-    participant p18 as sha256_bytes
-    participant p19 as canonical_json_text
+    participant p18 as sha256_digest
+    participant p19 as compact_text
     participant p20 as reference_identity
-    participant p21 as _ancestor_context
+    participant p21 as reference_provider
     participant p22 as deepcopy (src/llm_wiki_cli/services…ompare_publication_impact)
     participant p23 as findings.append (src/llm_wiki_cli/services…ompare_publication_impact)
     participant p24 as dict
@@ -61,13 +63,13 @@ sequenceDiagram
     p7->>p12: hash_json
     p11->>p13: reference_dependency_basis
     p10->>p14: _fail
-    p12->>p15: canonical_json_bytes
+    p12->>p15: compact_bytes
     p1->>p16: PublicationProtocolError
     p1->>p17: _reviewable_target
-    p12->>p18: sha256_bytes
-    p15->>p19: canonical_json_text
+    p12->>p18: sha256_digest
+    p15->>p19: compact_text
     p13->>p20: reference_identity
-    p13->>p21: _ancestor_context
+    p13->>p21: reference_provider
     p1-->>p22: deepcopy (src/llm_wiki_cli/services…ompare_publication_impact)(dict(...))
     p1-->>p23: findings.append (src/llm_wiki_cli/services…ompare_publication_impact)(_finding(...))
     p1-->>p24: dict(candidate)
@@ -79,9 +81,9 @@ sequenceDiagram
     p1-->>p25: any (src/llm_wiki_cli/services…ompare_publication_impact)(...)
 ```
 
-> Call sequence diagram shows 30 of 132 interactions; 102 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 33 (25 omitted); unresolved 1 of 60 (59 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 32 (24 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -95,7 +97,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_guard` | 8 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/publication_impact.py:compare_publication_impact` | 2 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 2 |
 | `src/llm_wiki_cli/services/publication_impact.py:_topic_versions` | 32 | - | external | 1 |
-> Omission summary shows 8 of 31 groups; 23 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 30 groups; 22 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -108,9 +110,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 40; effect analysis evaluated: 35, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+Source steps: 38; effect analysis evaluated: 33, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
-Collector observations for 35 source steps with known totals: observed: 126, emitted: 126, omitted: 0. Unavailable totals are excluded.
+Collector observations for 33 source steps with known totals: observed: 121, emitted: 121, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -198,26 +200,26 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3733 | `compare(candidate, baseline, reviews=reviews)` |
+| compare_publication_impact (src/llm_wiki_cli/api.py) | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | 3885 | `compare(candidate, baseline, reviews=reviews)` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 521 | `deepcopy(dict(...))` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 521 | `dict(candidate)` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | deepcopy (src/llm_wiki_cli/services…ompare_publication_impact) | 522 | `deepcopy(dict(...))` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | dict | 522 | `dict(baseline)` |
 | compare_publication_impact (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_basis | 523 | `validate_publication_basis(after)` |
-| validate_publication_basis | _guard | 923 | `_guard(_basis, value)` |
-| _guard | _json_tree | 913 | `_json_tree(value)` |
-| _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
-| _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
-| _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
+| validate_publication_basis | _guard | 935 | `_guard(_basis, value)` |
+| _guard | _json_tree | 925 | `_json_tree(value)` |
+| _json_tree | pending.pop | 140 | `pending.pop(data not statically known)` |
+| _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
+| _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `findings.append` | `compare_publication_impact` | 547 |
-| mutation | `pending.pop` | `_json_tree` | 135 |
-| mutation | `pending.extend` | `_json_tree` | 142 |
-| mutation | `pending.extend` | `_json_tree` | 144 |
+| mutation | `pending.pop` | `_json_tree` | 140 |
+| mutation | `pending.extend` | `_json_tree` | 147 |
+| mutation | `pending.extend` | `_json_tree` | 149 |
 
 ### Static analysis gaps
 

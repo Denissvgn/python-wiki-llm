@@ -2,15 +2,16 @@
 
 **Entry point:** `validate_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 20 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [context_budget](../modules/context_budget.md), and 21 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [api](../modules/api.md)
-- [change_selection](../modules/change_selection.md)
+- [canonical_json](../modules/canonical_json.md)
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
+- [context_request_format](../modules/context_request_format.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -55,14 +56,14 @@ sequenceDiagram
     participant p14 as _array
     participant p15 as coordinate
     participant p16 as _validate_task_claims
-    participant p17 as validate_changes
-    participant p18 as normalize_profile
-    participant p19 as content_id
-    participant p20 as validate_context_packet
-    participant p21 as validate_task_implementations
-    participant p22 as validate_scoped_bindings
-    participant p23 as TaskCompactError
-    participant p24 as canonical_json
+    participant p17 as compact_line_bytes
+    participant p18 as validate_changes
+    participant p19 as normalize_profile
+    participant p20 as content_id
+    participant p21 as validate_context_packet
+    participant p22 as validate_task_implementations
+    participant p23 as validate_scoped_bindings
+    participant p24 as TaskCompactError
     participant p25 as readable_projection
     participant p26 as _accounted_render
     participant p27 as CompactTaskContext
@@ -85,14 +86,14 @@ sequenceDiagram
     p7->>p14: _array
     p7->>p15: coordinate
     p9->>p16: _validate_task_claims
-    p7->>p17: validate_changes
-    p7->>p18: normalize_profile
-    p7->>p19: content_id
-    p9->>p20: validate_context_packet
-    p9->>p21: validate_task_implementations
-    p9->>p22: validate_scoped_bindings
-    p1->>p23: TaskCompactError
-    p1->>p24: canonical_json
+    p7->>p17: compact_line_bytes
+    p7->>p18: validate_changes
+    p7->>p19: normalize_profile
+    p7->>p20: content_id
+    p9->>p21: validate_context_packet
+    p9->>p22: validate_task_implementations
+    p9->>p23: validate_scoped_bindings
+    p1->>p24: TaskCompactError
     p2->>p25: readable_projection
     p2->>p26: _accounted_render
     p2->>p27: CompactTaskContext
@@ -103,7 +104,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 606 interactions; 576 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 307 (306 omitted); unresolved 1 of 144 (143 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 306 (305 omitted); unresolved 1 of 144 (143 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/workflow_profile.py:exact_fields` | 10 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 21 | - | external | 2 |
-> Omission summary shows 8 of 90 groups; 82 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 94 groups; 86 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -130,9 +131,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 156; effect analysis evaluated: 108, partial: 3, unavailable: 45. Counts include steps omitted from the displayed trace.
+Source steps: 157; effect analysis evaluated: 109, partial: 3, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 111 source steps with known totals: observed: 524, emitted: 519, omitted: 5. Unavailable totals are excluded.
+Collector observations for 112 source steps with known totals: observed: 527, emitted: 522, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -222,7 +223,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_compact_task_context (src/llm_wiki_cli/api.py) | validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1579 | `validate(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| validate_compact_task_context (src/llm_wiki_cli/api.py) | validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1731 | `validate(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | render_compact_task_context | 560 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | render_compact_task_context | _validated | 475 | `_validated(canonical_text, request, profile, policy, counter)` |
 | _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 171 | `isinstance(canonical_text, TaskContext)` |
@@ -231,8 +232,8 @@ flowchart LR
 | _validated | TaskCompactError | 179 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
 | _validated | normalize_task_request | 182 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
-| exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `isinstance(value, Mapping)` |
-| exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `any(...)` |
+| exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 66 | `isinstance(value, Mapping)` |
+| exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 66 | `any(...)` |
 
 ### Boundary effects
 
@@ -249,8 +250,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `_validated` | `isinstance` | 171 |
 | external_call | `_validated` | `isinstance` | 178 |
-| external_call | `exact_fields` | `isinstance` | 67 |
-| external_call | `exact_fields` | `any` | 67 |
+| external_call | `exact_fields` | `isinstance` | 66 |
+| external_call | `exact_fields` | `any` | 66 |
 | step_limit | `validate_compact_task_context` | `first 12 steps` | 0 |
 | truncated_flow | `validate_compact_task_context` | `depth limit` | 0 |
 

@@ -13,6 +13,7 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `..` | `__version__` |
 | `.contracts` | `KNOWLEDGE_REUSE_SCHEMA_VERSION` |
 | `.extraction_service` | `EXTRACTOR_REGISTRY` |
+| `.host` | `current_host` |
 | `.io` | `read_md`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `PlannedArtifactWrite` |
 | `.knowledge_envelope` | `hash_markdown_snapshot`, `INVENTORY_HASH_EXTENSION`, `build_repository_record`, `hash_inventory` |
@@ -58,8 +59,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (11) |
-| Outbound | `src` (21) |
+| Inbound | `src` (10) |
+| Outbound | `src` (22) |
 
 > All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 

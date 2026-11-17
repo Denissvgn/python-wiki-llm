@@ -27,6 +27,7 @@ flowchart LR
     n3["src/llm_wiki_cli/config.py"]
     n4["src/llm_wiki_cli/services/ci_installer.py"]
     n5["src/llm_wiki_cli/services/publication_config.py"]
+    n0 --> n1
     n0 --> n2
     n0 --> n3
     n1 --> n2

@@ -2,17 +2,21 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 24 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 29 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -26,6 +30,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
@@ -51,7 +56,7 @@ sequenceDiagram
     participant p6 as _wiki_anchor
     participant p7 as source_path_diagnostics
     participant p8 as _live_source_selection_identity
-    participant p9 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    participant p9 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     participant p10 as attach_implementation_read_view
     participant p11 as analysis_identity
     participant p12 as read_guarded
@@ -81,7 +86,7 @@ sequenceDiagram
     p0->>p6: _wiki_anchor
     p0->>p7: source_path_diagnostics
     p0->>p8: _live_source_selection_identity
-    p0->>p9: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    p0->>p9: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     p0->>p10: attach_implementation_read_view
     p0->>p11: analysis_identity
     p0->>p12: read_guarded
@@ -105,9 +110,9 @@ sequenceDiagram
     p0-->>p30: selected_snapshot_builder(source_root, **=snapshot_options)
 ```
 
-> Call sequence diagram shows 30 of 1981 interactions; 1951 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1986 interactions; 1956 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 683 (682 omitted); unresolved 1 of 518 (517 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 680 (679 omitted); unresolved 1 of 522 (521 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 22 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-> Omission summary shows 8 of 497 groups; 489 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 508 groups; 500 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 781; effect analysis evaluated: 496, partial: 32, unavailable: 253. Counts include steps omitted from the displayed trace.
+Source steps: 785; effect analysis evaluated: 499, partial: 32, unavailable: 254. Counts include steps omitted from the displayed trace.
 
-Collector observations for 528 source steps with known totals: observed: 3024, emitted: 2793, omitted: 231. Unavailable totals are excluded.
+Collector observations for 531 source steps with known totals: observed: 3022, emitted: 2791, omitted: 231. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

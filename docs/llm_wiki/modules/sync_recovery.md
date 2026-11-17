@@ -31,6 +31,7 @@ syncs discard only verified private scratch and retain unexpected contents.
 | Source | Symbols |
 |--------|---------|
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `unlink_guarded_bytes` |
+| `.host` | `emit` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
@@ -46,7 +47,6 @@ syncs discard only verified private scratch and retain unexpected contents.
 | `json` | `json` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
-| `sys` | `sys` |
 | `tempfile` | `tempfile` |
 | `typing` | `Any` |
 | `uuid` | `UUID`, `uuid4` |
@@ -70,9 +70,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

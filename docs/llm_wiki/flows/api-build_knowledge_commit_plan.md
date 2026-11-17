@@ -2,15 +2,16 @@
 
 **Entry point:** `build_knowledge_commit_plan` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 29 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 33 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
-- [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -21,11 +22,14 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
@@ -60,22 +64,22 @@ sequenceDiagram
     participant p10 as build_manifest_store
     participant p11 as formatted_json_bytes
     participant p12 as KnowledgeArtifactError
-    participant p13 as canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
-    participant p14 as digest
+    participant p13 as canonical_bytes
+    participant p14 as sha256_digest
     participant p15 as _has_validation_operation
     participant p16 as _model_to_payload
     participant p17 as _validated_index_serialization
-    participant p18 as sha256_bytes
-    participant p19 as KnowledgeStorageError
-    participant p20 as KnowledgeCommitPlan
-    participant p21 as _detached
-    participant p22 as build_packed_store
-    participant p23 as maintenance_core
-    participant p24 as _storage_validator_identity
-    participant p25 as _require_validation_receipt
-    participant p26 as _decode_json_object
-    participant p27 as read_guarded
-    participant p28 as spool_write
+    participant p18 as KnowledgeStorageError
+    participant p19 as KnowledgeCommitPlan
+    participant p20 as _detached
+    participant p21 as build_packed_store
+    participant p22 as maintenance_core
+    participant p23 as _storage_validator_identity
+    participant p24 as _require_validation_receipt
+    participant p25 as _decode_json_object
+    participant p26 as read_guarded
+    participant p27 as spool_write
+    participant p28 as _validate_artifact_parity
     participant p29 as Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
     participant p30 as (…).exists (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
     p0->>p1: current_manifest_format
@@ -90,29 +94,29 @@ sequenceDiagram
     p0->>p10: build_manifest_store
     p0->>p11: formatted_json_bytes
     p0->>p12: KnowledgeArtifactError
-    p0->>p13: canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
-    p0->>p14: digest
+    p0->>p13: canonical_bytes
+    p0->>p14: sha256_digest
     p0->>p15: _has_validation_operation
     p0->>p16: _model_to_payload
     p0->>p17: _validated_index_serialization
-    p0->>p18: sha256_bytes
-    p0->>p19: KnowledgeStorageError
-    p0->>p20: KnowledgeCommitPlan
-    p2->>p21: _detached
-    p7->>p22: build_packed_store
-    p2->>p23: maintenance_core
-    p8->>p24: _storage_validator_identity
-    p6->>p25: _require_validation_receipt
-    p5->>p26: _decode_json_object
-    p1->>p27: read_guarded
-    p4->>p28: spool_write
+    p0->>p18: KnowledgeStorageError
+    p0->>p19: KnowledgeCommitPlan
+    p2->>p20: _detached
+    p7->>p21: build_packed_store
+    p2->>p22: maintenance_core
+    p8->>p23: _storage_validator_identity
+    p6->>p24: _require_validation_receipt
+    p5->>p25: _decode_json_object
+    p1->>p26: read_guarded
+    p4->>p27: spool_write
+    p8->>p28: _validate_artifact_parity
     p0-->>p29: Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(wiki_dir)
     p0-->>p30: (…).exists (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
 ```
 
-> Call sequence diagram shows 30 of 2411 interactions; 2381 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2710 interactions; 2680 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 848 (847 omitted); unresolved 1 of 424 (423 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 936 (935 omitted); unresolved 1 of 481 (480 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_validate_range` | 15 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 539 groups; 531 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 615 groups; 607 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,9 +143,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1140; effect analysis evaluated: 695, partial: 41, unavailable: 404. Counts include steps omitted from the displayed trace.
+Source steps: 1294; effect analysis evaluated: 777, partial: 49, unavailable: 468. Counts include steps omitted from the displayed trace.
 
-Collector observations for 736 source steps with known totals: observed: 4009, emitted: 3803, omitted: 206. Unavailable totals are excluded.
+Collector observations for 826 source steps with known totals: observed: 4541, emitted: 4316, omitted: 225. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,7 +1,7 @@
 # recover_maintenance_authority
 
 **Entry point:** `maintenance_service.recover_maintenance_authority`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md), [validation](../modules/validation.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md), [validation](../modules/validation.md)
 
 > Restore one validated complete snapshot; never reconstruct review history.
 
@@ -31,18 +31,18 @@
 21. `knowledge_envelope.hash_source_snapshot`
 22. `maintenance_protocol.MaintenanceProtocolError`
 23. `maintenance_protocol.snapshot_wiki`
-24. `knowledge_storage.digest`
+24. `canonical_json.sha256_digest`
 25. `knowledge_storage_io.read_guarded`
 26. `maintenance_protocol.MaintenanceProtocolError`
 27. `knowledge_storage_io.read_guarded`
 28. `maintenance_protocol.MaintenanceProtocolError`
-29. `knowledge_storage.digest`
+29. `canonical_json.sha256_digest`
 30. `knowledge_storage_io.read_guarded`
 31. `maintenance_protocol.MaintenanceProtocolError`
 32. `validation.is_portable_relative_path`
 33. `knowledge_evidence.is_valid_sha256`
 34. `maintenance_protocol.MaintenanceProtocolError`
-35. `knowledge_storage.digest`
+35. `canonical_json.sha256_digest`
 36. `maintenance_protocol.MaintenanceProtocolError`
 37. `filesystem_guard.atomic_write_guarded_bytes`
 38. `filesystem_guard.unlink_guarded_bytes`
@@ -50,11 +50,12 @@
 40. `filesystem_guard.atomic_write_guarded_bytes`
 41. `filesystem_guard.atomic_write_guarded_bytes`
 42. `maintenance_protocol.guard_maintenance_owner`
-43. `knowledge_storage.digest`
+43. `canonical_json.sha256_digest`
 44. `knowledge_storage.canonical_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)

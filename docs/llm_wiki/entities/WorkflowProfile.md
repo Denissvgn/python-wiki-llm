@@ -1,6 +1,6 @@
 # WorkflowProfile
 
-**Location:** `src/llm_wiki_cli/services/workflow_profile.py:116`
+**Location:** `src/llm_wiki_cli/services/workflow_profile.py:115`
 **Kind:** Class
 **Bases:** —
 **Module:** [workflow_profile](../modules/workflow_profile.md)

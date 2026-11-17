@@ -2,10 +2,11 @@
 
 **Entry point:** `verify_documentation_run` (`api`)
 **Source:** [verify](../modules/verify.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_review](../modules/documentation_review.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), and 13 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [documentation_policy](../modules/documentation_policy.md), [documentation_review](../modules/documentation_review.md), and 14 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [documentation_policy](../modules/documentation_policy.md)
 - [documentation_review](../modules/documentation_review.md)
 - [documentation_run_contracts](../modules/documentation_run_contracts.md)
@@ -124,7 +125,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 363; effect analysis evaluated: 240, partial: 4, unavailable: 119. Counts include steps omitted from the displayed trace.
 
-Collector observations for 244 source steps with known totals: observed: 996, emitted: 987, omitted: 9. Unavailable totals are excluded.
+Collector observations for 244 source steps with known totals: observed: 997, emitted: 988, omitted: 9. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

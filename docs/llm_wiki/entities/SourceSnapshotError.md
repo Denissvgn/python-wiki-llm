@@ -1,6 +1,6 @@
 # SourceSnapshotError
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:103`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:97`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -28,7 +28,7 @@ flowchart LR
     n1["ValueError"]
     n2["SourceSnapshotMutationError (src/llm_wiki_cli/services/source_snapshot.py)"]
     n3["src/llm_wiki_cli/api.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
+    n4["src/llm_wiki_cli/services/context_packet_builder.py"]
     n5["src/llm_wiki_cli/services/documentation_native.py"]
     n6["_git_changed_files (src/llm_wiki_cli/services/extraction_service.py)"]
     n7["_git_name_status_paths (src/llm_wiki_cli/services/extraction_service.py)"]
@@ -37,8 +37,8 @@ flowchart LR
     n10["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
     n11["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
     n12["_confirmed_source_path (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n13["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n14["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n13["_language_selection_for_path (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n14["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -56,7 +56,7 @@ flowchart LR
     click n0 "../modules/source_snapshot.md"
     click n2 "../modules/source_snapshot.md"
     click n3 "../modules/api.md"
-    click n4 "../modules/context_packet.md"
+    click n4 "../modules/context_packet_builder.md"
     click n5 "../modules/documentation_native.md"
     click n6 "../modules/extraction_service.md"
     click n7 "../modules/extraction_service.md"
@@ -87,7 +87,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `_git_changed_files` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 | `_git_name_status_paths` | call | [extraction_service](../modules/extraction_service.md) | 3 |
@@ -96,7 +96,7 @@ flowchart LR
 | `_build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 | `_captured_snapshot_inputs` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_confirmed_source_path` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_language_selection_for_path` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 | `_prune_dirnames` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
-| `_read_ignore_control` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 
-> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.
+> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

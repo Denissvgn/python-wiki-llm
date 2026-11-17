@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 42 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 47 more
 
 **Complete modules touched:**
 
@@ -12,8 +12,10 @@
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -25,6 +27,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -32,6 +35,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -40,6 +44,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
+- [path_policy](../modules/path_policy.md)
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -80,14 +85,14 @@ sequenceDiagram
     participant p18 as committed_governance_bundle_id
     participant p19 as _plugin_extractors_by_language
     participant p20 as guard_maintenance_owner
-    participant p21 as validate_governance_ledger
-    participant p22 as load_governance
-    participant p23 as _decode_json_object
-    participant p24 as _merge_explicit_consumed_input
-    participant p25 as _confirmed_source_path
-    participant p26 as _validated_identity
-    participant p27 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
-    participant p28 as validate_knowledge_artifacts
+    participant p21 as load_governance
+    participant p22 as _decode_json_object
+    participant p23 as _merge_explicit_consumed_input
+    participant p24 as _confirmed_source_path
+    participant p25 as _validated_identity
+    participant p26 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p27 as validate_knowledge_artifacts
+    participant p28 as reconcile_concepts
     participant p29 as isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
     participant p30 as committed_state.require_for
     p0->>p1: capture_committed_knowledge
@@ -110,21 +115,21 @@ sequenceDiagram
     p2->>p18: committed_governance_bundle_id
     p3->>p19: _plugin_extractors_by_language
     p1->>p20: guard_maintenance_owner
-    p2->>p21: validate_governance_ledger
-    p2->>p22: load_governance
-    p1->>p23: _decode_json_object
-    p9->>p24: _merge_explicit_consumed_input
-    p7->>p25: _confirmed_source_path
-    p4->>p26: _validated_identity
-    p2->>p27: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
-    p1->>p28: validate_knowledge_artifacts
+    p2->>p21: load_governance
+    p1->>p22: _decode_json_object
+    p9->>p23: _merge_explicit_consumed_input
+    p7->>p24: _confirmed_source_path
+    p4->>p25: _validated_identity
+    p2->>p26: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    p1->>p27: validate_knowledge_artifacts
+    p2->>p28: reconcile_concepts
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs, RuntimeKnowledgeInputs)
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3773 interactions; 3743 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3505 interactions; 3475 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1198 (1197 omitted); unresolved 1 of 842 (841 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1125 (1124 omitted); unresolved 1 of 776 (775 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -136,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 7 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 882 groups; 874 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
+> Omission summary shows 8 of 832 groups; 824 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -151,9 +156,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1734; effect analysis evaluated: 984, partial: 68, unavailable: 682. Counts include steps omitted from the displayed trace.
+Source steps: 1605; effect analysis evaluated: 922, partial: 70, unavailable: 613. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1052 source steps with known totals: observed: 6223, emitted: 5891, omitted: 332. Unavailable totals are excluded.
+Collector observations for 992 source steps with known totals: observed: 5945, emitted: 5622, omitted: 323. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -244,14 +249,14 @@ flowchart LR
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `captured.update` | `capture_committed_knowledge` | 271 |
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 

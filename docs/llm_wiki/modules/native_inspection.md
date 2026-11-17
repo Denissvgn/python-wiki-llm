@@ -10,7 +10,7 @@ One bounded concept inspection over one captured native read view.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet` |
+| `.` | `context_packet_builder` |
 | `..api_types` | `QueryCostDisclosure` |
 | `.documentation_queries` | `DocumentationQueryError`, `QUERY_RESULT_SERIALIZED_BYTE_LIMIT` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view`, `build_snapshot_documentation_query_service` |
@@ -26,7 +26,7 @@ One bounded concept inspection over one captured native read view.
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/api_types.py"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
+    n2["src/llm_wiki_cli/services/context_packet_builder.py"]
     n3["src/llm_wiki_cli/services/documentation_queries.py"]
     n4["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n5["src/llm_wiki_cli/services/knowledge_coverage.py"]
@@ -48,7 +48,7 @@ flowchart LR
     n6 --> n5
     click n0 "../modules/api.md"
     click n1 "../modules/api_types.md"
-    click n2 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
     click n3 "../modules/documentation_queries.md"
     click n4 "../modules/documentation_query_builder.md"
     click n5 "../modules/knowledge_coverage.md"
@@ -61,7 +61,7 @@ flowchart LR
 |---|---|
 | Inbound | [api](../modules/api.md) |
 | Outbound | [api_types](../modules/api_types.md) |
-| Outbound | [context_packet](../modules/context_packet.md) |
+| Outbound | [context_packet_builder](../modules/context_packet_builder.md) |
 | Outbound | [documentation_queries](../modules/documentation_queries.md) |
 | Outbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
 | Outbound | [knowledge_coverage](../modules/knowledge_coverage.md) |

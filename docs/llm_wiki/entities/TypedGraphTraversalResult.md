@@ -1,6 +1,6 @@
 # TypedGraphTraversalResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:430`
+**Location:** `src/llm_wiki_cli/api_types.py:431`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)

@@ -2,7 +2,15 @@
 
 **Entry point:** `classify_wiki_lifecycle` (`api`)
 **Source:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
-**Modules touched:** [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), and 1 more
+
+**Complete modules touched:**
+
+- [canonical_json](../modules/canonical_json.md)
+- [current_contracts](../modules/current_contracts.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [wiki_lifecycle](../modules/wiki_lifecycle.md)
+- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -16,7 +24,7 @@ sequenceDiagram
     participant p2 as formatted_json_bytes
     participant p3 as iter_page_kinds
     participant p4 as current_contract_defaults
-    participant p5 as formatted_json_text
+    participant p5 as indented_line_text
     participant p6 as Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
     participant p7 as manifest.exists
     participant p8 as manifest.is_symlink
@@ -42,7 +50,7 @@ sequenceDiagram
     p1->>p2: formatted_json_bytes
     p1->>p3: iter_page_kinds
     p1->>p4: current_contract_defaults
-    p2->>p5: formatted_json_text
+    p2->>p5: indented_line_text
     p0-->>p6: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)(wiki_dir)
     p0-->>p7: manifest.exists
     p0-->>p8: manifest.is_symlink
@@ -80,7 +88,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 11 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 37 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 39 | - | external | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:indented_line_text` | 39 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -175,37 +183,37 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 293 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | manifest.exists | 295 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | manifest.is_symlink | 295 | `manifest.is_symlink(data not statically known)` |
-| classify_wiki_lifecycle | is_pristine_wiki_target | 297 | `is_pristine_wiki_target(root)` |
-| is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 156 | `Path(wiki_dir)` |
-| is_pristine_wiki_target | root.is_symlink | 157 | `root.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | root.exists | 159 | `root.exists(data not statically known)` |
-| is_pristine_wiki_target | root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 161 | `root.is_dir(data not statically known)` |
-| is_pristine_wiki_target | iter_page_kinds | 165 | `iter_page_kinds(data not statically known)` |
-| is_pristine_wiki_target | sorted | 177 | `sorted(root.rglob(...))` |
-| is_pristine_wiki_target | root.rglob | 177 | `root.rglob('*')` |
+| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 294 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | manifest.exists | 296 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | manifest.is_symlink | 296 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | is_pristine_wiki_target | 298 | `is_pristine_wiki_target(root)` |
+| is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 157 | `Path(wiki_dir)` |
+| is_pristine_wiki_target | root.is_symlink | 158 | `root.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | root.exists | 160 | `root.exists(data not statically known)` |
+| is_pristine_wiki_target | root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 162 | `root.is_dir(data not statically known)` |
+| is_pristine_wiki_target | iter_page_kinds | 166 | `iter_page_kinds(data not statically known)` |
+| is_pristine_wiki_target | sorted | 178 | `sorted(root.rglob(...))` |
+| is_pristine_wiki_target | root.rglob | 178 | `root.rglob('*')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 218 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 221 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 224 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 219 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 222 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 225 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 295 |
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 295 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
-| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |
-| external_call | `is_pristine_wiki_target` | `sorted` | 177 |
-| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 177 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 296 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 296 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 158 |
+| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 160 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 162 |
+| external_call | `is_pristine_wiki_target` | `sorted` | 178 |
+| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 178 |
 | step_limit | `classify_wiki_lifecycle` | `first 12 steps` | 0 |
 
 ## Behavior

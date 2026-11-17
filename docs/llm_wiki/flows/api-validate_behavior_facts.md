@@ -2,12 +2,13 @@
 
 **Entry point:** `validate_behavior_facts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 1 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_reference](../modules/cli_reference.md), and 2 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [behavior_reference](../modules/behavior_reference.md)
+- [canonical_json](../modules/canonical_json.md)
 - [cli_reference](../modules/cli_reference.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [validation](../modules/validation.md)
@@ -26,15 +27,15 @@ sequenceDiagram
     participant p4 as _validate_paths
     participant p5 as hash_json
     participant p6 as require_portable_relative_path
-    participant p7 as canonical_json_bytes
+    participant p7 as compact_bytes
     participant p8 as _default_path_error
     participant p9 as _check_path_collision
     participant p10 as require_portable_path_component
     participant p11 as _schema
     participant p12 as CLIReferenceError
-    participant p13 as sha256_bytes
+    participant p13 as sha256_digest
     participant p14 as _matches_type
-    participant p15 as canonical_json_text
+    participant p15 as compact_text
     participant p16 as _syntax_key
     participant p17 as _known_syntax
     participant p18 as _remember_syntax
@@ -55,15 +56,15 @@ sequenceDiagram
     p1->>p4: _validate_paths
     p1->>p5: hash_json
     p4->>p6: require_portable_relative_path
-    p5->>p7: canonical_json_bytes
+    p5->>p7: compact_bytes
     p6->>p8: _default_path_error
     p6->>p9: _check_path_collision
     p6->>p10: require_portable_path_component
     p1->>p11: _schema
     p2->>p12: CLIReferenceError
-    p5->>p13: sha256_bytes
+    p5->>p13: sha256_digest
     p3->>p14: _matches_type
-    p7->>p15: canonical_json_text
+    p7->>p15: compact_text
     p6->>p16: _syntax_key
     p6->>p17: _known_syntax
     p6->>p18: _remember_syntax
@@ -110,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 50; effect analysis evaluated: 31, partial: 2, unavailable: 17. Counts include steps omitted from the displayed trace.
 
-Collector observations for 33 source steps with known totals: observed: 156, emitted: 145, omitted: 11. Unavailable totals are excluded.
+Collector observations for 33 source steps with known totals: observed: 158, emitted: 147, omitted: 11. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -183,9 +184,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3601 | `isinstance(contract, Mapping)` |
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3602 | `ValueError('Behavior facts must be a mapping')` |
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3603 | `validate(dict(...))` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3753 | `isinstance(contract, Mapping)` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3754 | `ValueError('Behavior facts must be a mapping')` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3755 | `validate(dict(...))` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 150 | `isinstance(contract, Mapping)` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `dict(contract)` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 152 | `cli_reference._json_tree(contract)` |
@@ -203,8 +204,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_behavior_facts` | `isinstance` | 3601 |
-| external_call | `validate_behavior_facts` | `ValueError` | 3602 |
+| external_call | `validate_behavior_facts` | `isinstance` | 3753 |
+| external_call | `validate_behavior_facts` | `ValueError` | 3754 |
 | external_call | `validate_behavior_facts` | `isinstance` | 150 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |

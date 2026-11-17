@@ -33,45 +33,45 @@ flowchart LR
     n0["src/llm_wiki_cli/commands/hook_cmd.py"]
     n1["src/llm_wiki_cli/commands/status_cmd.py"]
     n2["src/llm_wiki_cli/commands/uninstall_cmd.py"]
-    n3["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n4["src/llm_wiki_cli/config.py"]
-    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n6["src/llm_wiki_cli/services/io.py"]
-    n7["src/llm_wiki_cli/services/legacy_hooks.py"]
-    n8["src/llm_wiki_cli/services/mcp_server.py"]
-    n9["src/llm_wiki_cli/services/paths.py"]
-    n0 --> n7
-    n1 --> n4
+    n3["src/llm_wiki_cli/config.py"]
+    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n5["src/llm_wiki_cli/services/io.py"]
+    n6["src/llm_wiki_cli/services/legacy_hooks.py"]
+    n7["src/llm_wiki_cli/services/mcp_server.py"]
+    n8["src/llm_wiki_cli/services/paths.py"]
+    n9["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n0 --> n6
+    n1 --> n3
+    n1 --> n5
     n1 --> n6
-    n1 --> n7
-    n1 --> n9
+    n1 --> n8
+    n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
-    n2 --> n7
-    n2 --> n9
+    n2 --> n8
     n3 --> n4
     n3 --> n5
-    n3 --> n7
-    n4 --> n5
-    n4 --> n6
-    n7 --> n4
+    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    n6 --> n8
+    n7 --> n3
     n7 --> n5
     n7 --> n6
-    n7 --> n9
-    n8 --> n4
-    n8 --> n6
-    n8 --> n7
+    n9 --> n3
+    n9 --> n4
+    n9 --> n6
     click n0 "../modules/hook_cmd.md"
     click n1 "../modules/status_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
-    click n3 "../modules/upgrade_cmd.md"
-    click n4 "../modules/config.md"
-    click n5 "../modules/filesystem_guard.md"
-    click n6 "../modules/io.md"
-    click n7 "../modules/legacy_hooks.md"
-    click n8 "../modules/mcp_server.md"
-    click n9 "../modules/paths.md"
+    click n3 "../modules/config.md"
+    click n4 "../modules/filesystem_guard.md"
+    click n5 "../modules/io.md"
+    click n6 "../modules/legacy_hooks.md"
+    click n7 "../modules/mcp_server.md"
+    click n8 "../modules/paths.md"
+    click n9 "../modules/upgrade_runtime.md"
 ```
 
 ### Internal neighbors
@@ -81,8 +81,8 @@ flowchart LR
 | Inbound | [hook_cmd](../modules/hook_cmd.md) |
 | Inbound | [status_cmd](../modules/status_cmd.md) |
 | Inbound | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| Inbound | [upgrade_cmd](../modules/upgrade_cmd.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
+| Inbound | [upgrade_runtime](../modules/upgrade_runtime.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |

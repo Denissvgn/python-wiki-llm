@@ -2,7 +2,7 @@
 
 **Entry point:** `build_cli_contract` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -18,7 +18,7 @@ sequenceDiagram
     participant p4 as hash_json
     participant p5 as validate_cli_contract
     participant p6 as _json_tree
-    participant p7 as canonical_json_bytes
+    participant p7 as compact_bytes
     participant p8 as _validate_schema
     participant p9 as _validate_command
     participant p10 as _text
@@ -27,9 +27,9 @@ sequenceDiagram
     participant p13 as _symbol
     participant p14 as _notes
     participant p15 as CLIReferenceError
-    participant p16 as sha256_bytes
+    participant p16 as sha256_digest
     participant p17 as _schema
-    participant p18 as canonical_json_text
+    participant p18 as compact_text
     participant p19 as _matches_type
     participant p20 as isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)
     participant p21 as json.dumps(…).encode
@@ -48,7 +48,7 @@ sequenceDiagram
     p1->>p4: hash_json
     p1->>p5: validate_cli_contract
     p5->>p6: _json_tree
-    p4->>p7: canonical_json_bytes
+    p4->>p7: compact_bytes
     p5->>p8: _validate_schema
     p5->>p9: _validate_command
     p3->>p10: _text
@@ -57,9 +57,9 @@ sequenceDiagram
     p11->>p13: _symbol
     p11->>p14: _notes
     p1->>p15: CLIReferenceError
-    p4->>p16: sha256_bytes
+    p4->>p16: sha256_digest
     p5->>p17: _schema
-    p7->>p18: canonical_json_text
+    p7->>p18: compact_text
     p8->>p19: _matches_type
     p1-->>p20: isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract)(parser, argparse.ArgumentParser)
     p5-->>p21: json.dumps(…).encode('utf-8')
@@ -103,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 78; effect analysis evaluated: 43, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
 
-Collector observations for 43 source steps with known totals: observed: 262, emitted: 262, omitted: 0. Unavailable totals are excluded.
+Collector observations for 43 source steps with known totals: observed: 264, emitted: 264, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -177,7 +177,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3557 | `build(parser, package=package, program=program)` |
+| build_cli_contract (src/llm_wiki_cli/api.py) | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3709 | `build(parser, package=package, program=program)` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |
 | build_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _value | 260 | `_value(dict(...))` |

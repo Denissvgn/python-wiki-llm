@@ -1,7 +1,7 @@
 # ContextSession__read
 
 **Entry point:** `context_session.ContextSession._read`
-**Modules involved:** [context_session](../modules/context_session.md), [immutable](../modules/immutable.md), [task_compact](../modules/task_compact.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_session](../modules/context_session.md), [immutable](../modules/immutable.md), [task_compact](../modules/task_compact.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -20,11 +20,11 @@
 12. `workflow_profile.content_id`
 13. `workflow_profile.WorkflowRequestError`
 14. `immutable.freeze`
-15. `workflow_profile.canonical_json`
+15. `canonical_json.compact_line_bytes`
 16. `task_compact.render_compact_task_context`
-17. `workflow_profile.canonical_json`
-18. `workflow_profile.canonical_json`
-19. `workflow_profile.canonical_json`
+17. `canonical_json.compact_line_bytes`
+18. `canonical_json.compact_line_bytes`
+19. `canonical_json.compact_line_bytes`
 20. `immutable.freeze`
 21. `immutable.freeze`
 22. `immutable.freeze`
@@ -35,6 +35,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [context_session](../modules/context_session.md)
 - [immutable](../modules/immutable.md)
 - [task_compact](../modules/task_compact.md)

@@ -18,6 +18,7 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | Source | Symbols |
 |--------|---------|
 | `.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.host` | `current_host` |
 | `.knowledge_artifacts` | `validated_artifact_bytes` |
 | `.knowledge_index` | `_model_to_payload` |
 | `.knowledge_loader` | `load_knowledge_state` |
@@ -35,7 +36,6 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `binascii` | `binascii` |
 | `heapq` | `heapq` |
 | `json` | `json` |
-| `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |
@@ -61,9 +61,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (13) |
+| Outbound | `src` (14) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

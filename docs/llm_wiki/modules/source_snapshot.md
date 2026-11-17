@@ -29,10 +29,13 @@ presence means captured input, not recognition as a supported format.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
-| `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
+| `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
+| `.domain_pack` | `current_pack` |
+| `.extractor_registry` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS` |
 | `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata`, `guard_windows_directory_chain`, `fresh_no_follow_stat` |
+| `.gitignore` | `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text` |
 | `.knowledge_envelope` | `ConsumedInput`, `consumed_inputs_from_captured_hashes` |
+| `.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
@@ -65,21 +68,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (58) |
-| Outbound | `src` (7) |
+| Inbound | `src` (59) |
+| Outbound | `src` (10) |
 
-> All 65 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 68 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 103 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 112 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
-| [SourceFile](../entities/SourceFile.md) | 117 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 129 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 141 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 454 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 97 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 106 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
+| [SourceFile](../entities/SourceFile.md) | 111 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 123 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 135 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 448 | — | — |
 
 ## Functions
 
@@ -88,7 +91,7 @@ flowchart LR
 | `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None, respect_ignores: bool = False, respect_discovery: bool = False, max_control_bytes: int \| None = None, max_scan_entries: int \| None = None, coherent: bool = False) -> _SnapshotBuckets` | — | — |
 | `_validate_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_normalize_only_files` | `(root: Path, only_files: Iterable[str] \| None) -> set[str] \| None` | — | — |
-| `_language_selection_for_path` | `(path: Path, include_tests: frozenset[str]) -> tuple[str \| None, str \| None]` | — | Return recognized language and any language test-policy exclusion. |
+| `_language_selection_for_path` | `(path: Path, include_tests: frozenset[str]) -> tuple[str \| None, str \| None]` | — | Return the active pack's source kind and any test-policy exclusion. |
 | `_language_for_path` | `(path: Path, include_tests: frozenset[str]) -> str \| None` | — | — |
 | `_unsupported_language_for_path` | `(path: Path) -> str \| None` | — | — |
 | `_is_dockerfile_candidate` | `(path: Path) -> bool` | — | — |

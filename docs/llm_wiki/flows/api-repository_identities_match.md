@@ -155,9 +155,9 @@ flowchart LR
 | repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 528 | `isinstance(right, RepositoryRecord)` |
 | repository_identities_match | TypeError | 531 | `TypeError('left and right must be RepositoryRecord values')` |
 | repository_identities_match | _repository_identity | 532 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1831 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1750 | `_string(value, path)` |
-| _string | require_string | 1741 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
+| _repository_identity | _nonempty_string | 1808 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1727 | `_string(value, path)` |
+| _string | require_string | 1718 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
 | require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
 | require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |

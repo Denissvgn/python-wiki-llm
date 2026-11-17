@@ -1,6 +1,6 @@
 # SourceFileIntegrity
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:129`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:123`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -32,7 +32,7 @@ Filesystem identity used for cheap between-stage mutation checks.
 ```mermaid
 flowchart LR
     n0["SourceFileIntegrity (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n1["_ensure_legacy_gitignore (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n1["_ensure_legacy_gitignore (src/llm_wiki_cli/services/migrate_runtime.py)"]
     n2["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
     n3["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
     n4["_file_integrity_from_stat (src/llm_wiki_cli/services/source_snapshot.py)"]
@@ -47,7 +47,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     click n0 "../modules/source_snapshot.md"
-    click n1 "../modules/migrate_cmd.md"
+    click n1 "../modules/migrate_runtime.md"
     click n2 "../modules/source_snapshot.md"
     click n3 "../modules/source_snapshot.md"
     click n4 "../modules/source_snapshot.md"
@@ -66,7 +66,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_ensure_legacy_gitignore` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
+| `_ensure_legacy_gitignore` | call | [migrate_runtime](../modules/migrate_runtime.md) | 1 |
 | `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_file_integrity_from_stat` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |

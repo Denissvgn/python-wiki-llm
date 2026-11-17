@@ -1,7 +1,7 @@
 # bootstrap_write_operation
 
 **Entry point:** `bootstrap_recovery.bootstrap_write_operation`
-**Modules involved:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md)
+**Modules involved:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md)
 
 > Lock before mutation and retain first-use preimages across interruption.
 
@@ -14,13 +14,14 @@
 4. `maintenance_protocol.guard_maintenance_owner`
 5. `maintenance_protocol.snapshot_wiki`
 6. `maintenance_protocol.save_recovery_snapshot`
-7. `knowledge_storage.digest`
+7. `canonical_json.sha256_digest`
 8. `knowledge_storage.canonical_bytes`
 9. `maintenance_protocol.WikiWriteBasis`
 
 ## Touches
 
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)

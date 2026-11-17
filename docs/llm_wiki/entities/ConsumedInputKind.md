@@ -1,6 +1,6 @@
 # ConsumedInputKind
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:99`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:100`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

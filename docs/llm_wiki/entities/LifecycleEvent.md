@@ -1,6 +1,6 @@
 # LifecycleEvent
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:193`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:194`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

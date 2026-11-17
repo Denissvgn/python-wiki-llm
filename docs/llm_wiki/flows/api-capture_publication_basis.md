@@ -2,31 +2,25 @@
 
 **Entry point:** `capture_publication_basis` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), and 18 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 12 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
-- [behavior_reference](../modules/behavior_reference.md)
-- [cli](../modules/cli.md)
-- [cli_reference](../modules/cli_reference.md)
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
-- [current_contracts](../modules/current_contracts.md)
-- [helper_runtime](../modules/helper_runtime.md)
-- [io](../modules/io.md)
+- [domain_pack](../modules/domain_pack.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
-- [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_contracts](../modules/publication_contracts.md)
 - [publication_impact](../modules/publication_impact.md)
 - [publication_links](../modules/publication_links.md)
 - [publication_references](../modules/publication_references.md)
-- [skills](../modules/skills.md)
+- [publication_targets](../modules/publication_targets.md)
+- [reference_providers](../modules/reference_providers.md)
 - [source_selection](../modules/source_selection.md)
-- [task_compact](../modules/task_compact.md)
-- [task_contract](../modules/task_contract.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -56,15 +50,15 @@ sequenceDiagram
     participant p17 as hash_json
     participant p18 as _installed_contract
     participant p19 as read_publication_json
-    participant p20 as parse_cli_contract
-    participant p21 as validate_publication_config
-    participant p22 as _locate_exact_path
-    participant p23 as _json_tree (src/llm_wiki_cli/services/publication_contracts.py)
-    participant p24 as get_behavior_facts
-    participant p25 as _text
-    participant p26 as _object
-    participant p27 as canonical_json_bytes
-    participant p28 as path_is_link_or_reparse
+    participant p20 as validate_publication_config
+    participant p21 as _locate_exact_path
+    participant p22 as _json_tree
+    participant p23 as _text
+    participant p24 as _object
+    participant p25 as compact_bytes
+    participant p26 as path_is_link_or_reparse
+    participant p27 as require_repository_relative_path
+    participant p28 as public_atx_section
     participant p29 as Path (src/llm_wiki_cli/services…capture_publication_basis)
     participant p30 as Path(…).absolute
     p0->>p1: capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)
@@ -86,22 +80,22 @@ sequenceDiagram
     p4->>p17: hash_json
     p7->>p18: _installed_contract
     p2->>p19: read_publication_json
-    p7->>p20: parse_cli_contract
-    p2->>p21: validate_publication_config
-    p16->>p22: _locate_exact_path
-    p12->>p23: _json_tree (src/llm_wiki_cli/services/publication_contracts.py)
-    p18->>p24: get_behavior_facts
-    p13->>p25: _text
-    p21->>p26: _object
-    p17->>p27: canonical_json_bytes
-    p11->>p28: path_is_link_or_reparse
+    p2->>p20: validate_publication_config
+    p16->>p21: _locate_exact_path
+    p12->>p22: _json_tree
+    p13->>p23: _text
+    p20->>p24: _object
+    p17->>p25: compact_bytes
+    p11->>p26: path_is_link_or_reparse
+    p13->>p27: require_repository_relative_path
+    p15->>p28: public_atx_section
     p1-->>p29: Path (src/llm_wiki_cli/services…capture_publication_basis)(consumer_root)
     p1-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 757 interactions; 727 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 627 interactions; 597 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 221 (220 omitted); unresolved 1 of 211 (210 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 172 (171 omitted); unresolved 1 of 190 (189 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_text` | 24 | - | external | 6 |
-> Omission summary shows 8 of 177 groups; 169 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 148 groups; 140 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -128,9 +122,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 326; effect analysis evaluated: 214, partial: 5, unavailable: 107. Counts include steps omitted from the displayed trace.
+Source steps: 266; effect analysis evaluated: 176, partial: 3, unavailable: 87. Counts include steps omitted from the displayed trace.
 
-Collector observations for 219 source steps with known totals: observed: 1089, emitted: 1070, omitted: 19. Unavailable totals are excluded.
+Collector observations for 179 source steps with known totals: observed: 856, emitted: 841, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -212,14 +206,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_publication_basis (src/llm_wiki_cli/api.py) | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | 3715 | `capture(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)` |
+| capture_publication_basis (src/llm_wiki_cli/api.py) | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | 3867 | `capture(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path(…).absolute | 222 | `Path(consumer_root).absolute(data not statically known)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | Path (src/llm_wiki_cli/services…capture_publication_basis) | 222 | `Path(consumer_root)` |
 | capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py) | load_publication_config | 223 | `load_publication_config(root, config_path=config_path)` |
 | load_publication_config | _consumer_root | 987 | `_consumer_root(consumer_root)` |
-| _consumer_root | Path(…).expanduser | 166 | `Path(value).expanduser(data not statically known)` |
-| _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 166 | `Path(value)` |
-| _consumer_root | path_is_link_or_reparse | 167 | `path_is_link_or_reparse(root)` |
+| _consumer_root | Path(…).expanduser | 182 | `Path(value).expanduser(data not statically known)` |
+| _consumer_root | Path (src/llm_wiki_cli/services…_config.py:_consumer_root) | 182 | `Path(value)` |
+| _consumer_root | path_is_link_or_reparse | 183 | `path_is_link_or_reparse(root)` |
 | path_is_link_or_reparse | _is_link_or_reparse_stat | 309 | `_is_link_or_reparse_stat(path.lstat(...))` |
 | _is_link_or_reparse_stat | stat.S_ISLNK | 299 | `stat.S_ISLNK(metadata.st_mode)` |
 | _is_link_or_reparse_stat | getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat) | 301 | `getattr(metadata, 'st_file_attributes', 0)` |
@@ -236,7 +230,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `capture_publication_basis` | `Path(consumer_root).absolute` | 222 |
-| unresolved_call | `_consumer_root` | `Path(value).expanduser` | 166 |
+| unresolved_call | `_consumer_root` | `Path(value).expanduser` | 182 |
 | external_call | `_is_link_or_reparse_stat` | `stat.S_ISLNK` | 299 |
 | external_call | `_is_link_or_reparse_stat` | `getattr` | 301 |
 | step_limit | `capture_publication_basis` | `first 12 steps` | 0 |

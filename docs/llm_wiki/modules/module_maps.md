@@ -24,28 +24,28 @@ generators can turn the returned plain dict/list data into diagrams later.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/dependencies.py"]
-    n3["src/llm_wiki_cli/services/module_maps.py"]
+    n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n1["src/llm_wiki_cli/services/dependencies.py"]
+    n2["src/llm_wiki_cli/services/module_maps.py"]
+    n3["src/llm_wiki_cli/services/sync_runtime.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
-    n1 --> n2
-    n1 --> n3
+    n2 --> n1
+    n3 --> n0
+    n3 --> n1
     n3 --> n2
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/services_dependencies.md"
-    click n3 "../modules/module_maps.md"
+    click n0 "../modules/bootstrap_runtime.md"
+    click n1 "../modules/services_dependencies.md"
+    click n2 "../modules/module_maps.md"
+    click n3 "../modules/sync_runtime.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Outbound | [services_dependencies](../modules/services_dependencies.md) |
 
 ## Functions

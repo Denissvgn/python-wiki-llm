@@ -4,7 +4,10 @@
 
 ## Description
 
-Pure validation and composition of a reviewed GitHub wiki delivery or rollback.
+Pure validation and composition of a reviewed publication delivery or rollback.
+
+The policy's publication target validates repository names and the restored
+tree of a rollback.
 
 ## Imports
 
@@ -12,8 +15,8 @@ Pure validation and composition of a reviewed GitHub wiki delivery or rollback.
 |--------|---------|
 | `.knowledge_evidence` | `canonical_json_bytes`, `hash_json`, `sha256_bytes` |
 | `.publication_candidate` | `MAX_FILE_BYTES`, `MAX_FILES`, `MAX_TREE_BYTES`, `_PRIVATE`, `_REVISION`, `_VCS`, `_check_hash`, `_hash_map`, `_hashes`, `_validate_candidate_files`, `validate_publication_receipt` |
-| `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `DELIVERY_CONFIG_SCHEMA_VERSION`, `publication_ref_name`, `publication_repository`, `validate_publication_config` |
-| `.publication_links` | `check_github_wiki` |
+| `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `DELIVERY_CONFIG_SCHEMA_VERSION`, `publication_ref_name`, `target_repository`, `validate_publication_config` |
+| `.publication_targets` | `current_publication_targets`, `publication_target` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `difflib` | `difflib` |
@@ -31,7 +34,7 @@ flowchart LR
     n3["src/llm_wiki_cli/services/publication_candidate.py"]
     n4["src/llm_wiki_cli/services/publication_config.py"]
     n5["src/llm_wiki_cli/services/publication_delivery.py"]
-    n6["src/llm_wiki_cli/services/publication_links.py"]
+    n6["src/llm_wiki_cli/services/publication_targets.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
@@ -44,17 +47,19 @@ flowchart LR
     n3 --> n4
     n3 --> n5
     n3 --> n6
+    n4 --> n6
     n5 --> n2
     n5 --> n3
     n5 --> n4
     n5 --> n6
+    n6 --> n4
     click n0 "../modules/git_transport.md"
     click n1 "../modules/publish.md"
     click n2 "../modules/knowledge_evidence.md"
     click n3 "../modules/publication_candidate.md"
     click n4 "../modules/publication_config.md"
     click n5 "../modules/publication_delivery.md"
-    click n6 "../modules/publication_links.md"
+    click n6 "../modules/publication_targets.md"
 ```
 
 ### Internal neighbors
@@ -67,7 +72,7 @@ flowchart LR
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
-| Outbound | [publication_links](../modules/publication_links.md) |
+| Outbound | [publication_targets](../modules/publication_targets.md) |
 
 ## Functions
 
@@ -78,6 +83,7 @@ flowchart LR
 | `review_rollback` | `(proposal: Mapping[str, Any], *, reviewer: str, reason: str) -> dict[str, str]` | — | Prepare a private review record for the consumer's normal acceptance process. |
 | `_public_hashes` | `(files: Mapping[str, bytes]) -> dict[str, str]` | — | — |
 | `_checkpoint_bytes` | `(checkpoint: Mapping[str, Any]) -> bytes` | — | — |
+| `_registered_repository` | `(value: object, field: str) -> None` | — | Accept a repository name that some registered publication target accepts. |
 | `_validated_checkpoint` | `(raw: bytes, observed: Mapping[str, str]) -> dict[str, Any]` | — | — |
 | `split_delivery_tree` | `(tree: Mapping[str, bytes]) -> tuple[dict[str, bytes], dict[str, Any] \| None]` | — | Separate the exact root checkpoint from public files and validate owned bytes. |
 | `_scope` | `(policy, source_repository, target_repository, target_branch)` | — | — |

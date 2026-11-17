@@ -1,6 +1,6 @@
 # ConsumedInput
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:125`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:126`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

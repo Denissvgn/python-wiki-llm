@@ -1,6 +1,6 @@
 # TypeScriptExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/ts_extractor.py:38`
+**Location:** `src/llm_wiki_cli/extractors/ts_extractor.py:39`
 **Kind:** Class
 **Bases:** —
 **Module:** [ts_extractor](../modules/ts_extractor.md)

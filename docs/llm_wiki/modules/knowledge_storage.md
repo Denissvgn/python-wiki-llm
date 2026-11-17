@@ -15,7 +15,7 @@ from diagnostics.
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `canonical_chunks`, `scalar_size` |
+| `.canonical_json` | `canonical_chunks`, `compact_line_bytes`, `scalar_size`, `sha256_digest` |
 | `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.implementation_evidence` | `validate_concept_implementation` |
@@ -61,18 +61,17 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 45 | `ValueError` | A storage contract, integrity or bounded-work failure. |
-| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 205 | — | — |
-| [_Encoder](../entities/Encoder.md) | 212 | — | — |
-| [_TreeBuilder](../entities/TreeBuilder.md) | 238 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 498 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 507 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 203 | — | — |
+| [_Encoder](../entities/Encoder.md) | 210 | — | — |
+| [_TreeBuilder](../entities/TreeBuilder.md) | 236 | — | — |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 496 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 505 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `canonical_bytes` | `(value: Any) -> bytes` | — | — |
-| `digest` | `(data: bytes) -> str` | — | — |
 | `logical_digest` | `(value: Any) -> str` | — | Hash logical JSON without allocating a second monolithic serialization. |
 | `_fail` | `(field: str, message: str, code: str = 'storage-invalid') -> NoReturn` | — | — |
 | `_selected_collections` | `(collections: Iterable[str] \| None) -> set[str]` | — | Validate a projection before any selected record is materialized. |

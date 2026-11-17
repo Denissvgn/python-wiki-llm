@@ -1,7 +1,7 @@
 # rebuild_surface_only_index
 
-**Entry point:** `sync_cmd._rebuild_surface_only_index`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [io](../modules/io.md), [sync_cmd](../modules/sync_cmd.md), [wiki_surface](../modules/wiki_surface.md)
+**Entry point:** `sync_runtime._rebuild_surface_only_index`
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [host](../modules/host.md), [io](../modules/io.md), [sync_runtime](../modules/sync_runtime.md), [wiki_surface](../modules/wiki_surface.md)
 
 > Re-index only pages already present during source-deferred backfill.
 
@@ -14,14 +14,17 @@
 4. `wiki_surface.canonical_path`
 5. `wiki_surface.canonical_path`
 6. `io.read_md`
+7. `host.emit`
+8. `host.emit`
 
 ## Touches
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._rebuild_surface_only_index`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._rebuild_surface_only_index`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

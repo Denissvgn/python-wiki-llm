@@ -2,21 +2,24 @@
 
 **Entry point:** `flow_for_entrypoint` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 20 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 24 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -24,6 +27,7 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
+- [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
@@ -59,14 +63,14 @@ sequenceDiagram
     participant p18 as _source_anchor
     participant p19 as _wiki_anchor
     participant p20 as source_path_diagnostics
-    participant p21 as _live_source_selection_identity
-    participant p22 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    participant p23 as attach_implementation_read_view
-    participant p24 as analysis_identity
-    participant p25 as read_guarded
-    participant p26 as attach_maintenance_view_from_inputs
-    participant p27 as _assert_source_unchanged
-    participant p28 as _assert_wiki_unchanged
+    participant p21 as first_unsafe_path_component
+    participant p22 as _live_source_selection_identity
+    participant p23 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    participant p24 as attach_implementation_read_view
+    participant p25 as analysis_identity
+    participant p26 as read_guarded
+    participant p27 as attach_maintenance_view_from_inputs
+    participant p28 as _assert_source_unchanged
     participant p29 as cast
     participant p30 as _query_service(…).flow_for_entrypoint
     p0->>p1: _normalize_query_input
@@ -89,21 +93,21 @@ sequenceDiagram
     p11->>p18: _source_anchor
     p11->>p19: _wiki_anchor
     p11->>p20: source_path_diagnostics
-    p11->>p21: _live_source_selection_identity
-    p11->>p22: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    p11->>p23: attach_implementation_read_view
-    p11->>p24: analysis_identity
-    p11->>p25: read_guarded
-    p11->>p26: attach_maintenance_view_from_inputs
-    p11->>p27: _assert_source_unchanged
-    p11->>p28: _assert_wiki_unchanged
+    p9->>p21: first_unsafe_path_component
+    p11->>p22: _live_source_selection_identity
+    p11->>p23: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    p11->>p24: attach_implementation_read_view
+    p11->>p25: analysis_identity
+    p11->>p26: read_guarded
+    p11->>p27: attach_maintenance_view_from_inputs
+    p11->>p28: _assert_source_unchanged
     p0-->>p29: cast(FlowForEntrypointResult, _run_query(...))
     p0-->>p30: _query_service(…).flow_for_entrypoint(query)
 ```
 
-> Call sequence diagram shows 30 of 914 interactions; 884 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 924 interactions; 894 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 374 (373 omitted); unresolved 1 of 201 (200 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 370 (369 omitted); unresolved 1 of 208 (207 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -117,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 6 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 15 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 17 | - | external | 3 |
-> Omission summary shows 8 of 196 groups; 188 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -130,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 340; effect analysis evaluated: 214, partial: 18, unavailable: 108. Counts include steps omitted from the displayed trace.
+Source steps: 347; effect analysis evaluated: 220, partial: 18, unavailable: 109. Counts include steps omitted from the displayed trace.
 
-Collector observations for 232 source steps with known totals: observed: 1479, emitted: 1374, omitted: 105. Unavailable totals are excluded.
+Collector observations for 238 source steps with known totals: observed: 1488, emitted: 1383, omitted: 105. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -206,11 +210,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| flow_for_entrypoint | _normalize_query_input | 2265 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2122 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2124 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2125 | `str(exc)` |
-| flow_for_entrypoint | normalize_documentation_query_text | 2266 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
+| flow_for_entrypoint | _normalize_query_input | 2417 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2274 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
+| flow_for_entrypoint | normalize_documentation_query_text | 2418 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 65 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
@@ -226,7 +230,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2122 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |

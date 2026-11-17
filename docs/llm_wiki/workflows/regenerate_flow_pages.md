@@ -1,7 +1,7 @@
 # regenerate_flow_pages
 
-**Entry point:** `sync_cmd._regenerate_flow_pages`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [io](../modules/io.md), [plugins](../modules/plugins.md), [sync_cmd](../modules/sync_cmd.md), [wiki_surface](../modules/wiki_surface.md)
+**Entry point:** `sync_runtime._regenerate_flow_pages`
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [host](../modules/host.md), [io](../modules/io.md), [plugins](../modules/plugins.md), [sync_runtime](../modules/sync_runtime.md), [wiki_surface](../modules/wiki_surface.md)
 
 > Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -23,6 +23,8 @@ rewritten, and human-edited ``## Behavior`` is preserved by default.
 8. `plugins.runtime_plugin_fallback_root`
 9. `plugins.runtime_project_plugins_enabled`
 10. `io.read_md`
+11. `host.emit`
+12. `host.emit`
 
 ## Touches
 
@@ -30,11 +32,12 @@ rewritten, and human-edited ``## Behavior`` is preserved by default.
 - [data_flow](../modules/data_flow.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [plugins](../modules/plugins.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._regenerate_flow_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._regenerate_flow_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

@@ -2,25 +2,21 @@
 
 **Entry point:** `evaluate_knowledge_freshness` (`api`)
 **Source:** [knowledge_freshness](../modules/knowledge_freshness.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 20 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), and 16 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [concept_identity](../modules/concept_identity.md)
+- [canonical_json](../modules/canonical_json.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -56,16 +52,16 @@ sequenceDiagram
     participant p16 as _parse_relationship
     participant p17 as _validated_reserved_extensions
     participant p18 as _validate_index_references
-    participant p19 as validate_implementation_collection
-    participant p20 as validate_maintenance_projection
-    participant p21 as validate_governance_projection
-    participant p22 as _object (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p23 as _emit_extensions
-    participant p24 as read_entity_retirement_state
-    participant p25 as _recorded_basis_details
-    participant p26 as _parse_document
-    participant p27 as validate_reuse_commitment
-    participant p28 as _result
+    participant p19 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p20 as _emit_extensions
+    participant p21 as read_entity_retirement_state
+    participant p22 as _recorded_basis_details
+    participant p23 as _parse_document
+    participant p24 as validate_reuse_commitment
+    participant p25 as _result
+    participant p26 as _parse_repository
+    participant p27 as _basis_to_payload
+    participant p28 as _relationship_target_to_payload
     participant p29 as isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)
     participant p30 as mappings.get
     p0->>p1: parse_knowledge_index
@@ -86,23 +82,23 @@ sequenceDiagram
     p1->>p16: _parse_relationship
     p1->>p17: _validated_reserved_extensions
     p1->>p18: _validate_index_references
-    p1->>p19: validate_implementation_collection
-    p1->>p20: validate_maintenance_projection
-    p1->>p21: validate_governance_projection
-    p7->>p22: _object (src/llm_wiki_cli/services/knowledge_model.py)
-    p8->>p23: _emit_extensions
-    p9->>p24: read_entity_retirement_state
-    p12->>p25: _recorded_basis_details
-    p14->>p26: _parse_document
-    p17->>p27: validate_reuse_commitment
-    p12->>p28: _result
+    p7->>p19: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p8->>p20: _emit_extensions
+    p9->>p21: read_entity_retirement_state
+    p12->>p22: _recorded_basis_details
+    p14->>p23: _parse_document
+    p17->>p24: validate_reuse_commitment
+    p12->>p25: _result
+    p11->>p26: _parse_repository
+    p13->>p27: _basis_to_payload
+    p15->>p28: _relationship_target_to_payload
     p0-->>p29: isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)(knowledge, ValidatedKnowledgeArtifacts)
     p3-->>p30: mappings.get(path)
 ```
 
-> Call sequence diagram shows 30 of 2026 interactions; 1996 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1276 interactions; 1246 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 350 (349 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 336 (335 omitted); unresolved 1 of 193 (192 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -116,7 +112,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 15 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 15 | - | unresolved | 1 |
-> Omission summary shows 8 of 503 groups; 495 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 306 groups; 298 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -129,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1136; effect analysis evaluated: 743, partial: 25, unavailable: 368. Counts include steps omitted from the displayed trace.
+Source steps: 748; effect analysis evaluated: 517, partial: 18, unavailable: 213. Counts include steps omitted from the displayed trace.
 
-Collector observations for 768 source steps with known totals: observed: 3917, emitted: 3689, omitted: 228. Unavailable totals are excluded.
+Collector observations for 535 source steps with known totals: observed: 2660, emitted: 2470, omitted: 190. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -214,8 +210,8 @@ flowchart LR
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 277 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 276 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 551 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1633 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1719 | `dict(require_mapping(...))` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1610 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1696 | `dict(require_mapping(...))` |
 
 ### Boundary effects
 

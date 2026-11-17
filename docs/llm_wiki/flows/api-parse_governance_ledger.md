@@ -2,12 +2,13 @@
 
 **Entry point:** `parse_governance_ledger` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [host](../modules/host.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [host](../modules/host.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [validation](../modules/validation.md)
@@ -84,9 +85,9 @@ sequenceDiagram
     p0-->>p30: concepts_raw.items
 ```
 
-> Call sequence diagram shows 30 of 454 interactions; 424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 456 interactions; 426 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 94 (93 omitted); unresolved 1 of 88 (87 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 93 (92 omitted); unresolved 1 of 90 (89 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -100,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 16 | - | external | 9 |
-> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 273; effect analysis evaluated: 153, partial: 2, unavailable: 118. Counts include steps omitted from the displayed trace.
+Source steps: 274; effect analysis evaluated: 154, partial: 2, unavailable: 118. Counts include steps omitted from the displayed trace.
 
-Collector observations for 155 source steps with known totals: observed: 688, emitted: 680, omitted: 8. Unavailable totals are excluded.
+Collector observations for 156 source steps with known totals: observed: 687, emitted: 679, omitted: 8. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -191,8 +192,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| parse_governance_ledger | _object | 422 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3290 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| parse_governance_ledger | _object | 423 | `_object(payload, 'governance')` |
+| _object | require_mapping | 3291 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -201,7 +202,7 @@ flowchart LR
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |
-| _object | GovernanceError | 3292 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3293 | `GovernanceError(path, 'must be an object')` |
 
 ### Boundary effects
 

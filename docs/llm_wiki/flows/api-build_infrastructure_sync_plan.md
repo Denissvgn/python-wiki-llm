@@ -2,10 +2,11 @@
 
 **Entry point:** `build_infrastructure_sync_plan` (`api`)
 **Source:** [infrastructure_sync](../modules/infrastructure_sync.md)
-**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 3 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -39,7 +40,7 @@ sequenceDiagram
     participant p17 as _valid_repository_path
     participant p18 as _pruned_prior_discovery
     participant p19 as hash_json
-    participant p20 as canonical_json_bytes
+    participant p20 as compact_bytes
     participant p21 as is_portable_relative_path
     participant p22 as _check_events
     participant p23 as _convert_node
@@ -69,7 +70,7 @@ sequenceDiagram
     p3->>p17: _valid_repository_path
     p4->>p18: _pruned_prior_discovery
     p1->>p19: hash_json
-    p19->>p20: canonical_json_bytes
+    p19->>p20: compact_bytes
     p17->>p21: is_portable_relative_path
     p16->>p22: _check_events
     p16->>p23: _convert_node
@@ -95,9 +96,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | [src/llm_wiki_cli/services/infrastructure_inventory.py](../modules/infrastructure_inventory.md) | internal | 1 |
 | `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_cli/services/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 19 | - | external | 1 |
 > Omission summary shows 8 of 76 groups; 68 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 99; effect analysis evaluated: 53, partial: 8, unavailable: 38. Counts include steps omitted from the displayed trace.
 
-Collector observations for 61 source steps with known totals: observed: 385, emitted: 362, omitted: 23. Unavailable totals are excluded.
+Collector observations for 61 source steps with known totals: observed: 387, emitted: 364, omitted: 23. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

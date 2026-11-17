@@ -14,7 +14,7 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR` |
-| `.bootstrap_runtime` | `_generate_index_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_build_relationships`, `_generate_entity_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_docker_md`, `build_module_page_map` |
+| `.bootstrap_runtime` | `_generate_index_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_build_relationships`, `_generate_entity_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_infrastructure_md`, `build_module_page_map` |
 | `.canonical_pages` | `canonical_generated_pages` |
 | `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `ExtractorFailureError`, `get_inventory_result` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes` |

@@ -1,6 +1,6 @@
 # LockAcquisitionError
 
-**Location:** `src/llm_wiki_cli/services/lockfile.py:22`
+**Location:** `src/llm_wiki_cli/services/lockfile.py:24`
 **Kind:** Class
 **Bases:** `Exception`
 **Module:** [lockfile](../modules/lockfile.md)

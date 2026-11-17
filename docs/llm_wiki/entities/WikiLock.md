@@ -1,6 +1,6 @@
 # WikiLock
 
-**Location:** `src/llm_wiki_cli/services/lockfile.py:26`
+**Location:** `src/llm_wiki_cli/services/lockfile.py:28`
 **Kind:** Class
 **Bases:** —
 **Module:** [lockfile](../modules/lockfile.md)

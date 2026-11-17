@@ -2,7 +2,7 @@
 
 **Entry point:** `hash_generation_options` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_envelope](../modules/knowledge_envelope.md)
 
 ## Call sequence
 
@@ -17,10 +17,10 @@ sequenceDiagram
     participant p3 as _hash_structured
     participant p4 as KnowledgeEnvelopeError
     participant p5 as _reject_machine_local_paths
-    participant p6 as canonical_json_bytes
+    participant p6 as compact_bytes
     participant p7 as _validate_json_tree
-    participant p8 as sha256_bytes
-    participant p9 as canonical_json_text
+    participant p8 as sha256_digest
+    participant p9 as compact_text
     participant p10 as isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
     participant p11 as payload.values
     participant p12 as isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
@@ -42,10 +42,10 @@ sequenceDiagram
     p0->>p3: _hash_structured
     p0->>p4: KnowledgeEnvelopeError
     p0->>p5: _reject_machine_local_paths
-    p3->>p6: canonical_json_bytes
+    p3->>p6: compact_bytes
     p3->>p7: _validate_json_tree
-    p3->>p8: sha256_bytes
-    p6->>p9: canonical_json_text
+    p3->>p8: sha256_digest
+    p6->>p9: compact_text
     p0-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(values, Mapping)
     p3-->>p11: payload.values
     p0-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(defaults, Mapping)
@@ -81,9 +81,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 6 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 20 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 35 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 38 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 41 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 43 | - | external | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 41 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:compact_text` | 43 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 33 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -97,7 +97,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 20; effect analysis evaluated: 10, partial: 0, unavailable: 10. Counts include steps omitted from the displayed trace.
 
-Collector observations for 10 source steps with known totals: observed: 32, emitted: 32, omitted: 0. Unavailable totals are excluded.
+Collector observations for 10 source steps with known totals: observed: 34, emitted: 34, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -171,17 +171,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 827 | `isinstance(values, Mapping)` |
-| hash_generation_options | KnowledgeEnvelopeError | 828 | `KnowledgeEnvelopeError('generation_options', 'must be an object')` |
-| hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 829 | `isinstance(defaults, Mapping)` |
-| hash_generation_options | KnowledgeEnvelopeError | 830 | `KnowledgeEnvelopeError('generation_option_defaults', 'must be an object')` |
-| hash_generation_options | _normalized_allowlist | 834 | `_normalized_allowlist(allowlist)` |
-| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1675 | `isinstance(value, (...))` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1676 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
-| _normalized_allowlist | tuple | 1681 | `tuple(value)` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1683 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
-| _normalized_allowlist | any (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1687 | `any(...)` |
-| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1687 | `isinstance(item, str)` |
+| hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 828 | `isinstance(values, Mapping)` |
+| hash_generation_options | KnowledgeEnvelopeError | 829 | `KnowledgeEnvelopeError('generation_options', 'must be an object')` |
+| hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 830 | `isinstance(defaults, Mapping)` |
+| hash_generation_options | KnowledgeEnvelopeError | 831 | `KnowledgeEnvelopeError('generation_option_defaults', 'must be an object')` |
+| hash_generation_options | _normalized_allowlist | 835 | `_normalized_allowlist(allowlist)` |
+| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1676 | `isinstance(value, (...))` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1677 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
+| _normalized_allowlist | tuple | 1682 | `tuple(value)` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1684 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
+| _normalized_allowlist | any (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1688 | `any(...)` |
+| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1688 | `isinstance(item, str)` |
 
 ### Boundary effects
 
@@ -191,11 +191,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `hash_generation_options` | `isinstance` | 827 |
-| external_call | `hash_generation_options` | `isinstance` | 829 |
-| external_call | `_normalized_allowlist` | `isinstance` | 1675 |
-| external_call | `_normalized_allowlist` | `any` | 1687 |
-| external_call | `_normalized_allowlist` | `isinstance` | 1687 |
+| external_call | `hash_generation_options` | `isinstance` | 828 |
+| external_call | `hash_generation_options` | `isinstance` | 830 |
+| external_call | `_normalized_allowlist` | `isinstance` | 1676 |
+| external_call | `_normalized_allowlist` | `any` | 1688 |
+| external_call | `_normalized_allowlist` | `isinstance` | 1688 |
 | step_limit | `hash_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -25,53 +25,53 @@ Read-only source/manifest diff analysis shared by sync and lint.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n3["src/llm_wiki_cli/services/lint_service.py"]
-    n4["src/llm_wiki_cli/services/source_retirement.py"]
-    n5["src/llm_wiki_cli/services/sync_analysis.py"]
-    n6["src/llm_wiki_cli/services/sync_manifest.py"]
+    n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n1["src/llm_wiki_cli/services/knowledge_evidence.py"]
+    n2["src/llm_wiki_cli/services/lint_service.py"]
+    n3["src/llm_wiki_cli/services/source_retirement.py"]
+    n4["src/llm_wiki_cli/services/sync_analysis.py"]
+    n5["src/llm_wiki_cli/services/sync_manifest.py"]
+    n6["src/llm_wiki_cli/services/sync_runtime.py"]
     n7["src/llm_wiki_cli/services/sync_transitions.py"]
     n8["src/llm_wiki_cli/services/validation.py"]
-    n0 --> n1
-    n0 --> n2
-    n0 --> n4
     n0 --> n5
-    n0 --> n6
-    n0 --> n7
     n0 --> n8
-    n1 --> n6
     n1 --> n8
+    n2 --> n0
+    n2 --> n3
+    n2 --> n4
+    n2 --> n5
     n2 --> n8
     n3 --> n1
     n3 --> n4
     n3 --> n5
-    n3 --> n6
     n3 --> n8
-    n4 --> n2
+    n4 --> n0
+    n4 --> n1
     n4 --> n5
-    n4 --> n6
     n4 --> n8
     n5 --> n1
-    n5 --> n2
-    n5 --> n6
+    n5 --> n3
     n5 --> n8
-    n6 --> n2
+    n6 --> n0
+    n6 --> n1
+    n6 --> n3
     n6 --> n4
+    n6 --> n5
+    n6 --> n7
     n6 --> n8
-    n7 --> n1
+    n7 --> n0
+    n7 --> n3
     n7 --> n4
     n7 --> n5
-    n7 --> n6
     n7 --> n8
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/knowledge_evidence.md"
-    click n3 "../modules/lint_service.md"
-    click n4 "../modules/source_retirement.md"
-    click n5 "../modules/sync_analysis.md"
-    click n6 "../modules/sync_manifest.md"
+    click n0 "../modules/bootstrap_runtime.md"
+    click n1 "../modules/knowledge_evidence.md"
+    click n2 "../modules/lint_service.md"
+    click n3 "../modules/source_retirement.md"
+    click n4 "../modules/sync_analysis.md"
+    click n5 "../modules/sync_manifest.md"
+    click n6 "../modules/sync_runtime.md"
     click n7 "../modules/sync_transitions.md"
     click n8 "../modules/validation.md"
 ```
@@ -80,9 +80,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
 | Inbound | [source_retirement](../modules/source_retirement.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Inbound | [sync_transitions](../modules/sync_transitions.md) |
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |

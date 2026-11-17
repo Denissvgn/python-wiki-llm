@@ -28,15 +28,14 @@ Regenerated Markdown and the number of semantic values restored.
 ```mermaid
 flowchart LR
     n0["SemanticMergeResult (src/llm_wiki_cli/services/section_ownership.py)"]
-    n1["_merge_entity_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["_merge_entity_semantics (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["_merge_module_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n4["_merge_module_semantics (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n5["_merge_semantic_markdown (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n6["_retain_unmarked_overload_guidance (src/llm_wiki_cli/services/section_ownership.py)"]
-    n7["merge_entity_semantics (src/llm_wiki_cli/services/section_ownership.py)"]
-    n8["merge_module_semantics (src/llm_wiki_cli/services/section_ownership.py)"]
-    n9["merge_semantic_markdown (src/llm_wiki_cli/services/section_ownership.py)"]
+    n1["_retain_unmarked_overload_guidance (src/llm_wiki_cli/services/section_ownership.py)"]
+    n2["merge_entity_semantics (src/llm_wiki_cli/services/section_ownership.py)"]
+    n3["merge_module_semantics (src/llm_wiki_cli/services/section_ownership.py)"]
+    n4["merge_semantic_markdown (src/llm_wiki_cli/services/section_ownership.py)"]
+    n5["_merge_entity_page (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n6["_merge_entity_semantics (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n7["_merge_module_page (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n8["_merge_module_semantics (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -45,17 +44,15 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
-    n9 --> n0
     click n0 "../modules/section_ownership.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/sync_cmd.md"
-    click n6 "../modules/section_ownership.md"
-    click n7 "../modules/section_ownership.md"
-    click n8 "../modules/section_ownership.md"
-    click n9 "../modules/section_ownership.md"
+    click n1 "../modules/section_ownership.md"
+    click n2 "../modules/section_ownership.md"
+    click n3 "../modules/section_ownership.md"
+    click n4 "../modules/section_ownership.md"
+    click n5 "../modules/sync_runtime.md"
+    click n6 "../modules/sync_runtime.md"
+    click n7 "../modules/sync_runtime.md"
+    click n8 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -68,17 +65,17 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_merge_entity_page` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
-| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_merge_entity_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_merge_module_page` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
-| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_merge_module_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_merge_semantic_markdown` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_retain_unmarked_overload_guidance` | call | [section_ownership](../modules/section_ownership.md) | 1 |
 | `_retain_unmarked_overload_guidance` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `merge_entity_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `merge_module_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `merge_semantic_markdown` | call | [section_ownership](../modules/section_ownership.md) | 1 |
+| `merge_semantic_markdown` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `_merge_entity_page` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_merge_entity_page` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_merge_entity_semantics` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_merge_module_page` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_merge_module_page` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_merge_module_semantics` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 
 > References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

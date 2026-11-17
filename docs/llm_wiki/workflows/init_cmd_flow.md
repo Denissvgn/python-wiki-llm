@@ -1,12 +1,12 @@
 # init_cmd_flow
 
 **Entry point:** `init_cmd.run`
-**Modules involved:** [config](../modules/config.md), [current_contracts](../modules/current_contracts.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), [helper_preparation](../modules/helper_preparation.md), [init_cmd](../modules/init_cmd.md), [rendering_lifecycle](../modules/rendering_lifecycle.md), [services_schema](../modules/services_schema.md), [skills](../modules/skills.md), [source_selection](../modules/source_selection.md), [wiki_lifecycle](../modules/wiki_lifecycle.md)
+**Modules involved:** [config](../modules/config.md), [current_contracts](../modules/current_contracts.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), [helper_preparation](../modules/helper_preparation.md), [init_cmd](../modules/init_cmd.md), [path_policy](../modules/path_policy.md), [rendering_lifecycle](../modules/rendering_lifecycle.md), [services_schema](../modules/services_schema.md), [skills](../modules/skills.md), [source_selection](../modules/source_selection.md), [wiki_lifecycle](../modules/wiki_lifecycle.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_path`
+1. `path_policy.validate_path`
 2. `wiki_lifecycle.require_safe_wiki_scaffold`
 3. `config.require_safe_config_path`
 4. `config.inspect_config`
@@ -63,6 +63,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_preparation](../modules/helper_preparation.md)
 - [init_cmd](../modules/init_cmd.md)
+- [path_policy](../modules/path_policy.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)

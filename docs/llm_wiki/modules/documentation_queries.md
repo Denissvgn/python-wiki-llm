@@ -31,6 +31,8 @@ retains its full inventory cost.
 
 | Source | Symbols |
 |--------|---------|
+| `.canonical_json` | `compact_text` |
+| `.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
@@ -79,17 +81,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (16) |
+| Outbound | `src` (18) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 135 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 355 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 859 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 138 | `ValueError` | Raised when a documentation graph query request is invalid. |
+| [_BoundedResult](../entities/BoundedResult.md) | 358 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 857 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

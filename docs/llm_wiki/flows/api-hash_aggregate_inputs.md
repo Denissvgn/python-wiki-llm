@@ -2,7 +2,7 @@
 
 **Entry point:** `hash_aggregate_inputs` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_envelope](../modules/knowledge_envelope.md)
 
 ## Call sequence
 
@@ -18,14 +18,14 @@ sequenceDiagram
     participant p4 as _hash_structured
     participant p5 as payload.values
     participant p6 as _validate_json_tree
-    participant p7 as sha256_bytes
-    participant p8 as canonical_json_bytes
+    participant p7 as sha256_digest
+    participant p8 as compact_bytes
     participant p9 as set
     participant p10 as hashlib.sha256(…).hexdigest
-    participant p11 as canonical_json_text(…).encode
+    participant p11 as compact_text(…).encode
     participant p12 as walk
     participant p13 as hashlib.sha256
-    participant p14 as canonical_json_text
+    participant p14 as compact_text
     participant p15 as json.dumps
     p0-->>p1: isinstance(inputs, (...))
     p0->>p2: KnowledgeEnvelopeError
@@ -34,16 +34,16 @@ sequenceDiagram
     p0->>p4: _hash_structured
     p4-->>p5: payload.values
     p4->>p6: _validate_json_tree
-    p4->>p7: sha256_bytes
-    p4->>p8: canonical_json_bytes
+    p4->>p7: sha256_digest
+    p4->>p8: compact_bytes
     p4->>p2: KnowledgeEnvelopeError
     p6-->>p9: set
     p7-->>p10: hashlib.sha256(…).hexdigest
-    p8-->>p11: canonical_json_text(…).encode('utf-8')
+    p8-->>p11: compact_text(…).encode('utf-8')
     p6-->>p12: walk(value, field_name)
-    p7-->>p13: hashlib.sha256(value)
-    p8->>p14: canonical_json_text
-    p14-->>p15: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
+    p7-->>p13: hashlib.sha256(data)
+    p8->>p14: compact_text
+    p14-->>p15: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)
 ```
 
 > Call sequence diagram shows 17 of 17 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -61,7 +61,7 @@ sequenceDiagram
 
 Source steps: 9; effect analysis evaluated: 6, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
 
-Collector observations for 6 source steps with known totals: observed: 17, emitted: 17, omitted: 0. Unavailable totals are excluded.
+Collector observations for 6 source steps with known totals: observed: 19, emitted: 19, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -78,7 +78,7 @@ Collector observations for 6 source steps with known totals: observed: 17, emitt
 | `_validate_json_tree` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `walk` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sha256_digest` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -93,7 +93,7 @@ flowchart LR
     s8["8. _validate_json_tree"]
     s9["9. set"]
     s10["10. walk"]
-    s11["11. sha256_bytes"]
+    s11["11. sha256_digest"]
     s12["12. hashlib.sha256(…).hexdigest"]
     s1 -. "isinstance(inputs, (...))" .-> s2
     s1 -->|"KnowledgeEnvelopeError('aggregate_inputs', 'must be an ordered iterable of contributor records')"| s3
@@ -104,14 +104,14 @@ flowchart LR
     s6 -->|"_validate_json_tree(value, field_name)"| s8
     s8 -. "set(data not statically known)" .-> s9
     s8 -. "walk(value, field_name)" .-> s10
-    s6 -->|"sha256_bytes(canonical_json_bytes(...))"| s11
+    s6 -->|"sha256_digest(canonical_json_bytes(...))"| s11
     s11 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s12
     click s1 "../modules/knowledge_envelope.md"
     click s3 "../modules/knowledge_envelope.md"
     click s5 "../modules/knowledge_envelope.md"
     click s6 "../modules/knowledge_envelope.md"
     click s8 "../modules/knowledge_envelope.md"
-    click s11 "../modules/knowledge_evidence.md"
+    click s11 "../modules/canonical_json.md"
 ```
 
 ### Step data
@@ -128,24 +128,24 @@ flowchart LR
 | `_validate_json_tree` | `value: object`, `field_name: str` | - | - | - |
 | `set` | - | - | - | - |
 | `walk` | - | - | - | - |
-| `sha256_bytes` | `value: bytes` | - | - | `...` |
+| `sha256_digest` | `data: bytes` | - | - | `...` |
 | `hashlib.sha256(…).hexdigest` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_aggregate_inputs | isinstance | 872 | `isinstance(inputs, (...))` |
-| hash_aggregate_inputs | KnowledgeEnvelopeError | 873 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an ordered iterable of contributor records')` |
-| hash_aggregate_inputs | list | 878 | `list(inputs)` |
-| hash_aggregate_inputs | KnowledgeEnvelopeError | 880 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an iterable of finite canonical JSON values')` |
-| hash_aggregate_inputs | _hash_structured | 884 | `_hash_structured(AGGREGATE_INPUT_DOMAIN, {...}, 'aggregate_inputs')` |
-| _hash_structured | payload.values | 1608 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1609 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set | 1630 | `set(data not statically known)` |
-| _validate_json_tree | walk | 1671 | `walk(value, field_name)` |
-| _hash_structured | sha256_bytes | 1610 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| hash_aggregate_inputs | isinstance | 873 | `isinstance(inputs, (...))` |
+| hash_aggregate_inputs | KnowledgeEnvelopeError | 874 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an ordered iterable of contributor records')` |
+| hash_aggregate_inputs | list | 879 | `list(inputs)` |
+| hash_aggregate_inputs | KnowledgeEnvelopeError | 881 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an iterable of finite canonical JSON values')` |
+| hash_aggregate_inputs | _hash_structured | 885 | `_hash_structured(AGGREGATE_INPUT_DOMAIN, {...}, 'aggregate_inputs')` |
+| _hash_structured | payload.values | 1609 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1610 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set | 1631 | `set(data not statically known)` |
+| _validate_json_tree | walk | 1672 | `walk(value, field_name)` |
+| _hash_structured | sha256_digest | 1611 | `sha256_bytes(canonical_json_bytes(...))` |
+| sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
@@ -155,10 +155,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `hash_aggregate_inputs` | `isinstance` | 872 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1608 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1671 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
+| external_call | `hash_aggregate_inputs` | `isinstance` | 873 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1609 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1672 |
+| unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
 | step_limit | `hash_aggregate_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

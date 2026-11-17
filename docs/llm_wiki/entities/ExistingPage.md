@@ -1,9 +1,9 @@
 # ExistingPage
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:120`
+**Location:** `src/llm_wiki_cli/services/migrate_runtime.py:118`
 **Kind:** Class
 **Bases:** —
-**Module:** [migrate_cmd](../modules/migrate_cmd.md)
+**Module:** [migrate_runtime](../modules/migrate_runtime.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -35,18 +35,18 @@ A currently active wiki page before migration.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ExistingPage (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n1["_active_managed_pages (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n2["_archive_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n3["_archived_managed_pages (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n4["_existing_legacy_payload (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n5["_match_existing_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n6["_merge_legacy_notes (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n7["_read_existing_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n8["_remove_old_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n9["_should_archive_matched_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n10["_staged_existing_page (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n11["_target_needs_apply (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n0["ExistingPage (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n1["_active_managed_pages (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n2["_archive_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n3["_archived_managed_pages (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n4["_existing_legacy_payload (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n5["_match_existing_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n6["_merge_legacy_notes (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n7["_read_existing_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n8["_remove_old_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n9["_should_archive_matched_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n10["_staged_existing_page (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n11["_target_needs_apply (src/llm_wiki_cli/services/migrate_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -58,39 +58,39 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
-    click n0 "../modules/migrate_cmd.md"
-    click n1 "../modules/migrate_cmd.md"
-    click n2 "../modules/migrate_cmd.md"
-    click n3 "../modules/migrate_cmd.md"
-    click n4 "../modules/migrate_cmd.md"
-    click n5 "../modules/migrate_cmd.md"
-    click n6 "../modules/migrate_cmd.md"
-    click n7 "../modules/migrate_cmd.md"
-    click n8 "../modules/migrate_cmd.md"
-    click n9 "../modules/migrate_cmd.md"
-    click n10 "../modules/migrate_cmd.md"
-    click n11 "../modules/migrate_cmd.md"
+    click n0 "../modules/migrate_runtime.md"
+    click n1 "../modules/migrate_runtime.md"
+    click n2 "../modules/migrate_runtime.md"
+    click n3 "../modules/migrate_runtime.md"
+    click n4 "../modules/migrate_runtime.md"
+    click n5 "../modules/migrate_runtime.md"
+    click n6 "../modules/migrate_runtime.md"
+    click n7 "../modules/migrate_runtime.md"
+    click n8 "../modules/migrate_runtime.md"
+    click n9 "../modules/migrate_runtime.md"
+    click n10 "../modules/migrate_runtime.md"
+    click n11 "../modules/migrate_runtime.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [migrate_cmd](../modules/migrate_cmd.md) | 0 | `archived`, `content`, `heading`, `kind`, `location_line`, `location_path`, `path`, `rel`, `source_path`, `stem` |
+| [migrate_runtime](../modules/migrate_runtime.md) | 0 | `archived`, `content`, `heading`, `kind`, `location_line`, `location_path`, `path`, `rel`, `source_path`, `stem` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_active_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_archive_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_archived_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_existing_legacy_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_match_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_merge_legacy_notes` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_read_existing_page` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
-| `_read_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_remove_old_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_should_archive_matched_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_staged_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_target_needs_apply` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_active_managed_pages` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_archive_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_archived_managed_pages` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_existing_legacy_payload` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_match_existing_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_merge_legacy_notes` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_read_existing_page` | call | [migrate_runtime](../modules/migrate_runtime.md) | 1 |
+| `_read_existing_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_remove_old_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_should_archive_matched_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_staged_existing_page` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_target_needs_apply` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |

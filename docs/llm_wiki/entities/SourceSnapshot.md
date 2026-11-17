@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:141`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:135`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -68,13 +68,13 @@ flowchart LR
     n3["_selected_prompt_diff (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n4["_validated_prompt_selection_and_diff (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n5["_validated_prompt_snapshot (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
-    n6["_advance_owned_ignore_snapshot (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n7["_append_log (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n8["_apply_current_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n9["_apply_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n10["_apply_surface_page_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n11["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n12["_build_generated_section_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n6["_preflight_team_source_selection (src/llm_wiki_cli/commands/team_cmd.py)"]
+    n7["_build_sync_prompt (src/llm_wiki_cli/commands/trigger_cmd.py)"]
+    n8["_filter_trigger_diff (src/llm_wiki_cli/commands/trigger_cmd.py)"]
+    n9["_preflight_trigger_source_selection (src/llm_wiki_cli/commands/trigger_cmd.py)"]
+    n10["_trigger_source_snapshot (src/llm_wiki_cli/commands/trigger_cmd.py)"]
+    n11["_resolve_openapi_path (src/llm_wiki_cli/services/api_contracts.py)"]
+    n12["build_api_contracts (src/llm_wiki_cli/services/api_contracts.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -93,13 +93,13 @@ flowchart LR
     click n3 "../modules/generate_prompt_cmd.md"
     click n4 "../modules/generate_prompt_cmd.md"
     click n5 "../modules/generate_prompt_cmd.md"
-    click n6 "../modules/migrate_cmd.md"
-    click n7 "../modules/sync_cmd.md"
-    click n8 "../modules/sync_cmd.md"
-    click n9 "../modules/sync_cmd.md"
-    click n10 "../modules/sync_cmd.md"
-    click n11 "../modules/sync_cmd.md"
-    click n12 "../modules/sync_cmd.md"
+    click n6 "../modules/team_cmd.md"
+    click n7 "../modules/trigger_cmd.md"
+    click n8 "../modules/trigger_cmd.md"
+    click n9 "../modules/trigger_cmd.md"
+    click n10 "../modules/trigger_cmd.md"
+    click n11 "../modules/api_contracts.md"
+    click n12 "../modules/api_contracts.md"
 ```
 
 ### Summary
@@ -117,12 +117,12 @@ flowchart LR
 | `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
-| `_advance_owned_ignore_snapshot` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_preflight_team_source_selection` | type_reference | [team_cmd](../modules/team_cmd.md) | — |
+| `_build_sync_prompt` | type_reference | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `_filter_trigger_diff` | type_reference | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `_preflight_trigger_source_selection` | type_reference | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `_trigger_source_snapshot` | type_reference | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `_resolve_openapi_path` | type_reference | [api_contracts](../modules/api_contracts.md) | — |
+| `build_api_contracts` | type_reference | [api_contracts](../modules/api_contracts.md) | — |
 
-> References: showing 12 of 164 logical references; 152 omitted by the 12-row generated summary limit.
+> References: showing 12 of 165 logical references; 153 omitted by the 12-row generated summary limit.

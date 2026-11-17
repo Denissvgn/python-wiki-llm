@@ -28,12 +28,12 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 | `.analysis_compatibility` | `EXTENSION`, `validate_record`, `configuration_commitment` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.immutable` | `FrozenDict` |
-| `.implementation_evidence` | `validate_implementation_collection`, `validate_concept_implementation` |
+| `.implementation_evidence` | `validate_concept_implementation` |
 | `.knowledge_evidence` | `SHA256_PATTERN` |
-| `.knowledge_governance` | `validate_governance_projection` |
 | `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
+| `.knowledge_kinds` | `current_kinds` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `validate_reuse_commitment` |
-| `.maintenance_projection` | `validate_maintenance_projection` |
+| `.knowledge_validators` | `current_validators` |
 | `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
 | `.validation` | `require_bounded_integral_number`, `require_enum_value`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_repository_relative_path`, `require_sha256`, `require_string` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
@@ -68,10 +68,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (37) |
+| Inbound | `src` (42) |
 | Outbound | `src` (13) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

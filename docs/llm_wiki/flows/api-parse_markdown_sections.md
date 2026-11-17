@@ -2,7 +2,7 @@
 
 **Entry point:** `parse_markdown_sections` (`api`)
 **Source:** [markdown_sections](../modules/markdown_sections.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md)
 
 ## Call sequence
 
@@ -17,16 +17,16 @@ sequenceDiagram
     participant p3 as hash_json
     participant p4 as _markdown_lines
     participant p5 as _frontmatter_extent
-    participant p6 as canonical_json_bytes
+    participant p6 as compact_bytes
     participant p7 as normalize_markdown
     participant p8 as _HeadingCandidate
     participant p9 as section_locator
     participant p10 as MarkdownSection
-    participant p11 as sha256_bytes
+    participant p11 as sha256_digest
     participant p12 as MarkdownSectionDocument
     participant p13 as _line_content
     participant p14 as _atx_heading
-    participant p15 as canonical_json_text
+    participant p15 as compact_text
     participant p16 as isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
     participant p17 as stack.pop
     participant p18 as TypeError
@@ -44,16 +44,16 @@ sequenceDiagram
     p1->>p3: hash_json
     p2->>p4: _markdown_lines
     p2->>p5: _frontmatter_extent
-    p3->>p6: canonical_json_bytes
+    p3->>p6: compact_bytes
     p1->>p7: normalize_markdown
     p1->>p8: _HeadingCandidate
     p1->>p9: section_locator
     p1->>p10: MarkdownSection
-    p1->>p11: sha256_bytes
+    p1->>p11: sha256_digest
     p1->>p12: MarkdownSectionDocument
     p2->>p13: _line_content
     p2->>p14: _atx_heading
-    p6->>p15: canonical_json_text
+    p6->>p15: compact_text
     p1-->>p16: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)
     p1-->>p17: stack.pop
     p1-->>p18: TypeError('markdown must be a string')
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 23; effect analysis evaluated: 20, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
 
-Collector observations for 20 source steps with known totals: observed: 57, emitted: 57, omitted: 0. Unavailable totals are excluded.
+Collector observations for 20 source steps with known totals: observed: 59, emitted: 59, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.

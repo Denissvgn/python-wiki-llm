@@ -2,13 +2,14 @@
 
 **Entry point:** `build_documentation_agent_packet` (`api`)
 **Source:** [packet](../modules/packet.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 11 more
+**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 12 more
 
 **Complete modules touched:**
 
 - [documentation_policy](../modules/documentation_policy.md)
 - [documentation_run_contracts](../modules/documentation_run_contracts.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -50,13 +51,13 @@ sequenceDiagram
     participant p19 as split_delivery_tree
     participant p20 as windows_object_identity
     participant p21 as guard_windows_directory_chain
-    participant p22 as _assert_safe_regular_file
-    participant p23 as _public_hashes
-    participant p24 as open_windows_readonly_file
-    participant p25 as _validated_checkpoint
-    participant p26 as _portable
-    participant p27 as _assert_stable_windows_path_handle_metadata
-    participant p28 as _assert_stable_file_metadata
+    participant p22 as first_unsafe_path_component
+    participant p23 as _assert_safe_regular_file
+    participant p24 as _public_hashes
+    participant p25 as open_windows_readonly_file
+    participant p26 as _validated_checkpoint
+    participant p27 as _portable
+    participant p28 as _assert_stable_windows_path_handle_metadata
     participant p29 as isinstance (src/llm_wiki_cli/services….py:capture_tree_baseline)
     participant p30 as DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_packet)
     p0->>p1: publication_packet
@@ -80,20 +81,20 @@ sequenceDiagram
     p6->>p19: split_delivery_tree
     p18->>p20: windows_object_identity
     p16->>p21: guard_windows_directory_chain
-    p17->>p22: _assert_safe_regular_file
-    p19->>p23: _public_hashes
-    p17->>p24: open_windows_readonly_file
-    p19->>p25: _validated_checkpoint
-    p12->>p26: _portable
-    p17->>p27: _assert_stable_windows_path_handle_metadata
-    p17->>p28: _assert_stable_file_metadata
+    p11->>p22: first_unsafe_path_component
+    p17->>p23: _assert_safe_regular_file
+    p19->>p24: _public_hashes
+    p17->>p25: open_windows_readonly_file
+    p19->>p26: _validated_checkpoint
+    p12->>p27: _portable
+    p17->>p28: _assert_stable_windows_path_handle_metadata
     p4-->>p29: isinstance (src/llm_wiki_cli/services….py:capture_tree_baseline)(value, bool)
     p0-->>p30: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_packet)(...)
 ```
 
-> Call sequence diagram shows 30 of 477 interactions; 447 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 478 interactions; 448 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 163 (162 omitted); unresolved 1 of 161 (160 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 162 (161 omitted); unresolved 1 of 162 (161 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,12 +102,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_run/packet.py:build_documentation_agent_packet` | 1 | - | unresolved | 74 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 34 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 34 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 34 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 34 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 34 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/publication_candidate.py:_tree_paths` | 66 | - | unresolved | 12 |
+| `src/llm_wiki_cli/services/publication_candidate.py:_tree_paths` | 67 | - | unresolved | 12 |
 > Omission summary shows 8 of 95 groups; 87 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -120,9 +121,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 154; effect analysis evaluated: 106, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
+Source steps: 155; effect analysis evaluated: 107, partial: 4, unavailable: 44. Counts include steps omitted from the displayed trace.
 
-Collector observations for 110 source steps with known totals: observed: 529, emitted: 516, omitted: 13. Unavailable totals are excluded.
+Collector observations for 111 source steps with known totals: observed: 531, emitted: 518, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

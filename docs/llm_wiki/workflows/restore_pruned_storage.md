@@ -1,7 +1,7 @@
 # restore_pruned_storage
 
 **Entry point:** `knowledge_storage_lifecycle.restore_pruned_storage`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [storage_spool](../modules/storage_spool.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [storage_spool](../modules/storage_spool.md)
 
 > Restore cleanup preimages into their recorded generation without overwrites.
 
@@ -12,9 +12,9 @@
 2. `knowledge_storage_io._absolute_path`
 3. `knowledge_storage.decode_bytes`
 4. `knowledge_storage_io.read_guarded`
-5. `knowledge_storage.digest`
+5. `canonical_json.sha256_digest`
 6. `knowledge_storage.canonical_bytes`
-7. `knowledge_storage.digest`
+7. `canonical_json.sha256_digest`
 8. `knowledge_storage.KnowledgeStorageError`
 9. `knowledge_storage._hash`
 10. `knowledge_storage._hash`
@@ -25,7 +25,7 @@
 15. `knowledge_storage.KnowledgeStorageError`
 16. `knowledge_storage.KnowledgeStorageError`
 17. `knowledge_storage_io.read_guarded`
-18. `knowledge_storage.digest`
+18. `canonical_json.sha256_digest`
 19. `knowledge_storage.KnowledgeStorageError`
 20. `maintenance_protocol.governance_writer_lock`
 21. `maintenance_protocol.storage_writer_lock`
@@ -36,6 +36,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)

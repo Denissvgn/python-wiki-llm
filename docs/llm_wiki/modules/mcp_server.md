@@ -29,7 +29,8 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `.context_budget` | `validate_request` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
-| `.context_packet` | `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context`, `describe_context_packet_error` |
+| `.context_packet` | `ContextPacketError` |
+| `.context_packet_builder` | `describe_context_packet_error`, `build_qualified_context`, `describe_context_packet_error` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
@@ -89,7 +90,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (33) |
+| Outbound | `src` (34) |
 
 ### External packages
 
@@ -97,7 +98,7 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 0 |
 
-> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

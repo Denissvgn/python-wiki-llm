@@ -2,15 +2,17 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [install_ci_cmd](../modules/install_ci_cmd.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [current_contracts](../modules/current_contracts.md), and 15 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [current_contracts](../modules/current_contracts.md), and 20 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [ci_installer](../modules/ci_installer.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [install_ci_cmd](../modules/install_ci_cmd.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -18,7 +20,10 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
+- [publication_targets](../modules/publication_targets.md)
+- [reference_providers](../modules/reference_providers.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -56,12 +61,12 @@ sequenceDiagram
     participant p20 as _validate_workflow_target
     participant p21 as _validated_project_path
     participant p22 as _relative_path
-    participant p23 as SyncManifest.load
-    participant p24 as is_pristine_wiki_target
-    participant p25 as resolve_source_selection
-    participant p26 as validate_persisted_source_selection_identity
-    participant p27 as is_unmodified_managed_workflow
-    participant p28 as read_publication_json
+    participant p23 as first_unsafe_path_component
+    participant p24 as SyncManifest.load
+    participant p25 as is_pristine_wiki_target
+    participant p26 as resolve_source_selection
+    participant p27 as validate_persisted_source_selection_identity
+    participant p28 as is_unmodified_managed_workflow
     participant p29 as getattr (src/llm_wiki_cli/commands/install_ci_cmd.py:run)
     participant p30 as authored.extend
     p0->>p1: install_documentation_ci_workflow
@@ -86,19 +91,19 @@ sequenceDiagram
     p15->>p20: _validate_workflow_target
     p6->>p21: _validated_project_path
     p9->>p22: _relative_path
-    p12->>p23: SyncManifest.load
-    p7->>p24: is_pristine_wiki_target
-    p12->>p25: resolve_source_selection
-    p12->>p26: validate_persisted_source_selection_identity
-    p15->>p27: is_unmodified_managed_workflow
-    p9->>p28: read_publication_json
+    p8->>p23: first_unsafe_path_component
+    p12->>p24: SyncManifest.load
+    p7->>p25: is_pristine_wiki_target
+    p12->>p26: resolve_source_selection
+    p12->>p27: validate_persisted_source_selection_identity
+    p15->>p28: is_unmodified_managed_workflow
     p0-->>p29: getattr (src/llm_wiki_cli/commands/install_ci_cmd.py:run)(args, 'profile', 'integrity')
     p1-->>p30: authored.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 1312 interactions; 1282 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1317 interactions; 1287 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 298 (297 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 450 (449 omitted); unresolved 1 of 298 (297 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -112,7 +117,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_installer.py:_project_root` | 13 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 20 | - | unresolved | 2 |
-> Omission summary shows 8 of 283 groups; 275 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 291 groups; 283 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,9 +130,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 568; effect analysis evaluated: 321, partial: 18, unavailable: 229. Counts include steps omitted from the displayed trace.
+Source steps: 570; effect analysis evaluated: 322, partial: 18, unavailable: 230. Counts include steps omitted from the displayed trace.
 
-Collector observations for 339 source steps with known totals: observed: 1946, emitted: 1885, omitted: 61. Unavailable totals are excluded.
+Collector observations for 340 source steps with known totals: observed: 1925, emitted: 1864, omitted: 61. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

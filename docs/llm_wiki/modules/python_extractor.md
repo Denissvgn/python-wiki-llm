@@ -19,7 +19,7 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `build_gitignore_matcher` |
+| `..services.gitignore` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
 | `..services.python_calls` | `PYTHON_LEXICAL_FUNCTIONS_SCHEMA` |
 | `..services.python_implementation` | `capture`, `envelope`, `producer` |
@@ -40,21 +40,29 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/config.py"]
-    n1["src/llm_wiki_cli/extractors/common.py"]
-    n2["src/llm_wiki_cli/extractors/fastapi_contracts.py"]
-    n3["src/llm_wiki_cli/extractors/python_bindings.py"]
-    n4["src/llm_wiki_cli/extractors/python_contracts.py"]
-    n5["src/llm_wiki_cli/extractors/python_extractor.py"]
-    n6["src/llm_wiki_cli/services/extraction_service.py"]
+    n0["src/llm_wiki_cli/extractors/common.py"]
+    n1["src/llm_wiki_cli/extractors/fastapi_contracts.py"]
+    n2["src/llm_wiki_cli/extractors/python_bindings.py"]
+    n3["src/llm_wiki_cli/extractors/python_contracts.py"]
+    n4["src/llm_wiki_cli/extractors/python_extractor.py"]
+    n5["src/llm_wiki_cli/services/extraction_service.py"]
+    n6["src/llm_wiki_cli/services/gitignore.py"]
     n7["src/llm_wiki_cli/services/imports.py"]
     n8["src/llm_wiki_cli/services/module_coverage.py"]
     n9["src/llm_wiki_cli/services/python_calls.py"]
     n10["src/llm_wiki_cli/services/python_implementation.py"]
     n11["src/llm_wiki_cli/services/python_observations.py"]
-    n1 --> n0
+    n0 --> n6
+    n4 --> n0
+    n4 --> n1
+    n4 --> n2
+    n4 --> n3
+    n4 --> n6
+    n4 --> n7
+    n4 --> n9
+    n4 --> n10
+    n4 --> n11
     n5 --> n0
-    n5 --> n1
     n5 --> n2
     n5 --> n3
     n5 --> n4
@@ -62,27 +70,17 @@ flowchart LR
     n5 --> n9
     n5 --> n10
     n5 --> n11
-    n6 --> n0
-    n6 --> n1
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n9
-    n6 --> n10
-    n6 --> n11
     n7 --> n0
-    n7 --> n1
-    n8 --> n5
-    n9 --> n3
+    n8 --> n4
+    n9 --> n2
     n9 --> n7
-    click n0 "../modules/config.md"
-    click n1 "../modules/common.md"
-    click n2 "../modules/fastapi_contracts.md"
-    click n3 "../modules/python_bindings.md"
-    click n4 "../modules/python_contracts.md"
-    click n5 "../modules/python_extractor.md"
-    click n6 "../modules/extraction_service.md"
+    click n0 "../modules/common.md"
+    click n1 "../modules/fastapi_contracts.md"
+    click n2 "../modules/python_bindings.md"
+    click n3 "../modules/python_contracts.md"
+    click n4 "../modules/python_extractor.md"
+    click n5 "../modules/extraction_service.md"
+    click n6 "../modules/gitignore.md"
     click n7 "../modules/imports.md"
     click n8 "../modules/module_coverage.md"
     click n9 "../modules/python_calls.md"
@@ -96,11 +94,11 @@ flowchart LR
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [module_coverage](../modules/module_coverage.md) |
-| Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
 | Outbound | [python_bindings](../modules/python_bindings.md) |
 | Outbound | [python_contracts](../modules/python_contracts.md) |
+| Outbound | [gitignore](../modules/gitignore.md) |
 | Outbound | [imports](../modules/imports.md) |
 | Outbound | [python_calls](../modules/python_calls.md) |
 | Outbound | [python_implementation](../modules/python_implementation.md) |

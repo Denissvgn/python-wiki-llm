@@ -1,9 +1,9 @@
 # MigrationPlan
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:149`
+**Location:** `src/llm_wiki_cli/services/migrate_runtime.py:147`
 **Kind:** Class
 **Bases:** —
-**Module:** [migrate_cmd](../modules/migrate_cmd.md)
+**Module:** [migrate_runtime](../modules/migrate_runtime.md)
 
 **Decorators:** `@dataclass`
 
@@ -45,18 +45,18 @@ Computed migration operations, shared by apply and dry-run paths.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MigrationPlan (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n1["_apply_chunk (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n2["_apply_plan (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n3["_build_chunks (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n4["_build_migration_plan (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n5["_chunk_has_archive_work (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n6["_chunk_link_map (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n7["_ensure_legacy_gitignore (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n8["_finalize_migration_artifacts (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n9["_finalizers_pending (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n10["_legacy_archive_ignore_applicable (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n11["_matched_archive_count (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n0["MigrationPlan (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n1["_apply_chunk (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n2["_apply_plan (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n3["_build_chunks (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n4["_build_migration_plan (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n5["_chunk_has_archive_work (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n6["_chunk_link_map (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n7["_ensure_legacy_gitignore (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n8["_finalize_migration_artifacts (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n9["_finalizers_pending (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n10["_legacy_archive_ignore_applicable (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n11["_matched_archive_count (src/llm_wiki_cli/services/migrate_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -68,41 +68,41 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
-    click n0 "../modules/migrate_cmd.md"
-    click n1 "../modules/migrate_cmd.md"
-    click n2 "../modules/migrate_cmd.md"
-    click n3 "../modules/migrate_cmd.md"
-    click n4 "../modules/migrate_cmd.md"
-    click n5 "../modules/migrate_cmd.md"
-    click n6 "../modules/migrate_cmd.md"
-    click n7 "../modules/migrate_cmd.md"
-    click n8 "../modules/migrate_cmd.md"
-    click n9 "../modules/migrate_cmd.md"
-    click n10 "../modules/migrate_cmd.md"
-    click n11 "../modules/migrate_cmd.md"
+    click n0 "../modules/migrate_runtime.md"
+    click n1 "../modules/migrate_runtime.md"
+    click n2 "../modules/migrate_runtime.md"
+    click n3 "../modules/migrate_runtime.md"
+    click n4 "../modules/migrate_runtime.md"
+    click n5 "../modules/migrate_runtime.md"
+    click n6 "../modules/migrate_runtime.md"
+    click n7 "../modules/migrate_runtime.md"
+    click n8 "../modules/migrate_runtime.md"
+    click n9 "../modules/migrate_runtime.md"
+    click n10 "../modules/migrate_runtime.md"
+    click n11 "../modules/migrate_runtime.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [migrate_cmd](../modules/migrate_cmd.md) | 0 | `archive_name`, `entity_occurrence_page_map`, `governance_ambiguous_moves`, `governance_enabled`, `governance_moves`, `governance_new_allocations`, `governance_uid_reuses`, `index_content`, `inventory`, `inventory_result`, `link_map`, `manifest` |
+| [migrate_runtime](../modules/migrate_runtime.md) | 0 | `archive_name`, `entity_occurrence_page_map`, `governance_ambiguous_moves`, `governance_enabled`, `governance_moves`, `governance_new_allocations`, `governance_uid_reuses`, `index_content`, `inventory`, `inventory_result`, `link_map`, `manifest` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_apply_chunk` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_apply_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_build_chunks` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_build_migration_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
-| `_build_migration_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_ensure_legacy_gitignore` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_finalize_migration_artifacts` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_finalizers_pending` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_legacy_archive_ignore_applicable` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_matched_archive_count` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_apply_chunk` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_apply_plan` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_build_chunks` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_build_migration_plan` | call | [migrate_runtime](../modules/migrate_runtime.md) | 1 |
+| `_build_migration_plan` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_chunk_has_archive_work` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_chunk_link_map` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_ensure_legacy_gitignore` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_finalize_migration_artifacts` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_finalizers_pending` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_legacy_archive_ignore_applicable` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_matched_archive_count` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
 
 > References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

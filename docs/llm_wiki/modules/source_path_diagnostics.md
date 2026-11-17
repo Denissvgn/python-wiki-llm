@@ -17,8 +17,9 @@ absence cannot establish a missing file, parser failure or completed extraction.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `PathValidationError`, `is_agent_worktree_path` |
 | `..extractors.common` | `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path` |
+| `.gitignore` | `GitIgnoreMatcher` |
+| `.path_policy` | `EXCLUDED_DIRS`, `PathValidationError`, `is_agent_worktree_path` |
 | `.source_selection` | `path_is_selected` |
 | `.source_snapshot` | `SourceSnapshot`, `_language_selection_for_path`, `_is_rescuable_typescript_src_lib_file` |
 | `__future__` | `annotations` |
@@ -30,30 +31,36 @@ absence cannot establish a missing file, parser failure or completed extraction.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/config.py"]
-    n1["src/llm_wiki_cli/extractors/common.py"]
-    n2["src/llm_wiki_cli/services/documentation_query_builder.py"]
-    n3["src/llm_wiki_cli/services/source_path_diagnostics.py"]
-    n4["src/llm_wiki_cli/services/source_selection.py"]
-    n5["src/llm_wiki_cli/services/source_snapshot.py"]
-    n1 --> n0
+    n0["src/llm_wiki_cli/extractors/common.py"]
+    n1["src/llm_wiki_cli/services/documentation_query_builder.py"]
+    n2["src/llm_wiki_cli/services/gitignore.py"]
+    n3["src/llm_wiki_cli/services/path_policy.py"]
+    n4["src/llm_wiki_cli/services/source_path_diagnostics.py"]
+    n5["src/llm_wiki_cli/services/source_selection.py"]
+    n6["src/llm_wiki_cli/services/source_snapshot.py"]
+    n0 --> n2
+    n0 --> n3
+    n1 --> n4
+    n1 --> n5
+    n1 --> n6
     n2 --> n3
-    n2 --> n4
-    n2 --> n5
-    n3 --> n0
-    n3 --> n1
-    n3 --> n4
-    n3 --> n5
     n4 --> n0
-    n5 --> n0
-    n5 --> n1
-    n5 --> n4
-    click n0 "../modules/config.md"
-    click n1 "../modules/common.md"
-    click n2 "../modules/documentation_query_builder.md"
-    click n3 "../modules/source_path_diagnostics.md"
-    click n4 "../modules/source_selection.md"
-    click n5 "../modules/source_snapshot.md"
+    n4 --> n2
+    n4 --> n3
+    n4 --> n5
+    n4 --> n6
+    n5 --> n3
+    n6 --> n0
+    n6 --> n2
+    n6 --> n3
+    n6 --> n5
+    click n0 "../modules/common.md"
+    click n1 "../modules/documentation_query_builder.md"
+    click n2 "../modules/gitignore.md"
+    click n3 "../modules/path_policy.md"
+    click n4 "../modules/source_path_diagnostics.md"
+    click n5 "../modules/source_selection.md"
+    click n6 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -61,8 +68,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
-| Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
+| Outbound | [gitignore](../modules/gitignore.md) |
+| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 

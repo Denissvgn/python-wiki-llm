@@ -2,25 +2,27 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 44 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [context_packet_builder](../modules/context_packet_builder.md), and 47 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
-- [context_budget](../modules/context_budget.md)
-- [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
+- [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
+- [engine_events](../modules/engine_events.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -39,6 +41,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
@@ -81,7 +84,7 @@ sequenceDiagram
     participant p16 as resolve_source_selection
     participant p17 as capture_source_selection_inputs
     participant p18 as validate_live_query_source_selection
-    participant p19 as validate_request
+    participant p19 as validate_budget_request
     participant p20 as build_source_snapshot
     participant p21 as retained_empty_module_paths_from_wiki
     participant p22 as _normalise_protocol_focus
@@ -90,7 +93,7 @@ sequenceDiagram
     participant p25 as _capture_protocol_enrichment_session
     participant p26 as _context_freshness_rank_by_source
     participant p27 as _context_enrichment_from_session
-    participant p28 as _selected_git_changed_files
+    participant p28 as _emit_context_warnings
     participant p29 as str (src/llm_wiki_cli/api.py:build_context)
     participant p30 as validated.get
     p0->>p1: _normalize_optional_knowledge_mode
@@ -111,7 +114,7 @@ sequenceDiagram
     p12->>p16: resolve_source_selection
     p12->>p17: capture_source_selection_inputs
     p12->>p18: validate_live_query_source_selection
-    p13->>p19: validate_request
+    p13->>p19: validate_budget_request
     p12->>p20: build_source_snapshot
     p12->>p21: retained_empty_module_paths_from_wiki
     p13->>p22: _normalise_protocol_focus
@@ -120,14 +123,14 @@ sequenceDiagram
     p12->>p25: _capture_protocol_enrichment_session
     p12->>p26: _context_freshness_rank_by_source
     p12->>p27: _context_enrichment_from_session
-    p12->>p28: _selected_git_changed_files
+    p12->>p28: _emit_context_warnings
     p0-->>p29: str (src/llm_wiki_cli/api.py:build_context)(exc)
     p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2222 interactions; 2192 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2236 interactions; 2206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 753 (752 omitted); unresolved 1 of 813 (812 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 745 (744 omitted); unresolved 1 of 818 (817 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,11 +140,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
-> Omission summary shows 8 of 492 groups; 484 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | external | 2 |
+| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
+| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 10 |
+> Omission summary shows 8 of 507 groups; 499 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -154,9 +157,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 657; effect analysis evaluated: 441, partial: 34, unavailable: 182. Counts include steps omitted from the displayed trace.
+Source steps: 674; effect analysis evaluated: 457, partial: 34, unavailable: 183. Counts include steps omitted from the displayed trace.
 
-Collector observations for 475 source steps with known totals: observed: 3223, emitted: 2966, omitted: 257. Unavailable totals are excluded.
+Collector observations for 491 source steps with known totals: observed: 3252, emitted: 2995, omitted: 257. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -206,7 +209,7 @@ flowchart LR
     click s2 "../modules/api.md"
     click s5 "../modules/api.md"
     click s9 "../modules/api.md"
-    click s11 "../modules/context_service.md"
+    click s11 "../modules/context_request_format.md"
 ```
 
 ### Step data
@@ -230,17 +233,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 1355 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3413 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3419 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 1356 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 407 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 408 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 408 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 409 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 414 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 1372 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1126 | `isinstance(data, dict)` |
+| build_context | _normalise_focus | 1507 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3565 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3571 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 1508 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 412 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 413 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 413 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 414 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 419 | `cast(KnowledgeMode, value)` |
+| build_context | _validate_protocol_request | 1524 | `context_cmd._validate_protocol_request(request)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 136 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -250,11 +253,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 3413 |
-| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 407 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 408 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 414 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1126 |
+| external_call | `_normalise_focus` | `isinstance` | 3565 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 412 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 413 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 419 |
+| external_call | `_validate_protocol_request` | `isinstance` | 136 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

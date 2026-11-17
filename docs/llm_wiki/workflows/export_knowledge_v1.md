@@ -1,7 +1,7 @@
 # export_knowledge_v1
 
 **Entry point:** `knowledge_storage_lifecycle.export_knowledge_v1`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 
 ## Sequence
 
@@ -15,10 +15,11 @@
 7. `knowledge_storage.KnowledgeStorageError`
 8. `filesystem_guard.ensure_guarded_directory`
 9. `filesystem_guard.atomic_write_guarded_bytes`
-10. `knowledge_storage.digest`
+10. `canonical_json.sha256_digest`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_storage](../modules/knowledge_storage.md)

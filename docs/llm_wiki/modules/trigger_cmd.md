@@ -13,6 +13,7 @@ and release a recovery probe through the failure path.
 
 | Source | Symbols |
 |--------|---------|
+| `..cli_declarations` | `DEFAULT_MAX_PROMPT_BYTES` |
 | `..config` | `DEFAULT_WIKI_DIR`, `IDE_AGENTS`, `validate_path`, `validate_source_root` |
 | `..services` | `circuit_breaker` |
 | `..services.extraction_service` | `filter_source_diff`, `get_call_graph`, `get_inventory_result`, `print_inventory_failures` |
@@ -53,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (12) |
+| Outbound | `src` (13) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

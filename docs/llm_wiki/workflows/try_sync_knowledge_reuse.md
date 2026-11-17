@@ -1,7 +1,7 @@
 # try_sync_knowledge_reuse
 
-**Entry point:** `sync_cmd._try_sync_knowledge_reuse`
-**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_cmd](../modules/sync_cmd.md), [validation](../modules/validation.md)
+**Entry point:** `sync_runtime._try_sync_knowledge_reuse`
+**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_runtime](../modules/sync_runtime.md), [validation](../modules/validation.md)
 
 ## Sequence
 
@@ -30,9 +30,9 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [progress](../modules/progress.md)
 - [source_snapshot](../modules/source_snapshot.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [validation](../modules/validation.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._try_sync_knowledge_reuse`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._try_sync_knowledge_reuse`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

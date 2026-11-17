@@ -1,6 +1,6 @@
 # _JointSelection
 
-**Location:** `src/llm_wiki_cli/services/context_budget.py:138`
+**Location:** `src/llm_wiki_cli/services/context_budget.py:95`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_budget](../modules/context_budget.md)

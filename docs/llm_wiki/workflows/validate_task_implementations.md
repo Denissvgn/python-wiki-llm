@@ -1,7 +1,7 @@
 # validate_task_implementations
 
 **Entry point:** `task_implementation.validate_task_implementations`
-**Modules involved:** [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [task_implementation](../modules/task_implementation.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [task_implementation](../modules/task_implementation.md)
 
 ## Sequence
 
@@ -10,11 +10,12 @@
 2. `knowledge_envelope.hash_source_snapshot`
 3. `knowledge_evidence.is_valid_sha256`
 4. `implementation_evidence.validate_implementation_comparison`
-5. `knowledge_storage.digest`
+5. `canonical_json.sha256_digest`
 6. `knowledge_storage.canonical_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)

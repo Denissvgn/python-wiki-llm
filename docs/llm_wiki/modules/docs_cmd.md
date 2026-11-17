@@ -15,7 +15,7 @@ Commands for deterministic standalone documentation workspaces.
 | `..services.calibration` | `controller` |
 | `..services.calibration.controller` | `P0CalibrationError` |
 | `..services.contracts` | `CALIBRATION_CONTROLLER_MAX_PACKET_BYTES` |
-| `..services.documentation_run` | `DocumentationAgentResult`, `DocumentationRunError`, `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `load_documentation_run`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
+| `..services.documentation_run` | `DocumentationAgentResult`, `DocumentationRunError`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `load_documentation_run`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
 | `..services.filesystem_guard` | `atomic_write_private_bytes` |
 | `__future__` | `annotations` |
 | `json` | `json` |
@@ -38,10 +38,9 @@ flowchart LR
     n7["src/llm_wiki_cli/services/contracts.py"]
     n8["src/llm_wiki_cli/services/documentation_run/__init__.py"]
     n9["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n4
     n0 --> n5
-    n0 --> n7
     n1 --> n2
     n2 --> n3
     n2 --> n4
@@ -87,7 +86,6 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `add_publication_candidate_commands` | `(docs_sub)` | — | — |
 | `_read_bounded_text` | `(path: str, *, label: str) -> str` | — | — |
 | `_read_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |
 | `_read_calibration_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |

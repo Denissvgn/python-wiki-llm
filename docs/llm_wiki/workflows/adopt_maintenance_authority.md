@@ -1,7 +1,7 @@
 # adopt_maintenance_authority
 
 **Entry point:** `maintenance_service.adopt_maintenance_authority`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_service](../modules/maintenance_service.md), [maintenance_state](../modules/maintenance_state.md), [source_snapshot](../modules/source_snapshot.md)
 
 > Explicitly adopt durable unreviewed authority without editing Markdown.
 
@@ -33,11 +33,12 @@
 23. `knowledge_artifacts.commit_knowledge_artifacts`
 24. `maintenance_protocol.save_recovery_snapshot`
 25. `maintenance_protocol.snapshot_wiki`
-26. `knowledge_storage.digest`
+26. `canonical_json.sha256_digest`
 27. `knowledge_storage.canonical_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_storage](../modules/knowledge_storage.md)

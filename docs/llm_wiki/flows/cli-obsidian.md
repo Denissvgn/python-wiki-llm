@@ -2,23 +2,25 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 51 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 55 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
-- [helper_preparation](../modules/helper_preparation.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
@@ -48,6 +50,7 @@
 - [obsidian](../modules/obsidian.md)
 - [obsidian_cmd](../modules/obsidian_cmd.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
@@ -88,16 +91,16 @@ sequenceDiagram
     participant p16 as project_knowledge
     participant p17 as _validate_no_authority_overlap
     participant p18 as collect_wiki_pages (src/llm_wiki_cli/services/obsidian.py)
-    participant p19 as windows_current_user_sid
-    participant p20 as _collect_outgoing_links
+    participant p19 as _collect_outgoing_links
+    participant p20 as windows_current_user_sid
     participant p21 as _select_knowledge_projection
     participant p22 as _merge_inventory_relationships
     participant p23 as _preflight_no_alias_paths
     participant p24 as _sidecar_note_path
-    participant p25 as _unexpected_projected_mirror_pages
-    participant p26 as _mirror_scan_relative_path
-    participant p27 as _preflight_planned_parent_directories
-    participant p28 as build_mirror_page
+    participant p25 as first_unsafe_path_component
+    participant p26 as _unexpected_projected_mirror_pages
+    participant p27 as _mirror_scan_relative_path
+    participant p28 as _preflight_planned_parent_directories
     participant p29 as getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
     participant p30 as Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
     p0->>p1: validate_path
@@ -118,37 +121,37 @@ sequenceDiagram
     p4->>p16: project_knowledge
     p5->>p17: _validate_no_authority_overlap
     p5->>p18: collect_wiki_pages (src/llm_wiki_cli/services/obsidian.py)
-    p2->>p19: windows_current_user_sid
-    p5->>p20: _collect_outgoing_links
+    p5->>p19: _collect_outgoing_links
+    p2->>p20: windows_current_user_sid
     p5->>p21: _select_knowledge_projection
     p5->>p22: _merge_inventory_relationships
     p5->>p23: _preflight_no_alias_paths
     p5->>p24: _sidecar_note_path
-    p5->>p25: _unexpected_projected_mirror_pages
-    p5->>p26: _mirror_scan_relative_path
-    p5->>p27: _preflight_planned_parent_directories
-    p5->>p28: build_mirror_page
+    p2->>p25: first_unsafe_path_component
+    p5->>p26: _unexpected_projected_mirror_pages
+    p5->>p27: _mirror_scan_relative_path
+    p5->>p28: _preflight_planned_parent_directories
     p0-->>p29: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3205 interactions; 3175 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3137 interactions; 3107 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 963 (962 omitted); unresolved 1 of 873 (872 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 928 (927 omitted); unresolved 1 of 854 (853 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/obsidian_cmd.py:run` | 1 | - | external | 22 |
-| `src/llm_wiki_cli/config.py:validate_path` | 6 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | external | 11 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 28 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 778 groups; 770 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | - | external | 10 |
+> Omission summary shows 8 of 769 groups; 761 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -161,9 +164,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1370; effect analysis evaluated: 927, partial: 45, unavailable: 398. Counts include steps omitted from the displayed trace.
+Source steps: 1356; effect analysis evaluated: 913, partial: 45, unavailable: 398. Counts include steps omitted from the displayed trace.
 
-Collector observations for 972 source steps with known totals: observed: 5366, emitted: 5105, omitted: 261. Unavailable totals are excluded.
+Collector observations for 958 source steps with known totals: observed: 5309, emitted: 5048, omitted: 261. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -178,11 +181,11 @@ Collector observations for 972 source steps with known totals: observed: 5366, e
 | `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -193,29 +196,30 @@ flowchart LR
     s5["5. getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)"]
     s6["6. validate_path"]
     s7["7. PathValidationError"]
-    s8["8. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. Path.cwd().resolve"]
-    s11["11. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s12["12. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
+    s8["8. (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s9["9. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s10["10. current_host"]
+    s11["11. _ACTIVE.get"]
+    s12["12. current_host().cwd().resolve"]
     s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)" .-> s2
     s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'format', 'text')" .-> s3
     s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
     s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'src_dir', '.')" .-> s5
     s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s6
     s6 -->|"PathValidationError(...)"| s7
-    s6 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
-    s6 -. "Path.cwd().resolve(data not statically known)" .-> s10
-    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
-    s6 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s12
+    s6 -. "(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s8
+    s6 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s9
+    s6 -->|"current_host(data not statically known)"| s10
+    s10 -. "_ACTIVE.get(data not statically known)" .-> s11
+    s6 -. "current_host().cwd().resolve(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
     s1 -. "output print" .-> b1
     click s1 "../modules/obsidian_cmd.md"
-    click s6 "../modules/config.md"
-    click s7 "../modules/config.md"
+    click s6 "../modules/path_policy.md"
+    click s7 "../modules/path_policy.md"
+    click s10 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -232,11 +236,11 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `current_host().cwd().resolve` | - | - | - | - |
 
 ### Call data
 
@@ -247,12 +251,12 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 79 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 80 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 81 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
 
 ### Boundary effects
 
@@ -269,11 +273,10 @@ flowchart LR
 | external_call | `run` | `getattr` | 75 |
 | external_call | `run` | `getattr` | 79 |
 | external_call | `run` | `getattr` | 80 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

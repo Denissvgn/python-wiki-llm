@@ -47,6 +47,7 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/__init__.py"]
     n2["src/llm_wiki_cli/commands/release_cmd.py"]
     n3["src/llm_wiki_cli/services/versioning.py"]
+    n0 --> n1
     n0 --> n2
     n1 --> n2
     n2 --> n3

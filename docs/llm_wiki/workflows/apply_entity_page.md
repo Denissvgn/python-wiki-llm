@@ -1,7 +1,7 @@
 # apply_entity_page
 
-**Entry point:** `sync_cmd._apply_entity_page`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [plugins](../modules/plugins.md), [sync_cmd](../modules/sync_cmd.md), [wiki_surface](../modules/wiki_surface.md)
+**Entry point:** `sync_runtime._apply_entity_page`
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [plugins](../modules/plugins.md), [sync_runtime](../modules/sync_runtime.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Sequence
 
@@ -16,9 +16,9 @@
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [plugins](../modules/plugins.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._apply_entity_page`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._apply_entity_page`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

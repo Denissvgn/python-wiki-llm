@@ -14,8 +14,8 @@ call gets fresh bindings. These primitives never inspect or prepare a helper.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `EXTRACTOR_REGISTRY` |
 | `.extractor_helpers` | `SUPPORTED_HELPERS` |
+| `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.immutable` | `freeze` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
@@ -49,10 +49,10 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (1) |
-| Inbound | `src` (13) |
+| Inbound | `src` (14) |
 | Outbound | `src` (4) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

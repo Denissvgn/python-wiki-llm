@@ -1,7 +1,7 @@
 # normalize_task_request
 
 **Entry point:** `task_contract.normalize_task_request`
-**Modules involved:** [change_selection](../modules/change_selection.md), [documentation_query_builder](../modules/documentation_query_builder.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_request_format](../modules/context_request_format.md), [documentation_query_builder](../modules/documentation_query_builder.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -13,13 +13,13 @@
 5. `workflow_profile.bounded_text`
 6. `workflow_profile.exact_fields`
 7. `workflow_profile.WorkflowRequestError`
-8. `workflow_profile.canonical_json`
+8. `canonical_json.compact_line_bytes`
 9. `workflow_profile.exact_fields`
 10. `workflow_profile.bounded_text`
 11. `workflow_profile.WorkflowRequestError`
 12. `workflow_profile.WorkflowRequestError`
 13. `workflow_profile.WorkflowRequestError`
-14. `change_selection.validate_changes`
+14. `context_request_format.validate_changes`
 15. `workflow_profile.WorkflowRequestError`
 16. `documentation_query_builder.normalize_supplied_paths`
 17. `workflow_profile.normalize_profile`
@@ -31,7 +31,8 @@
 
 ## Touches
 
-- [change_selection](../modules/change_selection.md)
+- [canonical_json](../modules/canonical_json.md)
+- [context_request_format](../modules/context_request_format.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [task_contract](../modules/task_contract.md)
 - [workflow_profile](../modules/workflow_profile.md)

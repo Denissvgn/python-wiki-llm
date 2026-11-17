@@ -1,6 +1,6 @@
 # GovernanceLoadResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:324`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:325`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

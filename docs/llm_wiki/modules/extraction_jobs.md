@@ -10,11 +10,11 @@ _Auto-generated from `src/llm_wiki_cli/services/extraction_jobs.py`._
 
 | Source | Symbols |
 |--------|---------|
+| `.host` | `emit` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `dataclasses` | `dataclass` |
 | `os` | `os` |
-| `sys` | `sys` |
 | `typing` | `Literal`, `TextIO` |
 
 ## Local dependency map
@@ -22,91 +22,37 @@ _Auto-generated from `src/llm_wiki_cli/services/extraction_jobs.py`._
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
-    n2["src/llm_wiki_cli/commands/doctor_cmd.py"]
-    n3["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n4["src/llm_wiki_cli/commands/team_cmd.py"]
-    n5["src/llm_wiki_cli/services/context_packet.py"]
-    n6["src/llm_wiki_cli/services/context_service.py"]
-    n7["src/llm_wiki_cli/services/doctor_service.py"]
-    n8["src/llm_wiki_cli/services/documentation_native.py"]
-    n9["src/llm_wiki_cli/services/extraction_jobs.py"]
-    n10["src/llm_wiki_cli/services/extraction_service.py"]
-    n11["src/llm_wiki_cli/services/lint_service.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/extraction_jobs.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n3
-    n0 --> n4
-    n0 --> n6
-    n0 --> n9
-    n0 --> n10
-    n0 --> n11
-    n1 --> n7
-    n1 --> n9
-    n1 --> n11
-    n2 --> n7
-    n2 --> n9
-    n3 --> n9
-    n3 --> n10
-    n4 --> n9
-    n4 --> n10
-    n5 --> n6
-    n5 --> n9
-    n5 --> n10
-    n6 --> n5
-    n6 --> n9
-    n6 --> n10
-    n7 --> n9
-    n7 --> n11
-    n8 --> n6
-    n8 --> n9
-    n8 --> n10
-    n10 --> n9
-    n11 --> n9
-    n11 --> n10
-    click n0 "../modules/cli.md"
-    click n1 "../modules/ci_check_cmd.md"
-    click n2 "../modules/doctor_cmd.md"
-    click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/team_cmd.md"
-    click n5 "../modules/context_packet.md"
-    click n6 "../modules/context_service.md"
-    click n7 "../modules/doctor_service.md"
-    click n8 "../modules/documentation_native.md"
-    click n9 "../modules/extraction_jobs.md"
-    click n10 "../modules/extraction_service.md"
-    click n11 "../modules/lint_service.md"
+    n1 --> n0
+    click n1 "../modules/extraction_jobs.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [cli](../modules/cli.md) |
-| Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
-| Inbound | [doctor_cmd](../modules/doctor_cmd.md) |
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [team_cmd](../modules/team_cmd.md) |
-| Inbound | [context_packet](../modules/context_packet.md) |
-| Inbound | [context_service](../modules/context_service.md) |
-| Inbound | [doctor_service](../modules/doctor_service.md) |
-| Inbound | [documentation_native](../modules/documentation_native.md) |
-| Inbound | [extraction_service](../modules/extraction_service.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
+| Inbound | `src` (11) |
+| Outbound | `src` (1) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractionJobRequest](../entities/ExtractionJobRequest.md) | 14 | — | The user-facing extractor job request and its resolved worker limit. |
-| [ExtractionJobsAction](../entities/ExtractionJobsAction.md) | 39 | `argparse.Action` | Resolve ``--jobs`` while preserving whether automatic sizing was requested. |
-| [ExtractionJobPlan](../entities/ExtractionJobPlan.md) | 52 | — | A deterministic description of the extraction work about to run. |
+| [ExtractionJobRequest](../entities/ExtractionJobRequest.md) | 15 | — | The user-facing extractor job request and its resolved worker limit. |
+| [ExtractionJobsAction](../entities/ExtractionJobsAction.md) | 40 | `argparse.Action` | Resolve ``--jobs`` while preserving whether automatic sizing was requested. |
+| [ExtractionJobPlan](../entities/ExtractionJobPlan.md) | 53 | — | A deterministic description of the extraction work about to run. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `extraction_job_request_for` | `(jobs: int \| None, requested_jobs: int \| str \| None = None) -> ExtractionJobRequest` | — | Build a request from resolved ``jobs`` and the raw request, if any. |
 | `extraction_job_request_from_args` | `(args) -> ExtractionJobRequest` | — | Build a request from an argparse-compatible namespace. |
 | `format_extraction_job_plan` | `(plan: ExtractionJobPlan) -> str` | — | — |
 | `print_extraction_job_plan` | `(plan: ExtractionJobPlan, *, file: TextIO \| None = None) -> None` | — | — |

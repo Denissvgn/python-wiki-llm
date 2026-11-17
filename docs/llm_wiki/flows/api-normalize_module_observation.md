@@ -2,7 +2,7 @@
 
 **Entry point:** `normalize_module_observation` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -37,7 +37,7 @@ sequenceDiagram
     participant p23 as require_mapping
     participant p24 as _pointer
     participant p25 as is_valid_sha256
-    participant p26 as sha256_bytes
+    participant p26 as sha256_digest
     participant p27 as _InventoryNormalizationError
     participant p28 as require_bool
     participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
@@ -67,7 +67,7 @@ sequenceDiagram
     p22->>p23: require_mapping
     p3->>p24: _pointer
     p6->>p25: is_valid_sha256
-    p6->>p26: sha256_bytes
+    p6->>p26: sha256_digest
     p13->>p27: _InventoryNormalizationError
     p18->>p28: require_bool
     p1-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
@@ -193,35 +193,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 457 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 540 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 541 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| normalize_module_observation | _normalize_module_observation | 213 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 428 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 512 | `_failure('', 'object-required', 'inventory object', file_data)` |
 | _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `file_data.get('language', MISSING_VALUE)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 543 | `isinstance(language, str)` |
-| _inventory_language | _failure | 544 | `_failure('/language', 'nonempty-text', 'nonempty language string', language)` |
-| _inventory_language | _failure | 546 | `_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)` |
-| _normalize_module_observation | isinstance (src/llm_wiki_cli/services…malize_module_observation) | 458 | `isinstance(file_data, Mapping)` |
-| _normalize_module_observation | _record_array | 459 | `_record_array(file_data, 'classes', required=True)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 514 | `isinstance(language, str)` |
+| _inventory_language | _failure | 515 | `_failure('/language', 'nonempty-text', 'nonempty language string', language)` |
+| _inventory_language | _failure | 517 | `_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)` |
+| _normalize_module_observation | isinstance (src/llm_wiki_cli/services…malize_module_observation) | 429 | `isinstance(file_data, Mapping)` |
+| _normalize_module_observation | _record_array | 430 | `_record_array(file_data, 'classes', required=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 474 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 480 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 502 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 509 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 445 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 473 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 480 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_inventory_language` | `isinstance` | 540 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 542 |
-| external_call | `_inventory_language` | `isinstance` | 543 |
-| external_call | `_normalize_module_observation` | `isinstance` | 458 |
+| external_call | `_inventory_language` | `isinstance` | 511 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 513 |
+| external_call | `_inventory_language` | `isinstance` | 514 |
+| external_call | `_normalize_module_observation` | `isinstance` | 429 |
 | step_limit | `normalize_module_observation` | `first 12 steps` | 0 |
 
 ## Behavior

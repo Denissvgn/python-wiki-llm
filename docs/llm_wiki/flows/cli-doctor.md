@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 68 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 69 more
 
 **Complete modules touched:**
 
@@ -10,25 +10,27 @@
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [analysis_targets](../modules/analysis_targets.md)
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [capability_diagnostics](../modules/capability_diagnostics.md)
 - [common](../modules/common.md)
-- [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [doctor_cmd](../modules/doctor_cmd.md)
 - [doctor_service](../modules/doctor_service.md)
+- [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [flow_followup](../modules/flow_followup.md)
+- [gitignore](../modules/gitignore.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
 - [health_summary](../modules/health_summary.md)
 - [helper_cache](../modules/helper_cache.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -39,8 +41,8 @@
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -49,15 +51,14 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_coverage](../modules/module_coverage.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
@@ -99,22 +100,22 @@ sequenceDiagram
     participant p10 as build_doctor_report
     participant p11 as analysis_input_status
     participant p12 as build_capability_diagnostics
-    participant p13 as read_guarded
-    participant p14 as StorageReadSession.read
-    participant p15 as _parse_bundle
-    participant p16 as parse_packed_root
-    participant p17 as parse_knowledge_index
-    participant p18 as SyncManifest.load
-    participant p19 as render_capability_doctor.<locals>.command
-    participant p20 as _render_doctor_payload
-    participant p21 as compare_targets
-    participant p22 as _require_relative_name
-    participant p23 as _record
-    participant p24 as decode_bytes
-    participant p25 as validate_source_root
-    participant p26 as _fields (src/llm_wiki_cli/services/knowledge_storage.py)
-    participant p27 as _absolute_path
-    participant p28 as _parse_repository
+    participant p13 as extraction_job_request_for
+    participant p14 as read_guarded
+    participant p15 as StorageReadSession.read
+    participant p16 as _parse_bundle
+    participant p17 as parse_packed_root
+    participant p18 as parse_knowledge_index
+    participant p19 as SyncManifest.load
+    participant p20 as render_capability_doctor.<locals>.command
+    participant p21 as _render_doctor_payload
+    participant p22 as compare_targets
+    participant p23 as _require_relative_name
+    participant p24 as _record
+    participant p25 as decode_bytes
+    participant p26 as validate_source_root
+    participant p27 as _fields
+    participant p28 as _absolute_path
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     p0->>p1: validate_path
@@ -129,43 +130,43 @@ sequenceDiagram
     p0->>p10: build_doctor_report
     p4->>p11: analysis_input_status
     p5->>p12: build_capability_diagnostics
-    p3->>p13: read_guarded
-    p2->>p14: StorageReadSession.read
-    p2->>p15: _parse_bundle
-    p2->>p16: parse_packed_root
-    p2->>p17: parse_knowledge_index
-    p2->>p18: SyncManifest.load
-    p7->>p19: render_capability_doctor.<locals>.command
-    p7->>p20: _render_doctor_payload
-    p2->>p21: compare_targets
-    p14->>p22: _require_relative_name
-    p15->>p23: _record
-    p16->>p24: decode_bytes
-    p12->>p25: validate_source_root
-    p16->>p26: _fields (src/llm_wiki_cli/services/knowledge_storage.py)
-    p13->>p27: _absolute_path
-    p15->>p28: _parse_repository
+    p6->>p13: extraction_job_request_for
+    p3->>p14: read_guarded
+    p2->>p15: StorageReadSession.read
+    p2->>p16: _parse_bundle
+    p2->>p17: parse_packed_root
+    p2->>p18: parse_knowledge_index
+    p2->>p19: SyncManifest.load
+    p7->>p20: render_capability_doctor.<locals>.command
+    p7->>p21: _render_doctor_payload
+    p2->>p22: compare_targets
+    p15->>p23: _require_relative_name
+    p16->>p24: _record
+    p17->>p25: decode_bytes
+    p12->>p26: validate_source_root
+    p17->>p27: _fields
+    p14->>p28: _absolute_path
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3720 interactions; 3690 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3208 interactions; 3178 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1158 (1157 omitted); unresolved 1 of 857 (856 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 994 (993 omitted); unresolved 1 of 768 (767 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 40 |
-| `src/llm_wiki_cli/config.py:validate_path` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 7 | - | external | 2 |
-| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
-| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
-| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | - | external | 7 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 910 groups; 902 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 1 |
+| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
+| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | - | external | 7 |
+> Omission summary shows 8 of 801 groups; 793 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1706; effect analysis evaluated: 1173, partial: 54, unavailable: 479. Counts include steps omitted from the displayed trace.
+Source steps: 1447; effect analysis evaluated: 1030, partial: 49, unavailable: 368. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1227 source steps with known totals: observed: 6724, emitted: 6443, omitted: 281. Unavailable totals are excluded.
+Collector observations for 1079 source steps with known totals: observed: 5914, emitted: 5659, omitted: 255. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -196,10 +197,10 @@ Collector observations for 1227 source steps with known totals: observed: 6724, 
 | `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -211,10 +212,10 @@ flowchart LR
     s6["6. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
     s7["7. validate_path"]
     s8["8. PathValidationError"]
-    s9["9. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s11["11. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s9["9. (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s10["10. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s11["11. current_host"]
+    s12["12. _ACTIVE.get"]
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')" .-> s2
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'target_runtime', None)" .-> s3
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'strict', False)" .-> s4
@@ -222,10 +223,10 @@ flowchart LR
     s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)(…)" .-> s6
     s1 -->|"validate_path(args.wiki_dir, '--wiki-dir')"| s7
     s7 -->|"PathValidationError(...)"| s8
-    s7 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
-    s7 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s10
-    s7 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
-    s7 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
+    s7 -. "(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s9
+    s7 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s10
+    s7 -->|"current_host(data not statically known)"| s11
+    s11 -. "_ACTIVE.get(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -243,8 +244,9 @@ flowchart LR
     b7["output print"]
     s1 -. "output print" .-> b7
     click s1 "../modules/doctor_cmd.md"
-    click s7 "../modules/config.md"
-    click s8 "../modules/config.md"
+    click s7 "../modules/path_policy.md"
+    click s8 "../modules/path_policy.md"
+    click s11 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -268,10 +270,10 @@ flowchart LR
 | `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
 
 ### Call data
 
@@ -283,11 +285,11 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 38 | `getattr(args, 'comparison_policy', 'auto')` |
 | run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 40 | `ValueError('--target-runtime checks declared prerequisites only; run strict health and comparison-policy checks separately')` |
 | run | validate_path | 46 | `validate_path(args.wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -311,10 +313,9 @@ flowchart LR
 | external_call | `run` | `getattr` | 37 |
 | external_call | `run` | `getattr` | 38 |
 | external_call | `run` | `ValueError` | 40 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

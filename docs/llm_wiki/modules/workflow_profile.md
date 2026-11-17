@@ -10,6 +10,7 @@ Normalizes explicitly supplied workflow settings within immutable host ceilings.
 
 | Source | Symbols |
 |--------|---------|
+| `.canonical_json` | `compact_line_bytes` |
 | `.request_json` | `load_request` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
@@ -25,62 +26,65 @@ Normalizes explicitly supplied workflow settings within immutable host ceilings.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_session.py"]
-    n2["src/llm_wiki_cli/services/mcp_server.py"]
-    n3["src/llm_wiki_cli/services/request_json.py"]
-    n4["src/llm_wiki_cli/services/search_service.py"]
-    n5["src/llm_wiki_cli/services/task_compact.py"]
-    n6["src/llm_wiki_cli/services/task_context.py"]
-    n7["src/llm_wiki_cli/services/task_context_v2.py"]
-    n8["src/llm_wiki_cli/services/task_contract.py"]
-    n9["src/llm_wiki_cli/services/task_evidence.py"]
-    n10["src/llm_wiki_cli/services/workflow_profile.py"]
-    n0 --> n1
-    n0 --> n4
+    n1["src/llm_wiki_cli/services/canonical_json.py"]
+    n2["src/llm_wiki_cli/services/context_session.py"]
+    n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n4["src/llm_wiki_cli/services/request_json.py"]
+    n5["src/llm_wiki_cli/services/search_service.py"]
+    n6["src/llm_wiki_cli/services/task_compact.py"]
+    n7["src/llm_wiki_cli/services/task_context.py"]
+    n8["src/llm_wiki_cli/services/task_context_v2.py"]
+    n9["src/llm_wiki_cli/services/task_contract.py"]
+    n10["src/llm_wiki_cli/services/task_evidence.py"]
+    n11["src/llm_wiki_cli/services/workflow_profile.py"]
+    n0 --> n2
     n0 --> n5
     n0 --> n6
-    n0 --> n8
-    n0 --> n10
-    n1 --> n5
-    n1 --> n6
-    n1 --> n7
-    n1 --> n8
-    n1 --> n10
-    n2 --> n0
-    n2 --> n3
-    n2 --> n4
+    n0 --> n7
+    n0 --> n9
+    n0 --> n11
     n2 --> n6
+    n2 --> n7
     n2 --> n8
-    n2 --> n10
-    n4 --> n10
-    n5 --> n3
-    n5 --> n6
-    n5 --> n8
-    n5 --> n10
-    n6 --> n3
+    n2 --> n9
+    n2 --> n11
+    n3 --> n0
+    n3 --> n4
+    n3 --> n5
+    n3 --> n7
+    n3 --> n9
+    n3 --> n11
+    n5 --> n11
     n6 --> n4
     n6 --> n7
-    n6 --> n8
     n6 --> n9
-    n6 --> n10
-    n7 --> n6
+    n6 --> n11
+    n7 --> n4
+    n7 --> n5
     n7 --> n8
     n7 --> n9
     n7 --> n10
+    n7 --> n11
+    n8 --> n7
+    n8 --> n9
     n8 --> n10
-    n9 --> n10
-    n10 --> n3
+    n8 --> n11
+    n9 --> n11
+    n10 --> n11
+    n11 --> n1
+    n11 --> n4
     click n0 "../modules/api.md"
-    click n1 "../modules/context_session.md"
-    click n2 "../modules/mcp_server.md"
-    click n3 "../modules/request_json.md"
-    click n4 "../modules/search_service.md"
-    click n5 "../modules/task_compact.md"
-    click n6 "../modules/task_context.md"
-    click n7 "../modules/task_context_v2.md"
-    click n8 "../modules/task_contract.md"
-    click n9 "../modules/task_evidence.md"
-    click n10 "../modules/workflow_profile.md"
+    click n1 "../modules/canonical_json.md"
+    click n2 "../modules/context_session.md"
+    click n3 "../modules/mcp_server.md"
+    click n4 "../modules/request_json.md"
+    click n5 "../modules/search_service.md"
+    click n6 "../modules/task_compact.md"
+    click n7 "../modules/task_context.md"
+    click n8 "../modules/task_context_v2.md"
+    click n9 "../modules/task_contract.md"
+    click n10 "../modules/task_evidence.md"
+    click n11 "../modules/workflow_profile.md"
 ```
 
 ### Internal neighbors
@@ -96,21 +100,21 @@ flowchart LR
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Inbound | [task_contract](../modules/task_contract.md) |
 | Inbound | [task_evidence](../modules/task_evidence.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [WorkflowRequestError](../entities/WorkflowRequestError.md) | 28 | `ValueError` | A field-specific workflow or session validation failure. |
-| [WorkflowPolicy](../entities/WorkflowPolicy.md) | 95 | — | Trusted host ceilings; profiles and task data can only narrow these. |
-| [WorkflowProfile](../entities/WorkflowProfile.md) | 116 | — | Immutable explicit settings; each payload access returns detached data. |
+| [WorkflowRequestError](../entities/WorkflowRequestError.md) | 29 | `ValueError` | A field-specific workflow or session validation failure. |
+| [WorkflowPolicy](../entities/WorkflowPolicy.md) | 94 | — | Trusted host ceilings; profiles and task data can only narrow these. |
+| [WorkflowProfile](../entities/WorkflowProfile.md) | 115 | — | Immutable explicit settings; each payload access returns detached data. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `canonical_json` | `(value: Any) -> bytes` | — | — |
 | `content_id` | `(domain: str, value: Any) -> str` | — | — |
 | `bounded_int` | `(value: object, field: str, maximum: int, *, minimum: int = 1) -> int` | — | — |
 | `bounded_text` | `(value: object, field: str, maximum: int = 4096, *, empty: bool = False) -> str` | — | — |

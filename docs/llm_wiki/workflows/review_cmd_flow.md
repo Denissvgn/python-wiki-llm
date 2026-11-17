@@ -1,13 +1,13 @@
 # review_cmd_flow
 
 **Entry point:** `review_cmd.run`
-**Modules involved:** [change_selection](../modules/change_selection.md), [config](../modules/config.md), [impact](../modules/impact.md), [io](../modules/io.md), [review_cmd](../modules/review_cmd.md), [review_service](../modules/review_service.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [impact](../modules/impact.md), [io](../modules/io.md), [path_policy](../modules/path_policy.md), [review_cmd](../modules/review_cmd.md), [review_service](../modules/review_service.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_source_root`
-2. `config.validate_path`
+1. `path_policy.validate_source_root`
+2. `path_policy.validate_path`
 3. `review_service._preflight_review_source_selection`
 4. `impact.build_impact`
 5. `change_selection.changes_from_args`
@@ -22,9 +22,9 @@
 ## Touches
 
 - [change_selection](../modules/change_selection.md)
-- [config](../modules/config.md)
 - [impact](../modules/impact.md)
 - [io](../modules/io.md)
+- [path_policy](../modules/path_policy.md)
 - [review_cmd](../modules/review_cmd.md)
 - [review_service](../modules/review_service.md)
 

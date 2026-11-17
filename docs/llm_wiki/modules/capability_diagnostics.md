@@ -22,10 +22,10 @@ overrides follow the same resolution rules as explicit preparation.
 | Source | Symbols |
 |--------|---------|
 | `.` | `extractor_helpers`, `plugins` |
-| `..config` | `validate_source_root` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.doctor_service` | `build_doctor_report`, `_render_doctor_payload` |
 | `.helper_cache` | `_profile_slots`, `cache_roots`, `preparation_cache_root`, `cache_roots` |
+| `.path_policy` | `validate_source_root` |
 | `.paths` | `render_shell_command` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
@@ -40,41 +40,38 @@ overrides follow the same resolution rules as explicit preparation.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/doctor_cmd.py"]
-    n1["src/llm_wiki_cli/config.py"]
-    n2["src/llm_wiki_cli/extractors/common.py"]
-    n3["src/llm_wiki_cli/services/capability_diagnostics.py"]
-    n4["src/llm_wiki_cli/services/doctor_service.py"]
-    n5["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n6["src/llm_wiki_cli/services/helper_cache.py"]
+    n1["src/llm_wiki_cli/extractors/common.py"]
+    n2["src/llm_wiki_cli/services/capability_diagnostics.py"]
+    n3["src/llm_wiki_cli/services/doctor_service.py"]
+    n4["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n5["src/llm_wiki_cli/services/helper_cache.py"]
+    n6["src/llm_wiki_cli/services/path_policy.py"]
     n7["src/llm_wiki_cli/services/paths.py"]
     n8["src/llm_wiki_cli/services/plugins.py"]
     n9["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n1
+    n0 --> n2
     n0 --> n3
-    n0 --> n4
+    n1 --> n6
     n2 --> n1
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
-    n3 --> n7
-    n3 --> n8
-    n3 --> n9
-    n4 --> n1
-    n5 --> n6
-    n5 --> n7
-    n6 --> n5
-    n8 --> n1
+    n2 --> n3
+    n2 --> n4
+    n2 --> n5
+    n2 --> n6
+    n2 --> n7
+    n2 --> n8
+    n2 --> n9
+    n4 --> n5
+    n4 --> n7
+    n5 --> n4
     n9 --> n1
-    n9 --> n2
+    n9 --> n6
     click n0 "../modules/doctor_cmd.md"
-    click n1 "../modules/config.md"
-    click n2 "../modules/common.md"
-    click n3 "../modules/capability_diagnostics.md"
-    click n4 "../modules/doctor_service.md"
-    click n5 "../modules/extractor_helpers.md"
-    click n6 "../modules/helper_cache.md"
+    click n1 "../modules/common.md"
+    click n2 "../modules/capability_diagnostics.md"
+    click n3 "../modules/doctor_service.md"
+    click n4 "../modules/extractor_helpers.md"
+    click n5 "../modules/helper_cache.md"
+    click n6 "../modules/path_policy.md"
     click n7 "../modules/paths.md"
     click n8 "../modules/plugins.md"
     click n9 "../modules/source_snapshot.md"
@@ -85,11 +82,11 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [doctor_cmd](../modules/doctor_cmd.md) |
-| Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [helper_cache](../modules/helper_cache.md) |
+| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [paths](../modules/paths.md) |
 | Outbound | [plugins](../modules/plugins.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |

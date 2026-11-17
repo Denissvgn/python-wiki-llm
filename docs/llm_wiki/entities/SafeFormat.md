@@ -1,6 +1,6 @@
 # _SafeFormat
 
-**Location:** `src/llm_wiki_cli/services/plugins.py:741`
+**Location:** `src/llm_wiki_cli/services/plugins.py:770`
 **Kind:** Class
 **Bases:** `dict`
 **Module:** [plugins](../modules/plugins.md)

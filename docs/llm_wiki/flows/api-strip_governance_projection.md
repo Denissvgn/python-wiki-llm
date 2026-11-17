@@ -2,11 +2,11 @@
 
 **Entry point:** `strip_governance_projection` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), and 2 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), and 2 more
 
 **Complete modules touched:**
 
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [validation](../modules/validation.md)
@@ -114,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 219; effect analysis evaluated: 160, partial: 2, unavailable: 57. Counts include steps omitted from the displayed trace.
 
-Collector observations for 162 source steps with known totals: observed: 776, emitted: 770, omitted: 6. Unavailable totals are excluded.
+Collector observations for 162 source steps with known totals: observed: 777, emitted: 771, omitted: 6. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -197,36 +197,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1646 | `isinstance(knowledge, KnowledgeIndex)` |
-| strip_governance_projection | TypeError | 1647 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1650 | `dict(concept.extensions)` |
-| strip_governance_projection | extensions.pop | 1651 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | concepts.append | 1652 | `concepts.append(replace(...))` |
-| strip_governance_projection | replace | 1653 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1659 | `dict(knowledge.extensions)` |
-| strip_governance_projection | extensions.pop | 1660 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | extensions.get | 1661 | `extensions.get('llm-wiki/typed-graph-v1')` |
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1662 | `isinstance(graph, Mapping)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1665 | `dict(graph)` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1647 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | TypeError | 1648 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1651 | `dict(concept.extensions)` |
+| strip_governance_projection | extensions.pop | 1652 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | concepts.append | 1653 | `concepts.append(replace(...))` |
+| strip_governance_projection | replace | 1654 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1660 | `dict(knowledge.extensions)` |
+| strip_governance_projection | extensions.pop | 1661 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | extensions.get | 1662 | `extensions.get('llm-wiki/typed-graph-v1')` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1663 | `isinstance(graph, Mapping)` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1666 | `dict(graph)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `extensions.pop` | `strip_governance_projection` | 1651 |
-| mutation | `concepts.append` | `strip_governance_projection` | 1652 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1660 |
-| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1689 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1652 |
+| mutation | `concepts.append` | `strip_governance_projection` | 1653 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1661 |
+| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1690 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `strip_governance_projection` | `isinstance` | 1646 |
-| external_call | `strip_governance_projection` | `TypeError` | 1647 |
-| external_call | `strip_governance_projection` | `replace` | 1653 |
-| unresolved_call | `strip_governance_projection` | `extensions.get` | 1661 |
-| external_call | `strip_governance_projection` | `isinstance` | 1662 |
+| external_call | `strip_governance_projection` | `isinstance` | 1647 |
+| external_call | `strip_governance_projection` | `TypeError` | 1648 |
+| external_call | `strip_governance_projection` | `replace` | 1654 |
+| unresolved_call | `strip_governance_projection` | `extensions.get` | 1662 |
+| external_call | `strip_governance_projection` | `isinstance` | 1663 |
 | step_limit | `strip_governance_projection` | `first 12 steps` | 0 |
 | truncated_flow | `strip_governance_projection` | `depth limit` | 0 |
 

@@ -46,56 +46,56 @@ checked before a repair can become output work.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n3["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n4["src/llm_wiki_cli/services/markdown_sections.py"]
-    n5["src/llm_wiki_cli/services/section_ownership.py"]
-    n6["src/llm_wiki_cli/services/sync_generated_sections.py"]
-    n7["src/llm_wiki_cli/services/sync_manifest.py"]
+    n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n2["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n3["src/llm_wiki_cli/services/markdown_sections.py"]
+    n4["src/llm_wiki_cli/services/section_ownership.py"]
+    n5["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n6["src/llm_wiki_cli/services/sync_manifest.py"]
+    n7["src/llm_wiki_cli/services/sync_runtime.py"]
     n8["src/llm_wiki_cli/services/sync_transitions.py"]
     n9["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n1
-    n0 --> n2
     n0 --> n3
-    n0 --> n4
-    n0 --> n5
     n0 --> n6
-    n0 --> n7
-    n0 --> n8
     n0 --> n9
     n1 --> n4
-    n1 --> n7
-    n1 --> n9
-    n2 --> n5
-    n3 --> n2
+    n2 --> n1
+    n4 --> n3
+    n4 --> n9
+    n5 --> n0
+    n5 --> n1
+    n5 --> n2
+    n5 --> n3
     n5 --> n4
+    n5 --> n6
+    n5 --> n8
     n5 --> n9
     n6 --> n1
     n6 --> n2
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
-    n6 --> n9
+    n7 --> n0
+    n7 --> n1
     n7 --> n2
     n7 --> n3
+    n7 --> n4
+    n7 --> n5
+    n7 --> n6
+    n7 --> n8
+    n7 --> n9
+    n8 --> n0
     n8 --> n1
     n8 --> n2
     n8 --> n3
-    n8 --> n4
-    n8 --> n7
+    n8 --> n6
     n8 --> n9
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/knowledge_storage_io.md"
-    click n4 "../modules/markdown_sections.md"
-    click n5 "../modules/section_ownership.md"
-    click n6 "../modules/sync_generated_sections.md"
-    click n7 "../modules/sync_manifest.md"
+    click n0 "../modules/bootstrap_runtime.md"
+    click n1 "../modules/knowledge_storage.md"
+    click n2 "../modules/knowledge_storage_io.md"
+    click n3 "../modules/markdown_sections.md"
+    click n4 "../modules/section_ownership.md"
+    click n5 "../modules/sync_generated_sections.md"
+    click n6 "../modules/sync_manifest.md"
+    click n7 "../modules/sync_runtime.md"
     click n8 "../modules/sync_transitions.md"
     click n9 "../modules/wiki_surface.md"
 ```
@@ -104,7 +104,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |

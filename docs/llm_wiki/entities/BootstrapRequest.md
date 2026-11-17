@@ -52,24 +52,27 @@ extraction or target writes.
 flowchart LR
     n0["BootstrapRequest (src/llm_wiki_cli/services/bootstrap_service.py)"]
     n1["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
-    n2["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n3["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["execute_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n6["build_bootstrap_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
+    n2["Engine.bootstrap (src/llm_wiki_cli/engine/__init__.py)"]
+    n3["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n4["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n5["execute_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n7["build_bootstrap_publication_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/bootstrap_service.md"
     click n1 "../modules/api.md"
-    click n2 "../modules/bootstrap_runtime.md"
+    click n2 "../modules/engine___init__.md"
     click n3 "../modules/bootstrap_runtime.md"
     click n4 "../modules/bootstrap_runtime.md"
-    click n5 "../modules/documentation_run_dependencies.md"
-    click n6 "../modules/publication_snapshot.md"
+    click n5 "../modules/bootstrap_runtime.md"
+    click n6 "../modules/documentation_run_dependencies.md"
+    click n7 "../modules/publication_snapshot.md"
 ```
 
 ### Summary
@@ -83,6 +86,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `bootstrap_wiki` | call | [api](../modules/api.md) | 1 |
+| `Engine.bootstrap` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
 | `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

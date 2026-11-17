@@ -1,6 +1,6 @@
 # EvaluationPlanError
 
-**Location:** `src/llm_wiki_cli/eval_lite/planner.py:63`
+**Location:** `src/llm_wiki_cli/eval_lite/planner.py:64`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [planner](../modules/planner.md)

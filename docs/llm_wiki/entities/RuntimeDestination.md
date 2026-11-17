@@ -1,6 +1,6 @@
 # RuntimeDestination
 
-**Location:** `src/llm_wiki_cli/services/runtime_output.py:37`
+**Location:** `src/llm_wiki_cli/services/runtime_output.py:38`
 **Kind:** Class
 **Bases:** —
 **Module:** [runtime_output](../modules/runtime_output.md)

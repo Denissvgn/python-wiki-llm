@@ -2,10 +2,11 @@
 
 **Entry point:** `current_infrastructure_bases` (`api`)
 **Source:** [infrastructure_sync](../modules/infrastructure_sync.md)
-**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 1 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 2 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -30,7 +31,7 @@ sequenceDiagram
     participant p9 as require_repository_relative_path
     participant p10 as require_sha256
     participant p11 as require_string
-    participant p12 as canonical_json_bytes
+    participant p12 as compact_bytes
     participant p13 as require_trimmed_text
     participant p14 as require_portable_relative_path
     participant p15 as require_nonempty_text
@@ -41,8 +42,8 @@ sequenceDiagram
     participant p20 as is_valid_sha256
     participant p21 as InfrastructureSyncError
     participant p22 as ConceptObservationBasis
-    participant p23 as sha256_bytes
-    participant p24 as canonical_json_text
+    participant p23 as sha256_digest
+    participant p24 as compact_text
     participant p25 as _syntax_key
     participant p26 as _validation_error
     participant p27 as _known_syntax
@@ -60,7 +61,7 @@ sequenceDiagram
     p5->>p9: require_repository_relative_path
     p6->>p10: require_sha256
     p7->>p11: require_string
-    p8->>p12: canonical_json_bytes
+    p8->>p12: compact_bytes
     p10->>p13: require_trimmed_text
     p9->>p14: require_portable_relative_path
     p13->>p15: require_nonempty_text
@@ -71,8 +72,8 @@ sequenceDiagram
     p3->>p20: is_valid_sha256
     p3->>p21: InfrastructureSyncError
     p2->>p22: ConceptObservationBasis
-    p8->>p23: sha256_bytes
-    p12->>p24: canonical_json_text
+    p8->>p23: sha256_digest
+    p12->>p24: compact_text
     p9->>p25: _syntax_key
     p10->>p26: _validation_error
     p9->>p27: _known_syntax
@@ -92,10 +93,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 15 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 18 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 20 | - | external | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 15 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 15 | - | external | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/canonical_json.py:compact_text` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
 > Omission summary shows 8 of 44 groups; 36 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -112,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 57; effect analysis evaluated: 45, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
 
-Collector observations for 48 source steps with known totals: observed: 196, emitted: 181, omitted: 15. Unavailable totals are excluded.
+Collector observations for 48 source steps with known totals: observed: 198, emitted: 183, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

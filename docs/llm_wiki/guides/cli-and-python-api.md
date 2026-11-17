@@ -32,7 +32,7 @@ llm-wiki ci-check --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
 
 The [CLI dispatcher](../modules/cli.md) owns argument parsing and routes each
 subcommand to its command or service module. Flow pages such as
-[bootstrap](../flows/cli-bootstrap.md), [sync](../flows/cli-sync.md), and
+[bootstrap](../flows/cli-bootstrap.md), [sync](../flows/api-sync_wiki.md), and
 [lint](../flows/cli-lint.md) show the generated call boundaries.
 
 ## Supported library calls

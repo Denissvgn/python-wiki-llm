@@ -1,6 +1,6 @@
 # LintReport
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:292`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:296`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)
@@ -44,18 +44,18 @@ _Auto-generated from `LintReport` in `src/llm_wiki_cli/services/lint_service.py`
 ```mermaid
 flowchart LR
     n0["LintReport (src/llm_wiki_cli/services/lint_service.py)"]
-    n1["build_ci_check_payload (src/llm_wiki_cli/services/ci_report.py)"]
-    n2["_availability_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n3["_drift_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n4["_freshness_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n5["_governance_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n6["_issues (src/llm_wiki_cli/services/doctor_service.py)"]
-    n7["_snapshot_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n8["_verification_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n9["compose_doctor_report (src/llm_wiki_cli/services/doctor_service.py)"]
-    n10["_add (src/llm_wiki_cli/services/lint_service.py)"]
-    n11["_add_extractor_failures (src/llm_wiki_cli/services/lint_service.py)"]
-    n12["_add_missing_wiki (src/llm_wiki_cli/services/lint_service.py)"]
+    n1["src/llm_wiki_cli/engine/__init__.py"]
+    n2["build_ci_check_payload (src/llm_wiki_cli/services/ci_report.py)"]
+    n3["_availability_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n4["_drift_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n5["_freshness_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n6["_governance_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n7["_issues (src/llm_wiki_cli/services/doctor_service.py)"]
+    n8["_snapshot_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n9["_verification_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n10["compose_doctor_report (src/llm_wiki_cli/services/doctor_service.py)"]
+    n11["_add (src/llm_wiki_cli/services/lint_service.py)"]
+    n12["_add_extractor_failures (src/llm_wiki_cli/services/lint_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -69,8 +69,8 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     click n0 "../modules/lint_service.md"
-    click n1 "../modules/ci_report.md"
-    click n2 "../modules/doctor_service.md"
+    click n1 "../modules/engine___init__.md"
+    click n2 "../modules/ci_report.md"
     click n3 "../modules/doctor_service.md"
     click n4 "../modules/doctor_service.md"
     click n5 "../modules/doctor_service.md"
@@ -78,7 +78,7 @@ flowchart LR
     click n7 "../modules/doctor_service.md"
     click n8 "../modules/doctor_service.md"
     click n9 "../modules/doctor_service.md"
-    click n10 "../modules/lint_service.md"
+    click n10 "../modules/doctor_service.md"
     click n11 "../modules/lint_service.md"
     click n12 "../modules/lint_service.md"
 ```
@@ -93,6 +93,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `build_ci_check_payload` | type_reference | [ci_report](../modules/ci_report.md) | — |
 | `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
@@ -104,6 +105,5 @@ flowchart LR
 | `compose_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_add` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_add_extractor_failures` | type_reference | [lint_service](../modules/lint_service.md) | — |
-| `_add_missing_wiki` | type_reference | [lint_service](../modules/lint_service.md) | — |
 
-> References: showing 12 of 53 logical references; 41 omitted by the 12-row generated summary limit.
+> References: showing 12 of 56 logical references; 44 omitted by the 12-row generated summary limit.

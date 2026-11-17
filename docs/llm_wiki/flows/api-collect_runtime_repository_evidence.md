@@ -2,7 +2,15 @@
 
 **Entry point:** `collect_runtime_repository_evidence` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [common](../modules/common.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [validation](../modules/validation.md)
+**Modules touched:** [common](../modules/common.md), [host](../modules/host.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), and 1 more
+
+**Complete modules touched:**
+
+- [common](../modules/common.md)
+- [host](../modules/host.md)
+- [knowledge_envelope](../modules/knowledge_envelope.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -33,13 +41,13 @@ sequenceDiagram
     participant p19 as _parse_local_remote_config
     participant p20 as _helper_relative_path_matches
     participant p21 as _owned_package_sentinels_present
-    participant p22 as KnowledgeEnvelopeError
-    participant p23 as _GitCommandResult
-    participant p24 as _syntax_key
-    participant p25 as _known_syntax
-    participant p26 as _remember_syntax
-    participant p27 as _default_path_error
-    participant p28 as _check_path_collision
+    participant p22 as current_host
+    participant p23 as KnowledgeEnvelopeError
+    participant p24 as _GitCommandResult
+    participant p25 as _syntax_key
+    participant p26 as _known_syntax
+    participant p27 as _remember_syntax
+    participant p28 as _default_path_error
     participant p29 as Path (src/llm_wiki_cli/services…ntime_repository_evidence)
     participant p30 as Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)
     p0->>p1: is_bundled_helper_implementation_path
@@ -63,20 +71,20 @@ sequenceDiagram
     p2->>p19: _parse_local_remote_config
     p1->>p20: _helper_relative_path_matches
     p1->>p21: _owned_package_sentinels_present
-    p12->>p22: KnowledgeEnvelopeError
-    p10->>p23: _GitCommandResult
-    p13->>p24: _syntax_key
-    p13->>p25: _known_syntax
-    p13->>p26: _remember_syntax
-    p14->>p27: _default_path_error
-    p14->>p28: _check_path_collision
+    p10->>p22: current_host
+    p12->>p23: KnowledgeEnvelopeError
+    p10->>p24: _GitCommandResult
+    p13->>p25: _syntax_key
+    p13->>p26: _known_syntax
+    p13->>p27: _remember_syntax
+    p14->>p28: _default_path_error
     p0-->>p29: Path (src/llm_wiki_cli/services…ntime_repository_evidence)(source_root)
     p0-->>p30: Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)
 ```
 
-> Call sequence diagram shows 30 of 236 interactions; 206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 241 interactions; 211 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 98 (97 omitted); unresolved 1 of 75 (74 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 94 (93 omitted); unresolved 1 of 80 (79 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +98,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/extractors/common.py:_is_windows_absolute_path_text` | 35 | - | external | 2 |
 | `src/llm_wiki_cli/extractors/common.py:_is_windows_absolute_path_text` | 35 | - | unresolved | 1 |
 | `src/llm_wiki_cli/extractors/common.py:is_bundled_helper_implementation_path` | 27 | - | external | 6 |
-> Omission summary shows 8 of 47 groups; 39 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 50 groups; 42 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 64; effect analysis evaluated: 52, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
+Source steps: 68; effect analysis evaluated: 56, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
 
-Collector observations for 55 source steps with known totals: observed: 361, emitted: 346, omitted: 15. Unavailable totals are excluded.
+Collector observations for 59 source steps with known totals: observed: 360, emitted: 345, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

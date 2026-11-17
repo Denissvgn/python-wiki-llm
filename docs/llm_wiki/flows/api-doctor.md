@@ -2,27 +2,30 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 54 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 58 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [doctor_service](../modules/doctor_service.md)
 - [documentation_queries](../modules/documentation_queries.md)
+- [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [flow_followup](../modules/flow_followup.md)
+- [gitignore](../modules/gitignore.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -44,6 +47,7 @@
 - [lint_service](../modules/lint_service.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [module_coverage](../modules/module_coverage.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_extractor](../modules/python_extractor.md)
@@ -90,17 +94,17 @@ sequenceDiagram
     participant p15 as _run_report_checks
     participant p16 as _verification_section
     participant p17 as windows_current_user_sid
-    participant p18 as resolve_team_policy
-    participant p19 as capture_health_details
-    participant p20 as _knowledge_declared
-    participant p21 as _current_windows_user_sid
-    participant p22 as _profile_phase
-    participant p23 as _coerce_plugin_issue
-    participant p24 as resolve_inventory_cache_path
-    participant p25 as _check_unsupported_source_diagnostics
-    participant p26 as knowledge_freshness_disclosure
-    participant p27 as team_config_issue
-    participant p28 as _check_broken_links
+    participant p18 as first_unsafe_path_component
+    participant p19 as resolve_team_policy
+    participant p20 as capture_health_details
+    participant p21 as _knowledge_declared
+    participant p22 as _current_windows_user_sid
+    participant p23 as _profile_phase
+    participant p24 as _coerce_plugin_issue
+    participant p25 as resolve_inventory_cache_path
+    participant p26 as _check_unsupported_source_diagnostics
+    participant p27 as knowledge_freshness_disclosure
+    participant p28 as team_config_issue
     participant p29 as cast (src/llm_wiki_cli/api.py:doctor)
     participant p30 as report.to_payload
     p0->>p1: build_doctor_report
@@ -120,38 +124,38 @@ sequenceDiagram
     p4->>p15: _run_report_checks
     p5->>p16: _verification_section
     p3->>p17: windows_current_user_sid
-    p7->>p18: resolve_team_policy
-    p9->>p19: capture_health_details
-    p8->>p20: _knowledge_declared
-    p17->>p21: _current_windows_user_sid
-    p12->>p22: _profile_phase
-    p7->>p23: _coerce_plugin_issue
-    p11->>p24: resolve_inventory_cache_path
-    p15->>p25: _check_unsupported_source_diagnostics
-    p10->>p26: knowledge_freshness_disclosure
-    p7->>p27: team_config_issue
-    p15->>p28: _check_broken_links
+    p3->>p18: first_unsafe_path_component
+    p7->>p19: resolve_team_policy
+    p9->>p20: capture_health_details
+    p8->>p21: _knowledge_declared
+    p17->>p22: _current_windows_user_sid
+    p12->>p23: _profile_phase
+    p7->>p24: _coerce_plugin_issue
+    p11->>p25: resolve_inventory_cache_path
+    p15->>p26: _check_unsupported_source_diagnostics
+    p10->>p27: knowledge_freshness_disclosure
+    p7->>p28: team_config_issue
     p0-->>p29: cast (src/llm_wiki_cli/api.py:doctor)(DoctorResult, report.to_payload(...))
     p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1747 interactions; 1717 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1754 interactions; 1724 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 562 (561 omitted); unresolved 1 of 514 (513 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 558 (557 omitted); unresolved 1 of 520 (519 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/doctor_service.py:build_doctor_report` | 2 | - | external | 13 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | external | 11 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 498 groups; 490 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 25 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 25 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 25 | - | external | 10 |
+> Omission summary shows 8 of 503 groups; 495 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -164,9 +168,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 672; effect analysis evaluated: 542, partial: 30, unavailable: 100. Counts include steps omitted from the displayed trace.
+Source steps: 677; effect analysis evaluated: 547, partial: 30, unavailable: 100. Counts include steps omitted from the displayed trace.
 
-Collector observations for 572 source steps with known totals: observed: 3766, emitted: 3590, omitted: 176. Unavailable totals are excluded.
+Collector observations for 577 source steps with known totals: observed: 3769, emitted: 3593, omitted: 176. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -237,7 +241,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 2003 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
+| doctor | build_doctor_report | 2155 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 136 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `ValueError('report_schema must be auto, v1, v3 or v4')` |

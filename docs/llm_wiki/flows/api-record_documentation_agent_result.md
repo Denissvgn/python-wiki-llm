@@ -2,12 +2,13 @@
 
 **Entry point:** `record_documentation_agent_result` (`api`)
 **Source:** [record](../modules/record.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [io](../modules/io.md), and 10 more
+**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [host](../modules/host.md), [io](../modules/io.md), and 10 more
 
 **Complete modules touched:**
 
 - [documentation_policy](../modules/documentation_policy.md)
 - [documentation_run_contracts](../modules/documentation_run_contracts.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -50,12 +51,12 @@ sequenceDiagram
     participant p20 as _absolute_path
     participant p21 as _tree_paths
     participant p22 as split_delivery_tree
-    participant p23 as _public_hashes
-    participant p24 as _validated_checkpoint
-    participant p25 as _portable
-    participant p26 as hash_bytes (src/llm_wiki_cli/services/documentation_policy.py)
-    participant p27 as _workspace_path (src/llm_wiki_cli/services…entation_run/workspace.py)
-    participant p28 as _finding_text_values
+    participant p23 as first_unsafe_path_component
+    participant p24 as _public_hashes
+    participant p25 as _validated_checkpoint
+    participant p26 as _portable
+    participant p27 as hash_bytes (src/llm_wiki_cli/services/documentation_policy.py)
+    participant p28 as _workspace_path (src/llm_wiki_cli/services…entation_run/workspace.py)
     participant p29 as isinstance (src/llm_wiki_cli/services….py:reconcile_publication)
     participant p30 as _resolve_workspace_root_argument
     p0->>p1: reconcile_publication
@@ -80,19 +81,19 @@ sequenceDiagram
     p18->>p20: _absolute_path
     p18->>p21: _tree_paths
     p18->>p22: split_delivery_tree
-    p22->>p23: _public_hashes
-    p22->>p24: _validated_checkpoint
-    p21->>p25: _portable
-    p2->>p26: hash_bytes (src/llm_wiki_cli/services/documentation_policy.py)
-    p2->>p27: _workspace_path (src/llm_wiki_cli/services…entation_run/workspace.py)
-    p3->>p28: _finding_text_values
+    p20->>p23: first_unsafe_path_component
+    p22->>p24: _public_hashes
+    p22->>p25: _validated_checkpoint
+    p21->>p26: _portable
+    p2->>p27: hash_bytes (src/llm_wiki_cli/services/documentation_policy.py)
+    p2->>p28: _workspace_path (src/llm_wiki_cli/services…entation_run/workspace.py)
     p1-->>p29: isinstance (src/llm_wiki_cli/services….py:reconcile_publication)(actor, str)
     p0-->>p30: _resolve_workspace_root_argument(workspace)
 ```
 
-> Call sequence diagram shows 30 of 658 interactions; 628 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 659 interactions; 629 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 82 (81 omitted); unresolved 1 of 503 (502 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 81 (80 omitted); unresolved 1 of 504 (503 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 74; effect analysis evaluated: 60, partial: 1, unavailable: 13. Counts include steps omitted from the displayed trace.
+Source steps: 75; effect analysis evaluated: 61, partial: 1, unavailable: 13. Counts include steps omitted from the displayed trace.
 
-Collector observations for 61 source steps with known totals: observed: 297, emitted: 287, omitted: 10. Unavailable totals are excluded.
+Collector observations for 62 source steps with known totals: observed: 299, emitted: 289, omitted: 10. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

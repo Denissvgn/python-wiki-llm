@@ -2,14 +2,14 @@
 
 **Entry point:** `build_api_contracts` (`api`)
 **Source:** [api_contracts](../modules/api_contracts.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 4 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [imports](../modules/imports.md), [packages](../modules/packages.md), [path_policy](../modules/path_policy.md), and 4 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
-- [config](../modules/config.md)
 - [imports](../modules/imports.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [python_imports](../modules/python_imports.md)
 - [source_selection](../modules/source_selection.md)

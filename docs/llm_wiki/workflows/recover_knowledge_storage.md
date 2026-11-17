@@ -1,7 +1,7 @@
 # recover_knowledge_storage
 
 **Entry point:** `knowledge_storage_lifecycle._recover_knowledge_storage`
-**Modules involved:** [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_state](../modules/maintenance_state.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_state](../modules/maintenance_state.md), [sync_manifest](../modules/sync_manifest.md)
 
 > Restore an exact interrupted migration; refuse unrelated newer roots.
 
@@ -16,30 +16,30 @@
 6. `maintenance_state.validate_maintenance_adoption`
 7. `knowledge_storage.decode_bytes`
 8. `knowledge_storage.canonical_bytes`
-9. `knowledge_storage.digest`
+9. `canonical_json.sha256_digest`
 10. `knowledge_storage.KnowledgeStorageError`
 11. `maintenance_projection.validate_maintenance_projection`
 12. `knowledge_storage.KnowledgeStorageError`
 13. `knowledge_storage.KnowledgeStorageError`
 14. `knowledge_storage_io.StorageReadSession`
 15. `knowledge_storage_io.StorageReadSession.read`
-16. `knowledge_storage.digest`
+16. `canonical_json.sha256_digest`
 17. `knowledge_storage.KnowledgeStorageError`
 18. `knowledge_storage_io.StorageReadSession.read`
-19. `knowledge_storage.digest`
+19. `canonical_json.sha256_digest`
 20. `knowledge_storage.KnowledgeStorageError`
-21. `knowledge_storage.digest`
+21. `canonical_json.sha256_digest`
 22. `io.decode_markdown_bytes`
 23. `knowledge_storage_io.StorageReadSession.read`
 24. `knowledge_storage.KnowledgeStorageError`
-25. `knowledge_storage.digest`
+25. `canonical_json.sha256_digest`
 26. `knowledge_storage_io.StorageReadSession.read`
 27. `knowledge_storage.KnowledgeStorageError`
 28. `knowledge_storage_io.StorageReadSession.read`
 29. `knowledge_storage.KnowledgeStorageError`
 30. `knowledge_storage_io.StorageReadSession.read`
 31. `knowledge_artifacts.PlannedArtifactWrite`
-32. `knowledge_storage.digest`
+32. `canonical_json.sha256_digest`
 33. `knowledge_packs.packed_format`
 34. `knowledge_artifacts.KnowledgeCommitPlan`
 35. `knowledge_storage_io.StorageReadSession.recheck`
@@ -47,6 +47,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_packs](../modules/knowledge_packs.md)

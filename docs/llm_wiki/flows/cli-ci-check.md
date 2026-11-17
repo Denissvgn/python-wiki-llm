@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 81 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 85 more
 
 **Complete modules touched:**
 
@@ -10,29 +10,32 @@
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [canonical_pages](../modules/canonical_pages.md)
 - [ci_check_cmd](../modules/ci_check_cmd.md)
 - [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [doctor_service](../modules/doctor_service.md)
 - [documentation_queries](../modules/documentation_queries.md)
+- [domain_pack](../modules/domain_pack.md)
+- [engine_events](../modules/engine_events.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [flow_followup](../modules/flow_followup.md)
+- [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
 - [health_summary](../modules/health_summary.md)
-- [helper_preparation](../modules/helper_preparation.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
@@ -66,6 +69,7 @@
 - [metrics](../modules/metrics.md)
 - [module_coverage](../modules/module_coverage.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
@@ -114,19 +118,19 @@ sequenceDiagram
     participant p13 as InventoryCacheStats
     participant p14 as _render_console
     participant p15 as format_cache_stats
-    participant p16 as write_bytes_atomic
-    participant p17 as _safe_knowledge_summary
-    participant p18 as record_event
-    participant p19 as resolve_inventory_cache_path
-    participant p20 as _new_lint_report
-    participant p21 as _preflight_lint_inputs
-    participant p22 as _referenced_storage_report
-    participant p23 as _finalize_lint_report
-    participant p24 as _collect_lint_inputs
-    participant p25 as prepare_destination
-    participant p26 as _run_report_checks
-    participant p27 as windows_current_user_sid
-    participant p28 as resolve_team_policy
+    participant p16 as cache_options_for
+    participant p17 as extraction_job_request_for
+    participant p18 as write_bytes_atomic
+    participant p19 as _safe_knowledge_summary
+    participant p20 as record_event
+    participant p21 as resolve_inventory_cache_path
+    participant p22 as _new_lint_report
+    participant p23 as stderr_warning
+    participant p24 as _preflight_lint_inputs
+    participant p25 as _referenced_storage_report
+    participant p26 as _finalize_lint_report
+    participant p27 as _collect_lint_inputs
+    participant p28 as prepare_destination
     participant p29 as getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     participant p30 as storage.get
     p0->>p1: validate_source_root
@@ -144,26 +148,26 @@ sequenceDiagram
     p0->>p13: InventoryCacheStats
     p0->>p14: _render_console
     p0->>p15: format_cache_stats
-    p8->>p16: write_bytes_atomic
-    p9->>p17: _safe_knowledge_summary
-    p9->>p18: record_event
-    p4->>p19: resolve_inventory_cache_path
-    p6->>p20: _new_lint_report
-    p6->>p21: _preflight_lint_inputs
-    p7->>p22: _referenced_storage_report
-    p6->>p23: _finalize_lint_report
-    p6->>p24: _collect_lint_inputs
-    p3->>p25: prepare_destination
-    p6->>p26: _run_report_checks
-    p1->>p27: windows_current_user_sid
-    p21->>p28: resolve_team_policy
+    p2->>p16: cache_options_for
+    p5->>p17: extraction_job_request_for
+    p8->>p18: write_bytes_atomic
+    p9->>p19: _safe_knowledge_summary
+    p9->>p20: record_event
+    p4->>p21: resolve_inventory_cache_path
+    p6->>p22: _new_lint_report
+    p8->>p23: stderr_warning
+    p6->>p24: _preflight_lint_inputs
+    p7->>p25: _referenced_storage_report
+    p6->>p26: _finalize_lint_report
+    p6->>p27: _collect_lint_inputs
+    p3->>p28: prepare_destination
     p0-->>p29: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4460 interactions; 4430 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4477 interactions; 4447 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1358 (1357 omitted); unresolved 1 of 1390 (1389 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1354 (1353 omitted); unresolved 1 of 1401 (1400 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -171,13 +175,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | - | external | 30 |
 | `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | [src/llm_wiki_cli/services/runtime_output.py](../modules/runtime_output.md) | internal | 1 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_path` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 16 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 1134 groups; 1126 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 15 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 20 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 15 | - | unresolved | 6 |
+> Omission summary shows 8 of 1154 groups; 1146 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -190,9 +194,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1713; effect analysis evaluated: 1288, partial: 60, unavailable: 365. Counts include steps omitted from the displayed trace.
+Source steps: 1723; effect analysis evaluated: 1296, partial: 60, unavailable: 367. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1348 source steps with known totals: observed: 7798, emitted: 7449, omitted: 349. Unavailable totals are excluded.
+Collector observations for 1356 source steps with known totals: observed: 7794, emitted: 7445, omitted: 349. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

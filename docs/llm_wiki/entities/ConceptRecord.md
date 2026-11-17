@@ -42,8 +42,8 @@ flowchart LR
     n7["_concept_for_page (src/llm_wiki_cli/services/knowledge_index.py)"]
     n8["_validate_builder_derived (src/llm_wiki_cli/services/knowledge_index.py)"]
     n9["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n10["_concept_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n11["_parse_concept (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n10["src/llm_wiki_cli/services/knowledge_kinds.py"]
+    n11["_concept_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -65,7 +65,7 @@ flowchart LR
     click n7 "../modules/knowledge_index.md"
     click n8 "../modules/knowledge_index.md"
     click n9 "../modules/knowledge_index.md"
-    click n10 "../modules/knowledge_model.md"
+    click n10 "../modules/knowledge_kinds.md"
     click n11 "../modules/knowledge_model.md"
 ```
 
@@ -89,7 +89,7 @@ flowchart LR
 | `_concept_for_page` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_validate_builder_derived` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_validate_builder_link` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_kinds` | import | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
 | `_concept_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
-| `_parse_concept` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
 
-> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

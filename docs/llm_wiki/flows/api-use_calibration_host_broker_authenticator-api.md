@@ -2,7 +2,7 @@
 
 **Entry point:** `use_calibration_host_broker_authenticator` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [context_packet](../modules/context_packet.md), [host_broker](../modules/host_broker.md), [validation](../modules/validation.md)
+**Modules touched:** [api](../modules/api.md), [context_packet_builder](../modules/context_packet_builder.md), [host_broker](../modules/host_broker.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -176,7 +176,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 3897 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 4049 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | isinstance (src/llm_wiki_cli/services…host_broker_authenticator) | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |

@@ -97,13 +97,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_configured_public_identity | isinstance | 687 | `isinstance(value, str)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 688 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
-| validate_configured_public_identity | value.strip | 693 | `value.strip(data not statically known)` |
-| validate_configured_public_identity | _REPOSITORY_IDENTITY_RE.fullmatch | 694 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
-| validate_configured_public_identity | value.casefold().endswith | 695 | `value.casefold().endswith('.git')` |
-| validate_configured_public_identity | value.casefold | 695 | `value.casefold(data not statically known)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 697 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
+| validate_configured_public_identity | isinstance | 688 | `isinstance(value, str)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 689 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
+| validate_configured_public_identity | value.strip | 694 | `value.strip(data not statically known)` |
+| validate_configured_public_identity | _REPOSITORY_IDENTITY_RE.fullmatch | 695 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
+| validate_configured_public_identity | value.casefold().endswith | 696 | `value.casefold().endswith('.git')` |
+| validate_configured_public_identity | value.casefold | 696 | `value.casefold(data not statically known)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 698 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
 
 ### Boundary effects
 
@@ -113,11 +113,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_configured_public_identity` | `isinstance` | 687 |
-| unresolved_call | `validate_configured_public_identity` | `value.strip` | 693 |
-| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 694 |
-| unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 695 |
-| unresolved_call | `validate_configured_public_identity` | `value.casefold` | 695 |
+| external_call | `validate_configured_public_identity` | `isinstance` | 688 |
+| unresolved_call | `validate_configured_public_identity` | `value.strip` | 694 |
+| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 695 |
+| unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 696 |
+| unresolved_call | `validate_configured_public_identity` | `value.casefold` | 696 |
 
 ## Behavior
 

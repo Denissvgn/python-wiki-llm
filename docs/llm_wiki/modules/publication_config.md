@@ -14,8 +14,9 @@ Reference dependencies require an explicitly declared, non-executable provider.
 
 | Source | Symbols |
 |--------|---------|
-| `.behavior_reference` | `BEHAVIOR_FACT_GROUPS` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_locator` |
+| `.publication_targets` | `PublicationTarget`, `current_publication_targets` |
+| `.reference_providers` | `ReferenceSelectorError`, `current_reference_providers`, `reference_provider` |
 | `.source_selection` | `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `locate_exact_repository_path`, `path_is_link_or_reparse` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `.wiki_media` | `MEDIA_EXTENSIONS` |
@@ -52,16 +53,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (5) |
-| Inbound | `src` (10) |
-| Outbound | `src` (5) |
+| Inbound | `src` (11) |
+| Outbound | `src` (6) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationConfigError](../entities/PublicationConfigError.md) | 79 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
+| [PublicationConfigError](../entities/PublicationConfigError.md) | 95 | `ValueError` | A field-specific failure in consumer-owned publication configuration. |
 
 ## Functions
 
@@ -69,6 +70,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `publication_ref_name` | `(value: object, field: str) -> str` | — | Validate a short, portable Git branch/tag name used by delivery. |
 | `publication_repository` | `(value: object, field: str) -> str` | — | — |
+| `target_repository` | `(target: PublicationTarget, value: object, field: str) -> str` | — | Validate a repository identifier with the rules of ``target``. |
 | `_object` | `(value: object, field: str, required: set[str], optional: set[str] \| None = None) -> Mapping[str, Any]` | — | — |
 | `_text` | `(value: object, field: str, maximum: int = 1024) -> str` | — | — |
 | `_choice` | `(value: object, field: str, choices: set[str]) -> str` | — | — |

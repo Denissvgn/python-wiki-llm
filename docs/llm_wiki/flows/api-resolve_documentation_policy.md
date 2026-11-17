@@ -2,13 +2,13 @@
 
 **Entry point:** `resolve_documentation_policy` (`api`)
 **Source:** [documentation_policy](../modules/documentation_policy.md)
-**Modules touched:** [config](../modules/config.md), [documentation_policy](../modules/documentation_policy.md), [filesystem_guard](../modules/filesystem_guard.md), [source_selection](../modules/source_selection.md), and 1 more
+**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [filesystem_guard](../modules/filesystem_guard.md), [path_policy](../modules/path_policy.md), [source_selection](../modules/source_selection.md), and 1 more
 
 **Complete modules touched:**
 
-- [config](../modules/config.md)
 - [documentation_policy](../modules/documentation_policy.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [path_policy](../modules/path_policy.md)
 - [source_selection](../modules/source_selection.md)
 - [validation](../modules/validation.md)
 

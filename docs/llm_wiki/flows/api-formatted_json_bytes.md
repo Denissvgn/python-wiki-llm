@@ -2,7 +2,7 @@
 
 **Entry point:** `formatted_json_bytes` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -13,10 +13,10 @@
 sequenceDiagram
     participant p0 as formatted_json_bytes
     participant p1 as formatted_json_text(…).encode
-    participant p2 as formatted_json_text
+    participant p2 as indented_line_text
     participant p3 as json.dumps
     p0-->>p1: formatted_json_text(…).encode('utf-8')
-    p0->>p2: formatted_json_text
+    p0->>p2: indented_line_text
     p2-->>p3: json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
 ```
 
@@ -41,13 +41,13 @@ Collector observations for 2 source steps with known totals: observed: 4, emitte
 flowchart LR
     s1["1. formatted_json_bytes"]
     s2["2. formatted_json_text(…).encode"]
-    s3["3. formatted_json_text"]
+    s3["3. indented_line_text"]
     s4["4. json.dumps"]
     s1 -. "formatted_json_text(…).encode('utf-8')" .-> s2
-    s1 -->|"formatted_json_text(value)"| s3
+    s1 -->|"indented_line_text(value)"| s3
     s3 -. "json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)" .-> s4
     click s1 "../modules/knowledge_evidence.md"
-    click s3 "../modules/knowledge_evidence.md"
+    click s3 "../modules/canonical_json.md"
 ```
 
 ### Step data
@@ -56,16 +56,16 @@ flowchart LR
 |---|---|---|---|---|
 | `formatted_json_bytes` | `value: Any` | - | - | `...` |
 | `formatted_json_text(…).encode` | - | - | - | - |
-| `formatted_json_text` | `value: Any` | - | - | `...` |
+| `indented_line_text` | `value: Any` | - | - | `...` |
 | `json.dumps` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| formatted_json_bytes | formatted_json_text(…).encode | 215 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | formatted_json_text | 215 | `formatted_json_text(value)` |
-| formatted_json_text | json.dumps | 201 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| formatted_json_bytes | formatted_json_text(…).encode | 189 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | indented_line_text | 189 | `formatted_json_text(value)` |
+| indented_line_text | json.dumps | 50 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
@@ -75,8 +75,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 215 |
-| external_call | `formatted_json_text` | `json.dumps` | 201 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 189 |
+| external_call | `indented_line_text` | `json.dumps` | 50 |
 
 ## Behavior
 

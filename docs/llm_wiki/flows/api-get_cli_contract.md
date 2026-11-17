@@ -2,18 +2,16 @@
 
 **Entry point:** `get_cli_contract` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), [docs_cmd](../modules/docs_cmd.md), and 4 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), [cli_reference](../modules/cli_reference.md), and 2 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
-- [cli](../modules/cli.md)
+- [canonical_json](../modules/canonical_json.md)
+- [cli_declarations](../modules/cli_declarations.md)
 - [cli_reference](../modules/cli_reference.md)
-- [docs_cmd](../modules/docs_cmd.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
-- [publication_cmd](../modules/publication_cmd.md)
-- [reference_cmd](../modules/reference_cmd.md)
 
 ## Call sequence
 
@@ -34,7 +32,7 @@ sequenceDiagram
     participant p9 as validate_cli_contract
     participant p10 as _installed_identity
     participant p11 as _json_tree
-    participant p12 as canonical_json_bytes
+    participant p12 as compact_bytes
     participant p13 as _register_commands
     participant p14 as _add_helper_preparation_arguments
     participant p15 as _validate_schema
@@ -64,7 +62,7 @@ sequenceDiagram
     p2->>p9: validate_cli_contract
     p4->>p10: _installed_identity
     p9->>p11: _json_tree
-    p8->>p12: canonical_json_bytes
+    p8->>p12: compact_bytes
     p5->>p13: _register_commands
     p5->>p14: _add_helper_preparation_arguments
     p9->>p15: _validate_schema
@@ -101,7 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | external | 24 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 24 | - | unresolved | 14 |
-> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 124 groups; 116 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -116,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 218; effect analysis evaluated: 183, partial: 0, unavailable: 35. Counts include steps omitted from the displayed trace.
 
-Collector observations for 183 source steps with known totals: observed: 559, emitted: 559, omitted: 0. Unavailable totals are excluded.
+Collector observations for 183 source steps with known totals: observed: 561, emitted: 561, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -191,7 +189,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3565 | `get_contract(data not statically known)` |
+| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3717 | `get_contract(data not statically known)` |
 | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |

@@ -21,7 +21,7 @@ streaming limits; the existing full-model API keeps its original limits.
 6. `storage_spool.DecodeCache`
 7. `manifest_storage.read_manifest_header`
 8. `knowledge_model._parse_bundle`
-9. `knowledge_storage.digest`
+9. `canonical_json.sha256_digest`
 10. `knowledge_envelope.EvaluatedEnvelope`
 11. `knowledge_storage.KnowledgeStorageError`
 12. `storage_sort.SortedRuns`
@@ -54,7 +54,7 @@ streaming limits; the existing full-model API keeps its original limits.
 39. `knowledge_storage.KnowledgeStorageError`
 40. `knowledge_storage.logical_digest`
 41. `knowledge_storage.KnowledgeStorageError`
-42. `knowledge_storage.digest`
+42. `canonical_json.sha256_digest`
 43. `knowledge_storage.canonical_bytes`
 44. `knowledge_storage.KnowledgeStorageError`
 45. `knowledge_audit.audit_spilled_records`

@@ -1,7 +1,7 @@
 # SourceSnapshot_path_is_effectively_selected
 
 **Entry point:** `source_snapshot.SourceSnapshot.path_is_effectively_selected`
-**Modules involved:** [common](../modules/common.md), [config](../modules/config.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [common](../modules/common.md), [gitignore](../modules/gitignore.md), [path_policy](../modules/path_policy.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
 
 > Evaluate configured selection rules for an existing or missing path.
 
@@ -14,15 +14,16 @@ globally excluded, agent-worktree, or bundled-helper paths.
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `source_selection.path_is_selected`
-2. `config.is_agent_worktree_path`
+2. `path_policy.is_agent_worktree_path`
 3. `common.is_bundled_helper_implementation_path`
-4. `config.GitIgnoreMatcher`
-5. `config.GitIgnoreMatcher.is_ignored`
+4. `gitignore.GitIgnoreMatcher`
+5. `gitignore.GitIgnoreMatcher.is_ignored`
 
 ## Touches
 
 - [common](../modules/common.md)
-- [config](../modules/config.md)
+- [gitignore](../modules/gitignore.md)
+- [path_policy](../modules/path_policy.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 

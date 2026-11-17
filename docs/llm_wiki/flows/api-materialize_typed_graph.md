@@ -2,11 +2,11 @@
 
 **Entry point:** `materialize_typed_graph` (`api`)
 **Source:** [knowledge_graph](../modules/knowledge_graph.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
 
 **Complete modules touched:**
 
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -37,7 +37,7 @@ sequenceDiagram
     participant p15 as KnowledgeGraphError
     participant p16 as _graph_concept_payload
     participant p17 as _sorted_json_records
-    participant p18 as sha256_bytes
+    participant p18 as sha256_digest
     participant p19 as _observation_collection
     participant p20 as _parse_typed_graph
     participant p21 as concept_endpoint
@@ -67,7 +67,7 @@ sequenceDiagram
     p0->>p15: KnowledgeGraphError
     p0->>p16: _graph_concept_payload
     p0->>p17: _sorted_json_records
-    p0->>p18: sha256_bytes
+    p0->>p18: sha256_digest
     p8->>p19: _observation_collection
     p14->>p20: _parse_typed_graph
     p7->>p21: concept_endpoint
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 390; effect analysis evaluated: 298, partial: 4, unavailable: 88. Counts include steps omitted from the displayed trace.
 
-Collector observations for 302 source steps with known totals: observed: 1435, emitted: 1418, omitted: 17. Unavailable totals are excluded.
+Collector observations for 302 source steps with known totals: observed: 1436, emitted: 1419, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

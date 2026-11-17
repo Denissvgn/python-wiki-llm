@@ -1,13 +1,13 @@
 # doctor_cmd_flow
 
 **Entry point:** `doctor_cmd.run`
-**Modules involved:** [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), [config](../modules/config.md), [doctor_cmd](../modules/doctor_cmd.md), [doctor_service](../modules/doctor_service.md), [extraction_jobs](../modules/extraction_jobs.md)
+**Modules involved:** [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), [doctor_cmd](../modules/doctor_cmd.md), [doctor_service](../modules/doctor_service.md), [extraction_jobs](../modules/extraction_jobs.md), [path_policy](../modules/path_policy.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_path`
-2. `config.validate_path`
+1. `path_policy.validate_path`
+2. `path_policy.validate_path`
 3. `analysis_targets.inspect_targets`
 4. `analysis_targets.load_targets`
 5. `api.get_analysis_input_status`
@@ -23,10 +23,10 @@
 - [analysis_targets](../modules/analysis_targets.md)
 - [api](../modules/api.md)
 - [capability_diagnostics](../modules/capability_diagnostics.md)
-- [config](../modules/config.md)
 - [doctor_cmd](../modules/doctor_cmd.md)
 - [doctor_service](../modules/doctor_service.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
+- [path_policy](../modules/path_policy.md)
 
 ## Behavior
 

@@ -13,6 +13,7 @@ An explicit diagnostic request enables the bundled native helper response, valid
 | Source | Symbols |
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
+| `..services.host` | `HostCapabilityError`, `current_host` |
 | `.common` | `discover_source_files`, `filter_bundled_inventory` |
 | `.native_diagnostics` | `load_native_chunks`, `path_outcome` |
 | `__future__` | `annotations` |
@@ -32,17 +33,22 @@ flowchart LR
     n2["src/llm_wiki_cli/extractors/native_diagnostics.py"]
     n3["src/llm_wiki_cli/services/extraction_service.py"]
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n5["src/llm_wiki_cli/services/host.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n4
+    n1 --> n5
     n2 --> n0
     n3 --> n0
     n3 --> n1
+    n3 --> n5
+    n4 --> n5
     click n0 "../modules/common.md"
     click n1 "../modules/haskell_extractor.md"
     click n2 "../modules/native_diagnostics.md"
     click n3 "../modules/extraction_service.md"
     click n4 "../modules/extractor_helpers.md"
+    click n5 "../modules/host.md"
 ```
 
 ### Internal neighbors
@@ -53,13 +59,14 @@ flowchart LR
 | Outbound | [common](../modules/common.md) |
 | Outbound | [native_diagnostics](../modules/native_diagnostics.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
+| Outbound | [host](../modules/host.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HaskellExtractionRequest](../entities/HaskellExtractionRequest.md) | 27 | — | Internal request object for Haskell extraction orchestration. |
-| [HaskellExtractor](../entities/HaskellExtractor.md) | 38 | — | Extractor for Haskell source files using a prepared helper binary. |
+| [HaskellExtractionRequest](../entities/HaskellExtractionRequest.md) | 28 | — | Internal request object for Haskell extraction orchestration. |
+| [HaskellExtractor](../entities/HaskellExtractor.md) | 39 | — | Extractor for Haskell source files using a prepared helper binary. |
 
 ## Functions
 

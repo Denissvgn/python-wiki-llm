@@ -156,14 +156,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| preserve_table_description_cells | _markdown_lines | 885 | `_markdown_lines(markdown)` |
+| preserve_table_description_cells | _markdown_lines | 890 | `_markdown_lines(markdown)` |
 | _markdown_lines | re.findall | 218 | `re.findall('[^\\n]*\\n\|[^\\n]+$', normalize_markdown(...))` |
 | _markdown_lines | normalize_markdown | 218 | `normalize_markdown(markdown)` |
 | normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 | normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |
 | _markdown_lines | _line_content | 219 | `_line_content(line)` |
 | _line_content | line.endswith | 212 | `line.endswith('\n')` |
-| preserve_table_description_cells | section_bounds | 886 | `section_bounds(lines, heading)` |
+| preserve_table_description_cells | section_bounds | 891 | `section_bounds(lines, heading)` |
 | section_bounds | heading.casefold | 669 | `heading.casefold(data not statically known)` |
 | section_bounds | enumerate | 670 | `enumerate(lines)` |
 | section_bounds | _LEGACY_HEADING_RE.match | 671 | `_LEGACY_HEADING_RE.match(line.strip(...))` |

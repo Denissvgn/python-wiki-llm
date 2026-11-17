@@ -40,7 +40,6 @@ flowchart LR
     n9["src/llm_wiki_cli/services/team.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
     n0 --> n4
     n1 --> n2
     n1 --> n3
@@ -50,13 +49,10 @@ flowchart LR
     n1 --> n7
     n1 --> n8
     n1 --> n9
-    n4 --> n2
     n4 --> n3
     n4 --> n6
     n4 --> n7
     n5 --> n7
-    n6 --> n2
-    n7 --> n2
     n7 --> n6
     n8 --> n6
     n8 --> n7

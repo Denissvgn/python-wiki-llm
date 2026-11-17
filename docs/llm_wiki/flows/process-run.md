@@ -2,10 +2,12 @@
 
 **Entry point:** `__main__` (`process`)
 **Source:** [run](../modules/run.md)
-**Modules touched:** [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), and 7 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [host](../modules/host.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 9 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -45,17 +47,17 @@ sequenceDiagram
     participant p15 as _proposal
     participant p16 as _guard
     participant p17 as _fail
-    participant p18 as canonical_json_bytes
-    participant p19 as _portable
-    participant p20 as _public_hashes
-    participant p21 as _validated_checkpoint
-    participant p22 as action_input
-    participant p23 as run_cli
-    participant p24 as sha256_bytes
-    participant p25 as StorageReadSession
-    participant p26 as PublicationProtocolError
-    participant p27 as write_diff
-    participant p28 as _check_hash
+    participant p18 as compact_bytes
+    participant p19 as first_unsafe_path_component
+    participant p20 as _portable
+    participant p21 as _public_hashes
+    participant p22 as _validated_checkpoint
+    participant p23 as action_input
+    participant p24 as run_cli
+    participant p25 as sha256_digest
+    participant p26 as StorageReadSession
+    participant p27 as PublicationProtocolError
+    participant p28 as write_diff
     participant p29 as str (integrations/wiki-candidate/run.py:__main__)
     participant p30 as (…).write_text (integrations/wiki-candidate/run.py:__main__)
     p0->>p1: run
@@ -75,24 +77,24 @@ sequenceDiagram
     p4->>p15: _proposal
     p11->>p16: _guard
     p8->>p17: _fail
-    p10->>p18: canonical_json_bytes
-    p13->>p19: _portable
-    p9->>p20: _public_hashes
-    p9->>p21: _validated_checkpoint
-    p1->>p22: action_input
-    p1->>p23: run_cli
-    p1->>p24: sha256_bytes
-    p2->>p25: StorageReadSession
-    p2->>p26: PublicationProtocolError
-    p3->>p27: write_diff
-    p4->>p28: _check_hash
+    p10->>p18: compact_bytes
+    p6->>p19: first_unsafe_path_component
+    p13->>p20: _portable
+    p9->>p21: _public_hashes
+    p9->>p22: _validated_checkpoint
+    p1->>p23: action_input
+    p1->>p24: run_cli
+    p1->>p25: sha256_digest
+    p2->>p26: StorageReadSession
+    p2->>p27: PublicationProtocolError
+    p3->>p28: write_diff
     p0-->>p29: str (integrations/wiki-candidate/run.py:__main__)(exc)
     p0-->>p30: (…).write_text (integrations/wiki-candidate/run.py:__main__)(..., encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 440 interactions; 410 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 250 (249 omitted); unresolved 1 of 105 (104 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 249 (248 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,9 +121,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 86; effect analysis evaluated: 76, partial: 2, unavailable: 8. Counts include steps omitted from the displayed trace.
+Source steps: 87; effect analysis evaluated: 77, partial: 2, unavailable: 8. Counts include steps omitted from the displayed trace.
 
-Collector observations for 78 source steps with known totals: observed: 329, emitted: 305, omitted: 24. Unavailable totals are excluded.
+Collector observations for 79 source steps with known totals: observed: 333, emitted: 309, omitted: 24. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

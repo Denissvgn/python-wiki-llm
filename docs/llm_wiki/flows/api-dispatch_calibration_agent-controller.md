@@ -2,12 +2,13 @@
 
 **Entry point:** `dispatch_calibration_agent` (`api`)
 **Source:** [controller](../modules/controller.md)
-**Modules touched:** [broker](../modules/broker.md), [calibration_contracts](../modules/calibration_contracts.md), [controller](../modules/controller.md), [documentation_policy](../modules/documentation_policy.md), and 4 more
+**Modules touched:** [broker](../modules/broker.md), [calibration_contracts](../modules/calibration_contracts.md), [canonical_json](../modules/canonical_json.md), [controller](../modules/controller.md), and 5 more
 
 **Complete modules touched:**
 
 - [broker](../modules/broker.md)
 - [calibration_contracts](../modules/calibration_contracts.md)
+- [canonical_json](../modules/canonical_json.md)
 - [controller](../modules/controller.md)
 - [documentation_policy](../modules/documentation_policy.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -85,9 +86,9 @@ sequenceDiagram
     p0-->>p30: store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
 ```
 
-> Call sequence diagram shows 30 of 2385 interactions; 2355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2383 interactions; 2353 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 601 (600 omitted); unresolved 1 of 736 (735 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 599 (598 omitted); unresolved 1 of 734 (733 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1049; effect analysis evaluated: 635, partial: 24, unavailable: 390. Counts include steps omitted from the displayed trace.
+Source steps: 1051; effect analysis evaluated: 637, partial: 24, unavailable: 390. Counts include steps omitted from the displayed trace.
 
-Collector observations for 659 source steps with known totals: observed: 3094, emitted: 2994, omitted: 100. Unavailable totals are excluded.
+Collector observations for 661 source steps with known totals: observed: 3098, emitted: 2998, omitted: 100. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

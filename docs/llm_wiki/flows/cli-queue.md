@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [queue_cmd](../modules/queue_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 76 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 82 more
 
 **Complete modules touched:**
 
@@ -10,10 +10,12 @@
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
+- [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
@@ -21,14 +23,17 @@
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [documentation_worklist](../modules/documentation_worklist.md)
+- [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [flow_followup](../modules/flow_followup.md)
+- [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
@@ -61,6 +66,7 @@
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_coverage](../modules/module_coverage.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_bindings](../modules/python_bindings.md)
@@ -156,9 +162,9 @@ sequenceDiagram
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4315 interactions; 4285 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4327 interactions; 4297 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1358 (1357 omitted); unresolved 1 of 1464 (1463 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1350 (1349 omitted); unresolved 1 of 1474 (1473 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,13 +172,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/maintenance_queue.py:build_maintenance_queue` | 2 | [src/llm_wiki_cli/services/maintenance_queue.py](../modules/maintenance_queue.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 3 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 7 | - | external | 37 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 20 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_path` | 21 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1121 groups; 1113 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/context_packet_builder.py:capture_context_read` | 7 | - | external | 37 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 20 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 25 | - | unresolved | 1 |
+> Omission summary shows 8 of 1140 groups; 1132 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -185,9 +191,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1494; effect analysis evaluated: 1121, partial: 74, unavailable: 299. Counts include steps omitted from the displayed trace.
+Source steps: 1504; effect analysis evaluated: 1131, partial: 74, unavailable: 299. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1195 source steps with known totals: observed: 7492, emitted: 7141, omitted: 351. Unavailable totals are excluded.
+Collector observations for 1205 source steps with known totals: observed: 7499, emitted: 7148, omitted: 351. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -202,11 +208,11 @@ Collector observations for 1195 source steps with known totals: observed: 7492, 
 | `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `capture_context_read` | `available` | `partial` | `available` | `37` | `25` | `12` |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…r.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -217,22 +223,22 @@ flowchart LR
     s5["5. isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)"]
     s6["6. ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)"]
     s7["7. capture_context_read"]
-    s8["8. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s9["9. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s10["10. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s11["11. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s12["12. callable (src/llm_wiki_cli/services…t.py:capture_context_read)"]
+    s8["8. isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)"]
+    s9["9. TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)"]
+    s10["10. isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)"]
+    s11["11. TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)"]
+    s12["12. callable (src/llm_wiki_cli/services…r.py:capture_context_read)"]
     s1 -->|"build_maintenance_queue(…)"| s2
     s2 -->|"validate_queue_limit(limit)"| s3
     s3 -. "isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)(limit, bool)" .-> s4
     s3 -. "isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)(limit, int)" .-> s5
     s3 -. "ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)(...)" .-> s6
     s2 -->|"capture_context_read(…)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)" .-> s8
-    s7 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('read_only must be a boolean')" .-> s9
-    s7 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(allow_external_src, bool)" .-> s10
-    s7 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('allow_external_src must be a boolean')" .-> s11
-    s7 -. "callable (src/llm_wiki_cli/services…t.py:capture_context_read)(plan_reporter)" .-> s12
+    s7 -. "isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)(read_only, bool)" .-> s8
+    s7 -. "TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)('read_only must be a boolean')" .-> s9
+    s7 -. "isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)(allow_external_src, bool)" .-> s10
+    s7 -. "TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)('allow_external_src must be a boolean')" .-> s11
+    s7 -. "callable (src/llm_wiki_cli/services…r.py:capture_context_read)(plan_reporter)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["mutation global_issues.append"]
@@ -240,7 +246,7 @@ flowchart LR
     click s1 "../modules/queue_cmd.md"
     click s2 "../modules/maintenance_queue.md"
     click s3 "../modules/maintenance_queue.md"
-    click s7 "../modules/context_packet.md"
+    click s7 "../modules/context_packet_builder.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -257,11 +263,11 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | - | - | - | - |
 | `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `os`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError` | `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `helper_options[...]`, `wiki_options[...]`, `wiki_options[...]` | `captured` |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
-| `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…r.py:capture_context_read)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…r.py:capture_context_read)` | - | - | - | - |
+| `callable (src/llm_wiki_cli/services…r.py:capture_context_read)` | - | - | - | - |
 
 ### Call data
 
@@ -273,11 +279,11 @@ flowchart LR
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | build_maintenance_queue | capture_context_read | 479 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 809 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 810 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 811 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 812 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 813 | `callable(plan_reporter)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 586 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 587 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 588 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 589 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 590 | `callable(plan_reporter)` |
 
 ### Boundary effects
 
@@ -293,11 +299,11 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 58 |
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
-| external_call | `capture_context_read` | `isinstance` | 809 |
-| external_call | `capture_context_read` | `TypeError` | 810 |
-| external_call | `capture_context_read` | `isinstance` | 811 |
-| external_call | `capture_context_read` | `TypeError` | 812 |
-| external_call | `capture_context_read` | `callable` | 813 |
+| external_call | `capture_context_read` | `isinstance` | 586 |
+| external_call | `capture_context_read` | `TypeError` | 587 |
+| external_call | `capture_context_read` | `isinstance` | 588 |
+| external_call | `capture_context_read` | `TypeError` | 589 |
+| external_call | `capture_context_read` | `callable` | 590 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

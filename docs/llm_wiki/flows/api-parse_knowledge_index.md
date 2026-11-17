@@ -2,24 +2,19 @@
 
 **Entry point:** `parse_knowledge_index` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 17 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), and 12 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [concept_identity](../modules/concept_identity.md)
+- [canonical_json](../modules/canonical_json.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -41,65 +36,65 @@ sequenceDiagram
     participant p4 as _parse_relationship
     participant p5 as _validated_reserved_extensions
     participant p6 as _validate_index_references
-    participant p7 as validate_implementation_collection
-    participant p8 as validate_maintenance_projection
-    participant p9 as validate_governance_projection
-    participant p10 as _string
-    participant p11 as KnowledgeModelError
-    participant p12 as _array (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p13 as KnowledgeIndex
-    participant p14 as _object (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p15 as _parse_document
-    participant p16 as validate_reuse_commitment
-    participant p17 as _parse_repository
-    participant p18 as _locator (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p19 as _parse_snapshot
-    participant p20 as typed_graph_from_knowledge_extensions
-    participant p21 as mcp_uri
-    participant p22 as _parse_producer
-    participant p23 as _parse_relationship_target
-    participant p24 as validate_maintenance_binding
-    participant p25 as validate_maintenance_state
-    participant p26 as _open_enum_value
-    participant p27 as canonical_hash
-    participant p28 as _parse_extensions
+    participant p7 as _string
+    participant p8 as KnowledgeModelError
+    participant p9 as _array (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p10 as KnowledgeIndex
+    participant p11 as current_validators
+    participant p12 as current_kinds
+    participant p13 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p14 as _parse_document
+    participant p15 as validate_reuse_commitment
+    participant p16 as _parse_repository
+    participant p17 as _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p18 as _parse_snapshot
+    participant p19 as typed_graph_from_knowledge_extensions
+    participant p20 as mcp_uri
+    participant p21 as _parse_producer
+    participant p22 as _parse_relationship_target
+    participant p23 as _open_enum_value
+    participant p24 as _parse_extensions
+    participant p25 as validate_section_ownership
+    participant p26 as _parse_relationship_evidence
+    participant p27 as concept_kind_for_page_kind
+    participant p28 as _parse_facets
     participant p29 as tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)
-    participant p30 as validated.get
+    participant p30 as current_validators().run
     p0->>p1: _record
     p0->>p2: _parse_bundle
     p0->>p3: _parse_concept
     p0->>p4: _parse_relationship
     p0->>p5: _validated_reserved_extensions
     p0->>p6: _validate_index_references
-    p0->>p7: validate_implementation_collection
-    p0->>p8: validate_maintenance_projection
-    p0->>p9: validate_governance_projection
-    p0->>p10: _string
-    p0->>p11: KnowledgeModelError
-    p0->>p12: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p0->>p13: KnowledgeIndex
-    p1->>p14: _object (src/llm_wiki_cli/services/knowledge_model.py)
-    p3->>p15: _parse_document
-    p5->>p16: validate_reuse_commitment
-    p2->>p17: _parse_repository
-    p3->>p18: _locator (src/llm_wiki_cli/services/knowledge_model.py)
-    p2->>p19: _parse_snapshot
-    p5->>p20: typed_graph_from_knowledge_extensions
-    p3->>p21: mcp_uri
-    p2->>p22: _parse_producer
-    p4->>p23: _parse_relationship_target
-    p8->>p24: validate_maintenance_binding
-    p8->>p25: validate_maintenance_state
-    p3->>p26: _open_enum_value
-    p8->>p27: canonical_hash
-    p1->>p28: _parse_extensions
+    p0->>p7: _string
+    p0->>p8: KnowledgeModelError
+    p0->>p9: _array (src/llm_wiki_cli/services/knowledge_model.py)
+    p0->>p10: KnowledgeIndex
+    p0->>p11: current_validators
+    p0->>p12: current_kinds
+    p1->>p13: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p3->>p14: _parse_document
+    p5->>p15: validate_reuse_commitment
+    p2->>p16: _parse_repository
+    p3->>p17: _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    p2->>p18: _parse_snapshot
+    p5->>p19: typed_graph_from_knowledge_extensions
+    p3->>p20: mcp_uri
+    p2->>p21: _parse_producer
+    p4->>p22: _parse_relationship_target
+    p3->>p23: _open_enum_value
+    p1->>p24: _parse_extensions
+    p5->>p25: validate_section_ownership
+    p4->>p26: _parse_relationship_evidence
+    p3->>p27: concept_kind_for_page_kind
+    p3->>p28: _parse_facets
     p0-->>p29: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
-    p7-->>p30: validated.get(IMPLEMENTATION_KEY)
+    p0-->>p30: current_validators().run(model)
 ```
 
-> Call sequence diagram shows 30 of 2330 interactions; 2300 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1141 interactions; 1111 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 684 (683 omitted); unresolved 1 of 461 (460 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 321 (320 omitted); unresolved 1 of 179 (178 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,7 +108,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 2 | - | external | 4 |
-> Omission summary shows 8 of 536 groups; 528 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 270 groups; 262 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +121,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1186; effect analysis evaluated: 780, partial: 18, unavailable: 388. Counts include steps omitted from the displayed trace.
+Source steps: 642; effect analysis evaluated: 444, partial: 10, unavailable: 188. Counts include steps omitted from the displayed trace.
 
-Collector observations for 798 source steps with known totals: observed: 3919, emitted: 3667, omitted: 252. Unavailable totals are excluded.
+Collector observations for 454 source steps with known totals: observed: 2112, emitted: 1982, omitted: 130. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -204,9 +199,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_knowledge_index | _record | 551 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1633 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1719 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1720 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1610 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1696 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1697 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |

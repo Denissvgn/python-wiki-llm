@@ -10,12 +10,11 @@ Strict portable validators for captured publication evidence and decisions.
 
 | Source | Symbols |
 |--------|---------|
-| `.behavior_reference` | `validate_behavior_facts` |
-| `.cli_reference` | `validate_cli_contract` |
 | `.concept_identity` | `validate_concept_uid` |
 | `.knowledge_evidence` | `hash_json` |
 | `.markdown_sections` | `SECTION_ORDER_DOMAIN`, `section_locator` |
 | `.publication_config` | `PUBLICATION_CONFIG_SCHEMA_VERSION`, `validate_publication_config` |
+| `.reference_providers` | `ReferenceContractError`, `current_reference_providers`, `reference_provider` |
 | `.sync_manifest` | `ManifestPageSource` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path`, `require_sha256` |
 | `.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
@@ -46,15 +45,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (9) |
+| Outbound | `src` (8) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 38 | `ValueError` | An imported publication document violates its versioned contract. |
+| [PublicationProtocolError](../entities/PublicationProtocolError.md) | 43 | `ValueError` | An imported publication document violates its versioned contract. |
 
 ## Functions
 

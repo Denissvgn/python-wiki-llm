@@ -2,15 +2,16 @@
 
 **Entry point:** `get_behavior_facts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [change_selection](../modules/change_selection.md), [cli](../modules/cli.md), and 15 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), and 15 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [behavior_reference](../modules/behavior_reference.md)
-- [change_selection](../modules/change_selection.md)
-- [cli](../modules/cli.md)
+- [canonical_json](../modules/canonical_json.md)
+- [cli_declarations](../modules/cli_declarations.md)
 - [cli_reference](../modules/cli_reference.md)
+- [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
@@ -18,7 +19,6 @@
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
-- [reference_cmd](../modules/reference_cmd.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
 - [task_contract](../modules/task_contract.md)
@@ -58,10 +58,10 @@ sequenceDiagram
     participant p22 as _installed_identity
     participant p23 as _array
     participant p24 as coordinate
-    participant p25 as validate_changes
-    participant p26 as normalize_profile
-    participant p27 as content_id
-    participant p28 as _json_tree
+    participant p25 as compact_line_bytes
+    participant p26 as validate_changes
+    participant p27 as normalize_profile
+    participant p28 as content_id
     participant p29 as dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)
     participant p30 as skill.to_dict
     p0->>p1: get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)
@@ -88,17 +88,17 @@ sequenceDiagram
     p9->>p22: _installed_identity
     p7->>p23: _array
     p7->>p24: coordinate
-    p7->>p25: validate_changes
-    p7->>p26: normalize_profile
-    p7->>p27: content_id
-    p21->>p28: _json_tree
+    p7->>p25: compact_line_bytes
+    p7->>p26: validate_changes
+    p7->>p27: normalize_profile
+    p7->>p28: content_id
     p1-->>p29: dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)(config._DEFAULT_CONFIG)
     p1-->>p30: skill.to_dict
 ```
 
 > Call sequence diagram shows 30 of 599 interactions; 569 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 211 (210 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 210 (209 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -125,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 236; effect analysis evaluated: 165, partial: 5, unavailable: 66. Counts include steps omitted from the displayed trace.
+Source steps: 237; effect analysis evaluated: 166, partial: 5, unavailable: 66. Counts include steps omitted from the displayed trace.
 
-Collector observations for 170 source steps with known totals: observed: 805, emitted: 788, omitted: 17. Unavailable totals are excluded.
+Collector observations for 171 source steps with known totals: observed: 810, emitted: 793, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -204,7 +204,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_behavior_facts (src/llm_wiki_cli/api.py) | get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3593 | `get_facts(data not statically known)` |
+| get_behavior_facts (src/llm_wiki_cli/api.py) | get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3745 | `get_facts(data not statically known)` |
 | get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | get_cli_contract | 89 | `cli_reference.get_cli_contract(data not statically known)` |
 | get_cli_contract | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |

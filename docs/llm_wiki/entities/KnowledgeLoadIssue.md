@@ -30,7 +30,7 @@ One stable, path-safe artifact load diagnostic.
 ```mermaid
 flowchart LR
     n0["KnowledgeLoadIssue (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n1["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
+    n1["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n2["_unsupported_reason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
     n3["KnowledgeReadView.findings (src/llm_wiki_cli/services/knowledge_consumption.py)"]
     n4["_issue_from_artifact_error (src/llm_wiki_cli/services/knowledge_loader.py)"]
@@ -47,7 +47,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/knowledge_loader.md"
-    click n1 "../modules/context_packet.md"
+    click n1 "../modules/context_packet_builder.md"
     click n2 "../modules/knowledge_consumption.md"
     click n3 "../modules/knowledge_consumption.md"
     click n4 "../modules/knowledge_loader.md"
@@ -67,7 +67,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `capture_context_read` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
 | `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `KnowledgeReadView.findings` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `_issue_from_artifact_error` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |

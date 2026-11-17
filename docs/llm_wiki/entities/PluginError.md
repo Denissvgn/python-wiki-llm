@@ -1,6 +1,6 @@
 # PluginError
 
-**Location:** `src/llm_wiki_cli/services/plugins.py:56`
+**Location:** `src/llm_wiki_cli/services/plugins.py:66`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [plugins](../modules/plugins.md)
@@ -90,4 +90,4 @@ flowchart LR
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
 | `_prepare_destination` | call | [plugin_samples](../modules/plugin_samples.md) | 2 |
 
-> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

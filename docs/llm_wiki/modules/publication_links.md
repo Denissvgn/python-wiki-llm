@@ -28,41 +28,28 @@ Pure Markdown rewriting and checks for portable GitHub wiki candidates.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/markdown_sections.py"]
-    n1["src/llm_wiki_cli/services/publication_candidate.py"]
-    n2["src/llm_wiki_cli/services/publication_delivery.py"]
-    n3["src/llm_wiki_cli/services/publication_impact.py"]
-    n4["src/llm_wiki_cli/services/publication_links.py"]
-    n5["src/llm_wiki_cli/services/publication_maintenance.py"]
-    n6["src/llm_wiki_cli/services/validation.py"]
+    n1["src/llm_wiki_cli/services/publication_impact.py"]
+    n2["src/llm_wiki_cli/services/publication_links.py"]
+    n3["src/llm_wiki_cli/services/publication_targets.py"]
+    n4["src/llm_wiki_cli/services/validation.py"]
     n1 --> n2
-    n1 --> n3
     n1 --> n4
-    n1 --> n6
-    n2 --> n1
+    n2 --> n0
     n2 --> n4
-    n3 --> n4
-    n3 --> n6
-    n4 --> n0
-    n4 --> n6
-    n5 --> n1
-    n5 --> n4
+    n3 --> n2
     click n0 "../modules/markdown_sections.md"
-    click n1 "../modules/publication_candidate.md"
-    click n2 "../modules/publication_delivery.md"
-    click n3 "../modules/publication_impact.md"
-    click n4 "../modules/publication_links.md"
-    click n5 "../modules/publication_maintenance.md"
-    click n6 "../modules/validation.md"
+    click n1 "../modules/publication_impact.md"
+    click n2 "../modules/publication_links.md"
+    click n3 "../modules/publication_targets.md"
+    click n4 "../modules/validation.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [publication_candidate](../modules/publication_candidate.md) |
-| Inbound | [publication_delivery](../modules/publication_delivery.md) |
 | Inbound | [publication_impact](../modules/publication_impact.md) |
-| Inbound | [publication_maintenance](../modules/publication_maintenance.md) |
+| Inbound | [publication_targets](../modules/publication_targets.md) |
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
 | Outbound | [validation](../modules/validation.md) |
 

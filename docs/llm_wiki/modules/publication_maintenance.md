@@ -17,7 +17,7 @@ Turn independently reviewed workspace edits into consumer-owned Markdown patches
 | `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `.publication_candidate` | `MAX_FILE_BYTES`, `MAX_TREE_BYTES`, `_candidate_path`, `_hashes`, `_read_tree`, `check_publication_candidate` |
 | `.publication_config` | `PUBLICATION_CONFIG_PATH`, `publication_control_overlap`, `publication_path` |
-| `.publication_links` | `check_github_wiki`, `prepare_wiki_markdown` |
+| `.publication_targets` | `publication_target` |
 | `.source_selection` | `resolve_source_selection` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
@@ -42,16 +42,16 @@ flowchart LR
     n6["src/llm_wiki_cli/services/knowledge_storage_io.py"]
     n7["src/llm_wiki_cli/services/publication_candidate.py"]
     n8["src/llm_wiki_cli/services/publication_config.py"]
-    n9["src/llm_wiki_cli/services/publication_links.py"]
-    n10["src/llm_wiki_cli/services/publication_maintenance.py"]
+    n9["src/llm_wiki_cli/services/publication_maintenance.py"]
+    n10["src/llm_wiki_cli/services/publication_targets.py"]
     n11["src/llm_wiki_cli/services/source_selection.py"]
     n0 --> n7
-    n0 --> n10
+    n0 --> n9
     n0 --> n11
     n1 --> n6
     n1 --> n7
     n1 --> n8
-    n1 --> n10
+    n1 --> n9
     n2 --> n3
     n2 --> n4
     n3 --> n2
@@ -61,17 +61,19 @@ flowchart LR
     n7 --> n5
     n7 --> n6
     n7 --> n8
-    n7 --> n9
+    n7 --> n10
+    n8 --> n10
     n8 --> n11
-    n10 --> n2
-    n10 --> n3
-    n10 --> n4
-    n10 --> n5
-    n10 --> n6
-    n10 --> n7
+    n9 --> n2
+    n9 --> n3
+    n9 --> n4
+    n9 --> n5
+    n9 --> n6
+    n9 --> n7
+    n9 --> n8
+    n9 --> n10
+    n9 --> n11
     n10 --> n8
-    n10 --> n9
-    n10 --> n11
     click n0 "../modules/api.md"
     click n1 "../modules/publication_candidate_cmd.md"
     click n2 "../modules/integrity.md"
@@ -81,8 +83,8 @@ flowchart LR
     click n6 "../modules/knowledge_storage_io.md"
     click n7 "../modules/publication_candidate.md"
     click n8 "../modules/publication_config.md"
-    click n9 "../modules/publication_links.md"
-    click n10 "../modules/publication_maintenance.md"
+    click n9 "../modules/publication_maintenance.md"
+    click n10 "../modules/publication_targets.md"
     click n11 "../modules/source_selection.md"
 ```
 
@@ -99,7 +101,7 @@ flowchart LR
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
-| Outbound | [publication_links](../modules/publication_links.md) |
+| Outbound | [publication_targets](../modules/publication_targets.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 
 ## Functions

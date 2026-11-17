@@ -2,7 +2,7 @@
 
 **Entry point:** `build_producer_record` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_model](../modules/knowledge_model.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_model](../modules/knowledge_model.md)
 
 ## Call sequence
 
@@ -19,12 +19,12 @@ sequenceDiagram
     participant p5 as _validated_limitations
     participant p6 as hash_component_configuration
     participant p7 as _hash_structured
-    participant p8 as canonical_json_bytes
+    participant p8 as compact_bytes
     participant p9 as _reject_machine_local_paths
     participant p10 as ProducerComponent
     participant p11 as _validate_json_tree
-    participant p12 as sha256_bytes
-    participant p13 as canonical_json_text
+    participant p12 as sha256_digest
+    participant p13 as compact_text
     participant p14 as tuple (src/llm_wiki_cli/services…e.py:build_producer_record)
     participant p15 as ids.count
     participant p16 as sorted (src/llm_wiki_cli/services…e.py:build_producer_record)
@@ -43,12 +43,12 @@ sequenceDiagram
     p1->>p5: _validated_limitations
     p1->>p6: hash_component_configuration
     p6->>p7: _hash_structured
-    p7->>p8: canonical_json_bytes
+    p7->>p8: compact_bytes
     p1->>p9: _reject_machine_local_paths
     p1->>p10: ProducerComponent
     p7->>p11: _validate_json_tree
-    p7->>p12: sha256_bytes
-    p8->>p13: canonical_json_text
+    p7->>p12: sha256_digest
+    p8->>p13: compact_text
     p0-->>p14: tuple (src/llm_wiki_cli/services…e.py:build_producer_record)(sorted(...))
     p0-->>p15: ids.count(item)
     p0-->>p16: sorted (src/llm_wiki_cli/services…e.py:build_producer_record)(..., key=...)
@@ -97,7 +97,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 31; effect analysis evaluated: 13, partial: 3, unavailable: 15. Counts include steps omitted from the displayed trace.
 
-Collector observations for 16 source steps with known totals: observed: 84, emitted: 81, omitted: 3. Unavailable totals are excluded.
+Collector observations for 16 source steps with known totals: observed: 86, emitted: 83, omitted: 3. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -179,33 +179,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_producer_record | _build_component | 962 | `_build_component(tool, 'producer.tool', analyzer=False)` |
-| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1788 | `isinstance(value, ProducerComponentInput)` |
-| _build_component | KnowledgeEnvelopeError | 1789 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
-| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1794 | `isinstance(value.component_id, str)` |
-| _build_component | _COMPONENT_ID_RE.fullmatch | 1795 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
-| _build_component | KnowledgeEnvelopeError | 1797 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
-| _build_component | set (src/llm_wiki_cli/services…velope.py:_build_component) | 1801 | `set(_validated_limitations(...))` |
-| _build_component | _validated_limitations | 1801 | `_validated_limitations(value.limitations, field_name)` |
-| _validated_limitations | isinstance (src/llm_wiki_cli/services….py:_validated_limitations) | 1851 | `isinstance(value, (...))` |
-| _validated_limitations | KnowledgeEnvelopeError | 1852 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
-| _validated_limitations | tuple (src/llm_wiki_cli/services….py:_validated_limitations) | 1857 | `tuple(value)` |
+| build_producer_record | _build_component | 963 | `_build_component(tool, 'producer.tool', analyzer=False)` |
+| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1789 | `isinstance(value, ProducerComponentInput)` |
+| _build_component | KnowledgeEnvelopeError | 1790 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
+| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1795 | `isinstance(value.component_id, str)` |
+| _build_component | _COMPONENT_ID_RE.fullmatch | 1796 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
+| _build_component | KnowledgeEnvelopeError | 1798 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
+| _build_component | set (src/llm_wiki_cli/services…velope.py:_build_component) | 1802 | `set(_validated_limitations(...))` |
+| _build_component | _validated_limitations | 1802 | `_validated_limitations(value.limitations, field_name)` |
+| _validated_limitations | isinstance (src/llm_wiki_cli/services….py:_validated_limitations) | 1852 | `isinstance(value, (...))` |
+| _validated_limitations | KnowledgeEnvelopeError | 1853 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
+| _validated_limitations | tuple (src/llm_wiki_cli/services….py:_validated_limitations) | 1858 | `tuple(value)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `limitations.add` | `_build_component` | 1804 |
-| mutation | `limitations.add` | `_build_component` | 1828 |
+| mutation | `limitations.add` | `_build_component` | 1805 |
+| mutation | `limitations.add` | `_build_component` | 1829 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_component` | `isinstance` | 1788 |
-| external_call | `_build_component` | `isinstance` | 1794 |
-| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1795 |
-| external_call | `_validated_limitations` | `isinstance` | 1851 |
+| external_call | `_build_component` | `isinstance` | 1789 |
+| external_call | `_build_component` | `isinstance` | 1795 |
+| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1796 |
+| external_call | `_validated_limitations` | `isinstance` | 1852 |
 | step_limit | `build_producer_record` | `first 12 steps` | 0 |
 
 ## Behavior

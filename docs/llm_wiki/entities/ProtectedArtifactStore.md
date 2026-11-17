@@ -1,6 +1,6 @@
 # ProtectedArtifactStore
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:149`
+**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:143`
 **Kind:** Class
 **Bases:** —
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)

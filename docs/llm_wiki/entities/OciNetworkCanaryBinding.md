@@ -1,6 +1,6 @@
 # OciNetworkCanaryBinding
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1227`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1228`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

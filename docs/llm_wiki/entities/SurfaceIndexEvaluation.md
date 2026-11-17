@@ -31,7 +31,7 @@ One collected canonical-page view reused by projection builders.
 ```mermaid
 flowchart LR
     n0["SurfaceIndexEvaluation (src/llm_wiki_cli/services/wiki_surface_index.py)"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_cli/services/context_packet_builder.py"]
     n2["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n3["_evaluate_runtime_surface (src/llm_wiki_cli/services/documentation_native.py)"]
     n4["src/llm_wiki_cli/services/knowledge_orchestration.py"]
@@ -42,7 +42,7 @@ flowchart LR
     n4 --> n0
     n5 --> n0
     click n0 "../modules/wiki_surface_index.md"
-    click n1 "../modules/context_packet.md"
+    click n1 "../modules/context_packet_builder.md"
     click n2 "../modules/context_service.md"
     click n3 "../modules/documentation_native.md"
     click n4 "../modules/knowledge_orchestration.md"
@@ -59,7 +59,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

@@ -4650,3 +4650,24 @@ Existing permissions, validation bounds and native authority remain separate.
 - Pages deprecated: 0
 - Semantic fields preserved: 0
 - Moved entities: none
+
+## 2026-11-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.1.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:1e741d336018fe81759c0bb2f8dc947bd10932b0ca1f405be6539443f4aef424`
+- Source snapshot digest: `sha256:2a1866856b43442c30109e89910cbd8d8c1ab2d00b54998e1cbd4f48fc4403dd`
+- Pages created: 178
+- Pages updated: 858
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 867
+- Pages deprecated: 21
+- Semantic fields preserved: 92
+- Moved entities: `CapturedContextRead` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ContextBasisComparison` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ContextPacketAuthorityError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ContextPacketReconciliation` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ContextPacketSourceMutationError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ContextPacketUnavailableError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_cli/services/context_packet_builder.py), `ExistingPage` (src/llm_wiki_cli/commands/migrate_cmd.py → src/llm_wiki_cli/services/migrate_runtime.py), `GeneratedSurfacePruneError` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `GitIgnoreMatcher` (src/llm_wiki_cli/config.py → src/llm_wiki_cli/services/gitignore.py), `MigrationChunk` (src/llm_wiki_cli/commands/migrate_cmd.py → src/llm_wiki_cli/services/migrate_runtime.py), `MigrationPlan` (src/llm_wiki_cli/commands/migrate_cmd.py → src/llm_wiki_cli/services/migrate_runtime.py), `PathValidationError` (src/llm_wiki_cli/config.py → src/llm_wiki_cli/services/path_policy.py), `ProtocolRequestError` (src/llm_wiki_cli/services/context_service.py → src/llm_wiki_cli/services/context_request_format.py), `ReferenceCleanupOutcome` (src/llm_wiki_cli/commands/upgrade_cmd.py → src/llm_wiki_cli/services/upgrade_runtime.py), `SchemaCleanupReceipt` (src/llm_wiki_cli/commands/upgrade_cmd.py → src/llm_wiki_cli/services/upgrade_runtime.py), `SourceCleanupOutcome` (src/llm_wiki_cli/commands/upgrade_cmd.py → src/llm_wiki_cli/services/upgrade_runtime.py), `StructureUpgradeResult` (src/llm_wiki_cli/commands/upgrade_cmd.py → src/llm_wiki_cli/services/upgrade_runtime.py), `SyncResult` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `SyncRuntimeRefreshError` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `TargetPage` (src/llm_wiki_cli/commands/migrate_cmd.py → src/llm_wiki_cli/services/migrate_runtime.py), `_ApplyDiffContext` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_ExplicitContextOption` (src/llm_wiki_cli/cli.py → src/llm_wiki_cli/cli_declarations.py), `_ExtractedSyncInventory` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_GeneratedSectionContext` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_GeneratedSurfaceTransition` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_GitignoreRule` (src/llm_wiki_cli/config.py → src/llm_wiki_cli/services/gitignore.py), `_PreparedSyncRun` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_ReusedSync` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_RuntimeGraphObservations` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_SurfaceInitializationPlan` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_SyncEntryPointAnalysis` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_SyncPageMaps` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py), `_SyncRunOptions` (src/llm_wiki_cli/commands/sync_cmd.py → src/llm_wiki_cli/services/sync_runtime.py)
+- Flow pages initialized: 31 (api=31)
+- Workflow pages created: 42
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Generated surface pages retired: 18

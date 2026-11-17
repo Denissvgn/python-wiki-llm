@@ -2,21 +2,19 @@
 
 **Entry point:** `build_evaluated_envelope` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [implementation_evidence](../modules/implementation_evidence.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 11 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 9 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -39,7 +37,7 @@ sequenceDiagram
     participant p8 as evaluated_envelope_to_payload
     participant p9 as KnowledgeEnvelopeError
     participant p10 as SnapshotRecord
-    participant p11 as sha256_bytes
+    participant p11 as sha256_digest
     participant p12 as BundleRecord
     participant p13 as EvaluatedEnvelope
     participant p14 as _build_component
@@ -50,7 +48,7 @@ sequenceDiagram
     participant p19 as _hash_structured
     participant p20 as _normalized_markdown_bytes
     participant p21 as require_repository_relative_path
-    participant p22 as canonical_json_bytes
+    participant p22 as compact_bytes
     participant p23 as knowledge_index_to_payload
     participant p24 as _validated_limitations
     participant p25 as hash_component_configuration
@@ -69,7 +67,7 @@ sequenceDiagram
     p0->>p8: evaluated_envelope_to_payload
     p0->>p9: KnowledgeEnvelopeError
     p0->>p10: SnapshotRecord
-    p0->>p11: sha256_bytes
+    p0->>p11: sha256_digest
     p0->>p12: BundleRecord
     p0->>p13: EvaluatedEnvelope
     p7->>p14: _build_component
@@ -80,7 +78,7 @@ sequenceDiagram
     p2->>p19: _hash_structured
     p5->>p20: _normalized_markdown_bytes
     p17->>p21: require_repository_relative_path
-    p19->>p22: canonical_json_bytes
+    p19->>p22: compact_bytes
     p15->>p23: knowledge_index_to_payload
     p14->>p24: _validated_limitations
     p14->>p25: hash_component_configuration
@@ -91,9 +89,9 @@ sequenceDiagram
     p0-->>p30: snapshot_extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 550 interactions; 520 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 452 interactions; 422 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 151 (150 omitted); unresolved 1 of 78 (77 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 119 (118 omitted); unresolved 1 of 65 (64 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:build_evaluated_envelope` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
-> Omission summary shows 8 of 136 groups; 128 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 126 groups; 118 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,9 +118,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 322; effect analysis evaluated: 211, partial: 10, unavailable: 101. Counts include steps omitted from the displayed trace.
+Source steps: 269; effect analysis evaluated: 179, partial: 8, unavailable: 82. Counts include steps omitted from the displayed trace.
 
-Collector observations for 221 source steps with known totals: observed: 1063, emitted: 1009, omitted: 54. Unavailable totals are excluded.
+Collector observations for 187 source steps with known totals: observed: 849, emitted: 807, omitted: 42. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -197,17 +195,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_evaluated_envelope | isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope) | 895 | `isinstance(inputs, EnvelopeInputs)` |
-| build_evaluated_envelope | TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope) | 896 | `TypeError('inputs must be an EnvelopeInputs')` |
-| build_evaluated_envelope | isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope) | 897 | `isinstance(inputs.repository, RepositoryRecord)` |
-| build_evaluated_envelope | KnowledgeEnvelopeError | 898 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
-| build_evaluated_envelope | _extensions_copy | 902 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
-| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1774 | `isinstance(value, Mapping)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1775 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
-| _extensions_copy | any (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1776 | `any(...)` |
-| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1776 | `isinstance(key, str)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1777 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
-| _extensions_copy | _reject_machine_local_paths | 1778 | `_reject_machine_local_paths(value, field_name)` |
+| build_evaluated_envelope | isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope) | 896 | `isinstance(inputs, EnvelopeInputs)` |
+| build_evaluated_envelope | TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope) | 897 | `TypeError('inputs must be an EnvelopeInputs')` |
+| build_evaluated_envelope | isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope) | 898 | `isinstance(inputs.repository, RepositoryRecord)` |
+| build_evaluated_envelope | KnowledgeEnvelopeError | 899 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
+| build_evaluated_envelope | _extensions_copy | 903 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
+| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1775 | `isinstance(value, Mapping)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1776 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
+| _extensions_copy | any (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1777 | `any(...)` |
+| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1777 | `isinstance(key, str)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1778 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
+| _extensions_copy | _reject_machine_local_paths | 1779 | `_reject_machine_local_paths(value, field_name)` |
 
 ### Boundary effects
 
@@ -217,12 +215,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_evaluated_envelope` | `isinstance` | 895 |
-| external_call | `build_evaluated_envelope` | `TypeError` | 896 |
-| external_call | `build_evaluated_envelope` | `isinstance` | 897 |
-| external_call | `_extensions_copy` | `isinstance` | 1774 |
-| external_call | `_extensions_copy` | `any` | 1776 |
-| external_call | `_extensions_copy` | `isinstance` | 1776 |
+| external_call | `build_evaluated_envelope` | `isinstance` | 896 |
+| external_call | `build_evaluated_envelope` | `TypeError` | 897 |
+| external_call | `build_evaluated_envelope` | `isinstance` | 898 |
+| external_call | `_extensions_copy` | `isinstance` | 1775 |
+| external_call | `_extensions_copy` | `any` | 1777 |
+| external_call | `_extensions_copy` | `isinstance` | 1777 |
 | step_limit | `build_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `build_evaluated_envelope` | `depth limit` | 0 |
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `normalize_entity_observation` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_int` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_int` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 64 groups; 56 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -178,8 +178,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_entity_observation | _validate_entity_coordinate | 260 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 903 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| normalize_entity_observation | _validate_entity_coordinate | 231 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 874 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |

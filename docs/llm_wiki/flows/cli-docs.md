@@ -99,30 +99,30 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 664 | `getattr(args, 'docs_action', None)` |
-| run | isinstance | 676 | `isinstance(action, str)` |
-| run | handlers.get | 676 | `handlers.get(action)` |
-| run | DocumentationRunError | 678 | `DocumentationRunError('Missing documentation action.')` |
-| run | handler | 680 | `handler(args)` |
-| run | print | 684 | `print(..., file=sys.stderr)` |
-| run | SystemExit | 685 | `SystemExit(1)` |
+| run | getattr | 656 | `getattr(args, 'docs_action', None)` |
+| run | isinstance | 668 | `isinstance(action, str)` |
+| run | handlers.get | 668 | `handlers.get(action)` |
+| run | DocumentationRunError | 670 | `DocumentationRunError('Missing documentation action.')` |
+| run | handler | 672 | `handler(args)` |
+| run | print | 676 | `print(..., file=sys.stderr)` |
+| run | SystemExit | 677 | `SystemExit(1)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 684 |
+| output | `print` | `run` | 676 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 664 |
-| external_call | `run` | `isinstance` | 676 |
-| unresolved_call | `run` | `handlers.get` | 676 |
-| unresolved_call | `run` | `DocumentationRunError` | 678 |
-| unresolved_call | `run` | `handler` | 680 |
-| external_call | `run` | `SystemExit` | 685 |
+| external_call | `run` | `getattr` | 656 |
+| external_call | `run` | `isinstance` | 668 |
+| unresolved_call | `run` | `handlers.get` | 668 |
+| unresolved_call | `run` | `DocumentationRunError` | 670 |
+| unresolved_call | `run` | `handler` | 672 |
+| external_call | `run` | `SystemExit` | 677 |
 
 ## Behavior
 

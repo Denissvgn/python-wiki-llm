@@ -2,13 +2,15 @@
 
 **Entry point:** `commit_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 12 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), [filesystem_guard](../modules/filesystem_guard.md), and 14 more
 
 **Complete modules touched:**
 
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
-- [common](../modules/common.md)
+- [canonical_json](../modules/canonical_json.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -50,15 +52,15 @@ sequenceDiagram
     participant p17 as canonical_bytes
     participant p18 as _validate_range
     participant p19 as _detached
-    participant p20 as write_bytes_atomic
-    participant p21 as pending_bootstrap
-    participant p22 as guard_windows_directory_chain
-    participant p23 as maintenance_core
-    participant p24 as open_windows_readonly_file
-    participant p25 as _assert_windows_file_binding
-    participant p26 as StorageReadSession.read
-    participant p27 as SyncManifest.from_payload
-    participant p28 as StorageReadSession.recheck
+    participant p20 as compact_line_bytes
+    participant p21 as write_bytes_atomic
+    participant p22 as pending_bootstrap
+    participant p23 as first_unsafe_path_component
+    participant p24 as guard_windows_directory_chain
+    participant p25 as maintenance_core
+    participant p26 as open_windows_readonly_file
+    participant p27 as _assert_windows_file_binding
+    participant p28 as StorageReadSession.read
     participant p29 as isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
     participant p30 as path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
     p0->>p1: storage_writer_lock
@@ -80,22 +82,22 @@ sequenceDiagram
     p2->>p17: canonical_bytes
     p13->>p18: _validate_range
     p16->>p19: _detached
-    p9->>p20: write_bytes_atomic
-    p11->>p21: pending_bootstrap
-    p13->>p22: guard_windows_directory_chain
-    p16->>p23: maintenance_core
-    p13->>p24: open_windows_readonly_file
-    p13->>p25: _assert_windows_file_binding
-    p14->>p26: StorageReadSession.read
-    p14->>p27: SyncManifest.from_payload
-    p14->>p28: StorageReadSession.recheck
+    p17->>p20: compact_line_bytes
+    p9->>p21: write_bytes_atomic
+    p11->>p22: pending_bootstrap
+    p8->>p23: first_unsafe_path_component
+    p13->>p24: guard_windows_directory_chain
+    p16->>p25: maintenance_core
+    p13->>p26: open_windows_readonly_file
+    p13->>p27: _assert_windows_file_binding
+    p14->>p28: StorageReadSession.read
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)
     p2-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 860 interactions; 830 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 861 interactions; 831 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 357 (356 omitted); unresolved 1 of 154 (153 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 354 (353 omitted); unresolved 1 of 155 (154 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -103,13 +105,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:commit_knowledge_artifacts` | 1 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:storage_writer_lock` | 8 | - | external | 2 |
-> Omission summary shows 8 of 215 groups; 207 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 216 groups; 208 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -122,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 350; effect analysis evaluated: 194, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
+Source steps: 353; effect analysis evaluated: 197, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
 
-Collector observations for 207 source steps with known totals: observed: 1018, emitted: 992, omitted: 26. Unavailable totals are excluded.
+Collector observations for 210 source steps with known totals: observed: 1021, emitted: 995, omitted: 26. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -217,7 +219,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 

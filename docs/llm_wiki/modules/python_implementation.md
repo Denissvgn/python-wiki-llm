@@ -14,13 +14,13 @@ captured syntax, never dependencies, prose correctness, or runtime equivalence.
 | Source | Symbols |
 |--------|---------|
 | `.analysis_capture` | `_CapturedAnalysis` |
+| `.canonical_json` | `compact_line_bytes` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
 | `hashlib` | `hashlib` |
 | `io` | `io` |
-| `json` | `json` |
 | `math` | `math` |
 | `pathlib` | `PurePosixPath` |
 | `platform` | `platform` |
@@ -47,8 +47,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
-| Outbound | `src` (1) |
+| Inbound | `src` (12) |
+| Outbound | `src` (2) |
 
 > All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
@@ -56,7 +56,6 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `canonical_bytes` | `(value: Any) -> bytes` | — | — |
 | `_digest` | `(value: Any) -> str` | — | — |
 | `analysis_identity` | `(captured: object) -> str \| None` | — | Bind only issuer-owned surrounding code/runtime and normalization config. |
 | `producer` | `(analysis_hash: str \| None, *, language = 'python') -> dict[str, str] \| None` | — | — |

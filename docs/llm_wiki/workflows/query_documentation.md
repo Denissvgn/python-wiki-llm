@@ -1,7 +1,7 @@
 # query_documentation
 
 **Entry point:** `api.query_documentation`
-**Modules involved:** [api](../modules/api.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), [evidence_explanation](../modules/evidence_explanation.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules involved:** [api](../modules/api.md), [documentation_query_builder](../modules/documentation_query_builder.md), [evidence_explanation](../modules/evidence_explanation.md), [path_policy](../modules/path_policy.md), [wiki_surface](../modules/wiki_surface.md)
 
 > Dispatch one exact bounded read-only documentation query.
 
@@ -10,7 +10,7 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `documentation_query_builder.normalize_supplied_paths`
 2. `documentation_query_builder.normalize_concept_coordinate`
-3. `config.validate_source_root`
+3. `path_policy.validate_source_root`
 4. `evidence_explanation.explain_source`
 5. `evidence_explanation.explanation_provenance`
 6. `documentation_query_builder.normalize_concept_coordinate`
@@ -21,9 +21,9 @@
 ## Touches
 
 - [api](../modules/api.md)
-- [config](../modules/config.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [evidence_explanation](../modules/evidence_explanation.md)
+- [path_policy](../modules/path_policy.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior

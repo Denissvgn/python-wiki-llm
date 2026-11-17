@@ -14,6 +14,7 @@ Markdown mirror for static-site tooling without invoking external builders.
 | Source | Symbols |
 |--------|---------|
 | `.` | `wiki_surface` |
+| `.canonical_json` | `compact_bytes` |
 | `.filesystem_guard` | `fresh_no_follow_stat` |
 | `.io` | `read_md`, `write_md` |
 | `.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE` |
@@ -41,73 +42,35 @@ Markdown mirror for static-site tooling without invoking external builders.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/site_cmd.py"]
-    n1["src/llm_wiki_cli/services/documentation_run/export.py"]
-    n2["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n3["src/llm_wiki_cli/services/io.py"]
-    n4["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n6["src/llm_wiki_cli/services/site_export.py"]
-    n7["src/llm_wiki_cli/services/site_html_check.py"]
-    n8["src/llm_wiki_cli/services/validation.py"]
-    n9["src/llm_wiki_cli/services/wiki_media.py"]
-    n10["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n1 --> n6
-    n5 --> n4
-    n5 --> n8
-    n5 --> n10
-    n6 --> n2
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
-    n6 --> n9
-    n6 --> n10
-    n7 --> n9
-    n10 --> n8
-    click n0 "../modules/site_cmd.md"
-    click n1 "../modules/export.md"
-    click n2 "../modules/filesystem_guard.md"
-    click n3 "../modules/io.md"
-    click n4 "../modules/knowledge_observability.md"
-    click n5 "../modules/knowledge_projection.md"
-    click n6 "../modules/site_export.md"
-    click n7 "../modules/site_html_check.md"
-    click n8 "../modules/validation.md"
-    click n9 "../modules/wiki_media.md"
-    click n10 "../modules/wiki_surface.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/site_export.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/site_export.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [site_cmd](../modules/site_cmd.md) |
-| Inbound | [export](../modules/export.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
-| Outbound | [knowledge_projection](../modules/knowledge_projection.md) |
-| Outbound | [site_html_check](../modules/site_html_check.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_media](../modules/wiki_media.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (3) |
+| Outbound | `src` (9) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SiteExportError](../entities/SiteExportError.md) | 108 | `ValueError` | Raised for invalid static-site export requests. |
-| [SiteExportOperation](../entities/SiteExportOperation.md) | 113 | — | — |
-| [SitePublicationSelection](../entities/SitePublicationSelection.md) | 121 | — | Immutable, path-safe policy selections for one generated site. |
-| [SitePublicationReceipt](../entities/SitePublicationReceipt.md) | 156 | — | Validated publication receipt loaded from an exported mirror. |
-| [SiteExportReport](../entities/SiteExportReport.md) | 168 | — | — |
-| [FrontMatterParseResult](../entities/FrontMatterParseResult.md) | 265 | — | — |
-| [HubWikiSource](../entities/HubWikiSource.md) | 272 | — | — |
+| [SiteExportError](../entities/SiteExportError.md) | 109 | `ValueError` | Raised for invalid static-site export requests. |
+| [SiteExportOperation](../entities/SiteExportOperation.md) | 114 | — | — |
+| [SitePublicationSelection](../entities/SitePublicationSelection.md) | 122 | — | Immutable, path-safe policy selections for one generated site. |
+| [SitePublicationReceipt](../entities/SitePublicationReceipt.md) | 157 | — | Validated publication receipt loaded from an exported mirror. |
+| [SiteExportReport](../entities/SiteExportReport.md) | 169 | — | — |
+| [FrontMatterParseResult](../entities/FrontMatterParseResult.md) | 266 | — | — |
+| [HubWikiSource](../entities/HubWikiSource.md) | 273 | — | — |
 
 ## Functions
 

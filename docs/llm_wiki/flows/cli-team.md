@@ -2,26 +2,28 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 47 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [canonical_pages](../modules/canonical_pages.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
+- [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [helper_cache](../modules/helper_cache.md)
-- [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -35,8 +37,8 @@
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [markdown_sections](../modules/markdown_sections.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
@@ -81,16 +83,16 @@ sequenceDiagram
     participant p16 as build_team_issues
     participant p17 as resolve_source_selection
     participant p18 as _build_inventory_result
-    participant p19 as write_json_atomic
-    participant p20 as _print_payload
-    participant p21 as SyncManifest.load
-    participant p22 as _coerce_inventory_request
-    participant p23 as load_team_config
-    participant p24 as parse_github_actions_workflow
-    participant p25 as check_plugin_requirements
-    participant p26 as _parse_dockerfile
-    participant p27 as check_team_conventions
-    participant p28 as validate_persisted_source_selection_identity
+    participant p19 as extraction_job_request_for
+    participant p20 as write_json_atomic
+    participant p21 as _print_payload
+    participant p22 as SyncManifest.load
+    participant p23 as _coerce_inventory_request
+    participant p24 as load_team_config
+    participant p25 as parse_github_actions_workflow
+    participant p26 as check_plugin_requirements
+    participant p27 as _parse_dockerfile
+    participant p28 as check_team_conventions
     participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
     p0->>p1: _run_init
@@ -111,36 +113,36 @@ sequenceDiagram
     p2->>p16: build_team_issues
     p11->>p17: resolve_source_selection
     p12->>p18: _build_inventory_result
-    p5->>p19: write_json_atomic
-    p8->>p20: _print_payload
-    p11->>p21: SyncManifest.load
-    p12->>p22: _coerce_inventory_request
-    p7->>p23: load_team_config
-    p15->>p24: parse_github_actions_workflow
-    p16->>p25: check_plugin_requirements
-    p14->>p26: _parse_dockerfile
-    p16->>p27: check_team_conventions
-    p11->>p28: validate_persisted_source_selection_identity
+    p13->>p19: extraction_job_request_for
+    p5->>p20: write_json_atomic
+    p8->>p21: _print_payload
+    p11->>p22: SyncManifest.load
+    p12->>p23: _coerce_inventory_request
+    p7->>p24: load_team_config
+    p15->>p25: parse_github_actions_workflow
+    p16->>p26: check_plugin_requirements
+    p14->>p27: _parse_dockerfile
+    p16->>p28: check_team_conventions
     p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2750 interactions; 2720 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2584 interactions; 2554 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 856 (855 omitted); unresolved 1 of 887 (886 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 828 (827 omitted); unresolved 1 of 808 (807 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | - | external | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 5 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 5 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 5 | - | external | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 5 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 5 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 5 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 1 |
-| `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
-| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
-| `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
+| `src/llm_wiki_cli/services/team.py:team_config_path` | 16 | - | external | 1 |
+| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 20 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
 > Omission summary shows 8 of 673 groups; 665 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -154,9 +156,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1008; effect analysis evaluated: 724, partial: 42, unavailable: 242. Counts include steps omitted from the displayed trace.
+Source steps: 949; effect analysis evaluated: 673, partial: 34, unavailable: 242. Counts include steps omitted from the displayed trace.
 
-Collector observations for 766 source steps with known totals: observed: 4443, emitted: 4257, omitted: 186. Unavailable totals are excluded.
+Collector observations for 707 source steps with known totals: observed: 3875, emitted: 3775, omitted: 100. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -170,12 +172,12 @@ Collector observations for 766 source steps with known totals: observed: 4443, e
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -185,23 +187,23 @@ flowchart LR
     s4["4. getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)"]
     s5["5. validate_path"]
     s6["6. PathValidationError"]
-    s7["7. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s8["8. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s11["11. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
-    s12["12. PathValidationError"]
+    s7["7. (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s8["8. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s9["9. current_host"]
+    s10["10. _ACTIVE.get"]
+    s11["11. current_host().cwd().resolve"]
+    s12["12. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
     s1 -. "getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)" .-> s2
     s1 -->|"_run_init(args)"| s3
     s3 -. "getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
     s3 -->|"validate_path(wiki_dir, '--wiki-dir')"| s5
     s5 -->|"PathValidationError(...)"| s6
-    s5 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s7
-    s5 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s5 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
-    s5 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s10
-    s5 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s11
-    s5 -->|"PathValidationError(...)"| s12
+    s5 -. "(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s7
+    s5 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s8
+    s5 -->|"current_host(data not statically known)"| s9
+    s9 -. "_ACTIVE.get(data not statically known)" .-> s10
+    s5 -. "current_host().cwd().resolve(data not statically known)" .-> s11
+    s5 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -210,9 +212,9 @@ flowchart LR
     s3 -. "output print" .-> b2
     click s1 "../modules/team_cmd.md"
     click s3 "../modules/team_cmd.md"
-    click s5 "../modules/config.md"
-    click s6 "../modules/config.md"
-    click s12 "../modules/config.md"
+    click s5 "../modules/path_policy.md"
+    click s6 "../modules/path_policy.md"
+    click s9 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -229,12 +231,12 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `PathValidationError` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `current_host().cwd().resolve` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
@@ -244,13 +246,13 @@ flowchart LR
 | run | _run_init | 264 | `_run_init(args)` |
 | _run_init | getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init) | 61 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | _run_init | validate_path | 62 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -266,11 +268,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 262 |
 | external_call | `_run_init` | `getattr` | 61 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

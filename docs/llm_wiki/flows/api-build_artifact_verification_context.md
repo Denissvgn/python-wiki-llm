@@ -2,24 +2,20 @@
 
 **Entry point:** `build_artifact_verification_context` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 18 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), and 14 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [concept_identity](../modules/concept_identity.md)
+- [canonical_json](../modules/canonical_json.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -63,9 +59,9 @@ sequenceDiagram
     participant p25 as _document_to_payload
     participant p26 as _validated_reserved_extensions
     participant p27 as _validate_index_references
-    participant p28 as validate_implementation_collection
+    participant p28 as require_nonempty_text
     participant p29 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
-    participant p30 as knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)
+    participant p30 as knowledge.extensions.get
     p0->>p1: _sha256
     p0->>p2: knowledge_index_to_payload
     p0->>p3: require_validated_artifacts
@@ -93,14 +89,14 @@ sequenceDiagram
     p10->>p25: _document_to_payload
     p12->>p26: _validated_reserved_extensions
     p12->>p27: _validate_index_references
-    p12->>p28: validate_implementation_collection
+    p16->>p28: require_nonempty_text
     p0-->>p29: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
-    p0-->>p30: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
+    p0-->>p30: knowledge.extensions.get(governance_key)
 ```
 
-> Call sequence diagram shows 30 of 1305 interactions; 1275 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 784 interactions; 754 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 342 (341 omitted); unresolved 1 of 194 (193 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 187 (186 omitted); unresolved 1 of 97 (96 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,10 +107,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 11 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-> Omission summary shows 8 of 305 groups; 297 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 11 | - | unresolved | 1 |
+> Omission summary shows 8 of 184 groups; 176 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -127,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 770; effect analysis evaluated: 501, partial: 12, unavailable: 257. Counts include steps omitted from the displayed trace.
+Source steps: 501; effect analysis evaluated: 349, partial: 7, unavailable: 145. Counts include steps omitted from the displayed trace.
 
-Collector observations for 513 source steps with known totals: observed: 2461, emitted: 2318, omitted: 143. Unavailable totals are excluded.
+Collector observations for 356 source steps with known totals: observed: 1636, emitted: 1519, omitted: 117. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

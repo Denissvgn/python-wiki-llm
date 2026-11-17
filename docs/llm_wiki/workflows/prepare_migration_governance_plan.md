@@ -1,7 +1,7 @@
 # prepare_migration_governance_plan
 
-**Entry point:** `migrate_cmd._prepare_migration_governance_plan`
-**Modules involved:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [migrate_cmd](../modules/migrate_cmd.md), [wiki_surface](../modules/wiki_surface.md)
+**Entry point:** `migrate_runtime._prepare_migration_governance_plan`
+**Modules involved:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [migrate_runtime](../modules/migrate_runtime.md), [wiki_surface](../modules/wiki_surface.md)
 
 > Derive UID carry-forward strictly from the migration's exact matches.
 
@@ -32,9 +32,9 @@
 - [concept_identity](../modules/concept_identity.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
-- [migrate_cmd](../modules/migrate_cmd.md)
+- [migrate_runtime](../modules/migrate_runtime.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 
-This workflow starts at `migrate_cmd._prepare_migration_governance_plan`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `migrate_runtime._prepare_migration_governance_plan`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

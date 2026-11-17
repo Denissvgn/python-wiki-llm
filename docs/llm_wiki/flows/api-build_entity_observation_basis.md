@@ -2,7 +2,7 @@
 
 **Entry point:** `build_entity_observation_basis` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [normalization_diagnostics](../modules/normalization_diagnostics.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [normalization_diagnostics](../modules/normalization_diagnostics.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -22,7 +22,7 @@ sequenceDiagram
     participant p8 as _validate_source_path
     participant p9 as _inventory_language
     participant p10 as _validate_hash
-    participant p11 as canonical_json_bytes
+    participant p11 as compact_bytes
     participant p12 as _validate_extractor_ref
     participant p13 as require_positive_int
     participant p14 as _record_array
@@ -52,7 +52,7 @@ sequenceDiagram
     p1->>p8: _validate_source_path
     p4->>p9: _inventory_language
     p1->>p10: _validate_hash
-    p5->>p11: canonical_json_bytes
+    p5->>p11: compact_bytes
     p1->>p12: _validate_extractor_ref
     p2->>p13: require_positive_int
     p4->>p14: _record_array
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 99 groups; 91 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 100 groups; 92 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 186; effect analysis evaluated: 172, partial: 3, unavailable: 11. Counts include steps omitted from the displayed trace.
 
-Collector observations for 175 source steps with known totals: observed: 827, emitted: 812, omitted: 15. Unavailable totals are excluded.
+Collector observations for 175 source steps with known totals: observed: 829, emitted: 814, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -179,9 +179,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_entity_observation_basis | _validate_basis_inputs | 380 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 840 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 868 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_entity_observation_basis | _validate_basis_inputs | 351 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
+| _validate_basis_inputs | _validate_source_path | 811 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 839 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `type(value)` |

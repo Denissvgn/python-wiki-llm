@@ -1,16 +1,16 @@
 # run_check
 
 **Entry point:** `team_cmd._run_check`
-**Modules involved:** [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [team](../modules/team.md), [team_cmd](../modules/team_cmd.md)
+**Modules involved:** [extraction_jobs](../modules/extraction_jobs.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [path_policy](../modules/path_policy.md), [team](../modules/team.md), [team_cmd](../modules/team_cmd.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_source_root`
-2. `config.validate_path`
+1. `path_policy.validate_source_root`
+2. `path_policy.validate_path`
 3. `team.resolve_team_policy`
 4. `team.team_config_issue`
-5. `config.validate_path`
+5. `path_policy.validate_path`
 6. `team.team_config_issue`
 7. `team.TeamConfigError`
 8. `extraction_service.get_inventory_result`
@@ -21,10 +21,10 @@
 
 ## Touches
 
-- [config](../modules/config.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [path_policy](../modules/path_policy.md)
 - [team](../modules/team.md)
 - [team_cmd](../modules/team_cmd.md)
 

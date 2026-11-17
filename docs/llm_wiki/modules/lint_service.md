@@ -47,14 +47,15 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT` |
 | `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts`, `_iter_callables` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
-| `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
+| `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_for`, `print_extraction_job_plan` |
 | `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
 | `.flow_followup` | `validate_request` |
 | `.health_details` | `CapturedHealthDetails`, `capture_health_details` |
 | `.health_summary` | `_diagnostic_kind`, `diagnostic_groups`, `render_validation_markdown` |
+| `.host` | `emit` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
-| `.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
+| `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
 | `.io` | `read_md` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
@@ -64,8 +65,10 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
 | `.knowledge_verification` | `attach_machine_verification_read_view` |
+| `.lint_request` | `LintRequest`, `LintRequestError` |
 | `.metrics` | `record_validation_event` |
 | `.module_coverage` | `classify_uncovered_python_sources` |
+| `.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.progress` | `phase` |
 | `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection`, `retained_empty_module_paths` |
@@ -86,6 +89,7 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `sys` | `sys` |
@@ -110,23 +114,23 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (8) |
-| Outbound | `src` (42) |
+| Inbound | `src` (10) |
+| Outbound | `src` (45) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 204 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 243 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 254 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 292 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 333 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 340 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 354 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 361 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 208 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 247 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 258 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 296 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 337 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 344 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 358 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 365 | — | — |
 
 ## Functions
 
@@ -211,4 +215,7 @@ flowchart LR
 | `_add_extractor_failures` | `(report: LintReport, inventory_result) -> None` | — | — |
 | `render_text` | `(report: LintReport) -> str` | — | — |
 | `render_markdown` | `(report: LintReport, *, health: Mapping \| None = None) -> str` | — | — |
+| `lint_request_from_args` | `(args) -> LintRequest` | — | Translate parsed ``lint`` arguments into a :class:`LintRequest`. |
+| `_build_requested_report` | `(request: LintRequest, profiler: _LintProfiler \| None = None) -> LintReport` | — | Validate the request's paths and build its report; paths may raise. |
+| `execute_lint` | `(request: LintRequest) -> LintReport` | — | Lint without exiting; the report says whether the wiki passed. |
 | `run` | `(args)` | — | — |

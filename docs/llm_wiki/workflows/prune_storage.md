@@ -1,7 +1,7 @@
 # prune_storage
 
 **Entry point:** `knowledge_storage_lifecycle._prune_storage`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [manifest_storage](../modules/manifest_storage.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [manifest_storage](../modules/manifest_storage.md)
 
 > Remove only valid content-addressed objects unreachable from a full audit.
 
@@ -13,7 +13,7 @@
 3. `knowledge_artifacts.current_knowledge_format`
 4. `knowledge_storage.KnowledgeStorageError`
 5. `knowledge_storage.canonical_bytes`
-6. `knowledge_storage.digest`
+6. `canonical_json.sha256_digest`
 7. `knowledge_storage.canonical_bytes`
 8. `knowledge_storage.KnowledgeStorageError`
 9. `knowledge_storage.KnowledgeStorageError`
@@ -27,14 +27,14 @@
 17. `knowledge_storage_io.read_guarded`
 18. `knowledge_packs.inspect_pack`
 19. `knowledge_packs.inspect_index_pages`
-20. `knowledge_storage.digest`
+20. `canonical_json.sha256_digest`
 21. `knowledge_storage.KnowledgeStorageError`
 22. `manifest_storage.validate_catalog`
 23. `knowledge_storage.decode_bytes`
-24. `knowledge_storage.digest`
+24. `canonical_json.sha256_digest`
 25. `knowledge_storage.canonical_bytes`
 26. `knowledge_packs.PackedKnowledgeStoreReader`
-27. `knowledge_storage.digest`
+27. `canonical_json.sha256_digest`
 28. `knowledge_storage.canonical_bytes`
 29. `knowledge_storage.canonical_bytes`
 30. `knowledge_storage.KnowledgeStorageError`
@@ -44,6 +44,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_packs](../modules/knowledge_packs.md)

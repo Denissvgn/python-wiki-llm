@@ -1,6 +1,6 @@
 # BoundedProcessResult
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:637`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:638`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

@@ -177,10 +177,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_portable_relative_path | os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path) | 106 | `os.fspath(relative)` |
-| validate_portable_relative_path | isinstance (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `isinstance(raw, str)` |
-| validate_portable_relative_path | raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `raw.replace('\\', '/')` |
-| validate_portable_relative_path | require_portable_relative_path | 108 | `require_portable_relative_path(raw, normalize_backslashes=normalize_backslashes, text_error=ProtectedArtifactIntegrityError(...), relative_error=ProtectedArtifactIntegrityError(...), non_nfc_error=ProtectedArtifactIntegrityError(...), nonportable_error=ProtectedArtifactIntegrityError(...), reserved_error=ProtectedArtifactIntegrityError(...))` |
+| validate_portable_relative_path | os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `os.fspath(relative)` |
+| validate_portable_relative_path | isinstance (src/llm_wiki_cli/services…ate_portable_relative_path) | 108 | `isinstance(raw, str)` |
+| validate_portable_relative_path | raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path) | 108 | `raw.replace('\\', '/')` |
+| validate_portable_relative_path | require_portable_relative_path | 109 | `require_portable_relative_path(raw, normalize_backslashes=normalize_backslashes, text_error=ProtectedArtifactIntegrityError(...), relative_error=ProtectedArtifactIntegrityError(...), non_nfc_error=ProtectedArtifactIntegrityError(...), nonportable_error=ProtectedArtifactIntegrityError(...), reserved_error=ProtectedArtifactIntegrityError(...))` |
 | require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
@@ -197,9 +197,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_portable_relative_path` | `os.fspath` | 106 |
-| external_call | `validate_portable_relative_path` | `isinstance` | 107 |
-| unresolved_call | `validate_portable_relative_path` | `raw.replace` | 107 |
+| external_call | `validate_portable_relative_path` | `os.fspath` | 107 |
+| external_call | `validate_portable_relative_path` | `isinstance` | 108 |
+| unresolved_call | `validate_portable_relative_path` | `raw.replace` | 108 |
 | external_call | `require_portable_relative_path` | `isinstance` | 221 |
 | external_call | `require_portable_relative_path` | `os.fspath` | 223 |
 | external_call | `require_portable_relative_path` | `isinstance` | 224 |

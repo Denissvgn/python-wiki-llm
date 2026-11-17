@@ -1,6 +1,6 @@
 # _Receipt
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:166`
+**Location:** `src/llm_wiki_cli/services/context_session.py:167`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)

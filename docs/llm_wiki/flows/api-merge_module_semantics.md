@@ -2,7 +2,7 @@
 
 **Entry point:** `merge_module_semantics` (`api`)
 **Source:** [section_ownership](../modules/section_ownership.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md)
 
 ## Call sequence
 
@@ -24,7 +24,7 @@ sequenceDiagram
     participant p10 as _iter_structural_headings
     participant p11 as hash_json
     participant p12 as _frontmatter_extent
-    participant p13 as canonical_json_bytes
+    participant p13 as compact_bytes
     participant p14 as normalize_markdown
     participant p15 as SemanticMergeResult
     participant p16 as is_placeholder_description
@@ -37,7 +37,7 @@ sequenceDiagram
     participant p23 as format_table_row
     participant p24 as section_locator
     participant p25 as MarkdownSection
-    participant p26 as sha256_bytes
+    participant p26 as sha256_digest
     participant p27 as MarkdownSectionDocument
     participant p28 as _line_content
     participant p29 as isinstance (src/llm_wiki_cli/services…py:merge_module_semantics)
@@ -54,9 +54,9 @@ sequenceDiagram
     p3->>p10: _iter_structural_headings
     p3->>p11: hash_json
     p10->>p12: _frontmatter_extent
-    p11->>p13: canonical_json_bytes
+    p11->>p13: compact_bytes
     p1->>p14: normalize_markdown
-    p1->>p15: SemanticMergeResult
+    p2->>p15: SemanticMergeResult
     p5->>p16: is_placeholder_description
     p4->>p17: section_bounds
     p7->>p18: split_table_row
@@ -67,16 +67,16 @@ sequenceDiagram
     p8->>p23: format_table_row
     p3->>p24: section_locator
     p3->>p25: MarkdownSection
-    p3->>p26: sha256_bytes
+    p3->>p26: sha256_digest
     p3->>p27: MarkdownSectionDocument
     p9->>p28: _line_content
     p0-->>p29: isinstance (src/llm_wiki_cli/services…py:merge_module_semantics)(description, str)
     p0-->>p30: semantics.get('classes', {...})
 ```
 
-> Call sequence diagram shows 30 of 206 interactions; 176 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 208 interactions; 178 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 70 (69 omitted); unresolved 1 of 79 (78 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 70 (69 omitted); unresolved 1 of 81 (80 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -103,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 58; effect analysis evaluated: 53, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
-Collector observations for 53 source steps with known totals: observed: 222, emitted: 222, omitted: 0. Unavailable totals are excluded.
+Collector observations for 53 source steps with known totals: observed: 224, emitted: 224, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -177,10 +177,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| merge_module_semantics | semantics.get | 1237 | `semantics.get('classes', {...})` |
-| merge_module_semantics | semantics.get | 1238 | `semantics.get('functions', {...})` |
-| merge_module_semantics | semantics.get | 1239 | `semantics.get('description')` |
-| merge_module_semantics | merge_semantic_markdown | 1240 | `merge_semantic_markdown(existing, generated, (...), old_description=..., old_table_descriptions={...})` |
+| merge_module_semantics | semantics.get | 1241 | `semantics.get('classes', {...})` |
+| merge_module_semantics | semantics.get | 1242 | `semantics.get('functions', {...})` |
+| merge_module_semantics | semantics.get | 1243 | `semantics.get('description')` |
+| merge_module_semantics | merge_semantic_markdown | 1244 | `merge_semantic_markdown(existing, generated, (...), old_description=..., old_table_descriptions={...})` |
 | merge_semantic_markdown | normalize_markdown | 1158 | `normalize_markdown(generated)` |
 | normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 | normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |
@@ -197,9 +197,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `merge_module_semantics` | `semantics.get` | 1237 |
-| unresolved_call | `merge_module_semantics` | `semantics.get` | 1238 |
-| unresolved_call | `merge_module_semantics` | `semantics.get` | 1239 |
+| unresolved_call | `merge_module_semantics` | `semantics.get` | 1241 |
+| unresolved_call | `merge_module_semantics` | `semantics.get` | 1242 |
+| unresolved_call | `merge_module_semantics` | `semantics.get` | 1243 |
 | unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 82 |
 | unresolved_call | `normalize_markdown` | `text.replace` | 82 |
 | external_call | `_markdown_lines` | `re.findall` | 218 |

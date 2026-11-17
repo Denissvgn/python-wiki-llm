@@ -36,8 +36,9 @@ flowchart LR
     n3["src/llm_wiki_cli/services/context_packet.py"]
     n4["src/llm_wiki_cli/services/knowledge_artifacts.py"]
     n5["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n7["src/llm_wiki_cli/services/source_retirement.py"]
+    n6["src/llm_wiki_cli/services/knowledge_kinds.py"]
+    n7["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n8["src/llm_wiki_cli/services/source_retirement.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -45,12 +46,14 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/knowledge_artifacts.md"
     click n5 "../modules/knowledge_index.md"
-    click n6 "../modules/knowledge_projection.md"
-    click n7 "../modules/source_retirement.md"
+    click n6 "../modules/knowledge_kinds.md"
+    click n7 "../modules/knowledge_projection.md"
+    click n8 "../modules/source_retirement.md"
 ```
 
 ### Summary
@@ -73,5 +76,6 @@ flowchart LR
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_kinds` | import | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |

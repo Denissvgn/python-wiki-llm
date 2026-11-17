@@ -1,28 +1,28 @@
 # build_scoped_task_read
 
 **Entry point:** `task_context_v2.build_scoped_task_read`
-**Modules involved:** [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [python_implementation](../modules/python_implementation.md), [source_selection](../modules/source_selection.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet_builder](../modules/context_packet_builder.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [path_policy](../modules/path_policy.md), [python_implementation](../modules/python_implementation.md), [source_selection](../modules/source_selection.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `task_contract.normalize_task_request`
-2. `context_packet.ContextPacketUnavailableError`
+2. `context_packet_builder.ContextPacketUnavailableError`
 3. `task_context._counter`
 4. `workflow_profile.WorkflowRequestError`
 5. `task_context._cancel`
-6. `config.validate_source_root`
-7. `config.validate_path`
+6. `path_policy.validate_source_root`
+7. `path_policy.validate_path`
 8. `task_context.plan_source_read`
 9. `task_context._cancel`
 10. `knowledge_storage_access.capture_knowledge_slice`
 11. `source_selection.validate_persisted_source_selection_identity`
 12. `task_context._cancel`
-13. `context_packet.ContextPacketUnavailableError`
-14. `context_packet.ContextPacketUnavailableError`
+13. `context_packet_builder.ContextPacketUnavailableError`
+14. `context_packet_builder.ContextPacketUnavailableError`
 15. `workflow_profile.content_id`
 16. `workflow_profile.content_id`
-17. `context_packet.confirmed_missing_source_paths`
+17. `context_packet_builder.confirmed_missing_source_paths`
 18. `implementation_evidence.compare_knowledge_implementation`
 19. `python_implementation.analysis_identity`
 20. `task_evidence.declaration_records`
@@ -36,22 +36,22 @@
 28. `task_contract.TaskContext`
 29. `task_context._cancel`
 30. `workflow_profile.WorkflowRequestError`
-31. `context_packet._assert_source_unchanged`
+31. `context_packet_builder._assert_source_unchanged`
 32. `change_selection.select_changes`
-33. `context_packet.ContextPacketSourceMutationError`
+33. `context_packet_builder.ContextPacketSourceMutationError`
 34. `workflow_profile.WorkflowRequestError`
-35. `context_packet.ContextPacketSourceMutationError`
+35. `context_packet_builder.ContextPacketSourceMutationError`
 36. `task_context.TaskRead`
 
 ## Touches
 
 - [change_selection](../modules/change_selection.md)
-- [config](../modules/config.md)
 - [context_budget](../modules/context_budget.md)
-- [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
+- [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
 - [source_selection](../modules/source_selection.md)
 - [task_context](../modules/task_context.md)

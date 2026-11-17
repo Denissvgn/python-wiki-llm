@@ -1,6 +1,6 @@
 # EvaluatedEnvelope
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:267`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:268`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

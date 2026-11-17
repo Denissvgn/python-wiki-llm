@@ -17,7 +17,9 @@ Callers can supply already captured page contents to preserve their read basis.
 | Source | Symbols |
 |--------|---------|
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
+| `.context_request_format` | `portable_path`, `validate_changes` |
 | `.extraction_service` | `_git_name_status_paths`, `_partition_snapshot_git_changes` |
+| `.host` | `current_host` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `hashlib` | `hashlib` |
@@ -31,89 +33,28 @@ Callers can supply already captured page contents to preserve their read basis.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/review_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/change_selection.py"]
-    n3["src/llm_wiki_cli/services/context_budget.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["src/llm_wiki_cli/services/context_service.py"]
-    n6["src/llm_wiki_cli/services/extraction_service.py"]
-    n7["src/llm_wiki_cli/services/impact.py"]
-    n8["src/llm_wiki_cli/services/review_service.py"]
-    n9["src/llm_wiki_cli/services/task_context.py"]
-    n10["src/llm_wiki_cli/services/task_context_v2.py"]
-    n11["src/llm_wiki_cli/services/task_contract.py"]
-    n0 --> n2
-    n0 --> n7
-    n0 --> n8
-    n1 --> n6
-    n2 --> n1
-    n2 --> n6
-    n3 --> n2
-    n3 --> n4
-    n3 --> n5
-    n4 --> n2
-    n4 --> n5
-    n4 --> n6
-    n5 --> n2
-    n5 --> n3
-    n5 --> n4
-    n5 --> n6
-    n7 --> n2
-    n7 --> n8
-    n8 --> n1
-    n8 --> n2
-    n8 --> n6
-    n9 --> n2
-    n9 --> n3
-    n9 --> n4
-    n9 --> n5
-    n9 --> n10
-    n9 --> n11
-    n10 --> n2
-    n10 --> n3
-    n10 --> n4
-    n10 --> n5
-    n10 --> n6
-    n10 --> n9
-    n10 --> n11
-    n11 --> n2
-    click n0 "../modules/review_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/change_selection.md"
-    click n3 "../modules/context_budget.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/context_service.md"
-    click n6 "../modules/extraction_service.md"
-    click n7 "../modules/impact.md"
-    click n8 "../modules/review_service.md"
-    click n9 "../modules/task_context.md"
-    click n10 "../modules/task_context_v2.md"
-    click n11 "../modules/task_contract.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/change_selection.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/change_selection.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [review_cmd](../modules/review_cmd.md) |
-| Inbound | [context_budget](../modules/context_budget.md) |
-| Inbound | [context_packet](../modules/context_packet.md) |
-| Inbound | [context_service](../modules/context_service.md) |
-| Inbound | [impact](../modules/impact.md) |
-| Inbound | [review_service](../modules/review_service.md) |
-| Inbound | [task_context](../modules/task_context.md) |
-| Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Inbound | [task_contract](../modules/task_contract.md) |
-| Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| Outbound | [extraction_service](../modules/extraction_service.md) |
+| Inbound | `src` (9) |
+| Outbound | `src` (4) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `portable_path` | `(value: str) -> str` | — | — |
-| `validate_changes` | `(value: object) -> dict` | — | — |
 | `changes_from_args` | `(args) -> dict \| None` | — | — |
 | `_git` | `(root, *arguments) -> str` | — | — |
 | `source_relative_paths` | `(paths, root, *, prefix = None) -> list[str]` | — | Map repo-relative Git/patch paths through an exact source-root prefix. |

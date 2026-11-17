@@ -29,11 +29,11 @@ flowchart LR
     n0["ArtifactWriteState (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n4["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n5["_record_bootstrap_artifact (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n6["src/llm_wiki_cli/services/knowledge_reuse.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n3["_record_bootstrap_artifact (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n4["src/llm_wiki_cli/services/knowledge_reuse.py"]
+    n5["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n6["src/llm_wiki_cli/services/migrate_runtime.py"]
+    n7["src/llm_wiki_cli/services/sync_runtime.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -42,11 +42,11 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     click n0 "../modules/knowledge_artifacts.md"
-    click n3 "../modules/migrate_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/bootstrap_runtime.md"
-    click n6 "../modules/knowledge_reuse.md"
-    click n7 "../modules/knowledge_storage_lifecycle.md"
+    click n3 "../modules/bootstrap_runtime.md"
+    click n4 "../modules/knowledge_reuse.md"
+    click n5 "../modules/knowledge_storage_lifecycle.md"
+    click n6 "../modules/migrate_runtime.md"
+    click n7 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -66,8 +66,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_record_bootstrap_artifact` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `knowledge_reuse` | import | [knowledge_reuse](../modules/knowledge_reuse.md) | — |
 | `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |
+| `migrate_runtime` | import | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |

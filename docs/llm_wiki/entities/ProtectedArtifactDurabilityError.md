@@ -1,6 +1,6 @@
 # ProtectedArtifactDurabilityError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:91`
+**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:92`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)

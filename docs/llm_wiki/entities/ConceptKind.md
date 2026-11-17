@@ -43,8 +43,11 @@ flowchart LR
     n5["src/llm_wiki_cli/services/knowledge_coverage.py"]
     n6["src/llm_wiki_cli/services/knowledge_governance.py"]
     n7["_structural_facet (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n8["concept_kind_for_page_kind (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n9["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n8["_builtin_concept_specs (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n9["KindRegistry._check_concept (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n10["KindRegistry.with_concept_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n11["concept_kind_for_page_kind (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n12["src/llm_wiki_cli/services/knowledge_projection.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -54,14 +57,20 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
+    n12 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/knowledge_artifacts.md"
     click n5 "../modules/knowledge_coverage.md"
     click n6 "../modules/knowledge_governance.md"
     click n7 "../modules/knowledge_index.md"
-    click n8 "../modules/knowledge_model.md"
-    click n9 "../modules/knowledge_projection.md"
+    click n8 "../modules/knowledge_kinds.md"
+    click n9 "../modules/knowledge_kinds.md"
+    click n10 "../modules/knowledge_kinds.md"
+    click n11 "../modules/knowledge_model.md"
+    click n12 "../modules/knowledge_projection.md"
 ```
 
 ### Summary
@@ -86,5 +95,8 @@ flowchart LR
 | `knowledge_coverage` | import | [knowledge_coverage](../modules/knowledge_coverage.md) | — |
 | `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_builtin_concept_specs` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
+| `KindRegistry._check_concept` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
+| `KindRegistry.with_concept_kind` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
 | `concept_kind_for_page_kind` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

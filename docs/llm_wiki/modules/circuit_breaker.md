@@ -10,6 +10,7 @@ _Auto-generated from `src/llm_wiki_cli/services/circuit_breaker.py`._
 
 | Source | Symbols |
 |--------|---------|
+| `.host` | `current_host`, `emit` |
 | `datetime` | `datetime`, `timezone` |
 | `json` | `json` |
 | `math` | `math` |
@@ -25,14 +26,17 @@ flowchart LR
     n0["src/llm_wiki_cli/commands/status_cmd.py"]
     n1["src/llm_wiki_cli/commands/trigger_cmd.py"]
     n2["src/llm_wiki_cli/services/circuit_breaker.py"]
-    n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n3["src/llm_wiki_cli/services/host.py"]
+    n4["src/llm_wiki_cli/services/mcp_server.py"]
     n0 --> n2
     n1 --> n2
-    n3 --> n2
+    n2 --> n3
+    n4 --> n2
     click n0 "../modules/status_cmd.md"
     click n1 "../modules/trigger_cmd.md"
     click n2 "../modules/circuit_breaker.md"
-    click n3 "../modules/mcp_server.md"
+    click n3 "../modules/host.md"
+    click n4 "../modules/mcp_server.md"
 ```
 
 ### Internal neighbors
@@ -42,6 +46,7 @@ flowchart LR
 | Inbound | [status_cmd](../modules/status_cmd.md) |
 | Inbound | [trigger_cmd](../modules/trigger_cmd.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
+| Outbound | [host](../modules/host.md) |
 
 ## Functions
 

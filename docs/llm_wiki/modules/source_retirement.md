@@ -64,10 +64,10 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (1) |
-| Inbound | `src` (13) |
+| Inbound | `src` (12) |
 | Outbound | `src` (6) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

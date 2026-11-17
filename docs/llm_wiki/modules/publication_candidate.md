@@ -4,13 +4,17 @@
 
 ## Description
 
-Portable, review-bound GitHub wiki candidates without remote mutation.
+Portable, review-bound publication candidates without remote mutation.
+
+The policy's :mod:`publication target <.publication_targets>` prepares each
+owned page and checks the composed tree; GitHub wiki is the built-in target.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
+| `.domain_pack` | `current_pack` |
 | `.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
@@ -18,8 +22,9 @@ Portable, review-bound GitHub wiki candidates without remote mutation.
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
 | `.publication_delivery` | `split_delivery_tree` |
 | `.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `project_publication_targets`, `project_publication_targets`, `publication_target_observation` |
-| `.publication_links` | `check_github_wiki`, `prepare_wiki_markdown`, `check_github_wiki` |
 | `.publication_snapshot` | `assert_bootstrap_output_excluded` |
+| `.publication_targets` | `current_publication_targets`, `publication_target` |
+| `.reference_providers` | `reference_providers_identity` |
 | `.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
@@ -52,9 +57,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (4) |
 | Inbound | `src` (5) |
-| Outbound | `src` (11) |
+| Outbound | `src` (13) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

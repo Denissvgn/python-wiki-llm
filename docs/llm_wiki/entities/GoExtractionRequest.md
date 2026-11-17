@@ -1,6 +1,6 @@
 # GoExtractionRequest
 
-**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:39`
+**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:40`
 **Kind:** Class
 **Bases:** —
 **Module:** [go_extractor](../modules/go_extractor.md)

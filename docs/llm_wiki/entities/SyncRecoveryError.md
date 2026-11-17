@@ -24,16 +24,16 @@ A recovery proof or operation cannot be admitted safely.
 flowchart LR
     n0["SyncRecoveryError (src/llm_wiki_cli/services/sync_recovery.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n3["_page (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n4["_policy_inputs (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n5["_root_identity (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n6["_safe (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n7["NewPageJournal._persist (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n8["NewPageJournal.after_write (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n9["NewPageJournal.before_write (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n10["NewPageJournal.discard_committed (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n11["recover_new_sync_pages (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n2["_page (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n3["_policy_inputs (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n4["_root_identity (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n5["_safe (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n6["NewPageJournal._persist (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n7["NewPageJournal.after_write (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n8["NewPageJournal.before_write (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n9["NewPageJournal.discard_committed (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n10["recover_new_sync_pages (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n11["src/llm_wiki_cli/services/sync_runtime.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -46,7 +46,7 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     click n0 "../modules/sync_recovery.md"
-    click n2 "../modules/sync_cmd.md"
+    click n2 "../modules/sync_recovery.md"
     click n3 "../modules/sync_recovery.md"
     click n4 "../modules/sync_recovery.md"
     click n5 "../modules/sync_recovery.md"
@@ -55,7 +55,7 @@ flowchart LR
     click n8 "../modules/sync_recovery.md"
     click n9 "../modules/sync_recovery.md"
     click n10 "../modules/sync_recovery.md"
-    click n11 "../modules/sync_recovery.md"
+    click n11 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -74,7 +74,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_page` | call | [sync_recovery](../modules/sync_recovery.md) | 2 |
 | `_policy_inputs` | call | [sync_recovery](../modules/sync_recovery.md) | 1 |
 | `_root_identity` | call | [sync_recovery](../modules/sync_recovery.md) | 1 |
@@ -84,3 +83,4 @@ flowchart LR
 | `NewPageJournal.before_write` | call | [sync_recovery](../modules/sync_recovery.md) | 5 |
 | `NewPageJournal.discard_committed` | call | [sync_recovery](../modules/sync_recovery.md) | 5 |
 | `recover_new_sync_pages` | call | [sync_recovery](../modules/sync_recovery.md) | 28 |
+| `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |

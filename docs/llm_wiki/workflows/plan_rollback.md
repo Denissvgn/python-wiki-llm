@@ -1,14 +1,14 @@
 # plan_rollback
 
 **Entry point:** `publication_delivery.plan_rollback`
-**Modules involved:** [knowledge_evidence](../modules/knowledge_evidence.md), [publication_candidate](../modules/publication_candidate.md), [publication_delivery](../modules/publication_delivery.md), [publication_links](../modules/publication_links.md)
+**Modules involved:** [knowledge_evidence](../modules/knowledge_evidence.md), [publication_candidate](../modules/publication_candidate.md), [publication_delivery](../modules/publication_delivery.md), [publication_targets](../modules/publication_targets.md)
 
 > Propose a new target commit restoring earlier ownership and preserving manual changes.
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `publication_links.check_github_wiki`
+1. `publication_targets.publication_target`
 2. `knowledge_evidence.hash_json`
 3. `knowledge_evidence.hash_json`
 4. `publication_candidate._hashes`
@@ -21,7 +21,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_delivery](../modules/publication_delivery.md)
-- [publication_links](../modules/publication_links.md)
+- [publication_targets](../modules/publication_targets.md)
 
 ## Behavior
 

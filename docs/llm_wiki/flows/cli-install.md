@@ -2,13 +2,15 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [install_cmd](../modules/install_cmd.md)
-**Modules touched:** [config](../modules/config.md), [install_cmd](../modules/install_cmd.md), [io](../modules/io.md), [plugins](../modules/plugins.md), and 3 more
+**Modules touched:** [config](../modules/config.md), [host](../modules/host.md), [install_cmd](../modules/install_cmd.md), [io](../modules/io.md), and 5 more
 
 **Complete modules touched:**
 
 - [config](../modules/config.md)
+- [host](../modules/host.md)
 - [install_cmd](../modules/install_cmd.md)
 - [io](../modules/io.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [services_schema](../modules/services_schema.md)
 - [validation](../modules/validation.md)
@@ -29,27 +31,27 @@ sequenceDiagram
     participant p5 as _component_summary
     participant p6 as resolve_plugin_ref
     participant p7 as validate_plugin
-    participant p8 as require_safe_schema_path
-    participant p9 as read_lock
-    participant p10 as installed_skill_block_contents
-    participant p11 as _check_install_collisions
-    participant p12 as refresh_skill_blocks_content
-    participant p13 as write_bytes_atomic
-    participant p14 as plugin_store
-    participant p15 as write_lock
-    participant p16 as _manifest_root
-    participant p17 as lock_path
-    participant p18 as _ensure_no_reserved_plugin_sources
-    participant p19 as replace_skill_block_content
-    participant p20 as iter_components
-    participant p21 as _ensure_id
-    participant p22 as _load_catalog
-    participant p23 as _version_satisfies
-    participant p24 as _normalize_component
-    participant p25 as build_skill_block
-    participant p26 as _ensure_entry_point
-    participant p27 as _safe_component_path
-    participant p28 as _validate_prompt_template_vcs_boundary
+    participant p8 as first_unsafe_path_component
+    participant p9 as require_safe_schema_path
+    participant p10 as read_lock
+    participant p11 as installed_skill_block_contents
+    participant p12 as _check_install_collisions
+    participant p13 as refresh_skill_blocks_content
+    participant p14 as write_bytes_atomic
+    participant p15 as plugin_store
+    participant p16 as write_lock
+    participant p17 as _manifest_root
+    participant p18 as lock_path
+    participant p19 as _ensure_no_reserved_plugin_sources
+    participant p20 as replace_skill_block_content
+    participant p21 as iter_components
+    participant p22 as _ensure_id
+    participant p23 as _load_catalog
+    participant p24 as _version_satisfies
+    participant p25 as _normalize_component
+    participant p26 as build_skill_block
+    participant p27 as _ensure_entry_point
+    participant p28 as _safe_component_path
     participant p29 as getattr (src/llm_wiki_cli/commands/install_cmd.py:run)
     participant p30 as config.get
     p0->>p1: validate_path
@@ -59,48 +61,48 @@ sequenceDiagram
     p0->>p5: _component_summary
     p2->>p6: resolve_plugin_ref
     p2->>p7: validate_plugin
-    p4->>p8: require_safe_schema_path
-    p2->>p9: read_lock
-    p4->>p10: installed_skill_block_contents
-    p2->>p11: _check_install_collisions
-    p4->>p12: refresh_skill_blocks_content
-    p4->>p13: write_bytes_atomic
-    p2->>p14: plugin_store
-    p2->>p15: write_lock
-    p7->>p16: _manifest_root
-    p9->>p17: lock_path
-    p7->>p18: _ensure_no_reserved_plugin_sources
-    p12->>p19: replace_skill_block_content
-    p10->>p20: iter_components
-    p7->>p21: _ensure_id
-    p6->>p22: _load_catalog
-    p7->>p23: _version_satisfies
-    p7->>p24: _normalize_component
-    p19->>p25: build_skill_block
-    p24->>p26: _ensure_entry_point
-    p24->>p27: _safe_component_path
-    p24->>p28: _validate_prompt_template_vcs_boundary
+    p3->>p8: first_unsafe_path_component
+    p4->>p9: require_safe_schema_path
+    p2->>p10: read_lock
+    p4->>p11: installed_skill_block_contents
+    p2->>p12: _check_install_collisions
+    p4->>p13: refresh_skill_blocks_content
+    p4->>p14: write_bytes_atomic
+    p2->>p15: plugin_store
+    p2->>p16: write_lock
+    p7->>p17: _manifest_root
+    p10->>p18: lock_path
+    p7->>p19: _ensure_no_reserved_plugin_sources
+    p13->>p20: replace_skill_block_content
+    p11->>p21: iter_components
+    p7->>p22: _ensure_id
+    p6->>p23: _load_catalog
+    p7->>p24: _version_satisfies
+    p7->>p25: _normalize_component
+    p20->>p26: build_skill_block
+    p25->>p27: _ensure_entry_point
+    p25->>p28: _safe_component_path
     p0-->>p29: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0-->>p30: config.get('agent', 'generic')
 ```
 
-> Call sequence diagram shows 30 of 397 interactions; 367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 401 interactions; 371 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 129 (128 omitted); unresolved 1 of 159 (158 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 126 (125 omitted); unresolved 1 of 163 (162 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | unresolved | 9 |
-| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | external | 5 |
-| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 3 |
-| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | external | 9 |
-> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 15 | - | unresolved | 9 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 15 | - | external | 5 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 15 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 3 |
+| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 26 | - | unresolved | 5 |
+> Omission summary shows 8 of 107 groups; 99 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 110; effect analysis evaluated: 69, partial: 1, unavailable: 40. Counts include steps omitted from the displayed trace.
+Source steps: 113; effect analysis evaluated: 72, partial: 1, unavailable: 40. Counts include steps omitted from the displayed trace.
 
-Collector observations for 70 source steps with known totals: observed: 337, emitted: 327, omitted: 10. Unavailable totals are excluded.
+Collector observations for 73 source steps with known totals: observed: 343, emitted: 333, omitted: 10. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -128,13 +130,13 @@ Collector observations for 70 source steps with known totals: observed: 337, emi
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `install_plugin` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `resolve_plugin_ref` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -143,24 +145,24 @@ flowchart LR
     s3["3. validate_path"]
     s4["4. PathValidationError"]
     s5["5. (…).resolve"]
-    s6["6. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s7["7. Path.cwd().resolve"]
-    s8["8. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. PathValidationError"]
-    s11["11. install_plugin"]
-    s12["12. resolve_plugin_ref"]
+    s6["6. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s7["7. current_host"]
+    s8["8. _ACTIVE.get"]
+    s9["9. current_host().cwd().resolve"]
+    s10["10. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s11["11. current_host"]
+    s12["12. resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
     s1 -. "getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s2
     s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s3
     s3 -->|"PathValidationError(...)"| s4
     s3 -. "(…).resolve(data not statically known)" .-> s5
-    s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s6
-    s3 -. "Path.cwd().resolve(data not statically known)" .-> s7
-    s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s3 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s9
-    s3 -->|"PathValidationError(...)"| s10
-    s1 -->|"install_plugin(getattr(...), dry_run=bool(...), yes=bool(...))"| s11
-    s11 -->|"resolve_plugin_ref(ref, root=root)"| s12
+    s3 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s6
+    s3 -->|"current_host(data not statically known)"| s7
+    s7 -. "_ACTIVE.get(data not statically known)" .-> s8
+    s3 -. "current_host().cwd().resolve(data not statically known)" .-> s9
+    s3 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s10
+    s3 -->|"current_host(data not statically known)"| s11
+    s3 -. "resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)(cwd)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -173,14 +175,11 @@ flowchart LR
     s1 -. "output print" .-> b4
     b5["output print"]
     s1 -. "output print" .-> b5
-    b6["filesystem_write shutil.copytree"]
-    s11 -. "filesystem_write shutil.copytree" .-> b6
     click s1 "../modules/install_cmd.md"
-    click s3 "../modules/config.md"
-    click s4 "../modules/config.md"
-    click s10 "../modules/config.md"
-    click s11 "../modules/plugins.md"
-    click s12 "../modules/plugins.md"
+    click s3 "../modules/path_policy.md"
+    click s4 "../modules/path_policy.md"
+    click s7 "../modules/host.md"
+    click s11 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -188,7 +187,6 @@ flowchart LR
     class b3 boundary
     class b4 boundary
     class b5 boundary
-    class b6 boundary
 ```
 
 ### Step data
@@ -200,13 +198,13 @@ flowchart LR
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
 | `(…).resolve` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `PathValidationError` | - | - | - | - |
-| `install_plugin` | `ref: str`, `root: str \| Path`, `dry_run: bool`, `yes: bool` | `_copy_ignore` | - | `entry`, `entry` |
-| `resolve_plugin_ref` | `ref: str`, `root: str \| Path` | `PROJECT_CATALOG`, `USER_CATALOG` | - | `resolved`, `configured.resolve(...)` |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `current_host().cwd().resolve` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
@@ -214,15 +212,15 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/install_cmd.py:run) | 20 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | validate_path | 21 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
-| run | install_plugin | 24 | `install_plugin(getattr(...), dry_run=bool(...), yes=bool(...))` |
-| install_plugin | resolve_plugin_ref | 449 | `resolve_plugin_ref(ref, root=root)` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 102 | `current_host(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path) | 104 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -234,18 +232,18 @@ flowchart LR
 | output | `print` | `run` | 42 |
 | output | `print` | `run` | 43 |
 | output | `print` | `run` | 45 |
-| filesystem_write | `shutil.copytree` | `install_plugin` | 479 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 20 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

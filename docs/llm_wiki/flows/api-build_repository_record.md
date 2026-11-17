@@ -177,17 +177,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_repository_record | RepositoryEvidence | 615 | `RepositoryEvidence(data not statically known)` |
-| build_repository_record | isinstance (src/llm_wiki_cli/services…py:build_repository_record) | 616 | `isinstance(current.remotes_evaluated, bool)` |
-| build_repository_record | KnowledgeEnvelopeError | 617 | `KnowledgeEnvelopeError('remotes_evaluated', 'must be a boolean')` |
-| build_repository_record | isinstance (src/llm_wiki_cli/services…py:build_repository_record) | 621 | `isinstance(current.upstream_remote_evaluated, bool)` |
-| build_repository_record | KnowledgeEnvelopeError | 622 | `KnowledgeEnvelopeError('upstream_remote_evaluated', 'must be a boolean')` |
-| build_repository_record | select_repository_identity | 631 | `select_repository_identity(configured_public_identity=configured_public_identity, vcs_remotes=current.remotes, upstream_remote=current.upstream_remote)` |
-| select_repository_identity | validate_configured_public_identity | 658 | `validate_configured_public_identity(configured_public_identity)` |
-| validate_configured_public_identity | isinstance (src/llm_wiki_cli/services…configured_public_identity) | 687 | `isinstance(value, str)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 688 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
-| validate_configured_public_identity | value.strip (src/llm_wiki_cli/services…configured_public_identity) | 693 | `value.strip(data not statically known)` |
-| validate_configured_public_identity | _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity) | 694 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
+| build_repository_record | RepositoryEvidence | 616 | `RepositoryEvidence(data not statically known)` |
+| build_repository_record | isinstance (src/llm_wiki_cli/services…py:build_repository_record) | 617 | `isinstance(current.remotes_evaluated, bool)` |
+| build_repository_record | KnowledgeEnvelopeError | 618 | `KnowledgeEnvelopeError('remotes_evaluated', 'must be a boolean')` |
+| build_repository_record | isinstance (src/llm_wiki_cli/services…py:build_repository_record) | 622 | `isinstance(current.upstream_remote_evaluated, bool)` |
+| build_repository_record | KnowledgeEnvelopeError | 623 | `KnowledgeEnvelopeError('upstream_remote_evaluated', 'must be a boolean')` |
+| build_repository_record | select_repository_identity | 632 | `select_repository_identity(configured_public_identity=configured_public_identity, vcs_remotes=current.remotes, upstream_remote=current.upstream_remote)` |
+| select_repository_identity | validate_configured_public_identity | 659 | `validate_configured_public_identity(configured_public_identity)` |
+| validate_configured_public_identity | isinstance (src/llm_wiki_cli/services…configured_public_identity) | 688 | `isinstance(value, str)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 689 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
+| validate_configured_public_identity | value.strip (src/llm_wiki_cli/services…configured_public_identity) | 694 | `value.strip(data not statically known)` |
+| validate_configured_public_identity | _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity) | 695 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -197,11 +197,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_repository_record` | `isinstance` | 616 |
-| external_call | `build_repository_record` | `isinstance` | 621 |
-| external_call | `validate_configured_public_identity` | `isinstance` | 687 |
-| unresolved_call | `validate_configured_public_identity` | `value.strip` | 693 |
-| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 694 |
+| external_call | `build_repository_record` | `isinstance` | 617 |
+| external_call | `build_repository_record` | `isinstance` | 622 |
+| external_call | `validate_configured_public_identity` | `isinstance` | 688 |
+| unresolved_call | `validate_configured_public_identity` | `value.strip` | 694 |
+| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 695 |
 | step_limit | `build_repository_record` | `first 12 steps` | 0 |
 
 ## Behavior

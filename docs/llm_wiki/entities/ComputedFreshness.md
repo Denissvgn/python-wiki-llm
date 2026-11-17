@@ -33,17 +33,17 @@ flowchart LR
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/context_service.py"]
-    n5["src/llm_wiki_cli/services/doctor_service.py"]
-    n6["src/llm_wiki_cli/services/documentation_native.py"]
-    n7["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n8["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n9["src/llm_wiki_cli/services/health_contract.py"]
-    n10["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n11["src/llm_wiki_cli/services/knowledge_coverage.py"]
-    n12["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n13["knowledge_freshness_hint (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n14["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/context_packet_builder.py"]
+    n5["src/llm_wiki_cli/services/context_request_format.py"]
+    n6["src/llm_wiki_cli/services/context_service.py"]
+    n7["src/llm_wiki_cli/services/doctor_service.py"]
+    n8["src/llm_wiki_cli/services/documentation_native.py"]
+    n9["src/llm_wiki_cli/services/documentation_wiki_input.py"]
+    n10["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n11["src/llm_wiki_cli/services/health_contract.py"]
+    n12["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n13["src/llm_wiki_cli/services/knowledge_coverage.py"]
+    n14["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -60,17 +60,17 @@ flowchart LR
     n14 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_service.md"
-    click n5 "../modules/doctor_service.md"
-    click n6 "../modules/documentation_native.md"
-    click n7 "../modules/documentation_wiki_input.md"
-    click n8 "../modules/evidence_diagnostics.md"
-    click n9 "../modules/health_contract.md"
-    click n10 "../modules/knowledge_consumption.md"
-    click n11 "../modules/knowledge_coverage.md"
-    click n12 "../modules/knowledge_freshness.md"
-    click n13 "../modules/knowledge_observability.md"
-    click n14 "../modules/knowledge_projection.md"
+    click n4 "../modules/context_packet_builder.md"
+    click n5 "../modules/context_request_format.md"
+    click n6 "../modules/context_service.md"
+    click n7 "../modules/doctor_service.md"
+    click n8 "../modules/documentation_native.md"
+    click n9 "../modules/documentation_wiki_input.md"
+    click n10 "../modules/evidence_diagnostics.md"
+    click n11 "../modules/health_contract.md"
+    click n12 "../modules/knowledge_consumption.md"
+    click n13 "../modules/knowledge_coverage.md"
+    click n14 "../modules/knowledge_freshness.md"
 ```
 
 ### Summary
@@ -91,6 +91,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
@@ -100,7 +102,5 @@ flowchart LR
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `knowledge_coverage` | import | [knowledge_coverage](../modules/knowledge_coverage.md) | — |
 | `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
-| `knowledge_freshness_hint` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

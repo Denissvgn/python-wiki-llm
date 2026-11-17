@@ -1,6 +1,6 @@
 # EvaluationPlan
 
-**Location:** `src/llm_wiki_cli/eval_lite/planner.py:73`
+**Location:** `src/llm_wiki_cli/eval_lite/planner.py:74`
 **Kind:** Class
 **Bases:** —
 **Module:** [planner](../modules/planner.md)

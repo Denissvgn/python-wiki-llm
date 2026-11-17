@@ -1,6 +1,6 @@
 # RustExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/rust_extractor.py:47`
+**Location:** `src/llm_wiki_cli/extractors/rust_extractor.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [rust_extractor](../modules/rust_extractor.md)

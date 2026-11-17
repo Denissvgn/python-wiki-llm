@@ -15,8 +15,8 @@ observation, retaining repository scope and ecosystem semantics.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `is_agent_worktree_path` |
 | `.contracts` | `DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION` |
+| `.path_policy` | `is_agent_worktree_path` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `json` | `json` |
@@ -32,22 +32,22 @@ observation, retaining repository scope and ecosystem semantics.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/config.py"]
-    n1["src/llm_wiki_cli/services/contracts.py"]
-    n2["src/llm_wiki_cli/services/dependencies.py"]
-    n3["src/llm_wiki_cli/services/dependency_versions.py"]
+    n0["src/llm_wiki_cli/services/contracts.py"]
+    n1["src/llm_wiki_cli/services/dependencies.py"]
+    n2["src/llm_wiki_cli/services/dependency_versions.py"]
+    n3["src/llm_wiki_cli/services/path_policy.py"]
     n4["src/llm_wiki_cli/services/source_snapshot.py"]
+    n1 --> n2
+    n1 --> n3
+    n1 --> n4
     n2 --> n0
     n2 --> n3
     n2 --> n4
-    n3 --> n0
-    n3 --> n1
-    n3 --> n4
-    n4 --> n0
-    click n0 "../modules/config.md"
-    click n1 "../modules/services_contracts.md"
-    click n2 "../modules/services_dependencies.md"
-    click n3 "../modules/dependency_versions.md"
+    n4 --> n3
+    click n0 "../modules/services_contracts.md"
+    click n1 "../modules/services_dependencies.md"
+    click n2 "../modules/dependency_versions.md"
+    click n3 "../modules/path_policy.md"
     click n4 "../modules/source_snapshot.md"
 ```
 
@@ -56,8 +56,8 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [services_dependencies](../modules/services_dependencies.md) |
-| Outbound | [config](../modules/config.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ### External packages

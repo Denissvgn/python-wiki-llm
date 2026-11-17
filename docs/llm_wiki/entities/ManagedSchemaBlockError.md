@@ -28,10 +28,10 @@ flowchart LR
     n3["run (src/llm_wiki_cli/commands/init_cmd.py)"]
     n4["_preflight_agent_schemas (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
     n5["_validate_schema_plan (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
-    n6["_clean_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n7["_require_replaceable_schema_path (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n8["require_managed_schema_profile (src/llm_wiki_cli/services/schema.py)"]
-    n9["require_replaceable_managed_schema (src/llm_wiki_cli/services/schema.py)"]
+    n6["require_managed_schema_profile (src/llm_wiki_cli/services/schema.py)"]
+    n7["require_replaceable_managed_schema (src/llm_wiki_cli/services/schema.py)"]
+    n8["_clean_old_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n9["_require_replaceable_schema_path (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -46,10 +46,10 @@ flowchart LR
     click n3 "../modules/init_cmd.md"
     click n4 "../modules/uninstall_cmd.md"
     click n5 "../modules/uninstall_cmd.md"
-    click n6 "../modules/upgrade_cmd.md"
-    click n7 "../modules/upgrade_cmd.md"
-    click n8 "../modules/services_schema.md"
-    click n9 "../modules/services_schema.md"
+    click n6 "../modules/services_schema.md"
+    click n7 "../modules/services_schema.md"
+    click n8 "../modules/upgrade_runtime.md"
+    click n9 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -72,7 +72,7 @@ flowchart LR
 | `run` | call | [init_cmd](../modules/init_cmd.md) | 4 |
 | `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 2 |
 | `_validate_schema_plan` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 2 |
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
-| `_require_replaceable_schema_path` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
 | `require_managed_schema_profile` | call | [services_schema](../modules/services_schema.md) | 1 |
 | `require_replaceable_managed_schema` | call | [services_schema](../modules/services_schema.md) | 1 |
+| `_clean_old_schema` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |
+| `_require_replaceable_schema_path` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |

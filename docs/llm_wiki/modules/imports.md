@@ -10,9 +10,9 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `is_agent_worktree_path` |
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
+| `.path_policy` | `is_agent_worktree_path` |
 | `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `path_is_under`, `path_is_under_scope` |

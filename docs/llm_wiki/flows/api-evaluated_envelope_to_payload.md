@@ -2,24 +2,18 @@
 
 **Entry point:** `evaluated_envelope_to_payload` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 14 more
+**Modules touched:** [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 8 more
 
 **Complete modules touched:**
 
-- [concept_identity](../modules/concept_identity.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -50,16 +44,16 @@ sequenceDiagram
     participant p16 as _parse_bundle
     participant p17 as _component_to_payload
     participant p18 as _relationship_evidence_to_payload
-    participant p19 as _array (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p19 as _array
     participant p20 as _actor_to_payload
     participant p21 as _parse_concept
     participant p22 as _parse_relationship
     participant p23 as _document_to_payload
     participant p24 as _validated_reserved_extensions
     participant p25 as _validate_index_references
-    participant p26 as validate_implementation_collection
-    participant p27 as validate_maintenance_projection
-    participant p28 as validate_governance_projection
+    participant p26 as _object
+    participant p27 as require_string
+    participant p28 as require_list
     participant p29 as isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)
     participant p30 as bundle_payload[…].get(…).get
     p0->>p1: _validated_bundle_payload
@@ -80,23 +74,23 @@ sequenceDiagram
     p9->>p16: _parse_bundle
     p6->>p17: _component_to_payload
     p8->>p18: _relationship_evidence_to_payload
-    p9->>p19: _array (src/llm_wiki_cli/services/knowledge_model.py)
+    p9->>p19: _array
     p7->>p20: _actor_to_payload
     p9->>p21: _parse_concept
     p9->>p22: _parse_relationship
     p7->>p23: _document_to_payload
     p9->>p24: _validated_reserved_extensions
     p9->>p25: _validate_index_references
-    p9->>p26: validate_implementation_collection
-    p9->>p27: validate_maintenance_projection
-    p9->>p28: validate_governance_projection
+    p12->>p26: _object
+    p13->>p27: require_string
+    p19->>p28: require_list
     p0-->>p29: isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)(envelope, EvaluatedEnvelope)
     p0-->>p30: bundle_payload[…].get(…).get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 795 interactions; 765 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 496 interactions; 466 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 186 (185 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 97 (96 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,10 +101,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 10 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 13 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | - | external | 1 |
+> Omission summary shows 8 of 101 groups; 93 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +117,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 504; effect analysis evaluated: 334, partial: 8, unavailable: 162. Counts include steps omitted from the displayed trace.
+Source steps: 342; effect analysis evaluated: 247, partial: 3, unavailable: 92. Counts include steps omitted from the displayed trace.
 
-Collector observations for 342 source steps with known totals: observed: 1608, emitted: 1556, omitted: 52. Unavailable totals are excluded.
+Collector observations for 250 source steps with known totals: observed: 1047, emitted: 1021, omitted: 26. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -140,8 +134,8 @@ Collector observations for 342 source steps with known totals: observed: 1608, e
 | `_validated_bundle_payload` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `dict (src/llm_wiki_cli/services…_validated_bundle_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `snapshot_extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `replace (src/llm_wiki_cli/services…_validated_bundle_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `replace (src/llm_wiki_cli/services…_validated_bundle_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `knowledge_index_to_payload` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -155,8 +149,8 @@ flowchart LR
     s5["5. _validated_bundle_payload"]
     s6["6. dict (src/llm_wiki_cli/services…_validated_bundle_payload)"]
     s7["7. snapshot_extensions.pop"]
-    s8["8. replace (src/llm_wiki_cli/services…_validated_bundle_payload)"]
-    s9["9. replace (src/llm_wiki_cli/services…_validated_bundle_payload)"]
+    s8["8. replace"]
+    s9["9. replace"]
     s10["10. knowledge_index_to_payload"]
     s11["11. isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)"]
     s12["12. TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)"]
@@ -166,8 +160,8 @@ flowchart LR
     s1 -->|"_validated_bundle_payload(envelope.bundle)"| s5
     s5 -. "dict (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle.snapshot.extensions)" .-> s6
     s5 -. "snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)" .-> s7
-    s5 -. "replace (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle, snapshot=replace(...))" .-> s8
-    s5 -. "replace (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle.snapshot, extensions=snapshot_extensions)" .-> s9
+    s5 -. "replace(bundle, snapshot=replace(...))" .-> s8
+    s5 -. "replace(bundle.snapshot, extensions=snapshot_extensions)" .-> s9
     s5 -->|"knowledge_index_to_payload(KnowledgeIndex(...))"| s10
     s10 -. "isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)" .-> s11
     s10 -. "TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')" .-> s12
@@ -192,8 +186,8 @@ flowchart LR
 | `_validated_bundle_payload` | `bundle: BundleRecord` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION`, `KnowledgeModelError` | - | `payload[...]` |
 | `dict (src/llm_wiki_cli/services…_validated_bundle_payload)` | - | - | - | - |
 | `snapshot_extensions.pop` | - | - | - | - |
-| `replace (src/llm_wiki_cli/services…_validated_bundle_payload)` | - | - | - | - |
-| `replace (src/llm_wiki_cli/services…_validated_bundle_payload)` | - | - | - | - |
+| `replace` | - | - | - | - |
+| `replace` | - | - | - | - |
 | `knowledge_index_to_payload` | `model: KnowledgeIndex` | `KnowledgeIndex`, `KnowledgeModelError` | - | `_knowledge_index_to_payload_unchecked(...)` |
 | `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)` | - | - | - | - |
@@ -202,34 +196,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1946 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | snapshot_extensions.pop | 1947 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1948 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1950 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
-| _validated_bundle_payload | knowledge_index_to_payload | 1956 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
-| knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 688 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload) | 689 | `TypeError('model must be a KnowledgeIndex')` |
+| evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1143 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1145 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1149 | `_validated_bundle_payload(envelope.bundle)` |
+| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1947 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | snapshot_extensions.pop | 1948 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1949 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1951 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| _validated_bundle_payload | knowledge_index_to_payload | 1957 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
+| knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 665 | `isinstance(model, KnowledgeIndex)` |
+| knowledge_index_to_payload | TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload) | 666 | `TypeError('model must be a KnowledgeIndex')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1948 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
-| external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
-| external_call | `_validated_bundle_payload` | `replace` | 1948 |
-| external_call | `_validated_bundle_payload` | `replace` | 1950 |
-| external_call | `knowledge_index_to_payload` | `isinstance` | 688 |
-| external_call | `knowledge_index_to_payload` | `TypeError` | 689 |
+| external_call | `evaluated_envelope_to_payload` | `isinstance` | 1142 |
+| external_call | `evaluated_envelope_to_payload` | `TypeError` | 1143 |
+| external_call | `_validated_bundle_payload` | `replace` | 1949 |
+| external_call | `_validated_bundle_payload` | `replace` | 1951 |
+| external_call | `knowledge_index_to_payload` | `isinstance` | 665 |
+| external_call | `knowledge_index_to_payload` | `TypeError` | 666 |
 | step_limit | `evaluated_envelope_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `evaluated_envelope_to_payload` | `depth limit` | 0 |
 

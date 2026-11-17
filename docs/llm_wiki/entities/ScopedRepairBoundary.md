@@ -43,13 +43,13 @@ The boundary rechecks provider/helper/runtime and source inputs at publication c
 ```mermaid
 flowchart LR
     n0["ScopedRepairBoundary (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
-    n1["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n2["prepare_boundary (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n1["prepare_boundary (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n2["src/llm_wiki_cli/services/sync_runtime.py"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/scoped_sync_repair.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/scoped_sync_repair.md"
+    click n1 "../modules/scoped_sync_repair.md"
+    click n2 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -62,6 +62,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
 | `prepare_boundary` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |
 | `prepare_boundary` | type_reference | [scoped_sync_repair](../modules/scoped_sync_repair.md) | — |
+| `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |

@@ -1,7 +1,7 @@
 # planned_generated_surface_prune
 
-**Entry point:** `sync_cmd._planned_generated_surface_prune`
-**Modules involved:** [extraction_service](../modules/extraction_service.md), [io](../modules/io.md), [sync_cmd](../modules/sync_cmd.md), [wiki_surface](../modules/wiki_surface.md)
+**Entry point:** `sync_runtime._planned_generated_surface_prune`
+**Modules involved:** [extraction_service](../modules/extraction_service.md), [io](../modules/io.md), [sync_runtime](../modules/sync_runtime.md), [wiki_surface](../modules/wiki_surface.md)
 
 > Prove managed live workflows and generated pages absent from the live set.
 
@@ -20,9 +20,9 @@
 
 - [extraction_service](../modules/extraction_service.md)
 - [io](../modules/io.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._planned_generated_surface_prune`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._planned_generated_surface_prune`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

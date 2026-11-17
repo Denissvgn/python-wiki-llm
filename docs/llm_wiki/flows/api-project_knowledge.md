@@ -2,12 +2,13 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 24 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), [filesystem_guard](../modules/filesystem_guard.md), and 27 more
 
 **Complete modules touched:**
 
-- [common](../modules/common.md)
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
@@ -18,6 +19,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
@@ -25,6 +27,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -105,9 +108,9 @@ sequenceDiagram
     p0-->>p30: governance_by_locator.items
 ```
 
-> Call sequence diagram shows 30 of 2127 interactions; 2097 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2146 interactions; 2116 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 592 (591 omitted); unresolved 1 of 377 (376 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 608 (607 omitted); unresolved 1 of 381 (380 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +124,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
-> Omission summary shows 8 of 478 groups; 470 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 480 groups; 472 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1159; effect analysis evaluated: 818, partial: 35, unavailable: 306. Counts include steps omitted from the displayed trace.
+Source steps: 1158; effect analysis evaluated: 816, partial: 39, unavailable: 303. Counts include steps omitted from the displayed trace.
 
-Collector observations for 853 source steps with known totals: observed: 4421, emitted: 4275, omitted: 146. Unavailable totals are excluded.
+Collector observations for 855 source steps with known totals: observed: 4437, emitted: 4292, omitted: 145. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

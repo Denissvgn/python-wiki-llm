@@ -1,6 +1,6 @@
 # ProtectedArtifactLockError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:87`
+**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:88`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)

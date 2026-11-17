@@ -1,7 +1,7 @@
 # maintenance_cmd_flow
 
 **Entry point:** `maintenance_cmd.run`
-**Modules involved:** [api](../modules/api.md), [config](../modules/config.md), [maintenance_cmd](../modules/maintenance_cmd.md), [request_json](../modules/request_json.md), [sync_recovery](../modules/sync_recovery.md)
+**Modules involved:** [api](../modules/api.md), [maintenance_cmd](../modules/maintenance_cmd.md), [path_policy](../modules/path_policy.md), [request_json](../modules/request_json.md), [sync_recovery](../modules/sync_recovery.md)
 
 ## Sequence
 
@@ -11,14 +11,14 @@
 3. `api.acknowledge_maintenance`
 4. `request_json.load_request`
 5. `sync_recovery.recover_new_sync_pages`
-6. `config.validate_path`
+6. `path_policy.validate_path`
 7. `api.recover_maintenance`
 
 ## Touches
 
 - [api](../modules/api.md)
-- [config](../modules/config.md)
 - [maintenance_cmd](../modules/maintenance_cmd.md)
+- [path_policy](../modules/path_policy.md)
 - [request_json](../modules/request_json.md)
 - [sync_recovery](../modules/sync_recovery.md)
 

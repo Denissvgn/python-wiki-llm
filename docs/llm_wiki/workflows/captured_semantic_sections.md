@@ -1,7 +1,7 @@
 # captured_semantic_sections
 
 **Entry point:** `maintenance_evidence.captured_semantic_sections`
-**Modules involved:** [knowledge_storage](../modules/knowledge_storage.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_shapes](../modules/maintenance_shapes.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [maintenance_evidence](../modules/maintenance_evidence.md), [maintenance_shapes](../modules/maintenance_shapes.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md)
 
 > Exact raw section bytes joined to existing normalized ownership locators.
 
@@ -13,11 +13,11 @@
 3. `maintenance_shapes.MaintenanceError`
 4. `section_ownership.observe_page_sections`
 5. `markdown_sections.parse_markdown_document`
-6. `knowledge_storage.digest`
+6. `canonical_json.sha256_digest`
 
 ## Touches
 
-- [knowledge_storage](../modules/knowledge_storage.md)
+- [canonical_json](../modules/canonical_json.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [markdown_sections](../modules/markdown_sections.md)

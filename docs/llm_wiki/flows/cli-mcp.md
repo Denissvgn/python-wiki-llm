@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [mcp_cmd](../modules/mcp_cmd.md)
-**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [mcp_cmd](../modules/mcp_cmd.md)
+**Modules touched:** [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), [io](../modules/io.md), [mcp_cmd](../modules/mcp_cmd.md), [path_policy](../modules/path_policy.md)
 
 ## Call sequence
 
@@ -16,54 +16,54 @@ sequenceDiagram
     participant p2 as _mcp_service_export
     participant p3 as validate_path
     participant p4 as windows_current_user_sid
-    participant p5 as _current_windows_user_sid
-    participant p6 as _windows_sid_string
-    participant p7 as PathValidationError
-    participant p8 as first_unsafe_path_component
-    participant p9 as WindowsSecurityGuardError
-    participant p10 as _close_windows_handle
-    participant p11 as getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
-    participant p12 as config_type
-    participant p13 as bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
-    participant p14 as str
-    participant p15 as tuple
-    participant p16 as runner
-    participant p17 as print
+    participant p5 as first_unsafe_path_component
+    participant p6 as _current_windows_user_sid
+    participant p7 as _windows_sid_string
+    participant p8 as current_host
+    participant p9 as PathValidationError
+    participant p10 as WindowsSecurityGuardError
+    participant p11 as _close_windows_handle
+    participant p12 as getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p13 as config_type
+    participant p14 as bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p15 as str
+    participant p16 as tuple
+    participant p17 as runner
     p0->>p1: validate_source_root
     p0->>p2: _mcp_service_export
     p1->>p3: validate_path
     p1->>p4: windows_current_user_sid
-    p4->>p5: _current_windows_user_sid
-    p5->>p6: _windows_sid_string
-    p1->>p7: PathValidationError
-    p1->>p8: first_unsafe_path_component
-    p4->>p9: WindowsSecurityGuardError
-    p5->>p10: _close_windows_handle
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p12: config_type(…)
-    p0-->>p13: bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)(getattr(...))
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'comparison_policy', 'auto')
-    p0-->>p14: str(source_root)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', 'docs/llm_wiki')
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'transport', 'stdio')
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'host', '127.0.0.1')
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'port', 8765)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'path', '/mcp')
-    p0-->>p15: tuple(...)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allowed_origin', None)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', True)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_preparation', 'auto')
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p16: runner(config)
-    p0-->>p17: print(..., file=sys.stderr)
+    p1->>p5: first_unsafe_path_component
+    p4->>p6: _current_windows_user_sid
+    p6->>p7: _windows_sid_string
+    p1->>p8: current_host
+    p1->>p9: PathValidationError
+    p4->>p10: WindowsSecurityGuardError
+    p6->>p11: _close_windows_handle
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p13: config_type(…)
+    p0-->>p14: bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)(getattr(...))
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'comparison_policy', 'auto')
+    p0-->>p15: str(source_root)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', 'docs/llm_wiki')
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'transport', 'stdio')
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'host', '127.0.0.1')
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'port', 8765)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'path', '/mcp')
+    p0-->>p16: tuple(...)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allowed_origin', None)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', True)
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_preparation', 'auto')
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'helper_cache_dir', None)
+    p0-->>p17: runner(config)
 ```
 
-> Call sequence diagram shows 30 of 132 interactions; 102 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 137 interactions; 107 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 84 (66 omitted); unresolved 2 of 23 (21 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 80 (63 omitted); unresolved 2 of 28 (26 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -72,12 +72,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/commands/mcp_cmd.py:run` | 1 | [src/llm_wiki_cli/commands/mcp_cmd.py](../modules/mcp_cmd.md) | internal | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
-> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 13 | - | unresolved | 6 |
+> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -88,9 +88,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 26; effect analysis evaluated: 12, partial: 0, unavailable: 14. Counts include steps omitted from the displayed trace.
+Source steps: 30; effect analysis evaluated: 16, partial: 0, unavailable: 14. Counts include steps omitted from the displayed trace.
 
-Collector observations for 12 source steps with known totals: observed: 70, emitted: 70, omitted: 0. Unavailable totals are excluded.
+Collector observations for 16 source steps with known totals: observed: 78, emitted: 78, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.

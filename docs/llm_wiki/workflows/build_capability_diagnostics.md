@@ -1,12 +1,12 @@
 # build_capability_diagnostics
 
 **Entry point:** `capability_diagnostics.build_capability_diagnostics`
-**Modules involved:** [capability_diagnostics](../modules/capability_diagnostics.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [helper_cache](../modules/helper_cache.md), [plugins](../modules/plugins.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [capability_diagnostics](../modules/capability_diagnostics.md), [extractor_helpers](../modules/extractor_helpers.md), [helper_cache](../modules/helper_cache.md), [path_policy](../modules/path_policy.md), [plugins](../modules/plugins.md), [source_snapshot](../modules/source_snapshot.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_source_root`
+1. `path_policy.validate_source_root`
 2. `source_snapshot.build_source_snapshot`
 3. `helper_cache.cache_roots`
 4. `helper_cache.preparation_cache_root`
@@ -24,9 +24,9 @@
 ## Touches
 
 - [capability_diagnostics](../modules/capability_diagnostics.md)
-- [config](../modules/config.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [helper_cache](../modules/helper_cache.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [source_snapshot](../modules/source_snapshot.md)
 

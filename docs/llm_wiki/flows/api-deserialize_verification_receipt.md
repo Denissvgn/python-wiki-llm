@@ -2,7 +2,7 @@
 
 **Entry point:** `deserialize_verification_receipt` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md)
 
 ## Call sequence
 
@@ -31,7 +31,7 @@ sequenceDiagram
     participant p17 as _checker_id
     participant p18 as require_exact_fields
     participant p19 as _normalized_anchor_mapping
-    participant p20 as canonical_json_bytes
+    participant p20 as compact_bytes
     participant p21 as _checker_version
     participant p22 as _array
     participant p23 as _parse_diagnostic
@@ -61,7 +61,7 @@ sequenceDiagram
     p13->>p17: _checker_id
     p7->>p18: require_exact_fields
     p11->>p19: _normalized_anchor_mapping
-    p12->>p20: canonical_json_bytes
+    p12->>p20: compact_bytes
     p13->>p21: _checker_version
     p13->>p22: _array
     p13->>p23: _parse_diagnostic
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 119; effect analysis evaluated: 73, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 74 source steps with known totals: observed: 281, emitted: 279, omitted: 2. Unavailable totals are excluded.
+Collector observations for 74 source steps with known totals: observed: 283, emitted: 281, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -31,7 +31,7 @@ checker, and returns the same coordinate-keyed summaries to every consumer.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_cli/services/context_packet_builder.py"]
     n2["src/llm_wiki_cli/services/context_service.py"]
     n3["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n4["src/llm_wiki_cli/services/knowledge_consumption.py"]
@@ -45,6 +45,7 @@ flowchart LR
     n0 --> n3
     n0 --> n4
     n0 --> n7
+    n0 --> n8
     n1 --> n2
     n1 --> n3
     n1 --> n4
@@ -71,7 +72,7 @@ flowchart LR
     n8 --> n9
     n9 --> n5
     click n0 "../modules/api.md"
-    click n1 "../modules/context_packet.md"
+    click n1 "../modules/context_packet_builder.md"
     click n2 "../modules/context_service.md"
     click n3 "../modules/documentation_query_builder.md"
     click n4 "../modules/knowledge_consumption.md"
@@ -87,7 +88,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
-| Inbound | [context_packet](../modules/context_packet.md) |
+| Inbound | [context_packet_builder](../modules/context_packet_builder.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
 | Inbound | [knowledge_consumption](../modules/knowledge_consumption.md) |

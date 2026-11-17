@@ -1,6 +1,6 @@
 # KnowledgeRequiredUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/context_service.py:203`
+**Location:** `src/llm_wiki_cli/services/context_service.py:155`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [context_service](../modules/context_service.md)
@@ -26,7 +26,7 @@ Explicit required mode could not produce ready qualified knowledge.
 flowchart LR
     n0["KnowledgeRequiredUnavailableError (src/llm_wiki_cli/services/context_service.py)"]
     n1["RuntimeError"]
-    n2["_fit_knowledge_packet_response (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["_fit_knowledge_packet_response (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_build_explicit_knowledge_response (src/llm_wiki_cli/services/context_service.py)"]
     n4["_fit_explicit_knowledge_response (src/llm_wiki_cli/services/context_service.py)"]
     n5["_read_once (src/llm_wiki_cli/services/task_context.py)"]
@@ -36,7 +36,7 @@ flowchart LR
     n4 --> n0
     n5 --> n0
     click n0 "../modules/context_service.md"
-    click n2 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
     click n3 "../modules/context_service.md"
     click n4 "../modules/context_service.md"
     click n5 "../modules/task_context.md"
@@ -58,7 +58,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `_fit_knowledge_packet_response` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
 | `_build_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) | 1 |
 | `_fit_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) | 1 |
 | `_read_once` | call | [task_context](../modules/task_context.md) | 2 |

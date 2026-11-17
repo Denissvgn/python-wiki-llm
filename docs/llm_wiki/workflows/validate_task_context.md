@@ -1,7 +1,7 @@
 # validate_task_context
 
 **Entry point:** `task_context.validate_task_context`
-**Modules involved:** [context_packet](../modules/context_packet.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [task_implementation](../modules/task_implementation.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [task_implementation](../modules/task_implementation.md), [workflow_profile](../modules/workflow_profile.md)
 
 > Check the task envelope separately from the unchanged embedded packet.
 
@@ -9,7 +9,7 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `task_contract.normalize_task_request`
-2. `workflow_profile.canonical_json`
+2. `canonical_json.compact_line_bytes`
 3. `workflow_profile.content_id`
 4. `workflow_profile.content_id`
 5. `task_evidence.match_declarations`
@@ -22,6 +22,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)

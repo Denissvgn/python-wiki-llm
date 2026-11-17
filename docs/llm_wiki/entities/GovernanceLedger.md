@@ -1,6 +1,6 @@
 # GovernanceLedger
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:266`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:267`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

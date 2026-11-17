@@ -13,6 +13,7 @@ Streams the existing compact, sorted UTF-8 JSON representation in bounded chunks
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterator`, `Mapping` |
 | `functools` | `lru_cache` |
+| `hashlib` | `hashlib` |
 | `json` | `json` |
 | `math` | `math` |
 | `re` | `re` |
@@ -23,51 +24,38 @@ Streams the existing compact, sorted UTF-8 JSON representation in bounded chunks
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/canonical_json.py"]
-    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n3["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n4["src/llm_wiki_cli/services/manifest_storage.py"]
-    n5["src/llm_wiki_cli/services/sync_analysis_storage.py"]
-    n1 --> n0
-    n1 --> n2
-    n1 --> n4
-    n2 --> n0
-    n3 --> n0
-    n3 --> n2
-    n3 --> n4
-    n4 --> n0
-    n4 --> n1
-    n4 --> n2
-    n5 --> n0
-    click n0 "../modules/canonical_json.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/knowledge_stream_audit.md"
-    click n4 "../modules/manifest_storage.md"
-    click n5 "../modules/sync_analysis_storage.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/canonical_json.py"]
+    n0 --> n1
+    click n1 "../modules/canonical_json.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
-| Inbound | [manifest_storage](../modules/manifest_storage.md) |
-| Inbound | [sync_analysis_storage](../modules/sync_analysis_storage.md) |
+| Inbound | `src` (15) |
+
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CanonicalArray](../entities/CanonicalArray.md) | 21 | — | Explicit repeatable array stream for internal spill-backed operations. |
+| [CanonicalArray](../entities/CanonicalArray.md) | 59 | — | Explicit repeatable array stream for internal spill-backed operations. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `compact_text` | `(value: Any, *, allow_nan: bool = False) -> str` | — | — |
+| `compact_bytes` | `(value: Any, *, allow_nan: bool = False) -> bytes` | — | — |
+| `compact_line_bytes` | `(value: Any) -> bytes` | — | — |
+| `ascii_compact_bytes` | `(value: Any, *, allow_nan: bool = False) -> bytes` | — | — |
+| `indented_line_text` | `(value: Any) -> str` | — | — |
+| `sha256_digest` | `(data: bytes) -> str` | — | The ``sha256:<hex>`` wire form of a digest over raw bytes. |
 | `_string_size` | `(value: str) -> int` | — | — |
 | `scalar_size` | `(value: Any) -> int` | — | Exact encoded bytes, excluding a trailing newline, without JSON buffers. |
 | `_fits` | `(value: Any, budget: int) -> bool` | — | — |

@@ -29,6 +29,7 @@ evidence against the filesystem owner, root, or offline modification.
 | Source | Symbols |
 |--------|---------|
 | `.` | `_restore_legacy_definition_modules` |
+| `..canonical_json` | `compact_line_bytes` |
 | `..contracts` | `OCI_MAX_PACKET_BYTES`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION`, `P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION`, `P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION` |
 | `..filesystem_guard` | `atomic_write_private_bytes` |
 | `..redaction` | `LIKELY_SECRET_RE`, `SENSITIVE_KEYS` |
@@ -58,10 +59,11 @@ flowchart LR
     n0["src/llm_wiki_cli/services/calibration/__init__.py"]
     n1["src/llm_wiki_cli/services/calibration/broker.py"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
-    n3["src/llm_wiki_cli/services/contracts.py"]
-    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n5["src/llm_wiki_cli/services/redaction.py"]
-    n6["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_cli/services/canonical_json.py"]
+    n4["src/llm_wiki_cli/services/contracts.py"]
+    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n6["src/llm_wiki_cli/services/redaction.py"]
+    n7["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n0
@@ -69,19 +71,21 @@ flowchart LR
     n1 --> n4
     n1 --> n5
     n1 --> n6
+    n1 --> n7
     n2 --> n0
     n2 --> n1
-    n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
+    n2 --> n7
     click n0 "../modules/calibration___init__.md"
     click n1 "../modules/broker.md"
     click n2 "../modules/controller.md"
-    click n3 "../modules/services_contracts.md"
-    click n4 "../modules/filesystem_guard.md"
-    click n5 "../modules/redaction.md"
-    click n6 "../modules/validation.md"
+    click n3 "../modules/canonical_json.md"
+    click n4 "../modules/services_contracts.md"
+    click n5 "../modules/filesystem_guard.md"
+    click n6 "../modules/redaction.md"
+    click n7 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -91,6 +95,7 @@ flowchart LR
 | Inbound | [calibration___init__](../modules/calibration___init__.md) |
 | Inbound | [controller](../modules/controller.md) |
 | Outbound | [calibration___init__](../modules/calibration___init__.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [redaction](../modules/redaction.md) |
@@ -100,28 +105,28 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [OciBrokerError](../entities/OciBrokerError.md) | 133 | `ValueError` | Raised when OCI configuration or dispatch evidence is unsafe. |
-| [OciProcessRunner](../entities/OciProcessRunner.md) | 137 | `Protocol` | Dependency-injected bounded process runner. |
-| [OciImageCommand](../entities/OciImageCommand.md) | 155 | — | One digest-pinned OCI image and its fixed in-container entrypoint. |
-| [OciResourceLimits](../entities/OciResourceLimits.md) | 209 | — | Portable Docker/Podman resource ceilings. |
-| [OciOutputLimits](../entities/OciOutputLimits.md) | 257 | — | Bounded process and result capture sizes. |
-| [OciRuntimeConfig](../entities/OciRuntimeConfig.md) | 306 | — | Strict local-no-egress section of a frozen execution manifest. |
-| [BoundedProcessResult](../entities/BoundedProcessResult.md) | 637 | — | Bounded in-memory output plus complete stream hashes and byte counts. |
-| [OciDispatchContext](../entities/OciDispatchContext.md) | 728 | — | Controller-owned frozen value bindings for one agent attempt. |
-| [OciStreamEvidence](../entities/OciStreamEvidence.md) | 763 | — | Complete hash/count evidence with only a bounded captured prefix. |
-| [OciDispatchReceipt](../entities/OciDispatchReceipt.md) | 830 | — | Application-level hash-bound evidence for one broker attempt. |
-| [OciDispatchOutcome](../entities/OciDispatchOutcome.md) | 1155 | — | Bounded local evidence and a hash-bound receipt returned to the controller. |
-| [OciProbeSentinel](../entities/OciProbeSentinel.md) | 1165 | — | One real host file that must remain inaccessible to the probe container. |
-| [OciNetworkCanaryBinding](../entities/OciNetworkCanaryBinding.md) | 1227 | — | Host-controlled loopback canary with a successful pre-probe control. |
-| [_LocalEgressCanary](../entities/LocalEgressCanary.md) | 1304 | — | Small host-loopback challenge server used only during one admission probe. |
-| [OciAdmissionProbeEnvironment](../entities/OciAdmissionProbeEnvironment.md) | 1458 | — | Live host evidence required to execute one admission probe. |
-| [OciProbeCheck](../entities/OciProbeCheck.md) | 1548 | — | One mandatory, request-bound adversarial isolation attempt. |
-| [OciAdmissionProbeRequest](../entities/OciAdmissionProbeRequest.md) | 1744 | — | Evidence-bound request consumed by the pinned adversarial probe image. |
-| [OciAdmissionProbeResult](../entities/OciAdmissionProbeResult.md) | 1910 | — | Strict result emitted by the pinned adversarial probe image. |
-| [OciAdmissionProbeOutcome](../entities/OciAdmissionProbeOutcome.md) | 1996 | — | Execution and result evidence for admission; never an authority grant. |
-| [_CapturedStream](../entities/CapturedStream.md) | 2528 | — | — |
-| [_StreamCapture](../entities/StreamCapture.md) | 2535 | — | — |
-| [_ResultArtifactError](../entities/ResultArtifactError.md) | 2571 | `OciBrokerError` | — |
+| [OciBrokerError](../entities/OciBrokerError.md) | 134 | `ValueError` | Raised when OCI configuration or dispatch evidence is unsafe. |
+| [OciProcessRunner](../entities/OciProcessRunner.md) | 138 | `Protocol` | Dependency-injected bounded process runner. |
+| [OciImageCommand](../entities/OciImageCommand.md) | 156 | — | One digest-pinned OCI image and its fixed in-container entrypoint. |
+| [OciResourceLimits](../entities/OciResourceLimits.md) | 210 | — | Portable Docker/Podman resource ceilings. |
+| [OciOutputLimits](../entities/OciOutputLimits.md) | 258 | — | Bounded process and result capture sizes. |
+| [OciRuntimeConfig](../entities/OciRuntimeConfig.md) | 307 | — | Strict local-no-egress section of a frozen execution manifest. |
+| [BoundedProcessResult](../entities/BoundedProcessResult.md) | 638 | — | Bounded in-memory output plus complete stream hashes and byte counts. |
+| [OciDispatchContext](../entities/OciDispatchContext.md) | 729 | — | Controller-owned frozen value bindings for one agent attempt. |
+| [OciStreamEvidence](../entities/OciStreamEvidence.md) | 764 | — | Complete hash/count evidence with only a bounded captured prefix. |
+| [OciDispatchReceipt](../entities/OciDispatchReceipt.md) | 831 | — | Application-level hash-bound evidence for one broker attempt. |
+| [OciDispatchOutcome](../entities/OciDispatchOutcome.md) | 1156 | — | Bounded local evidence and a hash-bound receipt returned to the controller. |
+| [OciProbeSentinel](../entities/OciProbeSentinel.md) | 1166 | — | One real host file that must remain inaccessible to the probe container. |
+| [OciNetworkCanaryBinding](../entities/OciNetworkCanaryBinding.md) | 1228 | — | Host-controlled loopback canary with a successful pre-probe control. |
+| [_LocalEgressCanary](../entities/LocalEgressCanary.md) | 1305 | — | Small host-loopback challenge server used only during one admission probe. |
+| [OciAdmissionProbeEnvironment](../entities/OciAdmissionProbeEnvironment.md) | 1459 | — | Live host evidence required to execute one admission probe. |
+| [OciProbeCheck](../entities/OciProbeCheck.md) | 1549 | — | One mandatory, request-bound adversarial isolation attempt. |
+| [OciAdmissionProbeRequest](../entities/OciAdmissionProbeRequest.md) | 1745 | — | Evidence-bound request consumed by the pinned adversarial probe image. |
+| [OciAdmissionProbeResult](../entities/OciAdmissionProbeResult.md) | 1911 | — | Strict result emitted by the pinned adversarial probe image. |
+| [OciAdmissionProbeOutcome](../entities/OciAdmissionProbeOutcome.md) | 1997 | — | Execution and result evidence for admission; never an authority grant. |
+| [_CapturedStream](../entities/CapturedStream.md) | 2520 | — | — |
+| [_StreamCapture](../entities/StreamCapture.md) | 2527 | — | — |
+| [_ResultArtifactError](../entities/ResultArtifactError.md) | 2563 | `OciBrokerError` | — |
 
 ## Functions
 

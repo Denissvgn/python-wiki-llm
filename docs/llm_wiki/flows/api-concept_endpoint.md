@@ -2,11 +2,11 @@
 
 **Entry point:** `concept_endpoint` (`api`)
 **Source:** [knowledge_graph](../modules/knowledge_graph.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
 
 **Complete modules touched:**
 
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 103; effect analysis evaluated: 72, partial: 4, unavailable: 27. Counts include steps omitted from the displayed trace.
 
-Collector observations for 76 source steps with known totals: observed: 363, emitted: 346, omitted: 17. Unavailable totals are excluded.
+Collector observations for 76 source steps with known totals: observed: 364, emitted: 347, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

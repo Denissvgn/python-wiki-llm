@@ -2,11 +2,13 @@
 
 **Entry point:** `apply_governance_projection` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 6 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [host](../modules/host.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 7 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
+- [host](../modules/host.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -86,9 +88,9 @@ sequenceDiagram
     p0-->>p30: current.content_hash
 ```
 
-> Call sequence diagram shows 30 of 1382 interactions; 1352 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1384 interactions; 1354 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 411 (410 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 410 (409 omitted); unresolved 1 of 317 (316 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -102,7 +104,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_graph.py:_parse_typed_graph` | 24 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 16 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 25 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 26 | - | external | 2 |
-> Omission summary shows 8 of 298 groups; 290 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 301 groups; 293 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -115,9 +117,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 657; effect analysis evaluated: 425, partial: 9, unavailable: 223. Counts include steps omitted from the displayed trace.
+Source steps: 658; effect analysis evaluated: 426, partial: 9, unavailable: 223. Counts include steps omitted from the displayed trace.
 
-Collector observations for 434 source steps with known totals: observed: 2175, emitted: 2127, omitted: 48. Unavailable totals are excluded.
+Collector observations for 435 source steps with known totals: observed: 2177, emitted: 2129, omitted: 48. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -203,36 +205,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| apply_governance_projection | _event_limit | 1813 | `_event_limit(event_limit)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2692 | `isinstance(value, bool)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2693 | `isinstance(value, int)` |
-| _event_limit | GovernanceError | 2696 | `GovernanceError('event_limit', ...)` |
-| apply_governance_projection | strip_governance_projection | 1814 | `strip_governance_projection(knowledge)` |
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1646 | `isinstance(knowledge, KnowledgeIndex)` |
-| strip_governance_projection | TypeError (src/llm_wiki_cli/services…rip_governance_projection) | 1647 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1650 | `dict(concept.extensions)` |
-| strip_governance_projection | extensions.pop | 1651 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | concepts.append (src/llm_wiki_cli/services…rip_governance_projection) | 1652 | `concepts.append(replace(...))` |
-| strip_governance_projection | replace (src/llm_wiki_cli/services…rip_governance_projection) | 1653 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
+| apply_governance_projection | _event_limit | 1814 | `_event_limit(event_limit)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2693 | `isinstance(value, bool)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2694 | `isinstance(value, int)` |
+| _event_limit | GovernanceError | 2697 | `GovernanceError('event_limit', ...)` |
+| apply_governance_projection | strip_governance_projection | 1815 | `strip_governance_projection(knowledge)` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1647 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | TypeError (src/llm_wiki_cli/services…rip_governance_projection) | 1648 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1651 | `dict(concept.extensions)` |
+| strip_governance_projection | extensions.pop | 1652 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | concepts.append (src/llm_wiki_cli/services…rip_governance_projection) | 1653 | `concepts.append(replace(...))` |
+| strip_governance_projection | replace (src/llm_wiki_cli/services…rip_governance_projection) | 1654 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `extensions.pop` | `strip_governance_projection` | 1651 |
-| mutation | `concepts.append` | `strip_governance_projection` | 1652 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1660 |
-| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1689 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1652 |
+| mutation | `concepts.append` | `strip_governance_projection` | 1653 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1661 |
+| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1690 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_event_limit` | `isinstance` | 2692 |
 | external_call | `_event_limit` | `isinstance` | 2693 |
-| external_call | `strip_governance_projection` | `isinstance` | 1646 |
-| external_call | `strip_governance_projection` | `TypeError` | 1647 |
-| external_call | `strip_governance_projection` | `replace` | 1653 |
+| external_call | `_event_limit` | `isinstance` | 2694 |
+| external_call | `strip_governance_projection` | `isinstance` | 1647 |
+| external_call | `strip_governance_projection` | `TypeError` | 1648 |
+| external_call | `strip_governance_projection` | `replace` | 1654 |
 | step_limit | `apply_governance_projection` | `first 12 steps` | 0 |
 | truncated_flow | `apply_governance_projection` | `depth limit` | 0 |
 

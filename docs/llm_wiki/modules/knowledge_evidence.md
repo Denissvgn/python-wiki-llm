@@ -33,12 +33,12 @@ facts or grant authority to unavailable evidence.
 
 | Source | Symbols |
 |--------|---------|
+| `.canonical_json` | `compact_bytes`, `compact_text`, `indented_line_text`, `sha256_digest` |
 | `.normalization_diagnostics` | `MISSING_VALUE`, `NormalizationDiagnostic` |
 | `.validation` | `require_bool`, `require_list`, `require_mapping`, `require_member`, `require_nonempty_text`, `require_positive_int`, `require_repository_relative_path`, `require_sha256`, `require_string` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
-| `hashlib` | `hashlib` |
 | `json` | `json` |
 | `math` | `math` |
 | `pathlib` | `Path` |
@@ -66,10 +66,10 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (5) |
-| Inbound | `src` (44) |
-| Outbound | `src` (2) |
+| Inbound | `src` (46) |
+| Outbound | `src` (3) |
 
-> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -85,11 +85,7 @@ flowchart LR
 | `_failure` | `(pointer, rule, expected, value, *, reason = UNKNOWN_INVALID_INVENTORY, exact = True)` | — | — |
 | `_pointer` | `(parent, field)` | — | — |
 | `is_valid_sha256` | `(value: object) -> bool` | — | Return whether *value* is a canonical ``sha256:<lowercase-hex>`` string. |
-| `canonical_json_text` | `(value: Any) -> str` | — | Encode *value* as compact canonical JSON for hashing and ordering. |
-| `canonical_json_bytes` | `(value: Any) -> bytes` | — | Return the UTF-8 bytes of :func:`canonical_json_text`. |
-| `formatted_json_text` | `(value: Any) -> str` | — | Encode deterministic human-readable JSON with one trailing newline. |
 | `formatted_json_bytes` | `(value: Any) -> bytes` | — | Return UTF-8 deterministic JSON bytes with one trailing newline. |
-| `sha256_bytes` | `(value: bytes) -> str` | — | Return the canonical SHA-256 wire value for *value*. |
 | `hash_json` | `(value: Any) -> str` | — | Hash the canonical JSON encoding of *value*. |
 | `normalize_module_observation` | `(file_data: Mapping[str, Any]) -> dict[str, Any] \| None` | — | Return the canonical structural module observation. |
 | `normalize_entity_observation` | `(file_data: Mapping[str, Any], entity_name: str, occurrence: int = 1) -> dict[str, Any] \| None` | — | Return the structural observation for one same-name entity occurrence. |

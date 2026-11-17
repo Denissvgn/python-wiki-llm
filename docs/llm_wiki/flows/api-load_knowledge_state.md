@@ -2,14 +2,16 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 27 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 31 more
 
 **Complete modules touched:**
 
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
-- [common](../modules/common.md)
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -20,12 +22,14 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
@@ -69,11 +73,11 @@ sequenceDiagram
     participant p21 as pending_bootstrap
     participant p22 as _validate_surface_payload
     participant p23 as _storage_validator_identity
-    participant p24 as _surface_page_index
-    participant p25 as hash_markdown_snapshot
-    participant p26 as load_governance
-    participant p27 as read_md
-    participant p28 as collect_wiki_pages
+    participant p24 as first_unsafe_path_component
+    participant p25 as _surface_page_index
+    participant p26 as hash_markdown_snapshot
+    participant p27 as load_governance
+    participant p28 as read_md
     participant p29 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
     participant p30 as issue.field.split
     p0->>p1: guard_maintenance_owner
@@ -99,18 +103,18 @@ sequenceDiagram
     p9->>p21: pending_bootstrap
     p10->>p22: _validate_surface_payload
     p16->>p23: _storage_validator_identity
-    p10->>p24: _surface_page_index
-    p14->>p25: hash_markdown_snapshot
-    p18->>p26: load_governance
-    p14->>p27: read_md
-    p14->>p28: collect_wiki_pages
+    p7->>p24: first_unsafe_path_component
+    p10->>p25: _surface_page_index
+    p14->>p26: hash_markdown_snapshot
+    p18->>p27: load_governance
+    p14->>p28: read_md
     p0-->>p29: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)
     p0-->>p30: issue.field.split('.')
 ```
 
-> Call sequence diagram shows 30 of 1717 interactions; 1687 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1765 interactions; 1735 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 291 (290 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 534 (533 omitted); unresolved 1 of 306 (305 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -118,13 +122,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_loader.py:load_knowledge_state` | 1 | - | external | 9 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 9 | - | external | 2 |
-> Omission summary shows 8 of 419 groups; 411 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 424 groups; 416 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -137,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 913; effect analysis evaluated: 486, partial: 38, unavailable: 389. Counts include steps omitted from the displayed trace.
+Source steps: 926; effect analysis evaluated: 506, partial: 42, unavailable: 378. Counts include steps omitted from the displayed trace.
 
-Collector observations for 524 source steps with known totals: observed: 3116, emitted: 2846, omitted: 270. Unavailable totals are excluded.
+Collector observations for 548 source steps with known totals: observed: 3229, emitted: 2956, omitted: 273. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

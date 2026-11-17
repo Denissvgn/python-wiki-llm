@@ -2,11 +2,12 @@
 
 **Entry point:** `build_documentation_query_service_from_view` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_query_builder](../modules/documentation_query_builder.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 4 more
+**Modules touched:** [documentation_query_builder](../modules/documentation_query_builder.md), [host](../modules/host.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 4 more
 
 **Complete modules touched:**
 
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -30,26 +31,26 @@ sequenceDiagram
     participant p6 as load_verification_receipt
     participant p7 as _validated_artifacts_for_view
     participant p8 as evaluate_verification_receipt
-    participant p9 as _read_regular_receipt
-    participant p10 as deserialize_verification_receipt
-    participant p11 as validate_verification_receipt
-    participant p12 as serialize_verification_receipt
-    participant p13 as _frozen_summaries
-    participant p14 as MachineVerificationReadView
-    participant p15 as hash_json
-    participant p16 as machine_verification_summary
-    participant p17 as require_validated_artifacts
-    participant p18 as first_unsafe_path_component
+    participant p9 as first_unsafe_path_component
+    participant p10 as _read_regular_receipt
+    participant p11 as deserialize_verification_receipt
+    participant p12 as validate_verification_receipt
+    participant p13 as serialize_verification_receipt
+    participant p14 as _frozen_summaries
+    participant p15 as MachineVerificationReadView
+    participant p16 as hash_json
+    participant p17 as machine_verification_summary
+    participant p18 as require_validated_artifacts
     participant p19 as VerificationReceiptError
     participant p20 as verification_receipt_path
     participant p21 as VerificationReceiptEvaluation
-    participant p22 as formatted_json_bytes
-    participant p23 as _receipt_to_payload
-    participant p24 as verification_receipt_to_payload
-    participant p25 as _object
-    participant p26 as _exact_fields
-    participant p27 as _string
-    participant p28 as _receipt_hash
+    participant p22 as current_host
+    participant p23 as formatted_json_bytes
+    participant p24 as _receipt_to_payload
+    participant p25 as verification_receipt_to_payload
+    participant p26 as _object
+    participant p27 as _exact_fields
+    participant p28 as _string
     participant p29 as isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
     participant p30 as service_factory
     p0->>p1: attach_machine_verification_read_view
@@ -60,33 +61,33 @@ sequenceDiagram
     p4->>p6: load_verification_receipt
     p4->>p7: _validated_artifacts_for_view
     p4->>p8: evaluate_verification_receipt
-    p6->>p9: _read_regular_receipt
-    p6->>p10: deserialize_verification_receipt
-    p10->>p11: validate_verification_receipt
-    p10->>p12: serialize_verification_receipt
-    p2->>p13: _frozen_summaries
-    p4->>p14: MachineVerificationReadView
-    p4->>p15: hash_json
-    p4->>p16: machine_verification_summary
-    p7->>p17: require_validated_artifacts
-    p6->>p18: first_unsafe_path_component
+    p6->>p9: first_unsafe_path_component
+    p6->>p10: _read_regular_receipt
+    p6->>p11: deserialize_verification_receipt
+    p11->>p12: validate_verification_receipt
+    p11->>p13: serialize_verification_receipt
+    p2->>p14: _frozen_summaries
+    p4->>p15: MachineVerificationReadView
+    p4->>p16: hash_json
+    p4->>p17: machine_verification_summary
+    p7->>p18: require_validated_artifacts
     p6->>p19: VerificationReceiptError
     p6->>p20: verification_receipt_path
     p8->>p21: VerificationReceiptEvaluation
-    p12->>p22: formatted_json_bytes
-    p11->>p23: _receipt_to_payload
-    p12->>p24: verification_receipt_to_payload
-    p11->>p25: _object
-    p11->>p26: _exact_fields
-    p11->>p27: _string
-    p11->>p28: _receipt_hash
+    p9->>p22: current_host
+    p13->>p23: formatted_json_bytes
+    p12->>p24: _receipt_to_payload
+    p13->>p25: verification_receipt_to_payload
+    p12->>p26: _object
+    p12->>p27: _exact_fields
+    p12->>p28: _string
     p1-->>p29: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)
     p3-->>p30: service_factory(…)
 ```
 
-> Call sequence diagram shows 30 of 204 interactions; 174 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 206 interactions; 176 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 99 (98 omitted); unresolved 1 of 33 (32 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 98 (97 omitted); unresolved 1 of 35 (34 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -95,12 +96,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_verification.py:attach_machine_verification_read_view` | 2 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_verification.py:load_machine_verification_read_view` | 6 | - | external | 11 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 10 | - | external | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 10 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 41 | - | external | 1 |
-> Omission summary shows 8 of 34 groups; 26 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 35 groups; 27 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 73; effect analysis evaluated: 42, partial: 3, unavailable: 28. Counts include steps omitted from the displayed trace.
+Source steps: 74; effect analysis evaluated: 43, partial: 3, unavailable: 28. Counts include steps omitted from the displayed trace.
 
-Collector observations for 45 source steps with known totals: observed: 245, emitted: 235, omitted: 10. Unavailable totals are excluded.
+Collector observations for 46 source steps with known totals: observed: 247, emitted: 237, omitted: 10. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -210,7 +211,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 

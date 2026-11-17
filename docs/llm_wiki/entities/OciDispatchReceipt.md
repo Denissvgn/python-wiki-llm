@@ -1,6 +1,6 @@
 # OciDispatchReceipt
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:830`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:831`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

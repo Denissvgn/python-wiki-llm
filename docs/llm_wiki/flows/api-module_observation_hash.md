@@ -2,7 +2,7 @@
 
 **Entry point:** `module_observation_hash` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -18,7 +18,7 @@ sequenceDiagram
     participant p4 as _normalize_module_observation
     participant p5 as hash_json
     participant p6 as _inventory_language
-    participant p7 as canonical_json_bytes
+    participant p7 as compact_bytes
     participant p8 as _record_array
     participant p9 as _validate_import_record
     participant p10 as _record_name
@@ -48,7 +48,7 @@ sequenceDiagram
     p2->>p4: _normalize_module_observation
     p3->>p5: hash_json
     p4->>p6: _inventory_language
-    p5->>p7: canonical_json_bytes
+    p5->>p7: compact_bytes
     p4->>p8: _record_array
     p4->>p9: _validate_import_record
     p4->>p10: _record_name
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 17 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 64 groups; 56 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 145; effect analysis evaluated: 143, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 144 source steps with known totals: observed: 716, emitted: 712, omitted: 4. Unavailable totals are excluded.
+Collector observations for 144 source steps with known totals: observed: 718, emitted: 714, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -195,35 +195,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
+| module_observation_hash | _validate_inventory_complete | 249 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 818 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 828 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
-| module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
-| normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 457 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 540 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 541 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| _validate_inventory_complete | TypeError | 820 | `TypeError('inventory_complete must be a boolean')` |
+| module_observation_hash | normalize_module_observation | 252 | `normalize_module_observation(file_data)` |
+| normalize_module_observation | _normalize_module_observation | 213 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 428 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 512 | `_failure('', 'object-required', 'inventory object', file_data)` |
 | _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `file_data.get('language', MISSING_VALUE)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 474 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 480 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 502 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 509 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 445 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 473 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 480 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 828 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 849 |
-| external_call | `_inventory_language` | `isinstance` | 540 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 542 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 820 |
+| external_call | `_inventory_language` | `isinstance` | 511 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 513 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `module_observation_hash` | `depth limit` | 0 |
 
