@@ -36,6 +36,7 @@ ACTIONS = ("qualify", "dry-run", "tag", "publish", "github-release")
 NEXT = {"prepared": "qualify", "qualified": "dry-run", "dry-run-verified": "tag",
         "tagged": "publish", "published": "github-release"}
 FINISHED = {"complete", "superseded"}
+PUBLISHED_PACKAGES = (("agent-wiki-cli", "agent_wiki_cli-"), ("llm-wiki-engine", "llm_wiki_engine-"))
 WORKFLOWS = {"qualify": ("release-qualification.yml", "Release qualification"),
              "dry-run": ("publish.yml", "Promote qualified artifacts to PyPI"),
              "publish": ("publish.yml", "Promote qualified artifacts to PyPI")}
@@ -545,9 +546,12 @@ class GitHubBackend:
             return {**automation.qualification_inputs(state["candidate_sha"], "normal", ""),
                     "ubuntu-core-shards": "true"}
         qualified = state["qualification"]
+        engine = {f"{kind}-sha256": qualified["artifacts"][kind]["sha256"]
+                  for kind in ("engine-wheel", "engine-sdist") if kind in qualified["artifacts"]}
         return {"qualification-run-id": str(qualified["run_id"]), "candidate-sha": state["candidate_sha"],
                 "qualification-ref": "refs/heads/main", "wheel-sha256": qualified["artifacts"]["wheel"]["sha256"],
-                "sdist-sha256": qualified["artifacts"]["sdist"]["sha256"], "publish": str(action == "publish").lower()}
+                "sdist-sha256": qualified["artifacts"]["sdist"]["sha256"], **engine,
+                "publish": str(action == "publish").lower()}
 
     def perform(self, state: dict, pending: dict) -> dict:
         action = pending["action"]
@@ -732,6 +736,8 @@ class GitHubBackend:
             q.verify_bundle(argparse.Namespace(bundle=bundle, repository=self.repository, workflow_run_id=run["id"],
                 candidate_sha=state["candidate_sha"], repository_root=self.root, verify_repository=True, check_registry=True,
                 require_tag=False, wheel_sha256=artifacts["wheel"]["sha256"], sdist_sha256=artifacts["sdist"]["sha256"],
+                engine_wheel_sha256=artifacts.get("engine-wheel", {}).get("sha256"),
+                engine_sdist_sha256=artifacts.get("engine-sdist", {}).get("sha256"),
                 output=self.work / "qualified-verification.json"))
             return {"verified": True, "candidate_sha": state["candidate_sha"], "version": manifest["version"],
                     "run_id": run["id"], "attempt": run["run_attempt"], "bundle": str(bundle),
@@ -902,21 +908,31 @@ class GitHubBackend:
         for name, asset in assets.items():
             self._public_bytes("github", name, f"https://api.github.com/repos/{self.repository}/releases/assets/{asset['id']}",
                                asset["size"], expected[name], authenticated=True)
-        with urllib.request.urlopen("https://pypi.org/pypi/agent-wiki-cli/" + state["version"] + "/json", timeout=30) as response:
-            raw = response.read(4 * 1024 * 1024 + 1)
-        require(len(raw) <= 4 * 1024 * 1024, "Registry response exceeds bound")
-        registry = hosted._json(raw)
-        distributions = {a["filename"]: a for a in registry["urls"]}
-        require(len(distributions) == len(registry["urls"]) and set(distributions) == set(expected) - {"SHA256SUMS"}
-                and registry["info"]["version"] == state["version"]
-                and registry["info"]["name"].replace("_", "-").lower() == "agent-wiki-cli" and not registry["info"].get("yanked", False)
-                and all(not a["yanked"] and a["digests"]["sha256"] == expected[n] for n, a in distributions.items()), "Public registry distributions differ")
-        for name, asset in distributions.items():
-            self._public_bytes("pypi", name, asset["url"], asset["size"], expected[name])
+        registries = {}
+        published = set()
+        # Each distribution lives on its own PyPI project; together they hold every qualified file.
+        for package, prefix in PUBLISHED_PACKAGES:
+            files = {name for name in expected if name.startswith(prefix)}
+            if not files:
+                continue
+            published |= files
+            with urllib.request.urlopen("https://pypi.org/pypi/" + package + "/" + state["version"] + "/json", timeout=30) as response:
+                raw = response.read(4 * 1024 * 1024 + 1)
+            require(len(raw) <= 4 * 1024 * 1024, "Registry response exceeds bound")
+            registry = hosted._json(raw)
+            distributions = {a["filename"]: a for a in registry["urls"]}
+            require(len(distributions) == len(registry["urls"]) and set(distributions) == files
+                    and registry["info"]["version"] == state["version"]
+                    and registry["info"]["name"].replace("_", "-").lower() == package and not registry["info"].get("yanked", False)
+                    and all(not a["yanked"] and a["digests"]["sha256"] == expected[n] for n, a in distributions.items()), "Public registry distributions differ")
+            for name, asset in distributions.items():
+                self._public_bytes("pypi", name, asset["url"], asset["size"], expected[name])
+            registries[package] = registry
+        require(published == set(expected) - {"SHA256SUMS"}, "Public registry distributions differ")
         final_tag = self._tag(state)
         require(first_tag == final_tag, "Selected repository release tag changed during public verification")
-        atomic(self.work / "public-verification.json", {"registry": registry, "release": release,
-                                                        "tag": final_tag, "verified_at": now()})
+        atomic(self.work / "public-verification.json", {"registry": registries["agent-wiki-cli"], "registries": registries,
+                                                        "release": release, "tag": final_tag, "verified_at": now()})
         return {"verified": True, "candidate_sha": state["candidate_sha"], "release_url": release["html_url"],
                 "pypi_url": "https://pypi.org/project/agent-wiki-cli/" + state["version"] + "/"}
 

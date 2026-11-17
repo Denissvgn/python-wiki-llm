@@ -27,7 +27,7 @@ from typing import Mapping, Sequence
 from urllib.parse import unquote
 
 
-SCHEMA_VERSION = "agent-wiki-artifact-smoke/v1"
+SCHEMA_VERSION = "agent-wiki-artifact-smoke/v2"
 COMMAND_TIMEOUT_SECONDS = 120
 EXPECTED_SUBCOMMANDS = (
     "bootstrap",
@@ -586,6 +586,35 @@ def _validate_installation(python: Path, work: Path) -> str:
     return "/".join(module_path.parts[-2:])
 
 
+def _validate_engine(python: Path, work: Path, engine: Path, version: str) -> dict[str, str]:
+    """The CLI runs on the engine artifact installed beside it, never a source tree."""
+    expected_kind = "engine-wheel" if engine.suffix == ".whl" else "engine-sdist"
+    completed = _run(
+        _isolated_utf8_python_command(
+            python,
+            "-c",
+            (
+                "import json, pathlib, importlib.metadata as m, llm_wiki_engine; "
+                "print(json.dumps({'path': str(pathlib.Path(llm_wiki_engine.__file__).resolve()), "
+                "'version': llm_wiki_engine.__version__, "
+                "'distribution': m.version('llm-wiki-engine')}))"
+            ),
+        ),
+        cwd=work,
+    )
+    observed = json.loads(completed.stdout)
+    module_path = Path(observed["path"])
+    if work == module_path or work in module_path.parents:
+        raise SmokeError(f"engine imported from smoke workspace: {module_path}")
+    if "site-packages" not in module_path.parts:
+        raise SmokeError(f"engine did not import from site-packages: {module_path}")
+    if observed["version"] != version or observed["distribution"] != version:
+        raise SmokeError(
+            f"installed engine {observed['distribution']} is not the {version} release"
+        )
+    return {"filename": engine.name, "sha256": _sha256(engine), "kind": expected_kind}
+
+
 def _validate_mcp(mcp_python: Path, work: Path) -> str:
     _run(
         _isolated_utf8_python_command(
@@ -868,6 +897,13 @@ def run_smoke(args: argparse.Namespace) -> int:
     work.mkdir(parents=True)
 
     module_suffix = _validate_installation(python, work)
+    engine_artifact = _validate_engine(
+        python, work, args.engine_artifact.resolve(), args.expected_version
+    )
+    if engine_artifact["kind"] != "engine-" + (
+        "wheel" if artifact.suffix == ".whl" else "sdist"
+    ):
+        raise SmokeError("smoke must install the engine artifact of the same kind")
     provider_contract = _validate_provider_contract(python, work)
     version_text = _run(
         _isolated_utf8_python_command(
@@ -1125,6 +1161,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "sha256": _sha256(artifact),
             "kind": kind,
         },
+        "engine_artifact": engine_artifact,
         "version": args.expected_version,
         "result": {
             "installed_module": module_suffix,
@@ -1162,6 +1199,7 @@ def run_smoke(args: argparse.Namespace) -> int:
 def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact", type=Path, required=True)
+    parser.add_argument("--engine-artifact", type=Path, required=True)
     parser.add_argument("--python", type=Path, required=True)
     parser.add_argument("--mcp-python", type=Path, required=True)
     parser.add_argument("--expected-version", required=True)

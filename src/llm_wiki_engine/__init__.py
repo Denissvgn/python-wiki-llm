@@ -12,4 +12,4 @@ package. Its ``llm_wiki_cli.services.<module>`` import paths for these
 modules remain available as aliases of the same module objects.
 """
 
-__version__ = "0.1.0"
+__version__ = "4.1.1"

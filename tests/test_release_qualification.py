@@ -60,7 +60,7 @@ def _write_identity(path: Path) -> dict[str, object]:
     return payload
 
 
-def _smoke(path: Path, artifact: Path, kind: str) -> dict:
+def _smoke(path: Path, artifact: Path, kind: str, engine: Path | None = None) -> dict:
     payload = {
         "schema_version": qualification.SMOKE_SCHEMA,
         "artifact": {
@@ -75,6 +75,12 @@ def _smoke(path: Path, artifact: Path, kind: str) -> dict:
             "sync_sha256": "4" * 64,
         },
     }
+    if engine is not None:
+        payload["engine_artifact"] = {
+            "filename": engine.name,
+            "sha256": qualification.sha256_file(engine),
+            "kind": "engine-" + kind,
+        }
     _write_json(path, payload)
     return payload
 
@@ -101,6 +107,10 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="uns
     sdist = dist / f"agent_wiki_cli-{VERSION}.tar.gz"
     wheel.write_bytes(b"deterministic wheel")
     sdist.write_bytes(b"deterministic sdist")
+    engine_wheel = dist / f"llm_wiki_engine-{VERSION}-py3-none-any.whl"
+    engine_sdist = dist / f"llm_wiki_engine-{VERSION}.tar.gz"
+    engine_wheel.write_bytes(b"deterministic engine wheel")
+    engine_sdist.write_bytes(b"deterministic engine sdist")
     frozen = tmp_path / "frozen"
     frozen.mkdir()
     source_archive = frozen / "candidate-source.tar"
@@ -153,13 +163,15 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="uns
     )
     wheel_smoke_path = tmp_path / "wheel.json"
     sdist_smoke_path = tmp_path / "sdist.json"
-    wheel_smoke = _smoke(wheel_smoke_path, wheel, "wheel")
-    sdist_smoke = _smoke(sdist_smoke_path, sdist, "sdist")
+    wheel_smoke = _smoke(wheel_smoke_path, wheel, "wheel", engine_wheel)
+    sdist_smoke = _smoke(sdist_smoke_path, sdist, "sdist", engine_sdist)
     comparison = {
         "schema_version": qualification.SMOKE_COMPARISON_SCHEMA,
         "version": VERSION,
         "wheel_sha256": wheel_smoke["artifact"]["sha256"],
         "sdist_sha256": sdist_smoke["artifact"]["sha256"],
+        "engine_wheel_sha256": wheel_smoke["engine_artifact"]["sha256"],
+        "engine_sdist_sha256": sdist_smoke["engine_artifact"]["sha256"],
         "result_sha256": qualification._smoke_result_sha256(wheel_smoke["result"]),
         "equal": True,
     }
@@ -278,6 +290,41 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="uns
     return bundle, manifest
 
 
+def _as_cli_only_bundle(bundle: Path, manifest: dict, schema: str) -> None:
+    """Rewrite a bundle as one qualified before the engine distribution existed."""
+    manifest["schema_version"] = schema
+    for item in manifest["artifacts"]:
+        if item["kind"].startswith("engine-"):
+            (bundle / "dist" / item["filename"]).unlink()
+    manifest["artifacts"] = [
+        item for item in manifest["artifacts"] if not item["kind"].startswith("engine-")
+    ]
+    for name in ("smoke-wheel.json", "smoke-sdist.json"):
+        smoke = qualification.load_json(bundle / name)
+        smoke["schema_version"] = qualification.CLI_ONLY_SMOKE_SCHEMA
+        del smoke["engine_artifact"]
+        _write_json(bundle / name, smoke)
+    comparison = qualification.load_json(bundle / "smoke-comparison.json")
+    comparison["schema_version"] = qualification.CLI_ONLY_SMOKE_COMPARISON_SCHEMA
+    del comparison["engine_wheel_sha256"], comparison["engine_sdist_sha256"]
+    _write_json(bundle / "smoke-comparison.json", comparison)
+    (bundle / "SHA256SUMS").write_text("".join(
+        f"{item['sha256']}  dist/{item['filename']}\n" for item in manifest["artifacts"]
+    ), encoding="ascii")
+    _write_json(bundle / "sbom.spdx.json", qualification._expected_sbom(
+        repository=manifest["repository"], source=manifest["source"],
+        version=manifest["version"], artifacts=manifest["artifacts"],
+    ))
+    _write_json(bundle / "provenance.intoto.json", qualification._expected_provenance(
+        repository=manifest["repository"], source=manifest["source"],
+        workflow_run_id=manifest["workflow_run_id"], artifacts=manifest["artifacts"],
+        gates=manifest["gates"],
+    ))
+    for name in manifest["supporting_files"]:
+        manifest["supporting_files"][name] = qualification.sha256_file(bundle / name)
+    _write_json(bundle / "qualification-manifest.json", manifest)
+
+
 def _verify_args(bundle: Path, manifest: dict, **overrides) -> argparse.Namespace:
     artifacts = {item["kind"]: item for item in manifest["artifacts"]}
     values = {
@@ -287,6 +334,8 @@ def _verify_args(bundle: Path, manifest: dict, **overrides) -> argparse.Namespac
         "candidate_sha": SHA,
         "wheel_sha256": artifacts["wheel"]["sha256"],
         "sdist_sha256": artifacts["sdist"]["sha256"],
+        "engine_wheel_sha256": artifacts.get("engine-wheel", {}).get("sha256"),
+        "engine_sdist_sha256": artifacts.get("engine-sdist", {}).get("sha256"),
         "repository_root": bundle.parent,
         "require_tag": False,
         "check_registry": False,
@@ -327,7 +376,9 @@ def test_bundle_round_trip_binds_identity_artifacts_and_support(
         for gate in qualification.QUALIFIED_GATES
     )
     assert manifest["gates"]["RD-13"]["evidence"] == []
-    assert {item["kind"] for item in manifest["artifacts"]} == {"wheel", "sdist"}
+    assert [item["kind"] for item in manifest["artifacts"]] == list(
+        qualification.ARTIFACT_KINDS
+    )
 
 
 def test_bundle_relative_paths_are_portable_posix_text() -> None:
@@ -359,15 +410,24 @@ def test_bundle_rejects_file_set_and_digest_mutations(
         qualification.verify_bundle(_verify_args(bundle, manifest))
 
 
+def _smoke_pair(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
+    files = []
+    for name in (
+        f"agent_wiki_cli-{VERSION}-py3-none-any.whl", f"agent_wiki_cli-{VERSION}.tar.gz",
+        f"llm_wiki_engine-{VERSION}-py3-none-any.whl", f"llm_wiki_engine-{VERSION}.tar.gz",
+    ):
+        path = tmp_path / name
+        path.write_bytes(name.encode())
+        files.append(path)
+    return tuple(files)
+
+
 def test_compare_smoke_recomputes_canonical_result_digest(tmp_path: Path) -> None:
-    wheel = tmp_path / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
-    sdist = tmp_path / f"agent_wiki_cli-{VERSION}.tar.gz"
-    wheel.write_bytes(b"wheel")
-    sdist.write_bytes(b"sdist")
+    wheel, sdist, engine_wheel, engine_sdist = _smoke_pair(tmp_path)
     wheel_path = tmp_path / "wheel.json"
     sdist_path = tmp_path / "sdist.json"
-    wheel_smoke = _smoke(wheel_path, wheel, "wheel")
-    _smoke(sdist_path, sdist, "sdist")
+    wheel_smoke = _smoke(wheel_path, wheel, "wheel", engine_wheel)
+    _smoke(sdist_path, sdist, "sdist", engine_sdist)
     output = tmp_path / "comparison.json"
 
     assert (
@@ -386,6 +446,25 @@ def test_compare_smoke_recomputes_canonical_result_digest(tmp_path: Path) -> Non
     assert comparison["result_sha256"] == qualification._smoke_result_sha256(
         wheel_smoke["result"]
     )
+    assert comparison["engine_wheel_sha256"] == qualification.sha256_file(engine_wheel)
+    assert comparison["engine_sdist_sha256"] == qualification.sha256_file(engine_sdist)
+
+
+@pytest.mark.parametrize("change", ["missing", "wrong-kind"])
+def test_smoke_must_bind_the_engine_installed_beside_the_cli(tmp_path, change):
+    wheel, sdist, engine_wheel, engine_sdist = _smoke_pair(tmp_path)
+    wheel_path, sdist_path = tmp_path / "wheel.json", tmp_path / "sdist.json"
+    record = _smoke(wheel_path, wheel, "wheel", engine_wheel)
+    _smoke(sdist_path, sdist, "sdist", engine_sdist)
+    if change == "missing":
+        del record["engine_artifact"]
+    else:
+        record["engine_artifact"]["kind"] = "engine-sdist"
+    _write_json(wheel_path, record)
+    with pytest.raises(qualification.QualificationError, match="engine"):
+        qualification.compare_smoke(argparse.Namespace(
+            wheel=wheel_path, sdist=sdist_path, output=tmp_path / "comparison.json"
+        ))
 
 
 @pytest.mark.parametrize("field", [
@@ -393,12 +472,12 @@ def test_compare_smoke_recomputes_canonical_result_digest(tmp_path: Path) -> Non
     "packet_adapters.cases.v2-json", "native_consumer.packet_sha256",
 ])
 def test_smoke_comparison_rejects_and_identifies_changed_output(tmp_path, field):
-    wheel = tmp_path / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
-    sdist = tmp_path / f"agent_wiki_cli-{VERSION}.tar.gz"
-    wheel.write_bytes(b"wheel")
-    sdist.write_bytes(b"sdist")
+    wheel, sdist, engine_wheel, engine_sdist = _smoke_pair(tmp_path)
     wheel_path, sdist_path = tmp_path / "wheel.json", tmp_path / "sdist.json"
-    records = [_smoke(wheel_path, wheel, "wheel"), _smoke(sdist_path, sdist, "sdist")]
+    records = [
+        _smoke(wheel_path, wheel, "wheel", engine_wheel),
+        _smoke(sdist_path, sdist, "sdist", engine_sdist),
+    ]
     for record, value in zip(records, ("a" * 64, "b" * 64)):
         target = record["result"]
         *parents, key = field.split(".")
@@ -590,7 +669,7 @@ def test_registry_preflight_is_required_when_requested(
 ) -> None:
     bundle, manifest = qualified_bundle
 
-    def unavailable(_version: str) -> None:
+    def unavailable(_version: str, _packages=()) -> None:
         raise qualification.QualificationError("registry unavailable")
 
     monkeypatch.setattr(qualification, "_check_registry_unused", unavailable)
@@ -968,7 +1047,7 @@ def _write_attestation_receipts(
     path.write_text(
         "".join(
             json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n"
-            for _ in range(qualification.ATTESTATION_RECEIPT_COUNT)
+            for _ in manifest["artifacts"]
         ),
         encoding="utf-8",
     )
@@ -1298,8 +1377,8 @@ def test_exact_attempt_selection_preserves_originals_and_strict_promotion(
         receipt_record = record["receipts"][path.name]
         assert receipt_record["input_sha256"] == qualification.sha256_file(path)
         assert receipt_record["selected_sha256"] == qualification.sha256_file(selected)
-        assert receipt_record["original_counts"] == [4, 4]
-        assert receipt_record["selected_counts"] == [2, 2]
+        assert receipt_record["original_counts"] == [4] * len(manifest["artifacts"])
+        assert receipt_record["selected_counts"] == [2] * len(manifest["artifacts"])
         assert _load_attestation_receipt_lines(selected) == [
             [result for result in receipt if result["verificationResult"]["signature"]["certificate"]["runInvocationURI"] == record["run_invocation"]]
             for receipt in _load_attestation_receipt_lines(path)
@@ -1405,7 +1484,7 @@ def test_attestation_selection_binds_a_later_qualification_attempt(qualified_bun
     assert qualification.select_attestations(args) == 0
     record = qualification.load_json(args.output / "selection.json")
     assert record["run_attempt"] == 2 and record["run_invocation"].endswith("/attempts/2")
-    assert all(value["selected_counts"] == [1, 1] for value in record["receipts"].values())
+    assert all(value["selected_counts"] == [1] * len(manifest["artifacts"]) for value in record["receipts"].values())
 
 
 def test_exact_skip_allowlist_rejects_reason_drift(tmp_path: Path) -> None:
@@ -2343,7 +2422,7 @@ def test_previous_v3_unsharded_bundle_verifies_without_rewriting_its_schema(
     qualified_bundle,
 ):
     bundle, manifest = qualified_bundle
-    manifest["schema_version"] = qualification.PREVIOUS_QUALIFICATION_SCHEMA
+    _as_cli_only_bundle(bundle, manifest, qualification.UNSHARDED_QUALIFICATION_SCHEMA)
     del manifest["qualification_context"]["core_layout"]
     ledger = qualification.load_json(bundle / "hosted-evidence.json")
     del ledger["context"]["core_layout"]
@@ -2360,7 +2439,7 @@ def test_previous_v3_unsharded_bundle_verifies_without_rewriting_its_schema(
 @pytest.mark.parametrize(
     "schema,context_change",
     [
-        (qualification.PREVIOUS_QUALIFICATION_SCHEMA, "add-layout"),
+        (qualification.UNSHARDED_QUALIFICATION_SCHEMA, "add-layout"),
         (qualification.QUALIFICATION_SCHEMA, "missing-layout"),
         (qualification.QUALIFICATION_SCHEMA, "unknown-layout"),
     ],
@@ -2556,3 +2635,118 @@ def test_new_shadow_plan_cannot_become_qualifying_by_relabeling_flags():
     plan.update(purpose="qualification", qualifying=True)
     with pytest.raises(qualification.QualificationError, match="Nonqualifying shadow"):
         qualification._reject_shadow_value(plan)
+
+
+def test_cli_only_bundle_stays_verifiable_without_engine_digests(qualified_bundle):
+    bundle, manifest = qualified_bundle
+    _as_cli_only_bundle(bundle, manifest, qualification.PREVIOUS_QUALIFICATION_SCHEMA)
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    with pytest.raises(qualification.QualificationError, match="no qualified engine-wheel"):
+        qualification.verify_bundle(
+            _verify_args(bundle, manifest, engine_wheel_sha256="0" * 64)
+        )
+
+
+@pytest.mark.parametrize("kind", ["engine-wheel", "engine-sdist"])
+def test_engine_bundle_requires_each_engine_digest(qualified_bundle, kind):
+    bundle, manifest = qualified_bundle
+    field = kind.replace("-", "_") + "_sha256"
+    for value in (None, "0" * 64):
+        with pytest.raises(qualification.QualificationError, match=kind):
+            qualification.verify_bundle(_verify_args(bundle, manifest, **{field: value}))
+
+
+def test_engine_bundle_checks_both_registry_slots(qualified_bundle, monkeypatch):
+    bundle, manifest = qualified_bundle
+    checked = []
+    monkeypatch.setattr(
+        qualification, "_check_package_version_unused",
+        lambda package, version: checked.append((package, version)),
+    )
+    assert qualification.verify_bundle(
+        _verify_args(bundle, manifest, check_registry=True)
+    ) == 0
+    assert checked == [("agent-wiki-cli", VERSION), ("llm-wiki-engine", VERSION)]
+
+
+@pytest.mark.parametrize("change", ["order", "package", "count"])
+def test_manifest_binds_engine_artifacts_by_kind_and_order(qualified_bundle, change):
+    _, manifest = qualified_bundle
+    artifacts = manifest["artifacts"]
+    if change == "order":
+        artifacts[2], artifacts[3] = artifacts[3], artifacts[2]
+    elif change == "package":
+        artifacts[2]["filename"] = f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
+    else:
+        del artifacts[3]
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_manifest(manifest)
+
+
+def _build_output(root: Path, version: str = VERSION, engine_version: str = VERSION) -> Path:
+    (root / "engine").mkdir(parents=True)
+    for directory, package, value in (
+        (root, "agent_wiki_cli", version), (root / "engine", "llm_wiki_engine", engine_version),
+    ):
+        (directory / f"{package}-{value}-py3-none-any.whl").write_bytes(package.encode())
+        (directory / f"{package}-{value}.tar.gz").write_bytes(package.encode() + b" sdist")
+    return root
+
+
+def test_compare_builds_requires_and_selects_both_distributions(tmp_path):
+    first, second = _build_output(tmp_path / "a"), _build_output(tmp_path / "b")
+    output = tmp_path / "selected"
+    assert qualification.compare_builds(
+        argparse.Namespace(first=first, second=second, output=output)
+    ) == 0
+    selected = qualification._release_files(output / "dist")
+    assert list(selected) == list(qualification.ARTIFACT_KINDS)
+    record = qualification.load_json(output / "reproducible-build.json")
+    assert [item["kind"] for item in record["artifacts"]] == list(qualification.ARTIFACT_KINDS)
+
+    (second / "engine" / f"llm_wiki_engine-{VERSION}.tar.gz").write_bytes(b"different")
+    with pytest.raises(qualification.QualificationError, match="bytes differ"):
+        qualification.compare_builds(
+            argparse.Namespace(first=first, second=second, output=tmp_path / "again")
+        )
+
+
+@pytest.mark.parametrize("problem", ["missing-engine", "engine-version"])
+def test_build_output_needs_a_matching_engine(tmp_path, problem):
+    if problem == "missing-engine":
+        root = _build_output(tmp_path / "a")
+        for path in (root / "engine").iterdir():
+            path.unlink()
+    else:
+        root = _build_output(tmp_path / "a", engine_version="0.1.0")
+    with pytest.raises(qualification.QualificationError):
+        qualification._build_files(root)
+
+
+def _lockstep_project(root: Path, version="4.2.0", engine="4.2.0", pin="llm-wiki-engine==4.2.0"):
+    (root / "src").mkdir(parents=True)
+    dependencies = f'["{pin}"]' if pin else "[]"
+    (root / "pyproject.toml").write_text(
+        f'[project]\nname = "agent-wiki-cli"\nversion = "{version}"\ndependencies = {dependencies}\n'
+    )
+    if engine is not None:
+        (root / "src/pyproject.toml").write_text(
+            f'[project]\nname = "llm-wiki-engine"\nversion = "{engine}"\n'
+        )
+    return root
+
+
+def test_project_version_requires_lockstep_engine(tmp_path):
+    assert qualification._project_version(_lockstep_project(tmp_path / "ok")) == "4.2.0"
+    # A candidate from before the engine distribution has neither the pin nor the project.
+    assert qualification._project_version(
+        _lockstep_project(tmp_path / "old", engine=None, pin=None)
+    ) == "4.2.0"
+    for name, kwargs in {
+        "engine-behind": {"engine": "4.1.1"},
+        "loose-pin": {"pin": "llm-wiki-engine>=4.2.0"},
+        "pin-without-engine": {"engine": None},
+        "engine-without-pin": {"pin": None},
+    }.items():
+        with pytest.raises(qualification.QualificationError):
+            qualification._project_version(_lockstep_project(tmp_path / name, **kwargs))

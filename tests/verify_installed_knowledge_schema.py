@@ -343,7 +343,7 @@ def main() -> None:
     parser.add_argument(
         "--engine",
         type=Path,
-        help="Directory holding the llm-wiki-engine wheel and sdist (default: DIST/engine)",
+        help="Directory holding the llm-wiki-engine wheel and sdist (default: DIST/engine, else DIST)",
     )
     parser.add_argument(
         "--no-build-isolation",
@@ -352,14 +352,18 @@ def main() -> None:
     )
     args = parser.parse_args()
     dist_dir = args.dist.resolve()
+    # Names select each distribution, so a flat release directory works too.
     artifacts = (
-        _single_artifact(dist_dir, "*.whl"),
-        _single_artifact(dist_dir, "*.tar.gz"),
+        _single_artifact(dist_dir, "agent_wiki_cli-*.whl"),
+        _single_artifact(dist_dir, "agent_wiki_cli-*.tar.gz"),
     )
-    engine_dir = (args.engine or dist_dir / "engine").resolve()
+    engine_dir = args.engine or dist_dir / "engine"
+    if args.engine is None and not engine_dir.is_dir():
+        engine_dir = dist_dir
+    engine_dir = engine_dir.resolve()
     engine = (
-        _single_artifact(engine_dir, "*.whl"),
-        _single_artifact(engine_dir, "*.tar.gz"),
+        _single_artifact(engine_dir, "llm_wiki_engine-*.whl"),
+        _single_artifact(engine_dir, "llm_wiki_engine-*.tar.gz"),
     )
     _verify_contents(*artifacts)
     _verify_engine_contents(*engine, artifacts[0])

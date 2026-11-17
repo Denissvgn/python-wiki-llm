@@ -595,6 +595,8 @@ def test_cli_pins_the_engine_built_from_the_same_checkout():
     assert engine["requires-python"] == _pyproject()["project"]["requires-python"]
     assert [str(pin.specifier) for pin in pins] == [f"=={engine['version']}"]
     assert llm_wiki_engine.__version__ == engine["version"]
+    # Lockstep: every release publishes the engine under the CLI's own version.
+    assert engine["version"] == _pyproject()["project"]["version"]
 
 
 def test_each_project_packages_only_its_own_import_package():

@@ -542,7 +542,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Validate every declared runtime owner and platform build
         run: >-
@@ -614,7 +614,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Exercise the complete native measurement consumer before full suites
         env:
@@ -712,7 +712,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Run shared early preparation contracts
         if: ${{ !inputs.discovery-mode }}
@@ -942,7 +942,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Collect the complete inventory and bind the plan
         env:
@@ -1044,7 +1044,7 @@ jobs:
 
       - name: Install the identical resolved Ubuntu dependency profile
         if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
-        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt ./candidate/src "./candidate[dev,tokens]"
 
       - name: Execute one qualifying Ubuntu shard
         env:
@@ -1143,11 +1143,11 @@ jobs:
 
       - name: Install the identical resolved Ubuntu dependency profile
         if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
-        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt ./candidate/src "./candidate[dev,tokens]"
 
       - name: Install the frozen source non-editably
         if: ${{ needs.freeze.outputs.core-layout != 'platform-sharded' }}
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Run shared early preparation contracts
         if: ${{ !inputs.discovery-mode }}
@@ -1382,11 +1382,11 @@ jobs:
 
       - name: Install the identical resolved Windows dependency profile
         if: ${{ needs.freeze.outputs.core-layout == 'platform-sharded' }}
-        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt ./candidate/src "./candidate[dev,tokens]"
 
       - name: Install the frozen source non-editably
         if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Bind native owner source, environment and attempt
         env:
@@ -1447,7 +1447,7 @@ jobs:
           mkdir -p ../evidence/native-regressions
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/stdio-venv"
-          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ".[dev]"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ./src ".[dev]"
           "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pytest \
             tests/test_readonly_subprocess_stdin.py -q \
             -p no:cacheprovider --strict-config --strict-markers \
@@ -1495,9 +1495,10 @@ jobs:
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/provider-build-venv"
           builder="${RUNNER_TEMP}/provider-build-venv/Scripts/python.exe"
-          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ".[dev,tokens]"
+          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ./src ".[dev,tokens]"
           export PATH="${RUNNER_TEMP}/provider-build-venv/Scripts:${PATH}"
           "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
+          "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist" src
           version="$("${builder}" -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
           "${builder}" tests/run_provider_artifact_checks.py \
             --artifacts "${RUNNER_TEMP}/provider-dist" \
@@ -1621,7 +1622,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Collect the complete inventory and bind the plan
         env:
@@ -1723,7 +1724,7 @@ jobs:
 
       - name: Install the identical resolved Windows dependency profile
         if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
-        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt ./candidate/src "./candidate[dev,tokens]"
 
       - name: Execute one qualifying Windows shard
         env:
@@ -1828,11 +1829,11 @@ jobs:
 
       - name: Install the identical resolved Windows dependency profile
         if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
-        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir --constraint incoming/plan/constraints.txt --requirement incoming/plan/constraints.txt ./candidate/src "./candidate[dev,tokens]"
 
       - name: Install the frozen source non-editably
         if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
-        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
 
       - name: Download every Windows shard separately
         if: ${{ needs.freeze.outputs.core-layout != 'unsharded' }}
@@ -1916,7 +1917,7 @@ jobs:
           mkdir -p ../evidence/native-regressions
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/stdio-venv"
-          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ".[dev]"
+          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ./src ".[dev]"
           "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pytest \
             tests/test_readonly_subprocess_stdin.py -q \
             -p no:cacheprovider --strict-config --strict-markers \
@@ -1964,9 +1965,10 @@ jobs:
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/provider-build-venv"
           builder="${RUNNER_TEMP}/provider-build-venv/Scripts/python.exe"
-          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ".[dev,tokens]"
+          "${builder}" -m pip install "build==1.5.0" "pyright==1.1.411" ./src ".[dev,tokens]"
           export PATH="${RUNNER_TEMP}/provider-build-venv/Scripts:${PATH}"
           "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
+          "${builder}" -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist" src
           version="$("${builder}" -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
           "${builder}" tests/run_provider_artifact_checks.py \
             --artifacts "${RUNNER_TEMP}/provider-dist" \
@@ -2232,7 +2234,7 @@ jobs:
           python -I incoming/tools/release/qualification.py create-venv \
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev]"
       - name: Run the qualifying Ubuntu union once
         id: suites
         run: >-
@@ -2428,7 +2430,7 @@ jobs:
           python -I incoming/tools/release/qualification.py create-venv \
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev]"
       - name: Run security owner suites
         working-directory: candidate
         run: >-
@@ -2503,7 +2505,7 @@ jobs:
           python -I incoming/tools/release/qualification.py create-venv \
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install source with real SDK
-        run: python -m pip install --no-cache-dir "./candidate[dev,mcp]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,mcp]"
       - name: Run MCP contract
         env:
           LLM_WIKI_REQUIRE_MCP_SDK: "1"
@@ -2703,7 +2705,7 @@ jobs:
           grep -Fx "Scanner: ${expected_govulncheck}" evidence/govulncheck.txt > /dev/null
       - name: Install source and prepare every extractor
         run: |
-          python -m pip install --no-cache-dir "./candidate[dev]"
+          python -m pip install --no-cache-dir ./candidate/src "./candidate[dev]"
           python -m llm_wiki_cli.cli prepare-extractors \
             --src-dir candidate \
             --cache-dir "${RUNNER_TEMP}/extractor-cache" \
@@ -2860,7 +2862,7 @@ jobs:
           python -I incoming/tools/release/qualification.py create-venv \
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install frozen source
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev]"
       - name: Build immutable synthetic OCI fixture
         run: |
           set -euo pipefail
@@ -2989,7 +2991,7 @@ jobs:
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install source and hash-locked release tools
         run: |
-          python -m pip install --no-cache-dir "./candidate[dev,mcp,tokens]"
+          python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,mcp,tokens]"
           python -m pip install --require-hashes --only-binary=:all: --no-cache-dir -r candidate/examples/fastapi-contracts/requirements-ci.txt
           python -m pip install --require-hashes \
             --no-cache-dir -r candidate/release/requirements.txt
@@ -3094,7 +3096,7 @@ jobs:
           BOOTSTRAP_VENV: ${{ runner.temp }}/action-bootstrap
         run: |
           python -m venv "${BOOTSTRAP_VENV}"
-          "${BOOTSTRAP_VENV}/bin/python" -m pip install --no-input ./candidate
+          "${BOOTSTRAP_VENV}/bin/python" -m pip install --no-input ./candidate/src ./candidate
           "${BOOTSTRAP_VENV}/bin/llm-wiki" bootstrap \
             --src-dir candidate/tests/fixtures/context-health-action/source \
             --wiki-dir candidate/.action-selftest/wiki \
@@ -3567,6 +3569,8 @@ jobs:
           mkdir dist
           python -m build --no-isolation --sdist --wheel \
             --outdir dist candidate
+          python -m build --no-isolation --sdist --wheel \
+            --outdir dist/engine candidate/src
       - name: Create a separate fresh validation environment
         if: ${{ matrix.validate }}
         run: >-
@@ -3608,7 +3612,7 @@ jobs:
       - name: Validate the first independent build
         if: ${{ matrix.validate }}
         run: |
-          twine check dist/*
+          twine check dist/*.whl dist/*.tar.gz dist/engine/*
           python candidate/tests/verify_installed_knowledge_schema.py dist --no-build-isolation
       - name: Recheck build downloads immediately before saving
         id: build-cache-verified
@@ -3710,7 +3714,7 @@ jobs:
           digest-mismatch: error
           name: build-b
           path: incoming/b
-      - name: Require byte-identical wheel and sdist
+      - name: Require byte-identical CLI and engine wheel and sdist
         run: >-
           python -I incoming/tools/release/qualification.py compare-builds
           --first incoming/a
@@ -3768,16 +3772,20 @@ jobs:
           python -m venv "${RUNNER_TEMP}/default-venv"
           python -m venv "${RUNNER_TEMP}/mcp-venv"
           if [[ "${{ matrix.kind }}" == "wheel" ]]; then
-            artifact="$(find incoming/release/dist -maxdepth 1 -name '*.whl' -print)"
+            suffix='-py3-none-any.whl'
           else
-            artifact="$(find incoming/release/dist -maxdepth 1 -name '*.tar.gz' -print)"
+            suffix='.tar.gz'
           fi
-          test -n "${artifact}"
+          artifact="$(find incoming/release/dist -maxdepth 1 -name "agent_wiki_cli-*${suffix}" -print)"
+          engine="$(find incoming/release/dist -maxdepth 1 -name "llm_wiki_engine-*${suffix}" -print)"
+          test -n "${artifact}" && test -n "${engine}"
+          # The CLI pins this exact engine; installing both keeps PyPI out of the smoke.
           "${RUNNER_TEMP}/default-venv/bin/python" -m pip install \
-            --no-cache-dir "${artifact}"
+            --no-cache-dir "${engine}" "${artifact}"
           "${RUNNER_TEMP}/mcp-venv/bin/python" -m pip install \
-            --no-cache-dir "${artifact}[mcp]"
+            --no-cache-dir "${engine}" "${artifact}[mcp]"
           echo "ARTIFACT=${artifact}" >> "${GITHUB_ENV}"
+          echo "ENGINE_ARTIFACT=${engine}" >> "${GITHUB_ENV}"
       - name: Install the pinned downstream typing checker
         run: python -m pip install --no-cache-dir "pyright==1.1.411"
       - name: Run without a source checkout
@@ -3785,6 +3793,7 @@ jobs:
         run: >-
           python -I incoming/tools/tests/release_artifact_smoke.py
           --artifact "${ARTIFACT}"
+          --engine-artifact "${ENGINE_ARTIFACT}"
           --python "${RUNNER_TEMP}/default-venv/bin/python"
           --mcp-python "${RUNNER_TEMP}/mcp-venv/bin/python"
           --expected-version "${{ needs.freeze.outputs.version }}"
@@ -4045,7 +4054,7 @@ jobs:
       - name: Create isolated comparison environment
         run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/analysis-venv"
       - name: Install the candidate and its build dependencies
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
+        run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev]"
       - name: Verify real installed version and implementation pairs
         run: python -I incoming/tools/release/analysis_pairs.py --root candidate --work evidence/analysis-pairs
       - name: Retain installed comparison evidence
@@ -4105,6 +4114,8 @@ jobs:
       version: ${{ steps.bundle.outputs.version }}
       wheel-sha256: ${{ steps.bundle.outputs.wheel-sha256 }}
       sdist-sha256: ${{ steps.bundle.outputs.sdist-sha256 }}
+      engine-wheel-sha256: ${{ steps.bundle.outputs.engine-wheel-sha256 }}
+      engine-sdist-sha256: ${{ steps.bundle.outputs.engine-sdist-sha256 }}
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -4269,6 +4280,8 @@ jobs:
           --candidate-sha "${{ needs.freeze.outputs.sha }}"
           --wheel-sha256 "${{ steps.bundle.outputs.wheel-sha256 }}"
           --sdist-sha256 "${{ steps.bundle.outputs.sdist-sha256 }}"
+          --engine-wheel-sha256 "${{ steps.bundle.outputs.engine-wheel-sha256 }}"
+          --engine-sdist-sha256 "${{ steps.bundle.outputs.engine-sdist-sha256 }}"
       - name: Upload immutable qualification bundle
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

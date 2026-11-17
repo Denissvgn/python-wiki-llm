@@ -22,7 +22,8 @@ pip install llm-wiki-engine
 ```
 
 The code-documentation CLI, [`agent-wiki-cli`](https://pypi.org/project/agent-wiki-cli/),
-depends on an exact version of this package. Its
+depends on an exact version of this package. Both are released together and
+share one version number. Its
 `llm_wiki_cli.services.<module>` import paths for these modules stay
 available as aliases of the same modules.
 

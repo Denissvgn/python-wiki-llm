@@ -1,4 +1,8 @@
-"""Run the existing artifact harness in fresh wheel/sdist consumer environments."""
+"""Run the existing artifact harness in fresh wheel/sdist consumer environments.
+
+Each consumer installs the CLI artifact together with the llm-wiki-engine
+artifact of the same kind, so the pinned engine never comes from an index.
+"""
 
 from __future__ import annotations
 
@@ -52,11 +56,13 @@ def main(argv=None):
         )
         result.check_returncode()
 
-    for kind, pattern in (("wheel", "*.whl"), ("sdist", "*.tar.gz")):
-        artifacts = list(args.artifacts.glob(pattern))
-        if len(artifacts) != 1:
-            raise ValueError(f"Expected exactly one {kind}")
+    for kind, suffix in (("wheel", "-py3-none-any.whl"), ("sdist", ".tar.gz")):
+        artifacts = list(args.artifacts.glob("agent_wiki_cli-*" + suffix))
+        engines = list(args.artifacts.glob("llm_wiki_engine-*" + suffix))
+        if len(artifacts) != 1 or len(engines) != 1:
+            raise ValueError(f"Expected exactly one CLI and one engine {kind}")
         artifact = artifacts[0].absolute()
+        engine = engines[0].absolute()
         interpreters = []
         for extra in ("base", "mcp"):
             prefix = args.work / f"{kind}-{extra}" / ".venv"
@@ -70,7 +76,7 @@ def main(argv=None):
             requirement = str(artifact) + ("[mcp]" if extra == "mcp" else "")
             run(
                 kind + "-" + extra + "-install",
-                [python, "-I", "-m", "pip", "install", requirement],
+                [python, "-I", "-m", "pip", "install", engine, requirement],
             )
             run(kind + "-" + extra + "-check", [python, "-I", "-m", "pip", "check"])
         run(
@@ -80,6 +86,8 @@ def main(argv=None):
                 root / "tests/release_artifact_smoke.py",
                 "--artifact",
                 artifact,
+                "--engine-artifact",
+                engine,
                 "--python",
                 interpreters[0],
                 "--mcp-python",

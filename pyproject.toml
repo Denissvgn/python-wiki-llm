@@ -23,7 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
 ]
 dependencies = [
-    "llm-wiki-engine==0.1.0",
+    "llm-wiki-engine==4.1.1",
     "PyYAML>=6",
 ]
 

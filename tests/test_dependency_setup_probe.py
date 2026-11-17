@@ -14,6 +14,8 @@ def result(case):
     artifacts = {
         "agent_wiki_cli-1.0-py3-none-any.whl": "a" * 64,
         "agent_wiki_cli-1.0.tar.gz": "b" * 64,
+        "llm_wiki_engine-1.0-py3-none-any.whl": "c" * 64,
+        "llm_wiki_engine-1.0.tar.gz": "d" * 64,
     }
     state = {
         "baseline": "disabled",

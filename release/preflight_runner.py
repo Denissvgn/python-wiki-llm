@@ -737,6 +737,22 @@ def stage_commands(
             timeout=1200,
             environment={"SOURCE_DATE_EPOCH": "@commit_epoch"},
         )
+        command(
+            "independent-engine-build-" + copy,
+            (
+                env_python,
+                "-m",
+                "build",
+                "--no-isolation",
+                "--sdist",
+                "--wheel",
+                "--outdir",
+                scratch / ("dist-" + copy) / "engine",
+                candidate / "src",
+            ),
+            timeout=1200,
+            environment={"SOURCE_DATE_EPOCH": "@commit_epoch"},
+        )
     command(
         "compare-builds",
         (
@@ -794,7 +810,8 @@ def stage_commands(
     )
     command(
         "validate-distribution-metadata",
-        (validation_python, "-m", "twine", "check", "@wheel", "@sdist"),
+        (validation_python, "-m", "twine", "check", "@wheel", "@sdist",
+         "@engine-wheel", "@engine-sdist"),
     )
     command(
         "validate-installed-knowledge-schema",
@@ -825,6 +842,7 @@ def stage_commands(
                     "pip",
                     "install",
                     "--no-cache-dir",
+                    "@engine-" + kind,
                     artifact,
                 ),
                 expected_prefix=environment,
@@ -838,6 +856,8 @@ def stage_commands(
                 repo / "tests/release_artifact_smoke.py",
                 "--artifact",
                 "@" + kind,
+                "--engine-artifact",
+                "@engine-" + kind,
                 "--python",
                 _python(scratch / (kind + "-default-environment")),
                 "--mcp-python",
@@ -885,9 +905,10 @@ def _materialize(value: str, scratch: Path) -> str:
             raise RunnerError("frozen epoch is malformed")
         return str(result)
     kind = value.removeprefix("@").removesuffix("[mcp]")
-    if kind not in {"wheel", "sdist"}:
+    if kind not in {"wheel", "sdist", "engine-wheel", "engine-sdist"}:
         raise RunnerError("unrecognized internal command reference")
-    pattern = "*.whl" if kind == "wheel" else "*.tar.gz"
+    package = "llm_wiki_engine-" if kind.startswith("engine-") else "agent_wiki_cli-"
+    pattern = package + ("*.whl" if kind.endswith("wheel") else "*.tar.gz")
     files = list((scratch / "reproducible/dist").glob(pattern))
     if len(files) != 1 or files[0].is_symlink() or not files[0].is_file():
         raise RunnerError("expected exactly one compared " + kind)

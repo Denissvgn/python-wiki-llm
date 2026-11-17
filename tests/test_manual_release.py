@@ -1314,3 +1314,72 @@ def test_new_session_directory_ancestors_are_flushed(project, monkeypatch):
     store = manual.Store(project, project / "private/nested/session")
     manual.Controller(store).initialize("example/agent-wiki", git(project, "rev-parse", "HEAD"))
     assert project in calls and project / "private" in calls and project / "private/nested" in calls
+
+
+class _Latest:
+    def get(self, path):
+        assert path == "/releases/latest"
+        return {"id": 7}
+
+
+def _registry(package, files, version="9.0.0"):
+    return json.dumps({
+        "info": {"name": package, "version": version, "yanked": False},
+        "urls": [{"filename": name, "yanked": False, "digests": {"sha256": digest},
+                  "url": "https://files.pythonhosted.org/" + name, "size": 1}
+                 for name, digest in files.items()],
+    }).encode()
+
+
+@pytest.mark.parametrize("engine_listed", [True, False])
+def test_public_verification_reads_each_distribution_from_its_own_project(
+    project, monkeypatch, engine_listed
+):
+    api = backend(project, _Latest())
+    cli = {"agent_wiki_cli-9.0.0-py3-none-any.whl": "a" * 64, "agent_wiki_cli-9.0.0.tar.gz": "b" * 64}
+    engine = {"llm_wiki_engine-9.0.0-py3-none-any.whl": "c" * 64, "llm_wiki_engine-9.0.0.tar.gz": "d" * 64}
+    expected = {**cli, **engine, "SHA256SUMS": "e" * 64}
+    release = {"id": 7, "html_url": "https://github.com/example/agent-wiki/releases/v9.0.0", "assets": [{"name": name, "id": index, "size": 1, "state": "uploaded",
+                                    "digest": "sha256:" + digest}
+                                   for index, (name, digest) in enumerate(expected.items())]}
+    monkeypatch.setattr(api, "_tag", lambda state: {"refs": {}})
+    monkeypatch.setattr(api, "_release", lambda tag: release)
+    monkeypatch.setattr(api, "_release_metadata", lambda state, release: None)
+    monkeypatch.setattr(api, "_assets", lambda state: expected)
+    fetched = []
+    monkeypatch.setattr(api, "_public_bytes", lambda source, name, *args, **kwargs: fetched.append((source, name)))
+    pages = {
+        "https://pypi.org/pypi/agent-wiki-cli/9.0.0/json": _registry("agent-wiki-cli", cli),
+        "https://pypi.org/pypi/llm-wiki-engine/9.0.0/json": _registry(
+            "llm-wiki-engine", engine if engine_listed else dict(list(engine.items())[:1])),
+    }
+
+    class Response(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(manual.urllib.request, "urlopen", lambda url, timeout: Response(pages[url]))
+    state = {"version": "9.0.0", "candidate_sha": "a" * 40}
+    if not engine_listed:
+        with pytest.raises(manual.SessionError, match="registry distributions differ"):
+            api.verify_public(state)
+        return
+    result = api.verify_public(state)
+    assert result["verified"]
+    assert sorted(name for source, name in fetched if source == "pypi") == sorted({**cli, **engine})
+    record = json.loads((api.work / "public-verification.json").read_text())
+    assert set(record["registries"]) == {"agent-wiki-cli", "llm-wiki-engine"}
+
+
+def test_publish_dispatch_carries_engine_digests_only_when_qualified(project):
+    api = backend(project, None)
+    artifacts = {"wheel": {"sha256": "a" * 64}, "sdist": {"sha256": "b" * 64}}
+    state = {"candidate_sha": "f" * 40, "qualification": {"run_id": 5, "artifacts": artifacts}}
+    assert "engine-wheel-sha256" not in api._inputs(state, "publish")
+    artifacts.update({"engine-wheel": {"sha256": "c" * 64}, "engine-sdist": {"sha256": "d" * 64}})
+    inputs = api._inputs(state, "dry-run")
+    assert inputs["engine-wheel-sha256"] == "c" * 64 and inputs["engine-sdist-sha256"] == "d" * 64
+    assert inputs["publish"] == "false"

@@ -23,6 +23,16 @@ on:
         description: Qualified sdist SHA-256
         required: true
         type: string
+      engine-wheel-sha256:
+        description: Qualified llm-wiki-engine wheel SHA-256 (empty only for a CLI-only bundle)
+        required: false
+        default: ""
+        type: string
+      engine-sdist-sha256:
+        description: Qualified llm-wiki-engine sdist SHA-256 (empty only for a CLI-only bundle)
+        required: false
+        default: ""
+        type: string
       publish:
         description: Upload after verification (dry-run by default)
         required: true
@@ -49,11 +59,15 @@ jobs:
       REPOSITORY: ${{ github.repository }}
       SDIST_SHA256: ${{ inputs.sdist-sha256 }}
       WHEEL_SHA256: ${{ inputs.wheel-sha256 }}
+      ENGINE_SDIST_SHA256: ${{ inputs.engine-sdist-sha256 }}
+      ENGINE_WHEEL_SHA256: ${{ inputs.engine-wheel-sha256 }}
     outputs:
       version: ${{ steps.verify.outputs.version }}
       tag: ${{ steps.verify.outputs.tag }}
       wheel-filename: ${{ steps.verify.outputs.wheel-filename }}
       sdist-filename: ${{ steps.verify.outputs.sdist-filename }}
+      engine-wheel-filename: ${{ steps.verify.outputs.engine-wheel-filename }}
+      engine-sdist-filename: ${{ steps.verify.outputs.engine-sdist-filename }}
     steps:
       - name: Bind promotion to the protected default-branch workflow
         env:
@@ -143,8 +157,11 @@ jobs:
               --predicate-type https://spdx.dev/Document/v2.3 \
               --format json | jq -c . >> sbom-attestations.jsonl
           done
-          test "$(wc -l < build-provenance-attestations.jsonl)" -eq 2
-          test "$(wc -l < sbom-attestations.jsonl)" -eq 2
+          # One receipt per qualified distribution file and predicate.
+          expected="$(find qualified-release/dist -maxdepth 1 -type f | wc -l)"
+          test "${expected}" -ge 2
+          test "$(wc -l < build-provenance-attestations.jsonl)" -eq "${expected}"
+          test "$(wc -l < sbom-attestations.jsonl)" -eq "${expected}"
 
       - name: Verify identity, gates, contents, and registry vacancy
         id: verify
@@ -157,6 +174,13 @@ jobs:
           if [[ "${PUBLISH_REQUESTED}" == "true" ]]; then
             tag_requirement=(--require-tag)
           fi
+          engine_digests=()
+          if [[ -n "${ENGINE_WHEEL_SHA256}${ENGINE_SDIST_SHA256}" ]]; then
+            engine_digests=(
+              --engine-wheel-sha256 "${ENGINE_WHEEL_SHA256}"
+              --engine-sdist-sha256 "${ENGINE_SDIST_SHA256}"
+            )
+          fi
           python -I trusted-verifier/release/qualification.py verify-bundle \
             --bundle qualified-release \
             --repository "${REPOSITORY}" \
@@ -164,6 +188,7 @@ jobs:
             --candidate-sha "${CANDIDATE_SHA}" \
             --wheel-sha256 "${WHEEL_SHA256}" \
             --sdist-sha256 "${SDIST_SHA256}" \
+            "${engine_digests[@]}" \
             --repository-root candidate-source \
             --verify-repository \
             --check-registry \
@@ -227,6 +252,8 @@ jobs:
             printf '%s\n' "- candidate: \`${CANDIDATE_SHA}\`"
             printf '%s\n' "- wheel: \`${WHEEL_SHA256}\`"
             printf '%s\n' "- sdist: \`${SDIST_SHA256}\`"
+            printf '%s\n' "- engine wheel: \`${ENGINE_WHEEL_SHA256:-none}\`"
+            printf '%s\n' "- engine sdist: \`${ENGINE_SDIST_SHA256:-none}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
 
   publish:
@@ -250,8 +277,31 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ inputs.qualification-run-id }}
 
-      - name: Publish to PyPI using Trusted Publishing
+      - name: Split the engine from the CLI it pins
+        id: split
+        run: |
+          set -euo pipefail
+          mkdir -p upload/engine upload/cli
+          shopt -s nullglob
+          engine=(qualified-release/dist/llm_wiki_engine-*)
+          cli=(qualified-release/dist/agent_wiki_cli-*)
+          test "${#cli[@]}" -eq 2
+          test "${#engine[@]}" -eq 0 || test "${#engine[@]}" -eq 2
+          test $(( ${#cli[@]} + ${#engine[@]} )) -eq "$(find qualified-release/dist -maxdepth 1 -type f | wc -l)"
+          if (( ${#engine[@]} )); then cp "${engine[@]}" upload/engine/; fi
+          cp "${cli[@]}" upload/cli/
+          echo "engine=$(( ${#engine[@]} > 0 ))" >> "${GITHUB_OUTPUT}"
+
+      # The CLI pins this exact engine, so the engine must be on PyPI first.
+      - name: Publish the engine to PyPI using Trusted Publishing
+        if: ${{ steps.split.outputs.engine == '1' }}
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
-          packages-dir: qualified-release/dist/
+          packages-dir: upload/engine/
+          attestations: true
+
+      - name: Publish the CLI to PyPI using Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: upload/cli/
           attestations: true
