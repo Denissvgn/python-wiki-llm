@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY
-from .io import decode_markdown_bytes
+from llm_wiki_engine.io import decode_markdown_bytes
 from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_governance import GOVERNANCE_FILENAME
 from .knowledge_model import _bundle_to_payload

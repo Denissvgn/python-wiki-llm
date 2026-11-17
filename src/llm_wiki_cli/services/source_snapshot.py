@@ -16,15 +16,15 @@ from typing import Any, TYPE_CHECKING
 
 from .domain_pack import current_pack
 from .extractor_registry import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
-from .gitignore import GitIgnoreMatcher, _GitignoreRule, _parse_gitignore_text
-from .path_policy import EXCLUDED_DIRS, is_agent_worktree_path
+from llm_wiki_engine.gitignore import GitIgnoreMatcher, _GitignoreRule, _parse_gitignore_text
+from llm_wiki_engine.path_policy import EXCLUDED_DIRS, is_agent_worktree_path
 from ..extractors.common import (
     GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE,
     is_bundled_helper_implementation_path,
     is_generated_javascript_bundle_path,
     normalize_include_tests,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
     SOURCE_SELECTION_PATH,
     SourceSelectionError,
@@ -36,7 +36,7 @@ from .source_selection import (
     selection_may_contain_path,
 )
 from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
-from .filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata, guard_windows_directory_chain
+from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata, guard_windows_directory_chain
 
 if TYPE_CHECKING:
     from .knowledge_envelope import ConsumedInput
@@ -1934,7 +1934,7 @@ def _missing_source_path_no_follow(root: Path, relative: str) -> bool:
         return (info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns)
 
     if os.name == "nt":
-        from .filesystem_guard import fresh_no_follow_stat
+        from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat
 
         with ExitStack() as stack:
             stack.enter_context(guard_windows_directory_chain(root, ()))

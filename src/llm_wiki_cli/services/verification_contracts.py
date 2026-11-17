@@ -25,7 +25,7 @@ from pathlib import Path
 from types import MappingProxyType
 
 from llm_wiki_engine.contracts import VERIFICATION_RECEIPT_SCHEMA_VERSION
-from .io import first_unsafe_path_component, write_bytes_atomic
+from llm_wiki_engine.io import first_unsafe_path_component, write_bytes_atomic
 from llm_wiki_engine.knowledge_evidence import (
     formatted_json_bytes,
     hash_json,

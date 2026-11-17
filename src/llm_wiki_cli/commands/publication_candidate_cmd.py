@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 from . import publication_cmd
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )

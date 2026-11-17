@@ -9,8 +9,12 @@ It provides:
 - canonical JSON encodings and SHA-256 digests used by every stored format;
 - the host boundary: process runner, environment, working directory and clock;
 - path, request and redaction rules;
+- guarded filesystem writes, which keep the destination's directories from
+  being swapped for links or junctions mid-write, and wiki file I/O;
+- ignore-file matching, source-selection profiles and protected-artifact
+  checks;
 - the knowledge graph, evidence and concept-identity vocabularies;
-- wiki surface, media and section-ownership rules;
+- wiki surface, media, surface-index and section-ownership rules;
 - lexical search ranking;
 - validators for published formats such as extract payloads, documentation
   query and search results, and maintenance status and queue reports.

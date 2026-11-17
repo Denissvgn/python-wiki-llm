@@ -33,14 +33,14 @@ from .knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
 from .sync_manifest import SyncManifest, SyncManifestError
 from llm_wiki_engine.validation import require_portable_relative_path
-from .wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .source_snapshot import SourceSnapshot, build_source_snapshot, capture_source_selection_inputs
 
 _UNSET_LIVE_SELECTION_INPUTS = object()

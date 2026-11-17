@@ -11,7 +11,7 @@ import subprocess
 from typing import Any
 
 from llm_wiki_engine.host import current_host
-from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
 from .knowledge_artifacts import (
     ArtifactWriteState, KnowledgeCommitPlan, PlannedArtifactWrite,
     build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format,
@@ -24,7 +24,7 @@ from .maintenance_protocol import (
     load_adoption_marker,
 )
 from .knowledge_index import serialize_knowledge_index
-from .io import decode_markdown_bytes
+from llm_wiki_engine.io import decode_markdown_bytes
 from .knowledge_loader import load_knowledge_state
 from .knowledge_storage import (
     MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, OBJECT_DIRECTORY, ROOT_FILENAME,
@@ -39,7 +39,7 @@ from .knowledge_packs import (
 )
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 from .manifest_storage import OBJECT_NAME as MANIFEST_OBJECT_NAME, DIRECTORY as MANIFEST_DIRECTORY, validate_catalog
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 RECOVERY_SCHEMA = "llm-wiki-knowledge-recovery/v2"
 _OBJECT_NAME = re.compile(r"\.llm-wiki-knowledge/objects/([0-9a-f]{2})/\1[0-9a-f]{62}\.json\Z")

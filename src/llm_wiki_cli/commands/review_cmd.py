@@ -116,7 +116,7 @@ def run(args) -> None:
     diff_text = _read_patch(args, src_dir=src_dir)
     if output_format in {"impact-json", "impact-markdown", "github"}:
         from ..services.impact import build_impact, render_github, render_summary
-        from ..services.io import write_text_output
+        from llm_wiki_engine.io import write_text_output
 
         impact = build_impact(
             diff_text,

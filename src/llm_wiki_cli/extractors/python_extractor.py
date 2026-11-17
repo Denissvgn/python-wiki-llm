@@ -16,7 +16,7 @@ import symtable
 import sys
 from pathlib import Path
 
-from ..services.gitignore import build_gitignore_matcher
+from llm_wiki_engine.gitignore import build_gitignore_matcher
 from ..services.imports import build_module_path_resolver
 from ..services.python_calls import PYTHON_LEXICAL_FUNCTIONS_SCHEMA
 from .common import (

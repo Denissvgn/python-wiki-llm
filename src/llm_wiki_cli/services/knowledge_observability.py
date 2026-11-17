@@ -56,7 +56,7 @@ from .knowledge_loader import (
     load_knowledge_state,
 )
 from .knowledge_model import ComputedFreshness, ConceptRecord, EvidenceState, KnowledgeLoadState
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     source_selection_identity_from_generation_inputs,
@@ -65,7 +65,7 @@ from .source_selection import (
 )
 from .source_snapshot import build_source_snapshot, capture_source_selection_inputs
 from .sync_manifest import SyncManifest
-from .wiki_surface_index import SURFACE_INDEX_FILENAME, evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME, evaluate_surface_index
 
 _EVIDENCE_ISSUE_STATES = (
     EvidenceState.MISSING,

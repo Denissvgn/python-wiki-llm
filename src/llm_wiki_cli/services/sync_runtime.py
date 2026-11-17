@@ -85,7 +85,7 @@ from .infrastructure_sync import (
     with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
-from .io import read_md, write_md
+from llm_wiki_engine.io import read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
@@ -152,7 +152,7 @@ from .plugins import (
     runtime_plugin_fallback_root,
     runtime_project_plugins_enabled,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     path_is_selected,
@@ -211,7 +211,7 @@ from llm_wiki_engine.wiki_surface import (
     collect_wiki_pages,
     mcp_uri,
 )
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     evaluate_surface_index,
@@ -4041,7 +4041,7 @@ def _try_sync_knowledge_reuse(
     if maintenance_recheck is not None:
         maintenance_recheck()
     committed_state.assert_current()
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
     from .knowledge_storage_io import _absolute_path
 
     write_basis = ACTIVE_WRITE_BASIS.get()

@@ -8,7 +8,7 @@ from pathlib import Path
 import stat
 import uuid
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     atomic_write_private_bytes,
     ensure_guarded_directory,
@@ -19,7 +19,7 @@ from .filesystem_guard import (
 from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
 from .knowledge_storage_io import StorageReadSession, read_guarded
 from llm_wiki_engine.markdown_sections import normalize_markdown
-from .protected_artifacts import ProtectedArtifactStore
+from llm_wiki_engine.protected_artifacts import ProtectedArtifactStore
 from .sync_transitions import PageTransitionError, PageTransitionPlan
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.host import emit

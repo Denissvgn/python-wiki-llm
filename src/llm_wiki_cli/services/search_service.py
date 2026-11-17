@@ -7,16 +7,16 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
-from .path_policy import validate_path, validate_source_root
+from llm_wiki_engine.path_policy import validate_path, validate_source_root
 from llm_wiki_engine.query_result_format import SEARCH_RESULT_SCHEMA_VERSION
 from llm_wiki_engine import wiki_surface
 from .documentation_query_builder import (
     normalize_documentation_query_limit,
     validate_live_query_source_selection,
 )
-from .io import read_md, decode_markdown_bytes
+from llm_wiki_engine.io import read_md, decode_markdown_bytes
 from llm_wiki_engine.search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, rank_pages
-from .source_selection import resolve_source_selection
+from llm_wiki_engine.source_selection import resolve_source_selection
 from .source_snapshot import (
     build_source_snapshot, capture_source_selection_inputs, source_snapshot_matches_current_files,
 )
@@ -156,7 +156,7 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
     from .knowledge_storage import KnowledgeStorageError
     from .knowledge_storage_io import StorageReadSession
     from .search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
-    from .source_selection import path_is_selected, validate_persisted_source_selection_identity
+    from llm_wiki_engine.source_selection import path_is_selected, validate_persisted_source_selection_identity
     from llm_wiki_engine.workflow_profile import canonical_json
 
     wiki_reads = StorageReadSession(wiki_root, max_bytes=MAX_SEARCH_BYTES * 2)

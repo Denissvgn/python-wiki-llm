@@ -10,7 +10,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from .io import read_md
+from llm_wiki_engine.io import read_md
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     KnowledgeArtifactError,
@@ -33,7 +33,7 @@ from .sync_manifest import (
     SyncManifestError,
 )
 from llm_wiki_engine.wiki_surface import WikiSurfacePathError, collect_wiki_pages
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 class KnowledgeMismatchPolicy(str, Enum):

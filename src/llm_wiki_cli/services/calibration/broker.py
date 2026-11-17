@@ -47,7 +47,7 @@ from llm_wiki_engine.contracts import (
     P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION,
 )
 from llm_wiki_engine.canonical_json import compact_line_bytes
-from ..filesystem_guard import atomic_write_private_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes
 from llm_wiki_engine.redaction import (
     LIKELY_SECRET_RE as _LIKELY_SECRET_RE,
     SENSITIVE_KEYS as _SENSITIVE_KEYS,

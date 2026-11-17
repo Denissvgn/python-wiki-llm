@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..config import DEFAULT_WIKI_DIR
-from .io import decode_markdown_bytes, read_md, write_json_atomic
+from llm_wiki_engine.io import decode_markdown_bytes, read_md, write_json_atomic
 from .plugins import PluginError, iter_components
 from llm_wiki_engine.validation import (
     require_exact_fields,
@@ -646,7 +646,7 @@ def _manifest_content(
         prune_manifest_for_source_selection,
         retained_concept_page_paths,
     )
-    from .source_selection import with_source_selection_generation_input
+    from llm_wiki_engine.source_selection import with_source_selection_generation_input
 
     module_page_map = build_module_page_map(inventory)
     effective_generation_inputs = generation_inputs
@@ -1037,7 +1037,7 @@ def resolve_conflicts(
     source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
     from .extraction_service import ExtractorFailureError, get_inventory_result
-    from .source_selection import (
+    from llm_wiki_engine.source_selection import (
         SourceSelectionError,
         resolve_source_selection,
         validate_persisted_source_selection_identity,
@@ -1157,7 +1157,7 @@ def resolve_conflicts(
             unresolved.append({"path": rel_path, "reason": reason})
             continue
         if write:
-            from .filesystem_guard import atomic_write_guarded_bytes
+            from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
             from .knowledge_storage_io import _absolute_path
 
             normalized = new_content.replace("\r\n", "\n").replace("\r", "\n")

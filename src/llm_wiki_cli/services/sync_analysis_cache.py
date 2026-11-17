@@ -10,7 +10,7 @@ from .domain_pack import uses_default_pack
 from .extractor_registry import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
-from .io import first_unsafe_path_component, write_bytes_atomic
+from llm_wiki_engine.io import first_unsafe_path_component, write_bytes_atomic
 from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
 from .knowledge_storage_io import read_guarded

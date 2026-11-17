@@ -8,13 +8,13 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from .services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )
-from .services.io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
-from .services.path_policy import (  # noqa: F401  (re-exported)
+from llm_wiki_engine.path_policy import (  # noqa: F401  (re-exported)
     DEFAULT_WIKI_DIR,
     EXCLUDED_DIRS,
     AGENT_WORKTREE_DIR_PATTERNS,
@@ -25,7 +25,7 @@ from .services.path_policy import (  # noqa: F401  (re-exported)
     validate_source_root,
     validate_source_paths,
 )
-from .services.gitignore import (  # noqa: F401  (re-exported)
+from llm_wiki_engine.gitignore import (  # noqa: F401  (re-exported)
     _GitignoreRule,
     GitIgnoreMatcher,
     _normalize_gitignore_trailing_spaces,

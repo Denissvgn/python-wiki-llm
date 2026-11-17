@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sys
 
-from ..services.io import write_text_output, write_utf8_stdout
+from llm_wiki_engine.io import write_text_output, write_utf8_stdout
 from llm_wiki_engine.request_json import load_request
 
 

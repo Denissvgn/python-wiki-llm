@@ -19,7 +19,7 @@ from ..extractors.python_extractor import (
 from .knowledge_storage import KnowledgeStorageError
 from .knowledge_storage_io import read_guarded
 from .python_imports import PythonModuleIndex
-from .source_selection import SourceSelectionError, locate_exact_repository_path
+from llm_wiki_engine.source_selection import SourceSelectionError, locate_exact_repository_path
 from .source_snapshot import SourceSnapshot
 
 _MAX_SOURCE_BYTES = 1024 * 1024

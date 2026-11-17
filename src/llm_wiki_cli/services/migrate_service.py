@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-from .path_policy import DEFAULT_WIKI_DIR
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR
 
 MigrateStatus = Literal["migrated", "planned", "chunk-applied", "up-to-date"]
 

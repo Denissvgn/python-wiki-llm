@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Optional
 
-from .path_policy import is_agent_worktree_path
+from llm_wiki_engine.path_policy import is_agent_worktree_path
 from ..extractors.common import (
     BUNDLED_HELPER_IMPLEMENTATION_PATHS, executes_at_import,
     is_bundled_helper_implementation_path,

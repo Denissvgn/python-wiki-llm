@@ -31,7 +31,7 @@ from .publication_config import (
     publication_path,
 )
 from .publication_targets import publication_target
-from .source_selection import resolve_source_selection
+from llm_wiki_engine.source_selection import resolve_source_selection
 
 
 _BINDING_SCHEMA = "llm-wiki-publication-maintenance-binding/v1"

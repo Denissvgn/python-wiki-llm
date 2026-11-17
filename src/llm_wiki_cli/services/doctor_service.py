@@ -39,7 +39,7 @@ from .knowledge_observability import (
 from .lint_service import LintIssue, LintReport, build_report
 from .sync_manifest import SyncManifest
 from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 _REASON_RE = re.compile(r"\[reason=([a-z0-9-]+(?:,[a-z0-9-]+)*)\]")

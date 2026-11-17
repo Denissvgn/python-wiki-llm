@@ -57,7 +57,7 @@ from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     sha256_bytes,
 )
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from .knowledge_envelope import INVENTORY_HASH_EXTENSION
 from .knowledge_model import (
     ConceptKind,
@@ -3167,7 +3167,7 @@ def _write_durable_atomic(
     *,
     fault_injector: FaultInjector | None,
 ) -> None:
-    from .wiki_write_basis import before_wiki_write, after_wiki_write
+    from llm_wiki_engine.wiki_write_basis import before_wiki_write, after_wiki_write
 
     before_wiki_write(path, content)
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -17,7 +17,7 @@ from llm_wiki_engine.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
 from llm_wiki_engine.redaction import redact_credentials
 from llm_wiki_engine.secure_file import write_private_text
-from ..services.source_selection import resolve_source_selection
+from llm_wiki_engine.source_selection import resolve_source_selection
 from ..services.source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,

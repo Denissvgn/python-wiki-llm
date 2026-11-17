@@ -17,8 +17,8 @@ if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
     from .knowledge_orchestration import CommittedKnowledgeState
 
-from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes
-from .io import first_unsafe_path_component
+from llm_wiki_engine.filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes
+from llm_wiki_engine.io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest, MAX_EXPANDED_BYTES
 from .knowledge_storage_io import read_guarded, _absolute_path
 from llm_wiki_engine.progress import observed_phase
@@ -219,7 +219,7 @@ class WikiWriteBasis:
 
     def bind_committed_state(self, state: CommittedKnowledgeState) -> None:
         """Bind one owning sync's validated prior closure, never a caller skip flag."""
-        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+        from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
         from .knowledge_orchestration import CommittedKnowledgeState
 
         if (ACTIVE_WRITE_BASIS.get() is not self or self.changed
@@ -245,7 +245,7 @@ class WikiWriteBasis:
         self._storage_staging = None
 
     def _is_unreferenced_storage_staging(self, relative, content, previous, current) -> bool:
-        from .wiki_write_basis import ACTIVE_WRITE_BASIS
+        from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
         authority = self._storage_staging
         if (not isinstance(authority, _StorageStagingAuthority) or not authority._active
@@ -406,7 +406,7 @@ def _recovery_directory(root: Path, files: Mapping[str, bytes], marker=None) -> 
 @contextmanager
 def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery_dir: Path | None = None):
     """Hold locks from capture to publication; adopted writes retain preimages."""
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
     root = _absolute_path(Path(wiki_dir))
     if dry_run:
@@ -445,8 +445,8 @@ def maintenance_write_operation(wiki_dir: str | Path, *, dry_run=False, recovery
 
 def unlink_maintenance_page(path: Path) -> None:
     """Delete managed prose against the operation's captured exact preimage."""
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
-    from .filesystem_guard import unlink_guarded_bytes
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.filesystem_guard import unlink_guarded_bytes
 
     basis = ACTIVE_WRITE_BASIS.get()
     if basis is None:

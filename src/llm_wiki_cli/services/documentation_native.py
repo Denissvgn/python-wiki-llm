@@ -69,7 +69,7 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     source_selection_identity_from_generation_inputs,
@@ -83,7 +83,7 @@ from .sync_manifest import (
     SyncManifest,
 )
 from llm_wiki_engine.validation import is_portable_relative_path
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexEvaluation,
@@ -366,7 +366,7 @@ def _refresh_documentation_native_projection(
         source_snapshot=source_snapshot,
     )
     page_maps = _page_maps(runtime.inventory)
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
     write_basis = ACTIVE_WRITE_BASIS.get()
     if write_basis is not None:
         write_basis.source_snapshot = runtime.source_snapshot

@@ -11,7 +11,7 @@ from ..services.ci_installer import (
     MANAGED_WORKFLOW_PATH,
     is_unmodified_managed_workflow,
 )
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     GuardedTreeManifest,
     atomic_write_guarded_bytes,
     guarded_tree_manifest,
@@ -19,7 +19,7 @@ from ..services.filesystem_guard import (
     unlink_guarded_bytes,
     windows_object_identity,
 )
-from ..services.io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from llm_wiki_engine.paths import display_project_path
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,

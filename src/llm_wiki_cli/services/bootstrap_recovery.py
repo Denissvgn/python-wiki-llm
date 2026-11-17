@@ -9,7 +9,7 @@ import re
 import tempfile
 from uuid import uuid4
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
     remove_guarded_tree,
@@ -29,7 +29,7 @@ from .maintenance_protocol import (
 )
 from llm_wiki_engine.request_json import _pairs, _constant
 from llm_wiki_engine.validation import is_portable_relative_path
-from .wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
+from llm_wiki_engine.wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
 
 SCHEMA = "llm-wiki-bootstrap-recovery/v1"
 MAX_RECORD_BYTES = 8 * 1024 * 1024

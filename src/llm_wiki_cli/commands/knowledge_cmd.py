@@ -57,7 +57,7 @@ from ..services.knowledge_governance import (
     strip_governance_projection,
     validate_governance_ledger,
 )
-from ..services.io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from ..services.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
@@ -76,7 +76,7 @@ from ..services.verification_contracts import (
     verify,
     verify_and_write_receipt,
 )
-from ..services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 _RECOVERABLE_PROJECTION_CODES = frozenset(

@@ -19,7 +19,7 @@ from llm_wiki_engine.host import HostCapabilityError, current_host
 from .inventory_cache import ENV_CACHE_DIR
 from llm_wiki_engine.paths import render_shell_command
 from . import typescript_helper_identity as ts_identity
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 
 ENV_GO_BINARY = "LLM_WIKI_GO"
 ENV_GHC_BINARY = "LLM_WIKI_GHC"

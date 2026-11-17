@@ -95,13 +95,13 @@ from .knowledge_model import (
     concept_kind_for_page_kind,
 )
 from .source_snapshot import SourceSnapshot, source_snapshot_matches_current_files
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     selection_may_contain_path,
     with_source_selection_generation_input,
 )
 from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexEvaluation,
@@ -458,7 +458,7 @@ def build_runtime_knowledge_plan(
     old_targets = {row["target"]["canonical_path"] for row in (previous_maintenance["observations"].values() if previous_maintenance is not None else ())}
     target_root = Path(inputs.target_wiki_dir)
     absent_pages = {path for path in old_targets if not (target_root / path).exists() and not (target_root / path).is_symlink()}
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
     operation_basis = ACTIVE_WRITE_BASIS.get()
     raw_content = operation_basis.expected if operation_basis is not None else None

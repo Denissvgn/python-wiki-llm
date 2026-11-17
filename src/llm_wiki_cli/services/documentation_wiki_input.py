@@ -20,7 +20,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterator, Mapping
 from urllib.parse import urlsplit
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     _WindowsDirectoryGuardUnavailableError,
     WindowsFileGuardError,
@@ -44,7 +44,7 @@ from .knowledge_artifacts import (
 from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
 from .knowledge_model import ComputedFreshness
 from .knowledge_observability import knowledge_freshness_hint
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_GENERATION_INPUT_KEY,
     SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
     SourceSelectionError,
@@ -69,7 +69,7 @@ from llm_wiki_engine.wiki_media import (
     local_link_path,
     strip_fenced_code_blocks,
 )
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )

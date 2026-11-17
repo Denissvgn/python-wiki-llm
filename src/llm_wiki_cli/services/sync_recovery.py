@@ -11,19 +11,19 @@ import tempfile
 from typing import Any
 from uuid import UUID, uuid4
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
     fresh_no_follow_stat,
     unlink_guarded_bytes,
 )
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest
 from .knowledge_storage_io import _absolute_path, _identity, read_guarded
 from .maintenance_protocol import governance_writer_lock, storage_writer_lock
 from llm_wiki_engine.request_json import _pairs, _constant
 from .source_snapshot import SourceSnapshot
-from .wiki_write_basis import ACTIVE_SYNC_JOURNAL
+from llm_wiki_engine.wiki_write_basis import ACTIVE_SYNC_JOURNAL
 from llm_wiki_engine.host import emit
 
 MAX_BYTES = 64 * 1024 * 1024

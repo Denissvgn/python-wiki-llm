@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-from .path_policy import DEFAULT_WIKI_DIR
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR
 
 UpgradeStatus = Literal["complete", "source-cleanup-pending"]
 

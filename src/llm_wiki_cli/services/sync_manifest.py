@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .domain_pack import current_pack
-from .io import write_json_atomic
+from llm_wiki_engine.io import write_json_atomic
 from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
@@ -22,7 +22,7 @@ from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     semantic_hash_for_file,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     path_is_selected,
@@ -1240,7 +1240,7 @@ class SyncManifest:
         if current_format in {"v7", "indexed-v8"}:
             raise SyncManifestError("maintenance_state", "cannot replace adopted authority with a legacy manifest")
         if current_format == "indexed-v6" or self.storage_version == 6:
-            from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+            from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
             from .knowledge_governance import governance_lock
             from .knowledge_storage_io import read_guarded
             from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError

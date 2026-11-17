@@ -25,7 +25,7 @@ def run(args) -> None:
         elif args.knowledge_action == "prune-storage":
             from ..services.knowledge_storage import decode_bytes, canonical_bytes, MAX_OBJECT_BYTES
             from ..services.knowledge_storage_io import read_guarded
-            from ..services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+            from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
             plan = None if getattr(args, "plan", None) is None else decode_bytes(read_guarded(Path(args.plan), MAX_OBJECT_BYTES).content,
                                                                limit=MAX_OBJECT_BYTES, field="prune plan")
             result = prune_knowledge_storage(root, dry_run=not args.apply, plan=plan,

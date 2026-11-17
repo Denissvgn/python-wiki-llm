@@ -68,7 +68,7 @@ from ..documentation_policy import (
     source_snapshot_tree_baseline,
     source_tree_baseline,
 )
-from ..source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     resolve_source_selection,
@@ -89,11 +89,11 @@ from ..documentation_review import (
     reconcile_review_ledger,
 )
 from ..documentation_wiki_input import SUPPORTED_MANIFEST_VERSIONS
-from ..filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     guard_windows_directory_chain,
 )
-from ..io import read_md, write_bytes_atomic, write_text_output
+from llm_wiki_engine.io import read_md, write_bytes_atomic, write_text_output
 from ..knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from ..knowledge_consumption import KnowledgeReadView
 from ..knowledge_governance import GOVERNANCE_FILENAME
@@ -119,7 +119,7 @@ from llm_wiki_engine.wiki_media import (
     local_link_path,
     strip_fenced_code_blocks,
 )
-from ..wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 
 # Documentation preparation emits calibration evidence, but importing the

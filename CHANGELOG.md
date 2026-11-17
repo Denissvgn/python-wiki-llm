@@ -183,10 +183,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The standard-library-only core of the engine is now its own distribution,
   `llm-wiki-engine` (import package `llm_wiki_engine`), and `agent-wiki-cli`
   pins its exact version. Both are released together under the same version
-  number, and each release publishes both. It holds canonical JSON encodings and digests, the
-  host boundary, path and request validation, the knowledge graph and
-  evidence vocabularies, wiki surface and media rules, search ranking and
-  the published-format validators. `pip install agent-wiki-cli` installs it
+  number, and each release publishes both. It holds canonical JSON encodings
+  and digests, the host boundary, path and request validation, guarded
+  filesystem writes and wiki file I/O, path, ignore-file and source-selection
+  rules, protected-artifact checks, the knowledge graph and evidence
+  vocabularies, wiki surface, media and surface-index rules, search ranking
+  and the published-format validators. `pip install agent-wiki-cli` installs it
   automatically; a source checkout installs it from `src/`
   (`pip install ./src .`). The old `llm_wiki_cli.services.<module>` import
   paths for the moved modules remain as aliases of the same modules, so

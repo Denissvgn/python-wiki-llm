@@ -9,13 +9,13 @@ from dataclasses import replace
 from .knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts, validated_artifact_bytes
 from .knowledge_storage import canonical_bytes, digest, MAX_EXPANDED_BYTES
 from .knowledge_storage_io import read_guarded, _absolute_path
-from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes, unlink_guarded_bytes
+from llm_wiki_engine.filesystem_guard import ensure_guarded_directory, atomic_write_guarded_bytes, unlink_guarded_bytes
 from .maintenance_protocol import (
     ADOPTION_FILENAME, MaintenanceProtocolError, WikiWriteBasis,
     governance_writer_lock, storage_writer_lock, guard_maintenance_owner,
     load_adoption_marker, snapshot_wiki, save_recovery_snapshot,
 )
-from .wiki_write_basis import ACTIVE_WRITE_BASIS
+from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
 
 def _capture(src_dir, wiki_dir, *, require_ready=True, **options):
@@ -226,7 +226,7 @@ def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
         if digest(governance_bytes) != manifest.artifact_hashes.governance_hash:
             raise MaintenanceProtocolError("recovery-invalid", "Recovery governance bytes disagree")
         validate_governance_projection(validated.knowledge, ledger=parse_governance_ledger(json.loads(governance_bytes, object_pairs_hook=_pairs, parse_constant=_constant)))
-    from .io import decode_markdown_bytes
+    from llm_wiki_engine.io import decode_markdown_bytes
 
     for concept in validated.knowledge.concepts:
         if metadata["kind"] != "captured-preimage" and digest(decode_markdown_bytes(files[concept.document.canonical_path]).encode("utf-8")) != concept.facets.semantics.page_hash:
@@ -347,7 +347,7 @@ def _validate_status_request(live, record_id, limit):
 def _native_prose_coherent(root, knowledge, files):
     """Check native normalized prose without treating ledger baselines as current."""
     from llm_wiki_engine.wiki_surface import collect_wiki_pages
-    from .io import decode_markdown_bytes
+    from llm_wiki_engine.io import decode_markdown_bytes
     from .knowledge_envelope import hash_markdown_snapshot
 
     try:

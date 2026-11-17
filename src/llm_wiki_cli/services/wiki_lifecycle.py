@@ -13,8 +13,8 @@ from typing import Union
 
 from llm_wiki_engine.host import current_host
 from ..config import AGENT_CHOICES
-from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
-from .io import first_unsafe_path_component, formatted_json_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+from llm_wiki_engine.io import first_unsafe_path_component, formatted_json_bytes
 from .rendering_lifecycle import RenderReason
 from .schema import SCHEMA_BLOCK_VERSION, SchemaRenderProfile
 from .sync_manifest import MANIFEST_FILENAME

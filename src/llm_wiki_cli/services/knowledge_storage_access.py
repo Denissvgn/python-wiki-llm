@@ -26,7 +26,7 @@ from .knowledge_packs import PACKED_SCHEMAS, open_knowledge_store
 from .sync_manifest import MANIFEST_FILENAME
 from .manifest_storage import ValidatedManifestHeader, read_manifest_header
 from .maintenance_protocol import ADOPTION_FILENAME
-from .io import decode_markdown_bytes
+from llm_wiki_engine.io import decode_markdown_bytes
 
 
 @dataclass

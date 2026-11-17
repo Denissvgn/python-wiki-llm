@@ -20,10 +20,10 @@ import time
 from typing import Any
 
 from .. import __version__
-from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet_builder as packet_builder
 from llm_wiki_engine.immutable import freeze
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from .task_compact import CompactTaskContext, _CheckedCounter, normalize_view_options, render_compact_task_context
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context

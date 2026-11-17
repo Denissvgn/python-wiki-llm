@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .io import decode_markdown_bytes
+from llm_wiki_engine.io import decode_markdown_bytes
 from .knowledge_storage import KnowledgeStorageError
 from .knowledge_storage_diagnostics import _git
 from .knowledge_storage_lifecycle import _committed_inputs

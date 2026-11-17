@@ -14,7 +14,7 @@ from ..config import (
     validate_source_root,
 )
 from llm_wiki_engine import circuit_breaker
-from ..services.io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from ..services.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,

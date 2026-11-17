@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 from .extractor_registry import EXTRACTOR_REGISTRY
-from .path_policy import PathValidationError, validate_source_paths, validate_source_root
+from llm_wiki_engine.path_policy import PathValidationError, validate_source_paths, validate_source_root
 from ..extractors.common import (
     LANGUAGE_EXTENSIONS,  # noqa: F401 - re-exported through commands.extract_cmd
     filter_bundled_source_inventory,
@@ -80,7 +80,7 @@ from .inventory_cache import (
     make_cache_entry,
     extraction_bundle_hash,
 )
-from .io import write_text_output
+from llm_wiki_engine.io import write_text_output
 from .packages import discover_packages, package_for_path, stamp_inventory_packages
 from .plugins import (
     get_extractor_registry,
@@ -91,7 +91,7 @@ from .plugins import (
     runtime_project_plugins_enabled,
 )
 from .resource_diagnostics import format_resource_failure
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     path_is_selected,

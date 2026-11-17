@@ -24,7 +24,7 @@ from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from .io import write_bytes_atomic
+from llm_wiki_engine.io import write_bytes_atomic
 from .infrastructure_sync import (
     INFRASTRUCTURE_GENERATION_INPUT_KEY,
     INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
@@ -71,7 +71,7 @@ from llm_wiki_engine.wiki_surface import (
     iter_page_kinds,
     mcp_uri,
 )
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
@@ -986,7 +986,7 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
 
 
 def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> None:
-    from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
     from .maintenance_protocol import storage_writer_lock
     from .knowledge_storage_io import read_guarded, _absolute_path
 

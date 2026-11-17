@@ -15,7 +15,7 @@ from typing import Any
 import llm_wiki_cli
 from llm_wiki_engine.host import current_host
 from .extractor_registry import EXTRACTOR_REGISTRY
-from .path_policy import validate_path, validate_source_root
+from llm_wiki_engine.path_policy import validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
 from . import extractor_helpers, analysis_compatibility as ac
 from .analysis_capture import capture_analysis, attach
@@ -45,10 +45,10 @@ from .knowledge_orchestration import (
 from .knowledge_packs import parse_packed_root
 from .knowledge_storage import parse_store_root
 from .knowledge_storage_io import StorageReadSession, read_guarded
-from .source_selection import validate_persisted_source_selection_identity
+from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import build_source_snapshot
 from .sync_manifest import SyncManifest
-from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 MAX_EVIDENCE_BYTES = 64 * 1024 * 1024
 

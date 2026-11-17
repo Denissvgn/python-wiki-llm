@@ -108,7 +108,7 @@ def implementation_hash() -> str | None:
 
 
 def wiki_input_hashes(wiki_dir: str | Path) -> tuple[str, str]:
-    from .io import read_md
+    from llm_wiki_engine.io import read_md
     from .knowledge_envelope import hash_markdown_snapshot
     from llm_wiki_engine.validation import resolve_portable_workspace_path
     from llm_wiki_engine.wiki_media import build_asset_index
@@ -274,7 +274,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     Success retains a guarded raw-page recheck for the caller's final boundary.
     It never allocates an identity, changes review history or publishes evidence.
     """
-    from .io import decode_markdown_bytes
+    from llm_wiki_engine.io import decode_markdown_bytes
     from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
     from .knowledge_storage_io import StorageReadSession
     from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance

@@ -92,7 +92,7 @@ from .infrastructure_sync import (
     validate_infrastructure_generation_input,
     with_infrastructure_generation_input,
 )
-from .io import read_md, write_bytes_atomic, write_md
+from llm_wiki_engine.io import read_md, write_bytes_atomic, write_md
 from .knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
@@ -146,7 +146,7 @@ from .source_snapshot import (
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -171,7 +171,7 @@ from llm_wiki_engine.wiki_surface import (
     iter_page_kinds,
     mcp_uri,
 )
-from .wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .extraction_service import (
     InventoryResult,
     get_call_graph,

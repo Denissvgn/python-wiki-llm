@@ -17,7 +17,7 @@ from ..config import (
     validate_path,
     write_config,
 )
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
     unlink_guarded_bytes,
@@ -44,7 +44,7 @@ from ..services.schema import (
     require_replaceable_managed_schema,
     require_safe_schema_path,
 )
-from ..services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
 )

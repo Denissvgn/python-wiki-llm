@@ -32,7 +32,7 @@ from ..config import (
     validate_path,
     write_config,
 )
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
     guarded_tree_manifest,
@@ -69,7 +69,7 @@ from .skills import (
     skills_install_dir,
     verify_reference_skill,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
 )

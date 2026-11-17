@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-from .path_policy import DEFAULT_WIKI_DIR
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR
 
 #: Page counters reported for a sync that reached the write stage.
 SYNC_PAGE_COUNTERS = ("created", "updated", "metadata_only", "skipped", "deprecated", "preserved_semantic")

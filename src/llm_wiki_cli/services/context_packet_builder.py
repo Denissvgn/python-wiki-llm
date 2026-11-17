@@ -28,7 +28,7 @@ from types import MappingProxyType
 from typing import Any
 
 from .. import __version__
-from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path
 from . import context_service
 from llm_wiki_engine import wiki_surface
 from llm_wiki_engine.contracts import (
@@ -56,9 +56,9 @@ from .knowledge_model import (
     ComputedFreshness,
 )
 from .source_snapshot import directory_identity
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from .knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
-from .filesystem_guard import fresh_no_follow_stat, guard_windows_directory_chain, hold_windows_readonly_file
+from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat, guard_windows_directory_chain, hold_windows_readonly_file
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
 from .plugins import runtime_plugin_fallback_root
@@ -71,7 +71,7 @@ from .source_snapshot import (
     source_snapshot_inputs_match_current_files,
     source_snapshot_matches_current_files,
 )
-from .wiki_surface_index import SurfaceIndexEvaluation, evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import SurfaceIndexEvaluation, evaluate_surface_index
 from .context_packet import (
     _context_policy_digest,
     _domain_hash,

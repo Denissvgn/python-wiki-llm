@@ -22,7 +22,7 @@ from ..services.documentation_run import (
     record_documentation_agent_result,
     verify_documentation_run,
 )
-from ..services.filesystem_guard import atomic_write_private_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes
 
 
 _MAX_INTAKE_BYTES = 1_000_000

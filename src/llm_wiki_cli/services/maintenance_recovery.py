@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import time
 
-from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, fresh_no_follow_stat, remove_guarded_tree, unlink_guarded_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, fresh_no_follow_stat, remove_guarded_tree, unlink_guarded_bytes
 from .knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
 from .knowledge_storage_io import _absolute_path, read_guarded
 from llm_wiki_engine.validation import is_portable_relative_path

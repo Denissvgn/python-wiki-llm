@@ -7,7 +7,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from .path_policy import validate_source_root
+from llm_wiki_engine.path_policy import validate_source_root
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from . import extractor_helpers as helpers, plugins
 from .source_snapshot import build_source_snapshot

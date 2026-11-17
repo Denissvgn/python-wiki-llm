@@ -356,12 +356,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.source_path_diagnostics",
         }
     ),
-    "filesystem_guard": frozenset({"services.wiki_write_basis"}),
-    "io": frozenset(
-        {
-            "services.wiki_write_basis",
-        }
-    ),
     "knowledge_artifacts": frozenset(
         {
             "services.implementation_evidence",

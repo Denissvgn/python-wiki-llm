@@ -112,7 +112,7 @@ from llm_wiki_engine.wiki_surface import (
 from llm_wiki_engine.wiki_surface import (
     mcp_uri as wiki_mcp_uri,
 )
-from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 LINK_SYNTAX_EXTENSION = "llm-wiki/link-syntax"
 

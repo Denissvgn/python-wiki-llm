@@ -35,7 +35,7 @@ from llm_wiki_engine.validation import (
     trimmed_text_or_none,
 )
 from llm_wiki_engine.wiki_surface import is_safe_page_id
-from ..wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 CALIBRATION_TERMINAL_OUTCOMES = (

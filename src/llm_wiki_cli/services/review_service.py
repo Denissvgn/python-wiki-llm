@@ -24,7 +24,7 @@ from .plugins import (
     runtime_plugin_fallback_root,
     runtime_project_plugins_enabled,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -37,7 +37,7 @@ from .source_snapshot import (
 )
 from .sync_manifest import SyncManifest
 from llm_wiki_engine.wiki_surface import PageKind, collect_wiki_pages
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     build_surface_index,

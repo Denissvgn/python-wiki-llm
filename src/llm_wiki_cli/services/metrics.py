@@ -206,7 +206,7 @@ def current_coverage(
         _collect_documented_entities,
         _collect_documented_modules,
     )
-    from .source_selection import resolve_source_selection
+    from llm_wiki_engine.source_selection import resolve_source_selection
     from .source_snapshot import (
         build_source_snapshot,
         capture_source_selection_inputs,

@@ -9,7 +9,7 @@ from ..services import team
 from ..services.extraction_service import get_docker_inventory, get_inventory_result
 from ..services.extraction_jobs import extraction_job_request_from_args
 from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
-from ..services.source_selection import (
+from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )

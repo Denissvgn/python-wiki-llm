@@ -16,7 +16,7 @@ from typing import Any, Mapping
 
 from .. import __version__
 from .domain_pack import current_pack
-from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
 from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
 from .publication_config import (

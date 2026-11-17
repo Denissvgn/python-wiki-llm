@@ -14,7 +14,7 @@ import re
 from types import SimpleNamespace
 from typing import Any
 
-from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets, context_service as context
 from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
@@ -30,7 +30,7 @@ from .knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_sli
 from .knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
 from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_engine.section_ownership import observe_page_sections
-from .source_selection import validate_persisted_source_selection_identity
+from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .task_contract import TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_context import (

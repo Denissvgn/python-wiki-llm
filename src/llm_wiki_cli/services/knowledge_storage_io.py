@@ -9,13 +9,13 @@ from pathlib import Path
 import stat
 from typing import Any, NoReturn
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError, WindowsFileGuardError,
     fresh_no_follow_stat, guard_windows_directory_chain, open_windows_readonly_file,
     windows_object_identity, _windows_path_handle_metadata,
     _open_windows_directory_guard, _close_windows_handle,
 )
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
 from llm_wiki_engine.validation import is_portable_relative_path
 

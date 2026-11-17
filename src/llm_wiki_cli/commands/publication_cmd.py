@@ -7,7 +7,7 @@ from os import sep
 from pathlib import Path
 import sys
 
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )

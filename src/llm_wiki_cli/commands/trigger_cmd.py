@@ -19,7 +19,7 @@ from llm_wiki_engine.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
 from ..services.plugins import PluginError
 from llm_wiki_engine.secure_file import write_private_text
-from ..services.source_selection import (
+from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )

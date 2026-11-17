@@ -56,7 +56,7 @@ from llm_wiki_engine.concept_identity import (
 from .documentation_queries import DocumentationQueryError
 from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_service import InventoryRequest, get_inventory_result
-from .io import read_md
+from llm_wiki_engine.io import read_md
 from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
@@ -66,7 +66,7 @@ from .knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     resolve_source_selection,

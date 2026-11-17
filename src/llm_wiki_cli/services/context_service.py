@@ -29,7 +29,7 @@ from typing import Any, Literal, overload
 
 from .domain_pack import CodeContextSource, context_entry, context_related_sources
 from llm_wiki_engine.host import current_host
-from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from llm_wiki_engine import wiki_surface
 from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
 from .context_request_format import (  # re-exported: format checks live there
@@ -74,7 +74,7 @@ from .extraction_jobs import (
     ExtractionJobRequest,
     print_extraction_job_plan,
 )
-from .io import write_text_output, write_utf8_stdout
+from llm_wiki_engine.io import write_text_output, write_utf8_stdout
 from .infrastructure_inventory import get_yaml_infrastructure_inventory
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import (
@@ -111,9 +111,9 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .source_selection import SourceSelectionError, resolve_source_selection
+from llm_wiki_engine.source_selection import SourceSelectionError, resolve_source_selection
 from llm_wiki_engine.validation import nonnegative_int_or_none
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     SurfaceIndexEvaluation,
     evaluate_surface_index,

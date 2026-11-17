@@ -30,7 +30,7 @@ from .knowledge_packs import (
 from .knowledge_storage_lifecycle import stored_object_paths
 from .sync_manifest import MANIFEST_FILENAME
 from .manifest_storage import OBJECT_NAME as MANIFEST_OBJECT_NAME, OBJECT_LIMIT as MANIFEST_OBJECT_LIMIT
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 def _git(root: Path, arguments: list[str], *, input_bytes: bytes | None = None,

@@ -74,7 +74,7 @@ from llm_wiki_engine.maintenance_status_format import (
     MaintenanceStatusError,
     validate_maintenance_status,
 )
-from ..services.surface_index_format import (
+from llm_wiki_engine.surface_index_format import (
     SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexError,
     validate_surface_index,

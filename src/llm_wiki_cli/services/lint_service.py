@@ -53,9 +53,9 @@ from .inventory_cache import (
     format_cache_stats,
 )
 from .lint_request import LintRequest, LintRequestError
-from .path_policy import DEFAULT_WIKI_DIR, PathValidationError
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError
 from llm_wiki_engine.progress import phase as progress_phase
-from .io import read_md
+from llm_wiki_engine.io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .analysis_compatibility import comparison_entrypoint
 from .health_details import CapturedHealthDetails, capture_health_details
@@ -114,7 +114,7 @@ from .source_snapshot import (
     unsupported_source_label,
     unsupported_source_summary,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -145,7 +145,7 @@ from .team import (
     team_config_issue,
 )
 from llm_wiki_engine.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from .wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,

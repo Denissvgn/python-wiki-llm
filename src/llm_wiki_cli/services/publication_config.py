@@ -25,7 +25,7 @@ from .reference_providers import (
     current_reference_providers,
     reference_provider,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_PATH,
     SourceSelectionError,
     locate_exact_repository_path,

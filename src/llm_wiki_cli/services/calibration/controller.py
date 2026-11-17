@@ -74,13 +74,13 @@ from ..documentation_worklist import (
     WORK_ITEM_PRIORITIES,
     WORK_ITEM_STATUSES,
 )
-from ..filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsFileGuardError,
     guard_windows_directory_chain,
     open_windows_readonly_file,
 )
-from ..protected_artifacts import (
+from llm_wiki_engine.protected_artifacts import (
     ProtectedArtifactError,
     ProtectedArtifactIntegrityError,
     ProtectedArtifactStore,

@@ -5,12 +5,12 @@ from pathlib import Path
 import stat
 import sys
 
-from ..services.io import write_text_output, write_utf8_stdout
+from llm_wiki_engine.io import write_text_output, write_utf8_stdout
 from llm_wiki_engine.request_json import load_request
 
 
 def _safe_absolute(value):
-    from ..services.io import first_unsafe_path_component
+    from llm_wiki_engine.io import first_unsafe_path_component
 
     raw = Path(value).expanduser()
     if first_unsafe_path_component(raw) is not None:
@@ -73,7 +73,7 @@ def _compact_outputs(args):
 
 
 def _publish_compact_outputs(outputs, result):
-    from ..services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
 
     for path, _, stamps in outputs:
         if _safe_absolute(path) != path or any(

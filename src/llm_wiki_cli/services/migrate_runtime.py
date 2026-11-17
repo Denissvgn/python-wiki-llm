@@ -21,8 +21,8 @@ from typing import NoReturn
 from .. import __version__
 from ..config import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from llm_wiki_engine.concept_identity import AliasType, identity_coordinate_key
-from .io import read_md, write_json_atomic, write_md
-from .filesystem_guard import atomic_write_guarded_bytes
+from llm_wiki_engine.io import read_md, write_json_atomic, write_md
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
 from .knowledge_storage_io import read_guarded
 from .knowledge_storage import MAX_EXPANDED_BYTES
 from .knowledge_artifacts import (
@@ -50,7 +50,7 @@ from .knowledge_orchestration import (
     runtime_generation_options,
 )
 from llm_wiki_engine.paths import normalize_source_path
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
@@ -69,7 +69,7 @@ from .sync_manifest import (
 )
 from llm_wiki_engine.validation import path_is_in_top_level_directory
 from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, mcp_uri
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     evaluate_surface_index,
 )

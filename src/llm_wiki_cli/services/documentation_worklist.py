@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
-from .io import read_md
+from llm_wiki_engine.io import read_md
 from llm_wiki_engine.markdown_sections import GENERATED_INDEX_INTROS, parse_markdown_sections
 from llm_wiki_engine.wiki_media import iter_markdown_link_targets, local_link_path, mask_markdown_code
 from llm_wiki_engine.validation import (
@@ -35,7 +35,7 @@ from llm_wiki_engine.wiki_surface import (
     collect_wiki_pages,
     is_safe_page_id,
 )
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 DOCUMENTATION_WORKLIST_SCHEMA_VERSION = "llm-wiki-documentation-worklist/v1"

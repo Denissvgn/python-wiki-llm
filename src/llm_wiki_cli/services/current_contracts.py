@@ -29,7 +29,7 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
     from .maintenance_service import adopt_maintenance_authority
     from .manifest_storage import current_manifest_format
     from .knowledge_storage_lifecycle import _absolute_path
-    from .filesystem_guard import ensure_guarded_directory
+    from llm_wiki_engine.filesystem_guard import ensure_guarded_directory
 
     wiki = _absolute_path(Path(wiki_dir))
     root = wiki / ".llm-wiki-knowledge.json"

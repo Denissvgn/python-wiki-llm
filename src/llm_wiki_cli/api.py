@@ -191,9 +191,9 @@ from .services.documentation_wiki_input import (
 )
 
 from .services.entrypoints import build_flow
-from .services.wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .services.source_snapshot import SourceSnapshotError
-from .services.source_selection import SourceSelectionError
+from llm_wiki_engine.source_selection import SourceSelectionError
 from .services.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
 from .services.native_inspection import NATIVE_INSPECTION_SCHEMA_VERSION
 
@@ -3214,7 +3214,7 @@ def _impact_query(
     source_policy = request.get("source_policy", "explicit")
     checked_paths = selected_paths
     if source_policy == "discovery":
-        from .services.source_selection import resolve_source_selection, path_is_selected
+        from llm_wiki_engine.source_selection import resolve_source_selection, path_is_selected
         policy = resolve_source_selection(src_root, source_selection)
         if policy is not None:
             checked_paths = tuple(path for path in selected_paths if path != policy.path and path_is_selected(policy, path))
