@@ -20,7 +20,6 @@ retain their complete counts and omitted-detail qualifications.
 | Source | Symbols |
 |--------|---------|
 | `.extraction_service` | `InventoryResult` |
-| `.immutable` | `freeze` |
 | `.implementation_evidence` | `compare_implementation_observations` |
 | `.knowledge_storage` | `canonical_bytes` |
 | `.maintenance_evidence` | `MaintenanceCapture`, `owner_key`, `captured_observations_from_knowledge` |
@@ -32,6 +31,7 @@ retain their complete counts and omitted-detail qualifications.
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `replace`, `replace` |
+| `llm_wiki_engine.immutable` | `freeze` |
 | `re` | `re` |
 | `typing` | `Any` |
 

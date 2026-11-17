@@ -107,8 +107,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/prepare_extractors_cmd.py:_dedupe_languages` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 20 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 15 | - | unresolved | 6 |
 > Omission summary shows 8 of 303 groups; 295 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

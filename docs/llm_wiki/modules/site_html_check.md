@@ -10,9 +10,9 @@ Built static-site HTML link validation.
 
 | Source | Symbols |
 |--------|---------|
-| `.wiki_media` | `split_srcset_candidates` |
 | `__future__` | `annotations` |
 | `html.parser` | `HTMLParser` |
+| `llm_wiki_engine.wiki_media` | `split_srcset_candidates` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
 | `typing` | `Callable`, `Iterable`, `Optional`, `Union` |
@@ -26,7 +26,7 @@ flowchart LR
     n0["src/llm_wiki_cli/cli_declarations.py"]
     n1["src/llm_wiki_cli/services/site_export.py"]
     n2["src/llm_wiki_cli/services/site_html_check.py"]
-    n3["src/llm_wiki_cli/services/wiki_media.py"]
+    n3["src/llm_wiki_engine/wiki_media.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2

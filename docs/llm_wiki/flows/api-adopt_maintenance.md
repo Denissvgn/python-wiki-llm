@@ -161,8 +161,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | external | 4 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 16 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
 > Omission summary shows 8 of 766 groups; 758 further groups are not expanded here. Counts above include all omitted interactions.

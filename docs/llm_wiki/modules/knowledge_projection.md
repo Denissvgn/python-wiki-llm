@@ -19,25 +19,25 @@ identities, and non-parity hashes are never visited while constructing it.
 
 | Source | Symbols |
 |--------|---------|
-| `.concept_identity` | `ConceptIdentityError`, `validate_bundle_id`, `validate_concept_uid` |
-| `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.knowledge_artifacts` | `validate_knowledge_artifacts`, `require_validated_artifacts` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `validate_configured_public_identity` |
-| `.knowledge_evidence` | `sha256_bytes` |
 | `.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
 | `.knowledge_governance` | `validate_governance_projection` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_model` | `ActorKind`, `ConceptKind`, `ConceptRecord`, `ComputedFreshness`, `EVALUATED_REVISION_PATTERN`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeProjectionProfile`, `Lifecycle`, `LIMITATION_CODE_PATTERN`, `ObservationScope`, `Origin`, `REPOSITORY_IDENTITY_SOURCE_EXTENSION`, `RepositoryIdentitySource`, `Verification`, `WorkingTreeState`, `serialize_knowledge_index` |
 | `.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE`, `knowledge_freshness_disclosure`, `knowledge_freshness_hint` |
-| `.redaction` | `CREDENTIAL_VALUE_RE`, `PROJECTION_URI_USERINFO_RE`, `SENSITIVE_KEY_RE` |
-| `.validation` | `require_bool`, `require_choice`, `require_exact_fields`, `require_mapping`, `require_nonnegative_int`, `require_portable_relative_path`, `require_positive_int`, `require_sequence`, `require_sha256` |
-| `.wiki_surface` | `PageKind`, `SurfaceRole` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_bundle_id`, `validate_concept_uid` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `typed_graph_from_knowledge_extensions` |
+| `llm_wiki_engine.redaction` | `CREDENTIAL_VALUE_RE`, `PROJECTION_URI_USERINFO_RE`, `SENSITIVE_KEY_RE` |
+| `llm_wiki_engine.validation` | `require_bool`, `require_choice`, `require_exact_fields`, `require_mapping`, `require_nonnegative_int`, `require_portable_relative_path`, `require_positive_int`, `require_sequence`, `require_sha256` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `SurfaceRole` |
 | `math` | `math` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |

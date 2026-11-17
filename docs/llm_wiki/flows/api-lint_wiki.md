@@ -129,10 +129,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/host.py:discarding_output` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 4 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:discarding_output` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 4 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/lint_service.py:execute_lint` | 14 | - | external | 3 |
 | `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 17 | - | external | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 20 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
@@ -164,8 +164,8 @@ Collector observations for 293 source steps with known totals: observed: 1875, e
 | `LintRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `discarding_output` | `available` | `evaluated` | `available` | `0` | `0` | `0` |
 | `using_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.reset` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().with_output` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -179,8 +179,8 @@ flowchart LR
     s2["2. LintRequest"]
     s3["3. discarding_output"]
     s4["4. using_host"]
-    s5["5. isinstance (src/llm_wiki_cli/services/host.py:using_host)"]
-    s6["6. TypeError (src/llm_wiki_cli/services/host.py:using_host)"]
+    s5["5. isinstance (src/llm_wiki_engine/host.py:using_host)"]
+    s6["6. TypeError (src/llm_wiki_engine/host.py:using_host)"]
     s7["7. _ACTIVE.set"]
     s8["8. _ACTIVE.reset"]
     s9["9. current_host().with_output"]
@@ -190,8 +190,8 @@ flowchart LR
     s1 -->|"LintRequest(…)"| s2
     s1 -->|"discarding_output(data not statically known)"| s3
     s3 -->|"using_host(...)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services/host.py:using_host)(host, Host)" .-> s5
-    s4 -. "TypeError (src/llm_wiki_cli/services/host.py:using_host)('host must be a Host instance')" .-> s6
+    s4 -. "isinstance (src/llm_wiki_engine/host.py:using_host)(host, Host)" .-> s5
+    s4 -. "TypeError (src/llm_wiki_engine/host.py:using_host)('host must be a Host instance')" .-> s6
     s4 -. "_ACTIVE.set(host)" .-> s7
     s4 -. "_ACTIVE.reset(token)" .-> s8
     s3 -. "current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))" .-> s9
@@ -214,8 +214,8 @@ flowchart LR
 | `LintRequest` | - | - | - | - |
 | `discarding_output` | - | - | - | - |
 | `using_host` | `host: Host` | `Host` | - | - |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
 | `_ACTIVE.set` | - | - | - | - |
 | `_ACTIVE.reset` | - | - | - | - |
 | `current_host().with_output` | - | - | - | - |
@@ -230,8 +230,8 @@ flowchart LR
 | lint_wiki | LintRequest | 1369 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
 | lint_wiki | discarding_output | 1381 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_cli/services/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_cli/services/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
 | using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
 | using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
 | discarding_output | current_host().with_output | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |

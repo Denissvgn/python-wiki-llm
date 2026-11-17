@@ -17,12 +17,12 @@ static targets do not establish runtime execution.
 | Source | Symbols |
 |--------|---------|
 | `..extractors.python_bindings` | `valid_python_constructor_facts`, `CONSTRUCTOR_DISPATCH_VERSION` |
-| `.immutable` | `freeze` |
 | `.imports` | `ModulePathResolver` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.immutable` | `freeze` |
 | `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map
@@ -33,25 +33,25 @@ flowchart LR
     n0["src/llm_wiki_cli/extractors/python_bindings.py"]
     n1["src/llm_wiki_cli/extractors/python_extractor.py"]
     n2["src/llm_wiki_cli/services/extraction_service.py"]
-    n3["src/llm_wiki_cli/services/immutable.py"]
-    n4["src/llm_wiki_cli/services/imports.py"]
-    n5["src/llm_wiki_cli/services/python_calls.py"]
+    n3["src/llm_wiki_cli/services/imports.py"]
+    n4["src/llm_wiki_cli/services/python_calls.py"]
+    n5["src/llm_wiki_engine/immutable.py"]
     n1 --> n0
+    n1 --> n3
     n1 --> n4
-    n1 --> n5
     n2 --> n0
     n2 --> n1
+    n2 --> n3
     n2 --> n4
-    n2 --> n5
-    n5 --> n0
-    n5 --> n3
-    n5 --> n4
+    n4 --> n0
+    n4 --> n3
+    n4 --> n5
     click n0 "../modules/python_bindings.md"
     click n1 "../modules/python_extractor.md"
     click n2 "../modules/extraction_service.md"
-    click n3 "../modules/immutable.md"
-    click n4 "../modules/imports.md"
-    click n5 "../modules/python_calls.md"
+    click n3 "../modules/imports.md"
+    click n4 "../modules/python_calls.md"
+    click n5 "../modules/immutable.md"
 ```
 
 ### Internal neighbors
@@ -61,8 +61,8 @@ flowchart LR
 | Inbound | [python_extractor](../modules/python_extractor.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Outbound | [python_bindings](../modules/python_bindings.md) |
-| Outbound | [immutable](../modules/immutable.md) |
 | Outbound | [imports](../modules/imports.md) |
+| Outbound | [immutable](../modules/immutable.md) |
 
 ## Classes
 

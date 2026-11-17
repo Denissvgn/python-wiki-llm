@@ -31,7 +31,7 @@ sequenceDiagram
     participant p7 as GovernanceError
     participant p8 as GovernanceAllocation
     participant p9 as GovernanceAlias
-    participant p10 as derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    participant p10 as derive_concept_uid (src/llm_wiki_engine/concept_identity.py)
     participant p11 as _bundle_id
     participant p12 as _concept_uid
     participant p13 as _concept_kind
@@ -61,7 +61,7 @@ sequenceDiagram
     p0->>p7: GovernanceError
     p0->>p8: GovernanceAllocation
     p0->>p9: GovernanceAlias
-    p4->>p10: derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    p4->>p10: derive_concept_uid (src/llm_wiki_engine/concept_identity.py)
     p1->>p11: _bundle_id
     p1->>p12: _concept_uid
     p1->>p13: _concept_kind
@@ -94,12 +94,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 21 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 25 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 8 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 8 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 7 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 25 | - | unresolved | 2 |
 > Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -131,9 +131,9 @@ Collector observations for 114 source steps with known totals: observed: 609, em
 | `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
@@ -146,9 +146,9 @@ flowchart LR
     s6["6. _bundle_id"]
     s7["7. validate_bundle_id"]
     s8["8. _machine_text"]
-    s9["9. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s9["9. isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s10["10. ConceptIdentityError"]
-    s11["11. len (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s11["11. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
     s1 -->|"validate_governance_ledger(ledger)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s3
@@ -157,9 +157,9 @@ flowchart LR
     s2 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s6
     s6 -->|"validate_bundle_id(value)"| s7
     s7 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)(value, str)" .-> s9
     s8 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s10
-    s8 -. "len (src/llm_wiki_cli/services…identity.py:_machine_text)(value)" .-> s11
+    s8 -. "len (src/llm_wiki_engine/conce…identity.py:_machine_text)(value)" .-> s11
     s8 -->|"ConceptIdentityError(field, ...)"| s12
     b0["mutation aliases.pop"]
     s1 -. "mutation aliases.pop" .-> b0
@@ -193,9 +193,9 @@ flowchart LR
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
@@ -209,9 +209,9 @@ flowchart LR
 | validate_governance_ledger | _bundle_id | 535 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
 | _bundle_id | validate_bundle_id | 3505 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | len (src/llm_wiki_engine/conce…identity.py:_machine_text) | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
 
 ### Boundary effects

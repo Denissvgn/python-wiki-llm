@@ -92,14 +92,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | [src/llm_wiki_cli/services/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:indented_line_text` | 5 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:formatted_json_bytes` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:formatted_json_bytes` | 3 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 5 | - | external | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | - | external | 7 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 15 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 15 | - | external | 2 |
 > Omission summary shows 8 of 70 groups; 62 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,10 +1,10 @@
 # lockfile Module
 
-**Path:** `src/llm_wiki_cli/services/lockfile.py`
+**Path:** `src/llm_wiki_engine/lockfile.py`
 
 ## Description
 
-_Auto-generated from `src/llm_wiki_cli/services/lockfile.py`._
+_Auto-generated from `src/llm_wiki_engine/lockfile.py`._
 
 ## Imports
 
@@ -26,8 +26,8 @@ _Auto-generated from `src/llm_wiki_cli/services/lockfile.py`._
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n1["src/llm_wiki_cli/services/host.py"]
-    n2["src/llm_wiki_cli/services/lockfile.py"]
+    n1["src/llm_wiki_engine/host.py"]
+    n2["src/llm_wiki_engine/lockfile.py"]
     n0 --> n2
     n2 --> n1
     click n0 "../modules/trigger_cmd.md"

@@ -121,19 +121,19 @@ sequenceDiagram
     p3-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1914 interactions; 1884 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1916 interactions; 1886 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 745 (744 omitted); unresolved 1 of 520 (519 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 746 (745 omitted); unresolved 1 of 521 (520 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/request_json.py:load_request` | 2 | - | external | 2 |
-| `src/llm_wiki_cli/services/request_json.py:load_request` | 2 | [src/llm_wiki_cli/services/request_json.py](../modules/request_json.md) | internal | 2 |
-| `src/llm_wiki_cli/services/request_json.py:parse_request` | 4 | - | external | 8 |
-| `src/llm_wiki_cli/services/request_json.py:parse_request` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/request_json.py:load_request` | 2 | - | unresolved | 3 |
+| `src/llm_wiki_engine/request_json.py:load_request` | 2 | - | external | 2 |
+| `src/llm_wiki_engine/request_json.py:load_request` | 2 | [src/llm_wiki_engine/request_json.py](../modules/request_json.md) | internal | 2 |
+| `src/llm_wiki_engine/request_json.py:parse_request` | 4 | - | external | 8 |
+| `src/llm_wiki_engine/request_json.py:parse_request` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/request_json.py:load_request` | 2 | - | unresolved | 3 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
@@ -162,42 +162,42 @@ Collector observations for 475 source steps with known totals: observed: 2967, e
 |---|---|---|---|---:|---:|---:|
 | `run` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `load_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `getattr (src/llm_wiki_cli/services…uest_json.py:load_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_engine/request_json.py:load_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parse_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `len (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `raw.encode (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `raw.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.loads (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/request_json.py:parse_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. run"]
     s2["2. load_request"]
-    s3["3. getattr (src/llm_wiki_cli/services…uest_json.py:load_request)"]
+    s3["3. getattr (src/llm_wiki_engine/request_json.py:load_request)"]
     s4["4. parse_request"]
-    s5["5. len (src/llm_wiki_cli/services…est_json.py:parse_request)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)"]
-    s7["7. raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request)"]
-    s8["8. ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)"]
-    s9["9. isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)"]
+    s5["5. len (src/llm_wiki_engine/request_json.py:parse_request)"]
+    s6["6. isinstance (src/llm_wiki_engine/request_json.py:parse_request)"]
+    s7["7. raw.encode (src/llm_wiki_engine/request_json.py:parse_request)"]
+    s8["8. ValueError (src/llm_wiki_engine/request_json.py:parse_request)"]
+    s9["9. isinstance (src/llm_wiki_engine/request_json.py:parse_request)"]
     s10["10. raw.decode"]
-    s11["11. json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)"]
-    s12["12. ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)"]
+    s11["11. json.loads (src/llm_wiki_engine/request_json.py:parse_request)"]
+    s12["12. ValueError (src/llm_wiki_engine/request_json.py:parse_request)"]
     s1 -->|"load_request(args.request)"| s2
-    s2 -. "getattr (src/llm_wiki_cli/services…uest_json.py:load_request)(sys.stdin, 'buffer', sys.stdin)" .-> s3
+    s2 -. "getattr (src/llm_wiki_engine/request_json.py:load_request)(sys.stdin, 'buffer', sys.stdin)" .-> s3
     s2 -->|"parse_request(stream.read(...))"| s4
-    s4 -. "len (src/llm_wiki_cli/services…est_json.py:parse_request)(...)" .-> s5
-    s4 -. "isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)(raw, bytes)" .-> s6
-    s4 -. "raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request)('utf-8')" .-> s7
-    s4 -. "ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)('Request exceeds 1 MiB')" .-> s8
-    s4 -. "isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)(raw, bytes)" .-> s9
+    s4 -. "len (src/llm_wiki_engine/request_json.py:parse_request)(...)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/request_json.py:parse_request)(raw, bytes)" .-> s6
+    s4 -. "raw.encode (src/llm_wiki_engine/request_json.py:parse_request)('utf-8')" .-> s7
+    s4 -. "ValueError (src/llm_wiki_engine/request_json.py:parse_request)('Request exceeds 1 MiB')" .-> s8
+    s4 -. "isinstance (src/llm_wiki_engine/request_json.py:parse_request)(raw, bytes)" .-> s9
     s4 -. "raw.decode('utf-8')" .-> s10
-    s4 -. "json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)(text, object_pairs_hook=_pairs, parse_constant=_constant)" .-> s11
-    s4 -. "ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)('Request must be a UTF-8 JSON object')" .-> s12
+    s4 -. "json.loads (src/llm_wiki_engine/request_json.py:parse_request)(text, object_pairs_hook=_pairs, parse_constant=_constant)" .-> s11
+    s4 -. "ValueError (src/llm_wiki_engine/request_json.py:parse_request)('Request must be a UTF-8 JSON object')" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     click s1 "../modules/query_cmd.md"
@@ -213,32 +213,32 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `sys` | - | - |
 | `load_request` | `path: str` | `sys`, `MAX_REQUEST_BYTES`, `MAX_REQUEST_BYTES` | - | `parse_request(...)`, `parse_request(...)` |
-| `getattr (src/llm_wiki_cli/services…uest_json.py:load_request)` | - | - | - | - |
+| `getattr (src/llm_wiki_engine/request_json.py:load_request)` | - | - | - | - |
 | `parse_request` | `raw: bytes \| str` | `MAX_REQUEST_BYTES`, `_pairs`, `_constant`, `json` | - | `value` |
-| `len (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
-| `raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
+| `len (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
+| `raw.encode (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
 | `raw.decode` | - | - | - | - |
-| `json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
+| `json.loads (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/request_json.py:parse_request)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | load_request | 16 | `load_request(args.request)` |
-| load_request | getattr (src/llm_wiki_cli/services…uest_json.py:load_request) | 41 | `getattr(sys.stdin, 'buffer', sys.stdin)` |
+| load_request | getattr (src/llm_wiki_engine/request_json.py:load_request) | 41 | `getattr(sys.stdin, 'buffer', sys.stdin)` |
 | load_request | parse_request | 42 | `parse_request(stream.read(...))` |
-| parse_request | len (src/llm_wiki_cli/services…est_json.py:parse_request) | 27 | `len(...)` |
-| parse_request | isinstance (src/llm_wiki_cli/services…est_json.py:parse_request) | 27 | `isinstance(raw, bytes)` |
-| parse_request | raw.encode (src/llm_wiki_cli/services…est_json.py:parse_request) | 27 | `raw.encode('utf-8')` |
-| parse_request | ValueError (src/llm_wiki_cli/services…est_json.py:parse_request) | 28 | `ValueError('Request exceeds 1 MiB')` |
-| parse_request | isinstance (src/llm_wiki_cli/services…est_json.py:parse_request) | 30 | `isinstance(raw, bytes)` |
+| parse_request | len (src/llm_wiki_engine/request_json.py:parse_request) | 27 | `len(...)` |
+| parse_request | isinstance (src/llm_wiki_engine/request_json.py:parse_request) | 27 | `isinstance(raw, bytes)` |
+| parse_request | raw.encode (src/llm_wiki_engine/request_json.py:parse_request) | 27 | `raw.encode('utf-8')` |
+| parse_request | ValueError (src/llm_wiki_engine/request_json.py:parse_request) | 28 | `ValueError('Request exceeds 1 MiB')` |
+| parse_request | isinstance (src/llm_wiki_engine/request_json.py:parse_request) | 30 | `isinstance(raw, bytes)` |
 | parse_request | raw.decode | 30 | `raw.decode('utf-8')` |
-| parse_request | json.loads (src/llm_wiki_cli/services…est_json.py:parse_request) | 31 | `json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)` |
-| parse_request | ValueError (src/llm_wiki_cli/services…est_json.py:parse_request) | 33 | `ValueError('Request must be a UTF-8 JSON object')` |
+| parse_request | json.loads (src/llm_wiki_engine/request_json.py:parse_request) | 31 | `json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)` |
+| parse_request | ValueError (src/llm_wiki_engine/request_json.py:parse_request) | 33 | `ValueError('Request must be a UTF-8 JSON object')` |
 
 ### Boundary effects
 

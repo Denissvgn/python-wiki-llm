@@ -98,9 +98,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 12 | - | external | 9 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 12 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 195 groups; 187 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,6 +1,6 @@
 # IdentityCollisionError
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:215`
+**Location:** `src/llm_wiki_engine/concept_identity.py:215`
 **Kind:** Class
 **Bases:** `ConceptIdentityError`
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -24,10 +24,10 @@ Raised when allocations or aliases do not form a unique registry.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["IdentityCollisionError (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["ConceptIdentityError (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["validate_identity_registry (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["IdentityCollisionError (src/llm_wiki_engine/concept_identity.py)"]
+    n1["ConceptIdentityError (src/llm_wiki_engine/concept_identity.py)"]
+    n2["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n3["validate_identity_registry (src/llm_wiki_engine/concept_identity.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

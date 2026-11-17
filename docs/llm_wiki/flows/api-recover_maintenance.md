@@ -131,7 +131,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | external | 4 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 > Omission summary shows 8 of 481 groups; 473 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -22,7 +22,7 @@ sequenceDiagram
     participant p8 as directory.is_dir
     participant p9 as path.exists
     participant p10 as path.is_file
-    participant p11 as tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)
+    participant p11 as tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)
     participant p12 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
     participant p13 as os.fspath
     participant p14 as os.path.abspath
@@ -47,7 +47,7 @@ sequenceDiagram
     p0-->>p8: directory.is_dir
     p0-->>p9: path.exists
     p0-->>p10: path.is_file
-    p2-->>p11: tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)(...)
+    p2-->>p11: tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)(...)
     p1-->>p12: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))
     p1-->>p13: os.fspath(path)
     p1-->>p12: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))
@@ -76,7 +76,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/host.py:current_host` | 14 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 14 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | external | 6 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 1 | [src/llm_wiki_cli/services/wiki_lifecycle.py](../modules/wiki_lifecycle.md) | internal | 2 |
@@ -103,7 +103,7 @@ Collector observations for 4 source steps with known totals: observed: 19, emitt
 | `Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `iter_directory_kinds` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -118,7 +118,7 @@ flowchart LR
     s2["2. Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)"]
     s3["3. tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)"]
     s4["4. iter_directory_kinds"]
-    s5["5. tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)"]
+    s5["5. tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)"]
     s6["6. tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)"]
     s7["7. first_unsafe_path_component"]
     s8["8. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
@@ -129,7 +129,7 @@ flowchart LR
     s1 -. "Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(wiki_dir)" .-> s2
     s1 -. "tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(...)" .-> s3
     s1 -->|"iter_directory_kinds(data not statically known)"| s4
-    s4 -. "tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)(...)" .-> s5
+    s4 -. "tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)(...)" .-> s5
     s1 -. "tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(...)" .-> s6
     s1 -->|"first_unsafe_path_component(path)"| s7
     s7 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s8
@@ -154,7 +154,7 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | - | - | - | - |
 | `tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | - | - | - | - |
 | `iter_directory_kinds` | - | `_PAGE_KINDS` | - | `tuple(...)` |
-| `tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds)` | - | - | - | - |
 | `tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
@@ -170,7 +170,7 @@ flowchart LR
 | require_safe_wiki_scaffold | Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 44 | `Path(wiki_dir)` |
 | require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 45 | `tuple(...)` |
 | require_safe_wiki_scaffold | iter_directory_kinds | 47 | `iter_directory_kinds(data not statically known)` |
-| iter_directory_kinds | tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds) | 224 | `tuple(...)` |
+| iter_directory_kinds | tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds) | 224 | `tuple(...)` |
 | require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 50 | `tuple(...)` |
 | require_safe_wiki_scaffold | first_unsafe_path_component | 55 | `first_unsafe_path_component(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |

@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as _contains_uri_userinfo
     participant p27 as PageKind
     participant p28 as _looks_absolute_path
-    participant p29 as isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)
+    participant p29 as isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)
     participant p30 as {item.uid: item for item in current}.get
     p0->>p1: validate_identity_registry
     p0->>p2: aliases_for_move
@@ -70,7 +70,7 @@ sequenceDiagram
     p15->>p26: _contains_uri_userinfo
     p14->>p27: PageKind
     p15->>p28: _looks_absolute_path
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)(allocation, ConceptAllocation)
+    p0-->>p29: isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)(allocation, ConceptAllocation)
     p0-->>p30: {item.uid: item for item in current}.get(allocation.uid)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:move_allocation` | 1 | - | external | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 4 | - | external | 7 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_identity_registry` | 13 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 8 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | - | external | 24 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | - | unresolved | 15 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 26 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 26 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:move_allocation` | 1 | - | external | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_typed_tuple` | 4 | - | external | 7 |
+| `src/llm_wiki_engine/concept_identity.py:validate_identity_registry` | 13 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 16 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 8 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 16 | - | external | 24 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 16 | - | unresolved | 15 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_type` | 26 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_type` | 26 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
 > Omission summary shows 8 of 32 groups; 24 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -114,42 +114,42 @@ Collector observations for 44 source steps with known totals: observed: 205, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `move_allocation` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…entity.py:move_allocation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…entity.py:move_allocation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_typed_tuple` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `all` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. move_allocation"]
-    s2["2. isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…entity.py:move_allocation)"]
+    s2["2. isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)"]
+    s3["3. TypeError (src/llm_wiki_engine/conce…entity.py:move_allocation)"]
     s4["4. _typed_tuple"]
-    s5["5. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s6["6. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s7["7. tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s8["8. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s5["5. isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s6["6. TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s7["7. tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s8["8. TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s9["9. enumerate"]
-    s10["10. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s11["11. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s10["10. isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s11["11. TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s12["12. all"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)(allocation, ConceptAllocation)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…entity.py:move_allocation)('allocation must be a ConceptAllocation')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)(allocation, ConceptAllocation)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_engine/conce…entity.py:move_allocation)('allocation must be a ConceptAllocation')" .-> s3
     s1 -->|"_typed_tuple(allocations, ConceptAllocation, 'allocations')"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))" .-> s5
-    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s6
-    s4 -. "tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)" .-> s7
-    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s8
+    s4 -. "isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values, (...))" .-> s5
+    s4 -. "TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(...)" .-> s6
+    s4 -. "tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values)" .-> s7
+    s4 -. "TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(...)" .-> s8
     s4 -. "enumerate(result)" .-> s9
-    s4 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(value, expected_type)" .-> s10
-    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s11
+    s4 -. "isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(value, expected_type)" .-> s10
+    s4 -. "TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(...)" .-> s11
     s1 -. "all(...)" .-> s12
     click s1 "../modules/concept_identity.md"
     click s4 "../modules/concept_identity.md"
@@ -160,32 +160,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `move_allocation` | `allocation: ConceptAllocation`, `new_reference: ConceptReference`, `allocations: Iterable[ConceptAllocation]`, `aliases: Iterable[IdentityAlias]` | `ConceptAllocation`, `ConceptAllocation` | - | `IdentityUpdate(...)` |
-| `isinstance (src/llm_wiki_cli/services…entity.py:move_allocation)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…entity.py:move_allocation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…entity.py:move_allocation)` | - | - | - | - |
 | `_typed_tuple` | `values: Iterable[_RecordT]`, `expected_type: type[_RecordT]`, `field: str` | - | - | `result` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `all` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| move_allocation | isinstance (src/llm_wiki_cli/services…entity.py:move_allocation) | 850 | `isinstance(allocation, ConceptAllocation)` |
-| move_allocation | TypeError (src/llm_wiki_cli/services…entity.py:move_allocation) | 851 | `TypeError('allocation must be a ConceptAllocation')` |
+| move_allocation | isinstance (src/llm_wiki_engine/conce…entity.py:move_allocation) | 850 | `isinstance(allocation, ConceptAllocation)` |
+| move_allocation | TypeError (src/llm_wiki_engine/conce…entity.py:move_allocation) | 851 | `TypeError('allocation must be a ConceptAllocation')` |
 | move_allocation | _typed_tuple | 852 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
+| _typed_tuple | isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
 | _typed_tuple | enumerate | 1021 | `enumerate(result)` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1023 | `TypeError(...)` |
+| _typed_tuple | isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
+| _typed_tuple | TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1023 | `TypeError(...)` |
 | move_allocation | all | 853 | `all(...)` |
 
 ### Boundary effects

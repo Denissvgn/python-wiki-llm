@@ -103,10 +103,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 3 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 6 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 11 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 11 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 8 | - | external | 1 |
 > Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -142,7 +142,7 @@ Collector observations for 339 source steps with known totals: observed: 1558, e
 | `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -157,7 +157,7 @@ flowchart LR
     s9["9. _object (src/llm_wiki_cli/services/knowledge_model.py)"]
     s10["10. dict (src/llm_wiki_cli/services…nowledge_model.py:_object)"]
     s11["11. require_mapping"]
-    s12["12. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s12["12. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s1 -. "json.dumps(knowledge_index_to_payload(...), indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)" .-> s2
     s1 -->|"knowledge_index_to_payload(model)"| s3
     s3 -. "isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)" .-> s4
@@ -168,7 +168,7 @@ flowchart LR
     s8 -->|"_object (src/llm_wiki_cli/services/knowledge_model.py)(value, path)"| s9
     s9 -. "dict (src/llm_wiki_cli/services…nowledge_model.py:_object)(require_mapping(...))" .-> s10
     s9 -->|"require_mapping(…)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s12
     click s1 "../modules/knowledge_model.md"
     click s3 "../modules/knowledge_model.md"
     click s6 "../modules/knowledge_model.md"
@@ -192,7 +192,7 @@ flowchart LR
 | `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR`, `_UTF8_ERROR` | - | `dict(...)` |
 | `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | - | - | - | - |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 
 ### Call data
 
@@ -208,7 +208,7 @@ flowchart LR
 | _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1629 | `_object(value, path)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1696 | `dict(require_mapping(...))` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1697 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 

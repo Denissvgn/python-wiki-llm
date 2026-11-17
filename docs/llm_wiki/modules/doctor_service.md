@@ -16,9 +16,7 @@ verification-receipt evaluation already produced by strict lint.
 |--------|---------|
 | `.` | `analysis_compatibility` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
-| `.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.extraction_jobs` | `ExtractionJobRequest` |
-| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.health_contract` | `validate_health_details` |
 | `.health_details` | `CapturedHealthDetails` |
 | `.health_policy` | `DoctorStatus`, `DOCTOR_EXIT_CODES`, `classify_health_sections` |
@@ -35,6 +33,8 @@ verification-receipt evaluation already produced by strict lint.
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
+| `llm_wiki_engine.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |

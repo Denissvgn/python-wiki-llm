@@ -19,11 +19,11 @@ the shared writer lock around capture and manifest-last publication.
 | `.implementation_evidence` | `validate_implementation_evidence`, `validate_implementation_evidence` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.maintenance_shapes` | `MaintenanceError`, `VALIDATORS`, `require` |
-| `.validation` | `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
 | `contextvars` | `ContextVar` |
 | `copy` | `deepcopy` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `re` | `re` |
 | `typing` | `Any` |
 | `urllib.parse` | `quote`, `unquote` |

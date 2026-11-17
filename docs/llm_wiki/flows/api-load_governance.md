@@ -96,8 +96,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | - | external | 16 |

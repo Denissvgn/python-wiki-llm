@@ -17,8 +17,8 @@ boundary.
 | Source | Symbols |
 |--------|---------|
 | `.plugins` | `PluginError`, `diagram_style_components`, `load_entry_point` |
-| `.validation` | `resolved_paths_equal` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.validation` | `resolved_paths_equal` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any`, `Iterable`, `Mapping` |
@@ -34,7 +34,7 @@ flowchart LR
     n1["src/llm_wiki_cli/services/diagrams.py"]
     n2["src/llm_wiki_cli/services/lint_service.py"]
     n3["src/llm_wiki_cli/services/plugins.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
+    n4["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n4
     n1 --> n3

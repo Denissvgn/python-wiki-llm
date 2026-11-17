@@ -22,15 +22,15 @@ not authenticity.
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `compact_line_bytes` |
 | `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsDurabilityError`, `WindowsFileGuardError`, `WindowsSecurityGuardError`, `create_private_windows_directory`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `move_windows_path_write_through`, `open_windows_guarded_lock_file`, `open_windows_private_write_file`, `open_windows_readonly_file`, `replace_windows_file_write_through`, `verify_windows_restrictive_dacl`, `windows_current_user_sid` |
-| `.validation` | `portable_path_key`, `require_portable_path_component`, `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `ctypes` | `ctypes` |
 | `errno` | `errno` |
 | `fcntl` | `fcntl`, `fcntl` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `compact_line_bytes` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_path_component`, `require_portable_relative_path` |
 | `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
@@ -46,25 +46,25 @@ not authenticity.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/calibration/controller.py"]
-    n1["src/llm_wiki_cli/services/canonical_json.py"]
-    n2["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n3["src/llm_wiki_cli/services/protected_artifacts.py"]
-    n4["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
+    n1["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n2["src/llm_wiki_cli/services/protected_artifacts.py"]
+    n3["src/llm_wiki_cli/services/sync_transition_execution.py"]
+    n4["src/llm_wiki_engine/canonical_json.py"]
+    n5["src/llm_wiki_engine/validation.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n3
     n0 --> n5
+    n2 --> n1
+    n2 --> n4
+    n2 --> n5
     n3 --> n1
     n3 --> n2
     n3 --> n5
-    n4 --> n2
-    n4 --> n3
-    n4 --> n5
     click n0 "../modules/controller.md"
-    click n1 "../modules/canonical_json.md"
-    click n2 "../modules/filesystem_guard.md"
-    click n3 "../modules/protected_artifacts.md"
-    click n4 "../modules/sync_transition_execution.md"
+    click n1 "../modules/filesystem_guard.md"
+    click n2 "../modules/protected_artifacts.md"
+    click n3 "../modules/sync_transition_execution.md"
+    click n4 "../modules/canonical_json.md"
     click n5 "../modules/validation.md"
 ```
 
@@ -74,8 +74,8 @@ flowchart LR
 |---|---|
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
-| Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

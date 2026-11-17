@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as sha256_digest
     participant p27 as MarkdownSectionDocument
     participant p28 as _line_content
-    participant p29 as isinstance (src/llm_wiki_cli/services…py:merge_entity_semantics)
+    participant p29 as isinstance (src/llm_wiki_engine/secti…py:merge_entity_semantics)
     participant p30 as semantics.get
     p0->>p1: merge_semantic_markdown
     p0->>p2: _retain_unmarked_overload_guidance
@@ -70,7 +70,7 @@ sequenceDiagram
     p3->>p26: sha256_digest
     p3->>p27: MarkdownSectionDocument
     p9->>p28: _line_content
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…py:merge_entity_semantics)(description, str)
+    p0-->>p29: isinstance (src/llm_wiki_engine/secti…py:merge_entity_semantics)(description, str)
     p0-->>p30: semantics.get('attributes', {...})
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/section_ownership.py:merge_entity_semantics` | 1 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 6 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 10 | - | external | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 10 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 13 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 15 | - | unresolved | 10 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 15 | - | external | 6 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 9 | - | unresolved | 2 |
+| `src/llm_wiki_engine/section_ownership.py:merge_entity_semantics` | 1 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 10 | - | external | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 10 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 15 | - | unresolved | 10 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 15 | - | external | 6 |
+| `src/llm_wiki_engine/markdown_sections.py:section_body` | 9 | - | unresolved | 2 |
 > Omission summary shows 8 of 54 groups; 46 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

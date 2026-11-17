@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as AliasType
     participant p27 as WikiSurfaceError
     participant p28 as PageKind
-    participant p29 as isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)
+    participant p29 as isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)
     participant p30 as candidates.add
     p0->>p1: validate_bundle_id
     p0->>p2: validate_identity_registry
@@ -70,7 +70,7 @@ sequenceDiagram
     p12->>p26: AliasType
     p14->>p27: WikiSurfaceError
     p16->>p28: PageKind
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)(reference, ConceptReference)
+    p0-->>p29: isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)(reference, ConceptReference)
     p0-->>p30: candidates.add(allocation.uid)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:allocate_concept` | 1 | - | external | 7 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 22 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 4 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:allocate_concept` | 1 | - | external | 7 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 5 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 5 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 5 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 22 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 4 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
 > Omission summary shows 8 of 40 groups; 32 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,42 +113,42 @@ Collector observations for 46 source steps with known totals: observed: 198, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `allocate_concept` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `character.isspace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. allocate_concept"]
-    s2["2. isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)"]
+    s2["2. isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)"]
+    s3["3. TypeError (src/llm_wiki_engine/conce…ntity.py:allocate_concept)"]
     s4["4. validate_bundle_id"]
     s5["5. _machine_text"]
-    s6["6. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s6["6. isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s7["7. ConceptIdentityError"]
-    s8["8. len (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s8["8. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s9["9. ConceptIdentityError"]
     s10["10. value.strip"]
-    s11["11. any (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s11["11. any (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s12["12. character.isspace"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)(reference, ConceptReference)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)('reference must be a ConceptReference')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)(reference, ConceptReference)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_engine/conce…ntity.py:allocate_concept)('reference must be a ConceptReference')" .-> s3
     s1 -->|"validate_bundle_id(bundle_id)"| s4
     s4 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s5
-    s5 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)(value, str)" .-> s6
     s5 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s7
-    s5 -. "len (src/llm_wiki_cli/services…identity.py:_machine_text)(value)" .-> s8
+    s5 -. "len (src/llm_wiki_engine/conce…identity.py:_machine_text)(value)" .-> s8
     s5 -->|"ConceptIdentityError(field, ...)"| s9
     s5 -. "value.strip(data not statically known)" .-> s10
-    s5 -. "any (src/llm_wiki_cli/services…identity.py:_machine_text)(...)" .-> s11
+    s5 -. "any (src/llm_wiki_engine/conce…identity.py:_machine_text)(...)" .-> s11
     s5 -. "character.isspace(data not statically known)" .-> s12
     b0["mutation candidates.add"]
     s1 -. "mutation candidates.add" .-> b0
@@ -169,32 +169,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `allocate_concept` | `bundle_id: object`, `reference: ConceptReference`, `allocations: Iterable[ConceptAllocation]`, `aliases: Iterable[IdentityAlias]` | `ConceptReference`, `AliasType`, `AliasType`, `AliasType`, `AliasType` | - | `allocation`, `ConceptAllocation(...)` |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:allocate_concept)` | - | - | - | - |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `any (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `character.isspace` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| allocate_concept | isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 567 | `isinstance(reference, ConceptReference)` |
-| allocate_concept | TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 568 | `TypeError('reference must be a ConceptReference')` |
+| allocate_concept | isinstance (src/llm_wiki_engine/conce…ntity.py:allocate_concept) | 567 | `isinstance(reference, ConceptReference)` |
+| allocate_concept | TypeError (src/llm_wiki_engine/conce…ntity.py:allocate_concept) | 568 | `TypeError('reference must be a ConceptReference')` |
 | allocate_concept | validate_bundle_id | 569 | `validate_bundle_id(bundle_id)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | len (src/llm_wiki_engine/conce…identity.py:_machine_text) | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
 | _machine_text | value.strip | 946 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | any (src/llm_wiki_engine/conce…identity.py:_machine_text) | 946 | `any(...)` |
 | _machine_text | character.isspace | 946 | `character.isspace(data not statically known)` |
 
 ### Boundary effects

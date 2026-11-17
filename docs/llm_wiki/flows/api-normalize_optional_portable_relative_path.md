@@ -21,11 +21,11 @@ sequenceDiagram
     participant p7 as _remember_syntax
     participant p8 as SharedValidationError
     participant p9 as portable_path_key
-    participant p10 as isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)
+    participant p10 as isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)
     participant p11 as value.strip
     participant p12 as value.strip().replace
     participant p13 as normalized.startswith
-    participant p14 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p14 as isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p15 as os.fspath
     participant p16 as raw.encode
     participant p17 as raw.replace
@@ -49,14 +49,14 @@ sequenceDiagram
     p1->>p7: _remember_syntax
     p2->>p8: SharedValidationError
     p3->>p9: portable_path_key
-    p0-->>p10: isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)(value, str)
+    p0-->>p10: isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)(value, str)
     p0-->>p11: value.strip
     p0-->>p12: value.strip().replace('\\', '/')
     p0-->>p11: value.strip
     p0-->>p13: normalized.startswith('./')
-    p1-->>p14: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(value, (...))
+    p1-->>p14: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))
     p1-->>p15: os.fspath(value)
-    p1-->>p14: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)
+    p1-->>p14: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw, str)
     p1-->>p16: raw.encode('utf-8')
     p1-->>p17: raw.replace('\\', '/')
     p1-->>p18: PurePosixPath(normalized)
@@ -80,14 +80,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 14 | - | external | 5 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 25 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 25 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 24 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 46 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 7 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 14 | - | external | 5 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 25 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 25 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 24 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 24 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 46 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
 > Omission summary shows 8 of 12 groups; 4 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -110,43 +110,43 @@ Collector observations for 16 source steps with known totals: observed: 76, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `normalize_optional_portable_relative_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip().replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `normalized.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `require_portable_relative_path` | `available` | `partial` | `available` | `21` | `11` | `10` |
-| `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. normalize_optional_portable_relative_path"]
-    s2["2. isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)"]
+    s2["2. isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)"]
     s3["3. value.strip"]
     s4["4. value.strip().replace"]
     s5["5. value.strip"]
     s6["6. normalized.startswith"]
     s7["7. require_portable_relative_path"]
-    s8["8. isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)"]
+    s8["8. isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)"]
     s9["9. _default_path_error"]
     s10["10. SharedValidationError"]
     s11["11. os.fspath"]
-    s12["12. isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)(value, str)" .-> s2
+    s12["12. isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)"]
+    s1 -. "isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)(value, str)" .-> s2
     s1 -. "value.strip(data not statically known)" .-> s3
     s1 -. "value.strip().replace('\\', '/')" .-> s4
     s1 -. "value.strip(data not statically known)" .-> s5
     s1 -. "normalized.startswith('./')" .-> s6
     s1 -->|"require_portable_relative_path(normalized)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(value, (...))" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))" .-> s8
     s7 -->|"_default_path_error(value)"| s9
     s9 -->|"SharedValidationError(...)"| s10
     s7 -. "os.fspath(value)" .-> s11
-    s7 -. "isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)" .-> s12
+    s7 -. "isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw, str)" .-> s12
     click s1 "../modules/validation.md"
     click s7 "../modules/validation.md"
     click s9 "../modules/validation.md"
@@ -158,33 +158,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `normalize_optional_portable_relative_path` | `value: object` | `SharedValidationError` | - | `None`, `require_portable_relative_path(...)`, `None` |
-| `isinstance (src/llm_wiki_cli/services…nal_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path)` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `value.strip().replace` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `normalized.startswith` | - | - | - | - |
 | `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_optional_portable_relative_path | isinstance (src/llm_wiki_cli/services…nal_portable_relative_path) | 436 | `isinstance(value, str)` |
+| normalize_optional_portable_relative_path | isinstance (src/llm_wiki_engine/valid…nal_portable_relative_path) | 436 | `isinstance(value, str)` |
 | normalize_optional_portable_relative_path | value.strip | 436 | `value.strip(data not statically known)` |
 | normalize_optional_portable_relative_path | value.strip().replace | 438 | `value.strip().replace('\\', '/')` |
 | normalize_optional_portable_relative_path | value.strip | 438 | `value.strip(data not statically known)` |
 | normalize_optional_portable_relative_path | normalized.startswith | 439 | `normalized.startswith('./')` |
 | normalize_optional_portable_relative_path | require_portable_relative_path | 442 | `require_portable_relative_path(normalized)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
 | require_portable_relative_path | os.fspath | 223 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 224 | `isinstance(raw, str)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path) | 224 | `isinstance(raw, str)` |
 
 ### Boundary effects
 

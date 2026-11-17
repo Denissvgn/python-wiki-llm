@@ -130,12 +130,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/status_cmd.py:run` | 1 | - | external | 43 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 18 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:iter_directory_kinds` | 18 | - | external | 1 |
 > Omission summary shows 8 of 539 groups; 531 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

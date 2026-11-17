@@ -18,11 +18,11 @@ flow's analysis limits. Querying again repeats graph counting, not extraction.
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `_build_adjacency`, `_flow_step_from_edge`, `_iter_callables` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterator`, `Mapping` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -38,7 +38,7 @@ flowchart LR
     n4["src/llm_wiki_cli/services/flow_followup.py"]
     n5["src/llm_wiki_cli/services/lint_service.py"]
     n6["src/llm_wiki_cli/services/source_snapshot.py"]
-    n7["src/llm_wiki_cli/services/validation.py"]
+    n7["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4

@@ -49,7 +49,7 @@ sequenceDiagram
     participant p26 as section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)
     participant p27 as isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)
     participant p28 as knowledge.extensions.get
-    participant p29 as isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…idence.py:is_valid_sha256)
     participant p30 as value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)
     p0->>p1: _section_locator
     p0->>p2: _section_records_by_locator
@@ -79,7 +79,7 @@ sequenceDiagram
     p0-->>p26: section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)('semantic_hash')
     p1-->>p27: isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)(value, str)
     p2-->>p28: knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
-    p4-->>p29: isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value, str)
+    p4-->>p29: isinstance (src/llm_wiki_engine/knowl…idence.py:is_valid_sha256)(value, str)
     p1-->>p30: value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)('llm-wiki://')
 ```
 
@@ -93,12 +93,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_section_locator` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_section_locator` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 27 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 31 | - | external | 4 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 10 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 10 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 10 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 27 | - | unresolved | 2 |
+| `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 31 | - | external | 4 |
 > Omission summary shows 8 of 33 groups; 25 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -131,7 +131,7 @@ Collector observations for 28 source steps with known totals: observed: 115, emi
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `validate_locator` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
@@ -146,7 +146,7 @@ flowchart LR
     s8["8. GovernanceError"]
     s9["9. validate_locator"]
     s10["10. _machine_text"]
-    s11["11. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s11["11. isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
     s1 -->|"_section_locator(section_locator, 'section_locator')"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)(value, str)" .-> s3
@@ -157,7 +157,7 @@ flowchart LR
     s2 -->|"GovernanceError(path, 'must contain a section coordinate')"| s8
     s2 -->|"validate_locator(page_locator)"| s9
     s9 -->|"_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)(value, str)" .-> s11
     s10 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s12
     click s1 "../modules/knowledge_governance.md"
     click s2 "../modules/knowledge_governance.md"
@@ -182,7 +182,7 @@ flowchart LR
 | `GovernanceError` | - | - | - | - |
 | `validate_locator` | `value: object` | `_MAX_NATURAL_KEY_LENGTH`, `WikiSurfaceError` | - | `normalized` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
@@ -198,7 +198,7 @@ flowchart LR
 | _section_locator | GovernanceError | 3468 | `GovernanceError(path, 'must contain a section coordinate')` |
 | _section_locator | validate_locator | 3470 | `validate_locator(page_locator)` |
 | validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 
 ### Boundary effects

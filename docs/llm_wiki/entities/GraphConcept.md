@@ -1,6 +1,6 @@
 # GraphConcept
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:134`
+**Location:** `src/llm_wiki_engine/knowledge_graph.py:134`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)
@@ -31,13 +31,13 @@ One already-built concept coordinate used for endpoint lifting.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GraphConcept (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n0["GraphConcept (src/llm_wiki_engine/knowledge_graph.py)"]
     n1["_graph_concepts (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n2["_add_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["_graph_concept_payload (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n4["_materialization_state (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n5["_normalise_graph_concepts (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n6["_owner_concept (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n3["_graph_concept_payload (src/llm_wiki_engine/knowledge_graph.py)"]
+    n4["_materialization_state (src/llm_wiki_engine/knowledge_graph.py)"]
+    n5["_normalise_graph_concepts (src/llm_wiki_engine/knowledge_graph.py)"]
+    n6["_owner_concept (src/llm_wiki_engine/knowledge_graph.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

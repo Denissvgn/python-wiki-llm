@@ -23,17 +23,13 @@ silently accept a different retirement claim.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `canonical_json`, `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `.` | `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
-| `.immutable` | `freeze` |
 | `.implementation_evidence` | `validate_concept_implementation`, `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
 | `.io` | `write_bytes_atomic` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
-| `.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
 | `.knowledge_index` | `_validated_index_data`, `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validation_callable_identity`, `_validation_module_identity`, `_validation_policy_value`, `_validator_identity`, `_has_validation_operation`, `_validated_index_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `packed_format`, `parse_packed_root` |
@@ -44,13 +40,9 @@ silently accept a different retirement claim.
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `load_adoption_marker`, `storage_writer_lock`, `guard_maintenance_owner`, `load_adoption_marker`, `storage_writer_lock` |
 | `.maintenance_state` | `validate_maintenance_adoption` |
 | `.manifest_storage` | `build_manifest_store`, `current_manifest_format` |
-| `.progress` | `observed_phase` |
-| `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
 | `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.storage_spool` | `SpooledArtifactWrite`, `spool_write` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -58,6 +50,15 @@ silently accept a different retirement claim.
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine` | `canonical_json` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |

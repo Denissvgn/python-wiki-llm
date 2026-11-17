@@ -26,18 +26,18 @@ sequenceDiagram
     participant p12 as _line_content
     participant p13 as _atx_heading
     participant p14 as compact_text
-    participant p15 as isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p15 as isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)
     participant p16 as stack.pop
     participant p17 as TypeError
-    participant p18 as ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p18 as ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)
     participant p19 as list
     participant p20 as defaultdict
     participant p21 as candidates.append
     participant p22 as stack.append
-    participant p23 as len (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p23 as len (src/llm_wiki_engine/markd…py:parse_markdown_document)
     participant p24 as utf8_prefix_lengths.append
     participant p25 as character.encode
-    participant p26 as enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p26 as enumerate (src/llm_wiki_engine/markd…py:parse_markdown_document)
     participant p27 as exact_text.encode
     p0->>p1: _iter_structural_headings
     p0->>p2: hash_json
@@ -53,21 +53,21 @@ sequenceDiagram
     p1->>p12: _line_content
     p1->>p13: _atx_heading
     p11->>p14: compact_text
-    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)
+    p0-->>p15: isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)(markdown, str)
     p0-->>p16: stack.pop
     p0-->>p17: TypeError('markdown must be a string')
-    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)
-    p0-->>p18: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')
+    p0-->>p15: isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)(page_locator, str)
+    p0-->>p18: ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)('page_locator must be a non-empty string')
     p0-->>p19: list(_iter_structural_headings(...))
     p0-->>p20: defaultdict(int)
     p0-->>p21: candidates.append(_HeadingCandidate(...))
     p0-->>p22: stack.append(...)
-    p0-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
+    p0-->>p23: len (src/llm_wiki_engine/markd…py:parse_markdown_document)(candidates)
     p0-->>p24: utf8_prefix_lengths.append(...)
-    p0-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(character.encode(...))
+    p0-->>p23: len (src/llm_wiki_engine/markd…py:parse_markdown_document)(character.encode(...))
     p0-->>p25: character.encode('utf-8')
-    p0-->>p26: enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
-    p0-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(normalized)
+    p0-->>p26: enumerate (src/llm_wiki_engine/markd…py:parse_markdown_document)(candidates)
+    p0-->>p23: len (src/llm_wiki_engine/markd…py:parse_markdown_document)(normalized)
     p0-->>p27: exact_text.encode('utf-8')
 ```
 
@@ -79,14 +79,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 6 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 11 | - | external | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 14 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 16 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 16 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 16 | - | external | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 10 | - | external | 5 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 11 | - | external | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 11 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 14 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_frontmatter_extent` | 16 | - | unresolved | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:_frontmatter_extent` | 16 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_frontmatter_extent` | 16 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_iter_structural_headings` | 10 | - | external | 5 |
 > Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -108,10 +108,10 @@ Collector observations for 19 source steps with known totals: observed: 56, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `parse_markdown_document` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -123,10 +123,10 @@ Collector observations for 19 source steps with known totals: observed: 56, emit
 ```mermaid
 flowchart LR
     s1["1. parse_markdown_document"]
-    s2["2. isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)"]
+    s2["2. isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)"]
     s3["3. TypeError"]
-    s4["4. isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)"]
-    s5["5. ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)"]
+    s4["4. isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)"]
+    s5["5. ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)"]
     s6["6. normalize_markdown"]
     s7["7. text.replace(…).replace"]
     s8["8. text.replace"]
@@ -134,10 +134,10 @@ flowchart LR
     s10["10. _iter_structural_headings"]
     s11["11. _markdown_lines"]
     s12["12. re.findall"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)(markdown, str)" .-> s2
     s1 -. "TypeError('markdown must be a string')" .-> s3
-    s1 -. "isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)" .-> s4
-    s1 -. "ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')" .-> s5
+    s1 -. "isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)(page_locator, str)" .-> s4
+    s1 -. "ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)('page_locator must be a non-empty string')" .-> s5
     s1 -->|"normalize_markdown(markdown)"| s6
     s6 -. "text.replace(…).replace('\r', '\n')" .-> s7
     s6 -. "text.replace('\r\n', '\n')" .-> s8
@@ -172,10 +172,10 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `parse_markdown_document` | `markdown: str`, `page_locator: str` | `SECTION_ORDER_DOMAIN` | `occurrences[...]` | `MarkdownSectionDocument(...)` |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document)` | - | - | - | - |
 | `normalize_markdown` | `text: str` | - | - | `...` |
 | `text.replace(…).replace` | - | - | - | - |
 | `text.replace` | - | - | - | - |
@@ -188,10 +188,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…py:parse_markdown_document) | 333 | `isinstance(markdown, str)` |
+| parse_markdown_document | isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document) | 333 | `isinstance(markdown, str)` |
 | parse_markdown_document | TypeError | 334 | `TypeError('markdown must be a string')` |
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…py:parse_markdown_document) | 335 | `isinstance(page_locator, str)` |
-| parse_markdown_document | ValueError (src/llm_wiki_cli/services…py:parse_markdown_document) | 336 | `ValueError('page_locator must be a non-empty string')` |
+| parse_markdown_document | isinstance (src/llm_wiki_engine/markd…py:parse_markdown_document) | 335 | `isinstance(page_locator, str)` |
+| parse_markdown_document | ValueError (src/llm_wiki_engine/markd…py:parse_markdown_document) | 336 | `ValueError('page_locator must be a non-empty string')` |
 | parse_markdown_document | normalize_markdown | 338 | `normalize_markdown(markdown)` |
 | normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 | normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |

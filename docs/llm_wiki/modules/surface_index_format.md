@@ -17,11 +17,11 @@ the index does not carry, so only its shape is checked.
 
 | Source | Symbols |
 |--------|---------|
-| `.validation` | `SharedValidationError`, `require_portable_relative_path` |
-| `.wiki_surface` | `WikiSurfaceError`, `canonical_path`, `is_safe_page_id`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
+| `llm_wiki_engine.validation` | `SharedValidationError`, `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `WikiSurfaceError`, `canonical_path`, `is_safe_page_id`, `iter_page_kinds`, `mcp_uri` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -32,21 +32,21 @@ the index does not carry, so only its shape is checked.
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
     n1["src/llm_wiki_cli/services/surface_index_format.py"]
-    n2["src/llm_wiki_cli/services/validation.py"]
-    n3["src/llm_wiki_cli/services/wiki_surface.py"]
-    n4["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n2["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n3["src/llm_wiki_engine/validation.py"]
+    n4["src/llm_wiki_engine/wiki_surface.py"]
     n0 --> n1
     n1 --> n2
     n1 --> n3
     n1 --> n4
-    n3 --> n2
-    n4 --> n2
+    n2 --> n3
+    n2 --> n4
     n4 --> n3
     click n0 "../modules/engine___init__.md"
     click n1 "../modules/surface_index_format.md"
-    click n2 "../modules/validation.md"
-    click n3 "../modules/wiki_surface.md"
-    click n4 "../modules/wiki_surface_index.md"
+    click n2 "../modules/wiki_surface_index.md"
+    click n3 "../modules/validation.md"
+    click n4 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -54,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
+| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 | Outbound | [validation](../modules/validation.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
-| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 
 ## Classes
 

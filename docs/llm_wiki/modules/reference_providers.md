@@ -37,9 +37,9 @@ read declarations and never execute the referenced program.
 | `.behavior_reference` | `BEHAVIOR_FACT_GROUPS`, `get_behavior_facts`, `validate_behavior_facts` |
 | `.cli_reference` | `validate_cli_contract`, `get_cli_contract`, `parse_cli_contract` |
 | `.domain_pack` | `current_pack` |
-| `.knowledge_evidence` | `hash_json` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -52,44 +52,44 @@ flowchart LR
     n1["src/llm_wiki_cli/services/behavior_reference.py"]
     n2["src/llm_wiki_cli/services/cli_reference.py"]
     n3["src/llm_wiki_cli/services/domain_pack.py"]
-    n4["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n5["src/llm_wiki_cli/services/publication_candidate.py"]
-    n6["src/llm_wiki_cli/services/publication_config.py"]
-    n7["src/llm_wiki_cli/services/publication_contracts.py"]
-    n8["src/llm_wiki_cli/services/publication_references.py"]
-    n9["src/llm_wiki_cli/services/reference_providers.py"]
+    n4["src/llm_wiki_cli/services/publication_candidate.py"]
+    n5["src/llm_wiki_cli/services/publication_config.py"]
+    n6["src/llm_wiki_cli/services/publication_contracts.py"]
+    n7["src/llm_wiki_cli/services/publication_references.py"]
+    n8["src/llm_wiki_cli/services/reference_providers.py"]
+    n9["src/llm_wiki_engine/knowledge_evidence.py"]
     n0 --> n3
-    n0 --> n9
+    n0 --> n8
     n1 --> n2
-    n1 --> n4
-    n2 --> n4
-    n3 --> n9
-    n5 --> n3
-    n5 --> n4
-    n5 --> n6
-    n5 --> n7
-    n5 --> n9
+    n1 --> n9
+    n2 --> n9
+    n3 --> n8
+    n4 --> n3
+    n4 --> n5
+    n4 --> n6
+    n4 --> n8
+    n4 --> n9
+    n5 --> n8
+    n6 --> n5
+    n6 --> n8
     n6 --> n9
-    n7 --> n4
-    n7 --> n6
+    n7 --> n5
+    n7 --> n8
     n7 --> n9
-    n8 --> n4
-    n8 --> n6
+    n8 --> n1
+    n8 --> n2
+    n8 --> n3
     n8 --> n9
-    n9 --> n1
-    n9 --> n2
-    n9 --> n3
-    n9 --> n4
     click n0 "../modules/engine___init__.md"
     click n1 "../modules/behavior_reference.md"
     click n2 "../modules/cli_reference.md"
     click n3 "../modules/domain_pack.md"
-    click n4 "../modules/knowledge_evidence.md"
-    click n5 "../modules/publication_candidate.md"
-    click n6 "../modules/publication_config.md"
-    click n7 "../modules/publication_contracts.md"
-    click n8 "../modules/publication_references.md"
-    click n9 "../modules/reference_providers.md"
+    click n4 "../modules/publication_candidate.md"
+    click n5 "../modules/publication_config.md"
+    click n6 "../modules/publication_contracts.md"
+    click n7 "../modules/publication_references.md"
+    click n8 "../modules/reference_providers.md"
+    click n9 "../modules/knowledge_evidence.md"
 ```
 
 ### Internal neighbors

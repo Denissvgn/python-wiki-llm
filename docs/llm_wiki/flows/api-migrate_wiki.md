@@ -80,7 +80,7 @@ sequenceDiagram
     participant p27 as windows_current_user_sid
     participant p28 as get_docker_inventory
     participant p29 as str (src/llm_wiki_cli/api.py:migrate_wiki)
-    participant p30 as current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)
+    participant p30 as current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)
     p0->>p1: discarding_output
     p0->>p2: execute_migrate
     p0->>p3: MigrateRequest
@@ -110,7 +110,7 @@ sequenceDiagram
     p7->>p27: windows_current_user_sid
     p9->>p28: get_docker_inventory
     p0-->>p29: str (src/llm_wiki_cli/api.py:migrate_wiki)(exc)
-    p1-->>p30: current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
+    p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
 > Call sequence diagram shows 30 of 1113 interactions; 1083 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -121,10 +121,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/host.py:discarding_output` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 4 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:discarding_output` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 4 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/migrate_runtime.py:execute_migrate` | 14 | - | external | 3 |
 | `src/llm_wiki_cli/services/migrate_runtime.py:run_request` | 17 | - | external | 9 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
@@ -156,11 +156,11 @@ Collector observations for 350 source steps with known totals: observed: 2102, e
 | `MigrateRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `discarding_output` | `available` | `evaluated` | `available` | `0` | `0` | `0` |
 | `using_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.reset` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_Discard` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -171,22 +171,22 @@ flowchart LR
     s2["2. MigrateRequest"]
     s3["3. discarding_output"]
     s4["4. using_host"]
-    s5["5. isinstance (src/llm_wiki_cli/services/host.py:using_host)"]
-    s6["6. TypeError (src/llm_wiki_cli/services/host.py:using_host)"]
+    s5["5. isinstance (src/llm_wiki_engine/host.py:using_host)"]
+    s6["6. TypeError (src/llm_wiki_engine/host.py:using_host)"]
     s7["7. _ACTIVE.set"]
     s8["8. _ACTIVE.reset"]
-    s9["9. current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)"]
+    s9["9. current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)"]
     s10["10. current_host"]
     s11["11. _ACTIVE.get"]
     s12["12. _Discard"]
     s1 -->|"MigrateRequest(…)"| s2
     s1 -->|"discarding_output(data not statically known)"| s3
     s3 -->|"using_host(...)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services/host.py:using_host)(host, Host)" .-> s5
-    s4 -. "TypeError (src/llm_wiki_cli/services/host.py:using_host)('host must be a Host instance')" .-> s6
+    s4 -. "isinstance (src/llm_wiki_engine/host.py:using_host)(host, Host)" .-> s5
+    s4 -. "TypeError (src/llm_wiki_engine/host.py:using_host)('host must be a Host instance')" .-> s6
     s4 -. "_ACTIVE.set(host)" .-> s7
     s4 -. "_ACTIVE.reset(token)" .-> s8
-    s3 -. "current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))" .-> s9
+    s3 -. "current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))" .-> s9
     s3 -->|"current_host(data not statically known)"| s10
     s10 -. "_ACTIVE.get(data not statically known)" .-> s11
     s3 -->|"_Discard(data not statically known)"| s12
@@ -206,11 +206,11 @@ flowchart LR
 | `MigrateRequest` | - | - | - | - |
 | `discarding_output` | - | - | - | - |
 | `using_host` | `host: Host` | `Host` | - | - |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
 | `_ACTIVE.set` | - | - | - | - |
 | `_ACTIVE.reset` | - | - | - | - |
-| `current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)` | - | - | - | - |
+| `current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 | `_ACTIVE.get` | - | - | - | - |
 | `_Discard` | - | - | - | - |
@@ -222,11 +222,11 @@ flowchart LR
 | migrate_wiki | MigrateRequest | 1325 | `MigrateRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, chunk_size=chunk_size, chunk=chunk, plan_chunks=plan_chunks, plugins=trust_source_plugins, source_selection=source_selection)` |
 | migrate_wiki | discarding_output | 1336 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_cli/services/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_cli/services/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
 | using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
 | using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
 | discarding_output | current_host | 255 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
 | discarding_output | _Discard | 255 | `_Discard(data not statically known)` |

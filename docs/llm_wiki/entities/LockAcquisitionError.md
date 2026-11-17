@@ -1,6 +1,6 @@
 # LockAcquisitionError
 
-**Location:** `src/llm_wiki_cli/services/lockfile.py:24`
+**Location:** `src/llm_wiki_engine/lockfile.py:24`
 **Kind:** Class
 **Bases:** `Exception`
 **Module:** [lockfile](../modules/lockfile.md)
@@ -22,10 +22,10 @@ Raised when the wiki lock cannot be acquired (another sync is running).
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["LockAcquisitionError (src/llm_wiki_cli/services/lockfile.py)"]
+    n0["LockAcquisitionError (src/llm_wiki_engine/lockfile.py)"]
     n1["Exception"]
     n2["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n3["WikiLock._acquire_before_deadline (src/llm_wiki_cli/services/lockfile.py)"]
+    n3["WikiLock._acquire_before_deadline (src/llm_wiki_engine/lockfile.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

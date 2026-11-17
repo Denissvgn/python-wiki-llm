@@ -13,7 +13,7 @@
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [render_summary](../modules/render_summary.md)
 
-**Related modules:** [ci_report](../modules/ci_report.md), [health_summary](../modules/health_summary.md), [services_contracts](../modules/services_contracts.md)
+**Related modules:** [ci_report](../modules/ci_report.md), [health_summary](../modules/health_summary.md)
 
 ## Call sequence
 

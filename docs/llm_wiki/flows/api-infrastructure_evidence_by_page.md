@@ -89,7 +89,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_record_mapping` | 11 | [src/llm_wiki_cli/services/infrastructure_sync.py](../modules/infrastructure_sync.md) | internal | 15 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_record_mapping` | 11 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_valid_repository_path` | 18 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
 > Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,6 +1,6 @@
 # EngineEvent
 
-**Location:** `src/llm_wiki_cli/services/engine_events.py:55`
+**Location:** `src/llm_wiki_engine/engine_events.py:55`
 **Kind:** Class
 **Bases:** —
 **Module:** [engine_events](../modules/engine_events.md)
@@ -33,11 +33,11 @@ One thing that happened during an engine operation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EngineEvent (src/llm_wiki_cli/services/engine_events.py)"]
+    n0["EngineEvent (src/llm_wiki_engine/engine_events.py)"]
     n1["Engine._report (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["EngineEvent.from_dict (src/llm_wiki_cli/services/engine_events.py)"]
-    n3["_publish_message (src/llm_wiki_cli/services/host.py)"]
-    n4["Host.publish (src/llm_wiki_cli/services/host.py)"]
+    n2["EngineEvent.from_dict (src/llm_wiki_engine/engine_events.py)"]
+    n3["_publish_message (src/llm_wiki_engine/host.py)"]
+    n4["Host.publish (src/llm_wiki_engine/host.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

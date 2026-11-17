@@ -18,7 +18,6 @@ preserved history, with independent full native validation still required.
 |--------|---------|
 | `..knowledge_consumption` | `load_knowledge_read_view` |
 | `..knowledge_observability` | `knowledge_freshness_disclosure` |
-| `..markdown_sections` | `preserve_index_custom_sections` |
 | `..sync_manifest` | `SyncManifest` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
@@ -26,6 +25,7 @@ preserved history, with independent full native validation still required.
 | `.schema` | `*` |
 | `.workspace` | `*` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.markdown_sections` | `preserve_index_custom_sections` |
 
 ## Local dependency map
 

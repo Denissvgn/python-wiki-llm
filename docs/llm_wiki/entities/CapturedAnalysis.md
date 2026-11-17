@@ -29,7 +29,7 @@ _Auto-generated from `_CapturedAnalysis` in `src/llm_wiki_cli/services/analysis_
 ```mermaid
 flowchart LR
     n0["_CapturedAnalysis (src/llm_wiki_cli/services/analysis_capture.py)"]
-    n1["FrozenDict (src/llm_wiki_cli/services/immutable.py)"]
+    n1["FrozenDict (src/llm_wiki_engine/immutable.py)"]
     n2["_issued (src/llm_wiki_cli/services/analysis_capture.py)"]
     n3["src/llm_wiki_cli/services/python_implementation.py"]
     n0 --> n1

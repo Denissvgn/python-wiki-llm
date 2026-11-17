@@ -13,10 +13,10 @@ Reads complete files and exact ranges through bounded request-owned handles and 
 | `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata`, `_open_windows_directory_guard`, `_close_windows_handle` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES` |
-| `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
 | `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |

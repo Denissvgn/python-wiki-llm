@@ -27,10 +27,10 @@ an empty source record.
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_typescript_root`, `missing_helper_message`, `resolve_helper_cache_root` |
 | `..services.helper_runtime` | `current_helper_operation`, `pinned_helper`, `pinned_helper` |
-| `..services.host` | `HostCapabilityError`, `current_host` |
 | `.common` | `TYPESCRIPT_FAMILY_EXTENSIONS`, `chunk_source_files_for_cli`, `discover_source_files`, `filter_bundled_inventory`, `inventory_language_for_path` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |
 | `subprocess` | `subprocess` |
@@ -45,7 +45,7 @@ flowchart LR
     n1["src/llm_wiki_cli/extractors/ts_extractor.py"]
     n2["src/llm_wiki_cli/services/extractor_helpers.py"]
     n3["src/llm_wiki_cli/services/helper_runtime.py"]
-    n4["src/llm_wiki_cli/services/host.py"]
+    n4["src/llm_wiki_engine/host.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n3

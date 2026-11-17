@@ -1,6 +1,6 @@
 # CapturedContextRead
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:291`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:292`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)

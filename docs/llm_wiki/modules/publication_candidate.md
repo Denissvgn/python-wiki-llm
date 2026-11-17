@@ -14,9 +14,9 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
+| `.analysis_capture` | `ENGINE_PACKAGE`, `engine_package_root` |
 | `.domain_pack` | `current_pack` |
 | `.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
-| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
@@ -25,11 +25,12 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 | `.publication_snapshot` | `assert_bootstrap_output_excluded` |
 | `.publication_targets` | `current_publication_targets`, `publication_target` |
 | `.reference_providers` | `reference_providers_identity` |
-| `.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `importlib` | `metadata` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `stat` | `stat` |
@@ -57,9 +58,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (4) |
 | Inbound | `src` (5) |
-| Outbound | `src` (13) |
+| Outbound | `src` (14) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

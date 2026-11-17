@@ -46,7 +46,6 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
 | `.analysis_capture` | `capture_operation`, `analysis_diagnostics`, `capture_analysis`, `capture_analysis` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
-| `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
 | `.dependencies` | `analyze_dependencies` |
 | `.dockerfile_parser` | `parse_dockerfile` |
@@ -56,17 +55,14 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
 | `.helper_runtime` | `current_helper_operation`, `current_helper_operation` |
-| `.host` | `HostCapabilityError`, `current_host`, `emit` |
 | `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
 | `.io` | `write_text_output` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
-| `.knowledge_evidence` | `hash_json` |
 | `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.path_policy` | `PathValidationError`, `validate_source_paths`, `validate_source_root` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
-| `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
 | `.python_implementation` | `SCHEMA`, `comparison_id`, `envelope`, `producer`, `analysis_identity`, `producer`, `comparison_id` |
 | `.python_imports` | `is_python_source` |
@@ -85,6 +81,10 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `hashlib` | `hashlib` |
 | `importlib` | `importlib` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host`, `emit` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shlex` | `shlex` |

@@ -21,7 +21,7 @@
 - [health_summary](../modules/health_summary.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [lint_service](../modules/lint_service.md)
-- [services_contracts](../modules/services_contracts.md)
+- [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md)
 
 ## Call sequence
 

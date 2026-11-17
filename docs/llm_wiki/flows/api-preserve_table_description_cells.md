@@ -20,9 +20,9 @@ sequenceDiagram
     participant p6 as format_table_row
     participant p7 as normalize_markdown
     participant p8 as _line_content
-    participant p9 as range (src/llm_wiki_cli/services…ve_table_description_cells)
+    participant p9 as range (src/llm_wiki_engine/markd…ve_table_description_cells)
     participant p10 as headers.index
-    participant p11 as len (src/llm_wiki_cli/services…ve_table_description_cells)
+    participant p11 as len (src/llm_wiki_engine/markd…ve_table_description_cells)
     participant p12 as descriptions.get
     participant p13 as (…).get
     participant p14 as predicate
@@ -30,7 +30,7 @@ sequenceDiagram
     participant p16 as markdown.endswith
     participant p17 as re.findall
     participant p18 as heading.casefold
-    participant p19 as line.strip (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p19 as line.strip (src/llm_wiki_engine/markd…ections.py:split_table_row)
     participant p20 as all
     participant p21 as re.sub
     participant p22 as ' | '.join
@@ -49,10 +49,10 @@ sequenceDiagram
     p0->>p6: format_table_row
     p1->>p7: normalize_markdown
     p1->>p8: _line_content
-    p0-->>p9: range (src/llm_wiki_cli/services…ve_table_description_cells)(start, end)
+    p0-->>p9: range (src/llm_wiki_engine/markd…ve_table_description_cells)(start, end)
     p0-->>p10: headers.index('Description')
-    p0-->>p9: range (src/llm_wiki_cli/services…ve_table_description_cells)(row_start, end)
-    p0-->>p11: len (src/llm_wiki_cli/services…ve_table_description_cells)(row)
+    p0-->>p9: range (src/llm_wiki_engine/markd…ve_table_description_cells)(row_start, end)
+    p0-->>p11: len (src/llm_wiki_engine/markd…ve_table_description_cells)(row)
     p0-->>p12: descriptions.get(key)
     p0-->>p13: (…).get(key)
     p0-->>p14: predicate(existing_description, row[...], old_description)
@@ -60,7 +60,7 @@ sequenceDiagram
     p0-->>p16: markdown.endswith('\n')
     p1-->>p17: re.findall('[^\\n]*\\n|[^\\n]+$', normalize_markdown(...))
     p2-->>p18: heading.casefold
-    p3-->>p19: line.strip (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p3-->>p19: line.strip (src/llm_wiki_engine/markd…ections.py:split_table_row)
     p4-->>p20: all(...)
     p5-->>p21: re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)
     p6-->>p22: ' | '.join(cells)
@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 9 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 9 | - | external | 5 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 27 | - | external | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 27 | - | unresolved | 9 |
-| `src/llm_wiki_cli/services/markdown_sections.py:preserve_table_description_cells` | 1 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:semantic_table_key` | 52 | - | unresolved | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 9 | - | unresolved | 8 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 9 | - | external | 5 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 27 | - | external | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 27 | - | unresolved | 9 |
+| `src/llm_wiki_engine/markdown_sections.py:preserve_table_description_cells` | 1 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:semantic_table_key` | 52 | - | unresolved | 3 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

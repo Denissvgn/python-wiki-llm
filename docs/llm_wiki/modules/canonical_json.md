@@ -1,6 +1,6 @@
 # canonical_json Module
 
-**Path:** `src/llm_wiki_cli/services/canonical_json.py`
+**Path:** `src/llm_wiki_engine/canonical_json.py`
 
 ## Description
 
@@ -25,7 +25,7 @@ Streams the existing compact, sorted UTF-8 JSON representation in bounded chunks
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/canonical_json.py"]
+    n1["src/llm_wiki_engine/canonical_json.py"]
     n0 --> n1
     click n1 "../modules/canonical_json.md"
 ```

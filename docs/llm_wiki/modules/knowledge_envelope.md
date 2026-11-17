@@ -16,16 +16,16 @@ step whose result is inert input to the builder.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
-| `.host` | `current_host` |
-| `.knowledge_evidence` | `canonical_json_bytes`, `formatted_json_text`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_model` | `EVALUATED_REVISION_PATTERN`, `LIMITATION_CODE_PATTERN`, `REPOSITORY_IDENTITY_PATTERN`, `REPOSITORY_IDENTITY_SOURCE_EXTENSION`, `BundleRecord`, `KnowledgeIndex`, `KnowledgeModelError`, `ProducerComponent`, `ProducerRecord`, `RepositoryIdentitySource`, `RepositoryRecord`, `SnapshotRecord`, `WorkingTreeState`, `knowledge_index_to_payload` |
-| `.progress` | `observed_phase` |
-| `.validation` | `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_bytes`, `formatted_json_text`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `math` | `math` |
 | `os` | `os` |
 | `pathlib` | `Path` |

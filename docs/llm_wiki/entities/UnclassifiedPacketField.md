@@ -1,13 +1,13 @@
 # UnclassifiedPacketField
 
-**Location:** `src/llm_wiki_cli/services/packet_field_policy.py:24`
+**Location:** `src/llm_wiki_engine/packet_field_policy.py:24`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [packet_field_policy](../modules/packet_field_policy.md)
 
 ## Description
 
-_Auto-generated from `UnclassifiedPacketField` in `src/llm_wiki_cli/services/packet_field_policy.py`._
+_Auto-generated from `UnclassifiedPacketField` in `src/llm_wiki_engine/packet_field_policy.py`._
 
 ## Attributes
 
@@ -24,7 +24,7 @@ _Auto-generated from `UnclassifiedPacketField` in `src/llm_wiki_cli/services/pac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["UnclassifiedPacketField (src/llm_wiki_cli/services/packet_field_policy.py)"]
+    n0["UnclassifiedPacketField (src/llm_wiki_engine/packet_field_policy.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/services/context_packet.py"]
     n0 --> n1

@@ -94,13 +94,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/source_snapshot.py:confirmed_missing_source_paths` | 2 | - | external | 8 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 14 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 21 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 35 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 37 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 12 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 12 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 14 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 21 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 35 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:_default_path_error` | 37 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 68 groups; 60 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -195,7 +195,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 2101 | `confirm_missing(snapshot, requested_paths)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 2102 | `confirm_missing(snapshot, requested_paths)` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1909 | `isinstance(snapshot, SourceSnapshot)` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1910 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1911 | `isinstance(requested_paths, (...))` |

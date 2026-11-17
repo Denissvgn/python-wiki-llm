@@ -112,12 +112,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 4 | - | external | 3 |
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 4 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 4 |
-| `src/llm_wiki_cli/services/workflow_profile.py:exact_fields` | 10 | - | external | 5 |
-| `src/llm_wiki_cli/services/workflow_profile.py:exact_fields` | 10 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
+| `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 10 | - | external | 5 |
+| `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
-| `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 21 | - | external | 2 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
+| `src/llm_wiki_engine/workflow_profile.py:bounded_text` | 21 | - | external | 2 |
 > Omission summary shows 8 of 94 groups; 86 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -151,8 +151,8 @@ Collector observations for 112 source steps with known totals: observed: 527, em
 | `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `normalize_task_request` | `available` | `partial` | `available` | `23` | `21` | `2` |
 | `exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/workf…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/workf…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -166,8 +166,8 @@ flowchart LR
     s8["8. TaskCompactError"]
     s9["9. normalize_task_request"]
     s10["10. exact_fields"]
-    s11["11. isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)"]
-    s12["12. any (src/llm_wiki_cli/services…w_profile.py:exact_fields)"]
+    s11["11. isinstance (src/llm_wiki_engine/workf…w_profile.py:exact_fields)"]
+    s12["12. any (src/llm_wiki_engine/workf…w_profile.py:exact_fields)"]
     s1 -->|"validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py)(…)"| s2
     s2 -->|"render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)"| s3
     s3 -->|"_validated(canonical_text, request, profile, policy, counter)"| s4
@@ -177,8 +177,8 @@ flowchart LR
     s4 -->|"TaskCompactError('canonical-invalid', 'Canonical context must be original text')"| s8
     s4 -->|"normalize_task_request(request, profile=profile, policy=policy)"| s9
     s9 -->|"exact_fields(request, {...}, 'request')"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)(value, Mapping)" .-> s11
-    s10 -. "any (src/llm_wiki_cli/services…w_profile.py:exact_fields)(...)" .-> s12
+    s10 -. "isinstance (src/llm_wiki_engine/workf…w_profile.py:exact_fields)(value, Mapping)" .-> s11
+    s10 -. "any (src/llm_wiki_engine/workf…w_profile.py:exact_fields)(...)" .-> s12
     b0["mutation anchors.append"]
     s9 -. "mutation anchors.append" .-> b0
     b1["mutation ids.add"]
@@ -216,8 +216,8 @@ flowchart LR
 | `TaskCompactError` | - | - | - | - |
 | `normalize_task_request` | `request: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None` | `TASK_REQUEST_SCHEMA_V2`, `TASK_REQUEST_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_KINDS`, `ANCHOR_KINDS`, `canonical_json`, `FACETS`, `MAX_SELECTORS` | `changes[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]` | `(...)` |
 | `exact_fields` | `value: object`, `allowed: set[str]`, `field: str` | `Mapping` | - | `dict(...)` |
-| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/workf…w_profile.py:exact_fields)` | - | - | - | - |
+| `any (src/llm_wiki_engine/workf…w_profile.py:exact_fields)` | - | - | - | - |
 
 ### Call data
 
@@ -232,8 +232,8 @@ flowchart LR
 | _validated | TaskCompactError | 179 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
 | _validated | normalize_task_request | 182 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
-| exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 66 | `isinstance(value, Mapping)` |
-| exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 66 | `any(...)` |
+| exact_fields | isinstance (src/llm_wiki_engine/workf…w_profile.py:exact_fields) | 66 | `isinstance(value, Mapping)` |
+| exact_fields | any (src/llm_wiki_engine/workf…w_profile.py:exact_fields) | 66 | `any(...)` |
 
 ### Boundary effects
 

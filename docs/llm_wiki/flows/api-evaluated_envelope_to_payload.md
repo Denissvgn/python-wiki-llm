@@ -102,7 +102,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 10 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | - | external | 1 |
 > Omission summary shows 8 of 101 groups; 93 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

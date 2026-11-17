@@ -35,7 +35,7 @@ sequenceDiagram
     participant p21 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
     participant p22 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
     participant p23 as _CONTROL_RE.search
-    participant p24 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
+    participant p24 as isinstance (src/llm_wiki_engine/validation.py:require_sha256)
     participant p25 as _SENSITIVE_RE.search
     participant p26 as _SHA256_RE.fullmatch
     participant p27 as value.startswith
@@ -65,7 +65,7 @@ sequenceDiagram
     p3-->>p21: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value, str)
     p3-->>p22: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value)
     p3-->>p23: _CONTROL_RE.search(value)
-    p5-->>p24: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
+    p5-->>p24: isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)
     p6-->>p25: _SENSITIVE_RE.search(value)
     p5-->>p26: _SHA256_RE.fullmatch(parsed)
     p6-->>p27: value.startswith('/')
@@ -83,11 +83,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:current_review_evidence` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_review_evidence` | 6 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_safe_name` | 15 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_no_control_characters` | 22 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 24 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_no_control_characters` | 22 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:contains_control_character` | 24 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
-| `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | unresolved | 14 |
-| `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | external | 1 |
+| `src/llm_wiki_engine/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | unresolved | 14 |
+| `src/llm_wiki_engine/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | external | 1 |
 > Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

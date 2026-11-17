@@ -1,6 +1,6 @@
 # freshness_wording Module
 
-**Path:** `src/llm_wiki_cli/services/freshness_wording.py`
+**Path:** `src/llm_wiki_engine/freshness_wording.py`
 
 ## Description
 
@@ -12,23 +12,23 @@ Shared interpretation of the legacy structural freshness diagnostic.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/doctor_service.py"]
-    n1["src/llm_wiki_cli/services/freshness_wording.py"]
-    n2["src/llm_wiki_cli/services/health_summary.py"]
-    n3["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n4["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n1["src/llm_wiki_cli/services/health_summary.py"]
+    n2["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n3["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n4["src/llm_wiki_engine/freshness_wording.py"]
     n0 --> n1
-    n0 --> n2
+    n0 --> n3
     n0 --> n4
-    n2 --> n1
+    n1 --> n3
+    n1 --> n4
     n2 --> n4
-    n3 --> n1
-    n4 --> n1
-    n4 --> n3
+    n3 --> n2
+    n3 --> n4
     click n0 "../modules/doctor_service.md"
-    click n1 "../modules/freshness_wording.md"
-    click n2 "../modules/health_summary.md"
-    click n3 "../modules/knowledge_freshness.md"
-    click n4 "../modules/knowledge_observability.md"
+    click n1 "../modules/health_summary.md"
+    click n2 "../modules/knowledge_freshness.md"
+    click n3 "../modules/knowledge_observability.md"
+    click n4 "../modules/freshness_wording.md"
 ```
 
 ### Internal neighbors

@@ -16,10 +16,10 @@ They are never executed or written to a hook path.
 | `..config` | `AGENT_CHOICES`, `validate_path` |
 | `.filesystem_guard` | `unlink_guarded_bytes` |
 | `.io` | `first_unsafe_path_component` |
-| `.paths` | `display_project_path`, `shell_quote` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.paths` | `display_project_path`, `shell_quote` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |
@@ -38,30 +38,30 @@ flowchart LR
     n5["src/llm_wiki_cli/services/io.py"]
     n6["src/llm_wiki_cli/services/legacy_hooks.py"]
     n7["src/llm_wiki_cli/services/mcp_server.py"]
-    n8["src/llm_wiki_cli/services/paths.py"]
-    n9["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n8["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n9["src/llm_wiki_engine/paths.py"]
     n0 --> n6
     n1 --> n3
     n1 --> n5
     n1 --> n6
-    n1 --> n8
+    n1 --> n9
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
-    n2 --> n8
+    n2 --> n9
     n3 --> n4
     n3 --> n5
     n6 --> n3
     n6 --> n4
     n6 --> n5
-    n6 --> n8
+    n6 --> n9
     n7 --> n3
     n7 --> n5
     n7 --> n6
-    n9 --> n3
-    n9 --> n4
-    n9 --> n6
+    n8 --> n3
+    n8 --> n4
+    n8 --> n6
     click n0 "../modules/hook_cmd.md"
     click n1 "../modules/status_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
@@ -70,8 +70,8 @@ flowchart LR
     click n5 "../modules/io.md"
     click n6 "../modules/legacy_hooks.md"
     click n7 "../modules/mcp_server.md"
-    click n8 "../modules/paths.md"
-    click n9 "../modules/upgrade_runtime.md"
+    click n8 "../modules/upgrade_runtime.md"
+    click n9 "../modules/paths.md"
 ```
 
 ### Internal neighbors

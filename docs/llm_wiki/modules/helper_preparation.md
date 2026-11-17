@@ -24,11 +24,11 @@ needs Node.js at runtime. Read-only analysis never invokes this setup service.
 | `.` | `extractor_helpers` |
 | `.helper_cache` | `HelperPreparationError`, `cache_roots`, `ensure_helper`, `lookup_helper`, `validate_handle` |
 | `.helper_runtime` | `PreparedHelperHandle`, `bind_helper`, `current_helper_operation`, `pinned_helper`, `required_helper_languages` |
-| `.host` | `emit` |
-| `.progress` | `current_progress`, `phase` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
+| `llm_wiki_engine.host` | `emit` |
+| `llm_wiki_engine.progress` | `current_progress`, `phase` |
 | `pathlib` | `Path` |
 | `typing` | `TYPE_CHECKING` |
 
@@ -45,9 +45,9 @@ flowchart LR
     n5["src/llm_wiki_cli/services/helper_cache.py"]
     n6["src/llm_wiki_cli/services/helper_preparation.py"]
     n7["src/llm_wiki_cli/services/helper_runtime.py"]
-    n8["src/llm_wiki_cli/services/host.py"]
-    n9["src/llm_wiki_cli/services/progress.py"]
-    n10["src/llm_wiki_cli/services/source_snapshot.py"]
+    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_engine/host.py"]
+    n10["src/llm_wiki_engine/progress.py"]
     n0 --> n5
     n0 --> n6
     n0 --> n7
@@ -55,16 +55,16 @@ flowchart LR
     n1 --> n6
     n2 --> n4
     n2 --> n6
-    n2 --> n10
+    n2 --> n8
     n3 --> n6
     n3 --> n7
-    n3 --> n10
+    n3 --> n8
     n4 --> n5
     n4 --> n7
-    n4 --> n8
+    n4 --> n9
     n5 --> n4
     n5 --> n7
-    n5 --> n8
+    n5 --> n9
     n6 --> n4
     n6 --> n5
     n6 --> n7
@@ -72,9 +72,9 @@ flowchart LR
     n6 --> n9
     n6 --> n10
     n7 --> n4
-    n7 --> n10
-    n10 --> n3
-    n10 --> n9
+    n7 --> n8
+    n8 --> n3
+    n8 --> n10
     click n0 "../modules/wiki-candidate_prepare.md"
     click n1 "../modules/init_cmd.md"
     click n2 "../modules/prepare_extractors_cmd.md"
@@ -83,9 +83,9 @@ flowchart LR
     click n5 "../modules/helper_cache.md"
     click n6 "../modules/helper_preparation.md"
     click n7 "../modules/helper_runtime.md"
-    click n8 "../modules/host.md"
-    click n9 "../modules/progress.md"
-    click n10 "../modules/source_snapshot.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/host.md"
+    click n10 "../modules/progress.md"
 ```
 
 ### Internal neighbors
@@ -99,9 +99,9 @@ flowchart LR
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [helper_runtime](../modules/helper_runtime.md) |
+| Outbound | [source_snapshot](../modules/source_snapshot.md) |
 | Outbound | [host](../modules/host.md) |
 | Outbound | [progress](../modules/progress.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Functions
 

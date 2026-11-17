@@ -1,6 +1,6 @@
 # _MaterializationState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:219`
+**Location:** `src/llm_wiki_engine/knowledge_graph.py:219`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_MaterializationState` in `src/llm_wiki_cli/services/knowledge_graph.py`._
+_Auto-generated from `_MaterializationState` in `src/llm_wiki_engine/knowledge_graph.py`._
 
 ## Attributes
 
@@ -35,15 +35,15 @@ _Auto-generated from `_MaterializationState` in `src/llm_wiki_cli/services/knowl
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_MaterializationState (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n1["_materialization_state (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n2["_materialize_calls (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n3["_materialize_contains (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n4["_materialize_data_effects (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n5["_materialize_entrypoints (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n6["_materialize_external_dependencies (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n7["_materialize_imports (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n8["_owner_concept (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n0["_MaterializationState (src/llm_wiki_engine/knowledge_graph.py)"]
+    n1["_materialization_state (src/llm_wiki_engine/knowledge_graph.py)"]
+    n2["_materialize_calls (src/llm_wiki_engine/knowledge_graph.py)"]
+    n3["_materialize_contains (src/llm_wiki_engine/knowledge_graph.py)"]
+    n4["_materialize_data_effects (src/llm_wiki_engine/knowledge_graph.py)"]
+    n5["_materialize_entrypoints (src/llm_wiki_engine/knowledge_graph.py)"]
+    n6["_materialize_external_dependencies (src/llm_wiki_engine/knowledge_graph.py)"]
+    n7["_materialize_imports (src/llm_wiki_engine/knowledge_graph.py)"]
+    n8["_owner_concept (src/llm_wiki_engine/knowledge_graph.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

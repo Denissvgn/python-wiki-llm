@@ -100,10 +100,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:_event_limit` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 6 | - | external | 15 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 6 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:validate_typed_graph` | 23 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_parse_typed_graph` | 24 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 16 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 25 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 26 | - | external | 2 |
+| `src/llm_wiki_engine/knowledge_graph.py:validate_typed_graph` | 23 | [src/llm_wiki_engine/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_graph.py:_parse_typed_graph` | 24 | [src/llm_wiki_engine/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 16 |
+| `src/llm_wiki_engine/knowledge_graph.py:_object` | 25 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 26 | - | external | 2 |
 > Omission summary shows 8 of 301 groups; 293 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

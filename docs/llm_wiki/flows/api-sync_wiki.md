@@ -106,7 +106,7 @@ sequenceDiagram
     participant p27 as _recovery_directory
     participant p28 as report_capture
     participant p29 as str (src/llm_wiki_cli/api.py:sync_wiki)
-    participant p30 as current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)
+    participant p30 as current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)
     p0->>p1: discarding_output
     p0->>p2: execute_sync
     p0->>p3: SyncRequest
@@ -136,7 +136,7 @@ sequenceDiagram
     p10->>p27: _recovery_directory
     p11->>p28: report_capture
     p0-->>p29: str (src/llm_wiki_cli/api.py:sync_wiki)(exc)
-    p1-->>p30: current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
+    p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
 > Call sequence diagram shows 30 of 1635 interactions; 1605 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -147,14 +147,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/host.py:discarding_output` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 4 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/host.py:using_host` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:discarding_output` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 4 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/host.py:using_host` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | external | 6 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | [src/llm_wiki_cli/services/sync_runtime.py](../modules/sync_runtime.md) | internal | 3 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/host.py:recording_errors` | 19 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 3 |
+| `src/llm_wiki_engine/host.py:recording_errors` | 19 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 3 |
 > Omission summary shows 8 of 474 groups; 466 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -170,7 +170,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 718; effect analysis evaluated: 509, partial: 37, unavailable: 172. Counts include steps omitted from the displayed trace.
 
-Collector observations for 546 source steps with known totals: observed: 3689, emitted: 3446, omitted: 243. Unavailable totals are excluded.
+Collector observations for 546 source steps with known totals: observed: 3690, emitted: 3447, omitted: 243. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -182,11 +182,11 @@ Collector observations for 546 source steps with known totals: observed: 3689, e
 | `SyncRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `discarding_output` | `available` | `evaluated` | `available` | `0` | `0` | `0` |
 | `using_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_ACTIVE.reset` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_Discard` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -197,22 +197,22 @@ flowchart LR
     s2["2. SyncRequest"]
     s3["3. discarding_output"]
     s4["4. using_host"]
-    s5["5. isinstance (src/llm_wiki_cli/services/host.py:using_host)"]
-    s6["6. TypeError (src/llm_wiki_cli/services/host.py:using_host)"]
+    s5["5. isinstance (src/llm_wiki_engine/host.py:using_host)"]
+    s6["6. TypeError (src/llm_wiki_engine/host.py:using_host)"]
     s7["7. _ACTIVE.set"]
     s8["8. _ACTIVE.reset"]
-    s9["9. current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)"]
+    s9["9. current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)"]
     s10["10. current_host"]
     s11["11. _ACTIVE.get"]
     s12["12. _Discard"]
     s1 -->|"SyncRequest(…)"| s2
     s1 -->|"discarding_output(data not statically known)"| s3
     s3 -->|"using_host(...)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services/host.py:using_host)(host, Host)" .-> s5
-    s4 -. "TypeError (src/llm_wiki_cli/services/host.py:using_host)('host must be a Host instance')" .-> s6
+    s4 -. "isinstance (src/llm_wiki_engine/host.py:using_host)(host, Host)" .-> s5
+    s4 -. "TypeError (src/llm_wiki_engine/host.py:using_host)('host must be a Host instance')" .-> s6
     s4 -. "_ACTIVE.set(host)" .-> s7
     s4 -. "_ACTIVE.reset(token)" .-> s8
-    s3 -. "current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))" .-> s9
+    s3 -. "current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))" .-> s9
     s3 -->|"current_host(data not statically known)"| s10
     s10 -. "_ACTIVE.get(data not statically known)" .-> s11
     s3 -->|"_Discard(data not statically known)"| s12
@@ -232,11 +232,11 @@ flowchart LR
 | `SyncRequest` | - | - | - | - |
 | `discarding_output` | - | - | - | - |
 | `using_host` | `host: Host` | `Host` | - | - |
-| `isinstance (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services/host.py:using_host)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/host.py:using_host)` | - | - | - | - |
 | `_ACTIVE.set` | - | - | - | - |
 | `_ACTIVE.reset` | - | - | - | - |
-| `current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output)` | - | - | - | - |
+| `current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 | `_ACTIVE.get` | - | - | - | - |
 | `_Discard` | - | - | - | - |
@@ -248,11 +248,11 @@ flowchart LR
 | sync_wiki | SyncRequest | 1273 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge)` |
 | sync_wiki | discarding_output | 1292 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_cli/services/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_cli/services/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
 | using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
 | using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output (src/llm_wiki_cli/services/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
 | discarding_output | current_host | 255 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
 | discarding_output | _Discard | 255 | `_Discard(data not statically known)` |

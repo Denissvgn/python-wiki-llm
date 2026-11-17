@@ -58,7 +58,7 @@ sequenceDiagram
     participant p26 as EstimatedCounter
     participant p27 as _encode_contract
     participant p28 as bounded_text
-    participant p29 as deepcopy (src/llm_wiki_cli/services…ble.py:readable_expansion)
+    participant p29 as deepcopy (src/llm_wiki_engine/task_…ble.py:readable_expansion)
     participant p30 as fact.pop
     p0->>p1: expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py)
     p1->>p2: validate_compact_task_context
@@ -88,7 +88,7 @@ sequenceDiagram
     p12->>p26: EstimatedCounter
     p14->>p27: _encode_contract
     p11->>p28: bounded_text
-    p15-->>p29: deepcopy (src/llm_wiki_cli/services…ble.py:readable_expansion)(...)
+    p15-->>p29: deepcopy (src/llm_wiki_engine/task_…ble.py:readable_expansion)(...)
     p3-->>p30: fact.pop('citation_refs')
 ```
 
@@ -104,9 +104,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 4 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 17 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 17 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 4 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 > Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

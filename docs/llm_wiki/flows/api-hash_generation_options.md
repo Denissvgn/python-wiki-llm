@@ -81,9 +81,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 6 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 20 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 35 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 41 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_text` | 43 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 41 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_text` | 43 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 33 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

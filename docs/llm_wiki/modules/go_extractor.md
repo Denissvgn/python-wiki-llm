@@ -22,12 +22,12 @@ An explicit diagnostic request enables the bundled native helper response, valid
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
 | `..services.go_calls` | `attach_go_receiver_methods` |
-| `..services.host` | `HostCapabilityError`, `current_host` |
 | `.common` | `discover_source_files`, `filter_bundled_inventory`, `normalize_include_tests` |
 | `.native_diagnostics` | `load_native_chunks`, `path_outcome` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -44,7 +44,7 @@ flowchart LR
     n3["src/llm_wiki_cli/services/extraction_service.py"]
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
     n5["src/llm_wiki_cli/services/go_calls.py"]
-    n6["src/llm_wiki_cli/services/host.py"]
+    n6["src/llm_wiki_engine/host.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n4

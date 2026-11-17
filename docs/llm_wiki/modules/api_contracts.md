@@ -18,7 +18,6 @@ Python alias normalization and model lookup respect captured module bindings. A 
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
-| `.paths` | `is_test_source_path` |
 | `.python_imports` | `module_binding_imports` |
 | `.source_selection` | `SourceSelectionError`, `path_is_link_or_reparse`, `path_is_selected` |
 | `.source_snapshot` | `SourceSnapshot` |
@@ -28,6 +27,7 @@ Python alias normalization and model lookup respect captured module bindings. A 
 | `copy` | `deepcopy` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.paths` | `is_test_source_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -46,16 +46,16 @@ flowchart LR
     n4["src/llm_wiki_cli/services/extraction_service.py"]
     n5["src/llm_wiki_cli/services/impact.py"]
     n6["src/llm_wiki_cli/services/imports.py"]
-    n7["src/llm_wiki_cli/services/paths.py"]
-    n8["src/llm_wiki_cli/services/python_imports.py"]
-    n9["src/llm_wiki_cli/services/source_selection.py"]
-    n10["src/llm_wiki_cli/services/source_snapshot.py"]
-    n11["src/llm_wiki_cli/services/sync_runtime.py"]
+    n7["src/llm_wiki_cli/services/python_imports.py"]
+    n8["src/llm_wiki_cli/services/source_selection.py"]
+    n9["src/llm_wiki_cli/services/source_snapshot.py"]
+    n10["src/llm_wiki_cli/services/sync_runtime.py"]
+    n11["src/llm_wiki_engine/paths.py"]
     n0 --> n6
     n0 --> n7
     n0 --> n8
     n0 --> n9
-    n0 --> n10
+    n0 --> n11
     n1 --> n0
     n2 --> n0
     n2 --> n4
@@ -63,29 +63,29 @@ flowchart LR
     n2 --> n7
     n2 --> n8
     n2 --> n9
-    n2 --> n10
+    n2 --> n11
     n3 --> n0
     n3 --> n2
     n3 --> n4
-    n3 --> n7
+    n3 --> n8
     n3 --> n9
-    n3 --> n10
+    n3 --> n11
     n4 --> n0
     n4 --> n6
+    n4 --> n7
     n4 --> n8
     n4 --> n9
-    n4 --> n10
     n5 --> n0
-    n5 --> n10
-    n6 --> n8
-    n6 --> n10
+    n5 --> n9
+    n6 --> n7
+    n6 --> n9
+    n9 --> n8
+    n10 --> n0
+    n10 --> n2
+    n10 --> n4
+    n10 --> n8
     n10 --> n9
-    n11 --> n0
-    n11 --> n2
-    n11 --> n4
-    n11 --> n7
-    n11 --> n9
-    n11 --> n10
+    n10 --> n11
     click n0 "../modules/api_contracts.md"
     click n1 "../modules/api_diff.md"
     click n2 "../modules/bootstrap_runtime.md"
@@ -93,11 +93,11 @@ flowchart LR
     click n4 "../modules/extraction_service.md"
     click n5 "../modules/impact.md"
     click n6 "../modules/imports.md"
-    click n7 "../modules/paths.md"
-    click n8 "../modules/python_imports.md"
-    click n9 "../modules/source_selection.md"
-    click n10 "../modules/source_snapshot.md"
-    click n11 "../modules/sync_runtime.md"
+    click n7 "../modules/python_imports.md"
+    click n8 "../modules/source_selection.md"
+    click n9 "../modules/source_snapshot.md"
+    click n10 "../modules/sync_runtime.md"
+    click n11 "../modules/paths.md"
 ```
 
 ### Internal neighbors
@@ -111,10 +111,10 @@ flowchart LR
 | Inbound | [impact](../modules/impact.md) |
 | Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Outbound | [imports](../modules/imports.md) |
-| Outbound | [paths](../modules/paths.md) |
 | Outbound | [python_imports](../modules/python_imports.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [paths](../modules/paths.md) |
 
 ### External packages
 

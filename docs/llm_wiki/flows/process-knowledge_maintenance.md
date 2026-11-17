@@ -63,8 +63,8 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+- [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md)
 - [path_policy](../modules/path_policy.md)
-- [services_contracts](../modules/services_contracts.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -140,9 +140,9 @@ sequenceDiagram
     p0-->>p30: parser.add_subparsers(dest='command', required=True)
 ```
 
-> Call sequence diagram shows 30 of 2978 interactions; 2948 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3028 interactions; 2998 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 982 (981 omitted); unresolved 1 of 725 (724 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 997 (996 omitted); unresolved 1 of 752 (751 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,9 +154,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | external | 13 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 28 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 28 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 28 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 32 | - | unresolved | 1 |
-> Omission summary shows 8 of 704 groups; 696 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 28 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 32 | - | unresolved | 1 |
+> Omission summary shows 8 of 711 groups; 703 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -169,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1272; effect analysis evaluated: 836, partial: 32, unavailable: 404. Counts include steps omitted from the displayed trace.
+Source steps: 1280; effect analysis evaluated: 844, partial: 32, unavailable: 404. Counts include steps omitted from the displayed trace.
 
-Collector observations for 868 source steps with known totals: observed: 4465, emitted: 4290, omitted: 175. Unavailable totals are excluded.
+Collector observations for 876 source steps with known totals: observed: 4518, emitted: 4343, omitted: 175. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -248,40 +248,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | argparse.ArgumentParser | 390 | `argparse.ArgumentParser(data not statically known)` |
-| main | parser.add_subparsers | 391 | `parser.add_subparsers(dest='command', required=True)` |
-| main | commands.add_parser | 392 | `commands.add_parser('preflight')` |
-| main | before.add_argument | 394 | `before.add_argument(..., required=True)` |
-| main | before.add_argument | 401 | `before.add_argument(...)` |
-| main | before.add_argument | 402 | `before.add_argument('--allow-editable', action='store_true')` |
-| main | before.add_argument | 403 | `before.add_argument('--comparison-policy', choices=sorted(...), default='auto')` |
-| main | sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main) | 403 | `sorted(ac.POLICIES)` |
-| main | commands.add_parser | 405 | `commands.add_parser(name)` |
-| main | command.add_argument | 406 | `command.add_argument('--report', required=True)` |
-| main | command.add_argument | 407 | `command.add_argument('--preflight', required=True)` |
+| main | argparse.ArgumentParser | 413 | `argparse.ArgumentParser(data not statically known)` |
+| main | parser.add_subparsers | 414 | `parser.add_subparsers(dest='command', required=True)` |
+| main | commands.add_parser | 415 | `commands.add_parser('preflight')` |
+| main | before.add_argument | 417 | `before.add_argument(..., required=True)` |
+| main | before.add_argument | 424 | `before.add_argument(...)` |
+| main | before.add_argument | 425 | `before.add_argument('--allow-editable', action='store_true')` |
+| main | before.add_argument | 426 | `before.add_argument('--comparison-policy', choices=sorted(...), default='auto')` |
+| main | sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main) | 426 | `sorted(ac.POLICIES)` |
+| main | commands.add_parser | 428 | `commands.add_parser(name)` |
+| main | command.add_argument | 429 | `command.add_argument('--report', required=True)` |
+| main | command.add_argument | 430 | `command.add_argument('--preflight', required=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `values.pop` | `main` | 418 |
-| mutation | `values.pop` | `main` | 419 |
+| mutation | `values.pop` | `main` | 441 |
+| mutation | `values.pop` | `main` | 442 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `main` | `argparse.ArgumentParser` | 390 |
-| unresolved_call | `main` | `parser.add_subparsers` | 391 |
-| unresolved_call | `main` | `commands.add_parser` | 392 |
-| unresolved_call | `main` | `before.add_argument` | 394 |
-| unresolved_call | `main` | `before.add_argument` | 401 |
-| unresolved_call | `main` | `before.add_argument` | 402 |
-| unresolved_call | `main` | `before.add_argument` | 403 |
-| external_call | `main` | `sorted` | 403 |
-| unresolved_call | `main` | `commands.add_parser` | 405 |
-| unresolved_call | `main` | `command.add_argument` | 406 |
-| unresolved_call | `main` | `command.add_argument` | 407 |
+| external_call | `main` | `argparse.ArgumentParser` | 413 |
+| unresolved_call | `main` | `parser.add_subparsers` | 414 |
+| unresolved_call | `main` | `commands.add_parser` | 415 |
+| unresolved_call | `main` | `before.add_argument` | 417 |
+| unresolved_call | `main` | `before.add_argument` | 424 |
+| unresolved_call | `main` | `before.add_argument` | 425 |
+| unresolved_call | `main` | `before.add_argument` | 426 |
+| external_call | `main` | `sorted` | 426 |
+| unresolved_call | `main` | `commands.add_parser` | 428 |
+| unresolved_call | `main` | `command.add_argument` | 429 |
+| unresolved_call | `main` | `command.add_argument` | 430 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

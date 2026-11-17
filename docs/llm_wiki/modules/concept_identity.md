@@ -1,6 +1,6 @@
 # concept_identity Module
 
-**Path:** `src/llm_wiki_cli/services/concept_identity.py`
+**Path:** `src/llm_wiki_engine/concept_identity.py`
 
 ## Description
 
@@ -41,7 +41,7 @@ control characters and credential-bearing authorities remain invalid.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/concept_identity.py"]
+    n1["src/llm_wiki_engine/concept_identity.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/concept_identity.md"

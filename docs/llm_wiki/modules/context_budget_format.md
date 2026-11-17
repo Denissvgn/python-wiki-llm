@@ -18,11 +18,11 @@ and the named counter; ``context_budget.validate_budgeted_context`` does both.
 | Source | Symbols |
 |--------|---------|
 | `.` | `context_packet`, `context_request_format`, `context_response_format` |
-| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -36,7 +36,7 @@ flowchart LR
     n2["src/llm_wiki_cli/services/context_packet.py"]
     n3["src/llm_wiki_cli/services/context_request_format.py"]
     n4["src/llm_wiki_cli/services/context_response_format.py"]
-    n5["src/llm_wiki_cli/services/contracts.py"]
+    n5["src/llm_wiki_engine/contracts.py"]
     n0 --> n1
     n0 --> n4
     n1 --> n2
@@ -54,7 +54,7 @@ flowchart LR
     click n2 "../modules/context_packet.md"
     click n3 "../modules/context_request_format.md"
     click n4 "../modules/context_response_format.md"
-    click n5 "../modules/services_contracts.md"
+    click n5 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 ### Internal neighbors
@@ -65,7 +65,7 @@ flowchart LR
 | Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [context_request_format](../modules/context_request_format.md) |
 | Outbound | [context_response_format](../modules/context_response_format.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes
 

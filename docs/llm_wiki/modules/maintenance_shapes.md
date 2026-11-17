@@ -11,8 +11,8 @@ Strict maintenance payload shapes without a JSON Schema runtime dependency.
 | Source | Symbols |
 |--------|---------|
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
-| `.validation` | `require_exact_fields` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.validation` | `require_exact_fields` |
 | `re` | `re` |
 
 ## Local dependency map
@@ -23,7 +23,7 @@ flowchart LR
     n0["src/llm_wiki_cli/services/knowledge_storage.py"]
     n1["src/llm_wiki_cli/services/maintenance_shapes.py"]
     n2["src/llm_wiki_cli/services/maintenance_state.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_engine/validation.py"]
     n1 --> n0
     n1 --> n3
     n2 --> n0

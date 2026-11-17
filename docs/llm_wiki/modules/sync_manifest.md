@@ -24,7 +24,6 @@ also selects exact retention paths for future lint and live native reads.
 | `.domain_pack` | `current_pack` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.io` | `write_json_atomic` |
-| `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
 | `.knowledge_governance` | `governance_lock` |
 | `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
 | `.knowledge_storage` | `decode_bytes`, `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
@@ -34,13 +33,14 @@ also selects exact retention paths for future lint and live native reads.
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `llm_wiki_engine.validation` | `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `TYPE_CHECKING`, `Any` |

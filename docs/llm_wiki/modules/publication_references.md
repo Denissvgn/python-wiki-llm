@@ -13,12 +13,12 @@ Each declared provider kind is served by a
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_evidence` | `hash_json` |
 | `.publication_config` | `publication_path` |
 | `.reference_providers` | `reference_provider` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `typing` | `Any`, `Mapping` |
 
 ## Local dependency map
@@ -26,24 +26,24 @@ Each declared provider kind is served by a
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n1["src/llm_wiki_cli/services/publication_config.py"]
-    n2["src/llm_wiki_cli/services/publication_impact.py"]
-    n3["src/llm_wiki_cli/services/publication_references.py"]
-    n4["src/llm_wiki_cli/services/reference_providers.py"]
+    n0["src/llm_wiki_cli/services/publication_config.py"]
+    n1["src/llm_wiki_cli/services/publication_impact.py"]
+    n2["src/llm_wiki_cli/services/publication_references.py"]
+    n3["src/llm_wiki_cli/services/reference_providers.py"]
+    n4["src/llm_wiki_engine/knowledge_evidence.py"]
+    n0 --> n3
+    n1 --> n0
+    n1 --> n2
     n1 --> n4
     n2 --> n0
-    n2 --> n1
     n2 --> n3
-    n3 --> n0
-    n3 --> n1
+    n2 --> n4
     n3 --> n4
-    n4 --> n0
-    click n0 "../modules/knowledge_evidence.md"
-    click n1 "../modules/publication_config.md"
-    click n2 "../modules/publication_impact.md"
-    click n3 "../modules/publication_references.md"
-    click n4 "../modules/reference_providers.md"
+    click n0 "../modules/publication_config.md"
+    click n1 "../modules/publication_impact.md"
+    click n2 "../modules/publication_references.md"
+    click n3 "../modules/reference_providers.md"
+    click n4 "../modules/knowledge_evidence.md"
 ```
 
 ### Internal neighbors
@@ -51,9 +51,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [publication_impact](../modules/publication_impact.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [reference_providers](../modules/reference_providers.md) |
+| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 
 ## Functions
 

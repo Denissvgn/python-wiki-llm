@@ -1,6 +1,6 @@
 # MaintenanceQueueError
 
-**Location:** `src/llm_wiki_cli/services/maintenance_queue_format.py:122`
+**Location:** `src/llm_wiki_engine/maintenance_queue_format.py:122`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [maintenance_queue_format](../modules/maintenance_queue_format.md)
@@ -22,20 +22,20 @@ A maintenance queue report does not satisfy its published format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceQueueError (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
+    n0["MaintenanceQueueError (src/llm_wiki_engine/maintenance_queue_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_bounds (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n4["_budget (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n5["_check_counts (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n6["_check_coverage_gaps (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n7["_check_custody (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n8["_check_item (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n9["_check_item_consistency (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n10["_check_ordinary_review (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n11["_check_qualification (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n12["_choice (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
-    n13["_count (src/llm_wiki_cli/services/maintenance_queue_format.py)"]
+    n3["_bounds (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n4["_budget (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n5["_check_counts (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n6["_check_coverage_gaps (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n7["_check_custody (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n8["_check_item (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n9["_check_item_consistency (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n10["_check_ordinary_review (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n11["_check_qualification (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n12["_choice (src/llm_wiki_engine/maintenance_queue_format.py)"]
+    n13["_count (src/llm_wiki_engine/maintenance_queue_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

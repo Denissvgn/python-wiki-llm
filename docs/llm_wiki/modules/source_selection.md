@@ -15,13 +15,13 @@ identity and input commitments. Resolution supports the default
 | Source | Symbols |
 |--------|---------|
 | `.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
-| `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

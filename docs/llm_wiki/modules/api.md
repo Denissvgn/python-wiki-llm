@@ -16,7 +16,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 |--------|---------|
 | `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `DoctorV4Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `FlowSegmentResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult`, `MaintenanceStatusResult`, `MaintenanceAdoptionResult`, `MaintenanceAcknowledgmentResult`, `MaintenanceRecoveryResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
-| `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `query_result_format`, `extraction_service`, `context_packet`, `context_packet_builder`, `wiki_surface` |
+| `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `context_packet_builder` |
 | `.services.analysis_capture` | `analysis_input_status` |
 | `.services.behavior_reference` | `get_behavior_facts`, `validate_behavior_facts`, `render_behavior_reference` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
@@ -26,9 +26,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.ci_installer` | `InstallCiResult`, `install_documentation_ci_workflow` |
 | `.services.cli_reference` | `build_cli_contract`, `get_cli_contract`, `render_cli_reference`, `validate_cli_contract` |
 | `.services.context_budget` | `BudgetedContext`, `build_budgeted_context`, `validate_budgeted_context` |
-| `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
 | `.services.context_session` | `ContextSession`, `SessionReply`, `CompactSessionReply`, `CanonicalReceipt`, `apply_task_delta` |
-| `.services.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
 | `.services.dependencies` | `analyze_dependencies` |
 | `.services.doctor_service` | `build_doctor_report` |
 | `.services.documentation_model_policy` | `DocumentationModelEscalationRule`, `DocumentationModelOverride`, `DocumentationModelPolicyError`, `DocumentationModelRoute`, `DocumentationModelRoutingPolicy`, `DocumentationModelRoutingRequest`, `DocumentationModelSelection`, `select_documentation_model`, `validate_documentation_model_selection` |
@@ -42,10 +40,8 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.flow_followup` | `validate_request`, `validate_request` |
 | `.services.helper_cache` | `HelperPreparationError` |
 | `.services.helper_runtime` | `current_helper_operation`, `helper_operation`, `helper_policy` |
-| `.services.host` | `discarding_output`, `discarding_output`, `discarding_output` |
 | `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
-| `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.services.knowledge_loader` | `KnowledgeStateLoadError` |
 | `.services.knowledge_storage` | `KnowledgeStorageError` |
 | `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
@@ -60,7 +56,6 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.publication_candidate` | `export_publication_candidate`, `check_publication_candidate`, `review_publication_candidate`, `validate_publication_receipt` |
 | `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
-| `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
@@ -72,9 +67,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
 | `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
-| `.services.validation` | `require_portable_relative_path` |
 | `.services.wiki_surface_index` | `evaluate_surface_index` |
-| `.services.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
@@ -83,6 +76,14 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `inspect` | `inspect` |
 | `itertools` | `islice` |
 | `json` | `json` |
+| `llm_wiki_engine` | `query_result_format`, `wiki_surface` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `discarding_output`, `discarding_output`, `discarding_output` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
+| `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `TYPE_CHECKING`, `Any`, `NoReturn`, `ParamSpec`, `TypeVar`, `cast`, `Literal`, `overload` |

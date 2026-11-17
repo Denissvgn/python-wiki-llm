@@ -13,20 +13,20 @@ Markdown mirror for static-site tooling without invoking external builders.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
-| `.canonical_json` | `compact_bytes` |
 | `.filesystem_guard` | `fresh_no_follow_stat` |
 | `.io` | `read_md`, `write_md` |
 | `.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE` |
 | `.knowledge_projection` | `UNKNOWN_VALUE`, `KnowledgeProjection`, `KnowledgeProjectionError`, `validate_projection_summaries` |
 | `.site_html_check` | `SUPPORTED_LINK_MODES`, `check_built_site_links` |
-| `.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_sha256`, `require_string`, `resolve_portable_workspace_path` |
-| `.wiki_media` | `build_asset_index`, `collect_media_references`, `iter_markdown_link_targets`, `mask_markdown_code`, `media_type_for_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.canonical_json` | `compact_bytes` |
+| `llm_wiki_engine.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_sha256`, `require_string`, `resolve_portable_workspace_path` |
+| `llm_wiki_engine.wiki_media` | `build_asset_index`, `collect_media_references`, `iter_markdown_link_targets`, `mask_markdown_code`, `media_type_for_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |

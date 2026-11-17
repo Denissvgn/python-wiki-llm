@@ -19,11 +19,11 @@ Callers can supply already captured page contents to preserve their read basis.
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
 | `.context_request_format` | `portable_path`, `validate_changes` |
 | `.extraction_service` | `_git_name_status_paths`, `_partition_snapshot_git_changes` |
-| `.host` | `current_host` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `current_host` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |
 | `typing` | `Mapping` |

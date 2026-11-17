@@ -1,6 +1,6 @@
 # WikiSurfacePage
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:82`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:82`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `WikiSurfacePage` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `WikiSurfacePage` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -33,7 +33,7 @@ _Auto-generated from `WikiSurfacePage` in `src/llm_wiki_cli/services/wiki_surfac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiSurfacePage (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["WikiSurfacePage (src/llm_wiki_engine/wiki_surface.py)"]
     n1["_add_imported_page_candidates (src/llm_wiki_cli/services/documentation_worklist.py)"]
     n2["_add_missing_flow_candidates (src/llm_wiki_cli/services/documentation_worklist.py)"]
     n3["_add_page_candidate (src/llm_wiki_cli/services/documentation_worklist.py)"]

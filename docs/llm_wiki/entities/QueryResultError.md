@@ -1,6 +1,6 @@
 # QueryResultError
 
-**Location:** `src/llm_wiki_cli/services/query_result_format.py:90`
+**Location:** `src/llm_wiki_engine/query_result_format.py:90`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [query_result_format](../modules/query_result_format.md)
@@ -22,20 +22,20 @@ A documentation query or search result does not follow its format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["QueryResultError (src/llm_wiki_cli/services/query_result_format.py)"]
+    n0["QueryResultError (src/llm_wiki_engine/query_result_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_boolean (src/llm_wiki_cli/services/query_result_format.py)"]
-    n4["_bound (src/llm_wiki_cli/services/query_result_format.py)"]
-    n5["_cost (src/llm_wiki_cli/services/query_result_format.py)"]
-    n6["_count (src/llm_wiki_cli/services/query_result_format.py)"]
-    n7["_fields (src/llm_wiki_cli/services/query_result_format.py)"]
-    n8["_list (src/llm_wiki_cli/services/query_result_format.py)"]
-    n9["_object (src/llm_wiki_cli/services/query_result_format.py)"]
-    n10["_search_match (src/llm_wiki_cli/services/query_result_format.py)"]
-    n11["_strings (src/llm_wiki_cli/services/query_result_format.py)"]
-    n12["_text (src/llm_wiki_cli/services/query_result_format.py)"]
-    n13["validate_documentation_query_result (src/llm_wiki_cli/services/query_result_format.py)"]
+    n3["_boolean (src/llm_wiki_engine/query_result_format.py)"]
+    n4["_bound (src/llm_wiki_engine/query_result_format.py)"]
+    n5["_cost (src/llm_wiki_engine/query_result_format.py)"]
+    n6["_count (src/llm_wiki_engine/query_result_format.py)"]
+    n7["_fields (src/llm_wiki_engine/query_result_format.py)"]
+    n8["_list (src/llm_wiki_engine/query_result_format.py)"]
+    n9["_object (src/llm_wiki_engine/query_result_format.py)"]
+    n10["_search_match (src/llm_wiki_engine/query_result_format.py)"]
+    n11["_strings (src/llm_wiki_engine/query_result_format.py)"]
+    n12["_text (src/llm_wiki_engine/query_result_format.py)"]
+    n13["validate_documentation_query_result (src/llm_wiki_engine/query_result_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

@@ -15,11 +15,11 @@ observation, retaining repository scope and ecosystem semantics.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION` |
 | `.path_policy` | `is_agent_worktree_path` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -32,23 +32,23 @@ observation, retaining repository scope and ecosystem semantics.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/contracts.py"]
-    n1["src/llm_wiki_cli/services/dependencies.py"]
-    n2["src/llm_wiki_cli/services/dependency_versions.py"]
-    n3["src/llm_wiki_cli/services/path_policy.py"]
-    n4["src/llm_wiki_cli/services/source_snapshot.py"]
+    n0["src/llm_wiki_cli/services/dependencies.py"]
+    n1["src/llm_wiki_cli/services/dependency_versions.py"]
+    n2["src/llm_wiki_cli/services/path_policy.py"]
+    n3["src/llm_wiki_cli/services/source_snapshot.py"]
+    n4["src/llm_wiki_engine/contracts.py"]
+    n0 --> n1
+    n0 --> n2
+    n0 --> n3
     n1 --> n2
     n1 --> n3
     n1 --> n4
-    n2 --> n0
-    n2 --> n3
-    n2 --> n4
-    n4 --> n3
-    click n0 "../modules/services_contracts.md"
-    click n1 "../modules/services_dependencies.md"
-    click n2 "../modules/dependency_versions.md"
-    click n3 "../modules/path_policy.md"
-    click n4 "../modules/source_snapshot.md"
+    n3 --> n2
+    click n0 "../modules/services_dependencies.md"
+    click n1 "../modules/dependency_versions.md"
+    click n2 "../modules/path_policy.md"
+    click n3 "../modules/source_snapshot.md"
+    click n4 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 ### Internal neighbors
@@ -56,9 +56,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [services_dependencies](../modules/services_dependencies.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ### External packages
 

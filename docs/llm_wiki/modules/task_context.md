@@ -20,7 +20,6 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.knowledge_envelope` | `hash_source_snapshot` |
 | `.knowledge_loader` | `KnowledgeStateLoadError` |
 | `.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
-| `.request_json` | `_pairs`, `_constant` |
 | `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
 | `.task_context_v2` | `build_scoped_task_read`, `validate_scoped_bindings` |
@@ -29,11 +28,12 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.task_implementation` | `attach_bindings`, `native_bindings`, `attach_capture`, `attach_bindings`, `validate_task_implementations` |
 | `.token_counting` | `EstimatedCounter`, `TokenCounter` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
-| `.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |
 | `types` | `SimpleNamespace` |
 | `typing` | `Any` |

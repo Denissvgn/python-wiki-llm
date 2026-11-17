@@ -15,12 +15,10 @@ rewriting the evidence subsequently rendered by doctor or CI.
 | Source | Symbols |
 |--------|---------|
 | `.` | `analysis_compatibility` |
-| `.contracts` | `HEALTH_DETAILS_SCHEMA_VERSION` |
 | `.health_contract` | `COMPARABLE_STATES`, `EXAMPLE_LIMIT`, `FRESHNESS_STATES`, `HealthDetailsError` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
 | `.knowledge_envelope` | `hash_source_snapshot` |
-| `.knowledge_evidence` | `canonical_json_text`, `hash_json` |
 | `.knowledge_freshness` | `structural_freshness_modeled` |
 | `.knowledge_model` | `ProducerComponent`, `ProducerRecord` |
 | `.source_snapshot` | `SourceSnapshot` |
@@ -29,6 +27,8 @@ rewriting the evidence subsequently rendered by doctor or CI.
 | `collections` | `Counter` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `HEALTH_DETAILS_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_text`, `hash_json` |
 | `typing` | `Any` |
 
 ## Local dependency map

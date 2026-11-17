@@ -41,7 +41,7 @@ sequenceDiagram
     participant p27 as _validation_error
     participant p28 as _pointer
     participant p29 as ValueError
-    participant p30 as record.get (src/llm_wiki_cli/services…_evidence.py:_record_name)
+    participant p30 as record.get (src/llm_wiki_engine/knowl…_evidence.py:_record_name)
     p0->>p1: _validate_entity_coordinate
     p0->>p2: _normalize_entity_observation
     p1->>p3: require_nonempty_text
@@ -71,7 +71,7 @@ sequenceDiagram
     p3->>p27: _validation_error
     p6->>p28: _pointer
     p1-->>p29: ValueError('entity_name must be a non-empty string')
-    p7-->>p30: record.get (src/llm_wiki_cli/services…_evidence.py:_record_name)('name', MISSING_VALUE)
+    p7-->>p30: record.get (src/llm_wiki_engine/knowl…_evidence.py:_record_name)('name', MISSING_VALUE)
 ```
 
 > Call sequence diagram shows 30 of 211 interactions; 181 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_int` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_int` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 3 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 3 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_engine/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_int` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_int` | 17 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 64 groups; 56 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,9 +113,9 @@ Collector observations for 137 source steps with known totals: observed: 633, em
 | `normalize_entity_observation` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `_validate_entity_coordinate` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -128,9 +128,9 @@ flowchart LR
     s1["1. normalize_entity_observation"]
     s2["2. _validate_entity_coordinate"]
     s3["3. require_nonempty_text"]
-    s4["4. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
+    s4["4. isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)"]
     s5["5. _validation_error"]
-    s6["6. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s6["6. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s7["7. error"]
     s8["8. value.strip"]
     s9["9. _validation_error"]
@@ -139,9 +139,9 @@ flowchart LR
     s12["12. pattern.search"]
     s1 -->|"_validate_entity_coordinate(entity_name, occurrence)"| s2
     s2 -->|"require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)(value, str)" .-> s4
     s3 -->|"_validation_error(error, error_context)"| s5
-    s5 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s6
     s5 -. "error(context)" .-> s7
     s3 -. "value.strip(data not statically known)" .-> s8
     s3 -->|"_validation_error(error, error_context)"| s9
@@ -164,9 +164,9 @@ flowchart LR
 | `normalize_entity_observation` | `file_data: Mapping[str, Any]`, `entity_name: str`, `occurrence: int` | `_InventoryNormalizationError` | - | `_normalize_entity_observation(...)`, `None` |
 | `_validate_entity_coordinate` | `entity_name: object`, `occurrence: object` | - | - | - |
 | `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -180,9 +180,9 @@ flowchart LR
 |---|---|---:|---|
 | normalize_entity_observation | _validate_entity_coordinate | 231 | `_validate_entity_coordinate(entity_name, occurrence)` |
 | _validate_entity_coordinate | require_nonempty_text | 874 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
 | require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |

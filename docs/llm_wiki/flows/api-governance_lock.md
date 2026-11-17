@@ -79,7 +79,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 17 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | external | 7 |

@@ -1,6 +1,6 @@
 # Progress
 
-**Location:** `src/llm_wiki_cli/services/progress.py:48`
+**Location:** `src/llm_wiki_engine/progress.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [progress](../modules/progress.md)
@@ -30,12 +30,12 @@ One lightweight heartbeat worker and one bounded stream per command.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["Progress (src/llm_wiki_cli/services/progress.py)"]
+    n0["Progress (src/llm_wiki_engine/progress.py)"]
     n1["_dispatch_command (src/llm_wiki_cli/cli.py)"]
     n2["_packet_helper_diagnostics (src/llm_wiki_cli/services/context_service.py)"]
-    n3["current_progress (src/llm_wiki_cli/services/progress.py)"]
-    n4["Progress.run (src/llm_wiki_cli/services/progress.py)"]
-    n5["with_progress (src/llm_wiki_cli/services/progress.py)"]
+    n3["current_progress (src/llm_wiki_engine/progress.py)"]
+    n4["Progress.run (src/llm_wiki_engine/progress.py)"]
+    n5["with_progress (src/llm_wiki_engine/progress.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

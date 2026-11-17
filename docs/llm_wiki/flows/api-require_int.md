@@ -12,14 +12,14 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_int
-    participant p1 as isinstance (src/llm_wiki_cli/services/validation.py:require_int)
+    participant p1 as isinstance (src/llm_wiki_engine/validation.py:require_int)
     participant p2 as _validation_error
-    participant p3 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p3 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p4 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services/validation.py:require_int)(value, bool)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services/validation.py:require_int)(value, int)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_int)(value, bool)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_int)(value, int)
     p0->>p2: _validation_error
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p3: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p4: error(context)
 ```
 
@@ -43,15 +43,15 @@ Collector observations for 2 source steps with known totals: observed: 7, emitte
 ```mermaid
 flowchart LR
     s1["1. require_int"]
-    s2["2. isinstance (src/llm_wiki_cli/services/validation.py:require_int)"]
-    s3["3. isinstance (src/llm_wiki_cli/services/validation.py:require_int)"]
+    s2["2. isinstance (src/llm_wiki_engine/validation.py:require_int)"]
+    s3["3. isinstance (src/llm_wiki_engine/validation.py:require_int)"]
     s4["4. _validation_error"]
-    s5["5. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s6["6. error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_int)(value, bool)" .-> s2
-    s1 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_int)(value, int)" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_int)(value, bool)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_int)(value, int)" .-> s3
     s1 -->|"_validation_error(error, error_context)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s5
     s4 -. "error(context)" .-> s6
     click s1 "../modules/validation.md"
     click s4 "../modules/validation.md"
@@ -62,20 +62,20 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_int` | `value: object`, `error: _ValidationError`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_int)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_int)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 836 | `isinstance(value, bool)` |
-| require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 836 | `isinstance(value, int)` |
+| require_int | isinstance (src/llm_wiki_engine/validation.py:require_int) | 836 | `isinstance(value, bool)` |
+| require_int | isinstance (src/llm_wiki_engine/validation.py:require_int) | 836 | `isinstance(value, int)` |
 | require_int | _validation_error | 837 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 
 ### Boundary effects

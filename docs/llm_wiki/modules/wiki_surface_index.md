@@ -11,14 +11,14 @@ Machine-readable index for generated wiki surfaces.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `write_bytes_atomic` |
-| `.paths` | `normalize_source_path` |
-| `.validation` | `normalize_optional_portable_relative_path` |
-| `.wiki_media` | `build_asset_index`, `is_assets_path`, `iter_markdown_link_targets`, `normalize_markdown_link_target` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `collect_wiki_pages`, `iter_page_kinds` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.paths` | `normalize_source_path` |
+| `llm_wiki_engine.validation` | `normalize_optional_portable_relative_path` |
+| `llm_wiki_engine.wiki_media` | `build_asset_index`, `is_assets_path`, `iter_markdown_link_targets`, `normalize_markdown_link_target` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `collect_wiki_pages`, `iter_page_kinds` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any`, `Mapping`, `Optional`, `Sequence`, `Union` |

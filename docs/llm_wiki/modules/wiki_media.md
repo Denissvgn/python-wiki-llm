@@ -1,6 +1,6 @@
 # wiki_media Module
 
-**Path:** `src/llm_wiki_cli/services/wiki_media.py`
+**Path:** `src/llm_wiki_engine/wiki_media.py`
 
 ## Description
 
@@ -26,7 +26,7 @@ Media reference parsing for wiki pages and agent-owned assets.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/wiki_media.py"]
+    n1["src/llm_wiki_engine/wiki_media.py"]
     n0 --> n1
     click n1 "../modules/wiki_media.md"
 ```

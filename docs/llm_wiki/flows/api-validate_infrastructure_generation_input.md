@@ -79,11 +79,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_prior_infrastructure_state` | 2 | [src/llm_wiki_cli/services/infrastructure_sync.py](../modules/infrastructure_sync.md) | internal | 2 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_record_mapping` | 11 | [src/llm_wiki_cli/services/infrastructure_sync.py](../modules/infrastructure_sync.md) | internal | 14 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_valid_repository_path` | 18 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 28 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 35 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 38 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 21 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 28 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 35 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 38 | - | unresolved | 2 |
 > Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

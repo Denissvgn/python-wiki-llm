@@ -117,9 +117,9 @@ sequenceDiagram
     p1-->>p30: package_filter.strip
 ```
 
-> Call sequence diagram shows 30 of 3277 interactions; 3247 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3282 interactions; 3252 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1083 (1082 omitted); unresolved 1 of 1353 (1352 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1083 (1082 omitted); unresolved 1 of 1355 (1354 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,11 +127,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 3 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 3 | - | external | 10 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 6 |
 > Omission summary shows 8 of 737 groups; 729 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -146,9 +146,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 842; effect analysis evaluated: 682, partial: 38, unavailable: 122. Counts include steps omitted from the displayed trace.
+Source steps: 845; effect analysis evaluated: 685, partial: 38, unavailable: 122. Counts include steps omitted from the displayed trace.
 
-Collector observations for 720 source steps with known totals: observed: 4325, emitted: 4204, omitted: 121. Unavailable totals are excluded.
+Collector observations for 723 source steps with known totals: observed: 4352, emitted: 4231, omitted: 121. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

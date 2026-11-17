@@ -1,6 +1,6 @@
 # IdentityAlias
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:154`
+**Location:** `src/llm_wiki_engine/concept_identity.py:154`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -30,15 +30,15 @@ One historical locator or natural key owned by a persisted UID.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["IdentityAlias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["_deduplicated_aliases (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["_sorted_aliases (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n4["aliases_for_move (src/llm_wiki_cli/services/concept_identity.py)"]
-    n5["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n6["find_identity_collisions (src/llm_wiki_cli/services/concept_identity.py)"]
-    n7["move_allocation (src/llm_wiki_cli/services/concept_identity.py)"]
-    n8["validate_identity_registry (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["IdentityAlias (src/llm_wiki_engine/concept_identity.py)"]
+    n1["_deduplicated_aliases (src/llm_wiki_engine/concept_identity.py)"]
+    n2["_sorted_aliases (src/llm_wiki_engine/concept_identity.py)"]
+    n3["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n4["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
+    n5["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n6["find_identity_collisions (src/llm_wiki_engine/concept_identity.py)"]
+    n7["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
+    n8["validate_identity_registry (src/llm_wiki_engine/concept_identity.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

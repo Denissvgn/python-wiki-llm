@@ -12,10 +12,10 @@ Encodes and expands versioned selected-storage receipts without removing their c
 |--------|---------|
 | `.knowledge_packs` | `PACK_NAME`, `INDEX_PAGE_NAME`, `pack_path`, `index_page_path` |
 | `.knowledge_storage` | `canonical_bytes` |
-| `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -29,7 +29,7 @@ flowchart LR
     n2["src/llm_wiki_cli/services/knowledge_storage.py"]
     n3["src/llm_wiki_cli/services/storage_receipts.py"]
     n4["src/llm_wiki_cli/services/task_context_v2.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
+    n5["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n5

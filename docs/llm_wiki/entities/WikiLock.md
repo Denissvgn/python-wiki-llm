@@ -1,6 +1,6 @@
 # WikiLock
 
-**Location:** `src/llm_wiki_cli/services/lockfile.py:28`
+**Location:** `src/llm_wiki_engine/lockfile.py:28`
 **Kind:** Class
 **Bases:** —
 **Module:** [lockfile](../modules/lockfile.md)
@@ -32,7 +32,7 @@ remains fail-fast by default; ``wait_seconds`` enables bounded polling.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiLock (src/llm_wiki_cli/services/lockfile.py)"]
+    n0["WikiLock (src/llm_wiki_engine/lockfile.py)"]
     n1["run (src/llm_wiki_cli/commands/trigger_cmd.py)"]
     n1 --> n0
     click n0 "../modules/lockfile.md"

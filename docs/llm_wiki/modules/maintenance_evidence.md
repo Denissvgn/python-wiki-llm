@@ -13,18 +13,18 @@ capture; omitted declarations and unselected inputs cannot prove deletion.
 
 | Source | Symbols |
 |--------|---------|
-| `.immutable` | `freeze` |
 | `.implementation_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `validate_concept_implementation`, `validate_implementation_evidence` |
 | `.knowledge_storage` | `digest` |
 | `.maintenance_state` | `MaintenanceError`, `canonical_hash`, `maintenance_core`, `new_identity`, `validate_maintenance_adoption`, `validate_maintenance_state`, `_maintenance_reconciliation`, `_has_reconciliation_owner` |
-| `.markdown_sections` | `parse_markdown_document` |
 | `.python_implementation` | `comparison_id` |
-| `.section_ownership` | `SectionOwnership`, `observe_page_sections` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
+| `llm_wiki_engine.section_ownership` | `SectionOwnership`, `observe_page_sections` |
 | `typing` | `Any`, `Callable` |
 | `urllib.parse` | `quote` |
 

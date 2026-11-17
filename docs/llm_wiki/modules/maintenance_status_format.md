@@ -1,6 +1,6 @@
 # maintenance_status_format Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_status_format.py`
+**Path:** `src/llm_wiki_engine/maintenance_status_format.py`
 
 ## Description
 
@@ -30,9 +30,9 @@ per-path summary agrees with the records it summarizes.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/canonical_json.py"]
-    n2["src/llm_wiki_cli/services/maintenance_queue_format.py"]
-    n3["src/llm_wiki_cli/services/maintenance_status_format.py"]
+    n1["src/llm_wiki_engine/canonical_json.py"]
+    n2["src/llm_wiki_engine/maintenance_queue_format.py"]
+    n3["src/llm_wiki_engine/maintenance_status_format.py"]
     n0 --> n2
     n0 --> n3
     n2 --> n3

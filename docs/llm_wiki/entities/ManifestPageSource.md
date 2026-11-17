@@ -93,4 +93,4 @@ flowchart LR
 | `source_retirement_projection` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `with_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 
-> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.
+> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.

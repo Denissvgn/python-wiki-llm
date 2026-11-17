@@ -1,6 +1,6 @@
 # WikiSurfaceKind
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:62`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:62`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `WikiSurfaceKind` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `WikiSurfaceKind` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -34,15 +34,15 @@ _Auto-generated from `WikiSurfaceKind` in `src/llm_wiki_cli/services/wiki_surfac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiSurfaceKind (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n1["_collect_directory_pages (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n2["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n3["_matches_directory_path (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n4["_matches_directory_uri (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n5["_surface_page (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n6["iter_directory_kinds (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n7["iter_page_kinds (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n8["iter_root_pages (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["WikiSurfaceKind (src/llm_wiki_engine/wiki_surface.py)"]
+    n1["_collect_directory_pages (src/llm_wiki_engine/wiki_surface.py)"]
+    n2["_entry_for (src/llm_wiki_engine/wiki_surface.py)"]
+    n3["_matches_directory_path (src/llm_wiki_engine/wiki_surface.py)"]
+    n4["_matches_directory_uri (src/llm_wiki_engine/wiki_surface.py)"]
+    n5["_surface_page (src/llm_wiki_engine/wiki_surface.py)"]
+    n6["iter_directory_kinds (src/llm_wiki_engine/wiki_surface.py)"]
+    n7["iter_page_kinds (src/llm_wiki_engine/wiki_surface.py)"]
+    n8["iter_root_pages (src/llm_wiki_engine/wiki_surface.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -21,8 +21,6 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `.maintenance_recovery` | `save_recovery_catalog`, `recovery_catalog_key`, `mark_recovery_complete`, `retain_recovery_catalogs` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `object_path` |
-| `.progress` | `observed_phase` |
-| `.request_json` | `_pairs`, `_constant` |
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files` |
 | `.storage_spool` | `ByteSpool` |
 | `.sync_manifest` | `SyncManifest` |
@@ -34,6 +32,8 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `threading` | `threading` |

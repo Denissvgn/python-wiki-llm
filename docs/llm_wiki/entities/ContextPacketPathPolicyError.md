@@ -1,6 +1,6 @@
 # ContextPacketPathPolicyError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:188`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:189`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)

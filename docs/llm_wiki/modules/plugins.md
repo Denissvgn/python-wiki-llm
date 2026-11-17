@@ -24,7 +24,6 @@ with relative imports (``from . import helpers``); bare imports such as
 |--------|---------|
 | `..` | `__version__` |
 | `..config` | `EXTRACTOR_REGISTRY` |
-| `.validation` | `path_is_within`, `require_existing_file`, `resolve_portable_workspace_path` |
 | `__future__` | `annotations` |
 | `datetime` | `datetime`, `timezone` |
 | `hashlib` | `hashlib` |
@@ -32,6 +31,7 @@ with relative imports (``from . import helpers``); bare imports such as
 | `importlib.machinery` | `importlib.machinery` |
 | `importlib.util` | `importlib.util` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `path_is_within`, `require_existing_file`, `resolve_portable_workspace_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

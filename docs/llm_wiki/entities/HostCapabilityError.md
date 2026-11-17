@@ -1,6 +1,6 @@
 # HostCapabilityError
 
-**Location:** `src/llm_wiki_cli/services/host.py:51`
+**Location:** `src/llm_wiki_engine/host.py:51`
 **Kind:** Class
 **Bases:** `PermissionError`
 **Module:** [host](../modules/host.md)
@@ -25,7 +25,7 @@ executable as a soft failure degrade the same way.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["HostCapabilityError (src/llm_wiki_cli/services/host.py)"]
+    n0["HostCapabilityError (src/llm_wiki_engine/host.py)"]
     n1["PermissionError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
     n3["src/llm_wiki_cli/extractors/go_extractor.py"]
@@ -34,8 +34,8 @@ flowchart LR
     n6["src/llm_wiki_cli/extractors/ts_extractor.py"]
     n7["src/llm_wiki_cli/services/extraction_service.py"]
     n8["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n9["NoProcessHost.popen (src/llm_wiki_cli/services/host.py)"]
-    n10["NoProcessHost.run (src/llm_wiki_cli/services/host.py)"]
+    n9["NoProcessHost.popen (src/llm_wiki_engine/host.py)"]
+    n10["NoProcessHost.run (src/llm_wiki_engine/host.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

@@ -14,13 +14,13 @@ for lives in ``context_service`` and ``context_budget``.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
-| `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
-| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.knowledge_model` | `ComputedFreshness`, `EvidenceState` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `re` | `re` |
 | `typing` | `Any` |
 

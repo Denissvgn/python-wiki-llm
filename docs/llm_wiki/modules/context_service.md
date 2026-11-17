@@ -35,14 +35,11 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
 | `.context_budget` | `run`, `run` |
-| `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
 | `.context_packet` | `ContextPacketError` |
 | `.context_packet_builder` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `build_qualified_context` |
 | `.context_request_format` | `_CONCEPT_FILTER_KEYS`, `_CONTEXT_QUERY_LIMIT`, `_EVIDENCE_FILTER_VALUES`, `_FILTER_KEYS`, `_FOCUS_VALUES`, `_FORMATS`, `_FRESHNESS_FILTER_VALUES`, `_KNOWLEDGE_REFINEMENT_KEYS`, `_normalise_protocol_filters`, `_normalise_protocol_focus`, `_PROTOCOL_REQUEST_KEYS`, `_QUALIFIED_RELATIONSHIP_KIND_RE`, `_RELATIONSHIP_DIRECTIONS`, `_RELATIONSHIP_REFINEMENT_KEYS`, `_V1_REQUEST_KEYS`, `_V2_REQUEST_KEYS`, `_validate_enum_filter`, `_validate_protocol_request`, `_validate_protocol_request_impl`, `_validate_relationship_kind_filter`, `_validate_surface_filter`, `CONTEXT_KNOWLEDGE_CONCEPT_LIMIT`, `CONTEXT_KNOWLEDGE_PAGE_LIMIT`, `CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT`, `KNOWLEDGE_PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `ProtocolRequestError` |
-| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -50,7 +47,6 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `_git_changed_files`, `_partition_snapshot_git_changes`, `analyze_data_flow`, `build_data_flow_context`, `build_flow`, `get_entry_points`, `get_docker_inventory`, `get_inventory_result`, `read_console_scripts`, `resolve_call_edges` |
 | `.helper_cache` | `HelperPreparationError` |
-| `.host` | `current_host`, `emit` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `write_text_output`, `write_utf8_stdout` |
@@ -65,12 +61,10 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.plugins` | `runtime_project_plugins_enabled` |
-| `.progress` | `Progress` |
 | `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest` |
-| `.validation` | `nonnegative_int_or_none` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
@@ -79,6 +73,12 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `dataclasses` | `dataclass` |
 | `fnmatch` | `fnmatch` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
+| `llm_wiki_engine.host` | `current_host`, `emit` |
+| `llm_wiki_engine.progress` | `Progress` |
+| `llm_wiki_engine.validation` | `nonnegative_int_or_none` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `shlex` | `shlex` |

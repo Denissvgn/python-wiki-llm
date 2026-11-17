@@ -31,15 +31,15 @@ the independent historical retirement policy.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_evidence` | `entity_observation_hash` |
 | `.knowledge_model` | `KnowledgeIndex`, `EvidenceState`, `Origin` |
 | `.sync_analysis` | `_recorded_entity_pages` |
 | `.sync_manifest` | `ManifestPageSource`, `SyncManifest`, `SyncManifestError`, `generated_semantics_for_file` |
-| `.validation` | `portable_path_key` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.knowledge_evidence` | `entity_observation_hash` |
+| `llm_wiki_engine.validation` | `portable_path_key` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `pathlib` | `PurePosixPath` |
 | `typing` | `TYPE_CHECKING` |
 

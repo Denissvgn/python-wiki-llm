@@ -93,13 +93,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 1 | - | external | 14 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 6 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 27 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 6 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 24 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 27 | - | external | 1 |
 > Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -130,11 +130,11 @@ Collector observations for 98 source steps with known totals: observed: 438, emi
 | `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -145,22 +145,22 @@ flowchart LR
     s5["5. _bundle_id"]
     s6["6. validate_bundle_id"]
     s7["7. _machine_text"]
-    s8["8. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s8["8. isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s9["9. ConceptIdentityError"]
-    s10["10. len (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s10["10. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s11["11. ConceptIdentityError"]
-    s12["12. value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s12["12. value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s2
     s1 -. "TypeError('ledger must be a GovernanceLedger')" .-> s3
     s1 -->|"GovernanceError('schema_version', ..., code='governance-version-unsupported')"| s4
     s1 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s5
     s5 -->|"validate_bundle_id(value)"| s6
     s6 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)(value, str)" .-> s8
     s7 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s9
-    s7 -. "len (src/llm_wiki_cli/services…identity.py:_machine_text)(value)" .-> s10
+    s7 -. "len (src/llm_wiki_engine/conce…identity.py:_machine_text)(value)" .-> s10
     s7 -->|"ConceptIdentityError(field, ...)"| s11
-    s7 -. "value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)(data not statically known)" .-> s12
+    s7 -. "value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)(data not statically known)" .-> s12
     click s1 "../modules/knowledge_governance.md"
     click s4 "../modules/knowledge_governance.md"
     click s5 "../modules/knowledge_governance.md"
@@ -181,11 +181,11 @@ flowchart LR
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 
 ### Call data
 
@@ -197,11 +197,11 @@ flowchart LR
 | validate_governance_ledger | _bundle_id | 535 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
 | _bundle_id | validate_bundle_id | 3505 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | len (src/llm_wiki_engine/conce…identity.py:_machine_text) | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
+| _machine_text | value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 

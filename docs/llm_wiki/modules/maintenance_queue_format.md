@@ -1,6 +1,6 @@
 # maintenance_queue_format Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_queue_format.py`
+**Path:** `src/llm_wiki_engine/maintenance_queue_format.py`
 
 ## Description
 
@@ -34,8 +34,8 @@ marks every item, and ``queue_id`` hashes the rest of the report.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/maintenance_queue_format.py"]
-    n2["src/llm_wiki_cli/services/maintenance_status_format.py"]
+    n1["src/llm_wiki_engine/maintenance_queue_format.py"]
+    n2["src/llm_wiki_engine/maintenance_status_format.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2

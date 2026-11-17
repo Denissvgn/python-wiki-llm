@@ -99,8 +99,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/uninstall_cmd.py:run` | 1 | - | external | 43 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:inspect_legacy_hooks` | 19 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 8 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 20 | - | unresolved | 9 |

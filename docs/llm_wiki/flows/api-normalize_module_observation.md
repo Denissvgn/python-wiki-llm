@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as sha256_digest
     participant p27 as _InventoryNormalizationError
     participant p28 as require_bool
-    participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…malize_module_observation)
     participant p30 as seen_names.get
     p0->>p1: _normalize_module_observation
     p1->>p2: _inventory_language
@@ -70,7 +70,7 @@ sequenceDiagram
     p6->>p26: sha256_digest
     p13->>p27: _InventoryNormalizationError
     p18->>p28: require_bool
-    p1-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p1-->>p29: isinstance (src/llm_wiki_engine/knowl…malize_module_observation)(file_data, Mapping)
     p1-->>p30: seen_names.get(name, 0)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:require_list` | 20 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_inventory_language` | 3 | - | external | 2 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_inventory_language` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_inventory_language` | 3 | [src/llm_wiki_engine/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_record_array` | 12 | [src/llm_wiki_engine/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_pointer` | 14 | - | unresolved | 2 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_pointer` | 14 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_engine/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:require_list` | 20 | - | external | 1 |
 > Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -114,14 +114,14 @@ Collector observations for 139 source steps with known totals: observed: 705, em
 | `normalize_module_observation` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_normalize_module_observation` | `available` | `partial` | `available` | `24` | `20` | `4` |
 | `_inventory_language` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
 | `_InventoryNormalizationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
 | `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…malize_module_observation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…malize_module_observation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_record_array` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 
 ```mermaid
@@ -129,25 +129,25 @@ flowchart LR
     s1["1. normalize_module_observation"]
     s2["2. _normalize_module_observation"]
     s3["3. _inventory_language"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
+    s4["4. isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)"]
     s5["5. _failure"]
     s6["6. _InventoryNormalizationError"]
-    s7["7. file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
-    s8["8. isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
+    s7["7. file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language)"]
+    s8["8. isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)"]
     s9["9. _failure"]
     s10["10. _failure"]
-    s11["11. isinstance (src/llm_wiki_cli/services…malize_module_observation)"]
+    s11["11. isinstance (src/llm_wiki_engine/knowl…malize_module_observation)"]
     s12["12. _record_array"]
     s1 -->|"_normalize_module_observation(file_data)"| s2
     s2 -->|"_inventory_language(file_data)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(file_data, Mapping)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)(file_data, Mapping)" .-> s4
     s3 -->|"_failure('', 'object-required', 'inventory object', file_data)"| s5
     s5 -->|"_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)"| s6
-    s3 -. "file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)('language', MISSING_VALUE)" .-> s7
-    s3 -. "isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(language, str)" .-> s8
+    s3 -. "file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language)('language', MISSING_VALUE)" .-> s7
+    s3 -. "isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)(language, str)" .-> s8
     s3 -->|"_failure('/language', 'nonempty-text', 'nonempty language string', language)"| s9
     s3 -->|"_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)"| s10
-    s2 -. "isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)" .-> s11
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…malize_module_observation)(file_data, Mapping)" .-> s11
     s2 -->|"_record_array(file_data, 'classes', required=True)"| s12
     b0["mutation class_summaries.append"]
     s2 -. "mutation class_summaries.append" .-> b0
@@ -179,14 +179,14 @@ flowchart LR
 | `normalize_module_observation` | `file_data: Mapping[str, Any]` | `_InventoryNormalizationError` | - | `_normalize_module_observation(...)`, `None` |
 | `_normalize_module_observation` | `file_data: Mapping[str, Any] \| None` | `Mapping`, `_MODULE_ENTITY_FIELDS`, `_MODULE_NONSTRUCTURAL_KEYS`, `_MODULE_FUNCTION_FIELDS`, `_MODULE_NONSTRUCTURAL_KEYS`, `MODULE_OBSERVATION_SCOPE`, `_MODULE_NONSTRUCTURAL_KEYS`, `_MODULE_CONSTANT_FIELDS` | `seen_names[...]`, `summary[...]`, `payload[...]`, `payload[...]`, `payload[...]`, `payload[...]` | `payload` |
 | `_inventory_language` | `file_data: Mapping[str, Any] \| None` | `Mapping`, `MISSING_VALUE`, `_SUPPORTED_OBSERVATION_LANGUAGES`, `UNKNOWN_UNSUPPORTED_LANGUAGE` | - | `language` |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | - | - | - | - |
 | `_failure` | `pointer`, `rule`, `expected`, `value`, `reason`, `exact` | - | - | `_InventoryNormalizationError(...)` |
 | `_InventoryNormalizationError` | - | - | - | - |
-| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
+| `file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language)` | - | - | - | - |
 | `_failure` | `pointer`, `rule`, `expected`, `value`, `reason`, `exact` | - | - | `_InventoryNormalizationError(...)` |
 | `_failure` | `pointer`, `rule`, `expected`, `value`, `reason`, `exact` | - | - | `_InventoryNormalizationError(...)` |
-| `isinstance (src/llm_wiki_cli/services…malize_module_observation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…malize_module_observation)` | - | - | - | - |
 | `_record_array` | `file_data: Mapping[str, Any]`, `field: str`, `required: bool`, `pointer` | `MISSING_VALUE` | - | `_optional_record_array(...)` |
 
 ### Call data
@@ -195,14 +195,14 @@ flowchart LR
 |---|---|---:|---|
 | normalize_module_observation | _normalize_module_observation | 213 | `_normalize_module_observation(file_data)` |
 | _normalize_module_observation | _inventory_language | 428 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
+| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
 | _inventory_language | _failure | 512 | `_failure('', 'object-required', 'inventory object', file_data)` |
 | _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 514 | `isinstance(language, str)` |
+| _inventory_language | file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
+| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 514 | `isinstance(language, str)` |
 | _inventory_language | _failure | 515 | `_failure('/language', 'nonempty-text', 'nonempty language string', language)` |
 | _inventory_language | _failure | 517 | `_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)` |
-| _normalize_module_observation | isinstance (src/llm_wiki_cli/services…malize_module_observation) | 429 | `isinstance(file_data, Mapping)` |
+| _normalize_module_observation | isinstance (src/llm_wiki_engine/knowl…malize_module_observation) | 429 | `isinstance(file_data, Mapping)` |
 | _normalize_module_observation | _record_array | 430 | `_record_array(file_data, 'classes', required=True)` |
 
 ### Boundary effects

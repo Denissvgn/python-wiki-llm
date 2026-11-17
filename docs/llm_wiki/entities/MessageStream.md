@@ -1,6 +1,6 @@
 # MessageStream
 
-**Location:** `src/llm_wiki_cli/services/host.py:203`
+**Location:** `src/llm_wiki_engine/host.py:203`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)
@@ -31,7 +31,7 @@ A trailing partial line is reported by :meth:`close`.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MessageStream (src/llm_wiki_cli/services/host.py)"]
+    n0["MessageStream (src/llm_wiki_engine/host.py)"]
     n1["src/llm_wiki_cli/engine/__init__.py"]
     n1 --> n0
     click n0 "../modules/host.md"

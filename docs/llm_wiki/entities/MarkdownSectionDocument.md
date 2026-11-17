@@ -1,6 +1,6 @@
 # MarkdownSectionDocument
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:156`
+**Location:** `src/llm_wiki_engine/markdown_sections.py:156`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -35,9 +35,9 @@ Normalized Markdown plus its ordered hierarchy commitment.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MarkdownSectionDocument (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n1["parse_markdown_document (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n2["_preamble_observation (src/llm_wiki_cli/services/section_ownership.py)"]
+    n0["MarkdownSectionDocument (src/llm_wiki_engine/markdown_sections.py)"]
+    n1["parse_markdown_document (src/llm_wiki_engine/markdown_sections.py)"]
+    n2["_preamble_observation (src/llm_wiki_engine/section_ownership.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/markdown_sections.md"

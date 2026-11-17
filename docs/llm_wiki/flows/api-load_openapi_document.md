@@ -80,8 +80,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | unresolved | 10 |
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | external | 4 |
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 8 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 22 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 22 | - | unresolved | 5 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 22 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 22 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 21 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 7 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | - | external | 2 |

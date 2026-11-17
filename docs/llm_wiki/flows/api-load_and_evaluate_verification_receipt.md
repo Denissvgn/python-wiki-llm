@@ -93,8 +93,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 2 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 35 | - | external | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 37 | - | unresolved | 3 |

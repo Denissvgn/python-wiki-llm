@@ -1,6 +1,6 @@
 # MaintenanceStatusError
 
-**Location:** `src/llm_wiki_cli/services/maintenance_status_format.py:141`
+**Location:** `src/llm_wiki_engine/maintenance_status_format.py:141`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [maintenance_status_format](../modules/maintenance_status_format.md)
@@ -22,20 +22,20 @@ A maintenance status payload does not satisfy its published format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceStatusError (src/llm_wiki_cli/services/maintenance_status_format.py)"]
+    n0["MaintenanceStatusError (src/llm_wiki_engine/maintenance_status_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["src/llm_wiki_cli/services/maintenance_queue_format.py"]
-    n4["_acknowledgment (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n5["_check_bounds (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n6["_check_coverage (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n7["_check_qualification (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n8["_check_record (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n9["_check_record_consistency (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n10["_check_summary (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n11["_choice (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n12["_coordinate (src/llm_wiki_cli/services/maintenance_status_format.py)"]
-    n13["_count (src/llm_wiki_cli/services/maintenance_status_format.py)"]
+    n3["src/llm_wiki_engine/maintenance_queue_format.py"]
+    n4["_acknowledgment (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n5["_check_bounds (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n6["_check_coverage (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n7["_check_qualification (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n8["_check_record (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n9["_check_record_consistency (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n10["_check_summary (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n11["_choice (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n12["_coordinate (src/llm_wiki_engine/maintenance_status_format.py)"]
+    n13["_count (src/llm_wiki_engine/maintenance_status_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

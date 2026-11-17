@@ -18,11 +18,11 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 
 | Source | Symbols |
 |--------|---------|
-| `.host` | `current_host` |
-| `.knowledge_evidence` | `formatted_json_bytes` |
 | `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Set` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |

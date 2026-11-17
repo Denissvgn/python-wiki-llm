@@ -219,9 +219,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 686 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 689 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
-| build_knowledge_commit_plan | current_manifest_format | 690 | `current_manifest_format(root)` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 687 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 690 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
+| build_knowledge_commit_plan | current_manifest_format | 691 | `current_manifest_format(root)` |
 | current_manifest_format | Path (src/llm_wiki_cli/services…y:current_manifest_format) | 287 | `Path(wiki_dir)` |
 | current_manifest_format | adoption.exists | 289 | `adoption.exists(data not statically known)` |
 | current_manifest_format | adoption.is_symlink | 289 | `adoption.is_symlink(data not statically known)` |

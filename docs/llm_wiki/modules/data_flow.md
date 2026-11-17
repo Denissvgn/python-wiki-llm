@@ -14,11 +14,11 @@ bounded static observations rather than runtime guarantees.
 
 | Source | Symbols |
 |--------|---------|
-| `.validation` | `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict`, `deque` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.validation` | `positive_int_or_none` |
 
 ## Local dependency map
 
@@ -33,7 +33,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/lint_service.py"]
     n6["src/llm_wiki_cli/services/python_observations.py"]
     n7["src/llm_wiki_cli/services/sync_runtime.py"]
-    n8["src/llm_wiki_cli/services/validation.py"]
+    n8["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n8

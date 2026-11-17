@@ -31,17 +31,17 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 | `.maintenance_state` | `new_identity`, `validate_maintenance_adoption`, `maintenance_state_hash`, `_identity`, `maintenance_core`, `maintenance_state_hash`, `_identity` |
 | `.maintenance_status` | `build_maintenance_status`, `build_maintenance_status` |
 | `.python_implementation` | `analysis_identity`, `analysis_identity` |
-| `.request_json` | `_pairs`, `_constant`, `_pairs`, `_constant` |
 | `.source_snapshot` | `confirmed_missing_source_paths`, `source_snapshot_matches_current_files`, `build_source_snapshot`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifest`, `SyncManifest`, `SyncManifest` |
-| `.validation` | `is_portable_relative_path`, `is_portable_relative_path` |
-| `.wiki_surface` | `collect_wiki_pages` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant`, `_pairs`, `_constant` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path`, `is_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `collect_wiki_pages` |
 | `pathlib` | `Path`, `Path` |
 
 ## Local dependency map

@@ -1,13 +1,13 @@
 # PageKind
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:41`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:41`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_surface](../modules/wiki_surface.md)
 
 ## Description
 
-_Auto-generated from `PageKind` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `PageKind` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -34,7 +34,7 @@ _Auto-generated from `PageKind` in `src/llm_wiki_cli/services/wiki_surface.py`._
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageKind (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["PageKind (src/llm_wiki_engine/wiki_surface.py)"]
     n1["Enum"]
     n2["str"]
     n3["_status_label (src/llm_wiki_cli/commands/status_cmd.py)"]

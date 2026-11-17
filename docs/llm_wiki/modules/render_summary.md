@@ -33,17 +33,13 @@ degraded or unhealthy failure threshold.
 flowchart LR
     n0["integrations/github-action/render_summary.py"]
     n1["src/llm_wiki_cli/services/ci_report.py"]
-    n2["src/llm_wiki_cli/services/contracts.py"]
-    n3["src/llm_wiki_cli/services/health_summary.py"]
+    n2["src/llm_wiki_cli/services/health_summary.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
     n1 --> n2
-    n1 --> n3
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_report.md"
-    click n2 "../modules/services_contracts.md"
-    click n3 "../modules/health_summary.md"
+    click n2 "../modules/health_summary.md"
 ```
 
 ### Internal neighbors
@@ -51,8 +47,13 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Outbound | [ci_report](../modules/ci_report.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [health_summary](../modules/health_summary.md) |
+
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
 
 ## Functions
 

@@ -74,8 +74,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/mcp_cmd.py:run` | 1 | [src/llm_wiki_cli/commands/mcp_cmd.py](../modules/mcp_cmd.md) | internal | 3 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 14 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 18 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 13 | - | unresolved | 6 |
 > Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

@@ -174,8 +174,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
 > Omission summary shows 8 of 1229 groups; 1221 further groups are not expanded here. Counts above include all omitted interactions.

@@ -10,10 +10,10 @@ _Auto-generated from `src/llm_wiki_cli/services/extraction_jobs.py`._
 
 | Source | Symbols |
 |--------|---------|
-| `.host` | `emit` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.host` | `emit` |
 | `os` | `os` |
 | `typing` | `Literal`, `TextIO` |
 

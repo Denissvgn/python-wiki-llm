@@ -21,13 +21,13 @@ and sole authored `Notes` surface as other infrastructure families.
 | Source | Symbols |
 |--------|---------|
 | `.infrastructure_inventory` | `infrastructure_page_name` |
-| `.knowledge_evidence` | `ConceptObservationBasis`, `build_infrastructure_observation_basis`, `hash_json`, `is_valid_sha256` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `is_portable_relative_path` |
 | `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.knowledge_evidence` | `ConceptObservationBasis`, `build_infrastructure_observation_basis`, `hash_json`, `is_valid_sha256` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `pathlib` | `PurePosixPath` |
 | `typing` | `Mapping` |
 

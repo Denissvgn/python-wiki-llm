@@ -1,6 +1,6 @@
 # normalization_diagnostics Module
 
-**Path:** `src/llm_wiki_cli/services/normalization_diagnostics.py`
+**Path:** `src/llm_wiki_engine/normalization_diagnostics.py`
 
 ## Description
 
@@ -33,18 +33,18 @@ historical persisted evidence.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/contracts.py"]
-    n1["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n2["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n3["src/llm_wiki_cli/services/normalization_diagnostics.py"]
-    n1 --> n3
-    n2 --> n0
-    n2 --> n1
+    n0["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n1["src/llm_wiki_engine/contracts.py"]
+    n2["src/llm_wiki_engine/knowledge_evidence.py"]
+    n3["src/llm_wiki_engine/normalization_diagnostics.py"]
+    n0 --> n1
+    n0 --> n2
+    n0 --> n3
     n2 --> n3
-    n3 --> n0
-    click n0 "../modules/services_contracts.md"
-    click n1 "../modules/knowledge_evidence.md"
-    click n2 "../modules/knowledge_freshness.md"
+    n3 --> n1
+    click n0 "../modules/knowledge_freshness.md"
+    click n1 "../modules/llm_wiki_engine_contracts.md"
+    click n2 "../modules/knowledge_evidence.md"
     click n3 "../modules/normalization_diagnostics.md"
 ```
 
@@ -52,9 +52,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Inbound | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Inbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes
 

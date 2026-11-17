@@ -31,13 +31,11 @@ syncs discard only verified private scratch and retain unexpected contents.
 | Source | Symbols |
 |--------|---------|
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `unlink_guarded_bytes` |
-| `.host` | `emit` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `_identity`, `read_guarded` |
 | `.maintenance_protocol` | `governance_writer_lock`, `storage_writer_lock` |
-| `.request_json` | `_pairs`, `_constant` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.sync_manifest` | `SyncManifest` |
 | `.wiki_write_basis` | `ACTIVE_SYNC_JOURNAL` |
@@ -45,6 +43,8 @@ syncs discard only verified private scratch and retain unexpected contents.
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `emit` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `tempfile` | `tempfile` |

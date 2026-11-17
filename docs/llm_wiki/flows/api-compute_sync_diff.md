@@ -92,9 +92,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | external | 12 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | [src/llm_wiki_cli/services/sync_analysis.py](../modules/sync_analysis.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component` | 35 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
+| `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
+| `src/llm_wiki_engine/validation.py:portable_page_component` | 35 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | unresolved | 23 |
 | `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | external | 16 |
 > Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.

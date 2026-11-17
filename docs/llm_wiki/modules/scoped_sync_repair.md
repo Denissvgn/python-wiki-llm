@@ -17,7 +17,6 @@ Scope does not narrow discovery or bypass normal count/ratio review. Full analys
 | Source | Symbols |
 |--------|---------|
 | `.` | `analysis_capture`, `analysis_compatibility` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.implementation_evidence` | `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
 | `.knowledge_artifacts` | `KnowledgeCommitPlan`, `validate_knowledge_artifacts` |
 | `.knowledge_model` | `knowledge_index_to_payload` |
@@ -26,13 +25,14 @@ Scope does not narrow discovery or bypass normal count/ratio review. Full analys
 | `.knowledge_storage` | `canonical_bytes`, `MAX_EXPANDED_BYTES` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `.source_snapshot` | `SourceSnapshotError`, `source_snapshot_matches_current_files` |
-| `.validation` | `require_repository_relative_path` |
-| `.wiki_surface` | `collect_wiki_pages` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `asdict`, `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `collect_wiki_pages` |
 | `typing` | `Any` |
 
 ## Local dependency map

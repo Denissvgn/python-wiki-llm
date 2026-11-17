@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 9 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 7 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 30 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 30 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 40 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 40 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 7 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 9 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 16 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 7 | - | unresolved | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 30 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 30 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 40 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 40 | - | external | 1 |
 > Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -118,11 +118,11 @@ Collector observations for 28 source steps with known totals: observed: 131, emi
 | `pages.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_repository_relative_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -133,22 +133,22 @@ flowchart LR
     s5["5. pages.items"]
     s6["6. _repository_relative_path"]
     s7["7. require_repository_relative_path"]
-    s8["8. isinstance (src/llm_wiki_cli/services…_repository_relative_path)"]
+    s8["8. isinstance (src/llm_wiki_engine/valid…_repository_relative_path)"]
     s9["9. _syntax_key"]
     s10["10. type"]
-    s11["11. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s12["12. any (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s11["11. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s12["12. any (src/llm_wiki_engine/validation.py:_syntax_key)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('markdown_pages', 'must be an object')"| s3
     s1 -. "set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(data not statically known)" .-> s4
     s1 -. "pages.items(data not statically known)" .-> s5
     s1 -->|"_repository_relative_path(path, 'markdown_pages.path')"| s6
     s6 -->|"require_repository_relative_path(…)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/valid…_repository_relative_path)(value, str)" .-> s8
     s7 -->|"_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)"| s9
     s9 -. "type(value)" .-> s10
-    s9 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s11
-    s9 -. "any (src/llm_wiki_cli/services/validation.py:_syntax_key)(...)" .-> s12
+    s9 -. "len (src/llm_wiki_engine/validation.py:_syntax_key)(value)" .-> s11
+    s9 -. "any (src/llm_wiki_engine/validation.py:_syntax_key)(...)" .-> s12
     b0["mutation seen.add"]
     s1 -. "mutation seen.add" .-> b0
     b1["mutation records.append"]
@@ -177,11 +177,11 @@ flowchart LR
 | `pages.items` | - | - | - | - |
 | `_repository_relative_path` | `value: object`, `field_name: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | - | - | - | - |
 | `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
 | `type` | - | - | - | - |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
 
 ### Call data
 
@@ -193,11 +193,11 @@ flowchart LR
 | hash_markdown_snapshot | pages.items | 789 | `pages.items(data not statically known)` |
 | hash_markdown_snapshot | _repository_relative_path | 790 | `_repository_relative_path(path, 'markdown_pages.path')` |
 | _repository_relative_path | require_repository_relative_path | 1506 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
-| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
-| _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
+| _syntax_key | len (src/llm_wiki_engine/validation.py:_syntax_key) | 54 | `len(value)` |
+| _syntax_key | any (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `any(...)` |
 
 ### Boundary effects
 

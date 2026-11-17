@@ -1,6 +1,6 @@
 # ErrorRecorder
 
-**Location:** `src/llm_wiki_cli/services/host.py:259`
+**Location:** `src/llm_wiki_engine/host.py:259`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)
@@ -27,8 +27,8 @@ Forwards writes to a host's stderr and keeps a copy for error messages.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ErrorRecorder (src/llm_wiki_cli/services/host.py)"]
-    n1["recording_errors (src/llm_wiki_cli/services/host.py)"]
+    n0["ErrorRecorder (src/llm_wiki_engine/host.py)"]
+    n1["recording_errors (src/llm_wiki_engine/host.py)"]
     n1 --> n0
     click n0 "../modules/host.md"
     click n1 "../modules/host.md"

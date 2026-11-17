@@ -80,9 +80,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_bounded_text` | 6 | - | external | 3 |
-| `src/llm_wiki_cli/services/validation.py:require_bounded_text` | 6 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_bounded_text` | 6 | - | external | 3 |
+| `src/llm_wiki_engine/validation.py:require_bounded_text` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_required_knowledge_failure` | 19 | - | external | 10 |
 | `src/llm_wiki_cli/api.py:_required_knowledge_failure` | 19 | - | unresolved | 2 |
 | `src/llm_wiki_cli/api.py:_raise_required_knowledge_api_error` | 18 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
@@ -115,7 +115,7 @@ Collector observations for 20 source steps with known totals: observed: 151, emi
 | `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_require_bounded_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_bounded_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -130,7 +130,7 @@ flowchart LR
     s4["4. HostBrokerAuthenticationUnavailable"]
     s5["5. _require_bounded_text"]
     s6["6. require_bounded_text"]
-    s7["7. isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)"]
+    s7["7. isinstance (src/llm_wiki_engine/valid…n.py:require_bounded_text)"]
     s8["8. len"]
     s9["9. len"]
     s10["10. value.strip"]
@@ -141,7 +141,7 @@ flowchart LR
     s2 -->|"HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')"| s4
     s2 -->|"_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')"| s5
     s5 -->|"require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)(value, str)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_engine/valid…n.py:require_bounded_text)(value, str)" .-> s7
     s6 -. "len(value)" .-> s8
     s6 -. "len(value)" .-> s9
     s6 -. "value.strip(data not statically known)" .-> s10
@@ -165,7 +165,7 @@ flowchart LR
 | `HostBrokerAuthenticationUnavailable` | - | - | - | - |
 | `_require_bounded_text` | `value: Any`, `label: str` | - | - | `require_bounded_text(...)` |
 | `require_bounded_text` | `value: object`, `maximum: int`, `error: Exception`, `minimum: int`, `control_error: Exception \| None`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_bounded_text)` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
@@ -181,7 +181,7 @@ flowchart LR
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text) | 664 | `isinstance(value, str)` |
+| require_bounded_text | isinstance (src/llm_wiki_engine/valid…n.py:require_bounded_text) | 664 | `isinstance(value, str)` |
 | require_bounded_text | len | 665 | `len(value)` |
 | require_bounded_text | len | 666 | `len(value)` |
 | require_bounded_text | value.strip | 667 | `value.strip(data not statically known)` |

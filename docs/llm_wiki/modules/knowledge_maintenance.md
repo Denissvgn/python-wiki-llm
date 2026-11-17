@@ -13,12 +13,9 @@ Read-only candidate/producer preflight and bound health-policy commands.
 | `.` | `extractor_helpers`, `analysis_compatibility` |
 | `..extractors.common` | `inventory_language_for_path` |
 | `.analysis_capture` | `capture_analysis`, `attach` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.health_policy` | `PREFLIGHT_SCHEMA`, `MaintenanceError`, `derive_policy`, `digest`, `strict_json`, `verify_policy`, `_binding` |
-| `.host` | `current_host` |
 | `.knowledge_envelope` | `ProducerComponentInput`, `build_producer_record`, `hash_source_snapshot` |
-| `.knowledge_evidence` | `hash_json` |
 | `.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
 | `.knowledge_orchestration` | `_producer_evidence`, `_infrastructure_extractor_component`, `runtime_generation_options`, `runtime_generation_options_hash` |
 | `.knowledge_packs` | `parse_packed_root` |
@@ -35,6 +32,10 @@ Read-only candidate/producer preflight and bound health-policy commands.
 | `importlib.metadata` | `importlib.metadata` |
 | `json` | `json` |
 | `llm_wiki_cli` | `llm_wiki_cli` |
+| `llm_wiki_engine` | `llm_wiki_engine` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -66,7 +67,7 @@ flowchart LR
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 1 | 0 |
+| python | 2 | 1 |
 
 > All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 

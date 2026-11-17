@@ -13,22 +13,22 @@
 sequenceDiagram
     participant p0 as require_trimmed_text
     participant p1 as require_nonempty_text
-    participant p2 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p2 as isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)
     participant p3 as _validation_error
     participant p4 as value.strip
     participant p5 as contains_control_character
-    participant p6 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p6 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p7 as pattern.search
     participant p8 as error
     p0->>p1: require_nonempty_text
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p1-->>p2: isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)
     p1->>p3: _validation_error
     p1-->>p4: value.strip
     p1->>p3: _validation_error
     p1->>p3: _validation_error
     p1->>p5: contains_control_character
     p1->>p3: _validation_error
-    p3-->>p6: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p3-->>p6: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p5-->>p7: pattern.search(value)
     p3-->>p8: error(context)
 ```
@@ -54,9 +54,9 @@ Collector observations for 7 source steps with known totals: observed: 31, emitt
 flowchart LR
     s1["1. require_trimmed_text"]
     s2["2. require_nonempty_text"]
-    s3["3. isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)"]
+    s3["3. isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)"]
     s4["4. _validation_error"]
-    s5["5. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s6["6. error"]
     s7["7. value.strip"]
     s8["8. _validation_error"]
@@ -65,9 +65,9 @@ flowchart LR
     s11["11. pattern.search"]
     s12["12. _validation_error"]
     s1 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)" .-> s3
     s2 -->|"_validation_error(error, error_context)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s5
     s4 -. "error(context)" .-> s6
     s2 -. "value.strip(data not statically known)" .-> s7
     s2 -->|"_validation_error(error, error_context)"| s8
@@ -90,9 +90,9 @@ flowchart LR
 |---|---|---|---|---|
 | `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -106,9 +106,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
 | require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |

@@ -114,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | [src/llm_wiki_cli/services/circuit_breaker.py](../modules/circuit_breaker.md) | internal | 1 |
-| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | - | external | 5 |
-| `src/llm_wiki_cli/services/circuit_breaker.py:reset_breaker` | 3 | - | external | 1 |
+| `src/llm_wiki_engine/circuit_breaker.py:save_state` | 4 | [src/llm_wiki_engine/circuit_breaker.py](../modules/circuit_breaker.md) | internal | 1 |
+| `src/llm_wiki_engine/circuit_breaker.py:save_state` | 4 | - | external | 5 |
+| `src/llm_wiki_engine/circuit_breaker.py:reset_breaker` | 3 | - | external | 1 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:run` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_lock_wait_seconds` | 18 | - | external | 5 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync` | 25 | - | external | 2 |
@@ -155,7 +155,7 @@ Collector observations for 274 source steps with known totals: observed: 1740, e
 | `json.dump` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.unlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -170,7 +170,7 @@ flowchart LR
     s8["8. json.dump"]
     s9["9. os.replace"]
     s10["10. os.unlink"]
-    s11["11. dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)"]
+    s11["11. dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)"]
     s12["12. print (src/llm_wiki_cli/commands/trigger_cmd.py:run)"]
     s1 -. "getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)" .-> s2
     s1 -->|"reset_breaker(GIT_DIR)"| s3
@@ -181,7 +181,7 @@ flowchart LR
     s4 -. "json.dump(state, f, indent=2)" .-> s8
     s4 -. "os.replace(tmp, path)" .-> s9
     s4 -. "os.unlink(tmp)" .-> s10
-    s3 -. "dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)(_DEFAULT_STATE)" .-> s11
+    s3 -. "dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)(_DEFAULT_STATE)" .-> s11
     s1 -. "print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -222,7 +222,7 @@ flowchart LR
 | `json.dump` | - | - | - | - |
 | `os.replace` | - | - | - | - |
 | `os.unlink` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)` | - | - | - | - |
 | `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | - | - | - | - |
 
 ### Call data
@@ -238,7 +238,7 @@ flowchart LR
 | save_state | json.dump | 62 | `json.dump(state, f, indent=2)` |
 | save_state | os.replace | 63 | `os.replace(tmp, path)` |
 | save_state | os.unlink | 66 | `os.unlink(tmp)` |
-| reset_breaker | dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker) | 142 | `dict(_DEFAULT_STATE)` |
+| reset_breaker | dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker) | 142 | `dict(_DEFAULT_STATE)` |
 | run | print (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 51 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
 
 ### Boundary effects

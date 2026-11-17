@@ -12,12 +12,12 @@
 ```mermaid
 sequenceDiagram
     participant p0 as resolved_paths_equal
-    participant p1 as Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)
+    participant p1 as Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal)
     participant p2 as Path
-    participant p3 as Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)
-    p0-->>p1: Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)
+    participant p3 as Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1)
+    p0-->>p1: Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal)
     p0-->>p2: Path(left)
-    p0-->>p3: Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)
+    p0-->>p3: Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1)
     p0-->>p2: Path(right)
 ```
 
@@ -41,13 +41,13 @@ Collector observations for 1 source steps with known totals: observed: 3, emitte
 ```mermaid
 flowchart LR
     s1["1. resolved_paths_equal"]
-    s2["2. Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)"]
+    s2["2. Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal)"]
     s3["3. Path"]
-    s4["4. Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)"]
+    s4["4. Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1)"]
     s5["5. Path"]
-    s1 -. "Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)(data not statically known)" .-> s2
+    s1 -. "Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal)(data not statically known)" .-> s2
     s1 -. "Path(left)" .-> s3
-    s1 -. "Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)(…)" .-> s4
+    s1 -. "Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1)(…)" .-> s4
     s1 -. "Path(right)" .-> s5
     click s1 "../modules/validation.md"
 ```
@@ -57,18 +57,18 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `resolved_paths_equal` | `left: str \| Path`, `right: str \| Path` | - | - | `...` |
-| `Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal)` | - | - | - | - |
 | `Path` | - | - | - | - |
-| `Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1)` | - | - | - | - |
 | `Path` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal) | 512 | `Path(left).resolve(data not statically known)` |
+| resolved_paths_equal | Path(…).resolve (src/llm_wiki_engine/valid…on.py:resolved_paths_equal) | 512 | `Path(left).resolve(data not statically known)` |
 | resolved_paths_equal | Path | 512 | `Path(left)` |
-| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1) | 512 | `Path(left).resolve(data not statically known)` |
+| resolved_paths_equal | Path(…).resolve (src/llm_wiki_engine/valid…py:resolved_paths_equal, 1) | 512 | `Path(left).resolve(data not statically known)` |
 | resolved_paths_equal | Path | 512 | `Path(right)` |
 
 ### Boundary effects

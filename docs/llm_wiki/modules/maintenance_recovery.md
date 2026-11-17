@@ -16,12 +16,12 @@ Complete maintenance recovery catalogs backed by immutable deduplicated bytes.
 | `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
 | `.maintenance_protocol` | `MaintenanceProtocolError` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `validate_maintenance_adoption` |
-| `.request_json` | `_pairs`, `_constant` |
-| `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `contextlib` | `contextmanager` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `time` | `time` |
@@ -39,8 +39,8 @@ flowchart LR
     n5["src/llm_wiki_cli/services/maintenance_recovery.py"]
     n6["src/llm_wiki_cli/services/maintenance_service.py"]
     n7["src/llm_wiki_cli/services/maintenance_state.py"]
-    n8["src/llm_wiki_cli/services/request_json.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
+    n8["src/llm_wiki_engine/request_json.py"]
+    n9["src/llm_wiki_engine/validation.py"]
     n1 --> n9
     n3 --> n0
     n3 --> n2

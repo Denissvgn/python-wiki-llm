@@ -18,10 +18,10 @@ source root).  Each discovered package is represented as a
 | `.path_policy` | `EXCLUDED_DIRS` |
 | `.python_imports` | `normalized_root`, `under_root` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `nearest_path_scope` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.validation` | `nearest_path_scope` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
 | `tomli` | `tomllib` |
@@ -39,7 +39,7 @@ flowchart LR
     n3["src/llm_wiki_cli/services/path_policy.py"]
     n4["src/llm_wiki_cli/services/python_imports.py"]
     n5["src/llm_wiki_cli/services/source_snapshot.py"]
-    n6["src/llm_wiki_cli/services/validation.py"]
+    n6["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3

@@ -17,13 +17,13 @@ index builder.
 | Source | Symbols |
 |--------|---------|
 | `.knowledge_model` | `RelationshipLocation`, `Resolution`, `TargetClass` |
-| `.validation` | `contains_control_character`, `require_repository_relative_path` |
-| `.wiki_media` | `MarkdownLinkTarget`, `contains_uri_authority_userinfo`, `is_assets_path`, `iter_markdown_link_targets`, `iter_mermaid_click_targets`, `local_link_path`, `mask_fenced_code_blocks`, `media_type_for_path` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `canonical_path`, `mcp_uri` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.validation` | `contains_control_character`, `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_media` | `MarkdownLinkTarget`, `contains_uri_authority_userinfo`, `is_assets_path`, `iter_markdown_link_targets`, `iter_mermaid_click_targets`, `local_link_path`, `mask_fenced_code_blocks`, `media_type_for_path` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `canonical_path`, `mcp_uri` |
 | `posixpath` | `posixpath` |
 | `re` | `re` |
 | `urllib.parse` | `SplitResult`, `unquote`, `urlsplit` |
@@ -37,9 +37,9 @@ flowchart LR
     n1["src/llm_wiki_cli/services/knowledge_index.py"]
     n2["src/llm_wiki_cli/services/knowledge_links.py"]
     n3["src/llm_wiki_cli/services/knowledge_model.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
-    n5["src/llm_wiki_cli/services/wiki_media.py"]
-    n6["src/llm_wiki_cli/services/wiki_surface.py"]
+    n4["src/llm_wiki_engine/validation.py"]
+    n5["src/llm_wiki_engine/wiki_media.py"]
+    n6["src/llm_wiki_engine/wiki_surface.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3

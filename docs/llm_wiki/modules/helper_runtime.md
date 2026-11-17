@@ -16,13 +16,13 @@ call gets fresh bindings. These primitives never inspect or prepare a helper.
 |--------|---------|
 | `.extractor_helpers` | `SUPPORTED_HELPERS` |
 | `.extractor_registry` | `EXTRACTOR_REGISTRY` |
-| `.immutable` | `freeze` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping` |
 | `contextlib` | `contextmanager` |
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.immutable` | `freeze` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `types` | `MappingProxyType` |

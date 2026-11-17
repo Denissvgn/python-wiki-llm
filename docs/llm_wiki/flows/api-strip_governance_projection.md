@@ -93,12 +93,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | external | 14 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 21 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 21 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 23 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 23 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_graph.py:_object` | 20 | - | external | 1 |
 > Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

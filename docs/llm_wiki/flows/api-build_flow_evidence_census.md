@@ -91,11 +91,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/calibration/contracts.py:build_flow_evidence_census` | 2 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/calibration/contracts.py:_fallback_flow_records` | 8 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 14 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 14 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 21 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 21 | - | external | 5 |
+| `src/llm_wiki_engine/wiki_surface.py:is_safe_page_id` | 14 | - | external | 3 |
+| `src/llm_wiki_engine/wiki_surface.py:is_safe_page_id` | 14 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 21 | - | unresolved | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 21 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 21 | - | external | 5 |
 | `src/llm_wiki_cli/services/calibration/contracts.py:_fallback_flow_records` | 8 | - | external | 1 |
 > Omission summary shows 8 of 68 groups; 60 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

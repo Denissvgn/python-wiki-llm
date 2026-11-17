@@ -176,8 +176,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 20 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 25 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 25 | - | unresolved | 1 |
 > Omission summary shows 8 of 1140 groups; 1132 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -279,11 +279,11 @@ flowchart LR
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | build_maintenance_queue | capture_context_read | 479 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 586 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 587 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 588 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 589 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 590 | `callable(plan_reporter)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 587 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 588 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 589 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 590 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 591 | `callable(plan_reporter)` |
 
 ### Boundary effects
 
@@ -299,11 +299,11 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 58 |
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
-| external_call | `capture_context_read` | `isinstance` | 586 |
-| external_call | `capture_context_read` | `TypeError` | 587 |
-| external_call | `capture_context_read` | `isinstance` | 588 |
-| external_call | `capture_context_read` | `TypeError` | 589 |
-| external_call | `capture_context_read` | `callable` | 590 |
+| external_call | `capture_context_read` | `isinstance` | 587 |
+| external_call | `capture_context_read` | `TypeError` | 588 |
+| external_call | `capture_context_read` | `isinstance` | 589 |
+| external_call | `capture_context_read` | `TypeError` | 590 |
+| external_call | `capture_context_read` | `callable` | 591 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

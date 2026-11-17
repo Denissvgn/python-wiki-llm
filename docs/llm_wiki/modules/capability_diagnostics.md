@@ -26,9 +26,9 @@ overrides follow the same resolution rules as explicit preparation.
 | `.doctor_service` | `build_doctor_report`, `_render_doctor_payload` |
 | `.helper_cache` | `_profile_slots`, `cache_roots`, `preparation_cache_root`, `cache_roots` |
 | `.path_policy` | `validate_source_root` |
-| `.paths` | `render_shell_command` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.paths` | `render_shell_command` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |
@@ -46,9 +46,9 @@ flowchart LR
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
     n5["src/llm_wiki_cli/services/helper_cache.py"]
     n6["src/llm_wiki_cli/services/path_policy.py"]
-    n7["src/llm_wiki_cli/services/paths.py"]
-    n8["src/llm_wiki_cli/services/plugins.py"]
-    n9["src/llm_wiki_cli/services/source_snapshot.py"]
+    n7["src/llm_wiki_cli/services/plugins.py"]
+    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_engine/paths.py"]
     n0 --> n2
     n0 --> n3
     n1 --> n6
@@ -61,10 +61,10 @@ flowchart LR
     n2 --> n8
     n2 --> n9
     n4 --> n5
-    n4 --> n7
+    n4 --> n9
     n5 --> n4
-    n9 --> n1
-    n9 --> n6
+    n8 --> n1
+    n8 --> n6
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/common.md"
     click n2 "../modules/capability_diagnostics.md"
@@ -72,9 +72,9 @@ flowchart LR
     click n4 "../modules/extractor_helpers.md"
     click n5 "../modules/helper_cache.md"
     click n6 "../modules/path_policy.md"
-    click n7 "../modules/paths.md"
-    click n8 "../modules/plugins.md"
-    click n9 "../modules/source_snapshot.md"
+    click n7 "../modules/plugins.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/paths.md"
 ```
 
 ### Internal neighbors
@@ -87,9 +87,9 @@ flowchart LR
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [path_policy](../modules/path_policy.md) |
-| Outbound | [paths](../modules/paths.md) |
 | Outbound | [plugins](../modules/plugins.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [paths](../modules/paths.md) |
 
 ## Functions
 

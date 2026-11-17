@@ -1,6 +1,6 @@
 # Host
 
-**Location:** `src/llm_wiki_cli/services/host.py:63`
+**Location:** `src/llm_wiki_engine/host.py:63`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)
@@ -40,18 +40,18 @@ This machine: real processes, live environment and cwd, wall clock.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["Host (src/llm_wiki_cli/services/host.py)"]
-    n1["NoProcessHost (src/llm_wiki_cli/services/host.py)"]
+    n0["Host (src/llm_wiki_engine/host.py)"]
+    n1["NoProcessHost (src/llm_wiki_engine/host.py)"]
     n2["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
     n3["Engine.host (src/llm_wiki_cli/engine/__init__.py)"]
-    n4["_publish_message (src/llm_wiki_cli/services/host.py)"]
-    n5["current_host (src/llm_wiki_cli/services/host.py)"]
-    n6["discarding_output (src/llm_wiki_cli/services/host.py)"]
-    n7["discarding_stdout (src/llm_wiki_cli/services/host.py)"]
-    n8["ErrorRecorder.__init__ (src/llm_wiki_cli/services/host.py)"]
-    n9["Host.with_output (src/llm_wiki_cli/services/host.py)"]
-    n10["MessageStream._target (src/llm_wiki_cli/services/host.py)"]
-    n11["using_host (src/llm_wiki_cli/services/host.py)"]
+    n4["_publish_message (src/llm_wiki_engine/host.py)"]
+    n5["current_host (src/llm_wiki_engine/host.py)"]
+    n6["discarding_output (src/llm_wiki_engine/host.py)"]
+    n7["discarding_stdout (src/llm_wiki_engine/host.py)"]
+    n8["ErrorRecorder.__init__ (src/llm_wiki_engine/host.py)"]
+    n9["Host.with_output (src/llm_wiki_engine/host.py)"]
+    n10["MessageStream._target (src/llm_wiki_engine/host.py)"]
+    n11["using_host (src/llm_wiki_engine/host.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

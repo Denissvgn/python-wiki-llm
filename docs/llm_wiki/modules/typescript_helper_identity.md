@@ -19,10 +19,10 @@ receipts without preparing tools, migrating caches or executing target source.
 | `.filesystem_guard` | `fresh_no_follow_stat` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage_io` | `read_guarded` |
-| `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
@@ -37,7 +37,7 @@ flowchart LR
     n2["src/llm_wiki_cli/services/io.py"]
     n3["src/llm_wiki_cli/services/knowledge_storage_io.py"]
     n4["src/llm_wiki_cli/services/typescript_helper_identity.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
+    n5["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n4
     n3 --> n1

@@ -83,13 +83,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:collect_wiki_pages` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:collect_wiki_pages` | 15 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_collect_directory_pages` | 18 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_collect_directory_pages` | 18 | - | external | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:collect_wiki_pages` | 15 | - | external | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:collect_wiki_pages` | 15 | - | unresolved | 4 |
+| `src/llm_wiki_engine/wiki_surface.py:_collect_directory_pages` | 18 | - | unresolved | 7 |
+| `src/llm_wiki_engine/wiki_surface.py:_collect_directory_pages` | 18 | - | external | 1 |
 > Omission summary shows 8 of 31 groups; 23 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

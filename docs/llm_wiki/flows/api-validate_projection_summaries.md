@@ -94,10 +94,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:validate_projection_summaries` | 1 | - | external | 23 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 14 | - | external | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 14 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 14 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 21 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 23 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_sha256` | 21 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_sha256` | 21 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 23 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 23 | - | unresolved | 1 |
 > Omission summary shows 8 of 133 groups; 125 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

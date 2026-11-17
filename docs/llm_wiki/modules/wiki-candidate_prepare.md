@@ -36,10 +36,9 @@ flowchart LR
     n2["src/llm_wiki_cli/services/helper_cache.py"]
     n3["src/llm_wiki_cli/services/helper_preparation.py"]
     n4["src/llm_wiki_cli/services/helper_runtime.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/knowledge_loader.py"]
-    n7["src/llm_wiki_cli/services/publication_config.py"]
-    n8["src/llm_wiki_cli/services/source_retirement.py"]
+    n5["src/llm_wiki_cli/services/knowledge_loader.py"]
+    n6["src/llm_wiki_cli/services/publication_config.py"]
+    n7["src/llm_wiki_cli/services/source_retirement.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
@@ -47,22 +46,18 @@ flowchart LR
     n0 --> n5
     n0 --> n6
     n0 --> n7
-    n0 --> n8
-    n1 --> n5
-    n1 --> n8
+    n1 --> n7
     n2 --> n4
     n3 --> n2
     n3 --> n4
-    n8 --> n5
     click n0 "../modules/wiki-candidate_prepare.md"
     click n1 "../modules/documentation_native.md"
     click n2 "../modules/helper_cache.md"
     click n3 "../modules/helper_preparation.md"
     click n4 "../modules/helper_runtime.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/knowledge_loader.md"
-    click n7 "../modules/publication_config.md"
-    click n8 "../modules/source_retirement.md"
+    click n5 "../modules/knowledge_loader.md"
+    click n6 "../modules/publication_config.md"
+    click n7 "../modules/source_retirement.md"
 ```
 
 ### Internal neighbors
@@ -73,10 +68,15 @@ flowchart LR
 | Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [helper_preparation](../modules/helper_preparation.md) |
 | Outbound | [helper_runtime](../modules/helper_runtime.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [knowledge_loader](../modules/knowledge_loader.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [source_retirement](../modules/source_retirement.md) |
+
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
 
 ## Functions
 

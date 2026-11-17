@@ -150,9 +150,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3208 interactions; 3178 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3233 interactions; 3203 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 994 (993 omitted); unresolved 1 of 768 (767 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1004 (1003 omitted); unresolved 1 of 779 (778 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,12 +161,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 40 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 7 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 1 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | - | external | 7 |
-> Omission summary shows 8 of 801 groups; 793 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 807 groups; 799 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1447; effect analysis evaluated: 1030, partial: 49, unavailable: 368. Counts include steps omitted from the displayed trace.
+Source steps: 1451; effect analysis evaluated: 1034, partial: 49, unavailable: 368. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1079 source steps with known totals: observed: 5914, emitted: 5659, omitted: 255. Unavailable totals are excluded.
+Collector observations for 1083 source steps with known totals: observed: 5937, emitted: 5682, omitted: 255. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

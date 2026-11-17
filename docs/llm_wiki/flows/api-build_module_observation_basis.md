@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as _failure
     participant p27 as _optional_record_array
     participant p28 as _validate_optional_strings
-    participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…malize_module_observation)
     participant p30 as diagnostic.at_source
     p0->>p1: _validate_basis_inputs
     p0->>p2: _unknown_basis
@@ -70,7 +70,7 @@ sequenceDiagram
     p8->>p26: _failure
     p12->>p27: _optional_record_array
     p14->>p28: _validate_optional_strings
-    p3-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p3-->>p29: isinstance (src/llm_wiki_engine/knowl…malize_module_observation)(file_data, Mapping)
     p2-->>p30: diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 6 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 13 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 4 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 4 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 6 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 13 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 4 | - | unresolved | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 13 |
+| `src/llm_wiki_engine/validation.py:_default_path_error` | 29 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 99 groups; 91 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -117,14 +117,14 @@ Collector observations for 177 source steps with known totals: observed: 901, em
 | `_validate_basis_inputs` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_validate_source_path` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -132,25 +132,25 @@ flowchart LR
     s2["2. _validate_basis_inputs"]
     s3["3. _validate_source_path"]
     s4["4. require_repository_relative_path"]
-    s5["5. isinstance (src/llm_wiki_cli/services…_repository_relative_path)"]
+    s5["5. isinstance (src/llm_wiki_engine/valid…_repository_relative_path)"]
     s6["6. _syntax_key"]
-    s7["7. type (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s8["8. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s9["9. any (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s10["10. type (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s11["11. type (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s12["12. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s7["7. type (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s8["8. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s9["9. any (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s10["10. type (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s11["11. type (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s12["12. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
     s1 -->|"_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)"| s2
     s2 -->|"_validate_source_path(source_path)"| s3
     s3 -->|"require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/valid…_repository_relative_path)(value, str)" .-> s5
     s4 -->|"_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)"| s6
-    s6 -. "type (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s7
-    s6 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s8
-    s6 -. "any (src/llm_wiki_cli/services/validation.py:_syntax_key)(...)" .-> s9
-    s6 -. "type (src/llm_wiki_cli/services/validation.py:_syntax_key)(v)" .-> s10
-    s6 -. "type (src/llm_wiki_cli/services/validation.py:_syntax_key)(v)" .-> s11
-    s6 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(v)" .-> s12
+    s6 -. "type (src/llm_wiki_engine/validation.py:_syntax_key)(value)" .-> s7
+    s6 -. "len (src/llm_wiki_engine/validation.py:_syntax_key)(value)" .-> s8
+    s6 -. "any (src/llm_wiki_engine/validation.py:_syntax_key)(...)" .-> s9
+    s6 -. "type (src/llm_wiki_engine/validation.py:_syntax_key)(v)" .-> s10
+    s6 -. "type (src/llm_wiki_engine/validation.py:_syntax_key)(v)" .-> s11
+    s6 -. "len (src/llm_wiki_engine/validation.py:_syntax_key)(v)" .-> s12
     click s1 "../modules/knowledge_evidence.md"
     click s2 "../modules/knowledge_evidence.md"
     click s3 "../modules/knowledge_evidence.md"
@@ -166,14 +166,14 @@ flowchart LR
 | `_validate_basis_inputs` | `source_path: object`, `source_content_hash: object`, `extractor_ref: object`, `inventory_complete: object` | - | - | - |
 | `_validate_source_path` | `source_path: object` | - | - | - |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | - | - | - | - |
 | `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `type (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
 
 ### Call data
 
@@ -182,14 +182,14 @@ flowchart LR
 | build_module_observation_basis | _validate_basis_inputs | 290 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
 | _validate_basis_inputs | _validate_source_path | 811 | `_validate_source_path(source_path)` |
 | _validate_source_path | require_repository_relative_path | 839 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
-| _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `type(value)` |
-| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
-| _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
-| _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `type(v)` |
-| _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `type(v)` |
-| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `len(v)` |
+| _syntax_key | type (src/llm_wiki_engine/validation.py:_syntax_key) | 54 | `type(value)` |
+| _syntax_key | len (src/llm_wiki_engine/validation.py:_syntax_key) | 54 | `len(value)` |
+| _syntax_key | any (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `any(...)` |
+| _syntax_key | type (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `type(v)` |
+| _syntax_key | type (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `type(v)` |
+| _syntax_key | len (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `len(v)` |
 
 ### Boundary effects
 

@@ -122,8 +122,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/site_cmd.py:run` | 1 | - | external | 37 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_hub_requested` | 17 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |

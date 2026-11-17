@@ -87,10 +87,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 11 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 37 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:indented_line_text` | 39 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:formatted_json_bytes` | 37 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 39 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_engine/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

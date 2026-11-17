@@ -1,6 +1,6 @@
 # extract_format Module
 
-**Path:** `src/llm_wiki_cli/services/extract_format.py`
+**Path:** `src/llm_wiki_engine/extract_format.py`
 
 ## Description
 
@@ -32,14 +32,14 @@ names as strings; a full payload lists symbol records.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/contracts.py"]
-    n2["src/llm_wiki_cli/services/extract_format.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n1["src/llm_wiki_engine/contracts.py"]
+    n2["src/llm_wiki_engine/extract_format.py"]
+    n3["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n2 --> n1
     n2 --> n3
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/services_contracts.md"
+    click n1 "../modules/llm_wiki_engine_contracts.md"
     click n2 "../modules/extract_format.md"
     click n3 "../modules/validation.md"
 ```
@@ -49,7 +49,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

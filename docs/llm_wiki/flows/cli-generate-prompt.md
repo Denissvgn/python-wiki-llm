@@ -117,8 +117,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/generate_prompt_cmd.py:run` | 1 | - | external | 20 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | - | external | 10 |

@@ -1,6 +1,6 @@
 # knowledge_graph Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_graph.py`
+**Path:** `src/llm_wiki_engine/knowledge_graph.py`
 
 ## Description
 
@@ -43,7 +43,7 @@ subprocess work, network access, or LLM calls.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_graph.py"]
+    n1["src/llm_wiki_engine/knowledge_graph.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_graph.md"

@@ -1,6 +1,6 @@
 # WorkflowPolicy
 
-**Location:** `src/llm_wiki_cli/services/workflow_profile.py:94`
+**Location:** `src/llm_wiki_engine/workflow_profile.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [workflow_profile](../modules/workflow_profile.md)
@@ -37,7 +37,7 @@ Trusted host ceilings for read scope, output size, captured inputs, graph result
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WorkflowPolicy (src/llm_wiki_cli/services/workflow_profile.py)"]
+    n0["WorkflowPolicy (src/llm_wiki_engine/workflow_profile.py)"]
     n1["apply_task_delta (src/llm_wiki_cli/api.py)"]
     n2["build_compact_task_context (src/llm_wiki_cli/api.py)"]
     n3["build_task_context (src/llm_wiki_cli/api.py)"]

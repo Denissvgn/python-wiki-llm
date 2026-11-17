@@ -1,6 +1,6 @@
 # paths Module
 
-**Path:** `src/llm_wiki_cli/services/paths.py`
+**Path:** `src/llm_wiki_engine/paths.py`
 
 ## Description
 
@@ -21,7 +21,7 @@ Shared path normalization helpers.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/paths.py"]
+    n1["src/llm_wiki_engine/paths.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/paths.md"

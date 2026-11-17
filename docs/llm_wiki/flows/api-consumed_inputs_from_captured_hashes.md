@@ -77,13 +77,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:consumed_inputs_from_captured_hashes` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 16 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 18 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 25 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 16 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 39 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 39 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 49 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 16 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 18 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 25 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 16 | - | unresolved | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 39 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 39 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 49 | - | unresolved | 1 |
 > Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

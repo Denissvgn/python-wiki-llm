@@ -13,14 +13,14 @@
 sequenceDiagram
     participant p0 as should_preserve_semantic_value
     participant p1 as is_placeholder_description
-    participant p2 as (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
-    participant p3 as (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    participant p2 as (…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value)
+    participant p3 as (…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1)
     participant p4 as old_generated.strip
     participant p5 as value.strip
     participant p6 as _AUTO_GENERATED_RE.match
     p0->>p1: is_placeholder_description
-    p0-->>p2: (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
-    p0-->>p3: (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    p0-->>p2: (…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value)
+    p0-->>p3: (…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1)
     p0-->>p4: old_generated.strip
     p1-->>p5: value.strip
     p1-->>p6: _AUTO_GENERATED_RE.match(stripped)
@@ -49,14 +49,14 @@ flowchart LR
     s2["2. is_placeholder_description"]
     s3["3. value.strip"]
     s4["4. _AUTO_GENERATED_RE.match"]
-    s5["5. (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)"]
-    s6["6. (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)"]
+    s5["5. (…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value)"]
+    s6["6. (…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1)"]
     s7["7. old_generated.strip"]
     s1 -->|"is_placeholder_description(existing)"| s2
     s2 -. "value.strip(data not statically known)" .-> s3
     s2 -. "_AUTO_GENERATED_RE.match(stripped)" .-> s4
-    s1 -. "(…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)(data not statically known)" .-> s5
-    s1 -. "(…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)(data not statically known)" .-> s6
+    s1 -. "(…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value)(data not statically known)" .-> s5
+    s1 -. "(…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1)(data not statically known)" .-> s6
     s1 -. "old_generated.strip(data not statically known)" .-> s7
     click s1 "../modules/markdown_sections.md"
     click s2 "../modules/markdown_sections.md"
@@ -70,8 +70,8 @@ flowchart LR
 | `is_placeholder_description` | `value: str \| None` | - | - | `True`, `True`, `...` |
 | `value.strip` | - | - | - | - |
 | `_AUTO_GENERATED_RE.match` | - | - | - | - |
-| `(…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)` | - | - | - | - |
-| `(…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)` | - | - | - | - |
+| `(…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value)` | - | - | - | - |
+| `(…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1)` | - | - | - | - |
 | `old_generated.strip` | - | - | - | - |
 
 ### Call data
@@ -81,8 +81,8 @@ flowchart LR
 | should_preserve_semantic_value | is_placeholder_description | 551 | `is_placeholder_description(existing)` |
 | is_placeholder_description | value.strip | 538 | `value.strip(data not statically known)` |
 | is_placeholder_description | _AUTO_GENERATED_RE.match | 541 | `_AUTO_GENERATED_RE.match(stripped)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 553 | `(existing or '').strip(data not statically known)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 554 | `(generated or '').strip(data not statically known)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_engine/markd…ld_preserve_semantic_value) | 553 | `(existing or '').strip(data not statically known)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_engine/markd…preserve_semantic_value, 1) | 554 | `(generated or '').strip(data not statically known)` |
 | should_preserve_semantic_value | old_generated.strip | 557 | `old_generated.strip(data not statically known)` |
 
 ### Boundary effects

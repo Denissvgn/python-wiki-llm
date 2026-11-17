@@ -2,10 +2,11 @@
 
 **Entry point:** `export_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), and 21 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 22 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [api](../modules/api.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
@@ -102,9 +103,9 @@ sequenceDiagram
     p1-->>p30: architecture.get('source_root')
 ```
 
-> Call sequence diagram shows 30 of 1848 interactions; 1818 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1862 interactions; 1832 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 768 (767 omitted); unresolved 1 of 448 (447 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 770 (769 omitted); unresolved 1 of 456 (455 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,11 +115,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 4 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 14 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 14 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 4 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 4 | - | unresolved | 3 |
-> Omission summary shows 8 of 392 groups; 384 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 395 groups; 387 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -131,9 +132,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 633; effect analysis evaluated: 444, partial: 22, unavailable: 167. Counts include steps omitted from the displayed trace.
+Source steps: 637; effect analysis evaluated: 447, partial: 22, unavailable: 168. Counts include steps omitted from the displayed trace.
 
-Collector observations for 466 source steps with known totals: observed: 2424, emitted: 2356, omitted: 68. Unavailable totals are excluded.
+Collector observations for 469 source steps with known totals: observed: 2441, emitted: 2373, omitted: 68. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -221,8 +222,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | export_publication_candidate (src/llm_wiki_cli/api.py) | export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3785 | `export(consumer_root, output_dir=output_dir, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 927 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| _prepare | _absolute_path | 660 | `_absolute_path(Path(...))` |
+| export_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | _prepare | 937 | `_prepare(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| _prepare | _absolute_path | 670 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -236,9 +237,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `operations.append` | `_prepare` | 809 |
-| mutation | `output.pop` | `_prepare` | 828 |
-| mutation | `operations.append` | `_prepare` | 829 |
+| mutation | `operations.append` | `_prepare` | 819 |
+| mutation | `output.pop` | `_prepare` | 838 |
+| mutation | `operations.append` | `_prepare` | 839 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps

@@ -87,8 +87,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | external | 21 |
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | [src/llm_wiki_cli/services/source_retirement.py](../modules/source_retirement.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_entry_for` | 32 | - | external | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_entry_for` | 32 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:_entry_for` | 32 | - | external | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:_entry_for` | 32 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 > Omission summary shows 8 of 30 groups; 22 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

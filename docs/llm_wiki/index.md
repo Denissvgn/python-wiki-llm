@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 768 | [Open section](#entities) |
 | Modules | 308 | [Open section](#modules) |
-| Workflows | 317 | [Open section](#workflows) |
+| Workflows | 314 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 508 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -813,7 +813,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
 - [ci_installer](modules/ci_installer.md) - Portable installation of the managed integrity and documentation CI workflows.
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
-- [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
+- [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_engine/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
 - [cli_declarations](modules/cli_declarations.md) - Declarations of every ``llm-wiki`` command, option and default.
 - [cli_reference](modules/cli_reference.md) - Deterministic CLI reference data and inert Markdown from parser declarations.
@@ -939,7 +939,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
-- [lockfile](modules/lockfile.md) - `src/llm_wiki_cli/services/lockfile.py`
+- [llm_wiki_engine_contracts](modules/llm_wiki_engine_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
+- [lockfile](modules/lockfile.md) - `src/llm_wiki_engine/lockfile.py`
 - [maintenance_cmd](modules/maintenance_cmd.md) - CLI adapter for explicit ordinary maintenance review operations.
 - [maintenance_evidence](modules/maintenance_evidence.md) - Captured source/semantic-section joins and pure durable reconciliation.
 - [maintenance_projection](modules/maintenance_projection.md) - Bounded inspection projections of the separately owned maintenance ledger.
@@ -1032,7 +1033,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [search_source](modules/search_source.md) - Explicit bounded static-source text indexing for canonical module candidates.
 - [section_ownership](modules/section_ownership.md) - Conservative section ownership, scoped hashes, and semantic merge policy.
 - [secure_file](modules/secure_file.md) - Helpers for writing local runtime files with best-effort privacy.
-- [services_contracts](modules/services_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
 - [services_dependencies](modules/services_dependencies.md) - Internal dependency-graph analysis and external reconciliation.
 - [services_schema](modules/services_schema.md) - Shared schema utilities for agent constraint blocks.
 - [site_cmd](modules/site_cmd.md) - Commands for exporting LLM Wiki into a static-site-friendly mirror.
@@ -1122,7 +1122,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`
 - [SyncManifest_save](workflows/SyncManifest_save.md) - entry: `sync_manifest.SyncManifest.save`
 - [WikiWriteBasis_before_write](workflows/WikiWriteBasis_before_write.md) - entry: `maintenance_protocol.WikiWriteBasis.before_write`
-- [accepted_reviews](workflows/accepted_reviews.md) - entry: `publish.accepted_reviews`
 - [acknowledge_maintenance_authority](workflows/acknowledge_maintenance_authority.md) - entry: `maintenance_service.acknowledge_maintenance_authority`
 - [add_supersession_edges](workflows/add_supersession_edges.md) - entry: `knowledge_governance._add_supersession_edges`
 - [adopt_maintenance_authority](workflows/adopt_maintenance_authority.md) - entry: `maintenance_service.adopt_maintenance_authority`
@@ -1198,7 +1197,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
 - [checked_artifact](workflows/checked_artifact.md) - entry: `publish.checked_artifact`
 - [checked_preview](workflows/checked_preview.md) - entry: `publication_maintenance._checked_preview`
-- [checkpoint](workflows/checkpoint.md) - entry: `git_transport._checkpoint`
 - [ci_check_cmd_flow](workflows/ci_check_cmd_flow.md) - entry: `ci_check_cmd.run`
 - [classify_uncovered_python_sources](workflows/classify_uncovered_python_sources.md) - entry: `module_coverage.classify_uncovered_python_sources`
 - [clean_agent_schemas](workflows/clean_agent_schemas.md) - entry: `uninstall_cmd._clean_agent_schemas`
@@ -1411,7 +1409,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
 - [validator_identity](workflows/validator_identity.md) - entry: `knowledge_index._validator_identity`
-- [verify_target_blobs](workflows/verify_target_blobs.md) - entry: `checkout._verify_target_blobs`
 - [wiki_anchor](workflows/wiki_anchor.md) - entry: `context_packet_builder._wiki_anchor`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
 - [write](workflows/write.md) - entry: `publication_cmd._write`

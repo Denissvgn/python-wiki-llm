@@ -33,10 +33,10 @@ and strict validation; help text grants no extra write or setup authority.
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.analysis_compatibility` | `comparison_scope` |
 | `.services.helper_runtime` | `current_helper_configuration`, `helper_operation` |
-| `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
-| `.services.runtime_output` | `RuntimeOutputError` |
 | `contextlib` | `contextmanager` |
+| `llm_wiki_engine.progress` | `Progress` |
+| `llm_wiki_engine.runtime_output` | `RuntimeOutputError` |
 | `os` | `os` |
 | `sys` | `sys` |
 

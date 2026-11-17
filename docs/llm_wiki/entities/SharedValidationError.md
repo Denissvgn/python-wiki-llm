@@ -1,6 +1,6 @@
 # SharedValidationError
 
-**Location:** `src/llm_wiki_cli/services/validation.py:98`
+**Location:** `src/llm_wiki_engine/validation.py:98`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [validation](../modules/validation.md)
@@ -22,14 +22,14 @@ Raised when a caller uses a shared validator without a domain adapter.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SharedValidationError (src/llm_wiki_cli/services/validation.py)"]
+    n0["SharedValidationError (src/llm_wiki_engine/validation.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/extract_format.py"]
-    n3["src/llm_wiki_cli/services/surface_index_format.py"]
-    n4["_check_path_collision (src/llm_wiki_cli/services/validation.py)"]
-    n5["_default_path_error (src/llm_wiki_cli/services/validation.py)"]
-    n6["is_canonical_uuid (src/llm_wiki_cli/services/validation.py)"]
-    n7["require_portable_path_component (src/llm_wiki_cli/services/validation.py)"]
+    n2["src/llm_wiki_cli/services/surface_index_format.py"]
+    n3["src/llm_wiki_engine/extract_format.py"]
+    n4["_check_path_collision (src/llm_wiki_engine/validation.py)"]
+    n5["_default_path_error (src/llm_wiki_engine/validation.py)"]
+    n6["is_canonical_uuid (src/llm_wiki_engine/validation.py)"]
+    n7["require_portable_path_component (src/llm_wiki_engine/validation.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -38,8 +38,8 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     click n0 "../modules/validation.md"
-    click n2 "../modules/extract_format.md"
-    click n3 "../modules/surface_index_format.md"
+    click n2 "../modules/surface_index_format.md"
+    click n3 "../modules/extract_format.md"
     click n4 "../modules/validation.md"
     click n5 "../modules/validation.md"
     click n6 "../modules/validation.md"
@@ -62,8 +62,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `extract_format` | import | [extract_format](../modules/extract_format.md) | — |
 | `surface_index_format` | import | [surface_index_format](../modules/surface_index_format.md) | — |
+| `extract_format` | import | [extract_format](../modules/extract_format.md) | — |
 | `_check_path_collision` | call | [validation](../modules/validation.md) | 1 |
 | `_default_path_error` | call | [validation](../modules/validation.md) | 1 |
 | `_default_path_error` | type_reference | [validation](../modules/validation.md) | — |

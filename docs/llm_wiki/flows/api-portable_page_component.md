@@ -15,7 +15,7 @@ sequenceDiagram
     participant p1 as portable_page_component.<locals>.sanitize
     participant p2 as str(…).strip
     participant p3 as str
-    participant p4 as unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)
+    participant p4 as unicodedata.normalize (src/llm_wiki_engine/valid…omponent.<locals>.sanitize)
     participant p5 as _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip
     participant p6 as _UNSAFE_PAGE_COMPONENT_RE.sub
     participant p7 as re.sub(…).lstrip(…).rstrip
@@ -26,7 +26,7 @@ sequenceDiagram
     participant p12 as require_portable_path_component
     participant p13 as component.encode
     participant p14 as SharedValidationError
-    participant p15 as unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
+    participant p15 as unicodedata.normalize (src/llm_wiki_engine/valid…re_portable_path_component)
     participant p16 as any
     participant p17 as ord
     participant p18 as component.endswith
@@ -36,7 +36,7 @@ sequenceDiagram
     p0->>p1: portable_page_component.<locals>.sanitize
     p1-->>p2: str(…).strip
     p1-->>p3: str(candidate)
-    p1-->>p4: unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)('NFC', raw)
+    p1-->>p4: unicodedata.normalize (src/llm_wiki_engine/valid…omponent.<locals>.sanitize)('NFC', raw)
     p1-->>p5: _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip('_')
     p1-->>p6: _UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized)
     p1-->>p7: re.sub(…).lstrip(…).rstrip('. ')
@@ -47,7 +47,7 @@ sequenceDiagram
     p11->>p12: require_portable_path_component
     p12-->>p13: component.encode('utf-8')
     p12->>p14: SharedValidationError
-    p12-->>p15: unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)('NFC', component)
+    p12-->>p15: unicodedata.normalize (src/llm_wiki_engine/valid…re_portable_path_component)('NFC', component)
     p12->>p14: SharedValidationError
     p12-->>p16: any(...)
     p12-->>p17: ord(character)
@@ -88,7 +88,7 @@ Collector observations for 5 source steps with known totals: observed: 23, emitt
 | `portable_page_component.<locals>.sanitize` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `str(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `unicodedata.normalize (src/llm_wiki_engine/valid…omponent.<locals>.sanitize)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_UNSAFE_PAGE_COMPONENT_RE.sub` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `re.sub(…).lstrip(…).rstrip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -103,7 +103,7 @@ flowchart LR
     s2["2. portable_page_component.#60;locals#62;.sanitize"]
     s3["3. str(…).strip"]
     s4["4. str"]
-    s5["5. unicodedata.normalize (src/llm_wiki_cli/services…omponent.#60;locals#62;.sanitize)"]
+    s5["5. unicodedata.normalize (src/llm_wiki_engine/valid…omponent.#60;locals#62;.sanitize)"]
     s6["6. _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip"]
     s7["7. _UNSAFE_PAGE_COMPONENT_RE.sub"]
     s8["8. re.sub(…).lstrip(…).rstrip"]
@@ -114,7 +114,7 @@ flowchart LR
     s1 -->|"portable_page_component.#60;locals#62;.sanitize(value)"| s2
     s2 -. "str(…).strip(data not statically known)" .-> s3
     s2 -. "str(candidate)" .-> s4
-    s2 -. "unicodedata.normalize (src/llm_wiki_cli/services…omponent.#60;locals#62;.sanitize)('NFC', raw)" .-> s5
+    s2 -. "unicodedata.normalize (src/llm_wiki_engine/valid…omponent.#60;locals#62;.sanitize)('NFC', raw)" .-> s5
     s2 -. "_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip('_')" .-> s6
     s2 -. "_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized)" .-> s7
     s2 -. "re.sub(…).lstrip(…).rstrip('. ')" .-> s8
@@ -135,7 +135,7 @@ flowchart LR
 | `portable_page_component.<locals>.sanitize` | `candidate: object` | - | - | `safe` |
 | `str(…).strip` | - | - | - | - |
 | `str` | - | - | - | - |
-| `unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)` | - | - | - | - |
+| `unicodedata.normalize (src/llm_wiki_engine/valid…omponent.<locals>.sanitize)` | - | - | - | - |
 | `_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip` | - | - | - | - |
 | `_UNSAFE_PAGE_COMPONENT_RE.sub` | - | - | - | - |
 | `re.sub(…).lstrip(…).rstrip` | - | - | - | - |
@@ -151,7 +151,7 @@ flowchart LR
 | portable_page_component | portable_page_component.<locals>.sanitize | 621 | `sanitize(value)` |
 | portable_page_component.<locals>.sanitize | str(…).strip | 611 | `str(candidate).strip(data not statically known)` |
 | portable_page_component.<locals>.sanitize | str | 611 | `str(candidate)` |
-| portable_page_component.<locals>.sanitize | unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize) | 612 | `unicodedata.normalize('NFC', raw)` |
+| portable_page_component.<locals>.sanitize | unicodedata.normalize (src/llm_wiki_engine/valid…omponent.<locals>.sanitize) | 612 | `unicodedata.normalize('NFC', raw)` |
 | portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip | 613 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized).strip('_')` |
 | portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub | 613 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized)` |
 | portable_page_component.<locals>.sanitize | re.sub(…).lstrip(…).rstrip | 614 | `re.sub('_+', '_', safe).lstrip('.').rstrip('. ')` |

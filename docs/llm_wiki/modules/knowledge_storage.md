@@ -15,21 +15,21 @@ from diagnostics.
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `canonical_chunks`, `compact_line_bytes`, `scalar_size`, `sha256_digest` |
-| `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.implementation_evidence` | `validate_concept_implementation` |
 | `.knowledge_audit` | `audit_logical_records` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge`, `validate_typed_graph_slice` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
-| `.section_ownership` | `validate_section_ownership` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `collections.abc` | `MutableMapping`, `Callable`, `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `canonical_chunks`, `compact_line_bytes`, `scalar_size`, `sha256_digest` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge`, `validate_typed_graph_slice` |
+| `llm_wiki_engine.section_ownership` | `validate_section_ownership` |
 | `re` | `re` |
 | `typing` | `Any`, `NoReturn` |
 

@@ -1,6 +1,6 @@
 # _InventoryNormalizationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_evidence.py:151`
+**Location:** `src/llm_wiki_engine/knowledge_evidence.py:151`
 **Kind:** Class
 **Bases:** `Exception`
 **Module:** [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -31,9 +31,9 @@ exception has no invented record detail.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_InventoryNormalizationError (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n0["_InventoryNormalizationError (src/llm_wiki_engine/knowledge_evidence.py)"]
     n1["Exception"]
-    n2["_failure (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n2["_failure (src/llm_wiki_engine/knowledge_evidence.py)"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/knowledge_evidence.md"

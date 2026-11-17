@@ -17,13 +17,13 @@ changing its stored code or promoting unavailable comparisons to current.
 | Source | Symbols |
 |--------|---------|
 | `.` | `analysis_compatibility` |
-| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.knowledge_observability` | `knowledge_freshness_hint` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `re` | `re` |
 | `typing` | `Any` |
 | `unicodedata` | `unicodedata` |
@@ -38,42 +38,42 @@ flowchart LR
     n2["src/llm_wiki_cli/services/analysis_compatibility.py"]
     n3["src/llm_wiki_cli/services/ci_report.py"]
     n4["src/llm_wiki_cli/services/doctor_service.py"]
-    n5["src/llm_wiki_cli/services/freshness_wording.py"]
-    n6["src/llm_wiki_cli/services/health_summary.py"]
-    n7["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
+    n5["src/llm_wiki_cli/services/health_summary.py"]
+    n6["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n8["src/llm_wiki_engine/freshness_wording.py"]
     n0 --> n3
-    n0 --> n6
+    n0 --> n5
     n1 --> n3
     n1 --> n4
-    n1 --> n6
-    n1 --> n8
+    n1 --> n5
+    n1 --> n7
     n3 --> n2
     n3 --> n4
+    n3 --> n5
     n3 --> n6
     n3 --> n7
-    n3 --> n8
     n4 --> n2
     n4 --> n5
     n4 --> n6
     n4 --> n7
     n4 --> n8
-    n6 --> n2
-    n6 --> n5
-    n6 --> n7
+    n5 --> n2
+    n5 --> n6
+    n5 --> n8
+    n6 --> n8
+    n7 --> n2
     n7 --> n5
-    n8 --> n2
-    n8 --> n6
-    n8 --> n7
+    n7 --> n6
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/analysis_compatibility.md"
     click n3 "../modules/ci_report.md"
     click n4 "../modules/doctor_service.md"
-    click n5 "../modules/freshness_wording.md"
-    click n6 "../modules/health_summary.md"
-    click n7 "../modules/knowledge_observability.md"
-    click n8 "../modules/lint_service.md"
+    click n5 "../modules/health_summary.md"
+    click n6 "../modules/knowledge_observability.md"
+    click n7 "../modules/lint_service.md"
+    click n8 "../modules/freshness_wording.md"
 ```
 
 ### Internal neighbors
@@ -86,8 +86,8 @@ flowchart LR
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
 | Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
-| Outbound | [freshness_wording](../modules/freshness_wording.md) |
 | Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
+| Outbound | [freshness_wording](../modules/freshness_wording.md) |
 
 ## Functions
 

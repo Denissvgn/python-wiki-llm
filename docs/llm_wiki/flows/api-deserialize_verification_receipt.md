@@ -88,8 +88,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 17 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 > Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

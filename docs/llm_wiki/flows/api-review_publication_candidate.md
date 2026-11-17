@@ -97,8 +97,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | external | 2 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 38 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 38 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
 > Omission summary shows 8 of 33 groups; 25 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -205,11 +205,11 @@ flowchart LR
 | review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3841 | `isinstance(receipt, Mapping)` |
 | review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3842 | `ValueError('Publication receipt must be a mapping')` |
 | review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3843 | `review(dict(...), reviewer=reviewer, reason=reason)` |
-| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 591 | `validate_publication_receipt(receipt)` |
-| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 327 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 328 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 329 | `dict(receipt)` |
-| validate_publication_receipt | _json_tree | 330 | `_json_tree(receipt)` |
+| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 601 | `validate_publication_receipt(receipt)` |
+| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 337 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 338 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `dict(receipt)` |
+| validate_publication_receipt | _json_tree | 340 | `_json_tree(receipt)` |
 | _json_tree | pending.pop | 140 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
@@ -218,7 +218,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 478 |
+| mutation | `seen.add` | `validate_publication_receipt` | 488 |
 | mutation | `pending.pop` | `_json_tree` | 140 |
 | mutation | `pending.extend` | `_json_tree` | 147 |
 | mutation | `pending.extend` | `_json_tree` | 149 |
@@ -229,8 +229,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `review_publication_candidate` | `isinstance` | 3841 |
 | external_call | `review_publication_candidate` | `ValueError` | 3842 |
-| external_call | `validate_publication_receipt` | `isinstance` | 327 |
-| external_call | `validate_publication_receipt` | `ValueError` | 328 |
+| external_call | `validate_publication_receipt` | `isinstance` | 337 |
+| external_call | `validate_publication_receipt` | `ValueError` | 338 |
 | step_limit | `review_publication_candidate` | `first 12 steps` | 0 |
 | truncated_flow | `review_publication_candidate` | `depth limit` | 0 |
 

@@ -93,11 +93,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 15 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 18 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_text` | 20 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 15 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 15 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_text` | 20 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
 > Omission summary shows 8 of 44 groups; 36 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,13 +1,13 @@
 # _Discard
 
-**Location:** `src/llm_wiki_cli/services/host.py:237`
+**Location:** `src/llm_wiki_engine/host.py:237`
 **Kind:** Class
 **Bases:** `io.TextIOBase`
 **Module:** [host](../modules/host.md)
 
 ## Description
 
-_Auto-generated from `_Discard` in `src/llm_wiki_cli/services/host.py`._
+_Auto-generated from `_Discard` in `src/llm_wiki_engine/host.py`._
 
 ## Attributes
 
@@ -25,10 +25,10 @@ _Auto-generated from `_Discard` in `src/llm_wiki_cli/services/host.py`._
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_Discard (src/llm_wiki_cli/services/host.py)"]
+    n0["_Discard (src/llm_wiki_engine/host.py)"]
     n1["io.TextIOBase"]
-    n2["discarding_output (src/llm_wiki_cli/services/host.py)"]
-    n3["discarding_stdout (src/llm_wiki_cli/services/host.py)"]
+    n2["discarding_output (src/llm_wiki_engine/host.py)"]
+    n3["discarding_stdout (src/llm_wiki_engine/host.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

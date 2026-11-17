@@ -1,6 +1,6 @@
 # PageSectionObservations
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:112`
+**Location:** `src/llm_wiki_engine/section_ownership.py:112`
 **Kind:** Class
 **Bases:** —
 **Module:** [section_ownership](../modules/section_ownership.md)
@@ -33,10 +33,10 @@ All ordered section observations for one final Markdown page.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageSectionObservations (src/llm_wiki_cli/services/section_ownership.py)"]
-    n1["observe_page_sections (src/llm_wiki_cli/services/section_ownership.py)"]
-    n2["section_ownership_extension (src/llm_wiki_cli/services/section_ownership.py)"]
-    n3["serialize_section_ownership (src/llm_wiki_cli/services/section_ownership.py)"]
+    n0["PageSectionObservations (src/llm_wiki_engine/section_ownership.py)"]
+    n1["observe_page_sections (src/llm_wiki_engine/section_ownership.py)"]
+    n2["section_ownership_extension (src/llm_wiki_engine/section_ownership.py)"]
+    n3["serialize_section_ownership (src/llm_wiki_engine/section_ownership.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

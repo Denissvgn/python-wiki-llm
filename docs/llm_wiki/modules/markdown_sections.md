@@ -1,6 +1,6 @@
 # markdown_sections Module
 
-**Path:** `src/llm_wiki_cli/services/markdown_sections.py`
+**Path:** `src/llm_wiki_engine/markdown_sections.py`
 
 ## Description
 
@@ -33,7 +33,7 @@ duplicate-table-row behavior that predates the hierarchy parser.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/markdown_sections.py"]
+    n1["src/llm_wiki_engine/markdown_sections.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/markdown_sections.md"

@@ -21,12 +21,12 @@ An explicit diagnostic request enables the bundled native helper response, valid
 | Source | Symbols |
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
-| `..services.host` | `HostCapabilityError`, `current_host` |
 | `.common` | `discover_source_files`, `filter_bundled_inventory` |
 | `.native_diagnostics` | `load_native_chunks`, `path_outcome` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -41,7 +41,7 @@ flowchart LR
     n2["src/llm_wiki_cli/extractors/rust_extractor.py"]
     n3["src/llm_wiki_cli/services/extraction_service.py"]
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n5["src/llm_wiki_cli/services/host.py"]
+    n5["src/llm_wiki_engine/host.py"]
     n1 --> n0
     n2 --> n0
     n2 --> n1

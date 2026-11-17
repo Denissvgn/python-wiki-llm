@@ -1,6 +1,6 @@
 # runtime_output Module
 
-**Path:** `src/llm_wiki_cli/services/runtime_output.py`
+**Path:** `src/llm_wiki_engine/runtime_output.py`
 
 ## Description
 
@@ -25,25 +25,25 @@ Best-effort implicit output and preflighted operator-selected destinations.
 flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
     n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
-    n2["src/llm_wiki_cli/services/host.py"]
-    n3["src/llm_wiki_cli/services/inventory_cache.py"]
-    n4["src/llm_wiki_cli/services/runtime_output.py"]
-    n5["src/llm_wiki_cli/services/sync_analysis_cache.py"]
+    n2["src/llm_wiki_cli/services/inventory_cache.py"]
+    n3["src/llm_wiki_cli/services/sync_analysis_cache.py"]
+    n4["src/llm_wiki_engine/host.py"]
+    n5["src/llm_wiki_engine/runtime_output.py"]
     n0 --> n1
-    n0 --> n4
-    n1 --> n3
-    n1 --> n4
+    n0 --> n5
+    n1 --> n2
+    n1 --> n5
+    n2 --> n5
+    n3 --> n2
     n3 --> n4
-    n4 --> n2
-    n5 --> n2
-    n5 --> n3
+    n3 --> n5
     n5 --> n4
     click n0 "../modules/cli.md"
     click n1 "../modules/ci_check_cmd.md"
-    click n2 "../modules/host.md"
-    click n3 "../modules/inventory_cache.md"
-    click n4 "../modules/runtime_output.md"
-    click n5 "../modules/sync_analysis_cache.md"
+    click n2 "../modules/inventory_cache.md"
+    click n3 "../modules/sync_analysis_cache.md"
+    click n4 "../modules/host.md"
+    click n5 "../modules/runtime_output.md"
 ```
 
 ### Internal neighbors

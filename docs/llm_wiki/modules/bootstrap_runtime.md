@@ -28,7 +28,6 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_recovery` | `pending_bootstrap`, `bootstrap_write_operation`, `pending_bootstrap` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
-| `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `startup_cycle_groups`, `top_level_package` |
@@ -39,7 +38,6 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
 | `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
 | `.helper_runtime` | `current_helper_operation` |
-| `.host` | `current_host`, `emit` |
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
@@ -50,18 +48,14 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
 | `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
-| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
-| `.paths` | `normalize_source_path`, `portable_source_root_label` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
 | `.relationships` | `build_entity_page_relationship_summaries` |
 | `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.validation` | `portable_page_component`, `posix_path_text` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle`, `is_pristine_wiki_target`, `migration_guidance`, `sync_guidance` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
@@ -72,6 +66,12 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `functools` | `partial` |
 | `io` | `io` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host`, `emit` |
+| `llm_wiki_engine.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
+| `llm_wiki_engine.paths` | `normalize_source_path`, `portable_source_root_label` |
+| `llm_wiki_engine.validation` | `portable_page_component`, `posix_path_text` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shlex` | `shlex` |

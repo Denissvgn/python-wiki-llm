@@ -10,18 +10,18 @@ Strict portable validators for captured publication evidence and decisions.
 
 | Source | Symbols |
 |--------|---------|
-| `.concept_identity` | `validate_concept_uid` |
-| `.knowledge_evidence` | `hash_json` |
-| `.markdown_sections` | `SECTION_ORDER_DOMAIN`, `section_locator` |
 | `.publication_config` | `PUBLICATION_CONFIG_SCHEMA_VERSION`, `validate_publication_config` |
 | `.reference_providers` | `ReferenceContractError`, `current_reference_providers`, `reference_provider` |
 | `.sync_manifest` | `ManifestPageSource` |
-| `.validation` | `portable_path_key`, `require_repository_relative_path`, `require_sha256` |
-| `.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
+| `llm_wiki_engine.concept_identity` | `validate_concept_uid` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.markdown_sections` | `SECTION_ORDER_DOMAIN`, `section_locator` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path`, `require_sha256` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
 | `math` | `math` |
 | `re` | `re` |
 | `typing` | `Any`, `NoReturn` |

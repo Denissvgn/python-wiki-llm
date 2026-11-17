@@ -1,6 +1,6 @@
 # TextSink
 
-**Location:** `src/llm_wiki_cli/services/host.py:43`
+**Location:** `src/llm_wiki_engine/host.py:43`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [host](../modules/host.md)
@@ -25,13 +25,13 @@ A writable text stream, such as ``sys.stdout`` or ``io.StringIO``.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["TextSink (src/llm_wiki_cli/services/host.py)"]
+    n0["TextSink (src/llm_wiki_engine/host.py)"]
     n1["Protocol"]
-    n2["Host.__init__ (src/llm_wiki_cli/services/host.py)"]
-    n3["Host.stderr (src/llm_wiki_cli/services/host.py)"]
-    n4["Host.stdout (src/llm_wiki_cli/services/host.py)"]
-    n5["Host.with_output (src/llm_wiki_cli/services/host.py)"]
-    n6["MessageStream._target (src/llm_wiki_cli/services/host.py)"]
+    n2["Host.__init__ (src/llm_wiki_engine/host.py)"]
+    n3["Host.stderr (src/llm_wiki_engine/host.py)"]
+    n4["Host.stdout (src/llm_wiki_engine/host.py)"]
+    n5["Host.with_output (src/llm_wiki_engine/host.py)"]
+    n6["MessageStream._target (src/llm_wiki_engine/host.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

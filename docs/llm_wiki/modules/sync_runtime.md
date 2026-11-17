@@ -109,20 +109,17 @@ still stop the operation.
 | `..config` | `PathValidationError`, `validate_path`, `validate_source_root`, `EXTRACTOR_REGISTRY` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `load_openapi_document` |
 | `.bootstrap_runtime` | `_build_entity_relationship_summary_map`, `_build_relationships`, `_generate_api_contracts_md`, `_generate_dependencies_md`, `_generate_entity_md`, `_generate_flow_md`, `_generate_index_md`, `_generate_load_order_md`, `_generate_module_md`, `_generate_workflow_md`, `_generate_infrastructure_md`, `_generated_diagram_style`, `_module_name_from_path`, `_page_name_for_module`, `_source_snapshot_log_lines`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
-| `.contracts` | `INITIALIZABLE_SURFACES` |
 | `.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations` |
 | `.entrypoints` | `build_flow`, `build_flow_context`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_for`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_inventory_result`, `get_docker_inventory`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
-| `.host` | `current_host`, `discarding_stdout`, `emit`, `recording_errors` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
 | `.io` | `read_md`, `write_md` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
-| `.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
@@ -130,13 +127,9 @@ still stop the operation.
 | `.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
 | `.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
 | `.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
-| `.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `.module_maps` | `build_module_dependency_maps` |
-| `.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
-| `.progress` | `observed_phase`, `record_counts` |
 | `.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
-| `.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
 | `.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `source_snapshot_matches_current_files`, `format_unsupported_source_summary`, `unsupported_source_summary` |
@@ -147,9 +140,7 @@ still stop the operation.
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
 | `.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
-| `.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
@@ -159,6 +150,15 @@ still stop the operation.
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `INITIALIZABLE_SURFACES` |
+| `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit`, `recording_errors` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
+| `llm_wiki_engine.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
+| `llm_wiki_engine.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
+| `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
+| `llm_wiki_engine.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

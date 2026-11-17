@@ -1,6 +1,6 @@
 # ConceptAllocation
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:116`
+**Location:** `src/llm_wiki_engine/concept_identity.py:116`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -32,14 +32,14 @@ A persisted UID bound to the concept's current coordinates.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptAllocation (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["aliases_for_move (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n4["find_identity_collisions (src/llm_wiki_cli/services/concept_identity.py)"]
-    n5["move_allocation (src/llm_wiki_cli/services/concept_identity.py)"]
-    n6["validate_identity_registry (src/llm_wiki_cli/services/concept_identity.py)"]
-    n7["validate_governance_ledger (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["ConceptAllocation (src/llm_wiki_engine/concept_identity.py)"]
+    n1["validate_governance_ledger (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n3["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
+    n4["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n5["find_identity_collisions (src/llm_wiki_engine/concept_identity.py)"]
+    n6["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
+    n7["validate_identity_registry (src/llm_wiki_engine/concept_identity.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -48,13 +48,13 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     click n0 "../modules/concept_identity.md"
-    click n1 "../modules/concept_identity.md"
+    click n1 "../modules/knowledge_governance.md"
     click n2 "../modules/concept_identity.md"
     click n3 "../modules/concept_identity.md"
     click n4 "../modules/concept_identity.md"
     click n5 "../modules/concept_identity.md"
     click n6 "../modules/concept_identity.md"
-    click n7 "../modules/knowledge_governance.md"
+    click n7 "../modules/concept_identity.md"
 ```
 
 ### Summary
@@ -67,6 +67,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `validate_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) | 1 |
@@ -75,4 +76,3 @@ flowchart LR
 | `move_allocation` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 | `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `validate_identity_registry` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
-| `validate_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |

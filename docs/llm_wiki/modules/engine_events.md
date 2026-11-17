@@ -1,6 +1,6 @@
 # engine_events Module
 
-**Path:** `src/llm_wiki_cli/services/engine_events.py`
+**Path:** `src/llm_wiki_engine/engine_events.py`
 
 ## Description
 
@@ -54,8 +54,8 @@ loading the engine.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/engine_events.py"]
-    n2["src/llm_wiki_cli/services/host.py"]
+    n1["src/llm_wiki_engine/engine_events.py"]
+    n2["src/llm_wiki_engine/host.py"]
     n0 --> n1
     n0 --> n2
     n2 --> n1

@@ -127,11 +127,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet_builder.py:_wiki_anchor` | 2 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
 | `src/llm_wiki_cli/services/source_snapshot.py:directory_identity` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_wiki_anchor` | 2 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 9 | - | external | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:compact_bytes` | 12 | [src/llm_wiki_cli/services/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 9 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
 > Omission summary shows 8 of 274 groups; 266 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -165,7 +165,7 @@ Collector observations for 336 source steps with known totals: observed: 2305, e
 | `_domain_hash` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `sha256_digest` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `hashlib.sha256 (src/llm_wiki_cli/services…cal_json.py:sha256_digest)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `compact_bytes` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
@@ -180,7 +180,7 @@ flowchart LR
     s8["8. _domain_hash"]
     s9["9. sha256_digest"]
     s10["10. hashlib.sha256(…).hexdigest"]
-    s11["11. hashlib.sha256 (src/llm_wiki_cli/services…cal_json.py:sha256_digest)"]
+    s11["11. hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)"]
     s12["12. compact_bytes"]
     s1 -->|"_wiki_anchor(wiki_root)"| s2
     s2 -. "str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)(current)" .-> s3
@@ -191,7 +191,7 @@ flowchart LR
     s2 -->|"_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})"| s8
     s8 -->|"sha256_digest(canonical_json_bytes(...))"| s9
     s9 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s10
-    s9 -. "hashlib.sha256 (src/llm_wiki_cli/services…cal_json.py:sha256_digest)(data)" .-> s11
+    s9 -. "hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)(data)" .-> s11
     s8 -->|"compact_bytes({...})"| s12
     click s1 "../modules/documentation_query_builder.md"
     click s2 "../modules/context_packet_builder.md"
@@ -215,7 +215,7 @@ flowchart LR
 | `_domain_hash` | `domain: str`, `value: Mapping[str, Any]` | - | - | `sha256_bytes(...)` |
 | `sha256_digest` | `data: bytes` | - | - | `...` |
 | `hashlib.sha256(…).hexdigest` | - | - | - | - |
-| `hashlib.sha256 (src/llm_wiki_cli/services…cal_json.py:sha256_digest)` | - | - | - | - |
+| `hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)` | - | - | - | - |
 | `compact_bytes` | `value: Any`, `allow_nan: bool` | - | - | `...` |
 
 ### Call data
@@ -223,16 +223,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_snapshot_documentation_query_service | _wiki_anchor | 441 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor) | 2159 | `str(current)` |
-| _wiki_anchor | directory_identity | 2159 | `directory_identity(current)` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor) | 2160 | `str(current)` |
+| _wiki_anchor | directory_identity | 2160 | `directory_identity(current)` |
 | directory_identity | path.stat | 688 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 2160 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 2163 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 2164 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_digest | 3047 | `sha256_bytes(canonical_json_bytes(...))` |
+| _wiki_anchor | current.exists | 2161 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 2164 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 2165 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_digest | 3048 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
-| sha256_digest | hashlib.sha256 (src/llm_wiki_cli/services…cal_json.py:sha256_digest) | 56 | `hashlib.sha256(data)` |
-| _domain_hash | compact_bytes | 3048 | `canonical_json_bytes({...})` |
+| sha256_digest | hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest) | 56 | `hashlib.sha256(data)` |
+| _domain_hash | compact_bytes | 3049 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -243,8 +243,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `directory_identity` | `path.stat` | 688 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 2160 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 2163 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 2161 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 2164 |
 | unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
 | external_call | `sha256_digest` | `hashlib.sha256` | 56 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |

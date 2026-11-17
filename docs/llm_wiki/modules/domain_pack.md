@@ -61,14 +61,14 @@ ranking, so packets refuse to seal under a pack that replaces it.
 | `.helper_runtime` | `PreparedHelperHandle`, `required_helper_languages` |
 | `.reference_providers` | `BUILTIN_REFERENCE_PROVIDERS`, `ReferenceProvider`, `check_reference_providers` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `portable_page_component`, `portable_path_key` |
-| `.wiki_surface` | `PageKind` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping` |
 | `contextlib` | `contextmanager` |
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
+| `llm_wiki_engine.validation` | `portable_page_component`, `portable_path_key` |
+| `llm_wiki_engine.wiki_surface` | `PageKind` |
 | `pathlib` | `PurePath` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |

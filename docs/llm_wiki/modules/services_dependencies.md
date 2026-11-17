@@ -44,13 +44,13 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `.python_imports` | `is_python_source` |
 | `.python_stdlib` | `python_stdlib_module_names` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
-| `.validation` | `nearest_path_scope`, `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `heapq` | `heapq` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `nearest_path_scope`, `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

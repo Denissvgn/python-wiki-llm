@@ -15,13 +15,13 @@ Recover only journaled first-use output before capturing fresh evidence.
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
 | `.maintenance_protocol` | `MaintenanceProtocolError`, `WikiWriteBasis`, `governance_writer_lock`, `storage_writer_lock`, `guard_maintenance_owner`, `save_recovery_snapshot`, `snapshot_wiki` |
-| `.request_json` | `_pairs`, `_constant` |
-| `.validation` | `is_portable_relative_path` |
 | `.wiki_lifecycle` | `is_pristine_wiki_target` |
 | `.wiki_write_basis` | `ACTIVE_BOOTSTRAP_JOURNAL` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `tempfile` | `tempfile` |
@@ -39,10 +39,10 @@ flowchart LR
     n4["src/llm_wiki_cli/services/knowledge_storage.py"]
     n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
     n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n7["src/llm_wiki_cli/services/request_json.py"]
-    n8["src/llm_wiki_cli/services/validation.py"]
-    n9["src/llm_wiki_cli/services/wiki_lifecycle.py"]
-    n10["src/llm_wiki_cli/services/wiki_write_basis.py"]
+    n7["src/llm_wiki_cli/services/wiki_lifecycle.py"]
+    n8["src/llm_wiki_cli/services/wiki_write_basis.py"]
+    n9["src/llm_wiki_engine/request_json.py"]
+    n10["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
@@ -55,22 +55,22 @@ flowchart LR
     n1 --> n0
     n1 --> n3
     n1 --> n6
-    n1 --> n8
-    n1 --> n9
-    n2 --> n10
+    n1 --> n7
+    n1 --> n10
+    n2 --> n8
     n3 --> n8
     n3 --> n10
     n5 --> n2
     n5 --> n4
-    n5 --> n8
+    n5 --> n10
     n6 --> n0
     n6 --> n2
     n6 --> n3
     n6 --> n4
     n6 --> n5
-    n6 --> n7
-    n6 --> n10
-    n9 --> n2
+    n6 --> n8
+    n6 --> n9
+    n7 --> n2
     click n0 "../modules/bootstrap_recovery.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/filesystem_guard.md"
@@ -78,10 +78,10 @@ flowchart LR
     click n4 "../modules/knowledge_storage.md"
     click n5 "../modules/knowledge_storage_io.md"
     click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/request_json.md"
-    click n8 "../modules/validation.md"
-    click n9 "../modules/wiki_lifecycle.md"
-    click n10 "../modules/wiki_write_basis.md"
+    click n7 "../modules/wiki_lifecycle.md"
+    click n8 "../modules/wiki_write_basis.md"
+    click n9 "../modules/request_json.md"
+    click n10 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -95,10 +95,10 @@ flowchart LR
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
-| Outbound | [request_json](../modules/request_json.md) |
-| Outbound | [validation](../modules/validation.md) |
 | Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
 | Outbound | [wiki_write_basis](../modules/wiki_write_basis.md) |
+| Outbound | [request_json](../modules/request_json.md) |
+| Outbound | [validation](../modules/validation.md) |
 
 ## Functions
 

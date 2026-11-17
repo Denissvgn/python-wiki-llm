@@ -32,15 +32,15 @@ sequenceDiagram
     participant p18 as isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)
     participant p19 as inventory.items
     participant p20 as payload.values
-    participant p21 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p21 as isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)
     participant p22 as set
     participant p23 as hashlib.sha256(…).hexdigest
     participant p24 as compact_text(…).encode
     participant p25 as walk
     participant p26 as hashlib.sha256
     participant p27 as value.strip
-    participant p28 as any (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p29 as ord (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p28 as any (src/llm_wiki_engine/valid…e_repository_relative_path)
+    participant p29 as ord (src/llm_wiki_engine/valid…e_repository_relative_path)
     p0->>p1: _repository_relative_path
     p0->>p2: _hash_structured
     p0->>p3: KnowledgeEnvelopeError
@@ -62,15 +62,15 @@ sequenceDiagram
     p0-->>p19: inventory.items
     p0-->>p18: isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(source_path, str)
     p2-->>p20: payload.values
-    p4-->>p21: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)
+    p4-->>p21: isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)(value, str)
     p10-->>p22: set
     p11-->>p23: hashlib.sha256(…).hexdigest
     p5-->>p24: compact_text(…).encode('utf-8')
     p10-->>p25: walk(value, field_name)
     p11-->>p26: hashlib.sha256(data)
     p4-->>p27: value.strip
-    p4-->>p28: any (src/llm_wiki_cli/services…e_repository_relative_path)(...)
-    p4-->>p29: ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)
+    p4-->>p28: any (src/llm_wiki_engine/valid…e_repository_relative_path)(...)
+    p4-->>p29: ord (src/llm_wiki_engine/valid…e_repository_relative_path)(character)
 ```
 
 > Call sequence diagram shows 30 of 97 interactions; 67 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -82,13 +82,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:hash_inventory` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 10 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 17 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 8 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 8 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 31 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 31 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 41 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 10 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 17 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 8 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 8 | - | unresolved | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 31 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 31 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 41 | - | unresolved | 1 |
 > Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -118,10 +118,10 @@ Collector observations for 26 source steps with known totals: observed: 123, emi
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_repository_relative_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
-| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -133,10 +133,10 @@ flowchart LR
     s6["6. KnowledgeEnvelopeError"]
     s7["7. _repository_relative_path"]
     s8["8. require_repository_relative_path"]
-    s9["9. isinstance (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s9["9. isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)"]
     s10["10. _syntax_key"]
     s11["11. type"]
-    s12["12. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s12["12. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(inventory, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('inventory', 'must be an object')"| s3
     s1 -. "inventory.items(data not statically known)" .-> s4
@@ -144,10 +144,10 @@ flowchart LR
     s1 -->|"KnowledgeEnvelopeError('inventory', 'must use string source keys')"| s6
     s1 -->|"_repository_relative_path(source_path, 'inventory.source_path')"| s7
     s7 -->|"require_repository_relative_path(…)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)(value, str)" .-> s9
     s8 -->|"_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)"| s10
     s10 -. "type(value)" .-> s11
-    s10 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s12
+    s10 -. "len (src/llm_wiki_engine/validation.py:_syntax_key)(value)" .-> s12
     click s1 "../modules/knowledge_envelope.md"
     click s3 "../modules/knowledge_envelope.md"
     click s6 "../modules/knowledge_envelope.md"
@@ -168,10 +168,10 @@ flowchart LR
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `_repository_relative_path` | `value: object`, `field_name: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)` | - | - | - | - |
 | `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
 | `type` | - | - | - | - |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
 
 ### Call data
 
@@ -184,10 +184,10 @@ flowchart LR
 | hash_inventory | KnowledgeEnvelopeError | 771 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
 | hash_inventory | _repository_relative_path | 772 | `_repository_relative_path(source_path, 'inventory.source_path')` |
 | _repository_relative_path | require_repository_relative_path | 1506 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…e_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |
-| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
+| _syntax_key | len (src/llm_wiki_engine/validation.py:_syntax_key) | 54 | `len(value)` |
 
 ### Boundary effects
 

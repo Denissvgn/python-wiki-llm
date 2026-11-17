@@ -10,8 +10,7 @@ Shared construction for supported documentation query services.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface`, `context_service`, `extraction_service` |
-| `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `.` | `context_service`, `extraction_service` |
 | `.context_packet_builder` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT` |
@@ -25,12 +24,14 @@ Shared construction for supported documentation query services.
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.validation` | `require_portable_relative_path` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
 | `itertools` | `islice` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |

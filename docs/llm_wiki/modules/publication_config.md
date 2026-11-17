@@ -14,16 +14,16 @@ Reference dependencies require an explicitly declared, non-executable provider.
 
 | Source | Symbols |
 |--------|---------|
-| `.concept_identity` | `ConceptIdentityError`, `validate_locator` |
 | `.publication_targets` | `PublicationTarget`, `current_publication_targets` |
 | `.reference_providers` | `ReferenceSelectorError`, `current_reference_providers`, `reference_provider` |
 | `.source_selection` | `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `locate_exact_repository_path`, `path_is_link_or_reparse` |
-| `.validation` | `portable_path_key`, `require_repository_relative_path` |
-| `.wiki_media` | `MEDIA_EXTENSIONS` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `ipaddress` | `ipaddress` |
 | `json` | `json` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_locator` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_media` | `MEDIA_EXTENSIONS` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |

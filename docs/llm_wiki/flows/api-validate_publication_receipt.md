@@ -97,8 +97,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 8 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 32 | - | external | 2 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 32 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 37 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 37 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 37 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 37 | - | external | 1 |
 > Omission summary shows 8 of 37 groups; 29 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -204,10 +204,10 @@ flowchart LR
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3851 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3852 | `ValueError('Publication receipt must be a mapping')` |
 | validate_publication_receipt (src/llm_wiki_cli/api.py) | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | 3853 | `validate(dict(...))` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 327 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 328 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 329 | `dict(receipt)` |
-| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | _json_tree | 330 | `_json_tree(receipt)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 337 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 338 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `dict(receipt)` |
+| validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | _json_tree | 340 | `_json_tree(receipt)` |
 | _json_tree | pending.pop | 140 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
@@ -217,7 +217,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 478 |
+| mutation | `seen.add` | `validate_publication_receipt` | 488 |
 | mutation | `pending.pop` | `_json_tree` | 140 |
 | mutation | `pending.extend` | `_json_tree` | 147 |
 | mutation | `pending.extend` | `_json_tree` | 149 |
@@ -228,8 +228,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_publication_receipt` | `isinstance` | 3851 |
 | external_call | `validate_publication_receipt` | `ValueError` | 3852 |
-| external_call | `validate_publication_receipt` | `isinstance` | 327 |
-| external_call | `validate_publication_receipt` | `ValueError` | 328 |
+| external_call | `validate_publication_receipt` | `isinstance` | 337 |
+| external_call | `validate_publication_receipt` | `ValueError` | 338 |
 | external_call | `_json_tree` | `isinstance` | 144 |
 | step_limit | `validate_publication_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `validate_publication_receipt` | `depth limit` | 0 |

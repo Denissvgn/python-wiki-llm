@@ -27,11 +27,11 @@ best effort.
 | `..services.knowledge_storage_diagnostics` | `storage_report` |
 | `..services.lint_service` | `LintIssue`, `build_report`, `render_markdown`, `render_text`, `report_to_dict` |
 | `..services.metrics` | `record_validation_event` |
-| `..services.progress` | `observed_phase` |
-| `..services.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `prepare_destination`, `stderr_warning` |
 | `__future__` | `annotations` |
 | `dataclasses` | `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `prepare_destination`, `stderr_warning` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 | `time` | `time` |

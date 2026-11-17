@@ -35,11 +35,11 @@ follow unsafe paths.
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface` | `PageKind`, `collect_wiki_pages` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `collect_wiki_pages` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 

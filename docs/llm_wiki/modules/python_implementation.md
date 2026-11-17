@@ -14,13 +14,13 @@ captured syntax, never dependencies, prose correctness, or runtime equivalence.
 | Source | Symbols |
 |--------|---------|
 | `.analysis_capture` | `_CapturedAnalysis` |
-| `.canonical_json` | `compact_line_bytes` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
 | `hashlib` | `hashlib` |
 | `io` | `io` |
+| `llm_wiki_engine.canonical_json` | `compact_line_bytes` |
 | `math` | `math` |
 | `pathlib` | `PurePosixPath` |
 | `platform` | `platform` |

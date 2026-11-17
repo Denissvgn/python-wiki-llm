@@ -1,6 +1,6 @@
 # AliasType
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:86`
+**Location:** `src/llm_wiki_engine/concept_identity.py:86`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -25,15 +25,15 @@ The two coordinate namespaces that may retain historical aliases.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["AliasType (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["AliasType (src/llm_wiki_engine/concept_identity.py)"]
     n1["Enum"]
     n2["str"]
-    n3["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n4["identity_coordinate_key (src/llm_wiki_cli/services/concept_identity.py)"]
-    n5["validate_alias_type (src/llm_wiki_cli/services/concept_identity.py)"]
-    n6["validate_alias_value (src/llm_wiki_cli/services/concept_identity.py)"]
-    n7["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n8["src/llm_wiki_cli/services/migrate_runtime.py"]
+    n3["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n4["src/llm_wiki_cli/services/migrate_runtime.py"]
+    n5["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n6["identity_coordinate_key (src/llm_wiki_engine/concept_identity.py)"]
+    n7["validate_alias_type (src/llm_wiki_engine/concept_identity.py)"]
+    n8["validate_alias_value (src/llm_wiki_engine/concept_identity.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -43,12 +43,12 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/concept_identity.md"
-    click n3 "../modules/concept_identity.md"
-    click n4 "../modules/concept_identity.md"
+    click n3 "../modules/knowledge_governance.md"
+    click n4 "../modules/migrate_runtime.md"
     click n5 "../modules/concept_identity.md"
     click n6 "../modules/concept_identity.md"
-    click n7 "../modules/knowledge_governance.md"
-    click n8 "../modules/migrate_runtime.md"
+    click n7 "../modules/concept_identity.md"
+    click n8 "../modules/concept_identity.md"
 ```
 
 ### Summary
@@ -68,10 +68,10 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `migrate_runtime` | import | [migrate_runtime](../modules/migrate_runtime.md) | — |
 | `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `identity_coordinate_key` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `validate_alias_type` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 | `validate_alias_type` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `validate_alias_value` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
-| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `migrate_runtime` | import | [migrate_runtime](../modules/migrate_runtime.md) | — |

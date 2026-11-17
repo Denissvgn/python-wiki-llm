@@ -1,6 +1,6 @@
 # workflow_profile Module
 
-**Path:** `src/llm_wiki_cli/services/workflow_profile.py`
+**Path:** `src/llm_wiki_engine/workflow_profile.py`
 
 ## Description
 
@@ -26,64 +26,64 @@ Normalizes explicitly supplied workflow settings within immutable host ceilings.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/canonical_json.py"]
-    n2["src/llm_wiki_cli/services/context_session.py"]
-    n3["src/llm_wiki_cli/services/mcp_server.py"]
-    n4["src/llm_wiki_cli/services/request_json.py"]
-    n5["src/llm_wiki_cli/services/search_service.py"]
-    n6["src/llm_wiki_cli/services/task_compact.py"]
-    n7["src/llm_wiki_cli/services/task_context.py"]
-    n8["src/llm_wiki_cli/services/task_context_v2.py"]
-    n9["src/llm_wiki_cli/services/task_contract.py"]
-    n10["src/llm_wiki_cli/services/task_evidence.py"]
-    n11["src/llm_wiki_cli/services/workflow_profile.py"]
-    n0 --> n2
+    n1["src/llm_wiki_cli/services/context_session.py"]
+    n2["src/llm_wiki_cli/services/mcp_server.py"]
+    n3["src/llm_wiki_cli/services/search_service.py"]
+    n4["src/llm_wiki_cli/services/task_compact.py"]
+    n5["src/llm_wiki_cli/services/task_context.py"]
+    n6["src/llm_wiki_cli/services/task_context_v2.py"]
+    n7["src/llm_wiki_cli/services/task_contract.py"]
+    n8["src/llm_wiki_cli/services/task_evidence.py"]
+    n9["src/llm_wiki_engine/canonical_json.py"]
+    n10["src/llm_wiki_engine/request_json.py"]
+    n11["src/llm_wiki_engine/workflow_profile.py"]
+    n0 --> n1
+    n0 --> n3
+    n0 --> n4
     n0 --> n5
-    n0 --> n6
     n0 --> n7
-    n0 --> n9
     n0 --> n11
-    n2 --> n6
+    n1 --> n4
+    n1 --> n5
+    n1 --> n6
+    n1 --> n7
+    n1 --> n11
+    n2 --> n0
+    n2 --> n3
+    n2 --> n5
     n2 --> n7
-    n2 --> n8
-    n2 --> n9
+    n2 --> n10
     n2 --> n11
-    n3 --> n0
-    n3 --> n4
-    n3 --> n5
-    n3 --> n7
-    n3 --> n9
     n3 --> n11
+    n4 --> n5
+    n4 --> n7
+    n4 --> n10
+    n4 --> n11
+    n5 --> n3
+    n5 --> n6
+    n5 --> n7
+    n5 --> n8
+    n5 --> n10
     n5 --> n11
-    n6 --> n4
+    n6 --> n5
     n6 --> n7
-    n6 --> n9
+    n6 --> n8
     n6 --> n11
-    n7 --> n4
-    n7 --> n5
-    n7 --> n8
-    n7 --> n9
-    n7 --> n10
     n7 --> n11
-    n8 --> n7
-    n8 --> n9
-    n8 --> n10
     n8 --> n11
-    n9 --> n11
-    n10 --> n11
-    n11 --> n1
-    n11 --> n4
+    n11 --> n9
+    n11 --> n10
     click n0 "../modules/api.md"
-    click n1 "../modules/canonical_json.md"
-    click n2 "../modules/context_session.md"
-    click n3 "../modules/mcp_server.md"
-    click n4 "../modules/request_json.md"
-    click n5 "../modules/search_service.md"
-    click n6 "../modules/task_compact.md"
-    click n7 "../modules/task_context.md"
-    click n8 "../modules/task_context_v2.md"
-    click n9 "../modules/task_contract.md"
-    click n10 "../modules/task_evidence.md"
+    click n1 "../modules/context_session.md"
+    click n2 "../modules/mcp_server.md"
+    click n3 "../modules/search_service.md"
+    click n4 "../modules/task_compact.md"
+    click n5 "../modules/task_context.md"
+    click n6 "../modules/task_context_v2.md"
+    click n7 "../modules/task_contract.md"
+    click n8 "../modules/task_evidence.md"
+    click n9 "../modules/canonical_json.md"
+    click n10 "../modules/request_json.md"
     click n11 "../modules/workflow_profile.md"
 ```
 

@@ -15,13 +15,13 @@ Portable installation of the managed integrity and documentation CI workflows.
 | `.publication_config` | `PUBLICATION_CONFIG_PATH`, `PublicationConfigError`, `load_publication_config`, `publication_control_overlap`, `publication_path`, `publication_source_root` |
 | `.source_selection` | `SourceSelectionError`, `locate_exact_repository_path`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.validation` | `require_repository_relative_path` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `hmac` | `hmac` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 
@@ -39,11 +39,11 @@ flowchart LR
     n6["src/llm_wiki_cli/services/publication_config.py"]
     n7["src/llm_wiki_cli/services/source_selection.py"]
     n8["src/llm_wiki_cli/services/sync_manifest.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
-    n10["src/llm_wiki_cli/services/wiki_lifecycle.py"]
+    n9["src/llm_wiki_cli/services/wiki_lifecycle.py"]
+    n10["src/llm_wiki_engine/validation.py"]
     n0 --> n3
     n0 --> n7
-    n0 --> n9
+    n0 --> n10
     n1 --> n3
     n1 --> n6
     n2 --> n3
@@ -57,15 +57,15 @@ flowchart LR
     n3 --> n9
     n3 --> n10
     n6 --> n7
-    n6 --> n9
-    n7 --> n9
+    n6 --> n10
+    n7 --> n10
     n8 --> n4
     n8 --> n5
     n8 --> n7
-    n8 --> n9
-    n10 --> n4
-    n10 --> n5
-    n10 --> n8
+    n8 --> n10
+    n9 --> n4
+    n9 --> n5
+    n9 --> n8
     click n0 "../modules/api.md"
     click n1 "../modules/install_ci_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
@@ -75,8 +75,8 @@ flowchart LR
     click n6 "../modules/publication_config.md"
     click n7 "../modules/source_selection.md"
     click n8 "../modules/sync_manifest.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/wiki_lifecycle.md"
+    click n9 "../modules/wiki_lifecycle.md"
+    click n10 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -91,8 +91,8 @@ flowchart LR
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
-| Outbound | [validation](../modules/validation.md) |
 | Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Outbound | [validation](../modules/validation.md) |
 
 ## Classes
 

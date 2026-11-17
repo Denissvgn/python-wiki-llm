@@ -1,6 +1,6 @@
 # TableDescriptionCell
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:177`
+**Location:** `src/llm_wiki_engine/markdown_sections.py:177`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -31,8 +31,8 @@ One table Description cell without lossy duplicate-key collapse.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["TableDescriptionCell (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n1["description_table_cells (src/llm_wiki_cli/services/markdown_sections.py)"]
+    n0["TableDescriptionCell (src/llm_wiki_engine/markdown_sections.py)"]
+    n1["description_table_cells (src/llm_wiki_engine/markdown_sections.py)"]
     n1 --> n0
     click n0 "../modules/markdown_sections.md"
     click n1 "../modules/markdown_sections.md"

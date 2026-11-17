@@ -24,26 +24,26 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
 | `.analysis_compatibility` | `EXTENSION`, `validate_record`, `configuration_commitment` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
-| `.immutable` | `FrozenDict` |
 | `.implementation_evidence` | `validate_concept_implementation` |
-| `.knowledge_evidence` | `SHA256_PATTERN` |
-| `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_kinds` | `current_kinds` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `validate_reuse_commitment` |
 | `.knowledge_validators` | `current_validators` |
-| `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
-| `.validation` | `require_bounded_integral_number`, `require_enum_value`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_repository_relative_path`, `require_sha256`, `require_string` |
-| `.wiki_media` | `contains_uri_authority_userinfo` |
-| `.wiki_surface` | `PageKind`, `SurfaceRole`, `is_safe_page_id`, `iter_page_kinds` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `functools` | `partial` |
 | `importlib` | `resources` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.immutable` | `FrozenDict` |
+| `llm_wiki_engine.knowledge_evidence` | `SHA256_PATTERN` |
+| `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
+| `llm_wiki_engine.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
+| `llm_wiki_engine.validation` | `require_bounded_integral_number`, `require_enum_value`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_repository_relative_path`, `require_sha256`, `require_string` |
+| `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `SurfaceRole`, `is_safe_page_id`, `iter_page_kinds` |
 | `math` | `math` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |

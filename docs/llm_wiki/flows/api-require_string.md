@@ -12,16 +12,16 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_string
-    participant p1 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p1 as isinstance (src/llm_wiki_engine/validation.py:require_string)
     participant p2 as _validation_error
     participant p3 as value.encode
-    participant p4 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p4 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p5 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)
     p0->>p2: _validation_error
     p0-->>p3: value.encode('utf-8')
     p0->>p2: _validation_error
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p4: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p5: error(context)
 ```
 
@@ -45,15 +45,15 @@ Collector observations for 3 source steps with known totals: observed: 11, emitt
 ```mermaid
 flowchart LR
     s1["1. require_string"]
-    s2["2. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s2["2. isinstance (src/llm_wiki_engine/validation.py:require_string)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
     s6["6. value.encode"]
     s7["7. _validation_error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)" .-> s2
     s1 -->|"_validation_error(error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
     s1 -. "value.encode('utf-8')" .-> s6
     s1 -->|"_validation_error(utf8_error, error_context)"| s7
@@ -67,9 +67,9 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_string)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `value.encode` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -78,9 +78,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | isinstance (src/llm_wiki_engine/validation.py:require_string) | 761 | `isinstance(value, str)` |
 | require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_string | value.encode | 765 | `value.encode('utf-8')` |
 | require_string | _validation_error | 767 | `_validation_error(utf8_error, error_context)` |

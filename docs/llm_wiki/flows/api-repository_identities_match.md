@@ -23,14 +23,14 @@ sequenceDiagram
     participant p9 as _string
     participant p10 as require_nonempty_text
     participant p11 as require_string
-    participant p12 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p12 as isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)
     participant p13 as _validation_error
     participant p14 as value.strip
     participant p15 as contains_control_character
-    participant p16 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p16 as isinstance (src/llm_wiki_engine/validation.py:require_string)
     participant p17 as pattern.search
     participant p18 as value.encode
-    participant p19 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p19 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p20 as error
     p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)
@@ -46,19 +46,19 @@ sequenceDiagram
     p4->>p9: _string
     p4->>p10: require_nonempty_text
     p9->>p11: require_string
-    p10-->>p12: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p10-->>p12: isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)
     p10->>p13: _validation_error
     p10-->>p14: value.strip
     p10->>p13: _validation_error
     p10->>p13: _validation_error
     p10->>p15: contains_control_character
     p10->>p13: _validation_error
-    p11-->>p16: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
+    p11-->>p16: isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)
     p15-->>p17: pattern.search(value)
     p11->>p13: _validation_error
     p11-->>p18: value.encode('utf-8')
     p11->>p13: _validation_error
-    p13-->>p19: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p13-->>p19: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p13-->>p20: error(context)
 ```
 
@@ -92,9 +92,9 @@ Collector observations for 14 source steps with known totals: observed: 60, emit
 | `_nonempty_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_string` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `require_string` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -107,9 +107,9 @@ flowchart LR
     s6["6. _nonempty_string"]
     s7["7. _string"]
     s8["8. require_string"]
-    s9["9. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s9["9. isinstance (src/llm_wiki_engine/validation.py:require_string)"]
     s10["10. _validation_error"]
-    s11["11. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s11["11. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s12["12. error"]
     s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)" .-> s2
     s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)" .-> s3
@@ -118,9 +118,9 @@ flowchart LR
     s5 -->|"_nonempty_string(value, path)"| s6
     s6 -->|"_string(value, path)"| s7
     s7 -->|"require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)" .-> s9
     s8 -->|"_validation_error(error, error_context)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s11
     s10 -. "error(context)" .-> s12
     click s1 "../modules/knowledge_model.md"
     click s5 "../modules/knowledge_model.md"
@@ -142,9 +142,9 @@ flowchart LR
 | `_nonempty_string` | `value: object`, `path: str` | `_NONEMPTY_ERROR` | - | `require_nonempty_text(...)` |
 | `_string` | `value: object`, `path: str` | `_STRING_ERROR`, `_UTF8_ERROR` | - | `require_string(...)` |
 | `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_string)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 
 ### Call data
@@ -158,9 +158,9 @@ flowchart LR
 | _repository_identity | _nonempty_string | 1808 | `_nonempty_string(value, path)` |
 | _nonempty_string | _string | 1727 | `_string(value, path)` |
 | _string | require_string | 1718 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | isinstance (src/llm_wiki_engine/validation.py:require_string) | 761 | `isinstance(value, str)` |
 | require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 
 ### Boundary effects

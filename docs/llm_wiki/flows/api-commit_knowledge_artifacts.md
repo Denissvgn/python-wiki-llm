@@ -107,8 +107,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | external | 4 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
 > Omission summary shows 8 of 216 groups; 208 further groups are not expanded here. Counts above include all omitted interactions.
@@ -203,13 +203,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 857 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 858 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 859 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 860 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 861 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 862 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | storage_writer_lock | 868 | `storage_writer_lock(root)` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 858 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 859 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 860 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 861 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 862 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 863 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | storage_writer_lock | 869 | `storage_writer_lock(root)` |
 | storage_writer_lock | _absolute_path | 56 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -225,12 +225,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 857 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 858 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 859 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 860 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 861 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 862 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 858 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 859 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 860 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 861 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 862 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 863 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |

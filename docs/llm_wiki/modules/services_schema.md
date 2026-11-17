@@ -61,13 +61,13 @@ argument spelling and does not execute the recipe.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
-| `.paths` | `shell_quote` |
 | `.plugins` | `iter_components`, `read_component_text` |
 | `.skills` | `skills_install_dir` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.paths` | `shell_quote` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shlex` | `shlex` |

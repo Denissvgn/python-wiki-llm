@@ -98,7 +98,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 12 | - | external | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 14 | - | external | 19 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 14 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 21 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 12 | - | unresolved | 1 |
 > Omission summary shows 8 of 36 groups; 28 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

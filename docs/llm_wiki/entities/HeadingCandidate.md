@@ -1,6 +1,6 @@
 # _HeadingCandidate
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:200`
+**Location:** `src/llm_wiki_engine/markdown_sections.py:200`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_HeadingCandidate` in `src/llm_wiki_cli/services/markdown_sections.py`._
+_Auto-generated from `_HeadingCandidate` in `src/llm_wiki_engine/markdown_sections.py`._
 
 ## Attributes
 
@@ -33,8 +33,8 @@ _Auto-generated from `_HeadingCandidate` in `src/llm_wiki_cli/services/markdown_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_HeadingCandidate (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n1["parse_markdown_document (src/llm_wiki_cli/services/markdown_sections.py)"]
+    n0["_HeadingCandidate (src/llm_wiki_engine/markdown_sections.py)"]
+    n1["parse_markdown_document (src/llm_wiki_engine/markdown_sections.py)"]
     n1 --> n0
     click n0 "../modules/markdown_sections.md"
     click n1 "../modules/markdown_sections.md"

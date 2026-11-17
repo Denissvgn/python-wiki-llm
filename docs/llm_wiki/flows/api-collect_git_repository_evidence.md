@@ -82,8 +82,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git` | 3 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 6 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:collect_git_repository_evidence` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 7 |

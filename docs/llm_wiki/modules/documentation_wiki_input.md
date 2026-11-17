@@ -30,15 +30,15 @@ documentation-run service to persist ``wiki-input.json`` later.
 | `.source_selection` | `SOURCE_SELECTION_GENERATION_INPUT_KEY`, `SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY`, `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `LEGACY_MANIFEST_VERSION`, `MANIFEST_VERSION`, `ManifestArtifactHashes`, `SyncManifest`, `SyncManifestError` |
-| `.validation` | `is_portable_relative_path`, `path_is_within`, `paths_overlap`, `require_portable_relative_path` |
-| `.wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `strip_fenced_code_blocks` |
-| `.wiki_surface` | `is_safe_page_id`, `iter_page_kinds` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path`, `path_is_within`, `paths_overlap`, `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `strip_fenced_code_blocks` |
+| `llm_wiki_engine.wiki_surface` | `is_safe_page_id`, `iter_page_kinds` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |

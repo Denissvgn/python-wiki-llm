@@ -1,6 +1,6 @@
 # ExtractPayloadError
 
-**Location:** `src/llm_wiki_cli/services/extract_format.py:102`
+**Location:** `src/llm_wiki_engine/extract_format.py:102`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [extract_format](../modules/extract_format.md)
@@ -22,20 +22,20 @@ An extract payload does not follow its format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ExtractPayloadError (src/llm_wiki_cli/services/extract_format.py)"]
+    n0["ExtractPayloadError (src/llm_wiki_engine/extract_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_check_data_flow_details (src/llm_wiki_cli/services/extract_format.py)"]
-    n4["_check_entrypoints (src/llm_wiki_cli/services/extract_format.py)"]
-    n5["_check_inventory (src/llm_wiki_cli/services/extract_format.py)"]
-    n6["_check_limitations (src/llm_wiki_cli/services/extract_format.py)"]
-    n7["_check_unsupported (src/llm_wiki_cli/services/extract_format.py)"]
-    n8["_fields (src/llm_wiki_cli/services/extract_format.py)"]
-    n9["_ids (src/llm_wiki_cli/services/extract_format.py)"]
-    n10["_mapping (src/llm_wiki_cli/services/extract_format.py)"]
-    n11["_portable (src/llm_wiki_cli/services/extract_format.py)"]
-    n12["_sequence (src/llm_wiki_cli/services/extract_format.py)"]
-    n13["validate_extract_payload (src/llm_wiki_cli/services/extract_format.py)"]
+    n3["_check_data_flow_details (src/llm_wiki_engine/extract_format.py)"]
+    n4["_check_entrypoints (src/llm_wiki_engine/extract_format.py)"]
+    n5["_check_inventory (src/llm_wiki_engine/extract_format.py)"]
+    n6["_check_limitations (src/llm_wiki_engine/extract_format.py)"]
+    n7["_check_unsupported (src/llm_wiki_engine/extract_format.py)"]
+    n8["_fields (src/llm_wiki_engine/extract_format.py)"]
+    n9["_ids (src/llm_wiki_engine/extract_format.py)"]
+    n10["_mapping (src/llm_wiki_engine/extract_format.py)"]
+    n11["_portable (src/llm_wiki_engine/extract_format.py)"]
+    n12["_sequence (src/llm_wiki_engine/extract_format.py)"]
+    n13["validate_extract_payload (src/llm_wiki_engine/extract_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

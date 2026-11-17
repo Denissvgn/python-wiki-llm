@@ -16,12 +16,12 @@ permissions, the five rollback roots or the four refresh-mutable roots.
 
 | Source | Symbols |
 |--------|---------|
-| `..canonical_json` | `ascii_compact_bytes`, `sha256_digest` |
-| `..contracts` | `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES` |
 | `.dependencies` | `*` |
 | `.packet` | `_render_packet_markdown` |
 | `.schema` | `_assert_no_forbidden_packet_fields`, `_portable_path_tuple`, `_require_exact_fields`, `_required_agent_result_text`, `_require_utc_timestamp`, `_text_tuple`, `_validate_agent_result_findings`, `_validate_imported_page_edits`, `_validate_run_payload` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.canonical_json` | `ascii_compact_bytes`, `sha256_digest` |
+| `llm_wiki_engine.contracts` | `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES` |
 | `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map

@@ -28,26 +28,20 @@ Verify consumer inputs and retain the exact public wiki candidate checked by CI.
 ```mermaid
 flowchart LR
     n0["integrations/wiki-candidate/run.py"]
-    n1["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n2["src/llm_wiki_cli/services/publication_candidate.py"]
-    n3["src/llm_wiki_cli/services/publication_impact.py"]
+    n1["src/llm_wiki_cli/services/publication_candidate.py"]
+    n2["src/llm_wiki_cli/services/publication_impact.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
-    n2 --> n1
-    n2 --> n3
-    n3 --> n1
+    n1 --> n2
     click n0 "../modules/run.md"
-    click n1 "../modules/knowledge_evidence.md"
-    click n2 "../modules/publication_candidate.md"
-    click n3 "../modules/publication_impact.md"
+    click n1 "../modules/publication_candidate.md"
+    click n2 "../modules/publication_impact.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
 
@@ -55,7 +49,7 @@ flowchart LR
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 1 | 1 |
+| python | 2 | 2 |
 
 ## Functions
 

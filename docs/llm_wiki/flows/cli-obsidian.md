@@ -146,8 +146,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/obsidian_cmd.py:run` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 19 | - | external | 10 |
@@ -166,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1356; effect analysis evaluated: 913, partial: 45, unavailable: 398. Counts include steps omitted from the displayed trace.
 
-Collector observations for 958 source steps with known totals: observed: 5309, emitted: 5048, omitted: 261. Unavailable totals are excluded.
+Collector observations for 958 source steps with known totals: observed: 5311, emitted: 5050, omitted: 261. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

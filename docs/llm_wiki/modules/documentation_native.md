@@ -33,17 +33,14 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `CommitStage`, `KnowledgeArtifactError`, `KnowledgeCommitResult`, `validate_knowledge_artifacts`, `validate_surface_index_bytes` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
 | `.knowledge_envelope` | `ConsumedInput`, `ConsumedInputKind`, `hash_source_snapshot` |
-| `.knowledge_evidence` | `is_valid_sha256` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `evaluate_knowledge_freshness`, `structural_freshness_modeled` |
 | `.knowledge_model` | `ComputedFreshness`, `KnowledgeIndex`, `ObservationScope` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `collect_runtime_repository_evidence`, `finalize_runtime_knowledge`, `runtime_generation_options` |
 | `.maintenance_protocol` | `load_adoption_marker`, `maintenance_write_operation`, `guard_maintenance_owner`, `ADOPTION_FILENAME` |
-| `.paths` | `is_test_source_path` |
 | `.source_retirement` | `retained_empty_module_paths` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `LEGACY_MANIFEST_VERSION`, `MANIFEST_FILENAME`, `MANIFEST_VERSION`, `SyncManifest` |
-| `.validation` | `is_portable_relative_path` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
@@ -52,6 +49,9 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `is_valid_sha256` |
+| `llm_wiki_engine.paths` | `is_test_source_path` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `stat` | `stat` |
 | `typing` | `Any`, `Mapping`, `TypeGuard` |

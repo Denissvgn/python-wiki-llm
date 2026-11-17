@@ -79,14 +79,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 5 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | unresolved | 12 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | external | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | external | 7 |
-| `src/llm_wiki_cli/services/markdown_sections.py:is_table_separator` | 32 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 5 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 14 | - | unresolved | 12 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 14 | - | external | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | - | external | 7 |
+| `src/llm_wiki_engine/markdown_sections.py:is_table_separator` | 32 | - | external | 2 |
 > Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

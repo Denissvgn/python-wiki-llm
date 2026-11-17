@@ -18,7 +18,6 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `.canonical_pages` | `canonical_generated_pages` |
 | `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `ExtractorFailureError`, `get_inventory_result` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes` |
-| `.immutable` | `freeze` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `decode_markdown_bytes`, `read_md`, `write_json_atomic` |
 | `.knowledge_storage_io` | `_absolute_path` |
@@ -27,13 +26,14 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `.source_selection` | `with_source_selection_generation_input`, `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifest`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `MANIFEST_VERSION`, `SyncManifest`, `SyncManifestError`, `SyncManifest` |
-| `.validation` | `require_exact_fields`, `require_portable_relative_path`, `require_string_list`, `resolve_portable_workspace_path` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `functools` | `lru_cache` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.validation` | `require_exact_fields`, `require_portable_relative_path`, `require_string_list`, `resolve_portable_workspace_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `stat` | `stat` |

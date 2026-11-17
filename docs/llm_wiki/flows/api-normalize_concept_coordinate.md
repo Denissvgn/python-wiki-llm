@@ -29,15 +29,15 @@ sequenceDiagram
     participant p15 as SharedValidationError
     participant p16 as isinstance (src/llm_wiki_cli/services…e_documentation_query_text)
     participant p17 as validator
-    participant p18 as isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p18 as isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     participant p19 as value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    participant p20 as value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p20 as value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     participant p21 as len (src/llm_wiki_cli/services…e_documentation_query_text)
-    participant p22 as any (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p22 as any (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     participant p23 as selected.encode
-    participant p24 as ord (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p25 as coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)
-    participant p26 as coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)
+    participant p24 as ord (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
+    participant p25 as coordinate.startswith (src/llm_wiki_engine/wiki_…py:_matches_directory_path)
+    participant p26 as coordinate.startswith (src/llm_wiki_engine/wiki_….py:_matches_directory_uri)
     participant p27 as coordinate.endswith
     p0->>p1: normalize_documentation_query_text
     p0->>p2: validate_exact_page_coordinate
@@ -56,18 +56,18 @@ sequenceDiagram
     p12->>p15: SharedValidationError
     p1-->>p16: isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)
     p0-->>p17: validator(selected)
-    p2-->>p18: isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)
+    p2-->>p18: isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(value, str)
     p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    p2-->>p20: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p2-->>p20: value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    p2-->>p20: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p2-->>p20: value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     p1-->>p21: len (src/llm_wiki_cli/services…e_documentation_query_text)(selected.encode(...))
-    p2-->>p22: any (src/llm_wiki_cli/services…date_exact_page_coordinate)(...)
+    p2-->>p22: any (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(...)
     p1-->>p23: selected.encode('utf-8')
-    p2-->>p24: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p2-->>p24: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p4-->>p25: coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)(prefix)
-    p5-->>p26: coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)(prefix)
+    p2-->>p24: ord (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(character)
+    p2-->>p24: ord (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(character)
+    p4-->>p25: coordinate.startswith (src/llm_wiki_engine/wiki_…py:_matches_directory_path)(prefix)
+    p5-->>p26: coordinate.startswith (src/llm_wiki_engine/wiki_….py:_matches_directory_uri)(prefix)
     p4-->>p27: coordinate.endswith('.md')
 ```
 
@@ -80,13 +80,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 2 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 10 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 4 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 19 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 25 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 25 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | - | external | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 10 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 4 |
+| `src/llm_wiki_engine/wiki_surface.py:_matches_directory_path` | 19 | - | external | 3 |
+| `src/llm_wiki_engine/wiki_surface.py:is_safe_page_id` | 25 | - | external | 3 |
+| `src/llm_wiki_engine/wiki_surface.py:is_safe_page_id` | 25 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 32 | - | unresolved | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 32 | - | external | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 32 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 4 |
 > Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -118,8 +118,8 @@ Collector observations for 18 source steps with known totals: observed: 84, emit
 | `selected.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `validate_exact_page_coordinate` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -133,8 +133,8 @@ flowchart LR
     s8["8. selected.encode"]
     s9["9. DocumentationQueryError"]
     s10["10. validate_exact_page_coordinate"]
-    s11["11. isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)"]
-    s12["12. value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)"]
+    s11["11. isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)"]
+    s12["12. value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)"]
     s1 -->|"normalize_documentation_query_text(value, field='locator_or_exact_route')"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)" .-> s3
     s2 -. "value.strip (src/llm_wiki_cli/services…e_documentation_query_text)(data not statically known)" .-> s4
@@ -144,8 +144,8 @@ flowchart LR
     s2 -. "selected.encode('utf-8')" .-> s8
     s2 -->|"DocumentationQueryError(...)"| s9
     s1 -->|"validate_exact_page_coordinate(selected)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)" .-> s11
-    s10 -. "value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)(data not statically known)" .-> s12
+    s10 -. "isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(value, str)" .-> s11
+    s10 -. "value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(data not statically known)" .-> s12
     click s1 "../modules/documentation_query_builder.md"
     click s2 "../modules/documentation_query_builder.md"
     click s5 "../modules/documentation_queries.md"
@@ -167,8 +167,8 @@ flowchart LR
 | `selected.encode` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
 | `validate_exact_page_coordinate` | `value: object` | `_PAGE_KINDS` | - | `coordinate`, `coordinate` |
-| `isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)` | - | - | - | - |
 
 ### Call data
 
@@ -183,8 +183,8 @@ flowchart LR
 | normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
 | normalize_documentation_query_text | DocumentationQueryError | 69 | `DocumentationQueryError(...)` |
 | normalize_concept_coordinate | validate_exact_page_coordinate | 83 | `wiki_surface.validate_exact_page_coordinate(selected)` |
-| validate_exact_page_coordinate | isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate) | 263 | `isinstance(value, str)` |
-| validate_exact_page_coordinate | value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate) | 263 | `value.strip(data not statically known)` |
+| validate_exact_page_coordinate | isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate) | 263 | `isinstance(value, str)` |
+| validate_exact_page_coordinate | value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate) | 263 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 

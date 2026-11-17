@@ -84,11 +84,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 3 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 8 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 10 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 10 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 8 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 8 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 10 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_object` | 7 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
 > Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -121,9 +121,9 @@ Collector observations for 73 source steps with known totals: observed: 281, emi
 | `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -136,9 +136,9 @@ flowchart LR
     s6["6. check.to_payload"]
     s7["7. _object"]
     s8["8. require_mapping"]
-    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s9["9. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s10["10. _validation_error"]
-    s11["11. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s11["11. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s12["12. error"]
     s1 -. "isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)" .-> s2
     s1 -->|"_receipt_to_payload(value)"| s3
@@ -147,9 +147,9 @@ flowchart LR
     s3 -. "check.to_payload(data not statically known)" .-> s6
     s1 -->|"_object(payload, 'receipt')"| s7
     s7 -->|"require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s9
     s8 -->|"_validation_error(error, error_context)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s11
     s10 -. "error(context)" .-> s12
     click s1 "../modules/verification_contracts.md"
     click s3 "../modules/verification_contracts.md"
@@ -170,9 +170,9 @@ flowchart LR
 | `check.to_payload` | - | - | - | - |
 | `_object` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 
 ### Call data
@@ -186,9 +186,9 @@ flowchart LR
 | _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 | validate_verification_receipt | _object | 838 | `_object(payload, 'receipt')` |
 | _object | require_mapping | 1470 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 
 ### Boundary effects

@@ -1,6 +1,6 @@
 # host Module
 
-**Path:** `src/llm_wiki_cli/services/host.py`
+**Path:** `src/llm_wiki_engine/host.py`
 
 ## Description
 
@@ -52,7 +52,7 @@ the current directory, the clock and the standard streams directly.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/host.py"]
+    n1["src/llm_wiki_engine/host.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/host.md"

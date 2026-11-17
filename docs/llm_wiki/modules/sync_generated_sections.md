@@ -30,14 +30,14 @@ checked before a repair can become output work.
 | `.bootstrap_runtime` | `_generate_entity_md`, `_generate_module_md` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `StorageReadSession` |
-| `.markdown_sections` | `description_table_cells`, `is_placeholder_description`, `mixed_table_projection`, `normalize_markdown`, `parse_markdown_document`, `preserve_table_description_cells` |
-| `.section_ownership` | `observe_page_sections`, `SectionOwnership` |
 | `.sync_manifest` | `ManifestPageSource` |
 | `.sync_transitions` | `PageTransitionError`, `PageTransitionPlan`, `RetainedPageRepair` |
-| `.wiki_surface` | `PageKind` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `replace` |
+| `llm_wiki_engine.markdown_sections` | `description_table_cells`, `is_placeholder_description`, `mixed_table_projection`, `normalize_markdown`, `parse_markdown_document`, `preserve_table_description_cells` |
+| `llm_wiki_engine.section_ownership` | `observe_page_sections`, `SectionOwnership` |
+| `llm_wiki_engine.wiki_surface` | `PageKind` |
 | `pathlib` | `Path` |
 | `typing` | `Mapping` |
 
@@ -49,54 +49,54 @@ flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n1["src/llm_wiki_cli/services/knowledge_storage.py"]
     n2["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n3["src/llm_wiki_cli/services/markdown_sections.py"]
-    n4["src/llm_wiki_cli/services/section_ownership.py"]
-    n5["src/llm_wiki_cli/services/sync_generated_sections.py"]
-    n6["src/llm_wiki_cli/services/sync_manifest.py"]
-    n7["src/llm_wiki_cli/services/sync_runtime.py"]
-    n8["src/llm_wiki_cli/services/sync_transitions.py"]
-    n9["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n3
-    n0 --> n6
+    n3["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n4["src/llm_wiki_cli/services/sync_manifest.py"]
+    n5["src/llm_wiki_cli/services/sync_runtime.py"]
+    n6["src/llm_wiki_cli/services/sync_transitions.py"]
+    n7["src/llm_wiki_engine/markdown_sections.py"]
+    n8["src/llm_wiki_engine/section_ownership.py"]
+    n9["src/llm_wiki_engine/wiki_surface.py"]
+    n0 --> n4
+    n0 --> n7
     n0 --> n9
-    n1 --> n4
+    n1 --> n8
     n2 --> n1
-    n4 --> n3
-    n4 --> n9
+    n3 --> n0
+    n3 --> n1
+    n3 --> n2
+    n3 --> n4
+    n3 --> n6
+    n3 --> n7
+    n3 --> n8
+    n3 --> n9
+    n4 --> n1
+    n4 --> n2
     n5 --> n0
     n5 --> n1
     n5 --> n2
     n5 --> n3
     n5 --> n4
     n5 --> n6
+    n5 --> n7
     n5 --> n8
     n5 --> n9
+    n6 --> n0
     n6 --> n1
     n6 --> n2
-    n7 --> n0
-    n7 --> n1
-    n7 --> n2
-    n7 --> n3
-    n7 --> n4
-    n7 --> n5
-    n7 --> n6
-    n7 --> n8
-    n7 --> n9
-    n8 --> n0
-    n8 --> n1
-    n8 --> n2
-    n8 --> n3
-    n8 --> n6
+    n6 --> n4
+    n6 --> n7
+    n6 --> n9
+    n8 --> n7
     n8 --> n9
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/knowledge_storage.md"
     click n2 "../modules/knowledge_storage_io.md"
-    click n3 "../modules/markdown_sections.md"
-    click n4 "../modules/section_ownership.md"
-    click n5 "../modules/sync_generated_sections.md"
-    click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/sync_runtime.md"
-    click n8 "../modules/sync_transitions.md"
+    click n3 "../modules/sync_generated_sections.md"
+    click n4 "../modules/sync_manifest.md"
+    click n5 "../modules/sync_runtime.md"
+    click n6 "../modules/sync_transitions.md"
+    click n7 "../modules/markdown_sections.md"
+    click n8 "../modules/section_ownership.md"
     click n9 "../modules/wiki_surface.md"
 ```
 
@@ -108,10 +108,10 @@ flowchart LR
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
-| Outbound | [markdown_sections](../modules/markdown_sections.md) |
-| Outbound | [section_ownership](../modules/section_ownership.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
 | Outbound | [sync_transitions](../modules/sync_transitions.md) |
+| Outbound | [markdown_sections](../modules/markdown_sections.md) |
+| Outbound | [section_ownership](../modules/section_ownership.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
 
 ## Functions

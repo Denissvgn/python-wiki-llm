@@ -15,9 +15,9 @@ Adapts explicit task requests and optional profiles to canonical task context. W
 | `..services.io` | `write_text_output`, `write_utf8_stdout`, `first_unsafe_path_component` |
 | `..services.knowledge_storage` | `KnowledgeStorageError` |
 | `..services.knowledge_storage_io` | `read_guarded` |
-| `..services.request_json` | `load_request` |
 | `..services.token_counting` | `LocalTokenizerCounter` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `load_request` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 | `sys` | `sys` |
@@ -34,10 +34,10 @@ flowchart LR
     n4["src/llm_wiki_cli/services/io.py"]
     n5["src/llm_wiki_cli/services/knowledge_storage.py"]
     n6["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n7["src/llm_wiki_cli/services/request_json.py"]
-    n8["src/llm_wiki_cli/services/token_counting.py"]
+    n7["src/llm_wiki_cli/services/token_counting.py"]
+    n8["src/llm_wiki_engine/request_json.py"]
     n0 --> n5
-    n0 --> n8
+    n0 --> n7
     n1 --> n2
     n2 --> n0
     n2 --> n3
@@ -56,8 +56,8 @@ flowchart LR
     click n4 "../modules/io.md"
     click n5 "../modules/knowledge_storage.md"
     click n6 "../modules/knowledge_storage_io.md"
-    click n7 "../modules/request_json.md"
-    click n8 "../modules/token_counting.md"
+    click n7 "../modules/token_counting.md"
+    click n8 "../modules/request_json.md"
 ```
 
 ### Internal neighbors
@@ -70,8 +70,8 @@ flowchart LR
 | Outbound | [io](../modules/io.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
-| Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [token_counting](../modules/token_counting.md) |
+| Outbound | [request_json](../modules/request_json.md) |
 
 ## Functions
 

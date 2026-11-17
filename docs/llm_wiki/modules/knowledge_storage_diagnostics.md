@@ -17,8 +17,6 @@ Logical review continuations bind both snapshot commitments, native root locatio
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
-| `.host` | `current_host` |
 | `.knowledge_artifacts` | `validated_artifact_bytes` |
 | `.knowledge_index` | `_model_to_payload` |
 | `.knowledge_loader` | `load_knowledge_state` |
@@ -36,6 +34,8 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `binascii` | `binascii` |
 | `heapq` | `heapq` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.host` | `current_host` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |

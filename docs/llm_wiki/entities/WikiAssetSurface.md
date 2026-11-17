@@ -1,6 +1,6 @@
 # WikiAssetSurface
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:94`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `WikiAssetSurface` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `WikiAssetSurface` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -31,8 +31,8 @@ _Auto-generated from `WikiAssetSurface` in `src/llm_wiki_cli/services/wiki_surfa
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiAssetSurface (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n1["asset_surface (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["WikiAssetSurface (src/llm_wiki_engine/wiki_surface.py)"]
+    n1["asset_surface (src/llm_wiki_engine/wiki_surface.py)"]
     n1 --> n0
     click n0 "../modules/wiki_surface.md"
     click n1 "../modules/wiki_surface.md"

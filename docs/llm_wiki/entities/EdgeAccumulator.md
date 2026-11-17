@@ -1,6 +1,6 @@
 # _EdgeAccumulator
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:162`
+**Location:** `src/llm_wiki_engine/knowledge_graph.py:162`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_EdgeAccumulator` in `src/llm_wiki_cli/services/knowledge_graph.py`._
+_Auto-generated from `_EdgeAccumulator` in `src/llm_wiki_engine/knowledge_graph.py`._
 
 ## Attributes
 
@@ -38,8 +38,8 @@ _Auto-generated from `_EdgeAccumulator` in `src/llm_wiki_cli/services/knowledge_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_EdgeAccumulator (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n1["_MaterializationState.add_edge (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n0["_EdgeAccumulator (src/llm_wiki_engine/knowledge_graph.py)"]
+    n1["_MaterializationState.add_edge (src/llm_wiki_engine/knowledge_graph.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_graph.md"
     click n1 "../modules/knowledge_graph.md"

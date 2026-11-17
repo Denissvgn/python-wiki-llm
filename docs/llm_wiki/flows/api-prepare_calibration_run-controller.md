@@ -96,11 +96,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:prepare_calibration_run` | 1 | - | external | 16 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | - | external | 4 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 17 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 17 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 14 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | - | external | 9 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 17 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 17 | - | unresolved | 1 |
 > Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

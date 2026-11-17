@@ -164,8 +164,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 15 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 15 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 15 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 15 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 14 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 14 | - | external | 10 |
 > Omission summary shows 8 of 1375 groups; 1367 further groups are not expanded here. Counts above include all omitted interactions.
@@ -253,17 +253,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 586 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 587 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 588 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 589 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 590 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 591 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 592 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 593 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 594 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 595 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 596 | `isinstance(capture_implementation_observations, bool)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 587 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 588 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 589 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 590 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 591 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 592 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 593 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 594 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 595 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 596 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 597 | `isinstance(capture_implementation_observations, bool)` |
 
 ### Boundary effects
 
@@ -273,17 +273,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 586 |
-| external_call | `capture_context_read` | `TypeError` | 587 |
-| external_call | `capture_context_read` | `isinstance` | 588 |
-| external_call | `capture_context_read` | `TypeError` | 589 |
-| external_call | `capture_context_read` | `callable` | 590 |
-| external_call | `capture_context_read` | `TypeError` | 591 |
-| external_call | `capture_context_read` | `isinstance` | 592 |
-| external_call | `capture_context_read` | `TypeError` | 593 |
-| external_call | `capture_context_read` | `isinstance` | 594 |
-| external_call | `capture_context_read` | `TypeError` | 595 |
-| external_call | `capture_context_read` | `isinstance` | 596 |
+| external_call | `capture_context_read` | `isinstance` | 587 |
+| external_call | `capture_context_read` | `TypeError` | 588 |
+| external_call | `capture_context_read` | `isinstance` | 589 |
+| external_call | `capture_context_read` | `TypeError` | 590 |
+| external_call | `capture_context_read` | `callable` | 591 |
+| external_call | `capture_context_read` | `TypeError` | 592 |
+| external_call | `capture_context_read` | `isinstance` | 593 |
+| external_call | `capture_context_read` | `TypeError` | 594 |
+| external_call | `capture_context_read` | `isinstance` | 595 |
+| external_call | `capture_context_read` | `TypeError` | 596 |
+| external_call | `capture_context_read` | `isinstance` | 597 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -1,6 +1,6 @@
 # NoProcessHost
 
-**Location:** `src/llm_wiki_cli/services/host.py:142`
+**Location:** `src/llm_wiki_engine/host.py:142`
 **Kind:** Class
 **Bases:** `Host`
 **Module:** [host](../modules/host.md)
@@ -25,8 +25,8 @@ A host that grants no subprocesses; everything else is local.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["NoProcessHost (src/llm_wiki_cli/services/host.py)"]
-    n1["Host (src/llm_wiki_cli/services/host.py)"]
+    n0["NoProcessHost (src/llm_wiki_engine/host.py)"]
+    n1["Host (src/llm_wiki_engine/host.py)"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
     n0 --> n1
     n2 --> n0

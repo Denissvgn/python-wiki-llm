@@ -48,7 +48,7 @@ sequenceDiagram
     participant p26 as _validate_core_direction
     participant p27 as require_sha256
     participant p28 as require_nonnegative_int
-    participant p29 as set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    participant p29 as set (src/llm_wiki_engine/knowl…aph.py:_parse_typed_graph)
     participant p30 as seen_analyzers.add
     p0->>p1: _parse_typed_graph
     p1->>p2: _object
@@ -78,7 +78,7 @@ sequenceDiagram
     p9->>p26: _validate_core_direction
     p16->>p27: require_sha256
     p15->>p28: require_nonnegative_int
-    p1-->>p29: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    p1-->>p29: set (src/llm_wiki_engine/knowl…aph.py:_parse_typed_graph)
     p1-->>p30: seen_analyzers.add(analyzer)
 ```
 
@@ -90,14 +90,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 6 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_graph.py:_object` | 3 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | - | external | 9 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 122 groups; 114 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -125,11 +125,11 @@ Collector observations for 183 source steps with known totals: observed: 894, em
 | `_parse_typed_graph` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
 | `_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -140,22 +140,22 @@ flowchart LR
     s2["2. _parse_typed_graph"]
     s3["3. _object"]
     s4["4. require_mapping"]
-    s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s6["6. _validation_error"]
-    s7["7. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s7["7. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s8["8. error"]
-    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s9["9. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s10["10. _validation_error"]
     s11["11. key.encode"]
     s12["12. _validation_error"]
     s1 -->|"_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)"| s2
     s2 -->|"_object(payload, 'typed_graph')"| s3
     s3 -->|"require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s5
     s4 -->|"_validation_error(error, error_context)"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s7
     s6 -. "error(context)" .-> s8
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s9
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)" .-> s9
     s4 -->|"_validation_error(..., error_context)"| s10
     s4 -. "key.encode('utf-8')" .-> s11
     s4 -->|"_validation_error(..., error_context)"| s12
@@ -195,11 +195,11 @@ flowchart LR
 | `_parse_typed_graph` | `payload: object`, `concept_kinds: Mapping[str, str] \| None`, `complete: bool` | `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` | - | `{...}` |
 | `_object` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR` | - | `dict(...)` |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -211,11 +211,11 @@ flowchart LR
 | validate_typed_graph | _parse_typed_graph | 420 | `_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)` |
 | _parse_typed_graph | _object | 434 | `_object(payload, 'typed_graph')` |
 | _object | require_mapping | 2342 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 787 | `isinstance(key, str)` |
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |

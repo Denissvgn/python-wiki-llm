@@ -1,6 +1,6 @@
 # context_knowledge_contract Module
 
-**Path:** `src/llm_wiki_cli/services/context_knowledge_contract.py`
+**Path:** `src/llm_wiki_engine/context_knowledge_contract.py`
 
 ## Description
 
@@ -34,34 +34,34 @@ knowledge projection or a managed reference.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_knowledge_contract.py"]
-    n2["src/llm_wiki_cli/services/context_request_format.py"]
-    n3["src/llm_wiki_cli/services/context_response_format.py"]
-    n4["src/llm_wiki_cli/services/context_service.py"]
-    n5["src/llm_wiki_cli/services/contracts.py"]
-    n6["src/llm_wiki_cli/services/mcp_server.py"]
-    n0 --> n1
-    n0 --> n4
+    n1["src/llm_wiki_cli/services/context_request_format.py"]
+    n2["src/llm_wiki_cli/services/context_response_format.py"]
+    n3["src/llm_wiki_cli/services/context_service.py"]
+    n4["src/llm_wiki_cli/services/mcp_server.py"]
+    n5["src/llm_wiki_engine/context_knowledge_contract.py"]
+    n6["src/llm_wiki_engine/contracts.py"]
+    n0 --> n3
     n0 --> n5
+    n0 --> n6
     n1 --> n5
+    n1 --> n6
     n2 --> n1
     n2 --> n5
+    n2 --> n6
     n3 --> n1
-    n3 --> n2
     n3 --> n5
-    n4 --> n1
-    n4 --> n2
+    n3 --> n6
+    n4 --> n0
+    n4 --> n3
     n4 --> n5
-    n6 --> n0
-    n6 --> n1
-    n6 --> n4
+    n5 --> n6
     click n0 "../modules/api.md"
-    click n1 "../modules/context_knowledge_contract.md"
-    click n2 "../modules/context_request_format.md"
-    click n3 "../modules/context_response_format.md"
-    click n4 "../modules/context_service.md"
-    click n5 "../modules/services_contracts.md"
-    click n6 "../modules/mcp_server.md"
+    click n1 "../modules/context_request_format.md"
+    click n2 "../modules/context_response_format.md"
+    click n3 "../modules/context_service.md"
+    click n4 "../modules/mcp_server.md"
+    click n5 "../modules/context_knowledge_contract.md"
+    click n6 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 ### Internal neighbors
@@ -73,7 +73,7 @@ flowchart LR
 | Inbound | [context_response_format](../modules/context_response_format.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes
 

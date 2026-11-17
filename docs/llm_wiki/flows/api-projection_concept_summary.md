@@ -93,11 +93,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:projection_concept_summary` | 1 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | - | external | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 13 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 13 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_sha256` | 11 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_sha256` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 13 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_trimmed_text` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 128 groups; 120 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -132,7 +132,7 @@ Collector observations for 319 source steps with known totals: observed: 1260, e
 | `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_require_sha256` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `require_sha256` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -147,7 +147,7 @@ flowchart LR
     s9["9. KnowledgeProjectionError"]
     s10["10. _require_sha256"]
     s11["11. require_sha256"]
-    s12["12. isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)"]
+    s12["12. isinstance (src/llm_wiki_engine/validation.py:require_sha256)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…rojection_concept_summary)(projection, KnowledgeProjection)" .-> s2
     s1 -. "TypeError('projection must be a KnowledgeProjection')" .-> s3
     s1 -->|"_validate_projection_structure(projection)"| s4
@@ -158,7 +158,7 @@ flowchart LR
     s4 -->|"KnowledgeProjectionError('projection-profile-invalid', 'profile', #34;must be 'internal' or 'public-portable'#34;)"| s9
     s4 -->|"_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')"| s10
     s10 -->|"require_sha256(value, digest_error=KnowledgeProjectionError(...))"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)(value, str)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)" .-> s12
     click s1 "../modules/knowledge_projection.md"
     click s4 "../modules/knowledge_projection.md"
     click s6 "../modules/knowledge_projection.md"
@@ -183,7 +183,7 @@ flowchart LR
 | `KnowledgeProjectionError` | - | - | - | - |
 | `_require_sha256` | `value: object`, `path: str`, `code: str` | - | - | `require_shared_sha256(...)` |
 | `require_sha256` | `value: object`, `digest_error: _ValidationError`, `text_error: _ValidationError \| None`, `error_context: str`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sha256)` | - | - | - | - |
 
 ### Call data
 
@@ -199,7 +199,7 @@ flowchart LR
 | _validate_projection_structure | KnowledgeProjectionError | 821 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
 | _validate_projection_structure | _require_sha256 | 826 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
 | _require_sha256 | require_sha256 | 2240 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1159 | `isinstance(value, str)` |
+| require_sha256 | isinstance (src/llm_wiki_engine/validation.py:require_sha256) | 1159 | `isinstance(value, str)` |
 
 ### Boundary effects
 

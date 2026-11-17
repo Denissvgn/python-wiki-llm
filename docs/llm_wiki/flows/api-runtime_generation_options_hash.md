@@ -87,7 +87,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 30 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 45 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 45 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 48 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 48 | - | unresolved | 1 |
 > Omission summary shows 8 of 12 groups; 4 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

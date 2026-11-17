@@ -166,8 +166,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/doctor_service.py:build_doctor_report` | 1 | - | external | 12 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 13 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 13 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 13 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 17 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 13 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 24 | - | external | 10 |
@@ -186,7 +186,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1274; effect analysis evaluated: 975, partial: 50, unavailable: 249. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1025 source steps with known totals: observed: 6126, emitted: 5873, omitted: 253. Unavailable totals are excluded.
+Collector observations for 1025 source steps with known totals: observed: 6128, emitted: 5875, omitted: 253. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

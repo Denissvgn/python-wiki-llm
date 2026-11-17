@@ -11,13 +11,10 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
-| `.contracts` | `KNOWLEDGE_REUSE_SCHEMA_VERSION` |
 | `.extraction_service` | `EXTRACTOR_REGISTRY` |
-| `.host` | `current_host` |
 | `.io` | `read_md`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `PlannedArtifactWrite` |
 | `.knowledge_envelope` | `hash_markdown_snapshot`, `INVENTORY_HASH_EXTENSION`, `build_repository_record`, `hash_inventory` |
-| `.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_orchestration` | `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `packed_format` |
@@ -29,14 +26,18 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `.python_implementation` | `analysis_identity` |
 | `.source_retirement` | `retired_entity_mappings` |
 | `.source_snapshot` | `confirmed_missing_source_paths` |
-| `.validation` | `resolve_portable_workspace_path` |
-| `.wiki_media` | `build_asset_index` |
-| `.wiki_surface` | `collect_wiki_pages`, `collect_wiki_pages` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
 | `dataclasses` | `asdict`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine` | `llm_wiki_engine` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_REUSE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.validation` | `resolve_portable_workspace_path` |
+| `llm_wiki_engine.wiki_media` | `build_asset_index` |
+| `llm_wiki_engine.wiki_surface` | `collect_wiki_pages`, `collect_wiki_pages` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
@@ -61,6 +62,12 @@ flowchart LR
 |---|---|
 | Inbound | `src` (10) |
 | Outbound | `src` (22) |
+
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
 
 > All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 

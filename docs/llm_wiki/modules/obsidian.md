@@ -14,7 +14,6 @@ the packaged Obsidian plugin into a vault on explicit request.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -24,11 +23,12 @@ the packaged Obsidian plugin into a vault on explicit request.
 | `.knowledge_projection` | `KnowledgeProjection`, `KnowledgeProjectionError`, `projection_concept_summary`, `projection_json_value`, `validate_projection_summaries` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_portable_relative_path`, `require_safe_base_path`, `resolve_portable_workspace_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_portable_relative_path`, `require_safe_base_path`, `resolve_portable_workspace_path` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |

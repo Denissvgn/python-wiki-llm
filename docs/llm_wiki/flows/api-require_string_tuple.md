@@ -17,11 +17,11 @@ sequenceDiagram
     participant p3 as tuple
     participant p4 as require_string
     participant p5 as item_parser
-    participant p6 as isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    participant p7 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p6 as isinstance (src/llm_wiki_engine/validation.py:require_sequence)
+    participant p7 as isinstance (src/llm_wiki_engine/validation.py:require_string)
     participant p8 as _validation_error
     participant p9 as value.encode
-    participant p10 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p10 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p11 as error
     p0->>p1: require_sequence
     p0-->>p2: len(items)
@@ -30,15 +30,15 @@ sequenceDiagram
     p0->>p4: require_string
     p0-->>p3: tuple(...)
     p0-->>p5: item_parser(item)
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))
-    p4-->>p7: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)
+    p1-->>p6: isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, (...))
+    p4-->>p7: isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)
+    p1-->>p6: isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, Mapping)
     p4->>p8: _validation_error
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, container_type)
+    p1-->>p6: isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, container_type)
     p4-->>p9: value.encode('utf-8')
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Sequence)
+    p1-->>p6: isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, Sequence)
     p4->>p8: _validation_error
-    p8-->>p10: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p8-->>p10: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p8-->>p11: error(context)
 ```
 
@@ -63,26 +63,26 @@ Collector observations for 5 source steps with known totals: observed: 27, emitt
 flowchart LR
     s1["1. require_string_tuple"]
     s2["2. require_sequence"]
-    s3["3. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
-    s4["4. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
-    s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
+    s3["3. isinstance (src/llm_wiki_engine/validation.py:require_sequence)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:require_sequence)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:require_sequence)"]
+    s6["6. isinstance (src/llm_wiki_engine/validation.py:require_sequence)"]
     s7["7. len"]
     s8["8. len"]
     s9["9. tuple"]
     s10["10. require_string"]
-    s11["11. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s11["11. isinstance (src/llm_wiki_engine/validation.py:require_string)"]
     s12["12. _validation_error"]
     s1 -->|"require_sequence(value, error=error, container_type=container_type)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))" .-> s3
-    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)" .-> s4
-    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, container_type)" .-> s5
-    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Sequence)" .-> s6
+    s2 -. "isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, (...))" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, Mapping)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, container_type)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_engine/validation.py:require_sequence)(value, Sequence)" .-> s6
     s1 -. "len(items)" .-> s7
     s1 -. "len(items)" .-> s8
     s1 -. "tuple(...)" .-> s9
     s1 -->|"require_string(item, error=...)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/validation.py:require_string)(value, str)" .-> s11
     s10 -->|"_validation_error(error, error_context)"| s12
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
@@ -96,15 +96,15 @@ flowchart LR
 |---|---|---|---|---|
 | `require_string_tuple` | `value: object`, `error: Exception`, `item_error: Exception \| None`, `minimum: int`, `maximum: int \| None`, `container_type: type[object] \| tuple[type[object], ...]`, `item_parser: Callable[[object], str] \| None` | - | - | `tuple(...)`, `tuple(...)` |
 | `require_sequence` | `value: object`, `error: Exception`, `container_type: type[object] \| tuple[type[object], ...]`, `reject_mapping: bool` | `Mapping`, `Sequence` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sequence)` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `tuple` | - | - | - | - |
 | `require_string` | `value: object`, `error: _ValidationError`, `utf8_error: _ValidationError \| None`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_string)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 
 ### Call data
@@ -112,15 +112,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_string_tuple | require_sequence | 1029 | `require_sequence(value, error=error, container_type=container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 808 | `isinstance(value, (...))` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 809 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 810 | `isinstance(value, container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 813 | `isinstance(value, Sequence)` |
+| require_sequence | isinstance (src/llm_wiki_engine/validation.py:require_sequence) | 808 | `isinstance(value, (...))` |
+| require_sequence | isinstance (src/llm_wiki_engine/validation.py:require_sequence) | 809 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance (src/llm_wiki_engine/validation.py:require_sequence) | 810 | `isinstance(value, container_type)` |
+| require_sequence | isinstance (src/llm_wiki_engine/validation.py:require_sequence) | 813 | `isinstance(value, Sequence)` |
 | require_string_tuple | len | 1034 | `len(items)` |
 | require_string_tuple | len | 1035 | `len(items)` |
 | require_string_tuple | tuple | 1039 | `tuple(...)` |
 | require_string_tuple | require_string | 1040 | `require_string(item, error=...)` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 761 | `isinstance(value, str)` |
+| require_string | isinstance (src/llm_wiki_engine/validation.py:require_string) | 761 | `isinstance(value, str)` |
 | require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
 
 ### Boundary effects

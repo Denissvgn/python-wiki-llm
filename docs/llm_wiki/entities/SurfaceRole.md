@@ -1,13 +1,13 @@
 # SurfaceRole
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:55`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:55`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_surface](../modules/wiki_surface.md)
 
 ## Description
 
-_Auto-generated from `SurfaceRole` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `SurfaceRole` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -26,7 +26,7 @@ _Auto-generated from `SurfaceRole` in `src/llm_wiki_cli/services/wiki_surface.py
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SurfaceRole (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["SurfaceRole (src/llm_wiki_engine/wiki_surface.py)"]
     n1["Enum"]
     n2["str"]
     n3["_surface_pages (src/llm_wiki_cli/services/knowledge_index.py)"]

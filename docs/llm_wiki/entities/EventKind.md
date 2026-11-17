@@ -1,6 +1,6 @@
 # EventKind
 
-**Location:** `src/llm_wiki_cli/services/engine_events.py:43`
+**Location:** `src/llm_wiki_engine/engine_events.py:43`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [engine_events](../modules/engine_events.md)
@@ -8,7 +8,7 @@
 
 ## Description
 
-_Auto-generated from `EventKind` in `src/llm_wiki_cli/services/engine_events.py`._
+_Auto-generated from `EventKind` in `src/llm_wiki_engine/engine_events.py`._
 
 ## Attributes
 
@@ -23,7 +23,7 @@ _Auto-generated from `EventKind` in `src/llm_wiki_cli/services/engine_events.py`
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EventKind (src/llm_wiki_cli/services/engine_events.py)"]
+    n0["EventKind (src/llm_wiki_engine/engine_events.py)"]
     n1["Engine._report (src/llm_wiki_cli/engine/__init__.py)"]
     n1 --> n0
     click n0 "../modules/engine_events.md"

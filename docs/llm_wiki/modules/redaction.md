@@ -1,6 +1,6 @@
 # redaction Module
 
-**Path:** `src/llm_wiki_cli/services/redaction.py`
+**Path:** `src/llm_wiki_engine/redaction.py`
 
 ## Description
 
@@ -28,7 +28,7 @@ flowchart LR
     n1["src/llm_wiki_cli/services/calibration/broker.py"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
     n3["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n4["src/llm_wiki_cli/services/redaction.py"]
+    n4["src/llm_wiki_engine/redaction.py"]
     n0 --> n4
     n1 --> n4
     n2 --> n1

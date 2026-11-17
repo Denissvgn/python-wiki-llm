@@ -1,6 +1,6 @@
 # DiscoveryError
 
-**Location:** `src/llm_wiki_cli/services/search_discovery.py:33`
+**Location:** `src/llm_wiki_engine/search_discovery.py:33`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [search_discovery](../modules/search_discovery.md)
@@ -24,13 +24,13 @@ Safe fixed diagnostics without reflecting captured content.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DiscoveryError (src/llm_wiki_cli/services/search_discovery.py)"]
+    n0["DiscoveryError (src/llm_wiki_engine/search_discovery.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
     n3["src/llm_wiki_cli/services/mcp_server.py"]
-    n4["_invalid (src/llm_wiki_cli/services/search_discovery.py)"]
-    n5["enrich_search (src/llm_wiki_cli/services/search_discovery.py)"]
-    n6["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
+    n4["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
+    n5["_invalid (src/llm_wiki_engine/search_discovery.py)"]
+    n6["enrich_search (src/llm_wiki_engine/search_discovery.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -40,9 +40,9 @@ flowchart LR
     click n0 "../modules/search_discovery.md"
     click n2 "../modules/api.md"
     click n3 "../modules/mcp_server.md"
-    click n4 "../modules/search_discovery.md"
+    click n4 "../modules/search_service.md"
     click n5 "../modules/search_discovery.md"
-    click n6 "../modules/search_service.md"
+    click n6 "../modules/search_discovery.md"
 ```
 
 ### Summary
@@ -63,6 +63,6 @@ flowchart LR
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
 | `mcp_server` | import | [mcp_server](../modules/mcp_server.md) | — |
+| `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 1 |
 | `_invalid` | call | [search_discovery](../modules/search_discovery.md) | 1 |
 | `enrich_search` | call | [search_discovery](../modules/search_discovery.md) | 1 |
-| `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 1 |

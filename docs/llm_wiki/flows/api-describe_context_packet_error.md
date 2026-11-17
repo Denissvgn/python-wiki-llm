@@ -126,38 +126,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| describe_context_packet_error | isinstance | 194 | `isinstance(error, HelperPreparationError)` |
-| describe_context_packet_error | isinstance | 202 | `isinstance(error, ContextPacketAuthorityError)` |
-| describe_context_packet_error | str | 203 | `str(error)` |
-| describe_context_packet_error | deepcopy | 203 | `deepcopy(error.details)` |
-| describe_context_packet_error | getattr | 204 | `getattr(error, 'field', None)` |
-| describe_context_packet_error | isinstance | 207 | `isinstance(error, ContextPacketMalformedError)` |
-| describe_context_packet_error | isinstance | 218 | `isinstance(error, ContextPacketSourceMutationError)` |
-| describe_context_packet_error | {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get | 220 | `{'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get(error.facet, error.facet)` |
-| describe_context_packet_error | isinstance | 224 | `isinstance(error, ContextPacketUnavailableError)` |
-| describe_context_packet_error | isinstance | 227 | `isinstance(error, (...))` |
-| describe_context_packet_error | isinstance | 229 | `isinstance(error, PathValidationError)` |
+| describe_context_packet_error | isinstance | 195 | `isinstance(error, HelperPreparationError)` |
+| describe_context_packet_error | isinstance | 203 | `isinstance(error, ContextPacketAuthorityError)` |
+| describe_context_packet_error | str | 204 | `str(error)` |
+| describe_context_packet_error | deepcopy | 204 | `deepcopy(error.details)` |
+| describe_context_packet_error | getattr | 205 | `getattr(error, 'field', None)` |
+| describe_context_packet_error | isinstance | 208 | `isinstance(error, ContextPacketMalformedError)` |
+| describe_context_packet_error | isinstance | 219 | `isinstance(error, ContextPacketSourceMutationError)` |
+| describe_context_packet_error | {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get | 221 | `{'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get(error.facet, error.facet)` |
+| describe_context_packet_error | isinstance | 225 | `isinstance(error, ContextPacketUnavailableError)` |
+| describe_context_packet_error | isinstance | 228 | `isinstance(error, (...))` |
+| describe_context_packet_error | isinstance | 230 | `isinstance(error, PathValidationError)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `describe_context_packet_error` | 235 |
+| mutation | `seen.add` | `describe_context_packet_error` | 236 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `describe_context_packet_error` | `isinstance` | 194 |
-| external_call | `describe_context_packet_error` | `isinstance` | 202 |
-| external_call | `describe_context_packet_error` | `deepcopy` | 203 |
-| external_call | `describe_context_packet_error` | `getattr` | 204 |
-| external_call | `describe_context_packet_error` | `isinstance` | 207 |
-| external_call | `describe_context_packet_error` | `isinstance` | 218 |
-| unresolved_call | `describe_context_packet_error` | `{'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get` | 220 |
-| external_call | `describe_context_packet_error` | `isinstance` | 224 |
-| external_call | `describe_context_packet_error` | `isinstance` | 227 |
-| external_call | `describe_context_packet_error` | `isinstance` | 229 |
+| external_call | `describe_context_packet_error` | `isinstance` | 195 |
+| external_call | `describe_context_packet_error` | `isinstance` | 203 |
+| external_call | `describe_context_packet_error` | `deepcopy` | 204 |
+| external_call | `describe_context_packet_error` | `getattr` | 205 |
+| external_call | `describe_context_packet_error` | `isinstance` | 208 |
+| external_call | `describe_context_packet_error` | `isinstance` | 219 |
+| unresolved_call | `describe_context_packet_error` | `{'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get` | 221 |
+| external_call | `describe_context_packet_error` | `isinstance` | 225 |
+| external_call | `describe_context_packet_error` | `isinstance` | 228 |
+| external_call | `describe_context_packet_error` | `isinstance` | 230 |
 | step_limit | `describe_context_packet_error` | `first 12 steps` | 0 |
 
 ## Behavior

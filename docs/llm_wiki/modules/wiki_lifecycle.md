@@ -13,17 +13,17 @@ Read-only classification for wiki bootstrap, sync, and migration routing.
 | `..config` | `AGENT_CHOICES` |
 | `.current_contracts` | `current_contract_defaults` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
-| `.host` | `current_host` |
 | `.io` | `first_unsafe_path_component`, `formatted_json_bytes` |
 | `.rendering_lifecycle` | `RenderReason` |
 | `.schema` | `SCHEMA_BLOCK_VERSION`, `SchemaRenderProfile` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
 | `.wiki_scaffold` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN` |
-| `.wiki_surface` | `iter_directory_kinds`, `iter_page_kinds` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.wiki_surface` | `iter_directory_kinds`, `iter_page_kinds` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |

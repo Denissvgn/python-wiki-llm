@@ -36,15 +36,15 @@ presence means captured input, not recognition as a supported format.
 | `.gitignore` | `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text` |
 | `.knowledge_envelope` | `ConsumedInput`, `consumed_inputs_from_captured_hashes` |
 | `.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
-| `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
-| `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `contextlib` | `ExitStack` |
 | `dataclasses` | `dataclass`, `field` |
 | `fnmatch` | `fnmatch` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |

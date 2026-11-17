@@ -14,10 +14,10 @@ agent worktrees and validation of wiki and source roots.
 | Source | Symbols |
 |--------|---------|
 | `.filesystem_guard` | `WindowsSecurityGuardError`, `windows_current_user_sid`, `windows_path_owner_sid` |
-| `.host` | `current_host` |
 | `.io` | `first_unsafe_path_component` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
+| `llm_wiki_engine.host` | `current_host` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |

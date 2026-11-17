@@ -118,22 +118,22 @@ sequenceDiagram
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3365 interactions; 3335 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3370 interactions; 3340 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1117 (1116 omitted); unresolved 1 of 1384 (1383 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1117 (1116 omitted); unresolved 1 of 1386 (1385 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/extraction_service.py:run` | 1 | - | external | 20 |
-| `src/llm_wiki_cli/services/host.py:emit` | 16 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 17 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/host.py:emit` | 16 | - | external | 3 |
-| `src/llm_wiki_cli/services/host.py:emit` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/host.py:_publish_message` | 24 | [src/llm_wiki_cli/services/engine_events.py](../modules/engine_events.md) | internal | 2 |
-| `src/llm_wiki_cli/services/engine_events.py:current_operation` | 25 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/host.py:_publish_message` | 24 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:emit` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 17 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:emit` | 16 | - | external | 3 |
+| `src/llm_wiki_engine/host.py:emit` | 16 | - | unresolved | 2 |
+| `src/llm_wiki_engine/host.py:_publish_message` | 24 | [src/llm_wiki_engine/engine_events.py](../modules/engine_events.md) | internal | 2 |
+| `src/llm_wiki_engine/engine_events.py:current_operation` | 25 | - | unresolved | 1 |
+| `src/llm_wiki_engine/host.py:_publish_message` | 24 | - | unresolved | 1 |
 > Omission summary shows 8 of 761 groups; 753 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -147,9 +147,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 865; effect analysis evaluated: 709, partial: 37, unavailable: 119. Counts include steps omitted from the displayed trace.
+Source steps: 868; effect analysis evaluated: 712, partial: 37, unavailable: 119. Counts include steps omitted from the displayed trace.
 
-Collector observations for 746 source steps with known totals: observed: 4452, emitted: 4333, omitted: 119. Unavailable totals are excluded.
+Collector observations for 749 source steps with known totals: observed: 4479, emitted: 4360, omitted: 119. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

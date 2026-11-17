@@ -35,19 +35,15 @@ ownership. Ordinary callers retain the same publication protocol.
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `is_bundled_helper_implementation_path` |
 | `.analysis_capture` | `attach`, `attach`, `attach` |
 | `.analysis_compatibility` | `has_contract` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
-| `.immutable` | `freeze` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `current_infrastructure_bases`, `infrastructure_evidence_by_page` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
-| `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
 | `.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
-| `.progress` | `observed_phase` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
@@ -60,6 +56,10 @@ ownership. Ordinary callers retain the same publication protocol.
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
+| `llm_wiki_engine.progress` | `observed_phase` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any`, `TYPE_CHECKING` |

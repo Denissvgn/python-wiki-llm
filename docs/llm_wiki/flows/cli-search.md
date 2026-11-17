@@ -80,7 +80,7 @@ sequenceDiagram
     participant p24 as source_snapshot_matches_current_files
     participant p25 as SyncManifest.load
     participant p26 as _validate_capture_options
-    participant p27 as rank_pages (src/llm_wiki_cli/services/search_rank.py)
+    participant p27 as rank_pages (src/llm_wiki_engine/search_rank.py)
     participant p28 as _object
     participant p29 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
     participant p30 as Path(…).expanduser
@@ -110,7 +110,7 @@ sequenceDiagram
     p9->>p24: source_snapshot_matches_current_files
     p13->>p25: SyncManifest.load
     p14->>p26: _validate_capture_options
-    p15->>p27: rank_pages (src/llm_wiki_cli/services/search_rank.py)
+    p15->>p27: rank_pages (src/llm_wiki_engine/search_rank.py)
     p22->>p28: _object
     p0-->>p29: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
     p1-->>p30: Path(…).expanduser
@@ -127,11 +127,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_cli/services/host.py:current_host` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 2 | - | external | 10 |
 | `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 2 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_cli/services/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 > Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

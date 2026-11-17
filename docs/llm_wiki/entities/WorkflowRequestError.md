@@ -1,6 +1,6 @@
 # WorkflowRequestError
 
-**Location:** `src/llm_wiki_cli/services/workflow_profile.py:29`
+**Location:** `src/llm_wiki_engine/workflow_profile.py:29`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [workflow_profile](../modules/workflow_profile.md)
@@ -24,7 +24,7 @@ Reports a field-specific workflow or session error, including invalid inputs, ca
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WorkflowRequestError (src/llm_wiki_cli/services/workflow_profile.py)"]
+    n0["WorkflowRequestError (src/llm_wiki_engine/workflow_profile.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
     n3["_root_stamp (src/llm_wiki_cli/services/context_session.py)"]

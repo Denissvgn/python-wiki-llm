@@ -1,6 +1,6 @@
 # MarkdownSection
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:86`
+**Location:** `src/llm_wiki_engine/markdown_sections.py:86`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -55,12 +55,12 @@ includes nested sections and every blank line in that extent.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MarkdownSection (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n1["parse_markdown_document (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n2["parse_markdown_sections (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n3["_preamble_observation (src/llm_wiki_cli/services/section_ownership.py)"]
-    n4["_scoped_hashes (src/llm_wiki_cli/services/section_ownership.py)"]
-    n5["classify_section_ownership (src/llm_wiki_cli/services/section_ownership.py)"]
+    n0["MarkdownSection (src/llm_wiki_engine/markdown_sections.py)"]
+    n1["parse_markdown_document (src/llm_wiki_engine/markdown_sections.py)"]
+    n2["parse_markdown_sections (src/llm_wiki_engine/markdown_sections.py)"]
+    n3["_preamble_observation (src/llm_wiki_engine/section_ownership.py)"]
+    n4["_scoped_hashes (src/llm_wiki_engine/section_ownership.py)"]
+    n5["classify_section_ownership (src/llm_wiki_engine/section_ownership.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

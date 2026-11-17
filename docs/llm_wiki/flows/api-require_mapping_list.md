@@ -14,23 +14,23 @@ sequenceDiagram
     participant p0 as require_mapping_list
     participant p1 as require_list
     participant p2 as require_mapping
-    participant p3 as isinstance (src/llm_wiki_cli/services/validation.py:require_list)
-    participant p4 as isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
+    participant p3 as isinstance (src/llm_wiki_engine/validation.py:require_list)
+    participant p4 as isinstance (src/llm_wiki_engine/validation.py:require_mapping)
     participant p5 as _validation_error
     participant p6 as key.encode
-    participant p7 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p7 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p8 as error
     p0->>p1: require_list
     p0->>p2: require_mapping
-    p1-->>p3: isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)
+    p1-->>p3: isinstance (src/llm_wiki_engine/validation.py:require_list)(value, list)
+    p2-->>p4: isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)
     p1->>p5: _validation_error
     p2->>p5: _validation_error
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)
+    p2-->>p4: isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)
     p2->>p5: _validation_error
     p2-->>p6: key.encode('utf-8')
     p2->>p5: _validation_error
-    p5-->>p7: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p5-->>p7: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p5-->>p8: error(context)
 ```
 
@@ -55,25 +55,25 @@ Collector observations for 7 source steps with known totals: observed: 30, emitt
 flowchart LR
     s1["1. require_mapping_list"]
     s2["2. require_list"]
-    s3["3. isinstance (src/llm_wiki_cli/services/validation.py:require_list)"]
+    s3["3. isinstance (src/llm_wiki_engine/validation.py:require_list)"]
     s4["4. _validation_error"]
-    s5["5. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s6["6. error"]
     s7["7. require_mapping"]
-    s8["8. isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)"]
+    s8["8. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s9["9. _validation_error"]
-    s10["10. isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)"]
+    s10["10. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s11["11. _validation_error"]
     s12["12. key.encode"]
     s1 -->|"require_list(value, error=error)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/validation.py:require_list)(value, list)" .-> s3
     s2 -->|"_validation_error(error, error_context)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s5
     s4 -. "error(context)" .-> s6
     s1 -->|"require_mapping(item, error=..., require_string_keys=require_string_keys)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s8
     s7 -->|"_validation_error(error, error_context)"| s9
-    s7 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)" .-> s10
+    s7 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)" .-> s10
     s7 -->|"_validation_error(..., error_context)"| s11
     s7 -. "key.encode('utf-8')" .-> s12
     click s1 "../modules/validation.md"
@@ -90,14 +90,14 @@ flowchart LR
 |---|---|---|---|---|
 | `require_mapping_list` | `value: object`, `error: Exception`, `item_error: Exception \| None`, `require_string_keys: bool` | - | - | `items` |
 | `require_list` | `value: object`, `error: _ValidationError`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services/validation.py:require_list)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_list)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
 
@@ -106,14 +106,14 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_mapping_list | require_list | 1073 | `require_list(value, error=error)` |
-| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 820 | `isinstance(value, list)` |
+| require_list | isinstance (src/llm_wiki_engine/validation.py:require_list) | 820 | `isinstance(value, list)` |
 | require_list | _validation_error | 821 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_mapping_list | require_mapping | 1075 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 787 | `isinstance(key, str)` |
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 

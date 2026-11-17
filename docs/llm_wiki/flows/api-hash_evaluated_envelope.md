@@ -91,8 +91,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/canonical_json.py:sha256_digest` | 2 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/canonical_json.py:indented_line_text` | 7 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 2 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 7 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | external | 3 |

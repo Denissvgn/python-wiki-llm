@@ -1,6 +1,6 @@
 # OperationIdentity
 
-**Location:** `src/llm_wiki_cli/services/engine_events.py:167`
+**Location:** `src/llm_wiki_engine/engine_events.py:167`
 **Kind:** Class
 **Bases:** —
 **Module:** [engine_events](../modules/engine_events.md)
@@ -27,9 +27,9 @@ Names the engine operation that events are reported for.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["OperationIdentity (src/llm_wiki_cli/services/engine_events.py)"]
-    n1["current_operation (src/llm_wiki_cli/services/engine_events.py)"]
-    n2["operation_identity (src/llm_wiki_cli/services/engine_events.py)"]
+    n0["OperationIdentity (src/llm_wiki_engine/engine_events.py)"]
+    n1["current_operation (src/llm_wiki_engine/engine_events.py)"]
+    n2["operation_identity (src/llm_wiki_engine/engine_events.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/engine_events.md"

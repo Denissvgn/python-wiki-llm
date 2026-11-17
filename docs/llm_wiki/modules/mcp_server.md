@@ -20,15 +20,13 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `circuit_breaker`, `context_service`, `lint_service`, `wiki_surface` |
+| `.` | `analysis_compatibility`, `context_service`, `lint_service` |
 | `..` | `api` |
 | `..api` | `LlmWikiApiError`, `build_documentation_query_service`, `query_documentation` |
 | `..api_types` | `KnowledgeMode` |
 | `..config` | `IDE_AGENTS`, `PathValidationError`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
 | `.bootstrap_runtime` | `build_module_page_map` |
-| `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `.context_budget` | `validate_request` |
-| `.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `.context_packet` | `ContextPacketError` |
 | `.context_packet_builder` | `describe_context_packet_error`, `build_qualified_context`, `describe_context_packet_error` |
 | `.documentation_queries` | `DocumentationQueryError` |
@@ -36,21 +34,15 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
 | `.helper_runtime` | `helper_operation` |
 | `.io` | `read_md` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.maintenance_queue` | `validate_queue_limit` |
-| `.request_json` | `MAX_REQUEST_BYTES` |
-| `.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.task_compact_readable` | `readable_session_metadata` |
 | `.task_context` | `_counter` |
 | `.task_contract` | `normalize_task_request` |
 | `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
-| `.validation` | `posix_path_text`, `require_portable_relative_path` |
-| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `contextlib` | `asynccontextmanager` |
@@ -59,6 +51,15 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `ipaddress` | `ipaddress` |
 | `itertools` | `islice` |
 | `json` | `json` |
+| `llm_wiki_engine` | `circuit_breaker`, `wiki_surface` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
+| `llm_wiki_engine.request_json` | `MAX_REQUEST_BYTES` |
+| `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.task_compact_readable` | `readable_session_metadata` |
+| `llm_wiki_engine.validation` | `posix_path_text`, `require_portable_relative_path` |
+| `llm_wiki_engine.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
 | `mcp` | `mcp` |
 | `mcp.server.fastmcp` | `FastMCP` |
 | `mcp.types` | `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent` |
@@ -104,17 +105,17 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 119 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 123 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 220 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 224 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 228 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 236 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 243 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 265 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 284 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 371 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 435 | — | Workspace read/check operations with managed helper provisioning. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 120 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 124 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 221 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 225 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 229 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 237 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 244 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 266 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 285 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 372 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 436 | — | Workspace read/check operations with managed helper provisioning. |
 
 ## Functions
 
