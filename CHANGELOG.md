@@ -142,6 +142,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   section locators point into their page, record projections count the
   records they list, and a state's records, observations, acknowledgments and
   bases agree with each other.
+- Responses to `llm-wiki-context/v3` (budgeted context) requests have a JSON
+  Schema: `llm-wiki-context-response-v3.schema.json`. It covers the JSON and
+  packet envelopes, the JSON block that opens Markdown output, the
+  invalid-request envelope and the `cannot-fit` refusal with its diagnostics.
+  The embedded body is a version 2 context response or a version 2 qualified
+  packet, with the same definitions as those schemas.
+  `validate_budgeted_context_response()` in `llm_wiki_cli.engine` checks the
+  document on its own: usage stays within the budget (and a refused candidate
+  exceeds it), exact compliance follows the mode, change paths are portable,
+  sorted and hashed into `paths_id`, refusal counts agree, and the embedded
+  context or packet passes its own checks. Binding `request_id` to a request
+  and recounting the text still needs the request and the counter
+  (`validate_budgeted_context()`). A failure to provide required knowledge is
+  still reported with the version 2 error envelope.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also

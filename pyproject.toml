@@ -110,6 +110,7 @@ where = ["src"]
     "schemas/llm-wiki-extract-v1.schema.json",
     "schemas/llm-wiki-maintenance-status-v1.schema.json",
     "schemas/llm-wiki-maintenance-queue-v1.schema.json",
+    "schemas/llm-wiki-context-response-v3.schema.json",
     "schemas/conformance/*.cases.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",

@@ -16,6 +16,8 @@ from jsonschema import Draft202012Validator
 from llm_wiki_cli import api, cli
 from llm_wiki_cli import api_types
 from llm_wiki_cli.services import (
+    context_budget,
+    context_budget_format,
     context_packet,
     context_request_format,
     contracts,
@@ -43,6 +45,7 @@ from llm_wiki_cli.services.context_packet import (
     validate_context_packet,
 )
 from llm_wiki_cli.engine import (
+    CONTEXT_BUDGET_RESPONSE_PROTOCOL,
     CONTEXT_RESPONSE_PROTOCOLS,
     ENGINE_CAPABILITIES_SCHEMA_VERSION,
     ENGINE_EVENT_SCHEMA_VERSION,
@@ -53,6 +56,7 @@ from llm_wiki_cli.engine import (
     NoProcessHost,
     SyncError,
     SyncRequest,
+    validate_budgeted_context_response,
     validate_context_response,
     validate_engine_event,
 )
@@ -108,6 +112,7 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], object]] = {
     CONTEXT_PACKET_SCHEMA_VERSION: _validate_packet_document,
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION: _validate_packet_document,
     **{protocol: validate_context_response for protocol in CONTEXT_RESPONSE_PROTOCOLS},
+    CONTEXT_BUDGET_RESPONSE_PROTOCOL: validate_budgeted_context_response,
     query_result_format.DOCUMENTATION_QUERY_SCHEMA_VERSION: (
         query_result_format.validate_documentation_query_result
     ),
@@ -160,6 +165,7 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
         "llm-wiki-qualified-context-packet-v2.cases.json",
         "llm-wiki-context-response-v1.cases.json",
         "llm-wiki-context-response-v2.cases.json",
+        "llm-wiki-context-response-v3.cases.json",
         "llm-wiki-documentation-query-v1.cases.json",
         "llm-wiki-search-result-v1.cases.json",
     } <= set(files)
@@ -349,6 +355,126 @@ def test_emitted_context_responses_match_their_schema(
     Draft202012Validator(_schema(f"llm-wiki-context-response-v{version}.schema.json")).validate(response)
     validate_context_response(response)
     assert response["ok"] is ("bogus" not in request["focus"] and request["budget_tokens"] > 0)
+
+
+def test_budgeted_context_schema_reuses_the_v2_formats():
+    budgeted = _schema("llm-wiki-context-response-v3.schema.json")
+    packet = _schema("llm-wiki-qualified-context-packet-v2.schema.json")
+    response = _schema("llm-wiki-context-response-v2.schema.json")
+    defs = budgeted["$defs"]
+    outer = {"$schema", "$id", "title", "description", "$defs"}
+    assert defs["packet_v2"] == {key: value for key, value in packet.items() if key not in outer}
+    assert defs["context_v2"] == response["$defs"]["success"]
+    for name, definition in packet["$defs"].items():
+        assert defs[name] == definition, name
+    fmt = context_budget_format
+    metadata = defs["markdown_metadata"]
+    assert set(metadata["required"]) == fmt._METADATA_REQUIRED
+    assert set(metadata["properties"]) == fmt._METADATA_REQUIRED | fmt._METADATA_OPTIONAL
+    for name in set(metadata["properties"]) - {"budget", "used"}:
+        assert metadata["properties"][name] == response["$defs"]["success"]["properties"][name]
+    protocol = budgeted["properties"]["protocol"]["const"]
+    assert protocol == fmt.CONTEXT_BUDGET_RESPONSE_PROTOCOL == contracts.CONTEXT_BUDGET_PROTOCOL_VERSION
+    accounting = defs["accounting"]
+    assert set(accounting["required"]) == fmt._ACCOUNTING_FIELDS
+    assert accounting["properties"]["usage_kind"]["const"] == fmt._USAGE_KIND
+    assert accounting["properties"]["scope"]["const"] == fmt._SCOPE
+    assert set(defs["success"]["required"]) == fmt._COMMON_FIELDS
+    refusal = defs["refusal"]
+    assert set(refusal["required"]) == fmt._REFUSAL_FIELDS
+    assert refusal["properties"]["schema_version"]["const"] == fmt.CONTEXT_BUDGET_REFUSAL_SCHEMA_VERSION
+    assert set(refusal["properties"]["selection_policy"]["enum"]) == fmt._SELECTION_POLICIES
+    for name, value in fmt._REFUSAL_CONSTANTS.items():
+        assert refusal["properties"][name]["const"] == value
+    assert [item["properties"]["id"]["const"] for item in refusal["properties"]["recovery"]["prefixItems"]] == list(
+        fmt._RECOVERY_ROUTES
+    )
+
+
+def _git(*args: str) -> None:
+    import subprocess
+
+    subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+        check=True, capture_output=True,
+    )
+
+
+@pytest.mark.parametrize(
+    "request_overrides, cli_args",
+    [
+        ({"format": "json", "knowledge_mode": "auto", "prefer_fresh": True}, []),
+        ({"format": "markdown"}, []),
+        ({"format": "packet", "knowledge_mode": "auto"}, []),
+        ({"format": "json", "budget_tokens": 900, "focus": ["changed", "neighbors"]}, []),
+        ({"format": "json", "changes": {"mode": "paths", "paths": ["ledger.py", "missing.py"]}}, []),
+        ({"format": "json", "changes": {"mode": "range", "base": "HEAD~1", "head": "HEAD"}}, []),
+        ({"format": "packet", "changes": {"mode": "staged"}}, []),
+        ({"format": "packet", "budget_tokens": 1}, []),
+        ({"format": "json", "focus": ["bogus"]}, []),
+        ({"format": "json"}, ["--budget", "50"]),
+    ],
+)
+def test_emitted_budgeted_context_responses_match_their_schema(
+    tmp_path, monkeypatch, capsys, request_overrides, cli_args
+):
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/accounts.py").write_text(
+        'class Account:\n    """A customer account."""\n\n    balance: int\n', encoding="utf-8"
+    )
+    (tmp_path / "src/ledger.py").write_text(
+        "from accounts import Account\n\n\nclass Ledger:\n    def post(self, account: Account) -> None:\n"
+        "        pass\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    _git("init", "-q")
+    _git("add", "-A")
+    _git("commit", "-q", "-m", "init")
+    api.bootstrap_wiki("src", "docs/llm_wiki")
+    (tmp_path / "src/ledger.py").write_text(
+        (tmp_path / "src/ledger.py").read_text(encoding="utf-8") + "\nLIMIT = 3\n", encoding="utf-8"
+    )
+    _git("add", "-A")
+    _git("commit", "-q", "-m", "limit")
+    (tmp_path / "src/accounts.py").write_text(
+        (tmp_path / "src/accounts.py").read_text(encoding="utf-8") + "\nFLAG = 1\n", encoding="utf-8"
+    )
+    _git("add", "src/accounts.py")
+    request = {
+        "protocol": CONTEXT_BUDGET_RESPONSE_PROTOCOL, "budget_tokens": 32_000,
+        "budget_mode": "estimated", "focus": ["all"],
+    }
+    request.update(request_overrides)
+    (tmp_path / "request.json").write_text(json.dumps(request), encoding="utf-8")
+    capsys.readouterr()
+    monkeypatch.setattr(sys, "argv", [
+        "llm-wiki", "context", "--request", "request.json",
+        "--src-dir", "src", "--wiki-dir", "docs/llm_wiki", *cli_args,
+    ])
+
+    try:
+        cli.main()
+    except SystemExit:
+        pass
+
+    captured = capsys.readouterr()
+    text = captured.out or captured.err
+    if request["format"] == "markdown" and captured.out:
+        prefix = "# Budgeted context\n\n```json\n"
+        assert captured.out.startswith(prefix)
+        text = captured.out[len(prefix):].split("\n```\n\n", 1)[0]
+    document = json.loads(text)
+    Draft202012Validator(_schema("llm-wiki-context-response-v3.schema.json")).validate(document)
+    validate_budgeted_context_response(document)
+    if document["ok"]:
+        assert document["request_id"] == context_budget.request_identity(request)
+        if "changes" in request:
+            assert document["changes"]["request"]["mode"] == request["changes"]["mode"]
+    else:
+        expected = "cannot-fit" if request["budget_tokens"] == 1 else "invalid_request"
+        assert document["error"] == expected or document["error"]["code"] == expected
 
 
 def test_query_formats_match_the_running_code():

@@ -60,6 +60,7 @@ KERNEL_SERVICES = frozenset(
         "change_selection",
         "concept_identity",
         "context_budget",
+        "context_budget_format",
         "context_knowledge_contract",
         "context_packet",
         "context_packet_builder",
@@ -896,7 +897,8 @@ def test_upward_scan_counts_function_imports_but_not_type_checking(tmp_path: Pat
 
 # Format checks stay importable without the builders or the analysis stack.
 FORMAT_MODULES = (
-    "context_packet", "context_request_format", "context_response_format", "query_result_format",
+    "context_packet", "context_request_format", "context_response_format",
+    "context_budget_format", "query_result_format",
     "surface_index_format", "extract_format", "maintenance_status_format",
     "maintenance_queue_format",
 )

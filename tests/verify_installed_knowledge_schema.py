@@ -134,6 +134,8 @@ _REQUIRED_HELPERS = {
     "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-event-v1.cases.json",
     "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-record-binding-v1.cases.json",
     "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-state-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-context-response-v3.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-context-response-v3.cases.json",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",
     "llm_wiki_cli/extractors/haskell_scripts/Main.hs",

@@ -106,6 +106,7 @@
     "services/cli_reference.py",
     "services/concept_identity.py",
     "services/context_budget.py",
+    "services/context_budget_format.py",
     "services/context_knowledge_contract.py",
     "services/context_packet.py",
     "services/context_packet_builder.py",
