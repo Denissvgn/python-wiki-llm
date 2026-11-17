@@ -470,7 +470,7 @@ def knowledge_freshness_hint(
 
     state_value = state.value if isinstance(state, ComputedFreshness) else state
     if state_value == ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value:
-        from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+        from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
         return SOURCE_CHANGED_STRUCTURE_UNCHANGED
     if state_value != ComputedFreshness.BASIS_INCOMPATIBLE.value:

@@ -64,7 +64,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_media import (
+from llm_wiki_engine.wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
     strip_fenced_code_blocks,
@@ -73,9 +73,9 @@ from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
-from .wiki_surface import is_safe_page_id, iter_page_kinds
+from llm_wiki_engine.wiki_surface import is_safe_page_id, iter_page_kinds
 from .maintenance_protocol import ADOPTION_FILENAME
-from .validation import (
+from llm_wiki_engine.validation import (
     is_portable_relative_path,
     path_is_within as shared_path_is_within,
     paths_overlap as shared_paths_overlap,

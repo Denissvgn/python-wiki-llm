@@ -17,7 +17,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from .contracts import (
+from llm_wiki_engine.contracts import (
     CI_CHECK_SCHEMA_VERSION,
     CI_CHECK_V2_SCHEMA_VERSION,
     CI_CHECK_V3_SCHEMA_VERSION,

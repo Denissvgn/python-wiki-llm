@@ -88,7 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           "${BOOTSTRAP_PYTHON}" -m venv .venv
-          .venv/Scripts/python.exe -m pip install --no-cache-dir ".[dev,tokens]" 2>&1 | tee "${EVIDENCE}/pip-install.log"
+          .venv/Scripts/python.exe -m pip install --no-cache-dir ./src ".[dev,tokens]" 2>&1 | tee "${EVIDENCE}/pip-install.log"
           .venv/Scripts/python.exe -m pip check 2>&1 | tee "${EVIDENCE}/pip-check.log"
           .venv/Scripts/python.exe -m pip freeze --all > "${EVIDENCE}/dependencies.txt"
       - name: Verify source and provider, then run only the complete measurement module

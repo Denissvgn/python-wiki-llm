@@ -172,8 +172,8 @@ def _validated_recovery_snapshot(directory, *, allow_captured_preimage=False):
 
 
 def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
-    from .request_json import _pairs, _constant
-    from .validation import is_portable_relative_path
+    from llm_wiki_engine.request_json import _pairs, _constant
+    from llm_wiki_engine.validation import is_portable_relative_path
     from .sync_manifest import SyncManifest, MANIFEST_FILENAME
     from .knowledge_artifacts import validate_knowledge_artifacts
 
@@ -243,7 +243,7 @@ def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_i
     from .source_snapshot import build_source_snapshot
     from .knowledge_envelope import hash_source_snapshot, ConsumedInput
     from .sync_manifest import MANIFEST_FILENAME, SyncManifest
-    from .request_json import _pairs, _constant
+    from llm_wiki_engine.request_json import _pairs, _constant
 
     root = _absolute_path(wiki_dir)
     directory = _absolute_path(recovery_dir)
@@ -300,7 +300,7 @@ def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_i
             if journal["preimage_metadata_hash"] != digest(read_guarded(directory / "maintenance-recovery.json", MAX_EXPANDED_BYTES).content):
                 raise MaintenanceProtocolError("recovery-invalid", "Publication journal differs from its captured preimage")
             for name, images in journal["eligible_images"].items():
-                from .validation import is_portable_relative_path
+                from llm_wiki_engine.validation import is_portable_relative_path
                 from .knowledge_envelope import is_valid_sha256
 
                 if not is_portable_relative_path(name) or not isinstance(images, list) or not images or any(v is not None and not is_valid_sha256(v) for v in images):
@@ -346,7 +346,7 @@ def _validate_status_request(live, record_id, limit):
 
 def _native_prose_coherent(root, knowledge, files):
     """Check native normalized prose without treating ledger baselines as current."""
-    from .wiki_surface import collect_wiki_pages
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
     from .io import decode_markdown_bytes
     from .knowledge_envelope import hash_markdown_snapshot
 

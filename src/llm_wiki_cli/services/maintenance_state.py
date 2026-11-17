@@ -17,7 +17,7 @@ from urllib.parse import quote, unquote
 from uuid import UUID, uuid4
 
 from .knowledge_storage import canonical_bytes, digest
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 from .maintenance_shapes import MaintenanceError, VALIDATORS, require
 
 

@@ -63,7 +63,7 @@ runs:
       run: >-
         "${{ steps.setup-python.outputs.python-path }}"
         -I -m pip install --no-cache-dir
-        "${GITHUB_ACTION_PATH}/../.."
+        "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."
 
     - name: Bind runner-temporary wiki paths
       shell: bash

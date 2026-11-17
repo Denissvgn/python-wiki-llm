@@ -1,5 +1,7 @@
-"""Shared interpretation of the legacy structural freshness diagnostic."""
+"""Compatibility alias for :mod:`llm_wiki_engine.freshness_wording`."""
 
-SOURCE_CHANGED_STRUCTURE_UNCHANGED = (
-    "Source changed; recorded structure unchanged; behavior not evaluated."
-)
+import sys
+
+from llm_wiki_engine import freshness_wording
+
+sys.modules[__name__] = freshness_wording

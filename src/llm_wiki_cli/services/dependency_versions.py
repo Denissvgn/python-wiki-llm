@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .path_policy import is_agent_worktree_path
-from .contracts import DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION
+from llm_wiki_engine.contracts import DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION
 from .source_snapshot import SourceSnapshot
 
 try:  # Python 3.11+

@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from .knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession
 from .publication_links import public_atx_section
 from .publication_config import load_publication_config, publication_path
@@ -29,7 +29,7 @@ from .publication_references import (
     recheck_reference_inputs,
     reference_dependency_basis,
 )
-from .validation import portable_path_key, require_repository_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
 
 
 BASIS_SCHEMA = "llm-wiki-publication-basis/v1"

@@ -424,10 +424,10 @@ def test_missing_or_incompatible_inputs_never_reuse_old_review(
     else:
         original = analysis_capture.implementation_hash
 
-        def incompatible(root, paths):
+        def incompatible(root, paths, engine_paths=()):
             return (
                 "sha256:"
-                + sha256(("new-producer:" + original(root, paths)).encode()).hexdigest()
+                + sha256(("new-producer:" + original(root, paths, engine_paths)).encode()).hexdigest()
             )
 
         monkeypatch.setattr(analysis_capture, "implementation_hash", incompatible)

@@ -36,7 +36,7 @@ from .source_snapshot import (
     source_snapshot_matches_current_files,
 )
 from .sync_manifest import SyncManifest
-from .wiki_surface import PageKind, collect_wiki_pages
+from llm_wiki_engine.wiki_surface import PageKind, collect_wiki_pages
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,

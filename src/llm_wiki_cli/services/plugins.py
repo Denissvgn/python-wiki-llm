@@ -31,7 +31,7 @@ from typing import Any
 
 from .. import __version__
 from ..config import EXTRACTOR_REGISTRY
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_within as shared_path_is_within,
     require_existing_file,
     resolve_portable_workspace_path,

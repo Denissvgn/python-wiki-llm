@@ -23,6 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
 ]
 dependencies = [
+    "llm-wiki-engine==0.1.0",
     "PyYAML>=6",
 ]
 
@@ -69,6 +70,7 @@ llm-wiki = "llm_wiki_cli.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["llm_wiki_cli*"]
 
 [tool.setuptools.package-data]
 "llm_wiki_cli" = [

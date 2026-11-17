@@ -18,11 +18,11 @@ from .filesystem_guard import (
 )
 from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
 from .knowledge_storage_io import StorageReadSession, read_guarded
-from .markdown_sections import normalize_markdown
+from llm_wiki_engine.markdown_sections import normalize_markdown
 from .protected_artifacts import ProtectedArtifactStore
 from .sync_transitions import PageTransitionError, PageTransitionPlan
-from .validation import portable_path_key
-from .host import emit
+from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine.host import emit
 
 
 RECOVERY_PREFIX = ".llm-wiki-page-moves-"

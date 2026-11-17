@@ -20,7 +20,7 @@ from ..services.filesystem_guard import (
     windows_object_identity,
 )
 from ..services.io import first_unsafe_path_component
-from ..services.paths import display_project_path
+from llm_wiki_engine.paths import display_project_path
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
     CONSTRAINT_END as CONSTRAINT_END,
@@ -1011,4 +1011,4 @@ def run(args):
     removed_total += sum(_remove_ci_workflow(plan=plan) for plan in ci_plans)
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
-    print("To uninstall the CLI itself: pip uninstall agent-wiki-cli")
+    print("To uninstall the CLI itself: pip uninstall agent-wiki-cli llm-wiki-engine")

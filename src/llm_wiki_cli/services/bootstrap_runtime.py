@@ -39,7 +39,7 @@ from .bootstrap_service import (
     BootstrapRequest,
     BootstrapResult,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     KNOWLEDGE_SCHEMA_VERSION,
 )
@@ -113,7 +113,7 @@ from .knowledge_orchestration import (
     runtime_graph_analyzer_limitations,
     runtime_source_snapshot_hash,
 )
-from .markdown_sections import (
+from llm_wiki_engine.markdown_sections import (
     GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     GENERATED_INDEX_INTRO_WITH_GUIDES,
@@ -124,7 +124,7 @@ from .markdown_sections import (
 )
 from .module_maps import build_module_dependency_maps
 from .dockerfile_parser import DOCKERFILE_STAGES_SCHEMA
-from .paths import normalize_source_path, portable_source_root_label
+from llm_wiki_engine.paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_page_relationship_summaries
 from .schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
@@ -152,7 +152,7 @@ from .source_selection import (
     validate_persisted_source_selection_identity,
 )
 from .sync_manifest import SyncManifest, SyncManifestError
-from .validation import (
+from llm_wiki_engine.validation import (
     portable_page_component,
     posix_path_text as shared_posix_path_text,
 )
@@ -163,7 +163,7 @@ from .wiki_lifecycle import (
     migration_guidance,
     sync_guidance,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
@@ -181,7 +181,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
-from .host import current_host, emit
+from llm_wiki_engine.host import current_host, emit
 from .domain_pack import (
     EntityOccurrenceKey,
     EntityPageRequest,

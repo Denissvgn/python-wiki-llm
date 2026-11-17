@@ -9,8 +9,8 @@ link observations from the generation run being committed.
 
 from __future__ import annotations
 
-from .progress import observed_phase, record_counts
-from .immutable import freeze
+from llm_wiki_engine.progress import observed_phase, record_counts
+from llm_wiki_engine.immutable import freeze
 
 import json
 import dataclasses
@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
 
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
 from .knowledge_envelope import (
     INVENTORY_HASH_EXTENSION,
     EvaluatedEnvelope,
@@ -35,7 +35,7 @@ from .knowledge_envelope import (
     evaluated_envelope_to_payload,
     hash_markdown_snapshot,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ConceptObservationBasis,
     canonical_json_text,
     is_valid_sha256,
@@ -83,12 +83,12 @@ from .sync_manifest import (
     ManifestPageSource,
     ManifestTombstone,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     contains_control_character as shared_contains_control_character,
     require_exact_fields,
     require_repository_relative_path,
 )
-from .wiki_media import (
+from llm_wiki_engine.wiki_media import (
     MarkdownLinkTarget,
     contains_uri_authority_userinfo,
     is_assets_path,
@@ -99,17 +99,17 @@ from .wiki_media import (
     media_type_for_path,
     normalize_markdown_link_target,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     WikiSurfaceError,
     WikiSurfacePage,
     iter_page_kinds,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     canonical_path as wiki_canonical_path,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     mcp_uri as wiki_mcp_uri,
 )
 from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION

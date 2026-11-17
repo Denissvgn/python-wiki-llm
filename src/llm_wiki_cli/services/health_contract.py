@@ -13,7 +13,7 @@ from collections import Counter
 import re
 from typing import Any, NoReturn
 
-from .contracts import HEALTH_DETAILS_SCHEMA_VERSION
+from llm_wiki_engine.contracts import HEALTH_DETAILS_SCHEMA_VERSION
 from . import analysis_compatibility as ac
 from .knowledge_freshness import (
     FRESHNESS_REASON_STATES,

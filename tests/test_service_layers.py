@@ -19,6 +19,9 @@ from pathlib import Path
 import pytest
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1] / "src" / "llm_wiki_cli"
+# Stdlib-only engine core, distributed as ``llm-wiki-engine``.
+ENGINE_ROOT = PACKAGE_ROOT.parent / "llm_wiki_engine"
+ENGINE_PACKAGE = "llm_wiki_engine"
 LAYER_ORDER = ("primitive", "kernel", "analysis", "product", "adapter")
 ENGINE_LAYERS = frozenset({"primitive", "kernel"})
 
@@ -356,7 +359,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
     "filesystem_guard": frozenset({"services.wiki_write_basis"}),
     "io": frozenset(
         {
-            "services.knowledge_evidence",
             "services.wiki_write_basis",
         }
     ),
@@ -565,6 +567,9 @@ def _module_name(path: Path, package_root: Path) -> str:
 def _module_layer(module: str, service_layers: dict[str, str]) -> str | None:
     if module in {_SERVICES, "llm_wiki_cli.schemas"}:
         return "primitive"
+    if module == ENGINE_PACKAGE or module.startswith(ENGINE_PACKAGE + "."):
+        # The engine core sits beneath every provider layer.
+        return "primitive"
     if module.startswith(_SERVICES + "."):
         return service_layers.get(module.removeprefix(_SERVICES + "."))
     if module == "llm_wiki_cli.extractors" or module.startswith("llm_wiki_cli.extractors."):
@@ -732,6 +737,7 @@ def _side_effects(path: Path) -> frozenset[str]:
 def _engine_side_effects(
     package_root: Path = PACKAGE_ROOT,
     service_layers: dict[str, str] = _SERVICE_LAYERS,
+    engine_root: Path | None = None,
 ) -> dict[str, frozenset[str]]:
     result: dict[str, frozenset[str]] = {}
     for path in _source_paths(package_root / "services"):
@@ -740,11 +746,15 @@ def _engine_side_effects(
             effects := _side_effects(path)
         ):
             result[module.removeprefix(_SERVICES + ".")] = effects
+    # Engine modules keep their service names, so the baseline stays keyed by them.
+    for path in _source_paths(engine_root) if engine_root is not None else ():
+        if path.name != "__init__.py" and (effects := _side_effects(path)):
+            result[path.stem] = result.get(path.stem, frozenset()) | effects
     return result
 
 
 def test_engine_layers_add_no_ambient_side_effects() -> None:
-    actual = _engine_side_effects()
+    actual = _engine_side_effects(engine_root=ENGINE_ROOT)
     assert {name: actual.pop(name, frozenset()) for name in HOST_BOUNDARY} == HOST_BOUNDARY
     added = {
         module: sorted(effects - SIDE_EFFECT_BASELINE.get(module, frozenset()))
@@ -923,3 +933,72 @@ def test_format_modules_load_no_builders_or_analyzers(module: str) -> None:
     assert not {name for name in loaded if name.startswith("llm_wiki_cli.extractors")}
     assert services <= PRIMITIVE_SERVICES | KERNEL_SERVICES | FORMAT_ANALYSIS_ALLOWANCE
     assert not services & {"context_packet_builder", "context_service", "context_budget", "change_selection"}
+
+
+ENGINE_MODULES = frozenset(
+    path.stem for path in ENGINE_ROOT.glob("*.py") if path.name != "__init__.py"
+)
+ALIAS_TEMPLATE = (
+    '"""Compatibility alias for :mod:`llm_wiki_engine.{name}`."""\n\n'
+    "import sys\n\n"
+    "from llm_wiki_engine import {name}\n\n"
+    "sys.modules[__name__] = {name}\n"
+)
+
+
+def test_engine_modules_keep_their_engine_layer_classification() -> None:
+    assert ENGINE_MODULES
+    assert sorted(ENGINE_MODULES - (PRIMITIVE_SERVICES | KERNEL_SERVICES)) == []
+
+
+def test_engine_package_imports_only_the_standard_library_and_itself() -> None:
+    """Every import, including those inside functions, stays stdlib-only."""
+    allowed = set(sys.stdlib_module_names) | {"__future__", ENGINE_PACKAGE}
+    found: dict[str, list[str]] = {}
+    for path in _source_paths(ENGINE_ROOT):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    if node.level != 1:
+                        found.setdefault(path.name, []).append("." * node.level)
+                    continue
+                names = [node.module or ""]
+            else:
+                continue
+            found.setdefault(path.name, []).extend(
+                name for name in names if name.partition(".")[0] not in allowed
+            )
+    assert {name: imports for name, imports in found.items() if imports} == {}
+
+
+def test_engine_package_loads_without_the_provider_or_third_party_modules() -> None:
+    src = PACKAGE_ROOT.parent
+    names = ", ".join(repr(name) for name in sorted(ENGINE_MODULES))
+    probe = (
+        "import importlib, sys; "
+        f"sys.path.insert(0, {str(src)!r}); "
+        "before = set(sys.modules); "
+        f"[importlib.import_module('llm_wiki_engine.' + name) for name in ({names},)]; "
+        "loaded = set(sys.modules) - before; "
+        "print('\\n'.join(sorted(m for m in loaded if m.partition('.')[0] "
+        "not in sys.stdlib_module_names and not m.startswith('_') "
+        "and m.partition('.')[0] != 'llm_wiki_engine')))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True
+    )
+    assert result.stdout.split() == []
+
+
+@pytest.mark.parametrize("name", sorted(ENGINE_MODULES))
+def test_service_path_is_a_static_alias_of_the_engine_module(name: str) -> None:
+    import importlib
+
+    shim = PACKAGE_ROOT / "services" / f"{name}.py"
+    assert shim.read_text(encoding="utf-8") == ALIAS_TEMPLATE.format(name=name)
+    assert importlib.import_module(f"{_SERVICES}.{name}") is importlib.import_module(
+        f"{ENGINE_PACKAGE}.{name}"
+    )

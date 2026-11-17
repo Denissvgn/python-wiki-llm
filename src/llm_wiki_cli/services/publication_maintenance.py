@@ -15,7 +15,7 @@ from .documentation_run.workspace import (
     _load_bound_runtime_policy,
     load_documentation_run,
 )
-from .knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
 from .publication_candidate import (
     MAX_FILE_BYTES,

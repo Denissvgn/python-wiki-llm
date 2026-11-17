@@ -180,6 +180,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The standard-library-only core of the engine is now its own distribution,
+  `llm-wiki-engine` (import package `llm_wiki_engine`), and `agent-wiki-cli`
+  pins its exact version. It holds canonical JSON encodings and digests, the
+  host boundary, path and request validation, the knowledge graph and
+  evidence vocabularies, wiki surface and media rules, search ranking and
+  the published-format validators. `pip install agent-wiki-cli` installs it
+  automatically; a source checkout installs it from `src/`
+  (`pip install ./src .`). The old `llm_wiki_cli.services.<module>` import
+  paths for the moved modules remain as aliases of the same modules, so
+  existing imports and patches keep working. Classes from these modules
+  now report `llm_wiki_engine.<module>` as their `__module__`.
 - Wiki search results name their format: `llm-wiki search --format json`,
   MCP `search_wiki` and `api.search_wiki()` return
   `"schema_version": "llm-wiki-search-result/v1"`. The other fields are

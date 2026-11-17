@@ -25,7 +25,7 @@ from .task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TASK_REQUE
 from .task_evidence import coverage, declaration_records, match_declarations, observe_requirement, query_service
 from .token_counting import EstimatedCounter, TokenCounter
 from .wiki_surface_index import evaluate_surface_index
-from .workflow_profile import (
+from llm_wiki_engine.workflow_profile import (
     SCOPES, WorkflowPolicy, WorkflowProfile, WorkflowRequestError, canonical_json, content_id,
 )
 
@@ -546,7 +546,7 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
     schema = TASK_RESULT_SCHEMA_V2 if scoped else TASK_RESULT_SCHEMA
     counter = _counter(effective.settings, counter)
     try:
-        from .request_json import _pairs, _constant
+        from llm_wiki_engine.request_json import _pairs, _constant
         payload = json.loads(rendered, object_pairs_hook=_pairs, parse_constant=_constant)
         required_fields = {
             "schema_version", "ok", "state", "task_id", "task_ref", "request_id", "profile_id",

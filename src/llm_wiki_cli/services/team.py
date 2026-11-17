@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any
 from ..config import DEFAULT_WIKI_DIR
 from .io import decode_markdown_bytes, read_md, write_json_atomic
 from .plugins import PluginError, iter_components
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields,
     require_portable_relative_path,
     require_string_list,
@@ -261,7 +261,7 @@ def resolve_team_policy(
             raise TeamConfigError(
                 f"Could not resolve team wiki identity: {exc}"
             ) from exc
-    from .immutable import freeze
+    from llm_wiki_engine.immutable import freeze
 
     return TeamPolicyContext(freeze(config), selected, project_root)
 

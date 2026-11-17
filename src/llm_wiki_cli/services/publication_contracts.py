@@ -9,9 +9,9 @@ import math
 import re
 from typing import Any, NoReturn
 
-from .concept_identity import validate_concept_uid
-from .knowledge_evidence import hash_json
-from .markdown_sections import SECTION_ORDER_DOMAIN, section_locator
+from llm_wiki_engine.concept_identity import validate_concept_uid
+from llm_wiki_engine.knowledge_evidence import hash_json
+from llm_wiki_engine.markdown_sections import SECTION_ORDER_DOMAIN, section_locator
 from .publication_config import (
     PUBLICATION_CONFIG_SCHEMA_VERSION,
     validate_publication_config,
@@ -22,12 +22,12 @@ from .reference_providers import (
     reference_provider,
 )
 from .sync_manifest import ManifestPageSource
-from .validation import (
+from llm_wiki_engine.validation import (
     portable_path_key,
     require_repository_relative_path,
     require_sha256,
 )
-from .wiki_surface import PageKind, canonical_path, iter_page_kinds, mcp_uri
+from llm_wiki_engine.wiki_surface import PageKind, canonical_path, iter_page_kinds, mcp_uri
 
 
 _MAX_ITEMS = 65_536

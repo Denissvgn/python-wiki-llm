@@ -12,7 +12,7 @@ from typing import Any, Mapping
 from .path_policy import DEFAULT_WIKI_DIR
 from . import context_packet as packets, context_service as context
 from . import context_packet_builder as packet_builder
-from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
+from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
 from .io import write_text_output, write_utf8_stdout
 from .token_counting import EstimatedCounter, LocalTokenizerCounter, TokenCounter
 from .change_selection import (
@@ -24,7 +24,7 @@ from .context_request_format import (  # re-exported: format checks live there
     validate_budget_request as validate_request,
     validate_changes as validate_changes,
 )
-from .host import emit
+from llm_wiki_engine.host import emit
 
 
 @dataclass(frozen=True)
@@ -443,7 +443,7 @@ def validate_budgeted_context(
         raw = rendered[len(prefix):].split("\n```\n\n", 1)[0]
     else:
         raw = rendered
-    from .request_json import _pairs, _constant
+    from llm_wiki_engine.request_json import _pairs, _constant
 
     try:
         payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)

@@ -108,6 +108,9 @@ def test_search_consumers_do_not_change_source_evidence_producer_inputs():
         assert name in rules["classified_python_files"]
         assert name not in rules["shared"]
         assert all(name not in paths for paths in rules["providers"].values())
+    for name in ("llm_wiki_engine/search_lexical.py", "llm_wiki_engine/search_discovery.py"):
+        assert name in rules["engine_classified_python_files"]
+        assert name not in rules["engine_shared"]
 
 
 def test_flow_presentation_is_classified_without_changing_evidence_producer_inputs():
@@ -159,9 +162,9 @@ def test_extraction_captures_implementation_once_per_operation(tmp_path, monkeyp
     (source / "model.py").write_bytes(b"class User: pass\n")
     calls = []
     original = capture.implementation_hash
-    def counted(root, paths):
+    def counted(root, paths, engine_paths=()):
         calls.append(tuple(paths))
-        return original(root, paths)
+        return original(root, paths, engine_paths)
     monkeypatch.setattr(capture, "implementation_hash", counted)
     result = get_inventory_result(str(source), deep=True, include_plugins=False,
         cache_options=InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache")))

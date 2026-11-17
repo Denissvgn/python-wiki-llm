@@ -11,7 +11,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 from .implementation_evidence import (
     DECLARATIONS_KEY,
     IMPLEMENTATION_KEY,
@@ -30,8 +30,8 @@ from .maintenance_state import (
 )
 from .python_implementation import comparison_id
 from .knowledge_storage import digest
-from .markdown_sections import parse_markdown_document
-from .section_ownership import SectionOwnership, observe_page_sections
+from llm_wiki_engine.markdown_sections import parse_markdown_document
+from llm_wiki_engine.section_ownership import SectionOwnership, observe_page_sections
 
 
 def captured_semantic_sections(

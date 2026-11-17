@@ -29,8 +29,9 @@ from typing import Any
 
 from .. import __version__
 from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path
-from . import context_service, wiki_surface
-from .contracts import (
+from . import context_service
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
 )
 from .dependencies import analyze_dependencies
@@ -44,7 +45,7 @@ from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .extraction_service import InventoryResult
 from .knowledge_consumption import KnowledgeReadView
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     sha256_bytes,
 )

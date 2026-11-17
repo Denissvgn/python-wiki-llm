@@ -20,9 +20,9 @@ from pathlib import Path
 from typing import Any, Iterable, Optional, Union
 from urllib.parse import unquote
 
-from . import wiki_surface
+from llm_wiki_engine import wiki_surface
 from .filesystem_guard import fresh_no_follow_stat
-from .canonical_json import compact_bytes
+from llm_wiki_engine.canonical_json import compact_bytes
 from .io import read_md, write_md
 from .knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
 from .knowledge_projection import (
@@ -32,7 +32,7 @@ from .knowledge_projection import (
     validate_projection_summaries,
 )
 from .site_html_check import SUPPORTED_LINK_MODES, check_built_site_links
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_within as shared_path_is_within,
     paths_overlap as shared_paths_overlap,
     require_existing_directory,
@@ -40,7 +40,7 @@ from .validation import (
     require_string,
     resolve_portable_workspace_path,
 )
-from .wiki_media import (
+from llm_wiki_engine.wiki_media import (
     build_asset_index,
     collect_media_references,
     iter_markdown_link_targets as iter_wiki_markdown_link_targets,

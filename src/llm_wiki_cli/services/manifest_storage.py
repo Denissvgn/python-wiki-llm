@@ -16,8 +16,8 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .canonical_json import canonical_chunks
-from .immutable import freeze
+from llm_wiki_engine.canonical_json import canonical_chunks
+from llm_wiki_engine.immutable import freeze
 from .knowledge_storage import (
     MAX_EXPANDED_BYTES, KnowledgeStorageError, canonical_bytes, decode_bytes,
     digest, logical_digest, _hash,

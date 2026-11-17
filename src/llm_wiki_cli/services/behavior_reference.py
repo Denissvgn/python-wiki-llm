@@ -12,9 +12,9 @@ from typing import Any
 from .. import config
 from . import cli_reference, current_contracts, skills, task_compact, task_contract
 from .helper_runtime import resolve_helper_policy
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_storage_io import read_guarded
-from .validation import require_portable_relative_path
+from llm_wiki_engine.validation import require_portable_relative_path
 
 
 BEHAVIOR_FACTS_SCHEMA_VERSION = "llm-wiki-behavior-facts/v1"

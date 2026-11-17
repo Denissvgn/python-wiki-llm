@@ -11,12 +11,12 @@ import shlex
 from time import perf_counter_ns
 from typing import Any
 
-from .concept_identity import (
+from llm_wiki_engine.concept_identity import (
     ConceptIdentityError,
     validate_concept_uid,
     validate_natural_key,
 )
-from . import wiki_surface
+from llm_wiki_engine import wiki_surface
 from .dependencies import analyze_dependencies
 from .documentation_queries import (
     DocumentationGraphQueryService,
@@ -39,7 +39,7 @@ from .source_selection import (
     validate_persisted_source_selection_identity,
 )
 from .sync_manifest import SyncManifest, SyncManifestError
-from .validation import require_portable_relative_path
+from llm_wiki_engine.validation import require_portable_relative_path
 from .wiki_surface_index import evaluate_surface_index
 from .source_snapshot import SourceSnapshot, build_source_snapshot, capture_source_selection_inputs
 

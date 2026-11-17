@@ -17,7 +17,7 @@ from typing import Any, Mapping
 from .. import __version__
 from .domain_pack import current_pack
 from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
-from .knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from .knowledge_storage_io import StorageReadSession, _absolute_path
 from .publication_config import (
     DELIVERY_CHECKPOINT_PATH,
@@ -34,7 +34,7 @@ from .publication_contracts import (
 from .publication_impact import capture_publication_basis, compare_publication_impact
 from .publication_targets import current_publication_targets, publication_target
 from .reference_providers import reference_providers_identity
-from .validation import portable_path_key, require_portable_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_portable_relative_path
 
 
 RECEIPT_SCHEMA = "llm-wiki-publication-candidate/v1"
@@ -215,6 +215,16 @@ def _provider():
     with StorageReadSession(package).phase() as session:
         for name in sorted(names):
             files[name] = sha256_bytes(session.read(name, MAX_FILE_BYTES))
+    session.recheck()
+    # Engine modules ship in their own distribution but shape the same output.
+    from .analysis_capture import ENGINE_PACKAGE, engine_package_root
+
+    engine = engine_package_root(package)
+    with StorageReadSession(engine).phase() as session:
+        for name in sorted(registry.get("engine_classified_python_files", [])):
+            relative = name.removeprefix(ENGINE_PACKAGE + "/")
+            files[name] = sha256_bytes(session.read(relative, MAX_FILE_BYTES))
+        files[ENGINE_PACKAGE + "/py.typed"] = sha256_bytes(session.read("py.typed", MAX_FILE_BYTES))
     session.recheck()
     try:
         parser_version = metadata.version("markdown-it-py")

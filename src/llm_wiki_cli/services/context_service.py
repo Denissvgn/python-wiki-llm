@@ -28,10 +28,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Literal, overload
 
 from .domain_pack import CodeContextSource, context_entry, context_related_sources
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
-from . import wiki_surface
-from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
 from .context_request_format import (  # re-exported: format checks live there
     _CONCEPT_FILTER_KEYS as _CONCEPT_FILTER_KEYS,
     _CONTEXT_QUERY_LIMIT as _CONTEXT_QUERY_LIMIT,
@@ -61,7 +61,7 @@ from .context_request_format import (  # re-exported: format checks live there
     PROTOCOL_VERSION as PROTOCOL_VERSION,
     ProtocolRequestError as ProtocolRequestError,
 )
-from .context_knowledge_contract import KNOWLEDGE_MODE_VALUES
+from llm_wiki_engine.context_knowledge_contract import KNOWLEDGE_MODE_VALUES
 from .dependencies import analyze_dependencies
 from .documentation_queries import (
     DocumentationGraphQueryService,
@@ -112,7 +112,7 @@ from .source_snapshot import (
     capture_source_selection_inputs,
 )
 from .source_selection import SourceSelectionError, resolve_source_selection
-from .validation import nonnegative_int_or_none
+from llm_wiki_engine.validation import nonnegative_int_or_none
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     SurfaceIndexEvaluation,
@@ -131,7 +131,7 @@ from .extraction_service import (
     read_console_scripts,
     resolve_call_edges,
 )
-from .host import emit
+from llm_wiki_engine.host import emit
 
 
 CONTEXT_KNOWLEDGE_SERIALIZED_BYTE_LIMIT = 2 * 1024 * 1024
@@ -3223,7 +3223,7 @@ def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION
 def _packet_helper_diagnostics(protocol):
     """Reserve stderr for the single structured failure of CLI packet output."""
     from .helper_cache import HelperPreparationError
-    from .progress import Progress
+    from llm_wiki_engine.progress import Progress
 
     with Progress("context", mode="never").run():
         try:

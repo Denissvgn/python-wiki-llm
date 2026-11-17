@@ -12,7 +12,7 @@ import time
 from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, fresh_no_follow_stat, remove_guarded_tree, unlink_guarded_bytes
 from .knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
 from .knowledge_storage_io import _absolute_path, read_guarded
-from .validation import is_portable_relative_path
+from llm_wiki_engine.validation import is_portable_relative_path
 
 CATALOG_SCHEMA = "llm-wiki-maintenance-recovery/v2"
 CATALOG_FILENAME = "maintenance-recovery.json"
@@ -80,7 +80,7 @@ def _blob_path(root: Path, metadata, logical_hash: str) -> Path:
 
 
 def _read_json(path: Path, maximum=_MAX_CATALOG_BYTES):
-    from .request_json import _pairs, _constant
+    from llm_wiki_engine.request_json import _pairs, _constant
 
     raw = read_guarded(path, maximum).content
     return raw, json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)

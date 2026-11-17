@@ -9,10 +9,10 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .. import __version__
-from .contracts import KNOWLEDGE_REUSE_SCHEMA_VERSION
-from .knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
+from llm_wiki_engine.contracts import KNOWLEDGE_REUSE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
 
 REUSE_INPUT_KEY = "knowledge_reuse"
 REUSE_EXTENSION_KEY = "llm-wiki/knowledge-reuse-v1"
@@ -79,20 +79,25 @@ def repository_input_hash(record) -> str:
 
 def implementation_hash() -> str | None:
     """Fingerprint installed implementation inputs, without a process-global cache."""
+    import llm_wiki_engine
+
     root = Path(__file__).resolve().parents[1]
+    engine = Path(llm_wiki_engine.__file__).resolve().parent
     hashes = {}
     try:
-        for directory, names, files in os.walk(root):
-            names[:] = sorted(
-                name
-                for name in names
-                if name not in {"__pycache__", "node_modules", "target", ".git"}
-            )
-            for filename in sorted(files):
-                path = Path(directory) / filename
-                if path.suffix == ".pyc":
-                    continue
-                hashes[path.relative_to(root).as_posix()] = _file_hash(path)
+        # Engine files keep their package prefix; provider files stay relative.
+        for base, prefix in ((root, ""), (engine, "llm_wiki_engine/")):
+            for directory, names, files in os.walk(base):
+                names[:] = sorted(
+                    name
+                    for name in names
+                    if name not in {"__pycache__", "node_modules", "target", ".git"}
+                )
+                for filename in sorted(files):
+                    path = Path(directory) / filename
+                    if path.suffix == ".pyc":
+                        continue
+                    hashes[prefix + path.relative_to(base).as_posix()] = _file_hash(path)
     except OSError:
         return None
     if not hashes:
@@ -105,9 +110,9 @@ def implementation_hash() -> str | None:
 def wiki_input_hashes(wiki_dir: str | Path) -> tuple[str, str]:
     from .io import read_md
     from .knowledge_envelope import hash_markdown_snapshot
-    from .validation import resolve_portable_workspace_path
-    from .wiki_media import build_asset_index
-    from .wiki_surface import collect_wiki_pages
+    from llm_wiki_engine.validation import resolve_portable_workspace_path
+    from llm_wiki_engine.wiki_media import build_asset_index
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     root = Path(wiki_dir)
     content = {
@@ -277,7 +282,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     from .maintenance_state import MaintenanceError
     from .python_implementation import analysis_identity
     from .source_snapshot import confirmed_missing_source_paths
-    from .wiki_surface import collect_wiki_pages
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     owner = manifest.maintenance_state
     if owner is None:

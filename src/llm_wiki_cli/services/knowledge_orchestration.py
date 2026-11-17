@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from .sync_analysis_cache import EXTENSION as SYNC_ANALYSIS_EXTENSION
 
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 import re
 import json
@@ -30,7 +30,7 @@ from ..extractors.common import (
     BUNDLED_HELPER_IMPLEMENTATION_PATHS,
     is_bundled_helper_implementation_path,
 )
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     FaultInjector,
@@ -55,7 +55,7 @@ from .knowledge_envelope import (
     hash_source_snapshot,
     plugin_producer_inputs,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
@@ -235,7 +235,7 @@ def capture_committed_knowledge(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
 ) -> CommittedKnowledgeState:
-    from .immutable import freeze
+    from llm_wiki_engine.immutable import freeze
     from .knowledge_artifacts import _decode_json_object
     from .knowledge_storage_io import read_guarded
 

@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from typing import Literal, TextIO
 
-from .host import emit
+from llm_wiki_engine.host import emit
 
 
 RequestedJobs = int | Literal["auto"]

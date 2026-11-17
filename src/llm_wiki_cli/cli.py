@@ -38,8 +38,8 @@ from .commands import (
     upgrade_cmd,
 )
 from .config import PathValidationError
-from .services.runtime_output import RuntimeOutputError
-from .services.progress import Progress
+from llm_wiki_engine.runtime_output import RuntimeOutputError
+from llm_wiki_engine.progress import Progress
 from .services import (
     bootstrap_runtime as bootstrap_cmd,
     context_service as context_cmd,

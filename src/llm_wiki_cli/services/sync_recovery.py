@@ -21,10 +21,10 @@ from .io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest
 from .knowledge_storage_io import _absolute_path, _identity, read_guarded
 from .maintenance_protocol import governance_writer_lock, storage_writer_lock
-from .request_json import _pairs, _constant
+from llm_wiki_engine.request_json import _pairs, _constant
 from .source_snapshot import SourceSnapshot
 from .wiki_write_basis import ACTIVE_SYNC_JOURNAL
-from .host import emit
+from llm_wiki_engine.host import emit
 
 MAX_BYTES = 64 * 1024 * 1024
 MAX_FILE = 8 * 1024 * 1024

@@ -1,22 +1,7 @@
-"""Helpers for writing local runtime files with best-effort privacy."""
+"""Compatibility alias for :mod:`llm_wiki_engine.secure_file`."""
 
-from __future__ import annotations
+import sys
 
-import os
-from pathlib import Path
+from llm_wiki_engine import secure_file
 
-
-def write_private_text(path: str | Path, text: str, *, encoding: str = "utf-8") -> Path:
-    """Write text and restrict file permissions where the platform supports it.
-
-    POSIX platforms support owner-only mode bits. Windows' ``chmod`` support is
-    limited to read-only toggling, so this remains a best-effort operation there.
-    """
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(text, encoding=encoding)
-    try:
-        os.chmod(target, 0o600)
-    except OSError:
-        pass
-    return target
+sys.modules[__name__] = secure_file

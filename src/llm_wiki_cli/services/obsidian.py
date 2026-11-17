@@ -24,7 +24,7 @@ from .bootstrap_runtime import (
 )
 from .filesystem_guard import fresh_no_follow_stat
 from .extraction_service import InventoryRequest, get_inventory, get_inventory_result
-from . import wiki_surface
+from llm_wiki_engine import wiki_surface
 from .io import first_unsafe_path_component, read_md, write_md
 from .knowledge_projection import (
     KnowledgeProjection,
@@ -44,7 +44,7 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_within as shared_path_is_within,
     paths_overlap as shared_paths_overlap,
     require_existing_directory,

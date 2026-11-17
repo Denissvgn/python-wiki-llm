@@ -176,32 +176,54 @@ def test_archive_preflight_binds_original_source_and_rejects_mutation(
 
 
 @pytest.mark.parametrize(
-    "failure", ["version", "wrong-import", "changed-code", "extra-code"]
+    "failure",
+    [
+        "version",
+        "wrong-import",
+        "changed-code",
+        "extra-code",
+        "engine-version",
+        "engine-wrong-import",
+        "engine-changed-code",
+        "engine-extra-code",
+    ],
 )
 def test_installed_candidate_identity_rejects_stale_or_wrong_code(
     tmp_path, monkeypatch, failure
 ):
     import types
     import llm_wiki_cli
+    import llm_wiki_engine
 
     candidate = tmp_path / "candidate"
     source = candidate / "src/llm_wiki_cli"
-    source.mkdir(parents=True)
+    engine_source = candidate / "src/llm_wiki_engine"
     installed = tmp_path / "site/llm_wiki_cli"
-    installed.mkdir(parents=True)
+    engine_installed = tmp_path / "site/llm_wiki_engine"
     for base in (source, installed):
+        base.mkdir(parents=True)
         (base / "__init__.py").write_text('VERSION = "2.3.0"\n', encoding="utf-8")
+    for base in (engine_source, engine_installed):
+        base.mkdir(parents=True)
+        (base / "__init__.py").write_text('__version__ = "0.1.0"\n', encoding="utf-8")
     monkeypatch.setattr(llm_wiki_cli, "__file__", str(installed / "__init__.py"))
     monkeypatch.setattr(llm_wiki_cli, "__version__", "2.3.0")
-    distribution = types.SimpleNamespace(
-        version="2.3.0", locate_file=lambda name: tmp_path / "site" / name
-    )
     monkeypatch.setattr(
-        km.importlib.metadata, "distribution", lambda name: distribution
+        llm_wiki_engine, "__file__", str(engine_installed / "__init__.py")
     )
+    monkeypatch.setattr(llm_wiki_engine, "__version__", "0.1.0")
+    distributions = {
+        "agent-wiki-cli": types.SimpleNamespace(
+            version="2.3.0", locate_file=lambda name: tmp_path / "site" / name
+        ),
+        "llm-wiki-engine": types.SimpleNamespace(
+            version="0.1.0", locate_file=lambda name: tmp_path / "site" / name
+        ),
+    }
+    monkeypatch.setattr(km.importlib.metadata, "distribution", distributions.__getitem__)
     assert km._installed(candidate, "2.3.0", False)["version"] == "2.3.0"
     if failure == "version":
-        distribution.version = "2.2.0"
+        distributions["agent-wiki-cli"].version = "2.2.0"
     if failure == "wrong-import":
         monkeypatch.setattr(
             llm_wiki_cli, "__file__", str(tmp_path / "other/llm_wiki_cli/__init__.py")
@@ -210,6 +232,18 @@ def test_installed_candidate_identity_rejects_stale_or_wrong_code(
         (installed / "__init__.py").write_text("wrong implementation", encoding="utf-8")
     if failure == "extra-code":
         (installed / "extra.py").write_text("unexpected module", encoding="utf-8")
+    if failure == "engine-version":
+        distributions["llm-wiki-engine"].version = "0.0.9"
+    if failure == "engine-wrong-import":
+        monkeypatch.setattr(
+            llm_wiki_engine,
+            "__file__",
+            str(tmp_path / "other/llm_wiki_engine/__init__.py"),
+        )
+    if failure == "engine-changed-code":
+        (engine_installed / "__init__.py").write_text("wrong", encoding="utf-8")
+    if failure == "engine-extra-code":
+        (engine_installed / "extra.py").write_text("unexpected", encoding="utf-8")
     with pytest.raises(ValueError):
         km._installed(candidate, "2.3.0", False)
 
@@ -541,7 +575,12 @@ def explicit_activation_root(tmp_path):
     shutil.copyfile(ROOT / "docs/llm_wiki/.llm-wiki-knowledge.json", root / "docs/llm_wiki/.llm-wiki-knowledge.json")
     registry_path = "src/llm_wiki_cli/services/analysis_contracts.json"
     registry = json.loads((ROOT / registry_path).read_text())
-    for relative in [registry_path, *("src/llm_wiki_cli/" + name for name in registry["shared"])]:
+    shared = [
+        registry_path,
+        *("src/llm_wiki_cli/" + name for name in registry["shared"]),
+        *("src/" + name for name in registry.get("engine_shared", ())),
+    ]
+    for relative in shared:
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / relative, target)

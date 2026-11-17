@@ -19,17 +19,10 @@ ACTION = Path(__file__).resolve().parent
 FULL_SHA = re.compile(r"[0-9a-f]{40}(?:[0-9a-f]{24})?")
 
 
-def verify(source: Path, receipt: Path, revision: str, repository: str) -> None:
-    import llm_wiki_cli
-
-    package = Path(llm_wiki_cli.__file__).resolve().parent
+def _installed_files(package: Path, expected: Path, declared, prefix: str = "") -> dict[str, str]:
+    """Hash installed package files that match the pinned source byte for byte."""
     if not package.is_relative_to(Path(sys.prefix).resolve()):
         raise ValueError("Provider was imported from outside the isolated environment")
-    project = tomllib.loads((source / "pyproject.toml").read_text(encoding="utf-8"))
-    version = metadata.version("agent-wiki-cli")
-    if version != project["project"]["version"]:
-        raise ValueError("Installed provider version differs from the pinned source")
-    expected = source / "src/llm_wiki_cli"
     files = {}
     for path in sorted(package.rglob("*")):
         if "__pycache__" in path.parts or not path.is_file():
@@ -37,15 +30,40 @@ def verify(source: Path, receipt: Path, revision: str, repository: str) -> None:
         relative = path.relative_to(package).as_posix()
         original = expected / relative
         if path.is_symlink() or original.is_symlink() or not original.is_file():
-            raise ValueError(f"Unexpected installed provider file: {relative}")
+            raise ValueError(f"Unexpected installed provider file: {prefix}{relative}")
         raw = path.read_bytes()
         if raw != original.read_bytes():
-            raise ValueError(f"Installed provider differs from pinned source: {relative}")
+            raise ValueError(f"Installed provider differs from pinned source: {prefix}{relative}")
         files[relative] = hashlib.sha256(raw).hexdigest()
-    declared = project["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
-    required = set(declared) | {p.relative_to(expected).as_posix() for p in expected.rglob("*.py")}
+    required = set(declared) | {p.relative_to(expected).as_posix() for p in expected.rglob("*.py")
+                                if "__pycache__" not in p.parts}
     if not required <= files.keys():
         raise ValueError("Installed provider is missing declared package files")
+    return {prefix + name: digest for name, digest in files.items()}
+
+
+def verify(source: Path, receipt: Path, revision: str, repository: str) -> None:
+    import llm_wiki_cli
+    import llm_wiki_engine
+
+    package = Path(llm_wiki_cli.__file__).resolve().parent
+    project = tomllib.loads((source / "pyproject.toml").read_text(encoding="utf-8"))
+    version = metadata.version("agent-wiki-cli")
+    if version != project["project"]["version"]:
+        raise ValueError("Installed provider version differs from the pinned source")
+    files = _installed_files(
+        package, source / "src/llm_wiki_cli",
+        project["tool"]["setuptools"]["package-data"]["llm_wiki_cli"],
+    )
+    # The engine ships as its own distribution from the same pinned source.
+    engine_project = tomllib.loads((source / "src/pyproject.toml").read_text(encoding="utf-8"))
+    if metadata.version("llm-wiki-engine") != engine_project["project"]["version"]:
+        raise ValueError("Installed engine version differs from the pinned source")
+    files.update(_installed_files(
+        Path(llm_wiki_engine.__file__).resolve().parent, source / "src/llm_wiki_engine",
+        engine_project["tool"]["setuptools"]["package-data"]["llm_wiki_engine"],
+        prefix="llm_wiki_engine/",
+    ))
     fingerprint = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     receipt.write_text(
         json.dumps({
@@ -130,7 +148,7 @@ def setup(*, impact_only: bool = False) -> None:
     with (evidence / "provider-install.log").open("wb") as log:
         subprocess.run(
             [str(python), "-I", "-m", "pip", "--isolated", "--disable-pip-version-check",
-             "install", "--no-cache-dir", "--no-input", f"{source}[publication]"],
+             "install", "--no-cache-dir", "--no-input", f"{source}/src", f"{source}[publication]"],
             cwd=runtime, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=600,
         )
     subprocess.run(

@@ -22,11 +22,11 @@ from .knowledge_model import (
     Resolution,
     TargetClass,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     contains_control_character as shared_contains_control_character,
     require_repository_relative_path,
 )
-from .wiki_media import (
+from llm_wiki_engine.wiki_media import (
     MarkdownLinkTarget,
     contains_uri_authority_userinfo,
     is_assets_path,
@@ -36,13 +36,13 @@ from .wiki_media import (
     mask_fenced_code_blocks,
     media_type_for_path,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     WikiSurfacePage,
 )
-from .wiki_surface import canonical_path as wiki_canonical_path
-from .wiki_surface import mcp_uri as wiki_mcp_uri
+from llm_wiki_engine.wiki_surface import canonical_path as wiki_canonical_path
+from llm_wiki_engine.wiki_surface import mcp_uri as wiki_mcp_uri
 
 _MALFORMED_PERCENT_RE = re.compile(r"%(?![0-9A-Fa-f]{2})")
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")

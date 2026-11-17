@@ -22,8 +22,9 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from . import context_request_format, wiki_surface
-from .contracts import (
+from . import context_request_format
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
@@ -33,7 +34,7 @@ from .context_request_format import (
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
     CONTEXT_COVERAGE_LIMITATION_LIMIT,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     canonical_json_bytes,
     is_valid_sha256,
     sha256_bytes,
@@ -46,7 +47,7 @@ from .knowledge_freshness import (
     KNOWN_FRESHNESS_REASON_CODES,
     REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION,
 )
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     ENDPOINT_KINDS,
     GRAPH_COVERAGE_ANALYZERS,
@@ -66,13 +67,13 @@ from .knowledge_model import (
     Verification,
     concept_kind_for_page_kind,
 )
-from .wiki_media import contains_uri_authority_userinfo
-from .packet_field_policy import (
+from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
+from llm_wiki_engine.packet_field_policy import (
     PUBLIC_URI_FIELDS as _PUBLIC_URI_FIELDS,
     STRUCTURAL_PATH_FIELDS as _STRUCTURAL_PATH_FIELDS,
     STRING_CLASSES as _PATH_COUNT_KEYS,
 )
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 
 
 CONTEXT_PACKET_SCHEMA_VERSION = QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION
@@ -434,7 +435,7 @@ def _path_policy_digest() -> str:
 
 
 def _path_policy_receipt(value: Mapping[str, Any]) -> dict[str, Any]:
-    from .packet_field_policy import (
+    from llm_wiki_engine.packet_field_policy import (
         UnclassifiedPacketField, classify_string, validate_field_coverage,
     )
 

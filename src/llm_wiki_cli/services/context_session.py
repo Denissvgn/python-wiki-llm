@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from . import analysis_compatibility as ac
 
 from collections import OrderedDict
@@ -22,12 +22,12 @@ from typing import Any
 from .. import __version__
 from .path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet_builder as packet_builder
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 from .io import first_unsafe_path_component
 from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from .task_compact import CompactTaskContext, _CheckedCounter, normalize_view_options, render_compact_task_context
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context
-from .workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
+from llm_wiki_engine.workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
 
 SESSION_SCHEMA = "llm-wiki-context-session/v1"
 DELTA_SCHEMA = "llm-wiki-task-delta/v1"

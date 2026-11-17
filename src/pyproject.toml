@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools==84.1.0"]
+build-backend = "release_build_backend"
+backend-path = ["."]
+
+[project]
+name = "llm-wiki-engine"
+version = "0.1.0"
+description = "Standard-library-only core of the LLM Wiki engine: canonical encodings, host boundary and format validators."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [
+    {name = "Denis Sivagin", email = "denissvgn@gmail.com"}
+]
+keywords = ["llm", "wiki", "documentation", "knowledge", "engine"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Documentation",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Denissvgn/python-wiki-llm"
+Repository = "https://github.com/Denissvgn/python-wiki-llm"
+Issues = "https://github.com/Denissvgn/python-wiki-llm/issues"
+
+[tool.setuptools]
+packages = ["llm_wiki_engine"]
+
+[tool.setuptools.package-data]
+"llm_wiki_engine" = ["py.typed"]

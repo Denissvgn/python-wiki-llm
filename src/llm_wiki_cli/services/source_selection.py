@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .path_policy import EXCLUDED_DIRS, is_agent_worktree_path
-from .validation import portable_path_key, require_repository_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
 
 SOURCE_SELECTION_PATH = ".llm-wiki/source-selection.json"
 SOURCE_SELECTION_SCHEMA_VERSION = "llm-wiki-source-selection/v1"

@@ -20,7 +20,7 @@ from typing import NoReturn
 
 from .. import __version__
 from ..config import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
-from .concept_identity import AliasType, identity_coordinate_key
+from llm_wiki_engine.concept_identity import AliasType, identity_coordinate_key
 from .io import read_md, write_json_atomic, write_md
 from .filesystem_guard import atomic_write_guarded_bytes
 from .knowledge_storage_io import read_guarded
@@ -30,7 +30,7 @@ from .knowledge_artifacts import (
     ArtifactWriteState,
 )
 from .knowledge_envelope import RepositoryEvidence
-from .knowledge_evidence import is_valid_sha256, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256, sha256_bytes
 from .knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceError,
@@ -49,7 +49,7 @@ from .knowledge_orchestration import (
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
-from .paths import normalize_source_path
+from llm_wiki_engine.paths import normalize_source_path
 from .source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -67,8 +67,8 @@ from .sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     SyncManifest,
 )
-from .validation import path_is_in_top_level_directory
-from .wiki_surface import PageKind, WikiSurfaceError, mcp_uri
+from llm_wiki_engine.validation import path_is_in_top_level_directory
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, mcp_uri
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     evaluate_surface_index,
@@ -89,7 +89,7 @@ from .extraction_service import (
     get_docker_inventory,
     get_inventory_result,
 )
-from .host import current_host, discarding_stdout, emit
+from llm_wiki_engine.host import current_host, discarding_stdout, emit
 from .migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
 
 LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"

@@ -12,11 +12,11 @@ import subprocess
 from threading import Event, Thread
 from typing import Any
 
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .knowledge_artifacts import validated_artifact_bytes
 from .knowledge_loader import load_knowledge_state
 from .knowledge_index import _model_to_payload
-from .contracts import TYPED_GRAPH_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.contracts import TYPED_GRAPH_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY
 from .knowledge_storage import (
     GIT_FAILURE_BYTES, GIT_WARNING_BYTES, MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES,
     MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA, KnowledgeStorageError,

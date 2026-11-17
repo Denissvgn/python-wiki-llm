@@ -13,8 +13,17 @@ from tests.python_source_inventory import ParsedSource, PythonSourceInventory
 SERVICES_ROOT = (
     Path(__file__).resolve().parents[1] / "src" / "llm_wiki_cli" / "services"
 )
-VALIDATION_PATH = SERVICES_ROOT / "validation.py"
+ENGINE_ROOT = Path(__file__).resolve().parents[1] / "src" / "llm_wiki_engine"
+# Shared validation lives in the engine. Trees without one (such as release
+# timing controls) keep it in the services package.
+VALIDATION_PATH = (
+    ENGINE_ROOT / "validation.py"
+    if (ENGINE_ROOT / "validation.py").is_file()
+    else SERVICES_ROOT / "validation.py"
+)
 VALIDATION_MODULE = "llm_wiki_cli.services.validation"
+# The shared module lives in the engine; the services path is its alias.
+VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_engine.validation"})
 NON_ADAPTER_VALIDATION_HELPERS = frozenset(
     {
         # These utilities are intentionally used inside substantive domain
@@ -512,18 +521,18 @@ def _validation_imports(
                 level=node.level,
                 module=node.module or "",
             )
-            if module == VALIDATION_MODULE:
+            if module in VALIDATION_MODULES:
                 for alias in node.names:
                     if alias.name in helper_names:
                         direct_aliases[alias.asname or alias.name] = alias.name
                 continue
-            if module == "llm_wiki_cli.services":
+            if module in {"llm_wiki_cli.services", "llm_wiki_engine"}:
                 for alias in node.names:
                     if alias.name == "validation":
                         module_aliases.add(alias.asname or alias.name)
         elif isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name == VALIDATION_MODULE and alias.asname:
+                if alias.name in VALIDATION_MODULES and alias.asname:
                     module_aliases.add(alias.asname)
     changed = True
     while changed:
@@ -824,6 +833,7 @@ def _shared_validation_adapters(
     validation_path: Path = VALIDATION_PATH,
     analysis: _ValidationAnalysis | None = None,
     parsed: ParsedSource | None = None,
+    services_root: Path | None = None,
 ) -> dict[tuple[str, int], tuple[int, frozenset[str]]]:
     """Discover adapters from their dependency on shared validation helpers."""
 
@@ -839,7 +849,10 @@ def _shared_validation_adapters(
         if analysis is not None
         else _shared_validation_helpers(validation_path)
     )
-    services_root = validation_path.parent
+    if services_root is None:
+        services_root = (
+            SERVICES_ROOT if validation_path == VALIDATION_PATH else validation_path.parent
+        )
     direct_aliases, module_aliases = _module_validation_bindings(
         path,
         services_root=services_root,
@@ -992,6 +1005,17 @@ def _validation_body_fingerprint(
     )
 
 
+def _inventory_roots(services_root: Path, validation_path: Path) -> list[Path]:
+    if validation_path.is_relative_to(services_root):
+        return [services_root]
+    return [services_root, validation_path.parent]
+
+
+def _source_root(path: Path, services_root: Path, validation_path: Path) -> Path:
+    """Engine modules sit beside shared validation, outside the services tree."""
+    return services_root if path.is_relative_to(services_root) else validation_path.parent
+
+
 def _duplicated_unshared_validation_helpers(
     *,
     services_root: Path = SERVICES_ROOT,
@@ -1000,19 +1024,21 @@ def _duplicated_unshared_validation_helpers(
     """Find repeated validator bodies not fully backed by shared validation."""
 
     groups: dict[str, list[tuple[str, int, str, bool]]] = {}
-    with PythonSourceInventory([services_root]) as inventory:
+    with PythonSourceInventory(_inventory_roots(services_root, validation_path)) as inventory:
         analysis = _ValidationAnalysis(inventory, validation_path)
         for path in inventory.paths:
             if path == validation_path:
                 continue
+            root = _source_root(path, services_root, validation_path)
             parsed = inventory.module(path)
             adapters = _shared_validation_adapters(
                 path,
                 validation_path=validation_path,
                 analysis=analysis,
                 parsed=parsed,
+                services_root=root,
             )
-            relative = path.relative_to(services_root).as_posix()
+            relative = path.relative_to(root).as_posix()
             for node in parsed.nodes:
                 if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     continue
@@ -1146,17 +1172,19 @@ def test_shared_validation_adapters_remain_thin() -> None:
     violations: dict[str, dict[str, dict[str, object]]] = {}
     unshared_required: dict[str, list[tuple[int, str]]] = {}
     covered_adapters: dict[str, set[str]] = {}
-    with PythonSourceInventory([SERVICES_ROOT]) as inventory:
+    with PythonSourceInventory(_inventory_roots(SERVICES_ROOT, VALIDATION_PATH)) as inventory:
         analysis = _ValidationAnalysis(inventory, VALIDATION_PATH)
         for path in inventory.paths:
-            relative = path.relative_to(SERVICES_ROOT).as_posix()
+            root = _source_root(path, SERVICES_ROOT, VALIDATION_PATH)
+            relative = path.relative_to(root).as_posix()
             parsed = inventory.module(path)
             adapters = _shared_validation_adapters(
                 path,
                 analysis=analysis,
                 parsed=parsed,
+                services_root=root,
             )
-            family = _service_family(path)
+            family = _service_family(path, services_root=root)
             if adapters:
                 covered_adapters.setdefault(family, set()).update(
                     name for name, _line in adapters

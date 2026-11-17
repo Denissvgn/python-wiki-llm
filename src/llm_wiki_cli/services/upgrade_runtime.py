@@ -40,7 +40,7 @@ from .filesystem_guard import (
     unlink_guarded_bytes,
     windows_object_identity,
 )
-from .knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
 from .rendering_lifecycle import (
     reference_recovery_command,
     select_render_profile,
@@ -84,7 +84,7 @@ from .legacy_hooks import (
     inspect_legacy_hooks,
     remove_legacy_hooks,
 )
-from .host import current_host, emit, recording_errors
+from llm_wiki_engine.host import current_host, emit, recording_errors
 from .upgrade_service import UpgradeError, UpgradeOutcome, UpgradeRequest, UpgradeRequestError
 
 

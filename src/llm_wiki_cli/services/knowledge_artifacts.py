@@ -8,7 +8,7 @@ validated reader must reject any orphan or mixed projection set.
 
 from __future__ import annotations
 
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 import json
 import re
@@ -19,7 +19,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from .contracts import (
+from llm_wiki_engine.contracts import (
     KNOWLEDGE_SCHEMA_VERSION,
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
@@ -32,8 +32,8 @@ from .infrastructure_sync import (
     infrastructure_evidence_by_page,
 )
 from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
-from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
-from .knowledge_graph import KnowledgeGraphError, _validate_typed_graph_concept_bindings
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
+from llm_wiki_engine.knowledge_graph import KnowledgeGraphError, _validate_typed_graph_concept_bindings
 from .knowledge_index import (
     _validated_index_data, _validated_index_serialization,
     validate_knowledge_index, _model_to_payload,
@@ -42,7 +42,7 @@ from .knowledge_storage import (
     STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, logical_digest,
 )
 from .knowledge_packs import PACKED_SCHEMAS, PACKED_FORMATS, build_storage, open_knowledge_store, physical_objects, packed_format
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 from .knowledge_model import (
     ConceptKind,
     EvidenceBasis,
@@ -50,7 +50,7 @@ from .knowledge_model import (
     KnowledgeIndex,
     Origin,
 )
-from .section_ownership import SectionOwnershipError, validate_section_ownership
+from llm_wiki_engine.section_ownership import SectionOwnershipError, validate_section_ownership
 from .source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
@@ -59,12 +59,12 @@ from .source_retirement import (
 )
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from .storage_spool import SpooledArtifactWrite, spool_write
-from .validation import (
+from llm_wiki_engine.validation import (
     is_portable_relative_path,
     require_exact_fields as require_shared_exact_fields,
     require_nonnegative_int,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
@@ -581,7 +581,8 @@ def _validate_artifact_parity(
 
 def _storage_validator_identity() -> tuple:
     """Bind captured physical validation to its decoders, routes, and policy."""
-    from . import canonical_json, knowledge_audit, knowledge_packs, knowledge_storage
+    from . import knowledge_audit, knowledge_packs, knowledge_storage
+    from llm_wiki_engine import canonical_json
     from .knowledge_index import _validation_callable_identity, _validation_module_identity, _validation_policy_value
 
     return (

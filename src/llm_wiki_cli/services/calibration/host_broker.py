@@ -17,7 +17,7 @@ from functools import wraps
 from typing import Any, Iterator, Literal, Mapping, Protocol, runtime_checkable
 
 from . import _restore_legacy_definition_modules
-from ..validation import require_bounded_text, require_sha256
+from llm_wiki_engine.validation import require_bounded_text, require_sha256
 
 
 class HostBrokerAuthenticationError(ValueError):

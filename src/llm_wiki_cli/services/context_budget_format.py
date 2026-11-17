@@ -17,7 +17,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from . import context_packet, context_request_format, context_response_format
-from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION, CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION, CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
 
 #: Protocol of the responses these checks cover.
 CONTEXT_BUDGET_RESPONSE_PROTOCOL = CONTEXT_BUDGET_PROTOCOL_VERSION

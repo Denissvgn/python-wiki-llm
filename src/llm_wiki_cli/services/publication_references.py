@@ -10,7 +10,7 @@ from copy import deepcopy
 import json
 from typing import Any, Mapping
 
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .publication_config import publication_path
 from .reference_providers import reference_provider
 

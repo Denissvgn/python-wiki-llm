@@ -745,7 +745,13 @@
       "paths": [
         "pyproject.toml",
         "MANIFEST.in",
-        "release_build_backend.py"
+        "release_build_backend.py",
+        "src/pyproject.toml",
+        "src/MANIFEST.in",
+        "src/release_build_backend.py",
+        "src/README.md",
+        "src/LICENSE",
+        "src/llm_wiki_engine/py.typed"
       ],
       "groups": [
         "packaging",

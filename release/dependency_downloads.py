@@ -102,7 +102,7 @@ def read_lock(path):
         assert match is not None
         name, version = normalized(match[1]), match[2]
         require(
-            name not in records and name != "agent-wiki-cli",
+            name not in records and name not in {"agent-wiki-cli", "llm-wiki-engine"},
             "duplicate or candidate requirement in download lock",
         )
         require(

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from .domain_pack import current_pack
 from .io import write_json_atomic
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
@@ -29,7 +29,7 @@ from .source_selection import (
     source_selection_identity_from_generation_inputs,
     source_selection_inputs_from_generation_inputs,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields,
     require_mapping,
     require_repository_relative_path,

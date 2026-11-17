@@ -17,8 +17,8 @@ from ..extractors.common import LANGUAGE_EXTENSIONS
 from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot
 from .io import write_json_atomic
-from .progress import observed_phase
-from .runtime_output import (
+from llm_wiki_engine.progress import observed_phase
+from llm_wiki_engine.runtime_output import (
     RuntimeDestination,
     RuntimeOutputError,
     WarningSink,
@@ -499,7 +499,7 @@ def make_cache_entry(
 
 def extraction_bundle_hash(entry: dict) -> str:
     """Commit every raw analysis value reused together, excluding file metadata."""
-    from .knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
     return hash_json({key: entry.get(key) for key in (
         "language", "hash", "inventory", "python_observations", "python_implementation",
     )})

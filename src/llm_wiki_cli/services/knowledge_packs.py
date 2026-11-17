@@ -23,7 +23,7 @@ from .knowledge_storage import (
     KnowledgeStoreReader, build_knowledge_store, canonical_bytes, decode_bytes, digest,
     parse_store_root, _fields, _hash, _integer,
 )
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 PACKED_SCHEMA = "llm-wiki-knowledge/v3"
 LOCAL_PACKED_SCHEMA = "llm-wiki-knowledge/v4"

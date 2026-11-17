@@ -14,8 +14,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from .validation import SharedValidationError, require_portable_relative_path
-from .wiki_surface import (
+from llm_wiki_engine.validation import SharedValidationError, require_portable_relative_path
+from llm_wiki_engine.wiki_surface import (
     WikiSurfaceError,
     canonical_path,
     is_safe_page_id,

@@ -118,7 +118,7 @@ def constraints(value: dict) -> str:
             and re.fullmatch(r"[A-Za-z0-9.!+_-]+", version) is not None,
             "unsafe package pin",
         )
-        if name != "agent-wiki-cli":
+        if name not in {"agent-wiki-cli", "llm-wiki-engine"}:
             result.append(f"{name}=={version}\n")
     return "".join(sorted(result))
 

@@ -31,7 +31,7 @@ from .services.ci_installer import (
     install_documentation_ci_workflow as _install_documentation_ci_workflow,
 )
 from .services import context_service as context_cmd
-from .services import query_result_format
+from llm_wiki_engine import query_result_format
 from .services import extraction_service as extract_cmd
 from .api_types import (
     CalleesResult,
@@ -77,7 +77,7 @@ from .services import context_packet as context_packet_service
 from .services import context_packet_builder
 from .services.context_budget import BudgetedContext as BudgetedContext
 from .services.token_counting import TokenCounter as TokenCounter
-from .services.workflow_profile import (
+from llm_wiki_engine.workflow_profile import (
     WorkflowProfile as WorkflowProfile, WorkflowPolicy as WorkflowPolicy, WorkflowRequestError,
 )
 from .services.task_contract import TaskContext as TaskContext
@@ -86,12 +86,12 @@ from .services.context_session import (
     ContextSession as _ContextSession, SessionReply as SessionReply,
     CompactSessionReply as CompactSessionReply, CanonicalReceipt as CanonicalReceipt,
 )
-from .services.context_knowledge_contract import (
+from llm_wiki_engine.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
 )
-from .services import wiki_surface
-from .services.contracts import (
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
@@ -144,7 +144,7 @@ from .services.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from .services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
@@ -865,7 +865,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
     from .services.knowledge_loader import KnowledgeStateLoadError
     from .services.knowledge_storage import KnowledgeStorageError
-    from .services.validation import require_portable_relative_path
+    from llm_wiki_engine.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
     current: BaseException | None = exc
@@ -1267,7 +1267,7 @@ def sync_wiki(
     :class:`InvalidRequestError`.
     """
 
-    from .services.host import discarding_output
+    from llm_wiki_engine.host import discarding_output
     from .services.sync_runtime import execute_sync
 
     request = SyncRequest(
@@ -1319,7 +1319,7 @@ def migrate_wiki(
     :class:`InvalidRequestError`.
     """
 
-    from .services.host import discarding_output
+    from llm_wiki_engine.host import discarding_output
     from .services.migrate_runtime import execute_migrate
 
     request = MigrateRequest(
@@ -1363,7 +1363,7 @@ def lint_wiki(
     workspace raise :class:`InvalidRequestError`.
     """
 
-    from .services.host import discarding_output
+    from llm_wiki_engine.host import discarding_output
     from .services.lint_service import execute_lint, report_to_dict
 
     request = LintRequest(
@@ -1616,7 +1616,7 @@ def search_wiki(
 ) -> SearchResult:
     """Search canonical wiki pages with bounded, deterministic lexical ranking."""
     from .services.search_service import search_wiki as search
-    from .services.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
+    from llm_wiki_engine.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
     try:
         return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
@@ -1644,7 +1644,7 @@ def load_workflow_profile(
     path: str | Path, *, policy: WorkflowPolicy | None = None,
 ) -> WorkflowProfile:
     """Load an explicitly selected profile within trusted host ceilings."""
-    from .services.workflow_profile import load_profile
+    from llm_wiki_engine.workflow_profile import load_profile
 
     return load_profile(path, policy=policy)
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 import hashlib
 import os
@@ -35,7 +35,7 @@ from .source_selection import (
     resolve_source_selection,
     selection_may_contain_path,
 )
-from .validation import portable_path_key, require_repository_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
 from .filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata, guard_windows_directory_chain
 
 if TYPE_CHECKING:

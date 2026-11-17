@@ -19,8 +19,8 @@ from collections.abc import Callable, Set
 from pathlib import Path
 from typing import Any
 
-from .host import current_host
-from .knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.host import current_host
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
 
 
 def first_unsafe_path_component(

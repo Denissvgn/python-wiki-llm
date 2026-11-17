@@ -17,12 +17,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from llm_wiki_cli.services.canonical_json import compact_bytes
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.canonical_json import compact_bytes
+from llm_wiki_engine.contracts import (
     EVAL_LITE_PLAN_SCHEMA_VERSION,
     EVAL_LITE_TASK_SCHEMA_VERSION,
 )
-from llm_wiki_cli.services.validation import (
+from llm_wiki_engine.validation import (
     portable_path_key,
     require_portable_relative_path,
 )

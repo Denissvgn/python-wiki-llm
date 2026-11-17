@@ -1171,7 +1171,7 @@ def _merge_refresh_semantic_page(
     imported = "imported_semantic_page" in reasons
 
     if relative == "index.md" and current:
-        from ..markdown_sections import preserve_index_custom_sections
+        from llm_wiki_engine.markdown_sections import preserve_index_custom_sections
 
         merged = preserve_index_custom_sections(prior, current)
         if merged == current:

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Optional, Union
 from urllib.parse import unquote, urlsplit
 
-from .wiki_media import split_srcset_candidates
+from llm_wiki_engine.wiki_media import split_srcset_candidates
 
 
 SUPPORTED_LINK_MODES = frozenset({"http", "file"})

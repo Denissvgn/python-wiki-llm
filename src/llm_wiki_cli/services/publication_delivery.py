@@ -11,7 +11,7 @@ import difflib
 import json
 from typing import Any
 
-from .knowledge_evidence import canonical_json_bytes, hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import canonical_json_bytes, hash_json, sha256_bytes
 from .publication_candidate import (
     MAX_FILE_BYTES,
     MAX_FILES,

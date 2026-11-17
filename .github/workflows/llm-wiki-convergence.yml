@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: >-
           "${{ steps.setup-python.outputs.python-path }}"
-          -I -m pip install --no-cache-dir .
+          -I -m pip install --no-cache-dir ./src .
 
       - name: Bind runner-temporary helper paths
         shell: bash

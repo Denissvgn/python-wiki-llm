@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from .path_policy import is_agent_worktree_path
 from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
 from .python_imports import PythonModuleIndex, is_python_source
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_under as shared_path_is_under,
     path_is_under_scope as shared_path_is_under_scope,
 )

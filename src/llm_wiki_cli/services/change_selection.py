@@ -13,7 +13,7 @@ from .context_request_format import (  # re-exported: format checks live there
     portable_path as portable_path,
     validate_changes as validate_changes,
 )
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,

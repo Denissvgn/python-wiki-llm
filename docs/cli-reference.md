@@ -2919,7 +2919,7 @@ modified, incomplete, extra-bearing, or unverifiable trees are retained.
 Managed schema cleanup completes before reference removal, and both legacy and
 profiled blocks use the same ownership boundaries. The command does not
 uninstall the CLI itself; remove the Python package separately with
-`pip uninstall agent-wiki-cli`.
+`pip uninstall agent-wiki-cli llm-wiki-engine`.
 
 [native-knowledge]: native-knowledge.md
 [native-knowledge-strict]: native-knowledge.md#strict-lint-policy

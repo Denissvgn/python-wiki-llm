@@ -427,6 +427,22 @@ def _installed_fixture(tmp_path: Path):
         "Metadata-Version: 2.1\nName: agent-wiki-cli\nVersion: 1.0.0\n",
         encoding="utf-8",
     )
+    # The provider pins its engine, a second distribution from the same source.
+    engine = provider / "src/llm_wiki_engine"
+    engine.mkdir()
+    (engine / "__init__.py").write_text('__version__ = "0.1.0"\n', encoding="utf-8")
+    (engine / "py.typed").touch()
+    (provider / "src/pyproject.toml").write_text(
+        '[project]\nversion="0.1.0"\n[tool.setuptools.package-data]\nllm_wiki_engine=["py.typed"]\n',
+        encoding="utf-8",
+    )
+    shutil.copytree(engine, site / "llm_wiki_engine")
+    engine_metadata = site / "llm_wiki_engine-0.1.0.dist-info"
+    engine_metadata.mkdir()
+    (engine_metadata / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: llm-wiki-engine\nVersion: 0.1.0\n",
+        encoding="utf-8",
+    )
     consumer = tmp_path / "consumer"
     consumer.mkdir()
     return executable, provider, source, package, metadata, consumer

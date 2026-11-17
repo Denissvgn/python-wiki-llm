@@ -11,7 +11,7 @@ from .knowledge_storage import (
     COLLECTIONS, KnowledgeStorageError, _Encoder, _concept_aliases, _node_aliases, _owner,
     canonical_bytes, digest, _text, _LOOKUP_GROUP_TARGET,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     GOVERNANCE_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY,
 )
 

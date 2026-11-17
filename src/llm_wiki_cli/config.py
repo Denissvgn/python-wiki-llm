@@ -13,7 +13,7 @@ from .services.filesystem_guard import (
     ensure_guarded_directory,
 )
 from .services.io import first_unsafe_path_component
-from .services.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
 from .services.path_policy import (  # noqa: F401  (re-exported)
     DEFAULT_WIKI_DIR,
     EXCLUDED_DIRS,

@@ -159,7 +159,7 @@ jobs:
       run: python -I release/preflight_contracts.py check --repo .
     - name: Install release typing dependencies
       run: |
-        python -m pip install ".[dev,mcp,tokens]"
+        python -m pip install ./src ".[dev,mcp,tokens]"
         python -m pip install --require-hashes --only-binary=:all: -r examples/fastapi-contracts/requirements-ci.txt
         python -m pip install --require-hashes -r release/requirements.txt
     - name: Check the complete project type surface
@@ -240,7 +240,7 @@ jobs:
     - name: Install exact candidate noneditably
       env:
         PR_CI_PROFILE: ${{ matrix.profile }}
-      run: '"${PR_CI_PYTHON}" -m pip install ".[${PR_CI_PROFILE}]"'
+      run: '"${PR_CI_PYTHON}" -m pip install ./src ".[${PR_CI_PROFILE}]"'
     - name: Set up selected Node runtime
       if: ${{ matrix.typescript }}
       uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
@@ -378,7 +378,7 @@ jobs:
         cache: pip
         cache-dependency-path: pyproject.toml
     - name: Install dependencies with the MCP SDK
-      run: python -m pip install -e ".[dev,mcp]"
+      run: python -m pip install -e ./src -e ".[dev,mcp]"
     - name: Run MCP SDK registration contract
       env:
         LLM_WIKI_REQUIRE_MCP_SDK: '1'
@@ -451,7 +451,7 @@ jobs:
         cache: pip
         cache-dependency-path: pyproject.toml
     - name: Install focused test dependencies
-      run: python -m pip install -e ".[dev]"
+      run: python -m pip install -e ./src -e ".[dev]"
     - name: Build digest-pinned public synthetic OCI fixture
       shell: bash
       run: |
@@ -557,7 +557,7 @@ jobs:
         cache: pip
         cache-dependency-path: pyproject.toml
     - name: Install dependencies
-      run: python -m pip install -e ".[dev,tokens]"
+      run: python -m pip install -e ./src -e ".[dev,tokens]"
     - name: Verify foreign bootstrap publication
       id: foreign-bootstrap
       env:
@@ -580,6 +580,7 @@ jobs:
       run: |
         python -m pip install "build==1.5.0"
         python -m build
+        python -m build --outdir dist/engine src
         python tests/verify_installed_knowledge_schema.py dist
   core-check-inputs:
     name: Freeze core-check comparison inputs
@@ -675,7 +676,7 @@ jobs:
           echo "CORE_PYTHON=${PWD}/.venv/bin/python" >> "${GITHUB_ENV}"
         fi
     - name: Install the candidate profile noneditably
-      run: '"${CORE_PYTHON}" -m pip install --no-cache-dir "./work/candidate[dev,tokens]"'
+      run: '"${CORE_PYTHON}" -m pip install --no-cache-dir ./work/candidate/src "./work/candidate[dev,tokens]"'
     - name: Run affected assertions and mutation controls
       working-directory: work/candidate
       env:

@@ -15,7 +15,7 @@ from typing import TypeVar
 
 from ..config import validate_path, validate_source_root
 from ..extractors.common import normalize_include_tests
-from . import wiki_media
+from llm_wiki_engine import wiki_media
 from .data_flow import analyze_data_flow
 from .dependencies import analyze_dependencies, describe_unscanned_scopes, startup_cycle_groups
 from .module_coverage import classify_uncovered_python_sources
@@ -54,7 +54,7 @@ from .inventory_cache import (
 )
 from .lint_request import LintRequest, LintRequestError
 from .path_policy import DEFAULT_WIKI_DIR, PathValidationError
-from .progress import phase as progress_phase
+from llm_wiki_engine.progress import phase as progress_phase
 from .io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .analysis_compatibility import comparison_entrypoint
@@ -84,7 +84,7 @@ from .knowledge_governance import (
     evaluate_review_event,
     load_governance,
 )
-from .validation import path_is_in_top_level_directory
+from llm_wiki_engine.validation import path_is_in_top_level_directory
 from .knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
@@ -144,7 +144,7 @@ from .team import (
     resolve_team_policy,
     team_config_issue,
 )
-from .wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
+from llm_wiki_engine.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 from .wiki_lifecycle import (
     WikiLifecycleState,
@@ -165,7 +165,7 @@ from .extraction_service import (
     get_inventory_result,
     resolve_call_edges,
 )
-from .host import emit
+from llm_wiki_engine.host import emit
 
 MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')

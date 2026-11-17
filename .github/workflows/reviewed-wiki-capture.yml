@@ -68,7 +68,7 @@ jobs:
         run: |
           "${{ steps.python.outputs.python-path }}" -m venv .venv
           .venv/bin/python -m pip install --require-hashes -r release/validation-requirements.txt
-          .venv/bin/python -m pip install --no-build-isolation --no-deps .
+          .venv/bin/python -m pip install --no-build-isolation --no-deps ./src .
       - name: Prepare the selected locked helper
         run: |
           .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --src-dir . --plan --format json > "${RUNNER_TEMP}/reviewed-extractor-plan.json"

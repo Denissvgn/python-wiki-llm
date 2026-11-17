@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 from .implementation_evidence import compare_implementation_observations
 from .knowledge_storage import canonical_bytes
 from .maintenance_evidence import MaintenanceCapture, owner_key

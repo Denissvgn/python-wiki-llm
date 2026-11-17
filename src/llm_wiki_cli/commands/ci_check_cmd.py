@@ -19,8 +19,8 @@ from ..services.inventory_cache import (
     prepare_cache_options,
 )
 from ..services.io import write_bytes_atomic
-from ..services.progress import observed_phase
-from ..services.runtime_output import (
+from llm_wiki_engine.progress import observed_phase
+from llm_wiki_engine.runtime_output import (
     RuntimeDestination,
     RuntimeOutputError,
     prepare_destination,

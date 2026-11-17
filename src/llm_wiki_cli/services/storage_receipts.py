@@ -117,7 +117,7 @@ def expand_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
             raise ValueError("invalid compact root binding")
         _hash(commitment[7:])
         path = row[1] if row[0] == 0 else _file_path(row[0], commitment[7:])
-        from .validation import is_portable_relative_path
+        from llm_wiki_engine.validation import is_portable_relative_path
         if not is_portable_relative_path(path):
             raise ValueError("invalid compact receipt path")
         result["inputs"].append({"path": path, "hash": commitment, "bytes": row[-1]})

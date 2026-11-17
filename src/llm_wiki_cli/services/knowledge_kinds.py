@@ -30,7 +30,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any, Literal
 
-from .knowledge_graph import CORE_RELATIONSHIP_KINDS
+from llm_wiki_engine.knowledge_graph import CORE_RELATIONSHIP_KINDS
 from .knowledge_model import (
     PAGE_KIND_TO_CONCEPT_KIND,
     QUALIFIED_NAME_PATTERN,
@@ -40,7 +40,7 @@ from .knowledge_model import (
     Origin,
     RelationshipKind,
 )
-from .wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 
 if TYPE_CHECKING:
     from .knowledge_model import ConceptRecord, KnowledgeIndex

@@ -64,8 +64,8 @@ from .reference_providers import (
     ReferenceProvider,
     check_reference_providers,
 )
-from .validation import portable_page_component, portable_path_key
-from .wiki_surface import PageKind
+from llm_wiki_engine.validation import portable_page_component, portable_path_key
+from llm_wiki_engine.wiki_surface import PageKind
 
 if TYPE_CHECKING:
     from .helper_runtime import PreparedHelperHandle

@@ -51,7 +51,7 @@ from .knowledge_freshness import (
     evaluate_knowledge_freshness,
     structural_freshness_modeled,
 )
-from .knowledge_evidence import is_valid_sha256
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256
 from .knowledge_model import ComputedFreshness, KnowledgeIndex, ObservationScope
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
@@ -62,7 +62,7 @@ from .knowledge_orchestration import (
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
-from .paths import is_test_source_path
+from llm_wiki_engine.paths import is_test_source_path
 from .source_snapshot import (
     SourceSnapshot,
     SourceSnapshotError,
@@ -82,7 +82,7 @@ from .sync_manifest import (
     MANIFEST_VERSION,
     SyncManifest,
 )
-from .validation import is_portable_relative_path
+from llm_wiki_engine.validation import is_portable_relative_path
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,

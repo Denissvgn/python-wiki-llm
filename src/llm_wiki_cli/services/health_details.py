@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import json
 from typing import Any
 
-from .contracts import HEALTH_DETAILS_SCHEMA_VERSION
+from llm_wiki_engine.contracts import HEALTH_DETAILS_SCHEMA_VERSION
 from . import analysis_compatibility as ac
 from .health_contract import (
     COMPARABLE_STATES,
@@ -23,7 +23,7 @@ from .health_contract import (
 )
 from .knowledge_artifacts import require_validated_artifacts
 from .knowledge_consumption import KnowledgeReadView
-from .knowledge_evidence import canonical_json_text, hash_json
+from llm_wiki_engine.knowledge_evidence import canonical_json_text, hash_json
 from .knowledge_envelope import hash_source_snapshot
 from .knowledge_freshness import structural_freshness_modeled
 from .knowledge_model import ProducerComponent, ProducerRecord

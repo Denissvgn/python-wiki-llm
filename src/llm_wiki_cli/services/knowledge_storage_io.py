@@ -17,7 +17,7 @@ from .filesystem_guard import (
 )
 from .io import first_unsafe_path_component
 from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
-from .validation import is_portable_relative_path
+from llm_wiki_engine.validation import is_portable_relative_path
 
 
 def _identity(value: os.stat_result) -> tuple[int, ...]:

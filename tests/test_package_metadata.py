@@ -476,9 +476,10 @@ def test_wiki_guide_source_commands_use_project_virtualenv():
     guide_lines = {line.strip() for line in guide.splitlines()}
 
     for required in [
-        '.venv/bin/pip install -e ".[dev]"',
-        '.venv/bin/pip install -e ".[dev,mcp]"',
+        '.venv/bin/pip install -e ./src -e ".[dev]"',
+        '.venv/bin/pip install -e ./src -e ".[dev,mcp]"',
         ".venv/bin/python -m build",
+        ".venv/bin/python -m build --outdir dist/engine src",
     ]:
         assert required in guide
 
@@ -575,3 +576,41 @@ def test_wiki_integrity_uses_the_automatic_locked_helper_plan():
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert "--language" not in prepare
     assert "--source-selection" not in prepare
+
+
+def _engine_pyproject() -> dict:
+    return tomllib.loads((PROJECT_ROOT / "src" / "pyproject.toml").read_text(encoding="utf-8"))
+
+
+def test_cli_pins_the_engine_built_from_the_same_checkout():
+    import llm_wiki_engine
+
+    engine = _engine_pyproject()["project"]
+    pins = [
+        Requirement(value) for value in _pyproject()["project"]["dependencies"]
+        if Requirement(value).name == "llm-wiki-engine"
+    ]
+    assert engine["name"] == "llm-wiki-engine"
+    assert engine["dependencies"] == []
+    assert engine["requires-python"] == _pyproject()["project"]["requires-python"]
+    assert [str(pin.specifier) for pin in pins] == [f"=={engine['version']}"]
+    assert llm_wiki_engine.__version__ == engine["version"]
+
+
+def test_each_project_packages_only_its_own_import_package():
+    cli = _pyproject()["tool"]["setuptools"]["packages"]["find"]
+    assert cli["where"] == ["src"] and cli["include"] == ["llm_wiki_cli*"]
+    engine = _engine_pyproject()["tool"]["setuptools"]
+    assert engine["packages"] == ["llm_wiki_engine"]
+    assert engine["package-data"] == {"llm_wiki_engine": ["py.typed"]}
+    manifest = (PROJECT_ROOT / "src" / "MANIFEST.in").read_text(encoding="utf-8")
+    assert "prune llm_wiki_cli" in manifest.splitlines()
+
+
+def test_engine_project_reuses_the_reproducible_sdist_backend():
+    root, engine = (_pyproject()["build-system"], _engine_pyproject()["build-system"])
+    assert engine == root
+    assert (PROJECT_ROOT / "src" / "release_build_backend.py").read_bytes() == (
+        PROJECT_ROOT / "release_build_backend.py"
+    ).read_bytes()
+    assert (PROJECT_ROOT / "src" / "LICENSE").read_bytes() == (PROJECT_ROOT / "LICENSE").read_bytes()

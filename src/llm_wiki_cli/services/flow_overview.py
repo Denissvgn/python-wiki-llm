@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 
 _INTERACTION_LIMIT = 30
 _CALL_KINDS = frozenset({"internal", "external", "unresolved"})

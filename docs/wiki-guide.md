@@ -358,8 +358,13 @@ From source:
 git clone https://github.com/Denissvgn/python-wiki-llm.git
 cd python-wiki-llm
 python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install -e ./src -e ".[dev]"
 ```
+
+The checkout holds two distributions: `agent-wiki-cli` at the repository root
+and the standard-library-only `llm-wiki-engine` it depends on, under `src/`.
+Install both from the checkout, because the CLI pins the exact engine version
+from the same commit.
 
 The following extras are accepted for compatibility with documented workflows,
 but they do not install external TypeScript/JavaScript, Go, Rust, or Haskell
@@ -369,10 +374,10 @@ toolchains:
 pip install "agent-wiki-cli[typescript,go,rust]"
 ```
 
-Uninstall the Python package with:
+Uninstall the Python packages with:
 
 ```bash
-pip uninstall agent-wiki-cli
+pip uninstall agent-wiki-cli llm-wiki-engine
 ```
 
 ## Quick Start
@@ -448,23 +453,28 @@ For the separate protected lifecycle, see
 
 ## Working from source
 
-Install an editable development checkout from the repository root:
+Install an editable development checkout, engine included, from the
+repository root:
 
 ```bash
-.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install -e ./src -e ".[dev]"
 ```
 
 Include the optional MCP dependency when working on that integration:
 
 ```bash
-.venv/bin/pip install -e ".[dev,mcp]"
+.venv/bin/pip install -e ./src -e ".[dev,mcp]"
 ```
 
 Build distribution artifacts locally with:
 
 ```bash
 .venv/bin/python -m build
+.venv/bin/python -m build --outdir dist/engine src
 ```
+
+The first command builds `agent-wiki-cli`; the second builds
+`llm-wiki-engine` into `dist/engine`.
 
 Release notes and package metadata record the surface, distribution,
 compatibility, and release behavior for documentation-surface work. Use

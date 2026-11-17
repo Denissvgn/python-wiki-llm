@@ -12,8 +12,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from . import context_packet, context_request_format
-from .context_knowledge_contract import KNOWLEDGE_MODE_VALUES
-from .contracts import CONTEXT_KNOWLEDGE_PROTOCOL_VERSION, CONTEXT_PROTOCOL_VERSION
+from llm_wiki_engine.context_knowledge_contract import KNOWLEDGE_MODE_VALUES
+from llm_wiki_engine.contracts import CONTEXT_KNOWLEDGE_PROTOCOL_VERSION, CONTEXT_PROTOCOL_VERSION
 
 #: Protocols whose responses these checks cover, oldest first.
 CONTEXT_RESPONSE_PROTOCOLS = (CONTEXT_PROTOCOL_VERSION, CONTEXT_KNOWLEDGE_PROTOCOL_VERSION)

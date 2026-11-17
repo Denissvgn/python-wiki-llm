@@ -11,12 +11,12 @@ from typing import Mapping
 from .bootstrap_runtime import _module_name_from_path
 from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
 from .knowledge_storage_io import StorageReadSession
-from .markdown_sections import normalize_markdown
+from llm_wiki_engine.markdown_sections import normalize_markdown
 from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
 from .sync_manifest import ManifestPageSource, SyncManifest
-from .sync_retained_links import repair_retained_page_links
-from .validation import portable_path_key
-from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from llm_wiki_engine.sync_retained_links import repair_retained_page_links
+from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
 from .source_retirement import retired_entity_mappings
 
 

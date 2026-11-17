@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ..services.host import HostCapabilityError, current_host
+from llm_wiki_engine.host import HostCapabilityError, current_host
 from .common import (
     TYPESCRIPT_FAMILY_EXTENSIONS,
     chunk_source_files_for_cli,

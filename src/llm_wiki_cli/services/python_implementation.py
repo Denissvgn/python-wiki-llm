@@ -19,7 +19,7 @@ import sys
 import tokenize
 from typing import Any
 
-from .canonical_json import compact_line_bytes
+from llm_wiki_engine.canonical_json import compact_line_bytes
 
 SCHEMA = "llm-wiki-implementation-observations/v1"
 EVIDENCE_SCHEMA = "llm-wiki-implementation-evidence/v1"

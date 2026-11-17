@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from .contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
+from llm_wiki_engine.contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
 from . import analysis_compatibility as ac
 from .health_details import CapturedHealthDetails
 from .health_contract import validate_health_details
@@ -287,7 +287,7 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
         ]
     )
     if drift["nonsemantic_changes"]:
-        from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+        from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
         lines.append("Source-byte change:  " + SOURCE_CHANGED_STRUCTURE_UNCHANGED)
     if payload["unhealthy_reasons"]:

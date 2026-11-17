@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..services.host import HostCapabilityError, current_host
+from llm_wiki_engine.host import HostCapabilityError, current_host
 from .common import (
     discover_source_files,
     filter_bundled_inventory,

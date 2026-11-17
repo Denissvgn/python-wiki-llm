@@ -413,10 +413,10 @@ def test_producer_incompatibility_does_not_upgrade_snapshot_or_borrow_old_call_e
     before = _tree(root / "src"), _tree(root / "wiki")
     captured = analysis_capture.implementation_hash
 
-    def changed_producer(root, paths):
+    def changed_producer(root, paths, engine_paths=()):
         return (
             "sha256:"
-            + sha256(("changed-provider:" + captured(root, paths)).encode()).hexdigest()
+            + sha256(("changed-provider:" + captured(root, paths, engine_paths)).encode()).hexdigest()
         )
 
     monkeypatch.setattr(analysis_capture, "implementation_hash", changed_producer)

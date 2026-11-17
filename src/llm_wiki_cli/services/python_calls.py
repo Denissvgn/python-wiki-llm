@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from copy import deepcopy
 
-from .immutable import freeze
+from llm_wiki_engine.immutable import freeze
 from ..extractors.python_bindings import (
     valid_python_constructor_facts,
     CONSTRUCTOR_DISPATCH_VERSION,

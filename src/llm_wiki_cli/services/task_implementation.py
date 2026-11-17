@@ -78,7 +78,7 @@ def attach_capture(body, inventory_result):
 
 def validate_task_implementations(payload, settings):
     from .implementation_evidence import validate_implementation_comparison
-    from .knowledge_evidence import is_valid_sha256
+    from llm_wiki_engine.knowledge_evidence import is_valid_sha256
 
     comparisons = [(item, fact) for fact in payload["facts"] for item in _comparisons(fact)]
     receipt = payload.get("implementation_capture")

@@ -304,12 +304,12 @@ def test_unresolved_source_specific_review_hint_remains_a_full_queue_item(
     }
     original = analysis_capture.implementation_hash
 
-    def incompatible(root, paths):
+    def incompatible(root, paths, engine_paths=()):
         from hashlib import sha256
 
         return (
             "sha256:"
-            + sha256(("changed:" + original(root, paths)).encode()).hexdigest()
+            + sha256(("changed:" + original(root, paths, engine_paths)).encode()).hexdigest()
         )
 
     monkeypatch.setattr(analysis_capture, "implementation_hash", incompatible)

@@ -28,7 +28,7 @@ from ..services.publication_impact import (
     render_publication_impact,
     resolve_publication_finding,
 )
-from ..services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from ..services.source_snapshot import _is_package_marker
 
 

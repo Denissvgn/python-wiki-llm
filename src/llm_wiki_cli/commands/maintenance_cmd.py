@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from ..services.request_json import load_request
+from llm_wiki_engine.request_json import load_request
 
 
 def _capture_options(args):

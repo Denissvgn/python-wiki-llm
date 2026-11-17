@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field as dataclass_field, replace
@@ -32,7 +32,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_surface import WikiSurfacePathError, collect_wiki_pages
+from llm_wiki_engine.wiki_surface import WikiSurfacePathError, collect_wiki_pages
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
 

@@ -11,13 +11,13 @@ from .extractor_registry import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
 from .io import first_unsafe_path_component, write_bytes_atomic
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
 from .knowledge_storage_io import read_guarded
-from .progress import observed_phase, record_counts
-from .runtime_output import warn
+from llm_wiki_engine.progress import observed_phase, record_counts
+from llm_wiki_engine.runtime_output import warn
 from . import sync_analysis_storage
-from .host import emit
+from llm_wiki_engine.host import emit
 
 SCHEMA = "llm-wiki-sync-analysis/v2"
 EXTENSION = "llm-wiki/sync-analysis-v2"
@@ -285,8 +285,8 @@ def commitment(payload):
 
 def generated_sections_match(root, artifacts):
     """Allow prose edits; changing generated structure requires the ordinary path."""
-    from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-    from .section_ownership import observe_page_sections
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.section_ownership import observe_page_sections
     prior = {row["page_locator"]: row for row in artifacts.knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]}
     for concept in artifacts.knowledge.concepts:
         path = root / concept.document.canonical_path
@@ -297,7 +297,7 @@ def generated_sections_match(root, artifacts):
             if isinstance(exc, KnowledgeStorageError) and exc.code == "storage-mutation":
                 raise SyncAnalysisMutationError("wiki changed during analysis reuse") from exc
             return False
-        from .knowledge_evidence import sha256_bytes
+        from llm_wiki_engine.knowledge_evidence import sha256_bytes
         if sha256_bytes(content.encode("utf-8")) == concept.facets.semantics.page_hash:
             continue
         kind = concept.document.page_kind

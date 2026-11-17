@@ -19,7 +19,7 @@ from .maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 from contextlib import nullcontext
 from contextvars import ContextVar
 
-from .progress import observed_phase, record_counts
+from llm_wiki_engine.progress import observed_phase, record_counts
 
 import os
 import json
@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Mapping, Optional
 
 from .. import __version__
-from .contracts import INITIALIZABLE_SURFACES
+from llm_wiki_engine.contracts import INITIALIZABLE_SURFACES
 from ..config import PathValidationError, validate_path, validate_source_root
 from .api_contracts import (
     ApiContractError,
@@ -86,9 +86,9 @@ from .infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from .io import read_md, write_md
-from .paths import render_shell_command
+from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
-from .validation import portable_path_key
+from llm_wiki_engine.validation import portable_path_key
 from .source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
     SourceRetirementError,
@@ -104,11 +104,11 @@ from .knowledge_artifacts import (
 from .knowledge_envelope import RepositoryEvidence, build_repository_record
 from . import knowledge_reuse
 from . import sync_analysis_cache
-from .knowledge_evidence import hash_file
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import hash_file
+from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
 )
-from .knowledge_evidence import semantic_hash_for_file
+from llm_wiki_engine.knowledge_evidence import semantic_hash_for_file
 from .knowledge_governance import (
     GOVERNANCE_FILENAME,
     GOVERNANCE_LOCK_FILENAME,
@@ -129,7 +129,7 @@ from .knowledge_orchestration import (
     runtime_generation_options_hash,
     runtime_source_snapshot_hash,
 )
-from .markdown_sections import (
+from llm_wiki_engine.markdown_sections import (
     format_table_row as _service_format_table_row,
     is_placeholder_description as _service_is_placeholder_description,
     is_table_separator as _service_is_table_separator,
@@ -147,7 +147,7 @@ from .markdown_sections import (
     trim_blank_lines as _service_trim_blank_lines,
 )
 from .module_maps import build_module_dependency_maps
-from .paths import is_test_source_path, portable_source_root_label
+from llm_wiki_engine.paths import is_test_source_path, portable_source_root_label
 from .plugins import (
     runtime_plugin_fallback_root,
     runtime_project_plugins_enabled,
@@ -197,14 +197,14 @@ from .wiki_lifecycle import (
     classify_wiki_lifecycle,
     migration_guidance,
 )
-from .section_ownership import (
+from llm_wiki_engine.section_ownership import (
     SemanticMergeResult,
     merge_entity_semantics as _service_merge_entity_semantics,
     merge_module_semantics as _service_merge_module_semantics,
     merge_semantic_markdown as _service_merge_semantic_markdown,
     replace_generated_section as _service_replace_generated_section,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
@@ -245,7 +245,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
-from .host import current_host, discarding_stdout, emit, recording_errors
+from llm_wiki_engine.host import current_host, discarding_stdout, emit, recording_errors
 from .sync_service import (
     SYNC_PAGE_COUNTERS,
     SyncError,
@@ -963,7 +963,7 @@ def _merge_entity_page(
         if existing.startswith(SOURCE_MEMBER_REMOVED_HEADER):
             # Unknown/custom sections remain retained authored context on exact
             # owner revival; generated sections still come from the new source.
-            from .markdown_sections import parse_markdown_document
+            from llm_wiki_engine.markdown_sections import parse_markdown_document
             generated_doc = parse_markdown_document(merge_result.text, "revived-generated")
             old_doc = parse_markdown_document(existing, "revived-retained")
             known = {section.title.casefold() for section in generated_doc.sections if section.level == 2}
@@ -2702,7 +2702,7 @@ def _extract_current_inventory(
 def _qualify_surviving_module_inventory(options, snapshot, manifest, result):
     """Resolve prior-owned sparse paths through attributable parser observations."""
     from ..config import EXTRACTOR_REGISTRY
-    from .knowledge_evidence import module_observation_hash
+    from llm_wiki_engine.knowledge_evidence import module_observation_hash
 
     captured = snapshot.hashes_for()
     prior = set(manifest.sources) & set(captured)
@@ -2861,7 +2861,7 @@ def _recoverable_evidence_refresh_sources(
     manifest: SyncManifest, inventory: Mapping[str, Mapping], diff: SyncDiff,
 ) -> tuple[str, ...]:
     """Select unchanged sources whose captured invalid basis now normalizes."""
-    from .knowledge_evidence import (
+    from llm_wiki_engine.knowledge_evidence import (
         UNKNOWN_INVALID_INVENTORY, entity_observation_hash, module_observation_hash,
     )
 
@@ -3999,7 +3999,7 @@ def _try_sync_knowledge_reuse(
         )
     openapi = surface_plan.generation_inputs.get("openapi")
     if isinstance(openapi, Mapping):
-        from .validation import resolve_portable_workspace_path
+        from llm_wiki_engine.validation import resolve_portable_workspace_path
 
         path = resolve_portable_workspace_path(
             source_snapshot.root,

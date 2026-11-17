@@ -50,7 +50,7 @@ from .imports import build_module_path_resolver
 from .python_imports import is_python_source
 from .python_stdlib import python_stdlib_module_names as _python_stdlib
 from .source_snapshot import SourceSnapshot, build_source_snapshot
-from .validation import (
+from llm_wiki_engine.validation import (
     nearest_path_scope,
     path_is_under as shared_path_is_under,
     path_is_under_scope as shared_path_is_under_scope,

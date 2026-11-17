@@ -13,13 +13,13 @@ import tarfile
 from typing import Any
 
 import llm_wiki_cli
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .extractor_registry import EXTRACTOR_REGISTRY
 from .path_policy import validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
 from . import extractor_helpers, analysis_compatibility as ac
 from .analysis_capture import capture_analysis, attach
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
 from .health_policy import (
     PREFLIGHT_SCHEMA,
     MaintenanceError,
@@ -34,7 +34,7 @@ from .knowledge_envelope import (
     build_producer_record,
     hash_source_snapshot,
 )
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_model import _parse_bundle, parse_knowledge_index
 from .knowledge_orchestration import (
     _producer_evidence,
@@ -116,6 +116,29 @@ def _installed(candidate: Path, version: str, allow_editable: bool) -> dict[str,
                 raise MaintenanceError("invalid registered analysis resource")
             expected_files[name] = digest((source / name).read_bytes())
             actual_files[name] = digest((actual / name).read_bytes())
+    import llm_wiki_engine
+
+    engine_distribution = importlib.metadata.distribution("llm-wiki-engine")
+    engine_actual = Path(llm_wiki_engine.__file__).resolve().parent
+    engine_installed = Path(
+        str(engine_distribution.locate_file("llm_wiki_engine"))
+    ).resolve()
+    engine_source = (candidate / "src/llm_wiki_engine").resolve()
+    if engine_distribution.version != llm_wiki_engine.__version__:
+        raise MaintenanceError("installed engine distribution/imported version differs")
+    if engine_actual != engine_installed and not (
+        allow_editable and engine_actual == engine_source
+    ):
+        raise MaintenanceError(
+            "imported engine is outside the declared installed/candidate root"
+        )
+    if engine_actual == engine_source and not allow_editable:
+        raise MaintenanceError("release preflight requires a noneditable installation")
+    for root, files in ((engine_source, expected_files), (engine_actual, actual_files)):
+        files.update(
+            ("llm_wiki_engine/" + p.relative_to(root).as_posix(), digest(p.read_bytes()))
+            for p in root.rglob("*.py")
+        )
     if not expected_files or actual_files != expected_files:
         raise MaintenanceError(
             "installed implementation differs from the intended candidate"

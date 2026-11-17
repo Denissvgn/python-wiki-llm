@@ -17,7 +17,7 @@ from .filesystem_guard import (
     windows_current_user_sid,
     windows_path_owner_sid,
 )
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .io import first_unsafe_path_component
 
 

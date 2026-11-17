@@ -14,7 +14,7 @@ from enum import Enum
 from pathlib import Path
 
 from .io import first_unsafe_path_component, write_bytes_atomic
-from .paths import shell_quote
+from llm_wiki_engine.paths import shell_quote
 
 # Marker boundaries used to wrap the entire generated block
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"

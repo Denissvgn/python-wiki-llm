@@ -316,19 +316,24 @@ def test_missing_value_sentinel_is_bound_to_shared_producer_identity(tmp_path, m
     monkeypatch.setattr(ke, 'MISSING_VALUE', 'python')
     assert _module_basis(data).is_known
     rules = capture.registry()
-    name = 'services/normalization_diagnostics.py'
-    assert name in rules['shared']
-    package = Path(ke.__file__).parents[1]
-    copied = tmp_path / 'package'
+    name = 'llm_wiki_engine/normalization_diagnostics.py'
+    assert name in rules['engine_shared']
+    package = Path(capture.__file__).resolve().parents[1]
+    # Provider and engine packages are installed side by side.
+    copied = tmp_path / 'site' / 'package'
     for relative in rules['shared']:
         target = copied / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((package / relative).read_bytes())
-    before = capture.implementation_hash(copied, rules['shared'])
-    old_inputs = [p for p in rules['shared'] if p != name]
-    unbound_before = capture.implementation_hash(copied, old_inputs)
-    target = copied / name
+    for relative in rules['engine_shared']:
+        target = copied.parent / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(capture.engine_input(package, relative).read_bytes())
+    before = capture.implementation_hash(copied, rules['shared'], rules['engine_shared'])
+    old_inputs = [p for p in rules['engine_shared'] if p != name]
+    unbound_before = capture.implementation_hash(copied, rules['shared'], old_inputs)
+    target = copied.parent / name
     target.write_bytes(target.read_bytes().replace(b'MISSING_VALUE = object()', b'MISSING_VALUE = "python"'))
-    after = capture.implementation_hash(copied, rules['shared'])
+    after = capture.implementation_hash(copied, rules['shared'], rules['engine_shared'])
     assert before != after
-    assert capture.implementation_hash(copied, old_inputs) == unbound_before
+    assert capture.implementation_hash(copied, rules['shared'], old_inputs) == unbound_before

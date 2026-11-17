@@ -11,7 +11,7 @@ import stat
 from .filesystem_guard import fresh_no_follow_stat
 from .io import first_unsafe_path_component
 from .knowledge_storage_io import read_guarded
-from .validation import is_portable_relative_path
+from llm_wiki_engine.validation import is_portable_relative_path
 
 MANIFEST_VERSION = 3
 ARTIFACT_SCOPE = "typescript-node-modules/v1"

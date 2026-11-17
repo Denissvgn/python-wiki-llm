@@ -8,8 +8,8 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
 from .sync_manifest import ManifestPageSource, SyncManifest, SyncManifestError
-from .validation import portable_path_key
-from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
 
 if TYPE_CHECKING:
     from .knowledge_model import KnowledgeIndex
@@ -264,7 +264,7 @@ def discover_retired_entities(manifest: SyncManifest, inventory: Mapping[str, Ma
 
 def _check_duplicate_removal_custody(manifest, inventory, recorded) -> None:
     """Require an unchanged, distinguishable surviving prefix before retiring suffixes."""
-    from .knowledge_evidence import entity_observation_hash
+    from llm_wiki_engine.knowledge_evidence import entity_observation_hash
 
     for source, data in inventory.items():
         previous = manifest.sources.get(source, {})

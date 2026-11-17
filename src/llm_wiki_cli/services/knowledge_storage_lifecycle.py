@@ -10,7 +10,7 @@ import re
 import subprocess
 from typing import Any
 
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
 from .knowledge_artifacts import (
     ArtifactWriteState, KnowledgeCommitPlan, PlannedArtifactWrite,
@@ -364,7 +364,7 @@ def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, A
 
 
 def _canonical_markdown(relative: str) -> bool:
-    from .wiki_surface import WikiSurfaceError, validate_exact_page_coordinate
+    from llm_wiki_engine.wiki_surface import WikiSurfaceError, validate_exact_page_coordinate
     if not relative.endswith(".md"):
         return False
     try:

@@ -11,7 +11,7 @@ from collections import defaultdict, deque
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
-from .validation import positive_int_or_none
+from llm_wiki_engine.validation import positive_int_or_none
 
 _STEP_LIMIT = 12
 _EFFECT_LIMIT = 8

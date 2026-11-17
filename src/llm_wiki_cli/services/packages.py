@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Sequence
 
 from .path_policy import EXCLUDED_DIRS
 from .python_imports import normalized_root, under_root
-from .validation import nearest_path_scope
+from llm_wiki_engine.validation import nearest_path_scope
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot

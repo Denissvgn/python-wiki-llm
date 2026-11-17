@@ -27,8 +27,8 @@ from .maintenance_protocol import (
     save_recovery_snapshot,
     snapshot_wiki,
 )
-from .request_json import _pairs, _constant
-from .validation import is_portable_relative_path
+from llm_wiki_engine.request_json import _pairs, _constant
+from llm_wiki_engine.validation import is_portable_relative_path
 from .wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
 
 SCHEMA = "llm-wiki-bootstrap-recovery/v1"

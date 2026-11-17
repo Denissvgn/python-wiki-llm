@@ -15,9 +15,9 @@ from .bootstrap_runtime import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .knowledge_evidence import hash_file, semantic_hash_for_file
+from llm_wiki_engine.knowledge_evidence import hash_file, semantic_hash_for_file
 from .sync_manifest import ManifestPageSource, SyncManifest
-from .validation import is_portable_path_component, portable_path_key
+from llm_wiki_engine.validation import is_portable_path_component, portable_path_key
 
 
 EntityOwner = tuple[str, str, int]  # source path, entity name, occurrence

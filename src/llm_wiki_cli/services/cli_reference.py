@@ -14,7 +14,7 @@ import re
 from typing import Any
 
 from .. import _provider_package_identity
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_storage_io import read_guarded
 
 

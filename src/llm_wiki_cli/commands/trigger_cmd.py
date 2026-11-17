@@ -14,11 +14,11 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
-from ..services import circuit_breaker
-from ..services.lockfile import LockAcquisitionError, WikiLock
+from llm_wiki_engine import circuit_breaker
+from llm_wiki_engine.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
 from ..services.plugins import PluginError
-from ..services.secure_file import write_private_text
+from llm_wiki_engine.secure_file import write_private_text
 from ..services.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,

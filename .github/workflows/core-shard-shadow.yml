@@ -106,7 +106,7 @@ jobs:
     - name: Create a fresh job environment
       run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
     - name: Install the candidate noneditably
-      run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+      run: python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
     - name: Collect a complete plan and execute the unsharded reference
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
@@ -207,7 +207,7 @@ jobs:
           --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
     - name: Install the identical resolved dependency profile
-      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt ./candidate/src "./candidate[dev,tokens]"
     - name: Execute exactly one planned shard
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
@@ -303,7 +303,7 @@ jobs:
           --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
     - name: Install the identical aggregation profile
-      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt ./candidate/src "./candidate[dev,tokens]"
     - name: Require complete inventory coverage and outcome parity
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}

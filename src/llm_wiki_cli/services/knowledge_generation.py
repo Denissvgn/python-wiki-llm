@@ -10,7 +10,7 @@ filesystem reads are the target-state comparisons performed by
 
 from __future__ import annotations
 
-from .progress import observed_phase, record_counts
+from llm_wiki_engine.progress import observed_phase, record_counts
 
 import json
 from collections.abc import Mapping, Sequence
@@ -39,7 +39,7 @@ from .knowledge_envelope import (
     build_evaluated_envelope,
     build_repository_record,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ConceptObservationBasis,
     build_entity_observation_basis,
     build_module_observation_basis,
@@ -52,7 +52,7 @@ from .knowledge_index import (
     _assemble_knowledge_index,
     _knowledge_validation_operation,
 )
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
     GraphConcept,
     KnowledgeGraphError,
@@ -72,11 +72,11 @@ from .infrastructure_sync import (
     infrastructure_evidence_by_page,
 )
 from .knowledge_model import KnowledgeModelError, ProducerRecord, concept_kind_for_page_kind
-from .contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from .section_ownership import observe_page_sections, section_ownership_extension
+from llm_wiki_engine.section_ownership import observe_page_sections, section_ownership_extension
 from .source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
@@ -93,7 +93,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_surface import PageKind, WikiSurfacePage
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfacePage
 
 
 class KnowledgeGenerationError(ValueError):
@@ -566,7 +566,7 @@ def _application_knowledge_extensions(
         commitment = extensions.get(EXTENSION)
         from dataclasses import asdict
         from .knowledge_envelope import INVENTORY_HASH_EXTENSION, hash_inventory
-        from .knowledge_evidence import hash_json
+        from llm_wiki_engine.knowledge_evidence import hash_json
         coordinates = _graph_concepts(inputs.pages, module_page_map=module_page_map, occurrence_page_map=occurrence_page_map)
         if (isinstance(commitment, Mapping) and commitment == prior.knowledge.extensions.get(EXTENSION)
                 and commitment.get("graph_concepts_hash") == hash_json([asdict(v) for v in coordinates])

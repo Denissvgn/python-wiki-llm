@@ -1584,7 +1584,7 @@ def test_routine_ci_runs_only_validated_selected_contracts() -> None:
     assert job["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
     assert job["needs"] == "plan"
     install = _named_step(job, "Install exact candidate noneditably")
-    assert 'pip install ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
+    assert 'pip install ./src ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
     assert install["env"]["PR_CI_PROFILE"] == "${{ matrix.profile }}"
     selected = _named_step(job, "Run and account for every selected case")
     assert "pr_ci.py run --root ." in selected["run"]

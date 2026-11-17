@@ -38,16 +38,17 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
-from . import circuit_breaker, context_service as context_cmd
+from . import context_service as context_cmd
+from llm_wiki_engine import circuit_breaker
 from . import lint_service as lint_cmd
-from . import wiki_surface
-from .context_knowledge_contract import (
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
     RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
 )
 from .bootstrap_runtime import build_module_page_map
-from .concept_identity import (
+from llm_wiki_engine.concept_identity import (
     ConceptIdentityError,
     validate_concept_uid,
     validate_natural_key,
@@ -56,7 +57,7 @@ from .documentation_queries import DocumentationQueryError
 from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_service import InventoryRequest, get_inventory_result
 from .io import read_md
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
@@ -75,12 +76,12 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     posix_path_text as shared_posix_path_text,
     require_portable_relative_path,
 )
 from .token_counting import TokenCounter, LocalTokenizerCounter
-from .workflow_profile import WorkflowPolicy, WorkflowProfile
+from llm_wiki_engine.workflow_profile import WorkflowPolicy, WorkflowProfile
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
@@ -759,7 +760,7 @@ class McpWikiService:
         discovery: str | None = None,
     ) -> dict:
         from .search_service import normalize_discovery, normalize_search, search_prevalidated_roots
-        from .search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
+        from llm_wiki_engine.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
         try:
             query, requested, limit, mode = normalize_search(query, kinds, limit, mode)
@@ -782,7 +783,7 @@ class McpWikiService:
     def build_budgeted_context(self, request: Mapping[str, Any]) -> str:
         """Return precisely the canonical v3 text counted by the host counter."""
         from .context_budget import validate_request
-        from .request_json import MAX_REQUEST_BYTES
+        from llm_wiki_engine.request_json import MAX_REQUEST_BYTES
 
         try:
             normalized = validate_request(request)
@@ -1643,7 +1644,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def read_context_session(session_id: str, request: dict, if_result_id: str | None = None, delta: bool = False):
         """Validate current inputs before returning full, unchanged or delta context."""
         from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
-        from .workflow_profile import canonical_json
+        from llm_wiki_engine.workflow_profile import canonical_json
 
         result = _native_tool_call(service.read_context_session, session_id, request,
                                    if_result_id=if_result_id, delta=delta)
@@ -1672,7 +1673,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     ):
         """Return an opt-in counted view; fetch its canonical receipt explicitly."""
         from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
-        from .workflow_profile import canonical_json
+        from llm_wiki_engine.workflow_profile import canonical_json
 
         result = _native_tool_call(service.read_compact_context_session,
             session_id, request, view_options, if_result_id=if_result_id,
@@ -1681,7 +1682,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
             return result
         metadata = result.metadata()
         if (view_options is None or view_options.get("schema_version", "llm-wiki-task-view-request/v2") == "llm-wiki-task-view-request/v2") and not include_metadata:
-            from .task_compact_readable import readable_session_metadata
+            from llm_wiki_engine.task_compact_readable import readable_session_metadata
 
             metadata = readable_session_metadata(metadata)
         if result.view is not None:

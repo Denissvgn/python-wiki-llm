@@ -15,8 +15,8 @@ import json
 import re
 from typing import Any, NoReturn
 
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
-from .canonical_json import canonical_chunks, compact_line_bytes, scalar_size, sha256_digest
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.canonical_json import canonical_chunks, compact_line_bytes, scalar_size, sha256_digest
 
 STORE_SCHEMA = "llm-wiki-knowledge/v2"
 OBJECT_SCHEMA = "llm-wiki-knowledge-object/v1"
@@ -168,7 +168,7 @@ def _node_aliases(node: Any) -> set[str]:
 
 
 def _concept_aliases(concept: Mapping[str, Any]) -> set[str]:
-    from .concept_identity import ConceptIdentityError, natural_key_for, validate_locator
+    from llm_wiki_engine.concept_identity import ConceptIdentityError, natural_key_for, validate_locator
 
     path = concept["document"]["canonical_path"]
     try:
@@ -188,7 +188,7 @@ def _concept_aliases(concept: Mapping[str, Any]) -> set[str]:
     aliases = {"concept:" + concept["locator"], "page:" + concept["document"]["canonical_path"],
                "concept:" + natural_key,
                _owner(concept), *("term:" + term for term in re.findall(r"\w+", concept["title"].casefold())[:64])}
-    from .contracts import GOVERNANCE_EXTENSION_KEY
+    from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
     governance = concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
     if isinstance(governance, dict):
         if isinstance(governance.get("uid"), str):
@@ -311,7 +311,7 @@ def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TAR
     encoder = _Encoder(basis)
     records: dict[str, list[dict[str, Any]]] = {name: [] for name in COLLECTIONS}
     concept_owners: dict[str, str] = {c["locator"]: _owner(c) for c in payload["concepts"]}
-    from .contracts import GOVERNANCE_EXTENSION_KEY
+    from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 
     uid_owners = {
         governance["uid"]: _owner(concept)
@@ -442,7 +442,7 @@ def parse_store_root(raw: bytes) -> dict[str, Any]:
         if graph["schema_version"] != "llm-wiki-typed-graph/v1" or not isinstance(graph["input_hashes"], dict):
             _fail("metadata.graph", "unsupported graph metadata")
         expected_basis.update({"graph." + k: v for k, v in graph["input_hashes"].items()})
-        from .knowledge_graph import validate_typed_graph_slice
+        from llm_wiki_engine.knowledge_graph import validate_typed_graph_slice
         from .knowledge_envelope import INVENTORY_HASH_EXTENSION
         try:
             normalized_graph = validate_typed_graph_slice({**graph, "edges": []})
@@ -464,8 +464,8 @@ def parse_store_root(raw: bytes) -> dict[str, Any]:
 def _validate_selected_record(collection: str, row: dict[str, Any], value: Any, *, producer=None) -> None:
     """Reuse semantic record owners without issuing a whole-bundle verdict."""
     from .knowledge_model import _parse_concept, _parse_relationship, _parse_extensions
-    from .knowledge_graph import _normalise_edge
-    from .section_ownership import validate_section_ownership
+    from llm_wiki_engine.knowledge_graph import _normalise_edge
+    from llm_wiki_engine.section_ownership import validate_section_ownership
     try:
         if collection == "concepts":
             parsed = _parse_concept(value, "concept")
@@ -792,7 +792,7 @@ class KnowledgeStoreReader:
             row = self.record("concepts", _text(ref["owner"], "owner"), _text(ref["id"], "concept.id"))
             value = self.expand_record(row)
             _validate_selected_record("concepts", row, value, producer=self.root["bundle"]["producer"])
-            from .contracts import GOVERNANCE_EXTENSION_KEY
+            from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 
             governance = value.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
             uid = governance.get("uid") if isinstance(governance, dict) else None
@@ -869,7 +869,7 @@ class KnowledgeStoreReader:
             self._validated_records[collection].add((owner, rid))
             records[collection].append({"id": rid, "owner": owner, "value": value})
         if records["edges"]:
-            from .knowledge_graph import validate_typed_graph_slice
+            from llm_wiki_engine.knowledge_graph import validate_typed_graph_slice
             metadata = self.root["metadata"]["graph"]
             if metadata is None:
                 _fail("edges", "graph metadata missing")

@@ -6,7 +6,7 @@ import stat
 import sys
 
 from ..services.io import write_text_output, write_utf8_stdout
-from ..services.request_json import load_request
+from llm_wiki_engine.request_json import load_request
 
 
 def _safe_absolute(value):

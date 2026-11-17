@@ -11,15 +11,15 @@ from typing import Any, Mapping, Optional, Sequence, Union
 from urllib.parse import unquote
 
 from .io import write_bytes_atomic
-from .paths import normalize_source_path
-from .validation import normalize_optional_portable_relative_path
-from .wiki_media import (
+from llm_wiki_engine.paths import normalize_source_path
+from llm_wiki_engine.validation import normalize_optional_portable_relative_path
+from llm_wiki_engine.wiki_media import (
     build_asset_index,
     is_assets_path,
     iter_markdown_link_targets,
     normalize_markdown_link_target,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     WikiSurfacePage,

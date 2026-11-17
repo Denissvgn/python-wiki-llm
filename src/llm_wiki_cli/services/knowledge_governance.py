@@ -31,13 +31,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
 
-from .host import current_host
-from .contracts import (
+from llm_wiki_engine.host import current_host
+from llm_wiki_engine.contracts import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_HASH_EXTENSION_KEY,
     GOVERNANCE_SCHEMA_VERSION,
 )
-from .concept_identity import (
+from llm_wiki_engine.concept_identity import (
     AliasType,
     ConceptAllocation,
     ConceptIdentityError,
@@ -51,7 +51,7 @@ from .concept_identity import (
     validate_locator,
     validate_natural_key,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     canonical_json_text,
     formatted_json_bytes,
     is_valid_sha256,
@@ -66,7 +66,7 @@ from .knowledge_model import (
     KnowledgeIndex,
     Lifecycle,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields as require_shared_exact_fields,
     require_list,
     require_mapping,
@@ -74,7 +74,7 @@ from .validation import (
     require_nonnegative_int,
     require_sha256,
 )
-from .wiki_media import contains_uri_authority_userinfo
+from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
 
 GOVERNANCE_FILENAME = ".llm-wiki-governance.json"
 GOVERNANCE_LOCK_FILENAME = "llm-wiki-governance.lock"
@@ -1661,7 +1661,7 @@ def strip_governance_projection(knowledge: KnowledgeIndex) -> KnowledgeIndex:
     extensions.pop(GOVERNANCE_EXTENSION_KEY, None)
     graph = extensions.get("llm-wiki/typed-graph-v1")
     if isinstance(graph, Mapping):
-        from .knowledge_graph import validate_typed_graph
+        from llm_wiki_engine.knowledge_graph import validate_typed_graph
 
         graph_payload = dict(graph)
         edges = graph_payload.get("edges")
@@ -2390,7 +2390,7 @@ def _add_supersession_edges(
     supersessions = _supersession_records(ledger)
     if not isinstance(graph, Mapping) and not supersessions:
         return extensions
-    from .knowledge_graph import (
+    from llm_wiki_engine.knowledge_graph import (
         GRAPH_INPUT_NAMES,
         GraphConcept,
         KnowledgeGraphInputs,
@@ -2475,7 +2475,7 @@ def _supersession_edges(
     governance_hash: str,
 ) -> list[dict[str, Any]]:
     """Build only the authority-owned edges for both projection and custody."""
-    from .knowledge_graph import DEFAULT_EVIDENCE_LIMIT, relationship_edge_key
+    from llm_wiki_engine.knowledge_graph import DEFAULT_EVIDENCE_LIMIT, relationship_edge_key
 
     edges: list[dict[str, Any]] = []
     for uid, successor_uid, event in supersessions:
@@ -2606,7 +2606,7 @@ def _validate_supersession_projection(
 def _section_records_by_locator(
     knowledge: KnowledgeIndex,
 ) -> dict[str, Mapping[str, object]]:
-    from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 
     extension = knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
     if not isinstance(extension, Mapping):

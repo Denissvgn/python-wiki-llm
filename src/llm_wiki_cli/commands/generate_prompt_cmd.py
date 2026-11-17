@@ -13,10 +13,10 @@ from ..services.documentation_query_builder import (
 )
 from ..services.metrics import record_event, resolve_agent
 from ..services.extraction_service import filter_source_diff
-from ..services.paths import shell_quote
+from llm_wiki_engine.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
-from ..services.redaction import redact_credentials
-from ..services.secure_file import write_private_text
+from llm_wiki_engine.redaction import redact_credentials
+from llm_wiki_engine.secure_file import write_private_text
 from ..services.source_selection import resolve_source_selection
 from ..services.source_snapshot import (
     SourceSnapshot,

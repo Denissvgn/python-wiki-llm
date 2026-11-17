@@ -28,7 +28,7 @@ from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Iterator, Mapping, Sequence, cast
 
-from .canonical_json import compact_line_bytes
+from llm_wiki_engine.canonical_json import compact_line_bytes
 from .filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsDurabilityError,
@@ -45,7 +45,7 @@ from .filesystem_guard import (
     verify_windows_restrictive_dacl,
     windows_current_user_sid,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     portable_path_key,
     require_portable_path_component,
     require_portable_relative_path,

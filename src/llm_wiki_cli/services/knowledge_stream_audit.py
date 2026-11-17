@@ -11,8 +11,8 @@ from collections.abc import Mapping
 from contextlib import ExitStack
 from pathlib import Path
 
-from .canonical_json import CanonicalArray
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.canonical_json import CanonicalArray
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
 from .knowledge_audit import audit_spilled_records
 from .knowledge_envelope import EvaluatedEnvelope
 from .knowledge_model import (
@@ -128,7 +128,7 @@ def audit_knowledge_stream(wiki_dir, *, record_bytes=1_048_576):
                     if canonical_bytes(_relationship_to_payload(relation)) != canonical_bytes(value):
                         raise KnowledgeStorageError(kind, "noncanonical native record")
                 elif kind == "edges":
-                    from .knowledge_graph import _normalise_edge
+                    from llm_wiki_engine.knowledge_graph import _normalise_edge
                     if canonical_bytes(_normalise_edge(value, "edge", concepts)) != canonical_bytes(value):
                         raise KnowledgeStorageError(kind, "noncanonical native edge")
                 if kind == "extensions":

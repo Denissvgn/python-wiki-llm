@@ -10,7 +10,7 @@ from typing import Any
 from .knowledge_artifacts import _decode_json_object
 from .knowledge_storage import MAX_EXPANDED_BYTES
 from .knowledge_storage_io import StorageReadSession
-from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES
+from llm_wiki_engine.search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES
 from .source_snapshot import SourceSnapshot
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 

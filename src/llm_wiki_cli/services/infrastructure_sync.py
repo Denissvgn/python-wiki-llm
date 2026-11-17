@@ -14,14 +14,14 @@ from pathlib import PurePosixPath
 from typing import Mapping
 
 from .infrastructure_inventory import infrastructure_page_name
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ConceptObservationBasis,
     build_infrastructure_observation_basis,
     hash_json,
     is_valid_sha256,
 )
 from .source_snapshot import SourceSnapshot
-from .validation import is_portable_relative_path
+from llm_wiki_engine.validation import is_portable_relative_path
 
 
 INFRASTRUCTURE_SYNC_SCHEMA_VERSION = "llm-wiki-infrastructure-sync/v1"

@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .canonical_json import canonical_chunks
+from llm_wiki_engine.canonical_json import canonical_chunks
 from .filesystem_guard import (
     atomic_write_guarded_bytes, ensure_guarded_directory, fresh_no_follow_stat,
     remove_guarded_tree, unlink_guarded_bytes,

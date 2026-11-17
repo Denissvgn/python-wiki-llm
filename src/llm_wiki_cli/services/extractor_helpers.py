@@ -15,9 +15,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .host import HostCapabilityError, current_host
+from llm_wiki_engine.host import HostCapabilityError, current_host
 from .inventory_cache import ENV_CACHE_DIR
-from .paths import render_shell_command
+from llm_wiki_engine.paths import render_shell_command
 from . import typescript_helper_identity as ts_identity
 from .io import first_unsafe_path_component
 

@@ -8,7 +8,7 @@ application or the public API. ``llm_wiki_cli.cli`` adds dispatch.
 import argparse
 
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
-from .services.contracts import (
+from llm_wiki_engine.contracts import (
     BOOTSTRAP_SKIP_DATA_FLOW_FLAG,
     INITIALIZABLE_SURFACES,
     SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,

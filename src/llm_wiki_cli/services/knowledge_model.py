@@ -28,10 +28,10 @@ from types import MappingProxyType
 from typing import AbstractSet, Any, Mapping, Optional, Type, TypeVar, Union
 from urllib.parse import unquote, urlsplit
 
-from . import wiki_surface
-from .contracts import KNOWLEDGE_SCHEMA_FILENAME, KNOWLEDGE_SCHEMA_VERSION
-from .knowledge_evidence import SHA256_PATTERN
-from .validation import (
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_FILENAME, KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_evidence import SHA256_PATTERN
+from llm_wiki_engine.validation import (
     require_bounded_integral_number,
     require_enum_value,
     require_list,
@@ -41,8 +41,8 @@ from .validation import (
     require_sha256,
     require_string,
 )
-from .wiki_media import contains_uri_authority_userinfo
-from .wiki_surface import (
+from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     is_safe_page_id,
@@ -597,15 +597,15 @@ def _validated_reserved_extensions(
 
     # Local imports avoid making the independent extension contracts depend on
     # the legacy relationship dataclasses in this module.
-    from .contracts import (
+    from llm_wiki_engine.contracts import (
         SECTION_OWNERSHIP_EXTENSION_KEY,
         TYPED_GRAPH_EXTENSION_KEY,
     )
-    from .knowledge_graph import (
+    from llm_wiki_engine.knowledge_graph import (
         KnowledgeGraphError,
         typed_graph_from_knowledge_extensions,
     )
-    from .section_ownership import (
+    from llm_wiki_engine.section_ownership import (
         SectionOwnershipError,
         validate_section_ownership,
     )
@@ -1979,7 +1979,7 @@ def _emit_extensions(
     extensions: Extensions,
     path: str,
 ) -> dict[str, Any]:
-    from .immutable import FrozenDict
+    from llm_wiki_engine.immutable import FrozenDict
 
     # Copy elision only. Public model emitters still parse the complete payload;
     # the artifact factory freezes values only after full model validation.

@@ -11,7 +11,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from . import analysis_compatibility as ac
-from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
 
 FRESHNESS_ORDER = (

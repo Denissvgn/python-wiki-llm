@@ -16,7 +16,7 @@ from ..filesystem_guard import (
     ensure_guarded_directory,
     unlink_guarded_bytes,
 )
-from ..knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from ..knowledge_governance import governance_lock
 from ..publication_candidate import _read_tree
 from .contracts import (

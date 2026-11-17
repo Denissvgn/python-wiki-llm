@@ -3,7 +3,7 @@
 from __future__ import annotations
 import re
 from .knowledge_storage import canonical_bytes, digest
-from .validation import require_exact_fields
+from llm_wiki_engine.validation import require_exact_fields
 
 
 def canonical_hash(value):

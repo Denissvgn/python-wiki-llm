@@ -11,14 +11,14 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from . import wiki_surface
-from .context_knowledge_contract import KNOWLEDGE_MODE_VALUES
-from .contracts import (
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.context_knowledge_contract import KNOWLEDGE_MODE_VALUES
+from llm_wiki_engine.contracts import (
     CONTEXT_BUDGET_PROTOCOL_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_PROTOCOL_VERSION,
 )
-from .knowledge_graph import CORE_RELATIONSHIP_KINDS, GRAPH_ORIGINS, GRAPH_RESOLUTIONS
+from llm_wiki_engine.knowledge_graph import CORE_RELATIONSHIP_KINDS, GRAPH_ORIGINS, GRAPH_RESOLUTIONS
 from .knowledge_model import ComputedFreshness, EvidenceState
 
 CONTEXT_COVERAGE_LIMITATION_LIMIT = 16

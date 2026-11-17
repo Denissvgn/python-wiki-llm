@@ -7,7 +7,7 @@ import hashlib
 import importlib.util
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import sys
 import tarfile
@@ -182,6 +182,11 @@ def version_check(root: Path, config) -> dict:
             module.ac.validate_record(record, "agent-wiki-cli")
             rules = module.strict_json(read(root / "src/llm_wiki_cli/services/analysis_contracts.json"))
             inputs = {name: hashlib.sha256(read(root / "src/llm_wiki_cli" / name).replace(b"\r\n", b"\n")).hexdigest() for name in sorted(rules["shared"])}
+            for name in sorted(rules.get("engine_shared", [])):
+                path = PurePosixPath(name)
+                if path.is_absolute() or ".." in path.parts or "\\" in name or path.parts[:1] != ("llm_wiki_engine",):
+                    raise ValueError("unsafe engine analysis input")
+                inputs[name] = hashlib.sha256(read(root / "src" / name).replace(b"\r\n", b"\n")).hexdigest()
             ready = record["implementation"] == module.ac.digest(inputs)
             deferred = ready
 

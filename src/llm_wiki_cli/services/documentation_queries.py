@@ -19,7 +19,7 @@ from itertools import islice
 from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
 from .context_request_format import (  # re-exported: format checks live there
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH as CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
     CONTEXT_COVERAGE_LIMITATION_LIMIT as CONTEXT_COVERAGE_LIMITATION_LIMIT,
@@ -36,13 +36,13 @@ from .knowledge_consumption import (
     KnowledgeReadView,
     _validated_artifacts_for_view,
 )
-from .canonical_json import compact_text
-from .immutable import freeze
+from llm_wiki_engine.canonical_json import compact_text
+from llm_wiki_engine.immutable import freeze
 from .knowledge_artifacts import (
     ValidatedKnowledgeArtifacts,
     require_validated_artifacts,
 )
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
@@ -57,7 +57,7 @@ from .knowledge_observability import (
     knowledge_status_payload,
 )
 from .relationships import build_entity_relationship_summaries
-from .validation import (
+from llm_wiki_engine.validation import (
     normalize_legacy_portable_relative_path,
     require_nonempty_text,
 )

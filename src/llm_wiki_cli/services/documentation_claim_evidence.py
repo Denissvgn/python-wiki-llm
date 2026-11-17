@@ -17,13 +17,13 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 from .documentation_queries import DocumentationQueryError
-from .knowledge_evidence import is_valid_sha256
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256
+from llm_wiki_engine.knowledge_graph import (
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
     is_supported_relationship_kind,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_choice,
     require_exact_fields,
     require_mapping,

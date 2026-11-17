@@ -10,7 +10,7 @@ from typing import Any, Mapping
 from . import publication_candidate_cmd, publication_cmd
 
 from ..config import PathValidationError, validate_source_root
-from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
+from llm_wiki_engine.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
     DocumentationAgentResult,
     DocumentationRunError,

@@ -21,7 +21,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Optional
 from urllib.parse import urlsplit
 from ... import __version__
-from ..contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
     DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION,
@@ -103,7 +103,7 @@ from ..skills import (
     export_skills,
     list_bundled_skills,
 )
-from ..validation import (
+from llm_wiki_engine.validation import (
     parse_utc_timestamp,
     portable_path_key,
     require_exact_fields as require_shared_exact_fields,
@@ -114,7 +114,7 @@ from ..validation import (
     resolve_workspace_path,
 )
 from ..verification_contracts import VERIFICATION_RECEIPT_FILENAME
-from ..wiki_media import (
+from llm_wiki_engine.wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
     strip_fenced_code_blocks,

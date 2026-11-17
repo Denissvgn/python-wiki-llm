@@ -11,7 +11,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 
-from .host import current_host
+from llm_wiki_engine.host import current_host
 from ..config import AGENT_CHOICES
 from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
 from .io import first_unsafe_path_component, formatted_json_bytes
@@ -22,7 +22,7 @@ from .wiki_scaffold import (
     INITIAL_WIKI_INDEX_MARKDOWN,
     INITIAL_WIKI_LOG_MARKDOWN,
 )
-from .wiki_surface import iter_directory_kinds, iter_page_kinds
+from llm_wiki_engine.wiki_surface import iter_directory_kinds, iter_page_kinds
 
 
 class WikiScaffoldPathError(ValueError):

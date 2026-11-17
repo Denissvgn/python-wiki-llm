@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .analysis_capture import capture_operation
 
-from .progress import observed_phase, current_progress, with_progress, record_counts
+from llm_wiki_engine.progress import observed_phase, current_progress, with_progress, record_counts
 
 import hashlib
 import importlib
@@ -39,7 +39,7 @@ from .api_contracts import (
     attach_routes_to_entry_points,
     build_api_contracts,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
     EXTRACT_SCHEMA_VERSION,
 )
@@ -107,7 +107,7 @@ from .source_snapshot import (
     unsupported_source_summary,
 )
 from .yaml_syntax import load_yaml_documents
-from .host import HostCapabilityError, current_host, emit
+from llm_wiki_engine.host import HostCapabilityError, current_host, emit
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -1222,7 +1222,7 @@ def _valid_cached_implementation(context, path, entry, source_hash):
     if not context.request.capture_implementation_observations:
         return True
     from .python_implementation import producer, comparison_id
-    from .knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
     row = entry.get("python_implementation")
     committed_hash = context.implementation_cache_hashes.get(path)
     bundle_hash = context.extraction_cache_hashes.get(path)

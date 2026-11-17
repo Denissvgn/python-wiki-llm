@@ -24,9 +24,9 @@ from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
 
-from .contracts import VERIFICATION_RECEIPT_SCHEMA_VERSION
+from llm_wiki_engine.contracts import VERIFICATION_RECEIPT_SCHEMA_VERSION
 from .io import first_unsafe_path_component, write_bytes_atomic
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     formatted_json_bytes,
     hash_json,
 )
@@ -38,7 +38,7 @@ from .knowledge_model import (
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields as require_shared_exact_fields,
     require_bounded_text,
     require_list,

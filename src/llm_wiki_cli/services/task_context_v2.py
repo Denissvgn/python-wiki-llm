@@ -20,16 +20,16 @@ from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render
 from .dependencies import analyze_dependencies
-from .contracts import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 from .documentation_query_builder import assemble_documentation_query_service
 from .extraction_service import InventoryResult
 from .knowledge_envelope import ConsumedInput, hash_source_snapshot
-from .knowledge_graph import KnowledgeGraphError, _normalise_edge
+from llm_wiki_engine.knowledge_graph import KnowledgeGraphError, _normalise_edge
 from .knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
 from .knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
 from .knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
-from .markdown_sections import parse_markdown_document
-from .section_ownership import observe_page_sections
+from llm_wiki_engine.markdown_sections import parse_markdown_document
+from llm_wiki_engine.section_ownership import observe_page_sections
 from .source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .task_contract import TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
@@ -37,7 +37,7 @@ from .task_context import (
     TaskRead, _LIVE_FACETS, _NATIVE_FACETS, _cancel, _counter, _result_body, plan_source_read,
 )
 from .task_evidence import declaration_records, observe_requirement
-from .workflow_profile import WorkflowRequestError, canonical_json, content_id
+from llm_wiki_engine.workflow_profile import WorkflowRequestError, canonical_json, content_id
 
 SOURCE_RECEIPT_SCHEMA = "llm-wiki-task-source/v1"
 STORAGE_RECEIPT_SCHEMA = "llm-wiki-task-storage/v1"
@@ -485,7 +485,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
 def validate_scoped_bindings(payload, normalized, profile):
     """Validate portable scope and consumed-input bindings, without claiming authenticity."""
     from .task_context import _result_fields
-    from .validation import is_portable_relative_path
+    from llm_wiki_engine.validation import is_portable_relative_path
     settings = profile.settings
     if payload["packet"] is not None:
         raise ValueError("scoped task context cannot carry a legacy full-validity packet")

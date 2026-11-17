@@ -9,8 +9,8 @@ step whose result is inert input to the builder.
 
 from __future__ import annotations
 
-from .host import current_host
-from .progress import observed_phase
+from llm_wiki_engine.host import current_host
+from llm_wiki_engine.progress import observed_phase
 
 import math
 import os
@@ -23,8 +23,8 @@ from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import unquote, urlsplit
 
-from .contracts import GOVERNANCE_HASH_EXTENSION_KEY, KNOWLEDGE_SCHEMA_VERSION
-from .knowledge_evidence import (
+from llm_wiki_engine.contracts import GOVERNANCE_HASH_EXTENSION_KEY, KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_evidence import (
     canonical_json_bytes,
     formatted_json_text,
     is_valid_sha256,
@@ -46,7 +46,7 @@ from .knowledge_model import (
     WorkingTreeState,
     knowledge_index_to_payload,
 )
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 
 EVALUATED_ENVELOPE_VERSION = "llm-wiki-evaluated-envelope/v1"
 INVENTORY_HASH_EXTENSION = "llm-wiki/inventory-hash"

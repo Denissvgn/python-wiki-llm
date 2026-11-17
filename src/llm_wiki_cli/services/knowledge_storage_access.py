@@ -8,13 +8,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .concept_identity import natural_key_for
+from llm_wiki_engine.concept_identity import natural_key_for
 from .knowledge_envelope import EvaluatedEnvelope
 from .knowledge_governance import (
     GOVERNANCE_FILENAME, parse_governance_ledger, lifecycle_state_by_uid,
     _validate_selected_supersession_edges,
 )
-from .contracts import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
     LOGICAL_SCHEMA, MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,

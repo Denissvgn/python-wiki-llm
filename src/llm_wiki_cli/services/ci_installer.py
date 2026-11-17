@@ -30,7 +30,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 from .wiki_lifecycle import WikiLifecycleState, classify_wiki_lifecycle
 
 

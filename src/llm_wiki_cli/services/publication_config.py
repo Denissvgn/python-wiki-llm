@@ -18,7 +18,7 @@ from typing import Any
 import unicodedata
 from urllib.parse import quote, unquote, urlsplit
 
-from .concept_identity import ConceptIdentityError, validate_locator
+from llm_wiki_engine.concept_identity import ConceptIdentityError, validate_locator
 from .publication_targets import PublicationTarget, current_publication_targets
 from .reference_providers import (
     ReferenceSelectorError,
@@ -31,8 +31,8 @@ from .source_selection import (
     locate_exact_repository_path,
     path_is_link_or_reparse,
 )
-from .validation import portable_path_key, require_repository_relative_path
-from .wiki_media import MEDIA_EXTENSIONS
+from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
+from llm_wiki_engine.wiki_media import MEDIA_EXTENSIONS
 
 
 PUBLICATION_CONFIG_PATH = ".llm-wiki/publication.json"

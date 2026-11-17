@@ -16,14 +16,14 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from . import analysis_compatibility as ac
-from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
-from .normalization_diagnostics import NormalizationDiagnostic
+from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+from llm_wiki_engine.normalization_diagnostics import NormalizationDiagnostic
 
-from .contracts import (
+from llm_wiki_engine.contracts import (
     GOVERNANCE_HASH_EXTENSION_KEY,
     KNOWLEDGE_SCHEMA_VERSION,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     UNKNOWN_ENTITY_NOT_FOUND,
     ConceptObservationBasis,
     hash_json,
@@ -45,8 +45,8 @@ from .knowledge_model import (
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
-from .validation import require_repository_relative_path
-from .wiki_surface import PageKind
+from llm_wiki_engine.validation import require_repository_relative_path
+from llm_wiki_engine.wiki_surface import PageKind
 
 if TYPE_CHECKING:
     from .sync_manifest import SyncManifest

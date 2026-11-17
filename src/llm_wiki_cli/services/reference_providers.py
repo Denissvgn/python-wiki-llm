@@ -31,7 +31,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}\Z")
 _MAX_COMMAND_TOKENS = 32

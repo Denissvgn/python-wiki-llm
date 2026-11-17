@@ -94,7 +94,7 @@ runs:
       run: >-
         "${{ steps.setup-python.outputs.python-path }}"
         -I -m pip install --no-cache-dir
-        "${GITHUB_ACTION_PATH}/../.."
+        "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."
 
     - name: Reserve dashboard paths
       id: reserve

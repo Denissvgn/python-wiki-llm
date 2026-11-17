@@ -17,7 +17,7 @@ from .data_flow import _STEP_LIMIT
 from .documentation_queries import DocumentationQueryError
 from .entrypoints import DEFAULT_FLOW_DEPTH, _build_adjacency, _flow_step_from_edge, _iter_callables
 from .source_snapshot import SourceSnapshot
-from .validation import require_portable_relative_path
+from llm_wiki_engine.validation import require_portable_relative_path
 
 SCHEMA = "llm-wiki-flow-segment/v1"
 _STEP_BYTE_BUDGET = 32 * 1024

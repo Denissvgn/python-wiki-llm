@@ -52,24 +52,24 @@ from ..services.context_response_format import (
     ContextResponseError,
     validate_context_response,
 )
-from ..services.query_result_format import (
+from llm_wiki_engine.query_result_format import (
     DOCUMENTATION_QUERY_SCHEMA_VERSION,
     SEARCH_RESULT_SCHEMA_VERSION,
     QueryResultError,
     validate_documentation_query_result,
     validate_search_result,
 )
-from ..services.extract_format import (
+from llm_wiki_engine.extract_format import (
     EXTRACT_SCHEMA_VERSION,
     ExtractPayloadError,
     validate_extract_payload,
 )
-from ..services.maintenance_queue_format import (
+from llm_wiki_engine.maintenance_queue_format import (
     MAINTENANCE_QUEUE_SCHEMA_VERSION,
     MaintenanceQueueError,
     validate_maintenance_queue,
 )
-from ..services.maintenance_status_format import (
+from llm_wiki_engine.maintenance_status_format import (
     MAINTENANCE_STATUS_SCHEMA_VERSION,
     MaintenanceStatusError,
     validate_maintenance_status,
@@ -79,7 +79,7 @@ from ..services.surface_index_format import (
     SurfaceIndexError,
     validate_surface_index,
 )
-from ..services.engine_events import (
+from llm_wiki_engine.engine_events import (
     ENGINE_EVENT_SCHEMA_VERSION,
     EVENT_KINDS,
     EngineEvent,
@@ -88,7 +88,7 @@ from ..services.engine_events import (
     operation_identity,
     validate_engine_event,
 )
-from ..services.host import (
+from llm_wiki_engine.host import (
     ALL_CAPABILITIES,
     Host,
     HostCapabilityError,

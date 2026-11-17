@@ -21,7 +21,7 @@ from .filesystem_guard import ensure_guarded_directory, atomic_write_guarded_byt
 from .io import first_unsafe_path_component
 from .knowledge_storage import canonical_bytes, digest, MAX_EXPANDED_BYTES
 from .knowledge_storage_io import read_guarded, _absolute_path
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 from .storage_spool import ByteSpool
 
 ADOPTION_FILENAME = ".llm-wiki-maintenance-adoption.json"
@@ -87,7 +87,7 @@ def governance_writer_lock(wiki_dir: str | Path) -> Iterator[None]:
 
 def load_adoption_marker(wiki_dir: str | Path) -> dict | None:
     from .maintenance_state import validate_maintenance_adoption
-    from .request_json import _pairs, _constant
+    from llm_wiki_engine.request_json import _pairs, _constant
 
     path = _absolute_path(Path(wiki_dir)) / ADOPTION_FILENAME
     if not path.exists() and not path.is_symlink():

@@ -19,7 +19,7 @@ from .knowledge_consumption import (
     MachineVerificationReadView,
     _validated_artifacts_for_view,
 )
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .verification_contracts import (
     VerificationReceipt,
