@@ -1,0 +1,811 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-maintenance-record-binding/v1",
+  "schema": "llm-wiki-maintenance-record-binding-v1.schema.json",
+  "cases": [
+    {
+      "name": "pending",
+      "valid": true,
+      "description": "One page's records in a ledger awaiting review.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "target-deleted",
+      "valid": true,
+      "description": "A record whose section was deleted.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "deleted"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "registered",
+      "valid": true,
+      "description": "Four records after a section was added.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 4,
+          "observations_total": 4,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4006-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Third%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "empty",
+      "valid": true,
+      "description": "A page with no maintained sections.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_total": 0,
+          "observations_returned": 0,
+          "truncated": false
+        },
+        "records": [],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "truncated",
+      "valid": true,
+      "description": "Records beyond the bound are counted, not listed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 5,
+          "truncated": true
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The projection names this format.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v2"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "The projection is closed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1",
+        "state_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "missing-bounds",
+      "valid": false,
+      "description": "Every projection reports its bounds.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "unknown-target-presence",
+      "valid": false,
+      "description": "A target is present or deleted.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "moved"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "record-id-not-uuid",
+      "valid": false,
+      "description": "Record ids are UUIDv4.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "record-1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "returned-over-limit",
+      "valid": false,
+      "description": "At most 128 records are listed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 129,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "negative-total",
+      "valid": false,
+      "description": "Totals are not negative.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": -1,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "record-missing-target",
+      "valid": false,
+      "description": "Each record names its semantic section.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "truncated-flag-wrong",
+      "valid": false,
+      "description": "Truncated means fewer records listed than exist.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": true
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "count-differs",
+      "valid": false,
+      "description": "The returned count is the number of listed records.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 2,
+          "observations_total": 3,
+          "truncated": true
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "returned-over-total",
+      "valid": false,
+      "description": "No more records are listed than exist.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 2,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "duplicate-record",
+      "valid": false,
+      "description": "Each record is listed once.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 4,
+          "observations_total": 4,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "record-for-other-page",
+      "valid": false,
+      "description": "Every record targets the projected page.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Other.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Other#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    },
+    {
+      "name": "locator-for-other-page",
+      "valid": false,
+      "description": "The section locator points into the target page.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "bounds": {
+          "observations_returned": 3,
+          "observations_total": 3,
+          "truncated": false
+        },
+        "records": [
+          {
+            "record_id": "00000000-0000-4003-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4004-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Other#section/Batch~1/Description~1/First%20note~1"
+            },
+            "target_presence": "present"
+          },
+          {
+            "record_id": "00000000-0000-4005-8000-000000001234",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            },
+            "target_presence": "present"
+          }
+        ],
+        "schema_version": "llm-wiki-maintenance-record-binding/v1"
+      }
+    }
+  ]
+}

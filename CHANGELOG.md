@@ -134,6 +134,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counts add up, items are ranked by score and each score is the sum of its
   reasons, review details count what they list, and `queue_id` hashes the
   rest of the report.
+- The maintenance ledger schemas (`llm-wiki-maintenance-adoption`, `-state`,
+  `-event`, `-basis`, `-binding` and `-record-binding`, all v1) have
+  conformance cases. Cases with `schema_valid: true` and `valid: false` cover
+  what only the ledger enforces: adoption and record ids are canonical
+  UUIDv4, source paths are relative and owners are dotted identifiers,
+  section locators point into their page, record projections count the
+  records they list, and a state's records, observations, acknowledgments and
+  bases agree with each other.
 - A domain pack can extract source kinds of its own:
   `DomainPack.extractors` maps each kind its classifier declares to a
   `"module:attribute"` entry point the host can import (also

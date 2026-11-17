@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 import sys
+import uuid
 from collections.abc import Callable
 from importlib import resources
 from typing import Any, get_args, get_type_hints
@@ -21,8 +22,10 @@ from llm_wiki_cli.services import (
     data_flow,
     entrypoints,
     extract_format,
+    maintenance_projection,
     maintenance_queue,
     maintenance_queue_format,
+    maintenance_state,
     maintenance_status,
     maintenance_status_format,
     query_result_format,
@@ -66,8 +69,41 @@ def _validate_packet_document(document: object) -> None:
     validate_context_packet(context_packet._encode_packet_payload(document))
 
 
+def _validate_maintenance_event(document: object) -> None:
+    """Check an event the way the ledger checks one before a transition."""
+    maintenance_state.maintenance_core().validate_schema("maintenance-event-v1", document)
+
+
+def _validate_maintenance_basis(document: object) -> None:
+    """Check a basis with the ledger's coordinate and semantic target grammar."""
+    core = maintenance_state.maintenance_core()
+    core.validate_schema("maintenance-basis-v1", document)
+    assert isinstance(document, dict)
+    core._coordinate(document["coordinate"])
+    core._target(document["target"])
+
+
+def _validate_maintenance_record_binding(document: object) -> None:
+    """Check a page's record projection against the page its first record names."""
+    try:
+        page = document["records"][0]["target"]["canonical_path"]  # type: ignore[index]
+    except (KeyError, IndexError, TypeError):
+        page = "entities/Batch.md"
+    adoption_id = document.get("adoption_id") if isinstance(document, dict) else None
+    binding = {
+        "schema_version": maintenance_projection.BINDING_SCHEMA,
+        "adoption_id": adoption_id if isinstance(adoption_id, str) else str(uuid.UUID(int=0, version=4)),
+        "state_hash": "sha256:" + "0" * 64,
+    }
+    concept = {
+        "document": {"canonical_path": page},
+        "extensions": {maintenance_projection.RECORD_KEY: document},
+    }
+    maintenance_projection.validate_maintenance_concept_projection(concept, binding=binding)
+
+
 #: Python validators that must accept exactly the valid cases of a format.
-PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
+PYTHON_VALIDATORS: dict[str, Callable[[object], object]] = {
     ENGINE_EVENT_SCHEMA_VERSION: validate_engine_event,
     CONTEXT_PACKET_SCHEMA_VERSION: _validate_packet_document,
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION: _validate_packet_document,
@@ -84,6 +120,12 @@ PYTHON_VALIDATORS: dict[str, Callable[[object], None]] = {
     maintenance_queue_format.MAINTENANCE_QUEUE_SCHEMA_VERSION: (
         maintenance_queue_format.validate_maintenance_queue
     ),
+    "llm-wiki-maintenance-adoption/v1": maintenance_state.validate_maintenance_adoption,
+    "llm-wiki-maintenance-basis/v1": _validate_maintenance_basis,
+    "llm-wiki-maintenance-event/v1": _validate_maintenance_event,
+    "llm-wiki-maintenance-state/v1": maintenance_state.validate_maintenance_state,
+    maintenance_projection.BINDING_SCHEMA: maintenance_projection.validate_maintenance_binding,
+    maintenance_projection.RECORD_SCHEMA: _validate_maintenance_record_binding,
 }
 
 
@@ -127,11 +169,22 @@ def test_every_case_file_is_well_formed_and_names_its_schema():
         cases_schema.validate(document)
         assert name == document["schema"].replace(".schema.json", ".cases.json")
         schema = _schema(document["schema"])
+        stem = document["schema"].removesuffix(".schema.json")
         # A format names its version in schema_version, or in protocol for
-        # the context protocol responses.
-        version_key = "schema_version" if "schema_version" in schema["properties"] else "protocol"
-        assert schema["properties"][version_key]["const"] == document["format"]
-        assert schema["$id"].endswith("/" + document["schema"])
+        # the context protocol responses. A maintenance basis names none, so
+        # its format follows from the schema file name.
+        for version_key in ("schema_version", "protocol"):
+            if version_key in schema["properties"]:
+                assert schema["properties"][version_key]["const"] == document["format"]
+                break
+        else:
+            family, version = stem.rsplit("-", 1)
+            assert document["format"] == f"{family}/{version}"
+        # The maintenance ledger schemas predate the published ids and keep
+        # their original urn ids.
+        assert schema["$id"].endswith("/" + document["schema"]) or (
+            schema["$id"] == "urn:llm-wiki:" + stem.removeprefix("llm-wiki-")
+        )
         names = [case["name"] for case in document["cases"]]
         assert len(names) == len(set(names)), name
         assert {case["valid"] for case in document["cases"]} == {True, False}, name
@@ -656,3 +709,69 @@ def test_maintenance_queue_reports_match_their_schema(tmp_path, monkeypatch, cap
     assert adopted["qualification"]["ordinary_review_custody"]["durable_owner_available"]
     assert any("maintenance" in item for item in adopted["items"])
     assert emitted == adopted
+
+
+def _check_ledger_documents(stem: str, documents: list[object]) -> None:
+    validator = Draft202012Validator(_schema(f"llm-wiki-maintenance-{stem}-v1.schema.json"))
+    python = PYTHON_VALIDATORS[f"llm-wiki-maintenance-{stem}/v1"]
+    unique = {json.dumps(document, sort_keys=True): document for document in documents}
+    assert unique, stem
+    for document in unique.values():
+        validator.validate(document)
+        python(document)
+
+
+def test_maintenance_ledger_documents_match_their_schemas(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.sync_manifest import SyncManifest
+
+    validated: dict[str, list[object]] = {"maintenance-event-v1": [], "maintenance-basis-v1": []}
+    original = maintenance_state.MaintenanceCore.validate_schema
+
+    def recording(self, name, value):
+        original(self, name, value)
+        if name in validated:
+            validated[name].append(json.loads(json.dumps(value)))
+
+    monkeypatch.setattr(maintenance_state.MaintenanceCore, "validate_schema", recording)
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
+    (tmp_path / "src/policy.py").write_text(POLICY_SOURCE + "\n\ndef extra():\n    return 1\n", encoding="utf-8")
+    api.sync_wiki("src", "wiki")
+    live = _check_maintenance_status(api.get_maintenance_status("src", "wiki"))
+    record = live["records"][0]
+    api.acknowledge_maintenance(
+        "src", "wiki", record_id=record["record_id"], expected_state_hash=live["state_hash"],
+        expected_basis=record["expected_basis"], actor_kind="agent", actor_id="review-agent",
+    )
+
+    wiki = tmp_path / "wiki"
+    marker = json.loads((wiki / ".llm-wiki-maintenance-adoption.json").read_text(encoding="utf-8"))
+    state = SyncManifest.load(wiki).maintenance_state
+    assert state is not None
+    knowledge = json.loads((wiki / ".llm-wiki-knowledge.json").read_text(encoding="utf-8"))
+    projections = [
+        concept["extensions"][maintenance_projection.RECORD_KEY] for concept in knowledge["concepts"]
+    ]
+    bases = [
+        basis
+        for record_id, observation in state["observations"].items()
+        for basis in (
+            observation["basis"],
+            state["records"][record_id]["last_present_basis"],
+            *(ack["basis"] for ack in state["records"][record_id]["acknowledgment_history"]),
+        )
+    ]
+    events = validated["maintenance-event-v1"]
+
+    _check_ledger_documents("adoption", [marker])
+    _check_ledger_documents("state", [state])
+    _check_ledger_documents("binding", [knowledge["extensions"][maintenance_projection.BINDING_KEY]])
+    _check_ledger_documents("record-binding", projections)
+    _check_ledger_documents("basis", [*bases, *validated["maintenance-basis-v1"]])
+    _check_ledger_documents("event", events)
+    assert any(projection["records"] for projection in projections)
+    assert {"acknowledge", "observe"} <= {event["kind"] for event in events}  # type: ignore[index]
+    assert any(row["status"] == "acknowledged" for row in state["records"].values())

@@ -1,0 +1,202 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-maintenance-adoption/v1",
+  "schema": "llm-wiki-maintenance-adoption-v1.schema.json",
+  "cases": [
+    {
+      "name": "adopted",
+      "valid": true,
+      "description": "The immutable marker an adopted wiki keeps.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "other-identity",
+      "valid": true,
+      "description": "Any canonical UUIDv4 names an adoption.",
+      "document": {
+        "adoption_id": "3f0c1b8e-6a2d-4c51-9e7f-2b8d4a6c0e19",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The marker names this format.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v2"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "The marker is closed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1",
+        "created_at": "2026-01-01"
+      }
+    },
+    {
+      "name": "missing-features",
+      "valid": false,
+      "description": "The marker lists its features.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "unknown-feature",
+      "valid": false,
+      "description": "Only the three adopted features are listed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1,
+          "governance": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "feature-version",
+      "valid": false,
+      "description": "Each feature is at version 1.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 2,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "other-manifest-version",
+      "valid": false,
+      "description": "Adoption requires manifest version 7.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 8,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "identity-with-space",
+      "valid": false,
+      "description": "An adoption id has no spaces.",
+      "document": {
+        "adoption_id": "my wiki",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "empty-identity",
+      "valid": false,
+      "description": "An adoption id is not empty.",
+      "document": {
+        "adoption_id": "",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "identity-not-uuid",
+      "valid": false,
+      "description": "An adoption id is a UUIDv4.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "wiki-1",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "identity-uppercase",
+      "valid": false,
+      "description": "A UUID is written in canonical lowercase.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "3F0C1B8E-6A2D-4C51-9E7F-2B8D4A6C0E19",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    },
+    {
+      "name": "identity-uuid-v1",
+      "valid": false,
+      "description": "Only version 4 UUIDs name an adoption.",
+      "schema_valid": true,
+      "document": {
+        "adoption_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+        "features": {
+          "implementation_evidence": 1,
+          "maintenance_state": 1,
+          "ordinary_acknowledgment": 1
+        },
+        "min_manifest_version": 7,
+        "schema_version": "llm-wiki-maintenance-adoption/v1"
+      }
+    }
+  ]
+}
