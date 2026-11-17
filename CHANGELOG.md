@@ -235,6 +235,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   source: classes that moved to another module keep their pages and authored
   text, and the old module page is marked stale for audit. Parse failures and
   unreported or unavailable outcomes still stop sync.
+- `llm-wiki sync` no longer stops with "Occupied target has no verified
+  outgoing owner" when a Python module moves to another directory under the
+  same page name, with or without an alias left at the old path. The moved
+  module now continues its existing page, keeping authored text, instead of
+  the old page being marked stale.
 
 ## [4.1.1] - 2026-11-13
 

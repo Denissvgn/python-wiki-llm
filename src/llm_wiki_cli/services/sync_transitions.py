@@ -188,6 +188,27 @@ def _prior_ownership(manifest: SyncManifest) -> _Ownership:
     return prior
 
 
+def _moved_module_owner(
+    prior: _Ownership, target: str, inventory: Mapping[str, Mapping]
+) -> ManifestPageSource | None:
+    """Return the retired module whose page a new module continues, if any.
+
+    A module moved to another directory keeps its page name. When exactly one
+    recorded module owns that page and its source no longer has documentable
+    inventory (removed, or now a static alias), the new source takes the page
+    over, so authored text stays with the moved implementation.
+    """
+    owners = prior.claims.get(portable_path_key(target), set())
+    if len(owners) != 1:
+        return None
+    (owner,) = owners
+    if owner.scope != "module" or owner.source_path in inventory:
+        return None
+    if owner not in prior.candidates:
+        return None
+    return owner
+
+
 def _existing_pages(wiki_dir: Path) -> dict[str, tuple[str, bool]]:
     """Inventory names and file kinds without reading content or following links."""
     existing: dict[str, tuple[str, bool]] = {}
@@ -293,6 +314,8 @@ def plan_page_transitions(
         previous = None
         if owner.scope == "module" and owner.source_path in manifest.sources:
             previous = owner
+        elif owner.scope == "module":
+            previous = _moved_module_owner(prior, target, inventory)
         elif owner.scope == "entity":
             name, occurrence = str(owner.entity_name), int(owner.occurrence or 0)
             if old_counts.get(owner.source_path, {}).get(name, 0) >= occurrence:

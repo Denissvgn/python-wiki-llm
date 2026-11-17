@@ -53,8 +53,9 @@ commitment while its removed members become history. A source the built-in
 Python parser classifies as a static self-module alias
 (`sys.modules[__name__] = impl`) no longer owns pages: sync treats it like a
 removed source, so declarations that moved to another module keep their pages
-and the module page is marked stale for audit. Parse failures, unreported
-outcomes and unavailable coverage stop that transition. A stale Markdown header
+and the module page is marked stale for audit. When the moved module keeps the
+same page name, it continues that page with its authored text instead. Parse
+failures, unreported outcomes and unavailable coverage stop that transition. A stale Markdown header
 alone does not establish retirement authority.
 
 Retained empty modules remain explicit in the owning manifest. Lint and live

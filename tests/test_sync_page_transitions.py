@@ -322,6 +322,45 @@ def test_rename_and_unchanged_page_repairs_share_one_sync(tmp_path, monkeypatch)
     assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == stable
 
 
+MODULE_ALIAS = "import sys\n\nfrom engine import model\n\nsys.modules[__name__] = model\n"
+
+
+@pytest.mark.parametrize("leaves_alias", [False, True])
+def test_module_moved_to_another_directory_keeps_its_page(
+    tmp_path, monkeypatch, leaves_alias
+):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    _author_description(
+        wiki_dir / "modules/model.md",
+        "_Auto-generated from `pkg/model.py`._",
+        "AUTHORED: module purpose.",
+    )
+    _author_description(
+        wiki_dir / "entities/Draft.md", "Original description.", "AUTHORED: entity."
+    )
+    _sync(wiki_dir)
+    (project / "engine").mkdir()
+    (project / "pkg/model.py").rename(project / "engine/model.py")
+    if leaves_alias:
+        (project / "pkg/model.py").write_text(MODULE_ALIAS, encoding="utf-8")
+
+    _sync(wiki_dir)
+
+    _assert_module_page(wiki_dir, "model", "engine/model.py")
+    module = read_md(wiki_dir / "modules/model.md")
+    assert "AUTHORED: module purpose." in module
+    assert not module.startswith(sync_cmd._DEPRECATION_HEADER)
+    _assert_entity_page(wiki_dir, "Draft", "engine/model.py", "AUTHORED: entity.")
+    assert {p.name for p in (wiki_dir / "modules").glob("*.md")} == {"model.md"}
+    assert "pkg/model.py" not in SyncManifest.load(wiki_dir).sources
+    _assert_consistent(wiki_dir)
+    stable = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+    _sync(wiki_dir)
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
+
+
 @pytest.mark.parametrize("dry_run", [False, True])
 def test_ownership_conflict_stops_sync_before_wiki_mutation(
     tmp_path, monkeypatch, capsys, dry_run
