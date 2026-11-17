@@ -2738,6 +2738,15 @@ def _qualify_surviving_module_inventory(options, snapshot, manifest, result):
         language = languages.get(path, "")
         status = retry.statuses.get(language)
         builtin = retry.extractor_registry.get(language) == EXTRACTOR_REGISTRY.get(language) and language in EXTRACTOR_REGISTRY
+        if (
+            path in missing and language == "python" and builtin
+            and status is not None and status.state == "ok" and record is None
+            and outcome == {"extraction_state": "no-documentable-content", "reason": "module-alias"}
+        ):
+            # The built-in parser positively classified a static self-module
+            # shim: the source no longer owns pages, exactly like a removal.
+            outcomes[path] = dict(outcome)
+            continue
         extracted = outcome.get("extraction_state") == "extracted" and outcome.get("reason") == "inventory-entry"
         empty = extracted and outcome.get("retained_empty") is True
         if (
@@ -4196,7 +4205,10 @@ def _prepare_sync_run(
     inventory = inventory_result.inventory
     source_content_hashes = source_snapshot.hashes_for(inventory)
     captured_prior_sources = set(source_snapshot.hashes_for()) & set(baseline_manifest.sources)
-    unobserved = sorted(captured_prior_sources - set(inventory))
+    unobserved = sorted(
+        path for path in captured_prior_sources - set(inventory)
+        if inventory_result.path_outcomes.get(path, {}).get("reason") != "module-alias"
+    )
     if unobserved:
         raise SourceRetirementError(
             f"Selected source is still captured but has no documentable inventory: {unobserved[0]!r}. "

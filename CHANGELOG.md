@@ -218,6 +218,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wiki. Before, sync treated every page as removed, marked them stale and
   rewrote the index and log, then failed with a misleading "directory changed
   during missing-source confirmation" error.
+- `llm-wiki sync` no longer stops when a documented Python module becomes a
+  static self-module alias (`sys.modules[__name__] = impl`). The built-in
+  parser's alias classification now retires the module like a removed
+  source: classes that moved to another module keep their pages and authored
+  text, and the old module page is marked stale for audit. Parse failures and
+  unreported or unavailable outcomes still stop sync.
 
 ## [4.1.1] - 2026-11-13
 

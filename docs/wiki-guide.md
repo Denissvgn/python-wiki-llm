@@ -49,8 +49,12 @@ its page and authored context; an unrelated owner cannot claim the occupied path
 Ambiguous duplicate removal requires resolved ownership before page writes.
 Previously documented sources with no documentable inventory receive a narrow
 parser qualification: a valid empty module retains its module page and source
-commitment while its removed members become history. Python aliases, parse
-failures and unavailable coverage stop that transition. A stale Markdown header
+commitment while its removed members become history. A source the built-in
+Python parser classifies as a static self-module alias
+(`sys.modules[__name__] = impl`) no longer owns pages: sync treats it like a
+removed source, so declarations that moved to another module keep their pages
+and the module page is marked stale for audit. Parse failures, unreported
+outcomes and unavailable coverage stop that transition. A stale Markdown header
 alone does not establish retirement authority.
 
 Retained empty modules remain explicit in the owning manifest. Lint and live
