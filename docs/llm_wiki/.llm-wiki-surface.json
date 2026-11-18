@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 311,
-      "workflows": 313
+      "workflows": 316
     },
     "dependency_architecture": 2,
-    "total": 1919
+    "total": 1922
   },
   "dependency_pages": {
     "count": 2,
@@ -2993,7 +2993,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3438,
+          "step_count": 3439,
           "truncated": true
         }
       },
@@ -35595,7 +35595,7 @@
             "src/llm_wiki_engine/engine_events.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4480,
+          "step_count": 4481,
           "truncated": true
         }
       },
@@ -41749,6 +41749,25 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/wiki_write_basis.py",
+            "src/llm_wiki_engine/knowledge_loader.py",
+            "src/llm_wiki_engine/maintenance_protocol.py",
+            "src/llm_wiki_engine/knowledge_storage.py",
+            "src/llm_wiki_engine/integrations.py",
+            "src/llm_wiki_engine/maintenance_state.py",
+            "src/llm_wiki_engine/sync_manifest.py",
+            "src/llm_wiki_engine/manifest_storage.py",
+            "src/llm_wiki_engine/knowledge_artifacts.py",
+            "src/llm_wiki_engine/wiki_surface.py",
+            "src/llm_wiki_engine/knowledge_envelope.py",
+            "src/llm_wiki_engine/knowledge_index.py",
+            "src/llm_wiki_engine/knowledge_validators.py",
+            "src/llm_wiki_engine/knowledge_kinds.py",
+            "src/llm_wiki_engine/immutable.py",
+            "src/llm_wiki_engine/knowledge_packs.py",
+            "src/llm_wiki_engine/knowledge_graph.py",
+            "src/llm_wiki_engine/section_ownership.py",
+            "src/llm_wiki_engine/knowledge_reuse_format.py",
+            "src/llm_wiki_engine/knowledge_governance.py",
             "src/llm_wiki_cli/services/documentation_native.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
@@ -41760,7 +41779,6 @@
             "src/llm_wiki_engine/source_retirement.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/knowledge_generation.py",
-            "src/llm_wiki_engine/knowledge_envelope.py",
             "src/llm_wiki_engine/analysis_compatibility.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_engine/knowledge_model.py",
@@ -41768,17 +41786,9 @@
             "src/llm_wiki_cli/services/python_implementation.py",
             "src/llm_wiki_engine/normalization_diagnostics.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
-            "src/llm_wiki_engine/infrastructure_state.py",
-            "src/llm_wiki_engine/knowledge_artifacts.py",
-            "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_engine/integrations.py",
-            "src/llm_wiki_engine/knowledge_reuse_format.py",
-            "src/llm_wiki_engine/knowledge_graph.py",
-            "src/llm_wiki_engine/section_ownership.py",
-            "src/llm_wiki_engine/knowledge_validators.py",
-            "src/llm_wiki_engine/knowledge_kinds.py"
+            "src/llm_wiki_engine/infrastructure_state.py"
           ],
-          "step_count": 2272,
+          "step_count": 2892,
           "truncated": true
         }
       },
@@ -42062,9 +42072,12 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
+            "src/llm_wiki_engine/knowledge_storage.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/publication_delivery.py"
           ],
-          "step_count": 874,
+          "step_count": 1003,
           "truncated": true
         }
       },
@@ -43949,6 +43962,7 @@
         "modules/workspace.md",
         "modules/yaml_formats.md",
         "modules/yaml_syntax.md",
+        "workflows/accepted_reviews.md",
         "workflows/acknowledge_maintenance_authority.md",
         "workflows/add_supersession_edges.md",
         "workflows/adopt_maintenance_authority.md",
@@ -44023,6 +44037,7 @@
         "workflows/check_team_conventions.md",
         "workflows/checked_artifact.md",
         "workflows/checked_preview.md",
+        "workflows/checkpoint.md",
         "workflows/ci_check_cmd_flow.md",
         "workflows/classify_uncovered_python_sources.md",
         "workflows/clean_agent_schemas.md",
@@ -44256,6 +44271,7 @@
         "workflows/validated_reserved_extensions.md",
         "workflows/validated_source.md",
         "workflows/validator_identity.md",
+        "workflows/verify_target_blobs.md",
         "workflows/wiki_anchor.md",
         "workflows/wiki_input_hashes.md",
         "workflows/WikiWriteBasis_before_write.md",
@@ -54880,6 +54896,8 @@
       "mcp_uri": "llm-wiki://modules/checkout",
       "outgoing_internal_links": [
         "modules/checkout.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
         "modules/publication_candidate.md",
         "modules/publication_config.md",
         "modules/publication_impact.md"
@@ -56024,9 +56042,11 @@
         "entities/Remote.md",
         "entities/Session.md",
         "modules/git_transport.md",
+        "modules/knowledge_evidence.md",
         "modules/publication_candidate.md",
         "modules/publication_config.md",
-        "modules/publication_delivery.md"
+        "modules/publication_delivery.md",
+        "modules/validation.md"
       ],
       "role": "semantic",
       "source_path": "integrations/wiki-candidate/delivery/git_transport.py",
@@ -58116,11 +58136,14 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/publish",
       "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
         "modules/publication_candidate.md",
         "modules/publication_config.md",
         "modules/publication_delivery.md",
         "modules/publication_impact.md",
-        "modules/publish.md"
+        "modules/publish.md",
+        "modules/validation.md"
       ],
       "role": "semantic",
       "source_path": "integrations/wiki-candidate/delivery/publish.py",
@@ -58468,6 +58491,7 @@
       "outgoing_internal_links": [
         "modules/ci_report.md",
         "modules/health_summary.md",
+        "modules/llm_wiki_engine_contracts.md",
         "modules/render_summary.md"
       ],
       "role": "semantic",
@@ -58560,6 +58584,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/run",
       "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
         "modules/publication_candidate.md",
         "modules/publication_impact.md",
         "modules/run.md"
@@ -59700,7 +59725,10 @@
         "modules/helper_cache.md",
         "modules/helper_preparation.md",
         "modules/helper_runtime.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_loader.md",
         "modules/publication_config.md",
+        "modules/source_retirement.md",
         "modules/wiki-candidate_prepare.md"
       ],
       "role": "semantic",
@@ -59913,6 +59941,21 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/yaml_syntax.py",
       "title": "yaml_syntax Module"
+    },
+    {
+      "canonical_path": "workflows/accepted_reviews.md",
+      "id": "accepted_reviews",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/accepted_reviews",
+      "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
+        "modules/publication_candidate.md",
+        "modules/publication_impact.md",
+        "modules/publish.md"
+      ],
+      "role": "mixed",
+      "source_path": "integrations/wiki-candidate/delivery/publish.py",
+      "title": "accepted_reviews"
     },
     {
       "canonical_path": "workflows/acknowledge_maintenance_authority.md",
@@ -61188,6 +61231,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/publication_maintenance.py",
       "title": "checked_preview"
+    },
+    {
+      "canonical_path": "workflows/checkpoint.md",
+      "id": "checkpoint",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/checkpoint",
+      "outgoing_internal_links": [
+        "modules/canonical_json.md",
+        "modules/git_transport.md",
+        "modules/knowledge_evidence.md",
+        "modules/publication_delivery.md"
+      ],
+      "role": "mixed",
+      "source_path": "integrations/wiki-candidate/delivery/git_transport.py",
+      "title": "checkpoint"
     },
     {
       "canonical_path": "workflows/ci_check_cmd_flow.md",
@@ -65003,6 +65061,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_engine/knowledge_index.py",
       "title": "validator_identity"
+    },
+    {
+      "canonical_path": "workflows/verify_target_blobs.md",
+      "id": "verify_target_blobs",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/verify_target_blobs",
+      "outgoing_internal_links": [
+        "modules/canonical_json.md",
+        "modules/checkout.md",
+        "modules/knowledge_storage_io.md",
+        "modules/publication_candidate.md"
+      ],
+      "role": "mixed",
+      "source_path": "integrations/wiki-candidate/checkout.py",
+      "title": "verify_target_blobs"
     },
     {
       "canonical_path": "workflows/wiki_anchor.md",
@@ -76071,6 +76144,7 @@
         "modules/helper_preparation.md",
         "modules/helper_runtime.md",
         "modules/host.md",
+        "modules/immutable.md",
         "modules/infrastructure_inventory.md",
         "modules/infrastructure_state.md",
         "modules/infrastructure_sync.md",
@@ -76082,13 +76156,21 @@
         "modules/knowledge_evidence.md",
         "modules/knowledge_freshness.md",
         "modules/knowledge_generation.md",
+        "modules/knowledge_governance.md",
         "modules/knowledge_graph.md",
+        "modules/knowledge_index.md",
         "modules/knowledge_kinds.md",
+        "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse_format.md",
+        "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_validators.md",
+        "modules/maintenance_protocol.md",
+        "modules/maintenance_state.md",
+        "modules/manifest_storage.md",
         "modules/normalization_diagnostics.md",
         "modules/path_policy.md",
         "modules/publication_config.md",
@@ -76099,6 +76181,7 @@
         "modules/source_retirement.md",
         "modules/source_selection.md",
         "modules/source_snapshot.md",
+        "modules/sync_manifest.md",
         "modules/typescript_helper_identity.md",
         "modules/validation.md",
         "modules/wiki-candidate_prepare.md",
@@ -76134,7 +76217,10 @@
         "modules/canonical_json.md",
         "modules/concept_identity.md",
         "modules/domain_pack.md",
+        "modules/filesystem_guard.md",
+        "modules/io.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/publication_candidate.md",
         "modules/publication_config.md",
@@ -76163,6 +76249,7 @@
         "modules/health_contract.md",
         "modules/health_summary.md",
         "modules/knowledge_freshness.md",
+        "modules/llm_wiki_engine_contracts.md",
         "modules/render_summary.md"
       ],
       "role": "mixed",
@@ -76891,5 +76978,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:0e2ca1d52c2128b109929754acb7893d2b95650d58b509f4d327599263fb413a"
+  "source_hash": "sha256:8a626ae255b13d0238f669e10f3022457e5ef4725dae89b11d85df43f3263b5f"
 }

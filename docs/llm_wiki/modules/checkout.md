@@ -13,11 +13,11 @@ Bind a local candidate action to the consumer checkout and accepted inputs.
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
-| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
-| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_cli.services.publication_candidate` | `MAX_FILE_BYTES`, `_read_tree` |
 | `llm_wiki_cli.services.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `_relative_path`, `publication_control_overlap`, `publication_path` |
 | `llm_wiki_cli.services.publication_impact` | `MAX_JSON_BYTES` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -32,16 +32,26 @@ flowchart LR
     n1["src/llm_wiki_cli/services/publication_candidate.py"]
     n2["src/llm_wiki_cli/services/publication_config.py"]
     n3["src/llm_wiki_cli/services/publication_impact.py"]
+    n4["src/llm_wiki_engine/knowledge_evidence.py"]
+    n5["src/llm_wiki_engine/knowledge_storage_io.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
+    n0 --> n4
+    n0 --> n5
     n1 --> n2
     n1 --> n3
+    n1 --> n4
+    n1 --> n5
     n3 --> n2
+    n3 --> n4
+    n3 --> n5
     click n0 "../modules/checkout.md"
     click n1 "../modules/publication_candidate.md"
     click n2 "../modules/publication_config.md"
     click n3 "../modules/publication_impact.md"
+    click n4 "../modules/knowledge_evidence.md"
+    click n5 "../modules/knowledge_storage_io.md"
 ```
 
 ### Internal neighbors
@@ -51,12 +61,8 @@ flowchart LR
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
-
-### External packages
-
-| Language | Used packages | Undeclared packages |
-|---|---:|---:|
-| python | 1 | 1 |
+| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 
 ## Functions
 

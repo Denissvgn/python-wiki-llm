@@ -88,10 +88,12 @@ the record must recognize its own version.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_engine/contracts.py"]
-    n0 --> n1
-    click n1 "../modules/llm_wiki_engine_contracts.md"
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_engine/contracts.py"]
+    n0 --> n2
+    n1 --> n2
+    click n2 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 > Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
@@ -100,6 +102,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | `integrations` (1) |
 | Inbound | `src` (54) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.

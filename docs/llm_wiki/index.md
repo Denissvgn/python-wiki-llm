@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 769 | [Open section](#entities) |
 | Modules | 311 | [Open section](#modules) |
-| Workflows | 313 | [Open section](#workflows) |
+| Workflows | 316 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 506 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1126,6 +1126,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`
 - [SyncManifest_save](workflows/SyncManifest_save.md) - entry: `sync_manifest.SyncManifest.save`
 - [WikiWriteBasis_before_write](workflows/WikiWriteBasis_before_write.md) - entry: `maintenance_protocol.WikiWriteBasis.before_write`
+- [accepted_reviews](workflows/accepted_reviews.md) - entry: `publish.accepted_reviews`
 - [acknowledge_maintenance_authority](workflows/acknowledge_maintenance_authority.md) - entry: `maintenance_service.acknowledge_maintenance_authority`
 - [add_supersession_edges](workflows/add_supersession_edges.md) - entry: `knowledge_governance._add_supersession_edges`
 - [adopt_maintenance_authority](workflows/adopt_maintenance_authority.md) - entry: `maintenance_service.adopt_maintenance_authority`
@@ -1200,6 +1201,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
 - [checked_artifact](workflows/checked_artifact.md) - entry: `publish.checked_artifact`
 - [checked_preview](workflows/checked_preview.md) - entry: `publication_maintenance._checked_preview`
+- [checkpoint](workflows/checkpoint.md) - entry: `git_transport._checkpoint`
 - [ci_check_cmd_flow](workflows/ci_check_cmd_flow.md) - entry: `ci_check_cmd.run`
 - [classify_uncovered_python_sources](workflows/classify_uncovered_python_sources.md) - entry: `module_coverage.classify_uncovered_python_sources`
 - [clean_agent_schemas](workflows/clean_agent_schemas.md) - entry: `uninstall_cmd._clean_agent_schemas`
@@ -1412,6 +1414,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
 - [validator_identity](workflows/validator_identity.md) - entry: `knowledge_index._validator_identity`
+- [verify_target_blobs](workflows/verify_target_blobs.md) - entry: `checkout._verify_target_blobs`
 - [wiki_anchor](workflows/wiki_anchor.md) - entry: `context_packet_builder._wiki_anchor`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
 - [write](workflows/write.md) - entry: `publication_cmd._write`

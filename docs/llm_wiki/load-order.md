@@ -339,7 +339,7 @@ Topological module load / startup order and import-time side effects.
 | [planner](modules/planner.md) | `_CONTENT_ADDRESS_RE = re.compile`, `_CAPABILITY_RE = re.compile`, `_MISSING = object`, `_TASK_FIELDS = frozenset`, `_ORACLE_FIELDS = frozenset` |
 | [common](modules/common.md) | `_HASH_TOKEN_SPLIT_RE = re.compile`, `INCLUDE_TEST_LANGUAGES = frozenset`, `NON_IMPORT_TIME_SCOPES = frozenset`, `_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `_WINDOWS_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS = frozenset` |
 | [python_bindings](modules/python_bindings.md) | `BUILTIN_NAMES = frozenset`, `_NAMESPACE_MUTATORS = frozenset`, `_DISPATCH_SLOTS = frozenset` |
-| [python_extractor](modules/python_extractor.md) | `_TYPE_CHECKING_MODULES = frozenset` |
+| [python_extractor](modules/python_extractor.md) | `_DEPRECATION_CATEGORIES = frozenset`, `_TYPE_CHECKING_MODULES = frozenset` |
 | [analysis_capture](modules/analysis_capture.md) | `_ISSUER = object`, `_CAPTURE = ContextVar`, `REGISTRY_PATH = Path(__file__).with_name` |
 | [api_contracts](modules/api_contracts.md) | `_STATUS_REF_RE = re.compile`, `_PATH_PARAMETER_RE = re.compile`, `_SAFE_ID_RE = re.compile`, `_NONE_ANNOTATION_RE = re.compile`, `_UNKNOWN = object` |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | `_SOURCE_DOC_LINK_RE = re.compile`, `_FLOWCHART_NODE_LINE = re.compile`, `_EMPTY_MAPPING = MappingProxyType` |

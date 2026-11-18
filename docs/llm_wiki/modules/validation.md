@@ -33,10 +33,12 @@ preserving domain diagnostics without allocating exceptions for valid values.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_engine/validation.py"]
-    n0 --> n1
-    click n1 "../modules/validation.md"
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_engine/validation.py"]
+    n0 --> n2
+    n1 --> n2
+    click n2 "../modules/validation.md"
 ```
 
 > Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
@@ -45,9 +47,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | `integrations` (2) |
 | Inbound | `src` (83) |
 
-> All 83 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 85 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

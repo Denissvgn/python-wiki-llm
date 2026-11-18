@@ -20,8 +20,8 @@ degraded or unhealthy failure threshold.
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_cli.services.ci_report` | `validate_doctor_payload` |
-| `llm_wiki_engine.contracts` | `DOCTOR_V3_SCHEMA_VERSION` |
 | `llm_wiki_cli.services.health_summary` | `ASSURANCE_DISCLOSURE`, `FRESHNESS_DISCLOSURE`, `RELEASE_POLICY_UNAVAILABLE`, `assurance_rows`, `detailed_health_rows`, `freshness_counts`, `health_policy`, `reason_list`, `summary_cell` |
+| `llm_wiki_engine.contracts` | `DOCTOR_V3_SCHEMA_VERSION` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
@@ -34,12 +34,16 @@ flowchart LR
     n0["integrations/github-action/render_summary.py"]
     n1["src/llm_wiki_cli/services/ci_report.py"]
     n2["src/llm_wiki_cli/services/health_summary.py"]
+    n3["src/llm_wiki_engine/contracts.py"]
     n0 --> n1
     n0 --> n2
+    n0 --> n3
     n1 --> n2
+    n1 --> n3
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_report.md"
     click n2 "../modules/health_summary.md"
+    click n3 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 ### Internal neighbors
@@ -48,12 +52,7 @@ flowchart LR
 |---|---|
 | Outbound | [ci_report](../modules/ci_report.md) |
 | Outbound | [health_summary](../modules/health_summary.md) |
-
-### External packages
-
-| Language | Used packages | Undeclared packages |
-|---|---:|---:|
-| python | 1 | 1 |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Functions
 

@@ -14,12 +14,12 @@ Protected GitHub Actions entry point for reviewed wiki delivery.
 | `importlib` | `importlib` |
 | `io` | `BytesIO` |
 | `json` | `json` |
-| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
-| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_cli.services.publication_candidate` | `MAX_FILE_BYTES`, `MAX_FILES`, `MAX_TREE_BYTES`, `_provider`, `validate_publication_receipt` |
 | `llm_wiki_cli.services.publication_config` | `publication_ref_name`, `read_publication_json`, `validate_publication_config` |
 | `llm_wiki_cli.services.publication_delivery` | `validate_rollback_review` |
 | `llm_wiki_cli.services.publication_impact` | `MAX_JSON_BYTES`, `compare_publication_impact`, `read_publication_document` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -37,21 +37,40 @@ flowchart LR
     n2["src/llm_wiki_cli/services/publication_config.py"]
     n3["src/llm_wiki_cli/services/publication_delivery.py"]
     n4["src/llm_wiki_cli/services/publication_impact.py"]
+    n5["src/llm_wiki_engine/knowledge_evidence.py"]
+    n6["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n7["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n0 --> n4
+    n0 --> n5
+    n0 --> n6
+    n0 --> n7
     n1 --> n2
     n1 --> n3
     n1 --> n4
+    n1 --> n5
+    n1 --> n6
+    n1 --> n7
+    n2 --> n7
     n3 --> n1
     n3 --> n2
+    n3 --> n5
     n4 --> n2
+    n4 --> n5
+    n4 --> n6
+    n4 --> n7
+    n5 --> n7
+    n6 --> n7
     click n0 "../modules/publish.md"
     click n1 "../modules/publication_candidate.md"
     click n2 "../modules/publication_config.md"
     click n3 "../modules/publication_delivery.md"
     click n4 "../modules/publication_impact.md"
+    click n5 "../modules/knowledge_evidence.md"
+    click n6 "../modules/knowledge_storage_io.md"
+    click n7 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -62,12 +81,9 @@ flowchart LR
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_delivery](../modules/publication_delivery.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
-
-### External packages
-
-| Language | Used packages | Undeclared packages |
-|---|---:|---:|
-| python | 1 | 1 |
+| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
+| Outbound | [validation](../modules/validation.md) |
 
 ## Functions
 

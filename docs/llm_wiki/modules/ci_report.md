@@ -56,6 +56,7 @@ flowchart LR
     n10["src/llm_wiki_engine/knowledge_observability.py"]
     n0 --> n2
     n0 --> n6
+    n0 --> n9
     n1 --> n2
     n1 --> n3
     n1 --> n6

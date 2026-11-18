@@ -20,7 +20,7 @@
 - [run](../modules/run.md)
 - [validation](../modules/validation.md)
 
-**Related modules:** [publication_candidate](../modules/publication_candidate.md), [publication_impact](../modules/publication_impact.md)
+**Related modules:** [knowledge_evidence](../modules/knowledge_evidence.md), [publication_candidate](../modules/publication_candidate.md), [publication_impact](../modules/publication_impact.md)
 
 ## Call sequence
 
@@ -54,10 +54,10 @@ sequenceDiagram
     participant p22 as _validated_checkpoint
     participant p23 as action_input
     participant p24 as run_cli
-    participant p25 as StorageReadSession
-    participant p26 as PublicationProtocolError
-    participant p27 as write_diff
-    participant p28 as _check_hash
+    participant p25 as sha256_digest
+    participant p26 as StorageReadSession
+    participant p27 as PublicationProtocolError
+    participant p28 as write_diff
     participant p29 as str (integrations/wiki-candidate/run.py:__main__)
     participant p30 as (…).write_text (integrations/wiki-candidate/run.py:__main__)
     p0->>p1: run
@@ -84,23 +84,23 @@ sequenceDiagram
     p9->>p22: _validated_checkpoint
     p1->>p23: action_input
     p1->>p24: run_cli
-    p2->>p25: StorageReadSession
-    p2->>p26: PublicationProtocolError
-    p3->>p27: write_diff
-    p4->>p28: _check_hash
+    p1->>p25: sha256_digest
+    p2->>p26: StorageReadSession
+    p2->>p27: PublicationProtocolError
+    p3->>p28: write_diff
     p0-->>p29: str (integrations/wiki-candidate/run.py:__main__)(exc)
     p0-->>p30: (…).write_text (integrations/wiki-candidate/run.py:__main__)(..., encoding='utf-8')
 ```
 
 > Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 251 (250 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 249 (248 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `integrations/wiki-candidate/run.py:run` | 2 | - | external | 36 |
+| `integrations/wiki-candidate/run.py:run` | 2 | - | external | 35 |
 | `integrations/wiki-candidate/run.py:action_input` | 8 | - | external | 2 |
 | `integrations/wiki-candidate/run.py:action_input` | 8 | - | unresolved | 2 |
 | `integrations/wiki-candidate/run.py:run` | 2 | [integrations/wiki-candidate/run.py](../modules/run.md) | internal | 9 |
@@ -108,7 +108,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/wiki-candidate/run.py:run_cli` | 35 | - | unresolved | 1 |
 | `integrations/wiki-candidate/run.py:run_cli` | 35 | - | external | 2 |
 | `src/llm_wiki_cli/services/publication_impact.py:read_publication_document` | 45 | - | unresolved | 3 |
-> Omission summary shows 8 of 71 groups; 63 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -121,9 +121,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 85; effect analysis evaluated: 75, partial: 2, unavailable: 8. Counts include steps omitted from the displayed trace.
+Source steps: 87; effect analysis evaluated: 77, partial: 2, unavailable: 8. Counts include steps omitted from the displayed trace.
 
-Collector observations for 77 source steps with known totals: observed: 329, emitted: 305, omitted: 24. Unavailable totals are excluded.
+Collector observations for 79 source steps with known totals: observed: 333, emitted: 309, omitted: 24. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

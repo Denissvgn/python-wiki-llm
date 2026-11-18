@@ -109,9 +109,9 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 523 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 1131 | `ast.NodeVisitor` | — |
-| [_LexicalBody](../entities/LexicalBody.md) | 1515 | `ast.NodeVisitor` | Current-body writes/calls, without entering deferred definitions. |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1889 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1178 | `ast.NodeVisitor` | — |
+| [_LexicalBody](../entities/LexicalBody.md) | 1562 | `ast.NodeVisitor` | Current-body writes/calls, without entering deferred definitions. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1936 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -150,6 +150,7 @@ flowchart LR
 | `_is_self_module_alias` | `(statement) -> bool` | — | Detect ``sys.modules[__name__] = other`` — a module replacing itself. |
 | `module_alias_target` | `(tree: ast.Module) -> str` | — | Return the imported binding of a static self-module shim, else ``""``. |
 | `_static_import_bindings` | `(statement: ast.AST) -> dict[str, str] \| None` | — | Capture direct import spellings; no module loading or attribute lookup. |
+| `_static_deprecation_warning` | `(statement: ast.AST, bindings: dict[str, str]) -> bool` | — | Recognize ``warnings.warn("literal", DeprecationWarning, stacklevel=N)``. |
 | `_static_type_checking_block` | `(statement: ast.AST, bindings: dict[str, str]) -> bool` | — | Recognize import-only mirrors behind a directly bound typing guard. |
 | `_import_time_body` | `(statement, type_checking_names: set[str]) -> list` | — | Return the nested statements of *statement* that run at import time. |
 | `_collect_module_calls` | `(body, calls: list[dict], type_checking_names: set[str]) -> None` | — | — |
