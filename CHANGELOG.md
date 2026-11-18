@@ -250,6 +250,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   same page name, with or without an alias left at the old path. The moved
   module now continues its existing page, keeping authored text, instead of
   the old page being marked stale.
+- The same applies to classes whose name another module also uses. Their
+  pages carry the module's name (`model_Draft`), so sync could not match the
+  move by class name and stopped with the same error. A class that moves
+  with its module now keeps its page and authored text.
 
 ## [4.1.1] - 2026-11-13
 

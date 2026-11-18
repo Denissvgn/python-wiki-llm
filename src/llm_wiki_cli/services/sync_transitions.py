@@ -209,6 +209,35 @@ def _moved_module_owner(
     return owner
 
 
+def _moved_entity_owner(
+    prior: _Ownership,
+    target: str,
+    owner: ManifestPageSource,
+    inventory: Mapping[str, Mapping],
+) -> ManifestPageSource | None:
+    """Return the retired declaration whose page a moved declaration continues.
+
+    A class whose name is not unique gets a module-qualified page, so name
+    based move detection cannot follow it. When exactly one recorded owner
+    holds the target page, declares the same name and occurrence, and its
+    source no longer has documentable inventory, the declaration moved with
+    its module and keeps its page.
+    """
+    owners = prior.claims.get(portable_path_key(target), set())
+    if len(owners) != 1:
+        return None
+    (previous,) = owners
+    if (
+        previous.scope != "entity"
+        or previous.entity_name != owner.entity_name
+        or previous.occurrence != owner.occurrence
+        or previous.source_path in inventory
+        or previous not in prior.candidates
+    ):
+        return None
+    return previous
+
+
 def _existing_pages(wiki_dir: Path) -> dict[str, tuple[str, bool]]:
     """Inventory names and file kinds without reading content or following links."""
     existing: dict[str, tuple[str, bool]] = {}
@@ -331,6 +360,8 @@ def plan_page_transitions(
                 ):
                     raise PageTransitionError(f"Ambiguous source move for {name!r}")
                 previous = ManifestPageSource("entity", old_source, name, 1)
+            else:
+                previous = _moved_entity_owner(prior, target, owner, inventory)
         old_path = prior.resolve(previous) if previous is not None else None
         source_path = None
         if old_path is not None and portable_path_key(old_path) in existing:
