@@ -1,6 +1,6 @@
 # _MaintenanceReconciliation
 
-**Location:** `src/llm_wiki_cli/services/maintenance_state.py:1029`
+**Location:** `src/llm_wiki_engine/maintenance_state.py:1033`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_state](../modules/maintenance_state.md)
@@ -33,8 +33,8 @@ One detached reconciliation; only membership-preserving observes are local.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_MaintenanceReconciliation (src/llm_wiki_cli/services/maintenance_state.py)"]
-    n1["_maintenance_reconciliation (src/llm_wiki_cli/services/maintenance_state.py)"]
+    n0["_MaintenanceReconciliation (src/llm_wiki_engine/maintenance_state.py)"]
+    n1["_maintenance_reconciliation (src/llm_wiki_engine/maintenance_state.py)"]
     n1 --> n0
     click n0 "../modules/maintenance_state.md"
     click n1 "../modules/maintenance_state.md"

@@ -18,11 +18,8 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `.canonical_pages` | `canonical_generated_pages` |
 | `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `ExtractorFailureError`, `get_inventory_result` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.knowledge_storage_io` | `_absolute_path` |
-| `.knowledge_storage_lifecycle` | `is_storage_path` |
 | `.plugins` | `PluginError`, `iter_components` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.sync_manifest` | `SyncManifest`, `SyncManifest`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `MANIFEST_VERSION`, `SyncManifest`, `SyncManifestError`, `SyncManifest` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
@@ -32,7 +29,10 @@ Text-conflict discovery skips immutable content-addressed storage objects, inclu
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes` |
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.io` | `decode_markdown_bytes`, `read_md`, `write_json_atomic` |
+| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path` |
+| `llm_wiki_engine.knowledge_storage_lifecycle` | `is_storage_path` |
 | `llm_wiki_engine.source_selection` | `with_source_selection_generation_input`, `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifest`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `MANIFEST_VERSION`, `SyncManifest`, `SyncManifestError`, `SyncManifest` |
 | `llm_wiki_engine.validation` | `require_exact_fields`, `require_portable_relative_path`, `require_string_list`, `resolve_portable_workspace_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |

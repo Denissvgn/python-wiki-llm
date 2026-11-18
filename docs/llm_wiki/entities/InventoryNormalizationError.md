@@ -1,6 +1,6 @@
 # _InventoryNormalizationError
 
-**Location:** `src/llm_wiki_engine/knowledge_evidence.py:151`
+**Location:** `src/llm_wiki_engine/knowledge_evidence.py:155`
 **Kind:** Class
 **Bases:** `Exception`
 **Module:** [knowledge_evidence](../modules/knowledge_evidence.md)

@@ -2,13 +2,12 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 81 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 79 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -27,10 +26,10 @@
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_audit](../modules/knowledge_audit.md)
@@ -62,7 +61,6 @@
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
@@ -124,7 +122,7 @@ sequenceDiagram
     participant p22 as _lifecycle_mutation
     participant p23 as build_artifact_verification_context
     participant p24 as _governance_mutation_operation
-    participant p25 as verify (src/llm_wiki_cli/services/verification_contracts.py)
+    participant p25 as verify (src/llm_wiki_engine/verification_contracts.py)
     participant p26 as verify_and_write_receipt
     participant p27 as prune_knowledge_storage
     participant p28 as _assert_snapshot_unchanged
@@ -154,7 +152,7 @@ sequenceDiagram
     p7->>p22: _lifecycle_mutation
     p9->>p23: build_artifact_verification_context
     p2->>p24: _governance_mutation_operation
-    p9->>p25: verify (src/llm_wiki_cli/services/verification_contracts.py)
+    p9->>p25: verify (src/llm_wiki_engine/verification_contracts.py)
     p9->>p26: verify_and_write_receipt
     p1->>p27: prune_knowledge_storage
     p2->>p28: _assert_snapshot_unchanged
@@ -162,9 +160,9 @@ sequenceDiagram
     p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4856 interactions; 4826 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4771 interactions; 4741 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1406 (1405 omitted); unresolved 1 of 1182 (1181 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1382 (1381 omitted); unresolved 1 of 1155 (1154 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -176,9 +174,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
+| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
-> Omission summary shows 8 of 1229 groups; 1221 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1213 groups; 1205 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -191,9 +189,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2269; effect analysis evaluated: 1514, partial: 102, unavailable: 653. Counts include steps omitted from the displayed trace.
+Source steps: 2235; effect analysis evaluated: 1495, partial: 94, unavailable: 646. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1616 source steps with known totals: observed: 9940, emitted: 9318, omitted: 622. Unavailable totals are excluded.
+Collector observations for 1589 source steps with known totals: observed: 9630, emitted: 9036, omitted: 594. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -39,10 +39,10 @@ or store repair and does not change strict evidence or report-only drift policy.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_consumption` | `KnowledgeReadView` |
-| `.knowledge_model` | `ComputedFreshness`, `ConceptRecord`, `EvidenceState` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `ConceptRecord`, `EvidenceState` |
 
 ## Local dependency map
 
@@ -51,23 +51,23 @@ or store repair and does not change strict evidence or report-only drift policy.
 flowchart LR
     n0["src/llm_wiki_cli/services/documentation_queries.py"]
     n1["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n2["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n3["src/llm_wiki_cli/services/knowledge_model.py"]
-    n4["src/llm_wiki_cli/services/lint_service.py"]
+    n2["src/llm_wiki_cli/services/lint_service.py"]
+    n3["src/llm_wiki_engine/knowledge_consumption.py"]
+    n4["src/llm_wiki_engine/knowledge_model.py"]
     n0 --> n1
-    n0 --> n2
     n0 --> n3
-    n1 --> n2
+    n0 --> n4
     n1 --> n3
+    n1 --> n4
+    n2 --> n1
     n2 --> n3
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
+    n2 --> n4
+    n3 --> n4
     click n0 "../modules/documentation_queries.md"
     click n1 "../modules/evidence_diagnostics.md"
-    click n2 "../modules/knowledge_consumption.md"
-    click n3 "../modules/knowledge_model.md"
-    click n4 "../modules/lint_service.md"
+    click n2 "../modules/lint_service.md"
+    click n3 "../modules/knowledge_consumption.md"
+    click n4 "../modules/knowledge_model.md"
 ```
 
 ### Internal neighbors

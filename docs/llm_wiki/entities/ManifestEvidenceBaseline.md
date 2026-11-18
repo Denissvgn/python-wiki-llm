@@ -1,6 +1,6 @@
 # ManifestEvidenceBaseline
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:252`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:257`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -34,15 +34,15 @@ Known or explicitly unknown evidence for one active concept page.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ManifestEvidenceBaseline (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["ManifestEvidenceBaseline (src/llm_wiki_engine/sync_manifest.py)"]
     n1["_mark_untrusted_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n2["_preserve_unchanged_unknown_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n3["src/llm_wiki_cli/services/knowledge_index.py"]
-    n4["_legacy_operational_state (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n5["ManifestEvidenceBaseline.from_basis (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n6["ManifestEvidenceBaseline.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n7["ManifestEvidenceBaseline.unknown (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n8["SyncManifest.build_from_inventory (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n3["src/llm_wiki_engine/knowledge_index.py"]
+    n4["_legacy_operational_state (src/llm_wiki_engine/sync_manifest.py)"]
+    n5["ManifestEvidenceBaseline.from_basis (src/llm_wiki_engine/sync_manifest.py)"]
+    n6["ManifestEvidenceBaseline.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
+    n7["ManifestEvidenceBaseline.unknown (src/llm_wiki_engine/sync_manifest.py)"]
+    n8["SyncManifest.build_from_inventory (src/llm_wiki_engine/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

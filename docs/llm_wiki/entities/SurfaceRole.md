@@ -29,18 +29,18 @@ flowchart LR
     n0["SurfaceRole (src/llm_wiki_engine/wiki_surface.py)"]
     n1["Enum"]
     n2["str"]
-    n3["_surface_pages (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_model.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["_surface_pages (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
     n5 --> n0
     click n0 "../modules/wiki_surface.md"
-    click n3 "../modules/knowledge_index.md"
-    click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/knowledge_projection.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/knowledge_index.md"
+    click n5 "../modules/knowledge_model.md"
 ```
 
 ### Summary
@@ -60,6 +60,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
 | `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) | — |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

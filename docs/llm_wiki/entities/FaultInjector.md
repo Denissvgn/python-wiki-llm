@@ -1,6 +1,6 @@
 # FaultInjector
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:361`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:361`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -8,7 +8,7 @@
 
 ## Description
 
-_Auto-generated from `FaultInjector` in `src/llm_wiki_cli/services/knowledge_governance.py`._
+_Auto-generated from `FaultInjector` in `src/llm_wiki_engine/knowledge_governance.py`._
 
 ## Attributes
 
@@ -23,9 +23,9 @@ _Auto-generated from `FaultInjector` in `src/llm_wiki_cli/services/knowledge_gov
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["FaultInjector (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n1["_write_durable_atomic (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n2["save_governance (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["FaultInjector (src/llm_wiki_engine/knowledge_governance.py)"]
+    n1["_write_durable_atomic (src/llm_wiki_engine/knowledge_governance.py)"]
+    n2["save_governance (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_governance.md"

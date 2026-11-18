@@ -20,9 +20,9 @@ sequenceDiagram
     participant p6 as GovernanceError
     participant p7 as parsed.utcoffset
     participant p8 as parsed.astimezone
-    participant p9 as utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)
+    participant p9 as utc.isoformat(…).replace (src/llm_wiki_engine/knowl…nce.py:authored_event_time)
     participant p10 as utc.isoformat
-    participant p11 as utc.isoformat(…).replace (src/llm_wiki_cli/services….py:authored_event_time, 1)
+    participant p11 as utc.isoformat(…).replace (src/llm_wiki_engine/knowl….py:authored_event_time, 1)
     participant p12 as _ACTIVE.get
     p0-->>p1: current_host().now
     p0->>p2: current_host
@@ -35,9 +35,9 @@ sequenceDiagram
     p0-->>p7: parsed.utcoffset
     p0->>p6: GovernanceError
     p0-->>p8: parsed.astimezone(timezone.utc)
-    p0-->>p9: utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)('+00:00', 'Z')
+    p0-->>p9: utc.isoformat(…).replace (src/llm_wiki_engine/knowl…nce.py:authored_event_time)('+00:00', 'Z')
     p0-->>p10: utc.isoformat(timespec='microseconds')
-    p0-->>p11: utc.isoformat(…).replace (src/llm_wiki_cli/services….py:authored_event_time, 1)('+00:00', 'Z')
+    p0-->>p11: utc.isoformat(…).replace (src/llm_wiki_engine/knowl….py:authored_event_time, 1)('+00:00', 'Z')
     p0-->>p10: utc.isoformat(timespec='seconds')
     p2-->>p12: _ACTIVE.get
 ```

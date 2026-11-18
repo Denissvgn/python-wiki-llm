@@ -1,6 +1,6 @@
 # _ValidatedIndexReceipt
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:485`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:485`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_ValidatedIndexReceipt` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_ValidatedIndexReceipt` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -31,10 +31,10 @@ _Auto-generated from `_ValidatedIndexReceipt` in `src/llm_wiki_cli/services/know
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_ValidatedIndexReceipt (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n2["_validated_index_receipt (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["build_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_ValidatedIndexReceipt (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n2["_validated_index_receipt (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["build_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

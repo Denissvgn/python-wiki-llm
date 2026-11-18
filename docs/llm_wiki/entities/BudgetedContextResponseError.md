@@ -1,6 +1,6 @@
 # BudgetedContextResponseError
 
-**Location:** `src/llm_wiki_cli/services/context_budget_format.py:79`
+**Location:** `src/llm_wiki_cli/services/context_budget_format.py:80`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_budget_format](../modules/context_budget_format.md)

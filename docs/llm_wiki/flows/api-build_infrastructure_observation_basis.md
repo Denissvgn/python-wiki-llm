@@ -174,8 +174,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_observation_basis | _validate_source_path | 414 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 839 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_infrastructure_observation_basis | _validate_source_path | 418 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 843 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…_repository_relative_path) | 304 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 306 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |

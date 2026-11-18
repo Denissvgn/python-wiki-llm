@@ -1,6 +1,6 @@
 # _ReadPhase
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:68`
+**Location:** `src/llm_wiki_engine/knowledge_storage_io.py:68`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -30,8 +30,8 @@ Bounded handles owned by one read phase, never by a reusable result.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_ReadPhase (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
-    n1["StorageReadSession.phase (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
+    n0["_ReadPhase (src/llm_wiki_engine/knowledge_storage_io.py)"]
+    n1["StorageReadSession.phase (src/llm_wiki_engine/knowledge_storage_io.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_storage_io.md"
     click n1 "../modules/knowledge_storage_io.md"

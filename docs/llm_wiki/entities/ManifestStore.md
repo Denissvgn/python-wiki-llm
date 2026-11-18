@@ -1,6 +1,6 @@
 # ManifestStore
 
-**Location:** `src/llm_wiki_cli/services/manifest_storage.py:82`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:82`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)
@@ -27,8 +27,8 @@ Carries bounded indexed manifest root bytes and immutable catalog bytes. Legacy 
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ManifestStore (src/llm_wiki_cli/services/manifest_storage.py)"]
-    n1["build_manifest_store (src/llm_wiki_cli/services/manifest_storage.py)"]
+    n0["ManifestStore (src/llm_wiki_engine/manifest_storage.py)"]
+    n1["build_manifest_store (src/llm_wiki_engine/manifest_storage.py)"]
     n1 --> n0
     click n0 "../modules/manifest_storage.md"
     click n1 "../modules/manifest_storage.md"

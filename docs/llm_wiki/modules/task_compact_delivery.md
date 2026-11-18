@@ -10,10 +10,10 @@ One-shot compact delivery through the owned, locked task read lifecycle.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
 | `.context_session` | `ContextSession` |
 | `.task_compact` | `CompactTaskContext` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine` | `analysis_compatibility` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR` |
 
 ## Local dependency map
@@ -22,27 +22,27 @@ One-shot compact delivery through the owned, locked task read lifecycle.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n2["src/llm_wiki_cli/services/context_session.py"]
-    n3["src/llm_wiki_cli/services/task_compact.py"]
-    n4["src/llm_wiki_cli/services/task_compact_delivery.py"]
+    n1["src/llm_wiki_cli/services/context_session.py"]
+    n2["src/llm_wiki_cli/services/task_compact.py"]
+    n3["src/llm_wiki_cli/services/task_compact_delivery.py"]
+    n4["src/llm_wiki_engine/analysis_compatibility.py"]
     n5["src/llm_wiki_engine/path_policy.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n2 --> n1
-    n2 --> n3
-    n2 --> n5
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n5
+    n1 --> n2
+    n1 --> n4
+    n1 --> n5
+    n3 --> n1
+    n3 --> n2
+    n3 --> n4
+    n3 --> n5
     click n0 "../modules/api.md"
-    click n1 "../modules/analysis_compatibility.md"
-    click n2 "../modules/context_session.md"
-    click n3 "../modules/task_compact.md"
-    click n4 "../modules/task_compact_delivery.md"
+    click n1 "../modules/context_session.md"
+    click n2 "../modules/task_compact.md"
+    click n3 "../modules/task_compact_delivery.md"
+    click n4 "../modules/analysis_compatibility.md"
     click n5 "../modules/path_policy.md"
 ```
 
@@ -51,9 +51,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
-| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [context_session](../modules/context_session.md) |
 | Outbound | [task_compact](../modules/task_compact.md) |
+| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [path_policy](../modules/path_policy.md) |
 
 ## Functions

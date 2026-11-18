@@ -1,7 +1,7 @@
 # validate_manifest_knowledge_parity
 
 **Entry point:** `knowledge_artifacts._validate_manifest_knowledge_parity`
-**Modules involved:** [implementation_evidence](../modules/implementation_evidence.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [source_retirement](../modules/source_retirement.md)
+**Modules involved:** [infrastructure_state](../modules/infrastructure_state.md), [integrations](../modules/integrations.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [maintenance_projection](../modules/maintenance_projection.md), [source_retirement](../modules/source_retirement.md)
 
 ## Sequence
 
@@ -9,14 +9,14 @@
 1. `maintenance_projection.validate_maintenance_projection`
 2. `source_retirement.retired_entity_mappings`
 3. `source_retirement.source_retirement_projection`
-4. `implementation_evidence.validate_concept_implementation`
+4. `integrations.attributes`
 5. `knowledge_evidence.is_valid_sha256`
-6. `infrastructure_sync.infrastructure_evidence_by_page`
+6. `infrastructure_state.infrastructure_evidence_by_page`
 
 ## Touches
 
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)

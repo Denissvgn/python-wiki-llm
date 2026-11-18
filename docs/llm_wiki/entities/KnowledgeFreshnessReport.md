@@ -1,6 +1,6 @@
 # KnowledgeFreshnessReport
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:229`
+**Location:** `src/llm_wiki_engine/knowledge_freshness.py:229`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -32,12 +32,12 @@ Freshness results for every recorded concept and aggregate counts.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeFreshnessReport (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n0["KnowledgeFreshnessReport (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1["src/llm_wiki_cli/services/documentation_native.py"]
-    n2["_knowledge_counts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n3["_evaluate_model_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n5["evaluate_validated_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n2["_knowledge_counts (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n3["_evaluate_model_freshness (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n4["evaluate_knowledge_freshness (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n5["evaluate_validated_knowledge_freshness (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

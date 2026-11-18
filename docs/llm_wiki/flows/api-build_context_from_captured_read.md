@@ -98,12 +98,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/context_packet_builder.py:build_context_from_captured_read` | 1 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 4 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 4 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 4 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | external | 2 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
 > Omission summary shows 8 of 166 groups; 158 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -138,7 +138,7 @@ Collector observations for 130 source steps with known totals: observed: 797, em
 | `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validate_protocol_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -153,7 +153,7 @@ flowchart LR
     s9["9. candidate.setdefault"]
     s10["10. candidate.setdefault"]
     s11["11. _validate_protocol_request"]
-    s12["12. isinstance (src/llm_wiki_cli/services…validate_protocol_request)"]
+    s12["12. isinstance (src/llm_wiki_engine/conte…validate_protocol_request)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)('captured must be a CapturedContextRead')" .-> s3
     s1 -->|"_normalized_request(request)"| s4
@@ -164,7 +164,7 @@ flowchart LR
     s4 -. "candidate.setdefault('knowledge_mode', 'auto')" .-> s9
     s4 -. "candidate.setdefault('filters', {...})" .-> s10
     s4 -->|"_validate_protocol_request(candidate)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…validate_protocol_request)(data, dict)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/conte…validate_protocol_request)(data, dict)" .-> s12
     click s1 "../modules/context_packet_builder.md"
     click s4 "../modules/context_packet_builder.md"
     click s6 "../modules/context_request_format.md"
@@ -186,7 +186,7 @@ flowchart LR
 | `candidate.setdefault` | - | - | - | - |
 | `candidate.setdefault` | - | - | - | - |
 | `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `_PROTOCOL_REQUEST_KEYS` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | - | - | - | - |
 
 ### Call data
 
@@ -202,7 +202,7 @@ flowchart LR
 | _normalized_request | candidate.setdefault | 1771 | `candidate.setdefault('knowledge_mode', 'auto')` |
 | _normalized_request | candidate.setdefault | 1772 | `candidate.setdefault('filters', {...})` |
 | _normalized_request | _validate_protocol_request | 1773 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 136 | `isinstance(data, dict)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `isinstance(data, dict)` |
 
 ### Boundary effects
 

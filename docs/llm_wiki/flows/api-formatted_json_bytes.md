@@ -63,8 +63,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| formatted_json_bytes | formatted_json_text(…).encode | 189 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | indented_line_text | 189 | `formatted_json_text(value)` |
+| formatted_json_bytes | formatted_json_text(…).encode | 193 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | indented_line_text | 193 | `formatted_json_text(value)` |
 | indented_line_text | json.dumps | 50 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
@@ -75,7 +75,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 189 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 193 |
 | external_call | `indented_line_text` | `json.dumps` | 50 |
 
 ## Behavior

@@ -11,7 +11,7 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p0 as natural_key_for (src/llm_wiki_engine/knowledge_governance.py)
     participant p1 as natural_key_for (src/llm_wiki_engine/concept_identity.py)
     participant p2 as GovernanceError
     participant p3 as validate_concept_kind
@@ -110,7 +110,7 @@ Collector observations for 29 source steps with known totals: observed: 135, emi
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `natural_key_for (src/llm_wiki_engine/knowledge_governance.py)` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `natural_key_for (src/llm_wiki_engine/concept_identity.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `validate_concept_kind` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -125,7 +125,7 @@ Collector observations for 29 source steps with known totals: observed: 135, emi
 
 ```mermaid
 flowchart LR
-    s1["1. natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    s1["1. natural_key_for (src/llm_wiki_engine/knowledge_governance.py)"]
     s2["2. natural_key_for (src/llm_wiki_engine/concept_identity.py)"]
     s3["3. validate_concept_kind"]
     s4["4. _machine_text"]
@@ -161,7 +161,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)` | `concept_kind: str`, `canonical_path: str` | `ConceptIdentityError` | - | `_identity_natural_key_for(...)` |
+| `natural_key_for (src/llm_wiki_engine/knowledge_governance.py)` | `concept_kind: str`, `canonical_path: str` | `ConceptIdentityError` | - | `_identity_natural_key_for(...)` |
 | `natural_key_for (src/llm_wiki_engine/concept_identity.py)` | `concept_kind: str`, `canonical_path: str` | - | - | `validate_natural_key(...)` |
 | `validate_concept_kind` | `value: object` | `_MAX_CONCEPT_KIND_LENGTH`, `_UID_TAG_BY_KIND` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
@@ -178,7 +178,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py) | natural_key_for (src/llm_wiki_engine/concept_identity.py) | 398 | `_identity_natural_key_for(concept_kind, canonical_path)` |
+| natural_key_for (src/llm_wiki_engine/knowledge_governance.py) | natural_key_for (src/llm_wiki_engine/concept_identity.py) | 398 | `_identity_natural_key_for(concept_kind, canonical_path)` |
 | natural_key_for (src/llm_wiki_engine/concept_identity.py) | validate_concept_kind | 327 | `validate_concept_kind(concept_kind)` |
 | validate_concept_kind | _machine_text | 306 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |

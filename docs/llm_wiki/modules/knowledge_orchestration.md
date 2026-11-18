@@ -34,30 +34,30 @@ ownership. Ordinary callers retain the same publication protocol.
 | `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `EXTRACTOR_REGISTRY` |
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `is_bundled_helper_implementation_path` |
 | `.analysis_capture` | `attach`, `attach`, `attach` |
-| `.analysis_compatibility` | `has_contract` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `current_infrastructure_bases`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
-| `.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
-| `.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
-| `.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.sync_analysis_cache` | `EXTENSION` |
-| `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.analysis_compatibility` | `has_contract` |
 | `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
+| `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
+| `llm_wiki_engine.knowledge_freshness` | `LiveKnowledgeEvaluation` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
+| `llm_wiki_engine.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
+| `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
 | `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `pathlib` | `Path` |
@@ -82,7 +82,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (11) |
+| Inbound | `src` (10) |
 | Outbound | `src` (26) |
 
 > All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.

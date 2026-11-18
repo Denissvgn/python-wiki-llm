@@ -1,6 +1,6 @@
 # VerificationReceiptEvaluation
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:566`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:566`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -31,9 +31,9 @@ Live validity of one recorded receipt against current anchors.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationReceiptEvaluation (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n1["evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n2["load_and_evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationReceiptEvaluation (src/llm_wiki_engine/verification_contracts.py)"]
+    n1["evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n2["load_and_evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/verification_contracts.md"

@@ -12,7 +12,7 @@
 ```mermaid
 sequenceDiagram
     participant p0 as repository_identities_match
-    participant p1 as isinstance (src/llm_wiki_cli/services…epository_identities_match)
+    participant p1 as isinstance (src/llm_wiki_engine/knowl…epository_identities_match)
     participant p2 as TypeError
     participant p3 as _repository_identity
     participant p4 as _nonempty_string
@@ -32,8 +32,8 @@ sequenceDiagram
     participant p18 as value.encode
     participant p19 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p20 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)
+    p0-->>p1: isinstance (src/llm_wiki_engine/knowl…epository_identities_match)(left, RepositoryRecord)
+    p0-->>p1: isinstance (src/llm_wiki_engine/knowl…epository_identities_match)(right, RepositoryRecord)
     p0-->>p2: TypeError('left and right must be RepositoryRecord values')
     p0->>p3: _repository_identity
     p0->>p3: _repository_identity
@@ -85,8 +85,8 @@ Collector observations for 14 source steps with known totals: observed: 60, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `repository_identities_match` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_repository_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_nonempty_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -100,8 +100,8 @@ Collector observations for 14 source steps with known totals: observed: 60, emit
 ```mermaid
 flowchart LR
     s1["1. repository_identities_match"]
-    s2["2. isinstance (src/llm_wiki_cli/services…epository_identities_match)"]
-    s3["3. isinstance (src/llm_wiki_cli/services…epository_identities_match)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…epository_identities_match)"]
+    s3["3. isinstance (src/llm_wiki_engine/knowl…epository_identities_match)"]
     s4["4. TypeError"]
     s5["5. _repository_identity"]
     s6["6. _nonempty_string"]
@@ -111,8 +111,8 @@ flowchart LR
     s10["10. _validation_error"]
     s11["11. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s12["12. error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)" .-> s2
-    s1 -. "isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…epository_identities_match)(left, RepositoryRecord)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…epository_identities_match)(right, RepositoryRecord)" .-> s3
     s1 -. "TypeError('left and right must be RepositoryRecord values')" .-> s4
     s1 -->|"_repository_identity(left.identity, 'left.identity')"| s5
     s5 -->|"_nonempty_string(value, path)"| s6
@@ -135,8 +135,8 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `repository_identities_match` | `left: RepositoryRecord`, `right: RepositoryRecord` | `RepositoryRecord`, `RepositoryRecord`, `RepositoryIdentitySource`, `RepositoryIdentitySource` | - | `False`, `...` |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…epository_identities_match)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…epository_identities_match)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_repository_identity` | `value: object`, `path: str` | - | - | `text` |
 | `_nonempty_string` | `value: object`, `path: str` | `_NONEMPTY_ERROR` | - | `require_nonempty_text(...)` |
@@ -151,13 +151,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 528 | `isinstance(left, RepositoryRecord)` |
-| repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 528 | `isinstance(right, RepositoryRecord)` |
-| repository_identities_match | TypeError | 531 | `TypeError('left and right must be RepositoryRecord values')` |
-| repository_identities_match | _repository_identity | 532 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1808 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1727 | `_string(value, path)` |
-| _string | require_string | 1718 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
+| repository_identities_match | isinstance (src/llm_wiki_engine/knowl…epository_identities_match) | 530 | `isinstance(left, RepositoryRecord)` |
+| repository_identities_match | isinstance (src/llm_wiki_engine/knowl…epository_identities_match) | 530 | `isinstance(right, RepositoryRecord)` |
+| repository_identities_match | TypeError | 533 | `TypeError('left and right must be RepositoryRecord values')` |
+| repository_identities_match | _repository_identity | 534 | `_repository_identity(left.identity, 'left.identity')` |
+| _repository_identity | _nonempty_string | 1810 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1729 | `_string(value, path)` |
+| _string | require_string | 1720 | `require_string(value, error=_STRING_ERROR, utf8_error=_UTF8_ERROR, error_context=path)` |
 | require_string | isinstance (src/llm_wiki_engine/validation.py:require_string) | 761 | `isinstance(value, str)` |
 | require_string | _validation_error | 762 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -171,8 +171,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `repository_identities_match` | `isinstance` | 528 |
-| external_call | `repository_identities_match` | `TypeError` | 531 |
+| external_call | `repository_identities_match` | `isinstance` | 530 |
+| external_call | `repository_identities_match` | `TypeError` | 533 |
 | external_call | `require_string` | `isinstance` | 761 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

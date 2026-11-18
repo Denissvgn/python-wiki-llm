@@ -1,6 +1,6 @@
 # ModelValidator
 
-**Location:** `src/llm_wiki_cli/services/knowledge_validators.py:37`
+**Location:** `src/llm_wiki_engine/knowledge_validators.py:39`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_validators](../modules/knowledge_validators.md)
@@ -37,9 +37,9 @@ invalidates earlier validation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ModelValidator (src/llm_wiki_cli/services/knowledge_validators.py)"]
+    n0["ModelValidator (src/llm_wiki_engine/knowledge_validators.py)"]
     n1["src/llm_wiki_cli/engine/__init__.py"]
-    n2["ValidatorRegistry.with_validator (src/llm_wiki_cli/services/knowledge_validators.py)"]
+    n2["ValidatorRegistry.with_validator (src/llm_wiki_engine/knowledge_validators.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_validators.md"

@@ -1,6 +1,6 @@
 # maintenance_state Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_state.py`
+**Path:** `src/llm_wiki_engine/maintenance_state.py`
 
 ## Description
 
@@ -15,14 +15,14 @@ the shared writer lock around capture and manifest-last publication.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `implementation_evidence`, `maintenance_shapes`, `python_implementation` |
-| `.implementation_evidence` | `validate_implementation_evidence`, `validate_implementation_evidence` |
+| `.` | `maintenance_shapes` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.maintenance_shapes` | `MaintenanceError`, `VALIDATORS`, `require` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
 | `contextvars` | `ContextVar` |
 | `copy` | `deepcopy` |
+| `llm_wiki_engine.integrations` | `attributes`, `provider` |
 | `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -35,7 +35,7 @@ the shared writer lock around capture and manifest-last publication.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/maintenance_state.py"]
+    n1["src/llm_wiki_engine/maintenance_state.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/maintenance_state.md"
@@ -48,16 +48,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (16) |
-| Outbound | `src` (5) |
+| Outbound | `src` (4) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceCore](../entities/MaintenanceCore.md) | 112 | — | Pure transitions with the installed implementation contract as authority. |
-| [_MaintenanceReconciliation](../entities/MaintenanceReconciliation.md) | 1029 | — | One detached reconciliation; only membership-preserving observes are local. |
+| [MaintenanceCore](../entities/MaintenanceCore.md) | 114 | — | Pure transitions with the installed implementation contract as authority. |
+| [_MaintenanceReconciliation](../entities/MaintenanceReconciliation.md) | 1033 | — | One detached reconciliation; only membership-preserving observes are local. |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # knowledge_validators Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_validators.py`
+**Path:** `src/llm_wiki_engine/knowledge_validators.py`
 
 ## Description
 
@@ -27,7 +27,6 @@ run side by side.
 
 | Source | Symbols |
 |--------|---------|
-| `.implementation_evidence` | `validate_implementation_collection` |
 | `.knowledge_governance` | `validate_governance_projection` |
 | `.knowledge_index` | `_validation_callable_identity`, `_validation_module_identity` |
 | `.knowledge_model` | `KnowledgeIndex`, `KnowledgeModelError`, `KnowledgeModelError`, `KnowledgeModelError`, `KnowledgeModelError` |
@@ -38,6 +37,7 @@ run side by side.
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `replace` |
 | `importlib` | `importlib` |
+| `llm_wiki_engine.integrations` | `attributes`, `provider` |
 | `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map
@@ -46,12 +46,12 @@ run side by side.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/implementation_evidence.py"]
-    n2["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n3["src/llm_wiki_cli/services/knowledge_index.py"]
-    n4["src/llm_wiki_cli/services/knowledge_model.py"]
-    n5["src/llm_wiki_cli/services/knowledge_validators.py"]
-    n6["src/llm_wiki_cli/services/maintenance_projection.py"]
+    n1["src/llm_wiki_engine/integrations.py"]
+    n2["src/llm_wiki_engine/knowledge_governance.py"]
+    n3["src/llm_wiki_engine/knowledge_index.py"]
+    n4["src/llm_wiki_engine/knowledge_model.py"]
+    n5["src/llm_wiki_engine/knowledge_validators.py"]
+    n6["src/llm_wiki_engine/maintenance_projection.py"]
     n0 --> n5
     n2 --> n4
     n3 --> n2
@@ -65,7 +65,7 @@ flowchart LR
     n5 --> n4
     n5 --> n6
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/implementation_evidence.md"
+    click n1 "../modules/integrations.md"
     click n2 "../modules/knowledge_governance.md"
     click n3 "../modules/knowledge_index.md"
     click n4 "../modules/knowledge_model.md"
@@ -80,7 +80,7 @@ flowchart LR
 | Inbound | [engine___init__](../modules/engine___init__.md) |
 | Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [knowledge_model](../modules/knowledge_model.md) |
-| Outbound | [implementation_evidence](../modules/implementation_evidence.md) |
+| Outbound | [integrations](../modules/integrations.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_index](../modules/knowledge_index.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |
@@ -90,8 +90,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ModelValidator](../entities/ModelValidator.md) | 37 | — | One acceptance check run on every parsed knowledge index. |
-| [ValidatorRegistry](../entities/ValidatorRegistry.md) | 64 | — | Ordered model validators plus the modules that define core parsing. |
+| [ModelValidator](../entities/ModelValidator.md) | 39 | — | One acceptance check run on every parsed knowledge index. |
+| [ValidatorRegistry](../entities/ValidatorRegistry.md) | 66 | — | Ordered model validators plus the modules that define core parsing. |
 
 ## Functions
 
@@ -101,5 +101,6 @@ flowchart LR
 | `_check_maintenance_projection` | `(model: KnowledgeIndex) -> None` | — | — |
 | `_check_governance_projection` | `(model: KnowledgeIndex) -> None` | — | — |
 | `_module` | `(name: str) -> str` | — | — |
+| `_module_name` | `(name: str) -> str` | — | — |
 | `current_validators` | `() -> ValidatorRegistry` | — | The registry chosen for this context, or :data:`DEFAULT_VALIDATORS`. |
 | `using_validators` | `(registry: ValidatorRegistry) -> Iterator[ValidatorRegistry]` | `@contextmanager` | Validate knowledge indexes inside the block with ``registry``. |

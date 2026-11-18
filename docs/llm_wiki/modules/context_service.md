@@ -39,7 +39,6 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.context_budget` | `run`, `run` |
 | `.context_packet` | `ContextPacketError` |
 | `.context_packet_builder` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `build_qualified_context` |
-| `.context_request_format` | `_CONCEPT_FILTER_KEYS`, `_CONTEXT_QUERY_LIMIT`, `_EVIDENCE_FILTER_VALUES`, `_FILTER_KEYS`, `_FOCUS_VALUES`, `_FORMATS`, `_FRESHNESS_FILTER_VALUES`, `_KNOWLEDGE_REFINEMENT_KEYS`, `_normalise_protocol_filters`, `_normalise_protocol_focus`, `_PROTOCOL_REQUEST_KEYS`, `_QUALIFIED_RELATIONSHIP_KIND_RE`, `_RELATIONSHIP_DIRECTIONS`, `_RELATIONSHIP_REFINEMENT_KEYS`, `_V1_REQUEST_KEYS`, `_V2_REQUEST_KEYS`, `_validate_enum_filter`, `_validate_protocol_request`, `_validate_protocol_request_impl`, `_validate_relationship_kind_filter`, `_validate_surface_filter`, `CONTEXT_KNOWLEDGE_CONCEPT_LIMIT`, `CONTEXT_KNOWLEDGE_PAGE_LIMIT`, `CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT`, `KNOWLEDGE_PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `ProtocolRequestError` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -49,19 +48,9 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.helper_cache` | `HelperPreparationError` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
-| `.knowledge_loader` | `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
-| `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState` |
-| `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
-| `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
-| `.maintenance_protocol` | `ADOPTION_FILENAME` |
-| `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
-| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
@@ -71,12 +60,23 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `json` | `json` |
 | `llm_wiki_engine` | `wiki_surface` |
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.context_request_format` | `_CONCEPT_FILTER_KEYS`, `_CONTEXT_QUERY_LIMIT`, `_EVIDENCE_FILTER_VALUES`, `_FILTER_KEYS`, `_FOCUS_VALUES`, `_FORMATS`, `_FRESHNESS_FILTER_VALUES`, `_KNOWLEDGE_REFINEMENT_KEYS`, `_normalise_protocol_filters`, `_normalise_protocol_focus`, `_PROTOCOL_REQUEST_KEYS`, `_QUALIFIED_RELATIONSHIP_KIND_RE`, `_RELATIONSHIP_DIRECTIONS`, `_RELATIONSHIP_REFINEMENT_KEYS`, `_V1_REQUEST_KEYS`, `_V2_REQUEST_KEYS`, `_validate_enum_filter`, `_validate_protocol_request`, `_validate_protocol_request_impl`, `_validate_relationship_kind_filter`, `_validate_surface_filter`, `CONTEXT_KNOWLEDGE_CONCEPT_LIMIT`, `CONTEXT_KNOWLEDGE_PAGE_LIMIT`, `CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT`, `KNOWLEDGE_PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `ProtocolRequestError` |
 | `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `llm_wiki_engine.host` | `current_host`, `emit` |
 | `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState` |
+| `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_hint` |
+| `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME` |
+| `llm_wiki_engine.maintenance_status` | `compact_maintenance_summary` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.progress` | `Progress` |
+| `llm_wiki_engine.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `llm_wiki_engine.validation` | `nonnegative_int_or_none` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `pathlib` | `Path`, `PurePosixPath` |

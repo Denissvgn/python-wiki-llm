@@ -1,6 +1,6 @@
 # ValidatedManifestHeader
 
-**Location:** `src/llm_wiki_cli/services/manifest_storage.py:248`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:248`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)
@@ -31,9 +31,9 @@ An immutable view of committed generation policy, artifact hashes and the physic
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ValidatedManifestHeader (src/llm_wiki_cli/services/manifest_storage.py)"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n2["read_manifest_header (src/llm_wiki_cli/services/manifest_storage.py)"]
+    n0["ValidatedManifestHeader (src/llm_wiki_engine/manifest_storage.py)"]
+    n1["src/llm_wiki_engine/knowledge_storage_access.py"]
+    n2["read_manifest_header (src/llm_wiki_engine/manifest_storage.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/manifest_storage.md"

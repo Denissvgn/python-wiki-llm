@@ -33,7 +33,7 @@ One already-built concept coordinate used for endpoint lifting.
 flowchart LR
     n0["GraphConcept (src/llm_wiki_engine/knowledge_graph.py)"]
     n1["_graph_concepts (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n2["_add_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["_add_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
     n3["_graph_concept_payload (src/llm_wiki_engine/knowledge_graph.py)"]
     n4["_materialization_state (src/llm_wiki_engine/knowledge_graph.py)"]
     n5["_normalise_graph_concepts (src/llm_wiki_engine/knowledge_graph.py)"]

@@ -52,7 +52,7 @@ sequenceDiagram
     participant p26 as _hash
     participant p27 as _parse_review_evidence
     participant p28 as _parse_actor
-    participant p29 as Path (src/llm_wiki_cli/services…rnance.py:load_governance)
+    participant p29 as Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)
     participant p30 as ledger.to_bytes
     p0->>p1: first_unsafe_path_component
     p0->>p2: _read_governance_bytes
@@ -82,7 +82,7 @@ sequenceDiagram
     p15->>p26: _hash
     p15->>p27: _parse_review_evidence
     p14->>p28: _parse_actor
-    p0-->>p29: Path (src/llm_wiki_cli/services…rnance.py:load_governance)(wiki_dir)
+    p0-->>p29: Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)(wiki_dir)
     p0-->>p30: ledger.to_bytes
 ```
 
@@ -98,10 +98,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 3 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 7 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 32 | - | external | 16 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_decode_unique_json` | 59 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:_read_governance_bytes` | 32 | - | unresolved | 3 |
+| `src/llm_wiki_engine/knowledge_governance.py:_read_governance_bytes` | 32 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 7 |
+| `src/llm_wiki_engine/knowledge_governance.py:_read_governance_bytes` | 32 | - | external | 16 |
+| `src/llm_wiki_engine/knowledge_governance.py:_decode_unique_json` | 59 | - | external | 1 |
 > Omission summary shows 8 of 133 groups; 125 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -126,7 +126,7 @@ Collector observations for 155 source steps with known totals: observed: 712, em
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `load_governance` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `Path (src/llm_wiki_cli/services…rnance.py:load_governance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -141,7 +141,7 @@ Collector observations for 155 source steps with known totals: observed: 712, em
 ```mermaid
 flowchart LR
     s1["1. load_governance"]
-    s2["2. Path (src/llm_wiki_cli/services…rnance.py:load_governance)"]
+    s2["2. Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)"]
     s3["3. first_unsafe_path_component"]
     s4["4. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s5["5. os.fspath"]
@@ -152,7 +152,7 @@ flowchart LR
     s10["10. current_host"]
     s11["11. _ACTIVE.get"]
     s12["12. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
-    s1 -. "Path (src/llm_wiki_cli/services…rnance.py:load_governance)(wiki_dir)" .-> s2
+    s1 -. "Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)(wiki_dir)" .-> s2
     s1 -->|"first_unsafe_path_component(root)"| s3
     s3 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s4
     s3 -. "os.fspath(path)" .-> s5
@@ -177,7 +177,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_governance` | `wiki_dir: str \| Path`, `expected_bundle_id: str \| None` | `GOVERNANCE_FILENAME`, `GOVERNANCE_FILENAME` | - | `GovernanceLoadResult(...)` |
-| `Path (src/llm_wiki_cli/services…rnance.py:load_governance)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…rnance.py:load_governance)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
@@ -193,7 +193,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 769 | `Path(wiki_dir)` |
+| load_governance | Path (src/llm_wiki_engine/knowl…rnance.py:load_governance) | 769 | `Path(wiki_dir)` |
 | load_governance | first_unsafe_path_component | 770 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |

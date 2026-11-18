@@ -26,7 +26,7 @@ Marks a repeatable internal array stream for canonical JSON hashing. Spill-backe
 ```mermaid
 flowchart LR
     n0["CanonicalArray (src/llm_wiki_engine/canonical_json.py)"]
-    n1["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n1["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n1 --> n0
     click n0 "../modules/canonical_json.md"
     click n1 "../modules/knowledge_stream_audit.md"

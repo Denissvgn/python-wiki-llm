@@ -180,13 +180,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| entity_observation_hash | _validate_inventory_complete | 265 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 818 | `require_bool(inventory_complete, error=TypeError(...))` |
+| entity_observation_hash | _validate_inventory_complete | 269 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 822 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_engine/validation.py:require_bool) | 828 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 820 | `TypeError('inventory_complete must be a boolean')` |
-| entity_observation_hash | normalize_entity_observation | 268 | `normalize_entity_observation(file_data, entity_name, occurrence)` |
-| normalize_entity_observation | _validate_entity_coordinate | 231 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 874 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| _validate_inventory_complete | TypeError | 824 | `TypeError('inventory_complete must be a boolean')` |
+| entity_observation_hash | normalize_entity_observation | 272 | `normalize_entity_observation(file_data, entity_name, occurrence)` |
+| normalize_entity_observation | _validate_entity_coordinate | 235 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 878 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -201,7 +201,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 828 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 820 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 824 |
 | external_call | `require_nonempty_text` | `isinstance` | 637 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

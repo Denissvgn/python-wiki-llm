@@ -16,16 +16,16 @@ sequenceDiagram
     participant p2 as KnowledgeEnvelopeError
     participant p3 as _reject_machine_local_paths
     participant p4 as _hash_structured
-    participant p5 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p5 as set (src/llm_wiki_engine/knowl…reject_machine_local_paths)
     participant p6 as payload.values
-    participant p7 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p7 as walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)
     participant p8 as _validate_json_tree
     participant p9 as sha256_digest
     participant p10 as compact_bytes
-    participant p11 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p11 as set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)
     participant p12 as hashlib.sha256(…).hexdigest
     participant p13 as compact_text(…).encode
-    participant p14 as walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p14 as walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)
     participant p15 as hashlib.sha256
     participant p16 as compact_text
     participant p17 as json.dumps
@@ -33,17 +33,17 @@ sequenceDiagram
     p0->>p2: KnowledgeEnvelopeError
     p0->>p3: _reject_machine_local_paths
     p0->>p4: _hash_structured
-    p3-->>p5: set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    p3-->>p5: set (src/llm_wiki_engine/knowl…reject_machine_local_paths)
     p4-->>p6: payload.values
-    p3-->>p7: walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)
+    p3-->>p7: walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)(value, field_name)
     p4->>p8: _validate_json_tree
     p4->>p9: sha256_digest
     p4->>p10: compact_bytes
     p4->>p2: KnowledgeEnvelopeError
-    p8-->>p11: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p8-->>p11: set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)
     p9-->>p12: hashlib.sha256(…).hexdigest
     p10-->>p13: compact_text(…).encode('utf-8')
-    p8-->>p14: walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)(value, field_name)
+    p8-->>p14: walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)(value, field_name)
     p9-->>p15: hashlib.sha256(data)
     p10->>p16: compact_text
     p16-->>p17: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)
@@ -75,13 +75,13 @@ Collector observations for 7 source steps with known totals: observed: 21, emitt
 | `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_reject_machine_local_paths` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `set (src/llm_wiki_cli/services…reject_machine_local_paths)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `walk (src/llm_wiki_cli/services…reject_machine_local_paths)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/knowl…reject_machine_local_paths)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_hash_structured` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validate_json_tree` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `sha256_digest` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
@@ -90,24 +90,24 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. KnowledgeEnvelopeError"]
     s4["4. _reject_machine_local_paths"]
-    s5["5. set (src/llm_wiki_cli/services…reject_machine_local_paths)"]
-    s6["6. walk (src/llm_wiki_cli/services…reject_machine_local_paths)"]
+    s5["5. set (src/llm_wiki_engine/knowl…reject_machine_local_paths)"]
+    s6["6. walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)"]
     s7["7. _hash_structured"]
     s8["8. payload.values"]
     s9["9. _validate_json_tree"]
-    s10["10. set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)"]
-    s11["11. walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)"]
+    s10["10. set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)"]
+    s11["11. walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)"]
     s12["12. sha256_digest"]
     s1 -. "isinstance(configuration, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('configuration', 'must be an object')"| s3
     s1 -->|"_reject_machine_local_paths(configuration, 'configuration')"| s4
-    s4 -. "set (src/llm_wiki_cli/services…reject_machine_local_paths)(data not statically known)" .-> s5
-    s4 -. "walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)" .-> s6
+    s4 -. "set (src/llm_wiki_engine/knowl…reject_machine_local_paths)(data not statically known)" .-> s5
+    s4 -. "walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)(value, field_name)" .-> s6
     s1 -->|"_hash_structured(COMPONENT_CONFIGURATION_DOMAIN, {...}, 'configuration')"| s7
     s7 -. "payload.values(data not statically known)" .-> s8
     s7 -->|"_validate_json_tree(value, field_name)"| s9
-    s9 -. "set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)(data not statically known)" .-> s10
-    s9 -. "walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)(value, field_name)" .-> s11
+    s9 -. "set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)(data not statically known)" .-> s10
+    s9 -. "walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)(value, field_name)" .-> s11
     s7 -->|"sha256_digest(canonical_json_bytes(...))"| s12
     click s1 "../modules/knowledge_envelope.md"
     click s3 "../modules/knowledge_envelope.md"
@@ -125,13 +125,13 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `_reject_machine_local_paths` | `value: object`, `field_name: str` | - | - | - |
-| `set (src/llm_wiki_cli/services…reject_machine_local_paths)` | - | - | - | - |
-| `walk (src/llm_wiki_cli/services…reject_machine_local_paths)` | - | - | - | - |
+| `set (src/llm_wiki_engine/knowl…reject_machine_local_paths)` | - | - | - | - |
+| `walk (src/llm_wiki_engine/knowl…reject_machine_local_paths)` | - | - | - | - |
 | `_hash_structured` | `domain: str`, `payload: Mapping[str, Any]`, `field_name: str` | `KnowledgeEnvelopeError` | - | `sha256_bytes(...)` |
 | `payload.values` | - | - | - | - |
 | `_validate_json_tree` | `value: object`, `field_name: str` | - | - | - |
-| `set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)` | - | - | - | - |
-| `walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)` | - | - | - | - |
+| `set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)` | - | - | - | - |
+| `walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree)` | - | - | - | - |
 | `sha256_digest` | `data: bytes` | - | - | `...` |
 
 ### Call data
@@ -141,13 +141,13 @@ flowchart LR
 | hash_component_configuration | isinstance | 860 | `isinstance(configuration, Mapping)` |
 | hash_component_configuration | KnowledgeEnvelopeError | 861 | `KnowledgeEnvelopeError('configuration', 'must be an object')` |
 | hash_component_configuration | _reject_machine_local_paths | 862 | `_reject_machine_local_paths(configuration, 'configuration')` |
-| _reject_machine_local_paths | set (src/llm_wiki_cli/services…reject_machine_local_paths) | 1718 | `set(data not statically known)` |
-| _reject_machine_local_paths | walk (src/llm_wiki_cli/services…reject_machine_local_paths) | 1762 | `walk(value, field_name)` |
+| _reject_machine_local_paths | set (src/llm_wiki_engine/knowl…reject_machine_local_paths) | 1718 | `set(data not statically known)` |
+| _reject_machine_local_paths | walk (src/llm_wiki_engine/knowl…reject_machine_local_paths) | 1762 | `walk(value, field_name)` |
 | hash_component_configuration | _hash_structured | 863 | `_hash_structured(COMPONENT_CONFIGURATION_DOMAIN, {...}, 'configuration')` |
 | _hash_structured | payload.values | 1609 | `payload.values(data not statically known)` |
 | _hash_structured | _validate_json_tree | 1610 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1631 | `set(data not statically known)` |
-| _validate_json_tree | walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1672 | `walk(value, field_name)` |
+| _validate_json_tree | set (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree) | 1631 | `set(data not statically known)` |
+| _validate_json_tree | walk (src/llm_wiki_engine/knowl…ope.py:_validate_json_tree) | 1672 | `walk(value, field_name)` |
 | _hash_structured | sha256_digest | 1611 | `sha256_bytes(canonical_json_bytes(...))` |
 
 ### Boundary effects

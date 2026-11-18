@@ -1,6 +1,6 @@
 # ConceptObservationBasis
 
-**Location:** `src/llm_wiki_engine/knowledge_evidence.py:90`
+**Location:** `src/llm_wiki_engine/knowledge_evidence.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -48,16 +48,15 @@ unknown reason codes retain their separate meanings.
 flowchart LR
     n0["ConceptObservationBasis (src/llm_wiki_engine/knowledge_evidence.py)"]
     n1["current_infrastructure_bases (src/llm_wiki_cli/services/infrastructure_sync.py)"]
-    n2["infrastructure_evidence_by_page (src/llm_wiki_cli/services/infrastructure_sync.py)"]
-    n3["_live_basis_details (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["_build_evidence_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n5["_mark_untrusted_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n6["_preserve_unchanged_unknown_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n7["_validated_evidence_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n8["_evidence_basis (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n9["_JoinedPage.basis (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n10["_runtime_live_concept_bases (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n11["_basis_from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n2["_build_evidence_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n3["_mark_untrusted_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n4["_preserve_unchanged_unknown_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n5["_validated_evidence_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n6["_runtime_live_concept_bases (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["infrastructure_evidence_by_page (src/llm_wiki_engine/infrastructure_state.py)"]
+    n8["_unknown_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n9["build_entity_observation_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n10["build_infrastructure_observation_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -68,19 +67,17 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
-    n11 --> n0
     click n0 "../modules/knowledge_evidence.md"
     click n1 "../modules/infrastructure_sync.md"
-    click n2 "../modules/infrastructure_sync.md"
-    click n3 "../modules/knowledge_freshness.md"
+    click n2 "../modules/knowledge_generation.md"
+    click n3 "../modules/knowledge_generation.md"
     click n4 "../modules/knowledge_generation.md"
     click n5 "../modules/knowledge_generation.md"
-    click n6 "../modules/knowledge_generation.md"
-    click n7 "../modules/knowledge_generation.md"
-    click n8 "../modules/knowledge_index.md"
-    click n9 "../modules/knowledge_index.md"
-    click n10 "../modules/knowledge_orchestration.md"
-    click n11 "../modules/sync_manifest.md"
+    click n6 "../modules/knowledge_orchestration.md"
+    click n7 "../modules/infrastructure_state.md"
+    click n8 "../modules/knowledge_evidence.md"
+    click n9 "../modules/knowledge_evidence.md"
+    click n10 "../modules/knowledge_evidence.md"
 ```
 
 ### Summary
@@ -94,16 +91,16 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `current_infrastructure_bases` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) | — |
-| `infrastructure_evidence_by_page` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) | — |
-| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `_build_evidence_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_mark_untrusted_evidence` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_preserve_unchanged_unknown_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_validated_evidence_page_paths` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
-| `_evidence_basis` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
-| `_JoinedPage.basis` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_runtime_live_concept_bases` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
-| `_basis_from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
-| `_basis_from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `infrastructure_evidence_by_page` | type_reference | [infrastructure_state](../modules/infrastructure_state.md) | — |
+| `_unknown_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_unknown_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `build_entity_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `build_entity_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `build_infrastructure_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
 
 > References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

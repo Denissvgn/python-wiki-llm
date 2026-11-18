@@ -71,12 +71,8 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | `.extraction_service` | `InventoryResult`, `ExtractorStatus` |
 | `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options`, `resolve_inventory_cache_path` |
-| `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_generation` | `_graph_concepts` |
 | `.knowledge_reuse` | `implementation_hash`, `REUSE_INPUT_KEY` |
-| `.knowledge_storage` | `KnowledgeStorageError` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.maintenance_state` | `MaintenanceError`, `_identity` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `asdict`, `fields` |
@@ -84,7 +80,11 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `llm_wiki_engine.host` | `emit` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.maintenance_state` | `MaintenanceError`, `_identity` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
 | `llm_wiki_engine.runtime_output` | `warn` |
 | `llm_wiki_engine.section_ownership` | `observe_page_sections` |

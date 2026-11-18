@@ -1,6 +1,6 @@
 # manifest_storage Module
 
-**Path:** `src/llm_wiki_cli/services/manifest_storage.py`
+**Path:** `src/llm_wiki_engine/manifest_storage.py`
 
 ## Description
 
@@ -32,7 +32,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/manifest_storage.py"]
+    n1["src/llm_wiki_engine/manifest_storage.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/manifest_storage.md"

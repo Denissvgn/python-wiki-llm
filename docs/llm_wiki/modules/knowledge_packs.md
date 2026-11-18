@@ -1,6 +1,6 @@
 # knowledge_packs Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_packs.py`
+**Path:** `src/llm_wiki_engine/knowledge_packs.py`
 
 ## Description
 
@@ -33,7 +33,7 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_packs.py"]
+    n1["src/llm_wiki_engine/knowledge_packs.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_packs.md"

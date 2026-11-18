@@ -26,7 +26,7 @@ Raised when a canonical page path cannot be read inside its wiki root.
 flowchart LR
     n0["WikiSurfacePathError (src/llm_wiki_engine/wiki_surface.py)"]
     n1["WikiSurfaceError (src/llm_wiki_engine/wiki_surface.py)"]
-    n2["src/llm_wiki_cli/services/knowledge_loader.py"]
+    n2["src/llm_wiki_engine/knowledge_loader.py"]
     n3["_collect_directory_pages (src/llm_wiki_engine/wiki_surface.py)"]
     n4["resolve_wiki_page_path (src/llm_wiki_engine/wiki_surface.py)"]
     n0 --> n1

@@ -39,7 +39,6 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 |--------|---------|
 | `..config` | `validate_path`, `validate_source_root` |
 | `..extractors.common` | `normalize_include_tests` |
-| `.analysis_compatibility` | `comparison_entrypoint` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.data_flow` | `analyze_data_flow` |
 | `.dependencies` | `analyze_dependencies`, `describe_unscanned_scopes`, `startup_cycle_groups` |
@@ -54,24 +53,14 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
-| `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `evaluate_review_event`, `load_governance` |
-| `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
-| `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState`, `ObservationScope` |
-| `.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
-| `.knowledge_verification` | `attach_machine_verification_read_view` |
 | `.lint_request` | `LintRequest`, `LintRequestError` |
 | `.metrics` | `record_validation_event` |
 | `.module_coverage` | `classify_uncovered_python_sources` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
-| `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection`, `retained_empty_module_paths` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
-| `.sync_manifest` | `MANIFEST_FILENAME`, `ManifestPageSource`, `SyncManifest`, `SyncManifestError` |
 | `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue` |
-| `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME`, `VerificationResult`, `load_verification_receipt` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance`, `sync_guidance` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -81,12 +70,23 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `enum` | `Enum` |
 | `json` | `json` |
 | `llm_wiki_engine` | `wiki_media` |
+| `llm_wiki_engine.analysis_compatibility` | `comparison_entrypoint` |
 | `llm_wiki_engine.host` | `emit` |
 | `llm_wiki_engine.io` | `read_md` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `evaluate_review_event`, `load_governance` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState`, `ObservationScope` |
+| `llm_wiki_engine.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
+| `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `llm_wiki_engine.progress` | `phase` |
+| `llm_wiki_engine.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection`, `retained_empty_module_paths` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME`, `ManifestPageSource`, `SyncManifest`, `SyncManifestError` |
 | `llm_wiki_engine.validation` | `path_is_in_top_level_directory` |
+| `llm_wiki_engine.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME`, `VerificationResult`, `load_verification_receipt` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `is_safe_page_id`, `iter_page_kinds` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `os` | `os` |

@@ -1,6 +1,6 @@
 # ByteSpool
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:21`
+**Location:** `src/llm_wiki_engine/storage_spool.py:21`
 **Kind:** Class
 **Bases:** `MutableMapping[str, bytes]`
 **Module:** [storage_spool](../modules/storage_spool.md)
@@ -35,18 +35,18 @@ Owns one private temporary file and a bounded index of immutable byte captures. 
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ByteSpool (src/llm_wiki_cli/services/storage_spool.py)"]
+    n0["ByteSpool (src/llm_wiki_engine/storage_spool.py)"]
     n1["MutableMapping[str, bytes]"]
-    n2["src/llm_wiki_cli/services/knowledge_audit.py"]
-    n3["build_packed_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n4["prune_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n6["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n7["_capture_spooled_wiki (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n8["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n9["ByteSpool.fork (src/llm_wiki_cli/services/storage_spool.py)"]
-    n10["JsonSpool.__init__ (src/llm_wiki_cli/services/storage_spool.py)"]
-    n11["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
+    n2["src/llm_wiki_engine/knowledge_audit.py"]
+    n3["build_packed_store (src/llm_wiki_engine/knowledge_packs.py)"]
+    n4["prune_knowledge_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
+    n5["restore_pruned_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
+    n6["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n7["_capture_spooled_wiki (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n8["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n9["ByteSpool.fork (src/llm_wiki_engine/storage_spool.py)"]
+    n10["JsonSpool.__init__ (src/llm_wiki_engine/storage_spool.py)"]
+    n11["spool_write (src/llm_wiki_engine/storage_spool.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

@@ -26,14 +26,14 @@ sequenceDiagram
     participant p12 as _validation_error
     participant p13 as contains_control_character
     participant p14 as _uri_candidate_contains_authority_userinfo
-    participant p15 as isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
-    participant p16 as value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p15 as isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)
+    participant p16 as value.strip (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)
     participant p17 as TypeError
-    participant p18 as isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)
+    participant p18 as isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)
     participant p19 as tuple
     participant p20 as sorted
-    participant p21 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p22 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p21 as isinstance (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)
+    participant p22 as len (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)
     participant p23 as _CONTROL_RE.search
     participant p24 as isinstance (src/llm_wiki_engine/validation.py:require_sha256)
     participant p25 as _SENSITIVE_RE.search
@@ -54,16 +54,16 @@ sequenceDiagram
     p5->>p12: _validation_error
     p7->>p13: contains_control_character
     p9->>p14: _uri_candidate_contains_authority_userinfo
-    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)(concept, ConceptRecord)
-    p3-->>p16: value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    p0-->>p15: isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)(concept, ConceptRecord)
+    p3-->>p16: value.strip (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)
     p0-->>p17: TypeError('concept must be a ConceptRecord')
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)(value, ReviewEvidence)
+    p1-->>p18: isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)(value, ReviewEvidence)
     p1-->>p19: tuple(sorted(...))
     p1-->>p20: sorted(...)
     p1-->>p19: tuple(sorted(...))
     p1-->>p20: sorted(...)
-    p3-->>p21: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value, str)
-    p3-->>p22: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value)
+    p3-->>p21: isinstance (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)(value, str)
+    p3-->>p22: len (src/llm_wiki_engine/knowl…e_governance.py:_safe_name)(value)
     p3-->>p23: _CONTROL_RE.search(value)
     p5-->>p24: isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)
     p6-->>p25: _SENSITIVE_RE.search(value)
@@ -80,12 +80,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:current_review_evidence` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_review_evidence` | 6 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_safe_name` | 15 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:current_review_evidence` | 1 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_engine/knowledge_governance.py:_review_evidence` | 6 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
+| `src/llm_wiki_engine/knowledge_governance.py:_safe_name` | 15 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
 | `src/llm_wiki_engine/validation.py:require_no_control_characters` | 22 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:contains_control_character` | 24 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
+| `src/llm_wiki_engine/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
 | `src/llm_wiki_engine/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | unresolved | 14 |
 | `src/llm_wiki_engine/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | external | 1 |
 > Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
@@ -109,12 +109,12 @@ Collector observations for 21 source steps with known totals: observed: 96, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `current_review_evidence` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
-| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_review_evidence` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -124,23 +124,23 @@ Collector observations for 21 source steps with known totals: observed: 96, emit
 ```mermaid
 flowchart LR
     s1["1. current_review_evidence"]
-    s2["2. isinstance (src/llm_wiki_cli/services…py:current_review_evidence)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)"]
     s3["3. TypeError"]
     s4["4. ReviewEvidence"]
     s5["5. ReviewEvidence"]
     s6["6. _review_evidence"]
-    s7["7. isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)"]
+    s7["7. isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)"]
     s8["8. GovernanceError"]
     s9["9. GovernanceError"]
     s10["10. GovernanceError"]
     s11["11. ReviewEvidence"]
     s12["12. GovernanceError"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…py:current_review_evidence)(concept, ConceptRecord)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)(concept, ConceptRecord)" .-> s2
     s1 -. "TypeError('concept must be a ConceptRecord')" .-> s3
     s1 -->|"ReviewEvidence(mode='no-source')"| s4
     s1 -->|"ReviewEvidence(mode='no-source')"| s5
     s1 -->|"_review_evidence(ReviewEvidence(...), 'evidence')"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)(value, ReviewEvidence)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)(value, ReviewEvidence)" .-> s7
     s6 -->|"GovernanceError(path, 'must be ReviewEvidence')"| s8
     s6 -->|"GovernanceError(..., #34;must be 'source' or 'no-source'#34;)"| s9
     s6 -->|"GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')"| s10
@@ -162,12 +162,12 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `current_review_evidence` | `concept: ConceptRecord` | `ConceptRecord`, `EvidenceState`, `EvidenceState`, `EvidenceState` | - | `ReviewEvidence(...)`, `ReviewEvidence(...)`, `None`, `None`, `_review_evidence(...)` |
-| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `ReviewEvidence` | - | - | - | - |
 | `ReviewEvidence` | - | - | - | - |
 | `_review_evidence` | `value: ReviewEvidence`, `path: str` | `ReviewEvidence`, `REVIEW_EVIDENCE_MODES` | - | `ReviewEvidence(...)`, `ReviewEvidence(...)` |
-| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence)` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
@@ -178,12 +178,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| current_review_evidence | isinstance (src/llm_wiki_cli/services…py:current_review_evidence) | 1526 | `isinstance(concept, ConceptRecord)` |
+| current_review_evidence | isinstance (src/llm_wiki_engine/knowl…py:current_review_evidence) | 1526 | `isinstance(concept, ConceptRecord)` |
 | current_review_evidence | TypeError | 1527 | `TypeError('concept must be a ConceptRecord')` |
 | current_review_evidence | ReviewEvidence | 1531 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | ReviewEvidence | 1535 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | _review_evidence | 1554 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
-| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 3037 | `isinstance(value, ReviewEvidence)` |
+| _review_evidence | isinstance (src/llm_wiki_engine/knowl…rnance.py:_review_evidence) | 3037 | `isinstance(value, ReviewEvidence)` |
 | _review_evidence | GovernanceError | 3038 | `GovernanceError(path, 'must be ReviewEvidence')` |
 | _review_evidence | GovernanceError | 3040 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
 | _review_evidence | GovernanceError | 3046 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |

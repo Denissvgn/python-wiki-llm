@@ -32,9 +32,9 @@ _Auto-generated from `MarkdownLinkTarget` in `src/llm_wiki_engine/wiki_media.py`
 ```mermaid
 flowchart LR
     n0["MarkdownLinkTarget (src/llm_wiki_engine/wiki_media.py)"]
-    n1["_index_source_link_occurrences (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_validate_observation_source_syntax (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n1["_index_source_link_occurrences (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_validate_observation_source_syntax (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
     n4["iter_markdown_link_targets (src/llm_wiki_engine/wiki_media.py)"]
     n5["iter_mermaid_click_targets (src/llm_wiki_engine/wiki_media.py)"]
     n1 --> n0

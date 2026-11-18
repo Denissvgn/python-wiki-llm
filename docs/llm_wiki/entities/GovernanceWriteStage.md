@@ -1,6 +1,6 @@
 # GovernanceWriteStage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:137`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:137`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -26,7 +26,7 @@ Fault-injection points for the durable ledger replacement.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceWriteStage (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceWriteStage (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["Enum"]
     n2["str"]
     n0 --> n1

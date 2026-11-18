@@ -1,6 +1,6 @@
 # knowledge_stream_audit Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_stream_audit.py`
+**Path:** `src/llm_wiki_engine/knowledge_stream_audit.py`
 
 ## Description
 
@@ -34,7 +34,7 @@ Audits complete indexed storage, native record shapes and references, logical co
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n1["src/llm_wiki_engine/knowledge_stream_audit.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_stream_audit.md"

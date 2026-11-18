@@ -125,17 +125,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_page_map | sorted | 42 | `sorted(source_paths)` |
-| build_infrastructure_page_map | infrastructure_page_name | 45 | `infrastructure_page_name(source_path)` |
+| build_infrastructure_page_map | sorted | 44 | `sorted(source_paths)` |
+| build_infrastructure_page_map | infrastructure_page_name | 47 | `infrastructure_page_name(source_path)` |
 | infrastructure_page_name | source_path.replace(…).replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
 | infrastructure_page_name | source_path.replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_')` |
 | infrastructure_page_name | source_path.replace | 31 | `source_path.replace('\\', '/')` |
-| build_infrastructure_page_map | by_stem.setdefault(…).append | 46 | `by_stem.setdefault(stem, []).append(source_path)` |
-| build_infrastructure_page_map | by_stem.setdefault | 46 | `by_stem.setdefault(stem, [...])` |
-| build_infrastructure_page_map | sorted | 48 | `sorted(by_stem.items(...))` |
-| build_infrastructure_page_map | by_stem.items | 48 | `by_stem.items(data not statically known)` |
-| build_infrastructure_page_map | len | 49 | `len(grouped_paths)` |
-| build_infrastructure_page_map | hash_json(…).removeprefix | 53 | `hash_json(source_path).removeprefix('sha256:')` |
+| build_infrastructure_page_map | by_stem.setdefault(…).append | 48 | `by_stem.setdefault(stem, []).append(source_path)` |
+| build_infrastructure_page_map | by_stem.setdefault | 48 | `by_stem.setdefault(stem, [...])` |
+| build_infrastructure_page_map | sorted | 50 | `sorted(by_stem.items(...))` |
+| build_infrastructure_page_map | by_stem.items | 50 | `by_stem.items(data not statically known)` |
+| build_infrastructure_page_map | len | 51 | `len(grouped_paths)` |
+| build_infrastructure_page_map | hash_json(…).removeprefix | 55 | `hash_json(source_path).removeprefix('sha256:')` |
 
 ### Boundary effects
 
@@ -145,15 +145,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_infrastructure_page_map` | `sorted` | 42 |
+| external_call | `build_infrastructure_page_map` | `sorted` | 44 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 31 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 31 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace` | 31 |
-| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
-| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault` | 46 |
-| external_call | `build_infrastructure_page_map` | `sorted` | 48 |
-| unresolved_call | `build_infrastructure_page_map` | `by_stem.items` | 48 |
-| unresolved_call | `build_infrastructure_page_map` | `hash_json(source_path).removeprefix` | 53 |
+| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 48 |
+| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault` | 48 |
+| external_call | `build_infrastructure_page_map` | `sorted` | 50 |
+| unresolved_call | `build_infrastructure_page_map` | `by_stem.items` | 50 |
+| unresolved_call | `build_infrastructure_page_map` | `hash_json(source_path).removeprefix` | 55 |
 | step_limit | `build_infrastructure_page_map` | `first 12 steps` | 0 |
 
 ## Behavior

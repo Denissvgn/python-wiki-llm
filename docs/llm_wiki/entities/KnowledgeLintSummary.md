@@ -33,7 +33,7 @@ Aggregate strict-lint knowledge status without exposing evidence.
 ```mermaid
 flowchart LR
     n0["KnowledgeLintSummary (src/llm_wiki_cli/services/lint_service.py)"]
-    n1["KnowledgeAggregateSummary (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n1["KnowledgeAggregateSummary (src/llm_wiki_engine/knowledge_observability.py)"]
     n2["_set_knowledge_summary (src/llm_wiki_cli/services/lint_service.py)"]
     n0 --> n1
     n2 --> n0

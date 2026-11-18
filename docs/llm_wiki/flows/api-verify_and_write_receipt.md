@@ -50,7 +50,7 @@ sequenceDiagram
     participant p26 as VerificationReceipt
     participant p27 as after_wiki_write
     participant p28 as indented_line_text
-    participant p29 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
+    participant p29 as Path (src/llm_wiki_engine/verif…rite_verification_receipt)
     participant p30 as root.is_symlink
     p0->>p1: verify
     p0->>p2: write_verification_receipt
@@ -80,7 +80,7 @@ sequenceDiagram
     p3->>p26: VerificationReceipt
     p7->>p27: after_wiki_write
     p8->>p28: indented_line_text
-    p2-->>p29: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
+    p2-->>p29: Path (src/llm_wiki_engine/verif…rite_verification_receipt)(wiki_dir)
     p2-->>p30: root.is_symlink
 ```
 
@@ -92,14 +92,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | - | external | 6 |
-| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:run_verification` | 13 | - | external | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | - | external | 11 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:build_verification_receipt` | 3 | - | external | 6 |
+| `src/llm_wiki_engine/verification_contracts.py:build_verification_receipt` | 3 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:run_verification` | 13 | - | external | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:_selected_contracts` | 16 | - | external | 11 |
+| `src/llm_wiki_engine/verification_contracts.py:_selected_contracts` | 16 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:_checker_id` | 31 | - | external | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:_checker_id` | 31 | - | unresolved | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:_checker_id` | 31 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
 > Omission summary shows 8 of 50 groups; 42 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -126,12 +126,12 @@ Collector observations for 57 source steps with known totals: observed: 229, emi
 | `verify_and_write_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `verify` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `build_verification_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/verif…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/verif…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `all` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -141,23 +141,23 @@ flowchart LR
     s1["1. verify_and_write_receipt"]
     s2["2. verify"]
     s3["3. build_verification_receipt"]
-    s4["4. isinstance (src/llm_wiki_cli/services…uild_verification_receipt)"]
-    s5["5. TypeError (src/llm_wiki_cli/services…uild_verification_receipt)"]
-    s6["6. tuple (src/llm_wiki_cli/services…uild_verification_receipt)"]
+    s4["4. isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)"]
+    s5["5. TypeError (src/llm_wiki_engine/verif…uild_verification_receipt)"]
+    s6["6. tuple (src/llm_wiki_engine/verif…uild_verification_receipt)"]
     s7["7. VerificationContractError"]
     s8["8. any"]
-    s9["9. isinstance (src/llm_wiki_cli/services…uild_verification_receipt)"]
+    s9["9. isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)"]
     s10["10. VerificationContractError"]
     s11["11. all"]
     s12["12. VerificationReceipt"]
     s1 -->|"verify(context, checker_ids)"| s2
     s2 -->|"build_verification_receipt(context, run_verification(...))"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…uild_verification_receipt)(context, VerificationContext)" .-> s4
-    s3 -. "TypeError (src/llm_wiki_cli/services…uild_verification_receipt)('context must be a VerificationContext')" .-> s5
-    s3 -. "tuple (src/llm_wiki_cli/services…uild_verification_receipt)(checks)" .-> s6
+    s3 -. "isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)(context, VerificationContext)" .-> s4
+    s3 -. "TypeError (src/llm_wiki_engine/verif…uild_verification_receipt)('context must be a VerificationContext')" .-> s5
+    s3 -. "tuple (src/llm_wiki_engine/verif…uild_verification_receipt)(checks)" .-> s6
     s3 -->|"VerificationContractError('checks must not be empty')"| s7
     s3 -. "any(...)" .-> s8
-    s3 -. "isinstance (src/llm_wiki_cli/services…uild_verification_receipt)(check, VerificationCheckResult)" .-> s9
+    s3 -. "isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)(check, VerificationCheckResult)" .-> s9
     s3 -->|"VerificationContractError('checks must contain VerificationCheckResult values')"| s10
     s3 -. "all(...)" .-> s11
     s3 -->|"VerificationReceipt(…)"| s12
@@ -176,12 +176,12 @@ flowchart LR
 | `verify_and_write_receipt` | `wiki_dir: str \| Path`, `context: VerificationContext`, `checker_ids: Sequence[str] \| None` | - | - | `receipt` |
 | `verify` | `context: VerificationContext`, `checker_ids: Sequence[str] \| None` | - | - | `build_verification_receipt(...)` |
 | `build_verification_receipt` | `context: VerificationContext`, `checks: Sequence[VerificationCheckResult]` | `VerificationContext`, `VerificationCheckResult`, `VerificationResult`, `VerificationResult`, `VerificationResult` | - | `VerificationReceipt(...)` |
-| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…uild_verification_receipt)` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…uild_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/verif…uild_verification_receipt)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/verif…uild_verification_receipt)` | - | - | - | - |
 | `VerificationContractError` | - | - | - | - |
 | `any` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…uild_verification_receipt)` | - | - | - | - |
 | `VerificationContractError` | - | - | - | - |
 | `all` | - | - | - | - |
 | `VerificationReceipt` | - | - | - | - |
@@ -192,12 +192,12 @@ flowchart LR
 |---|---|---:|---|
 | verify_and_write_receipt | verify | 1055 | `verify(context, checker_ids)` |
 | verify | build_verification_receipt | 799 | `build_verification_receipt(context, run_verification(...))` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 760 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError (src/llm_wiki_cli/services…uild_verification_receipt) | 761 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple (src/llm_wiki_cli/services…uild_verification_receipt) | 762 | `tuple(checks)` |
+| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…uild_verification_receipt) | 760 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError (src/llm_wiki_engine/verif…uild_verification_receipt) | 761 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple (src/llm_wiki_engine/verif…uild_verification_receipt) | 762 | `tuple(checks)` |
 | build_verification_receipt | VerificationContractError | 764 | `VerificationContractError('checks must not be empty')` |
 | build_verification_receipt | any | 765 | `any(...)` |
-| build_verification_receipt | isinstance (src/llm_wiki_cli/services…uild_verification_receipt) | 766 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…uild_verification_receipt) | 766 | `isinstance(check, VerificationCheckResult)` |
 | build_verification_receipt | VerificationContractError | 769 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
 | build_verification_receipt | all | 774 | `all(...)` |
 | build_verification_receipt | VerificationReceipt | 780 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |

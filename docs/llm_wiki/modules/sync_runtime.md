@@ -117,24 +117,13 @@ still stop the operation.
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
-| `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
-| `.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
-| `.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES` |
-| `.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
-| `.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
-| `.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
-| `.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `source_snapshot_matches_current_files`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
 | `.sync_generated_sections` | `plan_generated_source_repairs` |
-| `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
-| `.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
 | `.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
@@ -149,12 +138,23 @@ still stop the operation.
 | `llm_wiki_engine.contracts` | `INITIALIZABLE_SURFACES` |
 | `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit`, `recording_errors` |
 | `llm_wiki_engine.io` | `read_md`, `write_md` |
+| `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
+| `llm_wiki_engine.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
+| `llm_wiki_engine.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
+| `llm_wiki_engine.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
+| `llm_wiki_engine.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `llm_wiki_engine.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `llm_wiki_engine.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
 | `llm_wiki_engine.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
+| `llm_wiki_engine.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
+| `llm_wiki_engine.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |

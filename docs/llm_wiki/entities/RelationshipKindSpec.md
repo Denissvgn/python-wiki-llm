@@ -1,6 +1,6 @@
 # RelationshipKindSpec
 
-**Location:** `src/llm_wiki_cli/services/knowledge_kinds.py:92`
+**Location:** `src/llm_wiki_engine/knowledge_kinds.py:92`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_kinds](../modules/knowledge_kinds.md)
@@ -29,10 +29,10 @@ One relationship or typed-graph edge kind.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RelationshipKindSpec (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n0["RelationshipKindSpec (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1["src/llm_wiki_cli/engine/__init__.py"]
-    n2["KindRegistry.with_graph_relationship_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n3["KindRegistry.with_relationship_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n2["KindRegistry.with_graph_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n3["KindRegistry.with_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

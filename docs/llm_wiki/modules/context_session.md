@@ -10,7 +10,7 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `context_packet_builder` |
+| `.` | `context_packet_builder` |
 | `..` | `__version__` |
 | `.task_compact` | `CompactTaskContext`, `_CheckedCounter`, `normalize_view_options`, `render_compact_task_context` |
 | `.task_context` | `TaskCancelledError`, `TaskRead`, `_counter`, `build_task_read`, `plan_source_read`, `validate_task_context` |
@@ -22,6 +22,7 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 | `dataclasses` | `dataclass`, `fields`, `is_dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility` |
 | `llm_wiki_engine.host` | `current_host` |
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |

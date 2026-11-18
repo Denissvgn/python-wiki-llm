@@ -2,13 +2,12 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 51 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), and 50 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -29,6 +28,7 @@
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -41,7 +41,6 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
@@ -133,9 +132,9 @@ sequenceDiagram
     p1-->>p31: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 2405 interactions; 2375 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2396 interactions; 2366 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 764 (763 omitted); unresolved 1 of 765 (764 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 764 (763 omitted); unresolved 1 of 766 (765 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -149,7 +148,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | unresolved | 1 |
-> Omission summary shows 8 of 565 groups; 557 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 558 groups; 550 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -162,9 +161,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 877; effect analysis evaluated: 596, partial: 35, unavailable: 246. Counts include steps omitted from the displayed trace.
+Source steps: 867; effect analysis evaluated: 589, partial: 33, unavailable: 245. Counts include steps omitted from the displayed trace.
 
-Collector observations for 631 source steps with known totals: observed: 4044, emitted: 3789, omitted: 255. Unavailable totals are excluded.
+Collector observations for 622 source steps with known totals: observed: 3958, emitted: 3705, omitted: 253. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,6 +1,6 @@
 # KnowledgeStoreReader
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:505`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:507`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -39,12 +39,12 @@ Traverses hash-bound catalogs and expands only the records needed by a selected 
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeStoreReader (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n1["PackedKnowledgeStoreReader (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n2["open_knowledge_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n3["physical_objects (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n5["_prune_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n0["KnowledgeStoreReader (src/llm_wiki_engine/knowledge_storage.py)"]
+    n1["PackedKnowledgeStoreReader (src/llm_wiki_engine/knowledge_packs.py)"]
+    n2["open_knowledge_store (src/llm_wiki_engine/knowledge_packs.py)"]
+    n3["physical_objects (src/llm_wiki_engine/knowledge_packs.py)"]
+    n4["src/llm_wiki_engine/knowledge_storage_access.py"]
+    n5["_prune_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

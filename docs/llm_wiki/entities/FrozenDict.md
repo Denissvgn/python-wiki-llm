@@ -28,8 +28,8 @@ flowchart LR
     n1["dict"]
     n2["_CapturedAnalysis (src/llm_wiki_cli/services/analysis_capture.py)"]
     n3["src/llm_wiki_cli/services/analysis_capture.py"]
-    n4["src/llm_wiki_cli/services/knowledge_model.py"]
-    n5["freeze (src/llm_wiki_engine/immutable.py)"]
+    n4["freeze (src/llm_wiki_engine/immutable.py)"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -38,8 +38,8 @@ flowchart LR
     click n0 "../modules/immutable.md"
     click n2 "../modules/analysis_capture.md"
     click n3 "../modules/analysis_capture.md"
-    click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/immutable.md"
+    click n4 "../modules/immutable.md"
+    click n5 "../modules/knowledge_model.md"
 ```
 
 ### Summary
@@ -60,5 +60,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `analysis_capture` | import | [analysis_capture](../modules/analysis_capture.md) | — |
-| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) | — |
 | `freeze` | call | [immutable](../modules/immutable.md) | 1 |
+| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) | — |

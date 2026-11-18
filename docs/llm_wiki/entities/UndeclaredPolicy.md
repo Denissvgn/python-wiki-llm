@@ -1,6 +1,6 @@
 # UndeclaredPolicy
 
-**Location:** `src/llm_wiki_cli/services/knowledge_kinds.py:48`
+**Location:** `src/llm_wiki_engine/knowledge_kinds.py:48`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_kinds](../modules/knowledge_kinds.md)
@@ -8,7 +8,7 @@
 
 ## Description
 
-_Auto-generated from `UndeclaredPolicy` in `src/llm_wiki_cli/services/knowledge_kinds.py`._
+_Auto-generated from `UndeclaredPolicy` in `src/llm_wiki_engine/knowledge_kinds.py`._
 
 ## Attributes
 

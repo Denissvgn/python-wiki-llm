@@ -1,6 +1,6 @@
 # _ExpectedLinkOutcome
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:212`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:212`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_ExpectedLinkOutcome` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_ExpectedLinkOutcome` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -29,8 +29,8 @@ _Auto-generated from `_ExpectedLinkOutcome` in `src/llm_wiki_cli/services/knowle
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_ExpectedLinkOutcome (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["_expected_observation_outcome (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_ExpectedLinkOutcome (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_expected_observation_outcome (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_index.md"
     click n1 "../modules/knowledge_index.md"

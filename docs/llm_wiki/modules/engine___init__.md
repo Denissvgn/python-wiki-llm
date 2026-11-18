@@ -41,15 +41,12 @@ A host built with ``events=`` also receives structured
 
 | Source | Symbols |
 |--------|---------|
-| `..services.analysis_compatibility` | `selected_policy`, `comparison_scope` |
 | `..services.bootstrap_runtime` | `execute_bootstrap` |
 | `..services.bootstrap_service` | `BootstrapContractError`, `BootstrapRequest`, `BootstrapRequestError`, `BootstrapResult`, `BootstrapServiceError` |
 | `..services.context_budget_format` | `CONTEXT_BUDGET_RESPONSE_PROTOCOL`, `BudgetedContextResponseError`, `validate_budgeted_context_response` |
 | `..services.context_response_format` | `CONTEXT_RESPONSE_PROTOCOLS`, `ContextResponseError`, `validate_context_response` |
 | `..services.domain_pack` | `CODE_DOCS_PACK`, `BuiltInPageRenderer`, `BundledHelperToolchain`, `CodeContextSource`, `ContextSource`, `DomainPack`, `EntityPageRequest`, `ExtensionSourceClassifier`, `HelperToolchain`, `ModulePageRequest`, `NoHelperToolchain`, `PageNamer`, `PageRenderer`, `PageRequest`, `SourceClassifier`, `StemPageNamer`, `using_pack` |
 | `..services.helper_runtime` | `helper_operation`, `helper_policy` |
-| `..services.knowledge_kinds` | `DEFAULT_KINDS`, `ConceptKindSpec`, `KindRegistry`, `RelationshipKindSpec`, `using_kinds` |
-| `..services.knowledge_validators` | `DEFAULT_VALIDATORS`, `ModelValidator`, `ValidatorRegistry`, `using_validators` |
 | `..services.lint_request` | `LintRequest`, `LintRequestError` |
 | `..services.lint_service` | `LintReport`, `execute_lint` |
 | `..services.migrate_runtime` | `execute_migrate` |
@@ -64,9 +61,12 @@ A host built with ``events=`` also receives structured
 | `collections.abc` | `Callable`, `Iterator`, `Mapping` |
 | `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.analysis_compatibility` | `selected_policy`, `comparison_scope` |
 | `llm_wiki_engine.engine_events` | `ENGINE_EVENT_SCHEMA_VERSION`, `EVENT_KINDS`, `EngineEvent`, `EventKind`, `EventSink`, `operation_identity`, `validate_engine_event` |
 | `llm_wiki_engine.extract_format` | `EXTRACT_SCHEMA_VERSION`, `ExtractPayloadError`, `validate_extract_payload` |
 | `llm_wiki_engine.host` | `ALL_CAPABILITIES`, `Host`, `HostCapabilityError`, `MessageStream`, `NoProcessHost`, `current_host`, `using_host` |
+| `llm_wiki_engine.knowledge_kinds` | `DEFAULT_KINDS`, `ConceptKindSpec`, `KindRegistry`, `RelationshipKindSpec`, `using_kinds` |
+| `llm_wiki_engine.knowledge_validators` | `DEFAULT_VALIDATORS`, `ModelValidator`, `ValidatorRegistry`, `using_validators` |
 | `llm_wiki_engine.maintenance_queue_format` | `MAINTENANCE_QUEUE_SCHEMA_VERSION`, `MaintenanceQueueError`, `validate_maintenance_queue` |
 | `llm_wiki_engine.maintenance_status_format` | `MAINTENANCE_STATUS_SCHEMA_VERSION`, `MaintenanceStatusError`, `validate_maintenance_status` |
 | `llm_wiki_engine.query_result_format` | `DOCUMENTATION_QUERY_SCHEMA_VERSION`, `SEARCH_RESULT_SCHEMA_VERSION`, `QueryResultError`, `validate_documentation_query_result`, `validate_search_result` |

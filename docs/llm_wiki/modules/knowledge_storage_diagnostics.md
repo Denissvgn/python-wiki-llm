@@ -1,6 +1,6 @@
 # knowledge_storage_diagnostics Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage_diagnostics.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage_diagnostics.py`
 
 ## Description
 
@@ -48,7 +48,7 @@ Logical review continuations bind both snapshot commitments, native root locatio
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
+    n1["src/llm_wiki_engine/knowledge_storage_diagnostics.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_storage_diagnostics.md"

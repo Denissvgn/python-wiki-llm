@@ -1,6 +1,6 @@
 # knowledge_envelope Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_envelope.py`
+**Path:** `src/llm_wiki_engine/knowledge_envelope.py`
 
 ## Description
 
@@ -40,7 +40,7 @@ step whose result is inert input to the builder.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_envelope.py"]
+    n1["src/llm_wiki_engine/knowledge_envelope.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_envelope.md"
@@ -52,10 +52,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (26) |
+| Inbound | `src` (27) |
 | Outbound | `src` (6) |
 
-> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

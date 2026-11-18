@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 65 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 68 more
 
 **Complete modules touched:**
 
@@ -27,7 +27,9 @@
 - [host](../modules/host.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -39,6 +41,7 @@
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
@@ -101,14 +104,14 @@ sequenceDiagram
     participant p16 as _first_use_guidance
     participant p17 as _preflight_bootstrap_governance
     participant p18 as _extract_bootstrap_inventory
-    participant p19 as guard_incomplete_bootstrap
+    participant p19 as attributes
     participant p20 as _is_pristine_bootstrap_target
-    participant p21 as load_adoption_marker
-    participant p22 as governance_writer_lock
-    participant p23 as _finish_if_empty_bootstrap_inventory
-    participant p24 as SyncManifest.load
-    participant p25 as storage_writer_lock
-    participant p26 as _bootstrap_result
+    participant p21 as governance_writer_lock
+    participant p22 as _finish_if_empty_bootstrap_inventory
+    participant p23 as load_adoption_marker
+    participant p24 as storage_writer_lock
+    participant p25 as _bootstrap_result
+    participant p26 as SyncManifest.load
     participant p27 as _recover
     participant p28 as build_source_snapshot
     participant p29 as SystemExit
@@ -131,23 +134,23 @@ sequenceDiagram
     p7->>p16: _first_use_guidance
     p11->>p17: _preflight_bootstrap_governance
     p12->>p18: _extract_bootstrap_inventory
-    p6->>p19: guard_incomplete_bootstrap
+    p6->>p19: attributes
     p7->>p20: _is_pristine_bootstrap_target
-    p6->>p21: load_adoption_marker
-    p9->>p22: governance_writer_lock
-    p12->>p23: _finish_if_empty_bootstrap_inventory
-    p6->>p24: SyncManifest.load
-    p9->>p25: storage_writer_lock
-    p12->>p26: _bootstrap_result
+    p9->>p21: governance_writer_lock
+    p12->>p22: _finish_if_empty_bootstrap_inventory
+    p6->>p23: load_adoption_marker
+    p9->>p24: storage_writer_lock
+    p12->>p25: _bootstrap_result
+    p6->>p26: SyncManifest.load
     p10->>p27: _recover
     p11->>p28: build_source_snapshot
     p0-->>p29: SystemExit(1)
     p5-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 3514 interactions; 3484 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3520 interactions; 3490 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1171 (1170 omitted); unresolved 1 of 925 (924 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1175 (1174 omitted); unresolved 1 of 926 (925 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +164,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | external | 10 |
-> Omission summary shows 8 of 889 groups; 881 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 894 groups; 886 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +177,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1419; effect analysis evaluated: 1057, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1420; effect analysis evaluated: 1058, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1122 source steps with known totals: observed: 6564, emitted: 6261, omitted: 303. Unavailable totals are excluded.
+Collector observations for 1123 source steps with known totals: observed: 6570, emitted: 6267, omitted: 303. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

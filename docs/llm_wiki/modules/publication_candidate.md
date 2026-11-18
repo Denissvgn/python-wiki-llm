@@ -16,7 +16,6 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 | `..` | `__version__` |
 | `.analysis_capture` | `ENGINE_PACKAGE`, `engine_package_root` |
 | `.domain_pack` | `current_pack` |
-| `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
 | `.publication_delivery` | `split_delivery_tree` |
@@ -30,6 +29,7 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |

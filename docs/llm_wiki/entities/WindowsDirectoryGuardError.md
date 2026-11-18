@@ -29,11 +29,11 @@ flowchart LR
     n4["src/llm_wiki_cli/services/documentation_policy.py"]
     n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n6["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n8["_open_windows_directory_guard (src/llm_wiki_engine/filesystem_guard.py)"]
-    n9["create_private_windows_directory (src/llm_wiki_engine/filesystem_guard.py)"]
-    n10["guard_windows_directory_chain (src/llm_wiki_engine/filesystem_guard.py)"]
-    n11["remove_guarded_tree (src/llm_wiki_engine/filesystem_guard.py)"]
+    n7["_open_windows_directory_guard (src/llm_wiki_engine/filesystem_guard.py)"]
+    n8["create_private_windows_directory (src/llm_wiki_engine/filesystem_guard.py)"]
+    n9["guard_windows_directory_chain (src/llm_wiki_engine/filesystem_guard.py)"]
+    n10["remove_guarded_tree (src/llm_wiki_engine/filesystem_guard.py)"]
+    n11["src/llm_wiki_engine/knowledge_storage_io.py"]
     n12["src/llm_wiki_engine/protected_artifacts.py"]
     n0 --> n1
     n2 --> n0
@@ -53,11 +53,11 @@ flowchart LR
     click n4 "../modules/documentation_policy.md"
     click n5 "../modules/documentation_run_dependencies.md"
     click n6 "../modules/documentation_wiki_input.md"
-    click n7 "../modules/knowledge_storage_io.md"
+    click n7 "../modules/filesystem_guard.md"
     click n8 "../modules/filesystem_guard.md"
     click n9 "../modules/filesystem_guard.md"
     click n10 "../modules/filesystem_guard.md"
-    click n11 "../modules/filesystem_guard.md"
+    click n11 "../modules/knowledge_storage_io.md"
     click n12 "../modules/protected_artifacts.md"
 ```
 
@@ -82,9 +82,9 @@ flowchart LR
 | `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
-| `knowledge_storage_io` | import | [knowledge_storage_io](../modules/knowledge_storage_io.md) | — |
 | `_open_windows_directory_guard` | call | [filesystem_guard](../modules/filesystem_guard.md) | 3 |
 | `create_private_windows_directory` | call | [filesystem_guard](../modules/filesystem_guard.md) | 3 |
 | `guard_windows_directory_chain` | call | [filesystem_guard](../modules/filesystem_guard.md) | 4 |
 | `remove_guarded_tree` | call | [filesystem_guard](../modules/filesystem_guard.md) | 5 |
+| `knowledge_storage_io` | import | [knowledge_storage_io](../modules/knowledge_storage_io.md) | — |
 | `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) | — |

@@ -1,6 +1,6 @@
 # VerificationContext
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:244`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:244`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -39,17 +39,17 @@ All already evaluated inputs available to pure checkers.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationContext (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n1["_artifact_integrity_checker (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n2["_internal_links_checker (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n3["build_artifact_verification_context (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n4["build_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n5["CheckerContract.run (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n6["evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n7["load_and_evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n8["run_verification (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n9["verify (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n10["verify_and_write_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationContext (src/llm_wiki_engine/verification_contracts.py)"]
+    n1["_artifact_integrity_checker (src/llm_wiki_engine/verification_contracts.py)"]
+    n2["_internal_links_checker (src/llm_wiki_engine/verification_contracts.py)"]
+    n3["build_artifact_verification_context (src/llm_wiki_engine/verification_contracts.py)"]
+    n4["build_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n5["CheckerContract.run (src/llm_wiki_engine/verification_contracts.py)"]
+    n6["evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n7["load_and_evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n8["run_verification (src/llm_wiki_engine/verification_contracts.py)"]
+    n9["verify (src/llm_wiki_engine/verification_contracts.py)"]
+    n10["verify_and_write_receipt (src/llm_wiki_engine/verification_contracts.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

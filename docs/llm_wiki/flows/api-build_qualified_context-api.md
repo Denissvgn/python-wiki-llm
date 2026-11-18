@@ -2,14 +2,13 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 64 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), and 60 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -29,11 +28,10 @@
 - [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [host](../modules/host.md)
-- [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -48,9 +46,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
@@ -145,9 +141,9 @@ sequenceDiagram
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:build_qualified_context)('protocol')
 ```
 
-> Call sequence diagram shows 30 of 3781 interactions; 3751 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3740 interactions; 3710 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1234 (1233 omitted); unresolved 1 of 1303 (1302 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1230 (1229 omitted); unresolved 1 of 1296 (1295 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,10 +154,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:build_qualified_context` | 1 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 900 groups; 892 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 20 | - | external | 2 |
+> Omission summary shows 8 of 877 groups; 869 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1245; effect analysis evaluated: 853, partial: 56, unavailable: 336. Counts include steps omitted from the displayed trace.
+Source steps: 1215; effect analysis evaluated: 835, partial: 49, unavailable: 331. Counts include steps omitted from the displayed trace.
 
-Collector observations for 909 source steps with known totals: observed: 5734, emitted: 5394, omitted: 340. Unavailable totals are excluded.
+Collector observations for 884 source steps with known totals: observed: 5460, emitted: 5143, omitted: 317. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,6 +1,6 @@
 # verification_contracts Module
 
-**Path:** `src/llm_wiki_cli/services/verification_contracts.py`
+**Path:** `src/llm_wiki_engine/verification_contracts.py`
 
 ## Description
 
@@ -46,65 +46,65 @@ flowchart LR
     n0["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n1["src/llm_wiki_cli/services/doctor_service.py"]
     n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n3["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n4["src/llm_wiki_cli/services/knowledge_model.py"]
-    n5["src/llm_wiki_cli/services/knowledge_verification.py"]
-    n6["src/llm_wiki_cli/services/lint_service.py"]
-    n7["src/llm_wiki_cli/services/verification_contracts.py"]
-    n8["src/llm_wiki_engine/contracts.py"]
-    n9["src/llm_wiki_engine/io.py"]
-    n10["src/llm_wiki_engine/knowledge_evidence.py"]
-    n11["src/llm_wiki_engine/validation.py"]
-    n0 --> n3
-    n0 --> n4
-    n0 --> n7
-    n0 --> n9
+    n3["src/llm_wiki_cli/services/lint_service.py"]
+    n4["src/llm_wiki_engine/contracts.py"]
+    n5["src/llm_wiki_engine/io.py"]
+    n6["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n7["src/llm_wiki_engine/knowledge_evidence.py"]
+    n8["src/llm_wiki_engine/knowledge_model.py"]
+    n9["src/llm_wiki_engine/knowledge_verification.py"]
+    n10["src/llm_wiki_engine/validation.py"]
+    n11["src/llm_wiki_engine/verification_contracts.py"]
+    n0 --> n5
+    n0 --> n6
+    n0 --> n8
+    n0 --> n11
     n1 --> n3
     n1 --> n4
     n1 --> n6
-    n1 --> n7
     n1 --> n8
-    n2 --> n3
-    n2 --> n7
-    n2 --> n8
-    n2 --> n9
+    n1 --> n11
+    n2 --> n4
+    n2 --> n5
+    n2 --> n6
+    n2 --> n10
     n2 --> n11
-    n3 --> n4
+    n3 --> n5
+    n3 --> n6
     n3 --> n8
     n3 --> n9
     n3 --> n10
     n3 --> n11
-    n4 --> n8
-    n4 --> n10
-    n4 --> n11
     n5 --> n7
-    n5 --> n10
-    n6 --> n3
     n6 --> n4
     n6 --> n5
     n6 --> n7
-    n6 --> n9
-    n6 --> n11
-    n7 --> n3
-    n7 --> n4
-    n7 --> n8
-    n7 --> n9
+    n6 --> n8
+    n6 --> n10
     n7 --> n10
-    n7 --> n11
-    n9 --> n10
-    n10 --> n11
+    n8 --> n4
+    n8 --> n7
+    n8 --> n10
+    n9 --> n7
+    n9 --> n11
+    n11 --> n4
+    n11 --> n5
+    n11 --> n6
+    n11 --> n7
+    n11 --> n8
+    n11 --> n10
     click n0 "../modules/knowledge_cmd.md"
     click n1 "../modules/doctor_service.md"
     click n2 "../modules/documentation_run_dependencies.md"
-    click n3 "../modules/knowledge_artifacts.md"
-    click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/knowledge_verification.md"
-    click n6 "../modules/lint_service.md"
-    click n7 "../modules/verification_contracts.md"
-    click n8 "../modules/llm_wiki_engine_contracts.md"
-    click n9 "../modules/io.md"
-    click n10 "../modules/knowledge_evidence.md"
-    click n11 "../modules/validation.md"
+    click n3 "../modules/lint_service.md"
+    click n4 "../modules/llm_wiki_engine_contracts.md"
+    click n5 "../modules/io.md"
+    click n6 "../modules/knowledge_artifacts.md"
+    click n7 "../modules/knowledge_evidence.md"
+    click n8 "../modules/knowledge_model.md"
+    click n9 "../modules/knowledge_verification.md"
+    click n10 "../modules/validation.md"
+    click n11 "../modules/verification_contracts.md"
 ```
 
 ### Internal neighbors
@@ -114,13 +114,13 @@ flowchart LR
 | Inbound | [knowledge_cmd](../modules/knowledge_cmd.md) |
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Inbound | [knowledge_verification](../modules/knowledge_verification.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
-| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Outbound | [knowledge_model](../modules/knowledge_model.md) |
+| Inbound | [knowledge_verification](../modules/knowledge_verification.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Outbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

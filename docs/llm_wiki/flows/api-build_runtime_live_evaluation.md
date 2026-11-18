@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_live_evaluation` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 11 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 12 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -100,13 +101,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_live_evaluation` | 1 | - | external | 18 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | - | external | 4 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | [src/llm_wiki_cli/services/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 2 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:validate_record` | 20 | - | external | 22 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:validate_record` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:validate_record` | 20 | [src/llm_wiki_cli/services/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 1 |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:digest` | 43 | - | unresolved | 2 |
+| `src/llm_wiki_engine/analysis_compatibility.py:component_record` | 15 | - | external | 4 |
+| `src/llm_wiki_engine/analysis_compatibility.py:component_record` | 15 | - | unresolved | 2 |
+| `src/llm_wiki_engine/analysis_compatibility.py:component_record` | 15 | [src/llm_wiki_engine/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 2 |
+| `src/llm_wiki_engine/analysis_compatibility.py:validate_record` | 20 | - | external | 22 |
+| `src/llm_wiki_engine/analysis_compatibility.py:validate_record` | 20 | - | unresolved | 2 |
+| `src/llm_wiki_engine/analysis_compatibility.py:validate_record` | 20 | [src/llm_wiki_engine/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 1 |
+| `src/llm_wiki_engine/analysis_compatibility.py:digest` | 43 | - | unresolved | 2 |
 > Omission summary shows 8 of 183 groups; 175 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

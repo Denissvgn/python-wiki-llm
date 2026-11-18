@@ -1,6 +1,6 @@
 # storage_spool Module
 
-**Path:** `src/llm_wiki_cli/services/storage_spool.py`
+**Path:** `src/llm_wiki_engine/storage_spool.py`
 
 ## Description
 
@@ -26,14 +26,14 @@ Provides request-owned byte and JSON spill buffers with bounded metadata and dis
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n1["src/llm_wiki_cli/services/knowledge_audit.py"]
-    n2["src/llm_wiki_cli/services/knowledge_packs.py"]
-    n3["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n5["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n7["src/llm_wiki_cli/services/storage_spool.py"]
+    n0["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n1["src/llm_wiki_engine/knowledge_audit.py"]
+    n2["src/llm_wiki_engine/knowledge_packs.py"]
+    n3["src/llm_wiki_engine/knowledge_storage.py"]
+    n4["src/llm_wiki_engine/knowledge_storage_lifecycle.py"]
+    n5["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n6["src/llm_wiki_engine/maintenance_protocol.py"]
+    n7["src/llm_wiki_engine/storage_spool.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3

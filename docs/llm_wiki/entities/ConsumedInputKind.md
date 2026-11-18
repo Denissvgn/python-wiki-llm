@@ -1,6 +1,6 @@
 # ConsumedInputKind
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:100`
+**Location:** `src/llm_wiki_engine/knowledge_envelope.py:100`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -31,14 +31,14 @@ Known classes of repository/configuration input consumed by a run.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConsumedInputKind (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n0["ConsumedInputKind (src/llm_wiki_engine/knowledge_envelope.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/documentation_native.py"]
-    n4["_canonical_consumed_input_kind (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n5["consumed_inputs_from_captured_hashes (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n6["ConsumedInput.from_bytes (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n7["_merge_explicit_consumed_input (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n4["_merge_explicit_consumed_input (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["_canonical_consumed_input_kind (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n6["consumed_inputs_from_captured_hashes (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n7["ConsumedInput.from_bytes (src/llm_wiki_engine/knowledge_envelope.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -48,10 +48,10 @@ flowchart LR
     n7 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n3 "../modules/documentation_native.md"
-    click n4 "../modules/knowledge_envelope.md"
+    click n4 "../modules/knowledge_orchestration.md"
     click n5 "../modules/knowledge_envelope.md"
     click n6 "../modules/knowledge_envelope.md"
-    click n7 "../modules/knowledge_orchestration.md"
+    click n7 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -72,8 +72,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `_merge_explicit_consumed_input` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_canonical_consumed_input_kind` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `_canonical_consumed_input_kind` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `consumed_inputs_from_captured_hashes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `ConsumedInput.from_bytes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
-| `_merge_explicit_consumed_input` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

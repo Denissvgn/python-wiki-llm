@@ -1,6 +1,6 @@
 # analysis_compatibility Module
 
-**Path:** `src/llm_wiki_cli/services/analysis_compatibility.py`
+**Path:** `src/llm_wiki_engine/analysis_compatibility.py`
 
 ## Description
 
@@ -29,7 +29,7 @@ and never resolve executable paths or declarations from knowledge documents.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/analysis_compatibility.py"]
+    n1["src/llm_wiki_engine/analysis_compatibility.py"]
     n0 --> n1
     click n1 "../modules/analysis_compatibility.md"
 ```

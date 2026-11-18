@@ -1,6 +1,6 @@
 # ComputedFreshness
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:195`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:197`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -29,21 +29,21 @@ Live comparison outcomes; never serialized in the knowledge index.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ComputedFreshness (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["ComputedFreshness (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/context_packet.py"]
     n4["src/llm_wiki_cli/services/context_packet_builder.py"]
-    n5["src/llm_wiki_cli/services/context_request_format.py"]
-    n6["src/llm_wiki_cli/services/context_service.py"]
-    n7["src/llm_wiki_cli/services/doctor_service.py"]
-    n8["src/llm_wiki_cli/services/documentation_native.py"]
-    n9["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n10["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n11["src/llm_wiki_cli/services/health_contract.py"]
-    n12["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n13["src/llm_wiki_cli/services/knowledge_coverage.py"]
-    n14["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n5["src/llm_wiki_cli/services/context_service.py"]
+    n6["src/llm_wiki_cli/services/doctor_service.py"]
+    n7["src/llm_wiki_cli/services/documentation_native.py"]
+    n8["src/llm_wiki_cli/services/documentation_wiki_input.py"]
+    n9["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n10["src/llm_wiki_cli/services/health_contract.py"]
+    n11["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n12["src/llm_wiki_cli/services/lint_service.py"]
+    n13["src/llm_wiki_engine/context_request_format.py"]
+    n14["src/llm_wiki_engine/knowledge_consumption.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -61,16 +61,16 @@ flowchart LR
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_packet_builder.md"
-    click n5 "../modules/context_request_format.md"
-    click n6 "../modules/context_service.md"
-    click n7 "../modules/doctor_service.md"
-    click n8 "../modules/documentation_native.md"
-    click n9 "../modules/documentation_wiki_input.md"
-    click n10 "../modules/evidence_diagnostics.md"
-    click n11 "../modules/health_contract.md"
-    click n12 "../modules/knowledge_consumption.md"
-    click n13 "../modules/knowledge_coverage.md"
-    click n14 "../modules/knowledge_freshness.md"
+    click n5 "../modules/context_service.md"
+    click n6 "../modules/doctor_service.md"
+    click n7 "../modules/documentation_native.md"
+    click n8 "../modules/documentation_wiki_input.md"
+    click n9 "../modules/evidence_diagnostics.md"
+    click n10 "../modules/health_contract.md"
+    click n11 "../modules/knowledge_projection.md"
+    click n12 "../modules/lint_service.md"
+    click n13 "../modules/context_request_format.md"
+    click n14 "../modules/knowledge_consumption.md"
 ```
 
 ### Summary
@@ -92,15 +92,15 @@ flowchart LR
 |---|---|---|---:|
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
-| `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `evidence_diagnostics` | import | [evidence_diagnostics](../modules/evidence_diagnostics.md) | — |
 | `health_contract` | import | [health_contract](../modules/health_contract.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
-| `knowledge_coverage` | import | [knowledge_coverage](../modules/knowledge_coverage.md) | — |
-| `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 
 > References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

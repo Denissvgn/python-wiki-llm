@@ -93,12 +93,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 2 | - | unresolved | 1 |
 | `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 7 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 18 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 21 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | - | external | 2 |
+| `src/llm_wiki_engine/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | external | 3 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_model.py:knowledge_index_to_payload` | 18 | - | external | 2 |
+| `src/llm_wiki_engine/knowledge_model.py:_emit_extensions` | 21 | - | external | 1 |
 > Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -130,8 +130,8 @@ Collector observations for 57 source steps with known totals: observed: 227, emi
 | `indented_line_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `evaluated_envelope_to_payload` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…luated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…luated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…luated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…luated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
@@ -145,8 +145,8 @@ flowchart LR
     s7["7. indented_line_text"]
     s8["8. json.dumps"]
     s9["9. evaluated_envelope_to_payload"]
-    s10["10. isinstance (src/llm_wiki_cli/services…luated_envelope_to_payload)"]
-    s11["11. TypeError (src/llm_wiki_cli/services…luated_envelope_to_payload)"]
+    s10["10. isinstance (src/llm_wiki_engine/knowl…luated_envelope_to_payload)"]
+    s11["11. TypeError (src/llm_wiki_engine/knowl…luated_envelope_to_payload)"]
     s12["12. KnowledgeEnvelopeError"]
     s1 -->|"sha256_digest(...)"| s2
     s2 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s3
@@ -156,8 +156,8 @@ flowchart LR
     s6 -->|"indented_line_text(evaluated_envelope_to_payload(...))"| s7
     s7 -. "json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)" .-> s8
     s6 -->|"evaluated_envelope_to_payload(envelope)"| s9
-    s9 -. "isinstance (src/llm_wiki_cli/services…luated_envelope_to_payload)(envelope, EvaluatedEnvelope)" .-> s10
-    s9 -. "TypeError (src/llm_wiki_cli/services…luated_envelope_to_payload)('envelope must be an EvaluatedEnvelope')" .-> s11
+    s9 -. "isinstance (src/llm_wiki_engine/knowl…luated_envelope_to_payload)(envelope, EvaluatedEnvelope)" .-> s10
+    s9 -. "TypeError (src/llm_wiki_engine/knowl…luated_envelope_to_payload)('envelope must be an EvaluatedEnvelope')" .-> s11
     s9 -->|"KnowledgeEnvelopeError('schema_version', ...)"| s12
     click s1 "../modules/knowledge_envelope.md"
     click s2 "../modules/canonical_json.md"
@@ -180,8 +180,8 @@ flowchart LR
 | `indented_line_text` | `value: Any` | - | - | `...` |
 | `json.dumps` | - | - | - | - |
 | `evaluated_envelope_to_payload` | `envelope: EvaluatedEnvelope` | `EvaluatedEnvelope`, `EVALUATED_ENVELOPE_VERSION`, `EVALUATED_ENVELOPE_VERSION`, `INVENTORY_HASH_EXTENSION`, `INVENTORY_HASH_EXTENSION` | - | `{...}` |
-| `isinstance (src/llm_wiki_cli/services…luated_envelope_to_payload)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…luated_envelope_to_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…luated_envelope_to_payload)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…luated_envelope_to_payload)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 
 ### Call data
@@ -196,8 +196,8 @@ flowchart LR
 | serialize_evaluated_envelope | indented_line_text | 1168 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
 | indented_line_text | json.dumps | 50 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 | serialize_evaluated_envelope | evaluated_envelope_to_payload | 1168 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…luated_envelope_to_payload) | 1142 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…luated_envelope_to_payload) | 1143 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | isinstance (src/llm_wiki_engine/knowl…luated_envelope_to_payload) | 1142 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError (src/llm_wiki_engine/knowl…luated_envelope_to_payload) | 1143 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1145 | `KnowledgeEnvelopeError('schema_version', ...)` |
 
 ### Boundary effects

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 69 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 68 more
 
 **Complete modules touched:**
 
@@ -32,8 +32,8 @@
 - [helper_runtime](../modules/helper_runtime.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -48,7 +48,7 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
@@ -62,7 +62,6 @@
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
-- [python_implementation](../modules/python_implementation.md)
 - [runtime_output](../modules/runtime_output.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
@@ -108,14 +107,14 @@ sequenceDiagram
     participant p18 as parse_knowledge_index
     participant p19 as SyncManifest.load
     participant p20 as render_capability_doctor.<locals>.command
-    participant p21 as _render_doctor_payload
-    participant p22 as compare_targets
-    participant p23 as _require_relative_name
-    participant p24 as _record
-    participant p25 as decode_bytes
-    participant p26 as validate_source_root
-    participant p27 as _fields
-    participant p28 as _absolute_path
+    participant p21 as component_record
+    participant p22 as _render_doctor_payload
+    participant p23 as compare_targets
+    participant p24 as _require_relative_name
+    participant p25 as _record
+    participant p26 as decode_bytes
+    participant p27 as validate_source_root
+    participant p28 as _fields
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     p0->>p1: validate_path
@@ -138,21 +137,21 @@ sequenceDiagram
     p2->>p18: parse_knowledge_index
     p2->>p19: SyncManifest.load
     p7->>p20: render_capability_doctor.<locals>.command
-    p7->>p21: _render_doctor_payload
-    p2->>p22: compare_targets
-    p15->>p23: _require_relative_name
-    p16->>p24: _record
-    p17->>p25: decode_bytes
-    p12->>p26: validate_source_root
-    p17->>p27: _fields
-    p14->>p28: _absolute_path
+    p2->>p21: component_record
+    p7->>p22: _render_doctor_payload
+    p2->>p23: compare_targets
+    p15->>p24: _require_relative_name
+    p16->>p25: _record
+    p17->>p26: decode_bytes
+    p12->>p27: validate_source_root
+    p17->>p28: _fields
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3233 interactions; 3203 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3157 interactions; 3127 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1004 (1003 omitted); unresolved 1 of 779 (778 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 964 (963 omitted); unresolved 1 of 771 (770 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -164,9 +163,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 7 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 1 |
-| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
+| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | - | external | 7 |
-> Omission summary shows 8 of 807 groups; 799 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 795 groups; 787 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +178,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1451; effect analysis evaluated: 1034, partial: 49, unavailable: 368. Counts include steps omitted from the displayed trace.
+Source steps: 1423; effect analysis evaluated: 1005, partial: 49, unavailable: 369. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1083 source steps with known totals: observed: 5937, emitted: 5682, omitted: 255. Unavailable totals are excluded.
+Collector observations for 1054 source steps with known totals: observed: 5809, emitted: 5554, omitted: 255. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

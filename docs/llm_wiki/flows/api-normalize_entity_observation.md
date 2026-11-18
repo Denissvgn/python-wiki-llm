@@ -178,8 +178,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_entity_observation | _validate_entity_coordinate | 231 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 874 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| normalize_entity_observation | _validate_entity_coordinate | 235 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 878 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |

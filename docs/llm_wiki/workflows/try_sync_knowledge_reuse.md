@@ -1,7 +1,7 @@
 # try_sync_knowledge_reuse
 
 **Entry point:** `sync_runtime._try_sync_knowledge_reuse`
-**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_runtime](../modules/sync_runtime.md), [validation](../modules/validation.md)
+**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_reuse_format](../modules/knowledge_reuse_format.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_runtime](../modules/sync_runtime.md), [validation](../modules/validation.md)
 
 ## Sequence
 
@@ -14,7 +14,7 @@
 6. `knowledge_evidence.hash_file`
 7. `knowledge_reuse.wiki_input_hashes`
 8. `knowledge_orchestration.collect_runtime_repository_evidence`
-9. `knowledge_reuse.repository_input_hash`
+9. `knowledge_reuse_format.repository_input_hash`
 10. `knowledge_envelope.build_repository_record`
 11. `knowledge_reuse.implementation_hash`
 12. `knowledge_storage_io._absolute_path`
@@ -27,6 +27,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [progress](../modules/progress.md)
 - [source_snapshot](../modules/source_snapshot.md)

@@ -2,13 +2,12 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 69 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 69 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -32,7 +31,9 @@
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -52,7 +53,6 @@
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
@@ -149,23 +149,23 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5571 interactions; 5541 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5312 interactions; 5282 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1750 (1749 omitted); unresolved 1 of 1860 (1859 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1642 (1641 omitted); unresolved 1 of 1797 (1796 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 2 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 2 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 2 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 2 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 12 | - | external | 13 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 1354 groups; 1346 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 9 | - | external | 2 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 9 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | - | external | 13 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
+> Omission summary shows 8 of 1307 groups; 1299 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,9 +178,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1962; effect analysis evaluated: 1301, partial: 78, unavailable: 583. Counts include steps omitted from the displayed trace.
+Source steps: 1874; effect analysis evaluated: 1256, partial: 63, unavailable: 555. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1379 source steps with known totals: observed: 8045, emitted: 7634, omitted: 411. Unavailable totals are excluded.
+Collector observations for 1319 source steps with known totals: observed: 7450, emitted: 7088, omitted: 362. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -197,8 +197,8 @@ Collector observations for 1379 source steps with known totals: observed: 8045, 
 | `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validate_protocol_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `data.get (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `data.get (src/llm_wiki_engine/conte…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validate_protocol_request_impl` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
 
 ```mermaid
@@ -212,8 +212,8 @@ flowchart LR
     s7["7. candidate.setdefault"]
     s8["8. candidate.setdefault"]
     s9["9. _validate_protocol_request"]
-    s10["10. isinstance (src/llm_wiki_cli/services…validate_protocol_request)"]
-    s11["11. data.get (src/llm_wiki_cli/services…validate_protocol_request)"]
+    s10["10. isinstance (src/llm_wiki_engine/conte…validate_protocol_request)"]
+    s11["11. data.get (src/llm_wiki_engine/conte…validate_protocol_request)"]
     s12["12. _validate_protocol_request_impl"]
     s1 -->|"_normalized_request(...)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…er.py:_normalized_request)(request, Mapping)" .-> s3
@@ -223,8 +223,8 @@ flowchart LR
     s2 -. "candidate.setdefault('knowledge_mode', 'auto')" .-> s7
     s2 -. "candidate.setdefault('filters', {...})" .-> s8
     s2 -->|"_validate_protocol_request(candidate)"| s9
-    s9 -. "isinstance (src/llm_wiki_cli/services…validate_protocol_request)(data, dict)" .-> s10
-    s9 -. "data.get (src/llm_wiki_cli/services…validate_protocol_request)('protocol')" .-> s11
+    s9 -. "isinstance (src/llm_wiki_engine/conte…validate_protocol_request)(data, dict)" .-> s10
+    s9 -. "data.get (src/llm_wiki_engine/conte…validate_protocol_request)('protocol')" .-> s11
     s9 -->|"_validate_protocol_request_impl(data)"| s12
     click s1 "../modules/context_packet_builder.md"
     click s2 "../modules/context_packet_builder.md"
@@ -246,8 +246,8 @@ flowchart LR
 | `candidate.setdefault` | - | - | - | - |
 | `candidate.setdefault` | - | - | - | - |
 | `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `_PROTOCOL_REQUEST_KEYS` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | - | - | - | - |
+| `data.get (src/llm_wiki_engine/conte…validate_protocol_request)` | - | - | - | - |
 | `_validate_protocol_request_impl` | `data: object` | `_PROTOCOL_REQUEST_KEYS`, `_PROTOCOL_REQUEST_KEYS`, `CONTEXT_BUDGET_PROTOCOL_VERSION`, `_PROTOCOL_REQUEST_KEYS`, `_FORMATS`, `KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_VALUES`, `KNOWLEDGE_MODE_VALUES` | `normalized[...]` | `validate_budget_request(...)`, `normalized` |
 
 ### Call data
@@ -262,8 +262,8 @@ flowchart LR
 | _normalized_request | candidate.setdefault | 1771 | `candidate.setdefault('knowledge_mode', 'auto')` |
 | _normalized_request | candidate.setdefault | 1772 | `candidate.setdefault('filters', {...})` |
 | _normalized_request | _validate_protocol_request | 1773 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 136 | `isinstance(data, dict)` |
-| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 136 | `data.get('protocol')` |
+| _validate_protocol_request | isinstance (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `isinstance(data, dict)` |
+| _validate_protocol_request | data.get (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 138 | `_validate_protocol_request_impl(data)` |
 
 ### Boundary effects

@@ -17,7 +17,7 @@ sequenceDiagram
     participant p3 as _normalized_remote_identity
     participant p4 as isinstance
     participant p5 as value.strip
-    participant p6 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p6 as any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote)
     participant p7 as ord
     participant p8 as value.startswith
     participant p9 as _WINDOWS_DRIVE_PREFIX_RE.match
@@ -38,7 +38,7 @@ sequenceDiagram
     participant p24 as match.group(…).casefold
     participant p25 as path.casefold
     participant p26 as path.split
-    participant p27 as any (src/llm_wiki_cli/services…normalized_remote_identity)
+    participant p27 as any (src/llm_wiki_engine/knowl…normalized_remote_identity)
     participant p28 as '/'.join
     participant p29 as _REPOSITORY_IDENTITY_RE.fullmatch
     p0->>p1: _normalize_scheme_remote
@@ -46,7 +46,7 @@ sequenceDiagram
     p0->>p3: _normalized_remote_identity
     p0-->>p4: isinstance(value, str)
     p0-->>p5: value.strip
-    p0-->>p6: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)
+    p0-->>p6: any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote)(...)
     p0-->>p7: ord(char)
     p0-->>p8: value.startswith((...))
     p0-->>p9: _WINDOWS_DRIVE_PREFIX_RE.match(value)
@@ -68,7 +68,7 @@ sequenceDiagram
     p3-->>p25: path.casefold
     p2-->>p21: match.group('host')
     p3-->>p26: path.split('/')
-    p3-->>p27: any (src/llm_wiki_cli/services…normalized_remote_identity)(...)
+    p3-->>p27: any (src/llm_wiki_engine/knowl…normalized_remote_identity)(...)
     p3-->>p28: '/'.join(parts)
     p3-->>p29: _REPOSITORY_IDENTITY_RE.fullmatch(identity)
 ```
@@ -81,7 +81,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_remote_identity` | 22 | - | unresolved | 2 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_normalized_remote_identity` | 22 | - | unresolved | 2 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -101,7 +101,7 @@ flowchart LR
     s1["1. normalize_vcs_remote"]
     s2["2. isinstance"]
     s3["3. value.strip"]
-    s4["4. any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)"]
+    s4["4. any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote)"]
     s5["5. ord"]
     s6["6. value.startswith"]
     s7["7. _WINDOWS_DRIVE_PREFIX_RE.match"]
@@ -112,7 +112,7 @@ flowchart LR
     s12["12. parsed.netloc.rsplit"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "value.strip(data not statically known)" .-> s3
-    s1 -. "any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)" .-> s4
+    s1 -. "any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote)(...)" .-> s4
     s1 -. "ord(char)" .-> s5
     s1 -. "value.startswith((...))" .-> s6
     s1 -. "_WINDOWS_DRIVE_PREFIX_RE.match(value)" .-> s7
@@ -132,7 +132,7 @@ flowchart LR
 | `normalize_vcs_remote` | `value: object` | - | - | `None`, `None`, `_normalized_remote_identity(...)` |
 | `isinstance` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)` | - | - | - | - |
+| `any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote)` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `value.startswith` | - | - | - | - |
 | `_WINDOWS_DRIVE_PREFIX_RE.match` | - | - | - | - |
@@ -148,7 +148,7 @@ flowchart LR
 |---|---|---:|---|
 | normalize_vcs_remote | isinstance | 710 | `isinstance(value, str)` |
 | normalize_vcs_remote | value.strip | 712 | `value.strip(data not statically known)` |
-| normalize_vcs_remote | any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote) | 713 | `any(...)` |
+| normalize_vcs_remote | any (src/llm_wiki_engine/knowl…pe.py:normalize_vcs_remote) | 713 | `any(...)` |
 | normalize_vcs_remote | ord | 713 | `ord(char)` |
 | normalize_vcs_remote | value.startswith | 715 | `value.startswith((...))` |
 | normalize_vcs_remote | _WINDOWS_DRIVE_PREFIX_RE.match | 716 | `_WINDOWS_DRIVE_PREFIX_RE.match(value)` |

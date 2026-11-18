@@ -11,7 +11,6 @@ Portable installation of the managed integrity and documentation CI workflows.
 | Source | Symbols |
 |--------|---------|
 | `.publication_config` | `PUBLICATION_CONFIG_PATH`, `PublicationConfigError`, `load_publication_config`, `publication_control_overlap`, `publication_path`, `publication_source_root` |
-| `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
@@ -21,6 +20,7 @@ Portable installation of the managed integrity and documentation CI workflows.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `locate_exact_repository_path`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -35,20 +35,20 @@ flowchart LR
     n2["src/llm_wiki_cli/commands/uninstall_cmd.py"]
     n3["src/llm_wiki_cli/services/ci_installer.py"]
     n4["src/llm_wiki_cli/services/publication_config.py"]
-    n5["src/llm_wiki_cli/services/sync_manifest.py"]
-    n6["src/llm_wiki_cli/services/wiki_lifecycle.py"]
-    n7["src/llm_wiki_engine/filesystem_guard.py"]
-    n8["src/llm_wiki_engine/io.py"]
-    n9["src/llm_wiki_engine/source_selection.py"]
+    n5["src/llm_wiki_cli/services/wiki_lifecycle.py"]
+    n6["src/llm_wiki_engine/filesystem_guard.py"]
+    n7["src/llm_wiki_engine/io.py"]
+    n8["src/llm_wiki_engine/source_selection.py"]
+    n9["src/llm_wiki_engine/sync_manifest.py"]
     n10["src/llm_wiki_engine/validation.py"]
     n0 --> n3
-    n0 --> n9
+    n0 --> n8
     n0 --> n10
     n1 --> n3
     n1 --> n4
     n2 --> n3
+    n2 --> n6
     n2 --> n7
-    n2 --> n8
     n3 --> n4
     n3 --> n5
     n3 --> n6
@@ -56,26 +56,26 @@ flowchart LR
     n3 --> n8
     n3 --> n9
     n3 --> n10
-    n4 --> n9
+    n4 --> n8
     n4 --> n10
+    n5 --> n6
     n5 --> n7
-    n5 --> n8
     n5 --> n9
-    n5 --> n10
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
+    n8 --> n10
+    n9 --> n6
+    n9 --> n7
+    n9 --> n8
     n9 --> n10
     click n0 "../modules/api.md"
     click n1 "../modules/install_ci_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
     click n3 "../modules/ci_installer.md"
     click n4 "../modules/publication_config.md"
-    click n5 "../modules/sync_manifest.md"
-    click n6 "../modules/wiki_lifecycle.md"
-    click n7 "../modules/filesystem_guard.md"
-    click n8 "../modules/io.md"
-    click n9 "../modules/source_selection.md"
+    click n5 "../modules/wiki_lifecycle.md"
+    click n6 "../modules/filesystem_guard.md"
+    click n7 "../modules/io.md"
+    click n8 "../modules/source_selection.md"
+    click n9 "../modules/sync_manifest.md"
     click n10 "../modules/validation.md"
 ```
 
@@ -87,11 +87,11 @@ flowchart LR
 | Inbound | [install_ci_cmd](../modules/install_ci_cmd.md) |
 | Inbound | [uninstall_cmd](../modules/uninstall_cmd.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
 | Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
+| Outbound | [sync_manifest](../modules/sync_manifest.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

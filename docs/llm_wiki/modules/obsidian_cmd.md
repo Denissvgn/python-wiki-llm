@@ -15,10 +15,10 @@ packaged plugin through the service's guarded filesystem operations.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
-| `..services.knowledge_consumption` | `load_knowledge_read_view` |
 | `..services.knowledge_projection` | `KnowledgeProjection`, `KnowledgeProjectionError`, `project_knowledge` |
 | `..services.obsidian` | `DEFAULT_NOTES_DIR`, `DEFAULT_PLUGIN_SOURCE`, `ObsidianError`, `check_obsidian_vault`, `export_obsidian_vault`, `install_obsidian_plugin`, `render_report_json`, `render_report_text`, `validate_obsidian_export_source_selection` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
 | `sys` | `sys` |
 
 ## Local dependency map
@@ -29,23 +29,23 @@ flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
     n1["src/llm_wiki_cli/commands/obsidian_cmd.py"]
     n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n5["src/llm_wiki_cli/services/obsidian.py"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/obsidian.py"]
+    n5["src/llm_wiki_engine/knowledge_consumption.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n1 --> n3
     n1 --> n4
     n1 --> n5
+    n3 --> n5
     n4 --> n3
-    n5 --> n4
     click n0 "../modules/cli.md"
     click n1 "../modules/obsidian_cmd.md"
     click n2 "../modules/config.md"
-    click n3 "../modules/knowledge_consumption.md"
-    click n4 "../modules/knowledge_projection.md"
-    click n5 "../modules/obsidian.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/obsidian.md"
+    click n5 "../modules/knowledge_consumption.md"
 ```
 
 ### Internal neighbors
@@ -54,9 +54,9 @@ flowchart LR
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
 | Outbound | [config](../modules/config.md) |
-| Outbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Outbound | [knowledge_projection](../modules/knowledge_projection.md) |
 | Outbound | [obsidian](../modules/obsidian.md) |
+| Outbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 
 ## Functions
 

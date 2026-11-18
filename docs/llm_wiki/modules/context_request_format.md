@@ -1,6 +1,6 @@
 # context_request_format Module
 
-**Path:** `src/llm_wiki_cli/services/context_request_format.py`
+**Path:** `src/llm_wiki_engine/context_request_format.py`
 
 ## Description
 
@@ -30,7 +30,7 @@ for lives in ``context_service`` and ``context_budget``.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/context_request_format.py"]
+    n1["src/llm_wiki_engine/context_request_format.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/context_request_format.md"

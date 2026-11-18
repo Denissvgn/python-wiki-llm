@@ -33,12 +33,12 @@ sequenceDiagram
     participant p19 as PageKind
     participant p20 as _validation_error
     participant p21 as require_portable_path_component
-    participant p22 as isinstance (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p22 as isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)
     participant p23 as source_paths.update
-    participant p24 as set (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p24 as set (src/llm_wiki_engine/sync_…fest_for_source_selection)
     participant p25 as manifest.page_source_mappings.values
-    participant p26 as tuple (src/llm_wiki_cli/services…fest_for_source_selection)
-    participant p27 as sorted (src/llm_wiki_cli/services…fest_for_source_selection)
+    participant p26 as tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)
+    participant p27 as sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)
     participant p28 as is_selected
     participant p29 as manifest.page_source_mappings.items
     p0->>p1: read_entity_retirement_state
@@ -62,14 +62,14 @@ sequenceDiagram
     p7->>p19: PageKind
     p11->>p20: _validation_error
     p14->>p21: require_portable_path_component
-    p0-->>p22: isinstance (src/llm_wiki_cli/services…fest_for_source_selection)(manifest, SyncManifest)
+    p0-->>p22: isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)(manifest, SyncManifest)
     p0-->>p23: source_paths.update(...)
-    p0-->>p24: set (src/llm_wiki_cli/services…fest_for_source_selection)(manifest.sources)
+    p0-->>p24: set (src/llm_wiki_engine/sync_…fest_for_source_selection)(manifest.sources)
     p0-->>p25: manifest.page_source_mappings.values
-    p0-->>p26: tuple (src/llm_wiki_cli/services…fest_for_source_selection)(sorted(...))
-    p0-->>p27: sorted (src/llm_wiki_cli/services…fest_for_source_selection)(...)
+    p0-->>p26: tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)(sorted(...))
+    p0-->>p27: sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)(...)
     p0-->>p28: is_selected(path)
-    p0-->>p24: set (src/llm_wiki_cli/services…fest_for_source_selection)(deselected_sources)
+    p0-->>p24: set (src/llm_wiki_engine/sync_…fest_for_source_selection)(deselected_sources)
     p0-->>p29: manifest.page_source_mappings.items
 ```
 
@@ -81,12 +81,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | [src/llm_wiki_cli/services/sync_manifest.py](../modules/sync_manifest.md) | internal | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | external | 6 |
-| `src/llm_wiki_cli/services/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | external | 21 |
-| `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | [src/llm_wiki_cli/services/source_retirement.py](../modules/source_retirement.md) | internal | 8 |
-| `src/llm_wiki_cli/services/source_retirement.py:read_entity_retirement_state` | 21 | - | unresolved | 6 |
+| `src/llm_wiki_engine/sync_manifest.py:prune_manifest_for_source_selection` | 1 | [src/llm_wiki_engine/sync_manifest.py](../modules/sync_manifest.md) | internal | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | external | 6 |
+| `src/llm_wiki_engine/sync_manifest.py:prune_manifest_for_source_selection` | 1 | - | unresolved | 5 |
+| `src/llm_wiki_engine/source_retirement.py:read_entity_retirement_state` | 21 | - | external | 21 |
+| `src/llm_wiki_engine/source_retirement.py:read_entity_retirement_state` | 21 | [src/llm_wiki_engine/source_retirement.py](../modules/source_retirement.md) | internal | 8 |
+| `src/llm_wiki_engine/source_retirement.py:read_entity_retirement_state` | 21 | - | unresolved | 6 |
 | `src/llm_wiki_engine/wiki_surface.py:_entry_for` | 32 | - | external | 1 |
 | `src/llm_wiki_engine/wiki_surface.py:_entry_for` | 32 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 > Omission summary shows 8 of 30 groups; 22 further groups are not expanded here. Counts above include all omitted interactions.
@@ -113,41 +113,41 @@ Collector observations for 21 source steps with known totals: observed: 143, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `prune_manifest_for_source_selection` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `SyncManifestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `SourceSelectionPruneResult` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `SyncManifestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `set (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/sync_…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `source_paths.update` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `manifest.page_source_mappings.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `sorted (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `is_selected` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `SourceSelectionPruneResult` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. prune_manifest_for_source_selection"]
-    s2["2. isinstance (src/llm_wiki_cli/services…fest_for_source_selection)"]
+    s2["2. isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)"]
     s3["3. SyncManifestError"]
     s4["4. SourceSelectionPruneResult"]
     s5["5. SyncManifestError"]
-    s6["6. set (src/llm_wiki_cli/services…fest_for_source_selection)"]
+    s6["6. set (src/llm_wiki_engine/sync_…fest_for_source_selection)"]
     s7["7. source_paths.update"]
     s8["8. manifest.page_source_mappings.values"]
-    s9["9. tuple (src/llm_wiki_cli/services…fest_for_source_selection)"]
-    s10["10. sorted (src/llm_wiki_cli/services…fest_for_source_selection)"]
+    s9["9. tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)"]
+    s10["10. sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)"]
     s11["11. is_selected"]
     s12["12. SourceSelectionPruneResult"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…fest_for_source_selection)(manifest, SyncManifest)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)(manifest, SyncManifest)" .-> s2
     s1 -->|"SyncManifestError('manifest', 'must be a SyncManifest')"| s3
     s1 -->|"SourceSelectionPruneResult(manifest, (...), (...))"| s4
     s1 -->|"SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')"| s5
-    s1 -. "set (src/llm_wiki_cli/services…fest_for_source_selection)(manifest.sources)" .-> s6
+    s1 -. "set (src/llm_wiki_engine/sync_…fest_for_source_selection)(manifest.sources)" .-> s6
     s1 -. "source_paths.update(...)" .-> s7
     s1 -. "manifest.page_source_mappings.values(data not statically known)" .-> s8
-    s1 -. "tuple (src/llm_wiki_cli/services…fest_for_source_selection)(sorted(...))" .-> s9
-    s1 -. "sorted (src/llm_wiki_cli/services…fest_for_source_selection)(...)" .-> s10
+    s1 -. "tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)(sorted(...))" .-> s9
+    s1 -. "sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)(...)" .-> s10
     s1 -. "is_selected(path)" .-> s11
     s1 -->|"SourceSelectionPruneResult(manifest, (...), (...))"| s12
     b0["mutation source_paths.update"]
@@ -166,15 +166,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `prune_manifest_for_source_selection` | `manifest: SyncManifest`, `policy: SourceSelectionPolicy \| None`, `source_snapshot: SourceSnapshot \| None` | `SyncManifest` | - | `SourceSelectionPruneResult(...)`, `SourceSelectionPruneResult(...)`, `SourceSelectionPruneResult(...)` |
-| `isinstance (src/llm_wiki_cli/services…fest_for_source_selection)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection)` | - | - | - | - |
 | `SyncManifestError` | - | - | - | - |
 | `SourceSelectionPruneResult` | - | - | - | - |
 | `SyncManifestError` | - | - | - | - |
-| `set (src/llm_wiki_cli/services…fest_for_source_selection)` | - | - | - | - |
+| `set (src/llm_wiki_engine/sync_…fest_for_source_selection)` | - | - | - | - |
 | `source_paths.update` | - | - | - | - |
 | `manifest.page_source_mappings.values` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…fest_for_source_selection)` | - | - | - | - |
-| `sorted (src/llm_wiki_cli/services…fest_for_source_selection)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/sync_…fest_for_source_selection)` | - | - | - | - |
+| `sorted (src/llm_wiki_engine/sync_…fest_for_source_selection)` | - | - | - | - |
 | `is_selected` | - | - | - | - |
 | `SourceSelectionPruneResult` | - | - | - | - |
 
@@ -182,32 +182,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prune_manifest_for_source_selection | isinstance (src/llm_wiki_cli/services…fest_for_source_selection) | 1608 | `isinstance(manifest, SyncManifest)` |
-| prune_manifest_for_source_selection | SyncManifestError | 1609 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1611 | `SourceSelectionPruneResult(manifest, (...), (...))` |
-| prune_manifest_for_source_selection | SyncManifestError | 1620 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
-| prune_manifest_for_source_selection | set (src/llm_wiki_cli/services…fest_for_source_selection) | 1632 | `set(manifest.sources)` |
-| prune_manifest_for_source_selection | source_paths.update | 1633 | `source_paths.update(...)` |
-| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1634 | `manifest.page_source_mappings.values(data not statically known)` |
-| prune_manifest_for_source_selection | tuple (src/llm_wiki_cli/services…fest_for_source_selection) | 1636 | `tuple(sorted(...))` |
-| prune_manifest_for_source_selection | sorted (src/llm_wiki_cli/services…fest_for_source_selection) | 1637 | `sorted(...)` |
-| prune_manifest_for_source_selection | is_selected | 1637 | `is_selected(path)` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1640 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | isinstance (src/llm_wiki_engine/sync_…fest_for_source_selection) | 1613 | `isinstance(manifest, SyncManifest)` |
+| prune_manifest_for_source_selection | SyncManifestError | 1614 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1616 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | SyncManifestError | 1625 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
+| prune_manifest_for_source_selection | set (src/llm_wiki_engine/sync_…fest_for_source_selection) | 1637 | `set(manifest.sources)` |
+| prune_manifest_for_source_selection | source_paths.update | 1638 | `source_paths.update(...)` |
+| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1639 | `manifest.page_source_mappings.values(data not statically known)` |
+| prune_manifest_for_source_selection | tuple (src/llm_wiki_engine/sync_…fest_for_source_selection) | 1641 | `tuple(sorted(...))` |
+| prune_manifest_for_source_selection | sorted (src/llm_wiki_engine/sync_…fest_for_source_selection) | 1642 | `sorted(...)` |
+| prune_manifest_for_source_selection | is_selected | 1642 | `is_selected(path)` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1645 | `SourceSelectionPruneResult(manifest, (...), (...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1633 |
+| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1638 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1608 |
-| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1634 |
-| external_call | `prune_manifest_for_source_selection` | `sorted` | 1637 |
-| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1637 |
+| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1613 |
+| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1639 |
+| external_call | `prune_manifest_for_source_selection` | `sorted` | 1642 |
+| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1642 |
 | step_limit | `prune_manifest_for_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `prune_manifest_for_source_selection` | `depth limit` | 0 |
 

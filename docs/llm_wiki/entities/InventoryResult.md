@@ -111,4 +111,4 @@ flowchart LR
 | `_extractor_failure_message` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `ensure_complete_inventory` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 
-> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

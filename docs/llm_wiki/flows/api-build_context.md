@@ -140,10 +140,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 10 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | external | 2 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 10 |
 > Omission summary shows 8 of 507 groups; 499 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -178,7 +178,7 @@ Collector observations for 491 source steps with known totals: observed: 3252, e
 | `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validate_protocol_request` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -193,7 +193,7 @@ flowchart LR
     s9["9. InvalidRequestError"]
     s10["10. cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)"]
     s11["11. _validate_protocol_request"]
-    s12["12. isinstance (src/llm_wiki_cli/services…validate_protocol_request)"]
+    s12["12. isinstance (src/llm_wiki_engine/conte…validate_protocol_request)"]
     s1 -->|"_normalise_focus(focus)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/api.py:_normalise_focus)(focus, str)" .-> s3
     s2 -. "list (src/llm_wiki_cli/api.py:_normalise_focus)(focus)" .-> s4
@@ -204,7 +204,7 @@ flowchart LR
     s5 -->|"InvalidRequestError(..., code='invalid-request', details={...})"| s9
     s5 -. "cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)(KnowledgeMode, value)" .-> s10
     s1 -->|"_validate_protocol_request(request)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…validate_protocol_request)(data, dict)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/conte…validate_protocol_request)(data, dict)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
     click s5 "../modules/api.md"
@@ -227,7 +227,7 @@ flowchart LR
 | `InvalidRequestError` | - | - | - | - |
 | `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
 | `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `_PROTOCOL_REQUEST_KEYS` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conte…validate_protocol_request)` | - | - | - | - |
 
 ### Call data
 
@@ -243,7 +243,7 @@ flowchart LR
 | _normalize_optional_knowledge_mode | InvalidRequestError | 414 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 419 | `cast(KnowledgeMode, value)` |
 | build_context | _validate_protocol_request | 1524 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 136 | `isinstance(data, dict)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `isinstance(data, dict)` |
 
 ### Boundary effects
 

@@ -17,13 +17,13 @@ application or the public API. ``llm_wiki_cli.cli`` adds dispatch.
 | `.` | `__version__` |
 | `.config` | `AGENT_CHOICES`, `DEFAULT_WIKI_DIR` |
 | `.services.extraction_jobs` | `ExtractionJobsAction` |
-| `.services.knowledge_governance` | `ACTOR_KINDS`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` |
-| `.services.knowledge_model` | `KnowledgeProjectionProfile` |
 | `.services.maintenance_queue` | `DEFAULT_QUEUE_LIMIT`, `MAX_QUEUE_LIMIT`, `MIN_QUEUE_LIMIT`, `validate_queue_limit` |
 | `.services.site_export` | `SUPPORTED_KNOWLEDGE_METADATA`, `SUPPORTED_SITE_FORMATS`, `SUPPORTED_SITE_PROFILES` |
 | `.services.site_html_check` | `SUPPORTED_LINK_MODES` |
 | `argparse` | `argparse` |
 | `llm_wiki_engine.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG`, `INITIALIZABLE_SURFACES`, `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES` |
+| `llm_wiki_engine.knowledge_governance` | `ACTOR_KINDS`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` |
+| `llm_wiki_engine.knowledge_model` | `KnowledgeProjectionProfile` |
 
 ## Local dependency map
 

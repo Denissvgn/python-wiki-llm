@@ -1,6 +1,6 @@
 # MaintenanceCapture
 
-**Location:** `src/llm_wiki_cli/services/maintenance_evidence.py:101`
+**Location:** `src/llm_wiki_engine/maintenance_evidence.py:111`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `MaintenanceCapture` in `src/llm_wiki_cli/services/maintenance_evidence.py`._
+_Auto-generated from `MaintenanceCapture` in `src/llm_wiki_engine/maintenance_evidence.py`._
 
 ## Attributes
 
@@ -36,11 +36,11 @@ _Auto-generated from `MaintenanceCapture` in `src/llm_wiki_cli/services/maintena
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceCapture (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n1["captured_observations_from_knowledge (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n2["maintenance_transfers_from_page_plan (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n3["reconcile_pending_maintenance (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n4["build_maintenance_status (src/llm_wiki_cli/services/maintenance_status.py)"]
+    n0["MaintenanceCapture (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n1["captured_observations_from_knowledge (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n2["maintenance_transfers_from_page_plan (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n3["reconcile_pending_maintenance (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n4["build_maintenance_status (src/llm_wiki_engine/maintenance_status.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -1,6 +1,6 @@
 # ConceptFreshnessResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:216`
+**Location:** `src/llm_wiki_engine/knowledge_freshness.py:216`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -32,9 +32,9 @@ One consumer-computed freshness outcome.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptFreshnessResult (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n1["_evaluate_concept (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n2["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n0["ConceptFreshnessResult (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n1["_evaluate_concept (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n2["_result (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_freshness.md"

@@ -32,12 +32,12 @@ sequenceDiagram
     participant p10 as sha256_digest
     participant p11 as ConsumedInput
     participant p12 as compact_text
-    participant p13 as set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    participant p13 as set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)
     participant p14 as source_snapshot.to_consumed_inputs
     participant p15 as isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
     participant p16 as enumerate
     participant p17 as TypeError
-    participant p18 as isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    participant p18 as isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)
     participant p19 as seen_paths.add
     participant p20 as records.append
     participant p21 as generation_inputs.get
@@ -57,12 +57,12 @@ sequenceDiagram
     p4->>p10: sha256_digest
     p3->>p11: ConsumedInput
     p5->>p12: compact_text
-    p1-->>p13: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    p1-->>p13: set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)
     p2-->>p14: source_snapshot.to_consumed_inputs
     p2-->>p15: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(source_snapshot, SourceSnapshot)
     p1-->>p16: enumerate(inputs)
     p2-->>p17: TypeError('source_snapshot must be a SourceSnapshot')
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(item, ConsumedInput)
+    p1-->>p18: isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)(item, ConsumedInput)
     p2-->>p15: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(generation_inputs, Mapping)
     p2-->>p17: TypeError('generation_inputs must be a mapping')
     p1-->>p19: seen_paths.add(item.path)
@@ -85,10 +85,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 2 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 13 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:hash_source_snapshot` | 2 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_hash_structured` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_validate_json_tree` | 13 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_validate_json_tree` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 16 | - | external | 1 |
 | `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 19 | - | unresolved | 1 |
@@ -115,9 +115,9 @@ Collector observations for 12 source steps with known totals: observed: 56, emit
 |---|---|---|---|---:|---:|---:|
 | `runtime_source_snapshot_hash` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `hash_source_snapshot` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -130,9 +130,9 @@ Collector observations for 12 source steps with known totals: observed: 56, emit
 flowchart LR
     s1["1. runtime_source_snapshot_hash"]
     s2["2. hash_source_snapshot"]
-    s3["3. set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)"]
+    s3["3. set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)"]
     s4["4. enumerate"]
-    s5["5. isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)"]
     s6["6. KnowledgeEnvelopeError"]
     s7["7. KnowledgeEnvelopeError"]
     s8["8. seen_paths.add"]
@@ -141,9 +141,9 @@ flowchart LR
     s11["11. _hash_structured"]
     s12["12. payload.values"]
     s1 -->|"hash_source_snapshot(runtime_consumed_inputs(...))"| s2
-    s2 -. "set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(data not statically known)" .-> s3
+    s2 -. "set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)(data not statically known)" .-> s3
     s2 -. "enumerate(inputs)" .-> s4
-    s2 -. "isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(item, ConsumedInput)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)(item, ConsumedInput)" .-> s5
     s2 -->|"KnowledgeEnvelopeError(..., 'must be a ConsumedInput')"| s6
     s2 -->|"KnowledgeEnvelopeError(..., ...)"| s7
     s2 -. "seen_paths.add(item.path)" .-> s8
@@ -174,9 +174,9 @@ flowchart LR
 |---|---|---|---|---|
 | `runtime_source_snapshot_hash` | `source_snapshot: SourceSnapshot`, `generation_inputs: Mapping[str, object]`, `plugin_lock_path: str \| None`, `plugin_lock_hash: str \| None` | - | - | `hash_source_snapshot(...)` |
 | `hash_source_snapshot` | `inputs: Iterable[ConsumedInput]` | `ConsumedInput`, `SOURCE_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | - | - | - | - |
+| `set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `seen_paths.add` | - | - | - | - |
@@ -190,9 +190,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | runtime_source_snapshot_hash | hash_source_snapshot | 1550 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
-| hash_source_snapshot | set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 735 | `set(data not statically known)` |
+| hash_source_snapshot | set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot) | 735 | `set(data not statically known)` |
 | hash_source_snapshot | enumerate | 736 | `enumerate(inputs)` |
-| hash_source_snapshot | isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 737 | `isinstance(item, ConsumedInput)` |
+| hash_source_snapshot | isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot) | 737 | `isinstance(item, ConsumedInput)` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 738 | `KnowledgeEnvelopeError(..., 'must be a ConsumedInput')` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 743 | `KnowledgeEnvelopeError(..., ...)` |
 | hash_source_snapshot | seen_paths.add | 747 | `seen_paths.add(item.path)` |

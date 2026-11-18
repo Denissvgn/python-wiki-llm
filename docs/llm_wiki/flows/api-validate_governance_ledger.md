@@ -50,7 +50,7 @@ sequenceDiagram
     participant p26 as _derived_event_id
     participant p27 as _machine_text
     participant p28 as validate_alias_type
-    participant p29 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)
     participant p30 as concepts.items
     p0->>p1: _bundle_id
     p0->>p2: _concept_uid
@@ -80,7 +80,7 @@ sequenceDiagram
     p6->>p26: _derived_event_id
     p12->>p27: _machine_text
     p18->>p28: validate_alias_type
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)(ledger, GovernanceLedger)
     p0-->>p30: concepts.items
 ```
 
@@ -92,7 +92,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 1 | - | external | 14 |
+| `src/llm_wiki_engine/knowledge_governance.py:validate_governance_ledger` | 1 | - | external | 14 |
 | `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | external | 6 |
 | `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
@@ -124,7 +124,7 @@ Collector observations for 98 source steps with known totals: observed: 438, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `validate_governance_ledger` | `available` | `partial` | `available` | `20` | `14` | `6` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -139,7 +139,7 @@ Collector observations for 98 source steps with known totals: observed: 438, emi
 ```mermaid
 flowchart LR
     s1["1. validate_governance_ledger"]
-    s2["2. isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)"]
     s3["3. TypeError"]
     s4["4. GovernanceError"]
     s5["5. _bundle_id"]
@@ -150,7 +150,7 @@ flowchart LR
     s10["10. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s11["11. ConceptIdentityError"]
     s12["12. value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s2
     s1 -. "TypeError('ledger must be a GovernanceLedger')" .-> s3
     s1 -->|"GovernanceError('schema_version', ..., code='governance-version-unsupported')"| s4
     s1 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s5
@@ -175,7 +175,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `validate_governance_ledger` | `ledger: GovernanceLedger`, `expected_bundle_id: str \| None` | `GovernanceLedger`, `GOVERNANCE_SCHEMA_VERSION`, `GOVERNANCE_SCHEMA_VERSION`, `GovernanceAllocation`, `ConceptIdentityError`, `ALIAS_NATURAL_KEY`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` | `current_keys[...]`, `alias_counts[...]`, `alias_owners[...]` | `GovernanceLedger(...)` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
@@ -191,7 +191,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 527 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 527 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError | 528 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 530 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 535 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |

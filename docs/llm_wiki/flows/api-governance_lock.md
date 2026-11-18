@@ -18,9 +18,9 @@ sequenceDiagram
     participant p4 as _lock_open_diagnostic
     participant p5 as GovernanceConflictError
     participant p6 as current_host
-    participant p7 as Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    participant p7 as Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)
     participant p8 as lock_root.mkdir
-    participant p9 as getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    participant p9 as getattr (src/llm_wiki_engine/knowl…ernance.py:governance_lock)
     participant p10 as os.open
     participant p11 as os.fstat
     participant p12 as stat.S_ISREG
@@ -43,10 +43,10 @@ sequenceDiagram
     p0->>p4: _lock_open_diagnostic
     p0->>p5: GovernanceConflictError
     p1->>p6: current_host
-    p0-->>p7: Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)
+    p0-->>p7: Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)(wiki_dir)
     p0-->>p8: lock_root.mkdir(parents=True, exist_ok=True)
-    p0-->>p9: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_CLOEXEC', 0)
-    p0-->>p9: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_NOFOLLOW', 0)
+    p0-->>p9: getattr (src/llm_wiki_engine/knowl…ernance.py:governance_lock)(os, 'O_CLOEXEC', 0)
+    p0-->>p9: getattr (src/llm_wiki_engine/knowl…ernance.py:governance_lock)(os, 'O_NOFOLLOW', 0)
     p0-->>p10: os.open(lock_path, flags, 384)
     p0-->>p11: os.fstat(file_descriptor)
     p0-->>p12: stat.S_ISREG(metadata.st_mode)
@@ -80,11 +80,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | - | external | 17 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
 | `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | external | 7 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_lock_open_diagnostic` | 50 | - | external | 5 |
+| `src/llm_wiki_engine/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
+| `src/llm_wiki_engine/knowledge_governance.py:_governance_lock_root` | 33 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:_governance_lock_root` | 33 | - | external | 7 |
+| `src/llm_wiki_engine/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:_lock_open_diagnostic` | 50 | - | external | 5 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -106,7 +106,7 @@ Collector observations for 6 source steps with known totals: observed: 47, emitt
 |---|---|---|---|---:|---:|---:|
 | `governance_lock` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -121,7 +121,7 @@ Collector observations for 6 source steps with known totals: observed: 47, emitt
 flowchart LR
     s1["1. governance_lock"]
     s2["2. GovernanceError"]
-    s3["3. Path (src/llm_wiki_cli/services…ernance.py:governance_lock)"]
+    s3["3. Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)"]
     s4["4. first_unsafe_path_component"]
     s5["5. Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
     s6["6. os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
@@ -132,7 +132,7 @@ flowchart LR
     s11["11. current_host"]
     s12["12. _ACTIVE.get"]
     s1 -->|"GovernanceError('lock', 'unknown mutation lock')"| s2
-    s1 -. "Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)" .-> s3
+    s1 -. "Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)(wiki_dir)" .-> s3
     s1 -->|"first_unsafe_path_component(root)"| s4
     s4 -. "Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(os.fspath(...))" .-> s5
     s4 -. "os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(path)" .-> s6
@@ -158,7 +158,7 @@ flowchart LR
 |---|---|---|---|---|
 | `governance_lock` | `wiki_dir: str \| Path`, `_lock_filename: str` | `GOVERNANCE_LOCK_FILENAME`, `os`, `os`, `os`, `sys`, `sys`, `GOVERNANCE_FILENAME`, `sys` | - | - |
 | `GovernanceError` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
@@ -174,7 +174,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | governance_lock | GovernanceError | 883 | `GovernanceError('lock', 'unknown mutation lock')` |
-| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 884 | `Path(wiki_dir)` |
+| governance_lock | Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock) | 884 | `Path(wiki_dir)` |
 | governance_lock | first_unsafe_path_component | 885 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `os.fspath(path)` |

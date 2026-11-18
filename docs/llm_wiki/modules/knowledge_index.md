@@ -1,6 +1,6 @@
 # knowledge_index Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_index.py`
+**Path:** `src/llm_wiki_engine/knowledge_index.py`
 
 ## Description
 
@@ -61,7 +61,7 @@ across invocations.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_index.py"]
+    n1["src/llm_wiki_engine/knowledge_index.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_index.md"

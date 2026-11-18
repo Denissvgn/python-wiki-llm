@@ -19,7 +19,6 @@ and release a recovery probe through the failure path.
 | `..services.metrics` | `record_event` |
 | `..services.plugins` | `PluginError` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `..services.sync_manifest` | `SyncManifest` |
 | `..services.team` | `TeamConfigError`, `team_prompt_template_default` |
 | `.generate_prompt_cmd` | `_build_prompt`, `_redact_prompt_artifact` |
 | `__future__` | `annotations` |
@@ -28,6 +27,7 @@ and release a recovery probe through the failure path.
 | `llm_wiki_engine.lockfile` | `LockAcquisitionError`, `WikiLock` |
 | `llm_wiki_engine.secure_file` | `write_private_text` |
 | `llm_wiki_engine.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `math` | `math` |
 | `os` | `os` |
 | `pathlib` | `Path` |

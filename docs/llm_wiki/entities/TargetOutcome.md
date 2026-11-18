@@ -1,6 +1,6 @@
 # _TargetOutcome
 
-**Location:** `src/llm_wiki_cli/services/knowledge_links.py:118`
+**Location:** `src/llm_wiki_engine/knowledge_links.py:118`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_links](../modules/knowledge_links.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_TargetOutcome` in `src/llm_wiki_cli/services/knowledge_links.py`._
+_Auto-generated from `_TargetOutcome` in `src/llm_wiki_engine/knowledge_links.py`._
 
 ## Attributes
 
@@ -29,10 +29,10 @@ _Auto-generated from `_TargetOutcome` in `src/llm_wiki_cli/services/knowledge_li
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_TargetOutcome (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n1["_classify_target (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n2["_concept_candidates (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n3["_malformed (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n0["_TargetOutcome (src/llm_wiki_engine/knowledge_links.py)"]
+    n1["_classify_target (src/llm_wiki_engine/knowledge_links.py)"]
+    n2["_concept_candidates (src/llm_wiki_engine/knowledge_links.py)"]
+    n3["_malformed (src/llm_wiki_engine/knowledge_links.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

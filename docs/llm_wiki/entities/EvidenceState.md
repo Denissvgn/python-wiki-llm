@@ -1,13 +1,13 @@
 # EvidenceState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:150`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:152`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
 
 ## Description
 
-_Auto-generated from `EvidenceState` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `EvidenceState` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -28,21 +28,21 @@ _Auto-generated from `EvidenceState` in `src/llm_wiki_cli/services/knowledge_mod
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EvidenceState (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["EvidenceState (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/context_request_format.py"]
-    n5["src/llm_wiki_cli/services/context_service.py"]
-    n6["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n7["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n8["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n9["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n10["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n11["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n12["src/llm_wiki_cli/services/knowledge_kinds.py"]
-    n13["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n14["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/context_service.py"]
+    n5["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n6["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n8["src/llm_wiki_engine/context_request_format.py"]
+    n9["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n10["src/llm_wiki_engine/knowledge_consumption.py"]
+    n11["src/llm_wiki_engine/knowledge_freshness.py"]
+    n12["src/llm_wiki_engine/knowledge_governance.py"]
+    n13["_require_structure_state (src/llm_wiki_engine/knowledge_index.py)"]
+    n14["src/llm_wiki_engine/knowledge_kinds.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -59,17 +59,17 @@ flowchart LR
     n14 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_request_format.md"
-    click n5 "../modules/context_service.md"
-    click n6 "../modules/evidence_diagnostics.md"
-    click n7 "../modules/knowledge_artifacts.md"
-    click n8 "../modules/knowledge_consumption.md"
-    click n9 "../modules/knowledge_freshness.md"
-    click n10 "../modules/knowledge_governance.md"
-    click n11 "../modules/knowledge_index.md"
-    click n12 "../modules/knowledge_kinds.md"
-    click n13 "../modules/knowledge_observability.md"
-    click n14 "../modules/knowledge_projection.md"
+    click n4 "../modules/context_service.md"
+    click n5 "../modules/evidence_diagnostics.md"
+    click n6 "../modules/knowledge_projection.md"
+    click n7 "../modules/lint_service.md"
+    click n8 "../modules/context_request_format.md"
+    click n9 "../modules/knowledge_artifacts.md"
+    click n10 "../modules/knowledge_consumption.md"
+    click n11 "../modules/knowledge_freshness.md"
+    click n12 "../modules/knowledge_governance.md"
+    click n13 "../modules/knowledge_index.md"
+    click n14 "../modules/knowledge_kinds.md"
 ```
 
 ### Summary
@@ -90,16 +90,16 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
-| `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `evidence_diagnostics` | import | [evidence_diagnostics](../modules/evidence_diagnostics.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `knowledge_freshness` | import | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `knowledge_kinds` | import | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
-| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 
 > References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

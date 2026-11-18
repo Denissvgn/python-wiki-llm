@@ -125,4 +125,4 @@ flowchart LR
 | `_resolve_openapi_path` | type_reference | [api_contracts](../modules/api_contracts.md) | — |
 | `build_api_contracts` | type_reference | [api_contracts](../modules/api_contracts.md) | — |
 
-> References: showing 12 of 164 logical references; 152 omitted by the 12-row generated summary limit.
+> References: showing 12 of 159 logical references; 147 omitted by the 12-row generated summary limit.

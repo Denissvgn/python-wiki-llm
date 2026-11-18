@@ -97,12 +97,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/doctor_service.py:compose_doctor_report` | 1 | - | external | 5 |
 | `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
 > Omission summary shows 8 of 84 groups; 76 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -205,13 +205,13 @@ flowchart LR
 | _knowledge_declared | path.exists | 348 | `path.exists(data not statically known)` |
 | _knowledge_declared | path.is_symlink | 348 | `path.is_symlink(data not statically known)` |
 | _knowledge_declared | SyncManifest.load | 351 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1026 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | manifest_path.exists | 1031 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1047 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1052 |
 
 ### Static analysis gaps
 
@@ -223,7 +223,7 @@ flowchart LR
 | external_call | `compose_doctor_report` | `TypeError` | 193 |
 | unresolved_call | `_knowledge_declared` | `path.exists` | 348 |
 | unresolved_call | `_knowledge_declared` | `path.is_symlink` | 348 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1026 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1031 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |
 

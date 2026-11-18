@@ -49,7 +49,7 @@ sequenceDiagram
     participant p26 as _validate_edge_concept_references
     participant p27 as relationship_edge_key
     participant p28 as _validate_core_direction
-    participant p29 as isinstance (src/llm_wiki_cli/services…rip_governance_projection)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)
     participant p30 as extensions.pop
     p0->>p1: validate_typed_graph
     p1->>p2: _parse_typed_graph
@@ -79,7 +79,7 @@ sequenceDiagram
     p10->>p26: _validate_edge_concept_references
     p10->>p27: relationship_edge_key
     p10->>p28: _validate_core_direction
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(knowledge, KnowledgeIndex)
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)(knowledge, KnowledgeIndex)
     p0-->>p30: extensions.pop(GOVERNANCE_EXTENSION_KEY, None)
 ```
 
@@ -91,8 +91,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | external | 14 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 1 | - | unresolved | 7 |
+| `src/llm_wiki_engine/knowledge_governance.py:strip_governance_projection` | 1 | - | external | 14 |
+| `src/llm_wiki_engine/knowledge_governance.py:strip_governance_projection` | 1 | - | unresolved | 7 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 21 | - | external | 2 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 21 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 23 | - | external | 1 |
@@ -123,43 +123,43 @@ Collector observations for 162 source steps with known totals: observed: 777, em
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `strip_governance_projection` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
-| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `concepts.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. strip_governance_projection"]
-    s2["2. isinstance (src/llm_wiki_cli/services…rip_governance_projection)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)"]
     s3["3. TypeError"]
-    s4["4. dict (src/llm_wiki_cli/services…rip_governance_projection)"]
+    s4["4. dict (src/llm_wiki_engine/knowl…rip_governance_projection)"]
     s5["5. extensions.pop"]
     s6["6. concepts.append"]
     s7["7. replace"]
-    s8["8. dict (src/llm_wiki_cli/services…rip_governance_projection)"]
+    s8["8. dict (src/llm_wiki_engine/knowl…rip_governance_projection)"]
     s9["9. extensions.pop"]
     s10["10. extensions.get"]
-    s11["11. isinstance (src/llm_wiki_cli/services…rip_governance_projection)"]
-    s12["12. dict (src/llm_wiki_cli/services…rip_governance_projection)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…rip_governance_projection)(knowledge, KnowledgeIndex)" .-> s2
+    s11["11. isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)"]
+    s12["12. dict (src/llm_wiki_engine/knowl…rip_governance_projection)"]
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)(knowledge, KnowledgeIndex)" .-> s2
     s1 -. "TypeError('knowledge must be a KnowledgeIndex')" .-> s3
-    s1 -. "dict (src/llm_wiki_cli/services…rip_governance_projection)(concept.extensions)" .-> s4
+    s1 -. "dict (src/llm_wiki_engine/knowl…rip_governance_projection)(concept.extensions)" .-> s4
     s1 -. "extensions.pop(GOVERNANCE_EXTENSION_KEY, None)" .-> s5
     s1 -. "concepts.append(replace(...))" .-> s6
     s1 -. "replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)" .-> s7
-    s1 -. "dict (src/llm_wiki_cli/services…rip_governance_projection)(knowledge.extensions)" .-> s8
+    s1 -. "dict (src/llm_wiki_engine/knowl…rip_governance_projection)(knowledge.extensions)" .-> s8
     s1 -. "extensions.pop(GOVERNANCE_EXTENSION_KEY, None)" .-> s9
     s1 -. "extensions.get('llm-wiki/typed-graph-v1')" .-> s10
-    s1 -. "isinstance (src/llm_wiki_cli/services…rip_governance_projection)(graph, Mapping)" .-> s11
-    s1 -. "dict (src/llm_wiki_cli/services…rip_governance_projection)(graph)" .-> s12
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)(graph, Mapping)" .-> s11
+    s1 -. "dict (src/llm_wiki_engine/knowl…rip_governance_projection)(graph)" .-> s12
     b0["mutation extensions.pop"]
     s1 -. "mutation extensions.pop" .-> b0
     b1["mutation concepts.append"]
@@ -181,33 +181,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `strip_governance_projection` | `knowledge: KnowledgeIndex` | `KnowledgeIndex`, `GOVERNANCE_EXTENSION_KEY`, `Lifecycle`, `GOVERNANCE_EXTENSION_KEY`, `Mapping`, `Mapping`, `ConceptKind`, `GOVERNANCE_HASH_EXTENSION_KEY` | `graph_payload[...]`, `extensions[...]` | `replace(...)` |
-| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | - | - | - | - |
 | `extensions.pop` | - | - | - | - |
 | `concepts.append` | - | - | - | - |
 | `replace` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | - | - | - | - |
 | `extensions.pop` | - | - | - | - |
 | `extensions.get` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…rip_governance_projection)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/knowl…rip_governance_projection)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1647 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | isinstance (src/llm_wiki_engine/knowl…rip_governance_projection) | 1647 | `isinstance(knowledge, KnowledgeIndex)` |
 | strip_governance_projection | TypeError | 1648 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1651 | `dict(concept.extensions)` |
+| strip_governance_projection | dict (src/llm_wiki_engine/knowl…rip_governance_projection) | 1651 | `dict(concept.extensions)` |
 | strip_governance_projection | extensions.pop | 1652 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
 | strip_governance_projection | concepts.append | 1653 | `concepts.append(replace(...))` |
 | strip_governance_projection | replace | 1654 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1660 | `dict(knowledge.extensions)` |
+| strip_governance_projection | dict (src/llm_wiki_engine/knowl…rip_governance_projection) | 1660 | `dict(knowledge.extensions)` |
 | strip_governance_projection | extensions.pop | 1661 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
 | strip_governance_projection | extensions.get | 1662 | `extensions.get('llm-wiki/typed-graph-v1')` |
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1663 | `isinstance(graph, Mapping)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1666 | `dict(graph)` |
+| strip_governance_projection | isinstance (src/llm_wiki_engine/knowl…rip_governance_projection) | 1663 | `isinstance(graph, Mapping)` |
+| strip_governance_projection | dict (src/llm_wiki_engine/knowl…rip_governance_projection) | 1666 | `dict(graph)` |
 
 ### Boundary effects
 

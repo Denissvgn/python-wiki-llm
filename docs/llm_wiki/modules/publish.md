@@ -33,37 +33,31 @@ Protected GitHub Actions entry point for reviewed wiki delivery.
 ```mermaid
 flowchart LR
     n0["integrations/wiki-candidate/delivery/publish.py"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n2["src/llm_wiki_cli/services/publication_candidate.py"]
-    n3["src/llm_wiki_cli/services/publication_config.py"]
-    n4["src/llm_wiki_cli/services/publication_delivery.py"]
-    n5["src/llm_wiki_cli/services/publication_impact.py"]
+    n1["src/llm_wiki_cli/services/publication_candidate.py"]
+    n2["src/llm_wiki_cli/services/publication_config.py"]
+    n3["src/llm_wiki_cli/services/publication_delivery.py"]
+    n4["src/llm_wiki_cli/services/publication_impact.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n0 --> n5
-    n2 --> n1
-    n2 --> n3
-    n2 --> n4
-    n2 --> n5
+    n1 --> n2
+    n1 --> n3
+    n1 --> n4
+    n3 --> n1
+    n3 --> n2
     n4 --> n2
-    n4 --> n3
-    n5 --> n1
-    n5 --> n3
     click n0 "../modules/publish.md"
-    click n1 "../modules/knowledge_storage_io.md"
-    click n2 "../modules/publication_candidate.md"
-    click n3 "../modules/publication_config.md"
-    click n4 "../modules/publication_delivery.md"
-    click n5 "../modules/publication_impact.md"
+    click n1 "../modules/publication_candidate.md"
+    click n2 "../modules/publication_config.md"
+    click n3 "../modules/publication_delivery.md"
+    click n4 "../modules/publication_impact.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_delivery](../modules/publication_delivery.md) |

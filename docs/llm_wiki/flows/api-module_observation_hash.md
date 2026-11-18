@@ -195,35 +195,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| module_observation_hash | _validate_inventory_complete | 249 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 818 | `require_bool(inventory_complete, error=TypeError(...))` |
+| module_observation_hash | _validate_inventory_complete | 253 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 822 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_engine/validation.py:require_bool) | 828 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 820 | `TypeError('inventory_complete must be a boolean')` |
-| module_observation_hash | normalize_module_observation | 252 | `normalize_module_observation(file_data)` |
-| normalize_module_observation | _normalize_module_observation | 213 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 428 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 512 | `_failure('', 'object-required', 'inventory object', file_data)` |
-| _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
+| _validate_inventory_complete | TypeError | 824 | `TypeError('inventory_complete must be a boolean')` |
+| module_observation_hash | normalize_module_observation | 256 | `normalize_module_observation(file_data)` |
+| normalize_module_observation | _normalize_module_observation | 217 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 432 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 515 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 516 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| _failure | _InventoryNormalizationError | 170 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
+| _inventory_language | file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 517 | `file_data.get('language', MISSING_VALUE)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 445 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 473 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 480 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 449 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 455 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 477 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 484 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 828 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 820 |
-| external_call | `_inventory_language` | `isinstance` | 511 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 513 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 824 |
+| external_call | `_inventory_language` | `isinstance` | 515 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 517 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `module_observation_hash` | `depth limit` | 0 |
 

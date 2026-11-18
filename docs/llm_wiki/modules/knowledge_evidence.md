@@ -63,17 +63,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (46) |
+| Inbound | `src` (52) |
 | Outbound | `src` (3) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ConceptObservationBasis](../entities/ConceptObservationBasis.md) | 90 | — | One source-backed concept observation basis or explicit unknown result. |
-| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 151 | `Exception` | — |
+| [ConceptObservationBasis](../entities/ConceptObservationBasis.md) | 94 | — | One source-backed concept observation basis or explicit unknown result. |
+| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 155 | `Exception` | — |
 
 ## Functions
 

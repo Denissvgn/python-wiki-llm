@@ -2,11 +2,10 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 43 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 41 more
 
 **Complete modules touched:**
 
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
@@ -27,6 +26,7 @@
 - [host](../modules/host.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -36,7 +36,6 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [path_policy](../modules/path_policy.md)
@@ -123,9 +122,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1528 interactions; 1498 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1530 interactions; 1500 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 501 (500 omitted); unresolved 1 of 464 (463 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 501 (500 omitted); unresolved 1 of 466 (465 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -134,12 +133,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_run_protocol` | 3 | - | external | 19 |
 | `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | - | external | 4 |
 | `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 3 |
+| `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 3 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 319 groups; 311 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 20 | - | external | 2 |
+> Omission summary shows 8 of 320 groups; 312 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -154,7 +153,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 564; effect analysis evaluated: 403, partial: 29, unavailable: 132. Counts include steps omitted from the displayed trace.
 
-Collector observations for 432 source steps with known totals: observed: 3002, emitted: 2718, omitted: 284. Unavailable totals are excluded.
+Collector observations for 432 source steps with known totals: observed: 2995, emitted: 2711, omitted: 284. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

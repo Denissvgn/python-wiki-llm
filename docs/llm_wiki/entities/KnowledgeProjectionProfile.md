@@ -1,6 +1,6 @@
 # KnowledgeProjectionProfile
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:216`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:218`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -25,7 +25,7 @@ Out-of-band projection policies; never selected by artifact metadata.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeProjectionProfile (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["KnowledgeProjectionProfile (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/cli_declarations.py"]

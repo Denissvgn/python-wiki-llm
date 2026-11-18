@@ -31,16 +31,19 @@ _Auto-generated from `_Ownership` in `src/llm_wiki_cli/services/sync_transitions
 ```mermaid
 flowchart LR
     n0["_Ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n1["_moved_module_owner (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n2["_prior_ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n3["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n1["_moved_entity_owner (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n2["_moved_module_owner (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n3["_prior_ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n4["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/sync_transitions.md"
     click n1 "../modules/sync_transitions.md"
     click n2 "../modules/sync_transitions.md"
     click n3 "../modules/sync_transitions.md"
+    click n4 "../modules/sync_transitions.md"
 ```
 
 ### Summary
@@ -53,6 +56,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_moved_entity_owner` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
 | `_moved_module_owner` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
 | `_prior_ownership` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 | `_prior_ownership` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |

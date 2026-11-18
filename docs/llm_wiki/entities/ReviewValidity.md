@@ -1,6 +1,6 @@
 # ReviewValidity
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:349`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:349`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -30,9 +30,9 @@ Computed review validity; this is never persisted in the ledger.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ReviewValidity (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n1["_review_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n2["evaluate_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["ReviewValidity (src/llm_wiki_engine/knowledge_governance.py)"]
+    n1["_review_event_summary (src/llm_wiki_engine/knowledge_governance.py)"]
+    n2["evaluate_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_governance.md"

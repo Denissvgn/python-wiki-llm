@@ -49,7 +49,7 @@ sequenceDiagram
     participant p26 as _array
     participant p27 as _parse_diagnostic
     participant p28 as _parse_coverage
-    participant p29 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    participant p29 as Path (src/llm_wiki_engine/verif…load_verification_receipt)
     participant p30 as root.is_symlink
     p0->>p1: load_verification_receipt
     p0->>p2: evaluate_verification_receipt
@@ -79,7 +79,7 @@ sequenceDiagram
     p17->>p26: _array
     p17->>p27: _parse_diagnostic
     p17->>p28: _parse_coverage
-    p1-->>p29: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
+    p1-->>p29: Path (src/llm_wiki_engine/verif…load_verification_receipt)(wiki_dir)
     p1-->>p30: root.is_symlink
 ```
 
@@ -95,10 +95,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 2 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 35 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 37 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 37 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:load_verification_receipt` | 2 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:verification_receipt_path` | 35 | - | external | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:_read_regular_receipt` | 37 | - | unresolved | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:_read_regular_receipt` | 37 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
 > Omission summary shows 8 of 71 groups; 63 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -124,7 +124,7 @@ Collector observations for 74 source steps with known totals: observed: 310, emi
 |---|---|---|---|---:|---:|---:|
 | `load_and_evaluate_verification_receipt` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `load_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/verif…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -139,7 +139,7 @@ Collector observations for 74 source steps with known totals: observed: 310, emi
 flowchart LR
     s1["1. load_and_evaluate_verification_receipt"]
     s2["2. load_verification_receipt"]
-    s3["3. Path (src/llm_wiki_cli/services…load_verification_receipt)"]
+    s3["3. Path (src/llm_wiki_engine/verif…load_verification_receipt)"]
     s4["4. first_unsafe_path_component"]
     s5["5. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s6["6. os.fspath"]
@@ -150,7 +150,7 @@ flowchart LR
     s11["11. current_host"]
     s12["12. _ACTIVE.get"]
     s1 -->|"load_verification_receipt(wiki_dir, missing_ok=missing_ok)"| s2
-    s2 -. "Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)" .-> s3
+    s2 -. "Path (src/llm_wiki_engine/verif…load_verification_receipt)(wiki_dir)" .-> s3
     s2 -->|"first_unsafe_path_component(root)"| s4
     s4 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s5
     s4 -. "os.fspath(path)" .-> s6
@@ -176,7 +176,7 @@ flowchart LR
 |---|---|---|---|---|
 | `load_and_evaluate_verification_receipt` | `wiki_dir: str \| Path`, `context: VerificationContext`, `missing_ok: bool` | - | - | `None`, `evaluate_verification_receipt(...)` |
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
-| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/verif…load_verification_receipt)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
@@ -192,7 +192,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | load_and_evaluate_verification_receipt | load_verification_receipt | 1116 | `load_verification_receipt(wiki_dir, missing_ok=missing_ok)` |
-| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 985 | `Path(wiki_dir)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |

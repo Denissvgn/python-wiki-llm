@@ -31,10 +31,10 @@ and strict validation; help text grants no extra write or setup authority.
 | `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `maintenance_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `query_cmd`, `reference_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `task_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
 | `.config` | `PathValidationError` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
-| `.services.analysis_compatibility` | `comparison_scope` |
 | `.services.helper_runtime` | `current_helper_configuration`, `helper_operation` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
 | `contextlib` | `contextmanager` |
+| `llm_wiki_engine.analysis_compatibility` | `comparison_scope` |
 | `llm_wiki_engine.progress` | `Progress` |
 | `llm_wiki_engine.runtime_output` | `RuntimeOutputError` |
 | `os` | `os` |

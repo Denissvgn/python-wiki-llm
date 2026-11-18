@@ -1,6 +1,6 @@
 # SnapshotRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:318`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:320`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `SnapshotRecord` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `SnapshotRecord` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -30,10 +30,10 @@ _Auto-generated from `SnapshotRecord` in `src/llm_wiki_cli/services/knowledge_mo
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SnapshotRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["build_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_validate_live_producer (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n3["_parse_snapshot (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["SnapshotRecord (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["build_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n2["_validate_live_producer (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n3["_parse_snapshot (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

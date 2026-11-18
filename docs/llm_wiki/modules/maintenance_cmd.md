@@ -19,10 +19,10 @@ missing authority.
 |--------|---------|
 | `..` | `api` |
 | `..config` | `validate_path` |
-| `..services.sync_recovery` | `recover_new_sync_pages` |
 | `__future__` | `annotations` |
 | `json` | `json` |
 | `llm_wiki_engine.request_json` | `load_request` |
+| `llm_wiki_engine.sync_recovery` | `recover_new_sync_pages` |
 
 ## Local dependency map
 
@@ -34,8 +34,8 @@ flowchart LR
     n2["src/llm_wiki_cli/commands/__init__.py"]
     n3["src/llm_wiki_cli/commands/maintenance_cmd.py"]
     n4["src/llm_wiki_cli/config.py"]
-    n5["src/llm_wiki_cli/services/sync_recovery.py"]
-    n6["src/llm_wiki_engine/request_json.py"]
+    n5["src/llm_wiki_engine/request_json.py"]
+    n6["src/llm_wiki_engine/sync_recovery.py"]
     n0 --> n4
     n1 --> n2
     n1 --> n3
@@ -45,14 +45,14 @@ flowchart LR
     n3 --> n4
     n3 --> n5
     n3 --> n6
-    n5 --> n6
+    n6 --> n5
     click n0 "../modules/api.md"
     click n1 "../modules/cli.md"
     click n2 "../modules/commands___init__.md"
     click n3 "../modules/maintenance_cmd.md"
     click n4 "../modules/config.md"
-    click n5 "../modules/sync_recovery.md"
-    click n6 "../modules/request_json.md"
+    click n5 "../modules/request_json.md"
+    click n6 "../modules/sync_recovery.md"
 ```
 
 ### Internal neighbors
@@ -63,8 +63,8 @@ flowchart LR
 | Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [api](../modules/api.md) |
 | Outbound | [config](../modules/config.md) |
-| Outbound | [sync_recovery](../modules/sync_recovery.md) |
 | Outbound | [request_json](../modules/request_json.md) |
+| Outbound | [sync_recovery](../modules/sync_recovery.md) |
 
 ## Functions
 

@@ -26,8 +26,8 @@ Field-specific failure for the persisted section ownership contract.
 flowchart LR
     n0["SectionOwnershipError (src/llm_wiki_engine/section_ownership.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n3["src/llm_wiki_cli/services/knowledge_model.py"]
+    n2["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n3["src/llm_wiki_engine/knowledge_model.py"]
     n4["_normalise_section_record (src/llm_wiki_engine/section_ownership.py)"]
     n5["_section_array (src/llm_wiki_engine/section_ownership.py)"]
     n6["_section_fields (src/llm_wiki_engine/section_ownership.py)"]

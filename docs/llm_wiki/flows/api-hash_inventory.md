@@ -29,7 +29,7 @@ sequenceDiagram
     participant p15 as _remember_syntax
     participant p16 as SharedValidationError
     participant p17 as portable_path_key
-    participant p18 as isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)
+    participant p18 as isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)
     participant p19 as inventory.items
     participant p20 as payload.values
     participant p21 as isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)
@@ -58,9 +58,9 @@ sequenceDiagram
     p4->>p15: _remember_syntax
     p7->>p16: SharedValidationError
     p8->>p17: portable_path_key
-    p0-->>p18: isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(inventory, Mapping)
+    p0-->>p18: isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)(inventory, Mapping)
     p0-->>p19: inventory.items
-    p0-->>p18: isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(source_path, str)
+    p0-->>p18: isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)(source_path, str)
     p2-->>p20: payload.values
     p4-->>p21: isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)(value, str)
     p10-->>p22: set
@@ -81,7 +81,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_inventory` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:hash_inventory` | 1 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 | `src/llm_wiki_engine/validation.py:_syntax_key` | 10 | - | external | 6 |
 | `src/llm_wiki_engine/validation.py:_known_syntax` | 17 | - | unresolved | 2 |
 | `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 8 | - | external | 4 |
@@ -111,10 +111,10 @@ Collector observations for 26 source steps with known totals: observed: 123, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `hash_inventory` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `inventory.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_repository_relative_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
@@ -126,10 +126,10 @@ Collector observations for 26 source steps with known totals: observed: 123, emi
 ```mermaid
 flowchart LR
     s1["1. hash_inventory"]
-    s2["2. isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)"]
     s3["3. KnowledgeEnvelopeError"]
     s4["4. inventory.items"]
-    s5["5. isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)"]
     s6["6. KnowledgeEnvelopeError"]
     s7["7. _repository_relative_path"]
     s8["8. require_repository_relative_path"]
@@ -137,10 +137,10 @@ flowchart LR
     s10["10. _syntax_key"]
     s11["11. type"]
     s12["12. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(inventory, Mapping)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)(inventory, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('inventory', 'must be an object')"| s3
     s1 -. "inventory.items(data not statically known)" .-> s4
-    s1 -. "isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)(source_path, str)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)(source_path, str)" .-> s5
     s1 -->|"KnowledgeEnvelopeError('inventory', 'must use string source keys')"| s6
     s1 -->|"_repository_relative_path(source_path, 'inventory.source_path')"| s7
     s7 -->|"require_repository_relative_path(…)"| s8
@@ -161,10 +161,10 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `hash_inventory` | `inventory: Mapping[str, Any]` | `Mapping`, `INVENTORY_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `inventory.items` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `_repository_relative_path` | `value: object`, `field_name: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
@@ -177,10 +177,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 766 | `isinstance(inventory, Mapping)` |
+| hash_inventory | isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory) | 766 | `isinstance(inventory, Mapping)` |
 | hash_inventory | KnowledgeEnvelopeError | 767 | `KnowledgeEnvelopeError('inventory', 'must be an object')` |
 | hash_inventory | inventory.items | 769 | `inventory.items(data not statically known)` |
-| hash_inventory | isinstance (src/llm_wiki_cli/services…envelope.py:hash_inventory) | 770 | `isinstance(source_path, str)` |
+| hash_inventory | isinstance (src/llm_wiki_engine/knowl…envelope.py:hash_inventory) | 770 | `isinstance(source_path, str)` |
 | hash_inventory | KnowledgeEnvelopeError | 771 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
 | hash_inventory | _repository_relative_path | 772 | `_repository_relative_path(source_path, 'inventory.source_path')` |
 | _repository_relative_path | require_repository_relative_path | 1506 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |

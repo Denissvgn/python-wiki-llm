@@ -1,6 +1,6 @@
 # _ValidatedLiveEvaluation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:244`
+**Location:** `src/llm_wiki_engine/knowledge_freshness.py:244`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_ValidatedLiveEvaluation` in `src/llm_wiki_cli/services/knowledge_freshness.py`._
+_Auto-generated from `_ValidatedLiveEvaluation` in `src/llm_wiki_engine/knowledge_freshness.py`._
 
 ## Attributes
 
@@ -32,11 +32,11 @@ _Auto-generated from `_ValidatedLiveEvaluation` in `src/llm_wiki_cli/services/kn
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_ValidatedLiveEvaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n1["_basis_incompatibility_reason (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n2["_evaluate_concept (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n3["_live_basis_details (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["_validate_live_evaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n0["_ValidatedLiveEvaluation (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n1["_basis_incompatibility_reason (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n2["_evaluate_concept (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n3["_live_basis_details (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n4["_validate_live_evaluation (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

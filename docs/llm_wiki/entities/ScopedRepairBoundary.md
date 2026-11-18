@@ -1,6 +1,6 @@
 # ScopedRepairBoundary
 
-**Location:** `src/llm_wiki_cli/services/scoped_sync_repair.py:137`
+**Location:** `src/llm_wiki_cli/services/scoped_sync_repair.py:138`
 **Kind:** Class
 **Bases:** —
 **Module:** [scoped_sync_repair](../modules/scoped_sync_repair.md)

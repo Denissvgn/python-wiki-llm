@@ -2,13 +2,12 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 64 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 60 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -28,11 +27,10 @@
 - [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [host](../modules/host.md)
-- [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -47,9 +45,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
@@ -144,9 +140,9 @@ sequenceDiagram
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 4031 interactions; 4001 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3990 interactions; 3960 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1321 (1320 omitted); unresolved 1 of 1333 (1332 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1317 (1316 omitted); unresolved 1 of 1326 (1325 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -160,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 942 groups; 934 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 919 groups; 911 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -173,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1378; effect analysis evaluated: 926, partial: 57, unavailable: 395. Counts include steps omitted from the displayed trace.
+Source steps: 1348; effect analysis evaluated: 908, partial: 50, unavailable: 390. Counts include steps omitted from the displayed trace.
 
-Collector observations for 983 source steps with known totals: observed: 6036, emitted: 5693, omitted: 343. Unavailable totals are excluded.
+Collector observations for 958 source steps with known totals: observed: 5762, emitted: 5442, omitted: 320. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

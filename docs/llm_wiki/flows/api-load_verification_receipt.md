@@ -49,7 +49,7 @@ sequenceDiagram
     participant p26 as _array
     participant p27 as _parse_diagnostic
     participant p28 as _parse_coverage
-    participant p29 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    participant p29 as Path (src/llm_wiki_engine/verif…load_verification_receipt)
     participant p30 as root.is_symlink
     p0->>p1: first_unsafe_path_component
     p0->>p2: _read_regular_receipt
@@ -79,7 +79,7 @@ sequenceDiagram
     p17->>p26: _array
     p17->>p27: _parse_diagnostic
     p17->>p28: _parse_coverage
-    p0-->>p29: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
+    p0-->>p29: Path (src/llm_wiki_engine/verif…load_verification_receipt)(wiki_dir)
     p0-->>p30: root.is_symlink
 ```
 
@@ -95,10 +95,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 3 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 1 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 34 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 36 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 36 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:load_verification_receipt` | 1 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:verification_receipt_path` | 34 | - | external | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:_read_regular_receipt` | 36 | - | unresolved | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:_read_regular_receipt` | 36 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
 > Omission summary shows 8 of 78 groups; 70 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -123,7 +123,7 @@ Collector observations for 76 source steps with known totals: observed: 306, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `load_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/verif…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -138,7 +138,7 @@ Collector observations for 76 source steps with known totals: observed: 306, emi
 ```mermaid
 flowchart LR
     s1["1. load_verification_receipt"]
-    s2["2. Path (src/llm_wiki_cli/services…load_verification_receipt)"]
+    s2["2. Path (src/llm_wiki_engine/verif…load_verification_receipt)"]
     s3["3. first_unsafe_path_component"]
     s4["4. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s5["5. os.fspath"]
@@ -149,7 +149,7 @@ flowchart LR
     s10["10. current_host"]
     s11["11. _ACTIVE.get"]
     s12["12. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
-    s1 -. "Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)" .-> s2
+    s1 -. "Path (src/llm_wiki_engine/verif…load_verification_receipt)(wiki_dir)" .-> s2
     s1 -->|"first_unsafe_path_component(root)"| s3
     s3 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s4
     s3 -. "os.fspath(path)" .-> s5
@@ -174,7 +174,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
-| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/verif…load_verification_receipt)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
@@ -190,7 +190,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 985 | `Path(wiki_dir)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |

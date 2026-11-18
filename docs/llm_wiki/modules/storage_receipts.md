@@ -1,6 +1,6 @@
 # storage_receipts Module
 
-**Path:** `src/llm_wiki_cli/services/storage_receipts.py`
+**Path:** `src/llm_wiki_engine/storage_receipts.py`
 
 ## Description
 
@@ -25,27 +25,27 @@ Encodes and expands versioned selected-storage receipts without removing their c
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/knowledge_packs.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n3["src/llm_wiki_cli/services/storage_receipts.py"]
-    n4["src/llm_wiki_cli/services/task_context_v2.py"]
+    n1["src/llm_wiki_cli/services/task_context_v2.py"]
+    n2["src/llm_wiki_engine/knowledge_packs.py"]
+    n3["src/llm_wiki_engine/knowledge_storage.py"]
+    n4["src/llm_wiki_engine/storage_receipts.py"]
     n5["src/llm_wiki_engine/validation.py"]
-    n0 --> n2
     n0 --> n3
+    n0 --> n4
     n0 --> n5
     n1 --> n2
-    n3 --> n1
-    n3 --> n2
-    n3 --> n5
-    n4 --> n1
+    n1 --> n3
+    n1 --> n4
+    n1 --> n5
+    n2 --> n3
     n4 --> n2
     n4 --> n3
     n4 --> n5
     click n0 "../modules/api.md"
-    click n1 "../modules/knowledge_packs.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/storage_receipts.md"
-    click n4 "../modules/task_context_v2.md"
+    click n1 "../modules/task_context_v2.md"
+    click n2 "../modules/knowledge_packs.md"
+    click n3 "../modules/knowledge_storage.md"
+    click n4 "../modules/storage_receipts.md"
     click n5 "../modules/validation.md"
 ```
 

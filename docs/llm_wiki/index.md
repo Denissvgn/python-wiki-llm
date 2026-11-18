@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 768 | [Open section](#entities) |
-| Modules | 308 | [Open section](#modules) |
-| Workflows | 314 | [Open section](#workflows) |
+| Entities | 769 | [Open section](#entities) |
+| Modules | 311 | [Open section](#modules) |
+| Workflows | 313 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 508 | [Open section](#entry-point-flows) |
+| Entry-point flows | 506 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -321,6 +321,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InstructionOwner](entities/InstructionOwner.md)
 - [InstructionRoute](entities/InstructionRoute.md)
 - [InstructionRouteKind](entities/InstructionRouteKind.md)
+- [IntegrationUnavailable](entities/IntegrationUnavailable.md)
 - [IntegrityDifference](entities/IntegrityDifference.md)
 - [InvalidRequestError](entities/InvalidRequestError.md)
 - [InvalidSurfaceJson](entities/InvalidSurfaceJson.md)
@@ -895,11 +896,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [implementation_evidence](modules/implementation_evidence.md) - Pure, bounded persistence and comparison of captured implementation syntax.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Structured observations for recognized infrastructure YAML formats.
+- [infrastructure_state](modules/infrastructure_state.md) - Persisted infrastructure state: its format and the evidence it projects.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
 - [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
 - [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing portable LLM Wiki workflows.
 - [install_cmd](modules/install_cmd.md) - `src/llm_wiki_cli/commands/install_cmd.py`
 - [instruction_ownership](modules/instruction_ownership.md) - Machine-checkable ownership and routing for generated agent instructions.
+- [integrations](modules/integrations.md) - Providers the knowledge core borrows from the application that embeds it.
 - [integrity](modules/integrity.md) - Documentation-run integrity services.
 - [inventory_cache](modules/inventory_cache.md) - Persistent inventory cache used by lint and CI validation.
 - [io](modules/io.md) - Encoding-safe and atomic I/O helpers for wiki artifacts.
@@ -925,6 +928,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_packs](modules/knowledge_packs.md) - Immutable indexed ZIP containers for unchanged logical knowledge objects.
 - [knowledge_projection](modules/knowledge_projection.md) - Safe, deterministic projections over one validated knowledge read view.
 - [knowledge_reuse](modules/knowledge_reuse.md) - Versioned input commitments for conservative, validated sync no-ops.
+- [knowledge_reuse_format](modules/knowledge_reuse_format.md) - Knowledge reuse commitments: their format and their binding to artifacts.
 - [knowledge_storage](modules/knowledge_storage.md) - Bounded, content-addressed storage for the unchanged logical knowledge model.
 - [knowledge_storage_access](modules/knowledge_storage_access.md) - Coherent selected access to a committed sharded knowledge generation.
 - [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) - CLI adapter for explicit native storage operations.
@@ -1134,7 +1138,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [apply_module_page](workflows/apply_module_page.md) - entry: `sync_runtime._apply_module_page`
 - [apply_task_delta](workflows/apply_task_delta.md) - entry: `context_session.apply_task_delta`
 - [assert_bootstrap_output_excluded](workflows/assert_bootstrap_output_excluded.md) - entry: `publication_snapshot.assert_bootstrap_output_excluded`
-- [attach_maintenance_view_from_inputs](workflows/attach_maintenance_view_from_inputs.md) - entry: `maintenance_status.attach_maintenance_view_from_inputs`
 - [audit_knowledge_stream](workflows/audit_knowledge_stream.md) - entry: `knowledge_stream_audit.audit_knowledge_stream`
 - [audit_spilled_records](workflows/audit_spilled_records.md) - entry: `knowledge_audit.audit_spilled_records`
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
@@ -1162,7 +1165,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
 - [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
 - [build_maintenance_queue](workflows/build_maintenance_queue.md) - entry: `maintenance_queue.build_maintenance_queue`
-- [build_maintenance_status](workflows/build_maintenance_status.md) - entry: `maintenance_status.build_maintenance_status`
 - [build_manifest_store](workflows/build_manifest_store.md) - entry: `manifest_storage.build_manifest_store`
 - [build_migration_plan](workflows/build_migration_plan.md) - entry: `migrate_runtime._build_migration_plan`
 - [build_protocol_enrichment_from_captured_read](workflows/build_protocol_enrichment_from_captured_read.md) - entry: `context_packet_builder._build_protocol_enrichment_from_captured_read`
@@ -1176,6 +1178,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_sync_graph_observations](workflows/build_sync_graph_observations.md) - entry: `sync_runtime._build_sync_graph_observations`
 - [build_sync_prompt](workflows/build_sync_prompt.md) - entry: `trigger_cmd._build_sync_prompt`
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
+- [canonical_generated_pages](workflows/canonical_generated_pages.md) - entry: `canonical_pages.canonical_generated_pages`
 - [capture_analysis](workflows/capture_analysis.md) - entry: `analysis_capture.capture_analysis`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet_builder.capture_context_read`
@@ -1211,7 +1214,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [context_budget_flow](workflows/context_budget_flow.md) - entry: `context_budget.run`
 - [context_service_flow](workflows/context_service_flow.md) - entry: `context_service.run`
 - [current_coverage](workflows/current_coverage.md) - entry: `metrics.current_coverage`
-- [current_evidence](workflows/current_evidence.md) - entry: `maintenance_evidence._current_evidence`
 - [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
 - [deprecate_existing_page](workflows/deprecate_existing_page.md) - entry: `sync_runtime._deprecate_existing_page`
 - [deprecate_removed_files](workflows/deprecate_removed_files.md) - entry: `sync_runtime._deprecate_removed_files`
@@ -1273,6 +1275,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [maintenance_cmd_flow](workflows/maintenance_cmd_flow.md) - entry: `maintenance_cmd.run`
 - [maintenance_report_from_captured](workflows/maintenance_report_from_captured.md) - entry: `maintenance_service.maintenance_report_from_captured`
 - [maintenance_reuse_check](workflows/maintenance_reuse_check.md) - entry: `knowledge_reuse.maintenance_reuse_check`
+- [maintenance_transfers_from_page_plan](workflows/maintenance_transfers_from_page_plan.md) - entry: `maintenance_evidence.maintenance_transfers_from_page_plan`
 - [maintenance_write_operation](workflows/maintenance_write_operation.md) - entry: `maintenance_protocol.maintenance_write_operation`
 - [manifest_content](workflows/manifest_content.md) - entry: `team._manifest_content`
 - [mark_recovery_complete](workflows/mark_recovery_complete.md) - entry: `maintenance_recovery._mark_recovery_complete`
@@ -1605,7 +1608,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-hash_source_snapshot](flows/api-hash_source_snapshot.md) - entry: `hash_source_snapshot`
 - [api-helper_preparation](flows/api-helper_preparation.md) - entry: `helper_preparation`
 - [api-identity_coordinate_key](flows/api-identity_coordinate_key.md) - entry: `identity_coordinate_key`
-- [api-infrastructure_evidence_by_page](flows/api-infrastructure_evidence_by_page.md) - entry: `infrastructure_evidence_by_page`
 - [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`
 - [api-inspect_concept](flows/api-inspect_concept.md) - entry: `inspect_concept`
 - [api-install_ci_workflow](flows/api-install_ci_workflow.md) - entry: `install_ci_workflow`
@@ -1847,7 +1849,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-validate_governance_ledger](flows/api-validate_governance_ledger.md) - entry: `validate_governance_ledger`
 - [api-validate_governance_projection](flows/api-validate_governance_projection.md) - entry: `validate_governance_projection`
 - [api-validate_identity_registry](flows/api-validate_identity_registry.md) - entry: `validate_identity_registry`
-- [api-validate_infrastructure_generation_input](flows/api-validate_infrastructure_generation_input.md) - entry: `validate_infrastructure_generation_input`
 - [api-validate_knowledge_artifacts](flows/api-validate_knowledge_artifacts.md) - entry: `validate_knowledge_artifacts`
 - [api-validate_knowledge_index](flows/api-validate_knowledge_index.md) - entry: `validate_knowledge_index`
 - [api-validate_knowledge_payload](flows/api-validate_knowledge_payload.md) - entry: `validate_knowledge_payload`

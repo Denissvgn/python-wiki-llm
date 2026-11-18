@@ -32,28 +32,28 @@ producer incompatibility can still downgrade historical provenance explicitly.
 |--------|---------|
 | `.implementation_evidence` | `project_concept_implementations`, `analysis_hash_from_producer` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes`, `require_validated_artifacts` |
-| `.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record`, `INVENTORY_HASH_EXTENSION`, `hash_inventory` |
-| `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
-| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_assemble_knowledge_index`, `_knowledge_validation_operation` |
-| `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
-| `.knowledge_model` | `KnowledgeModelError`, `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
-| `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
-| `.maintenance_projection` | `project_maintenance_knowledge` |
-| `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.sync_analysis_cache` | `EXTENSION` |
-| `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `json` | `json` |
 | `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes`, `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record`, `INVENTORY_HASH_EXTENSION`, `hash_inventory` |
 | `llm_wiki_engine.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256`, `hash_json` |
+| `llm_wiki_engine.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `llm_wiki_engine.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
+| `llm_wiki_engine.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_assemble_knowledge_index`, `_knowledge_validation_operation` |
+| `llm_wiki_engine.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
+| `llm_wiki_engine.knowledge_model` | `KnowledgeModelError`, `ProducerRecord`, `concept_kind_for_page_kind` |
+| `llm_wiki_engine.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
+| `llm_wiki_engine.maintenance_projection` | `project_maintenance_knowledge` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
 | `llm_wiki_engine.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
+| `llm_wiki_engine.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
+| `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfacePage` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `TYPE_CHECKING` |

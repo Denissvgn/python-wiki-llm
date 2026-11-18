@@ -16,7 +16,6 @@ never a mutable language-wide current pointer.
 |--------|---------|
 | `.` | `extractor_helpers` |
 | `.helper_runtime` | `PreparedHelperHandle`, `current_helper_operation`, `PreparedHelperHandle`, `current_helper_operation` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `contextlib` | `contextmanager` |
@@ -27,6 +26,7 @@ never a mutable language-wide current pointer.
 | `json` | `json` |
 | `llm_wiki_engine.host` | `current_host` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `write_json_atomic` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `msvcrt` | `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path` |

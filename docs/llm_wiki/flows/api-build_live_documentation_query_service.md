@@ -2,11 +2,10 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 29 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), and 28 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [context_packet](../modules/context_packet.md)
@@ -17,7 +16,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -58,7 +57,7 @@ sequenceDiagram
     participant p8 as _live_source_selection_identity
     participant p9 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     participant p10 as attach_implementation_read_view
-    participant p11 as analysis_identity
+    participant p11 as analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     participant p12 as read_guarded
     participant p13 as attach_maintenance_view_from_inputs
     participant p14 as _assert_source_unchanged
@@ -69,13 +68,13 @@ sequenceDiagram
     participant p19 as SyncManifest.load
     participant p20 as _domain_hash
     participant p21 as confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
-    participant p22 as _supplied_path_values
-    participant p23 as _absolute_path
-    participant p24 as source_snapshot_matches_current_files
-    participant p25 as _resolve_snapshot_selection
-    participant p26 as _override_text
-    participant p27 as _new_snapshot_buckets
-    participant p28 as open_windows_readonly_file
+    participant p22 as attributes
+    participant p23 as _supplied_path_values
+    participant p24 as _absolute_path
+    participant p25 as source_snapshot_matches_current_files
+    participant p26 as _resolve_snapshot_selection
+    participant p27 as _override_text
+    participant p28 as _new_snapshot_buckets
     participant p29 as isinstance (src/llm_wiki_cli/services…cumentation_query_service)
     participant p30 as selected_snapshot_builder
     p0->>p1: normalize_supplied_paths
@@ -88,7 +87,7 @@ sequenceDiagram
     p0->>p8: _live_source_selection_identity
     p0->>p9: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     p0->>p10: attach_implementation_read_view
-    p0->>p11: analysis_identity
+    p0->>p11: analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     p0->>p12: read_guarded
     p0->>p13: attach_maintenance_view_from_inputs
     p0->>p14: _assert_source_unchanged
@@ -99,20 +98,20 @@ sequenceDiagram
     p4->>p19: SyncManifest.load
     p5->>p20: _domain_hash
     p9->>p21: confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
-    p1->>p22: _supplied_path_values
-    p12->>p23: _absolute_path
-    p14->>p24: source_snapshot_matches_current_files
-    p3->>p25: _resolve_snapshot_selection
-    p2->>p26: _override_text
-    p3->>p27: _new_snapshot_buckets
-    p12->>p28: open_windows_readonly_file
+    p10->>p22: attributes
+    p1->>p23: _supplied_path_values
+    p12->>p24: _absolute_path
+    p14->>p25: source_snapshot_matches_current_files
+    p3->>p26: _resolve_snapshot_selection
+    p2->>p27: _override_text
+    p3->>p28: _new_snapshot_buckets
     p0-->>p29: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(read_only, bool)
     p0-->>p30: selected_snapshot_builder(source_root, **=snapshot_options)
 ```
 
-> Call sequence diagram shows 30 of 1986 interactions; 1956 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1837 interactions; 1807 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 680 (679 omitted); unresolved 1 of 522 (521 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 614 (613 omitted); unresolved 1 of 485 (484 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +125,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_engine/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
 | `src/llm_wiki_engine/validation.py:_check_path_collision` | 22 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 2 |
-> Omission summary shows 8 of 508 groups; 500 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 490 groups; 482 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,9 +138,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 785; effect analysis evaluated: 499, partial: 32, unavailable: 254. Counts include steps omitted from the displayed trace.
+Source steps: 739; effect analysis evaluated: 463, partial: 27, unavailable: 249. Counts include steps omitted from the displayed trace.
 
-Collector observations for 531 source steps with known totals: observed: 3022, emitted: 2791, omitted: 231. Unavailable totals are excluded.
+Collector observations for 490 source steps with known totals: observed: 2704, emitted: 2496, omitted: 208. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

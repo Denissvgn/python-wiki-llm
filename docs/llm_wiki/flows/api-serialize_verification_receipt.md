@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as _nonnegative_int
     participant p27 as indented_line_text
     participant p28 as _receipt_to_payload
-    participant p29 as len (src/llm_wiki_cli/services…lize_verification_receipt)
+    participant p29 as len (src/llm_wiki_engine/verif…lize_verification_receipt)
     participant p30 as formatted_json_text(…).encode
     p0->>p1: formatted_json_bytes
     p0->>p2: verification_receipt_to_payload
@@ -70,7 +70,7 @@ sequenceDiagram
     p23->>p26: _nonnegative_int
     p1->>p27: indented_line_text
     p2->>p28: _receipt_to_payload
-    p0-->>p29: len (src/llm_wiki_cli/services…lize_verification_receipt)(content)
+    p0-->>p29: len (src/llm_wiki_engine/verif…lize_verification_receipt)(content)
     p1-->>p30: formatted_json_text(…).encode('utf-8')
 ```
 
@@ -83,10 +83,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 4 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 7 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:validate_verification_receipt` | 7 | - | external | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:validate_verification_receipt` | 7 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 9 | - | external | 2 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 14 | - | external | 2 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 14 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 16 | - | external | 1 |
@@ -120,10 +120,10 @@ Collector observations for 69 source steps with known totals: observed: 256, emi
 | `json.dumps (src/llm_wiki_engine/canon…son.py:indented_line_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `verification_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -135,10 +135,10 @@ flowchart LR
     s5["5. json.dumps (src/llm_wiki_engine/canon…son.py:indented_line_text)"]
     s6["6. verification_receipt_to_payload"]
     s7["7. validate_verification_receipt"]
-    s8["8. isinstance (src/llm_wiki_cli/services…date_verification_receipt)"]
+    s8["8. isinstance (src/llm_wiki_engine/verif…date_verification_receipt)"]
     s9["9. _receipt_to_payload"]
-    s10["10. dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)"]
-    s11["11. dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)"]
+    s10["10. dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)"]
+    s11["11. dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)"]
     s12["12. check.to_payload"]
     s1 -->|"formatted_json_bytes(verification_receipt_to_payload(...))"| s2
     s2 -. "formatted_json_text(…).encode('utf-8')" .-> s3
@@ -146,10 +146,10 @@ flowchart LR
     s4 -. "json.dumps (src/llm_wiki_engine/canon…son.py:indented_line_text)(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)" .-> s5
     s1 -->|"verification_receipt_to_payload(value)"| s6
     s6 -->|"validate_verification_receipt(value)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/verif…date_verification_receipt)(value, VerificationReceipt)" .-> s8
     s7 -->|"_receipt_to_payload(value)"| s9
-    s9 -. "dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)(receipt.evidence)" .-> s10
-    s9 -. "dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)(receipt.evaluated_snapshot)" .-> s11
+    s9 -. "dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)(receipt.evidence)" .-> s10
+    s9 -. "dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)(receipt.evaluated_snapshot)" .-> s11
     s9 -. "check.to_payload(data not statically known)" .-> s12
     click s1 "../modules/verification_contracts.md"
     click s2 "../modules/knowledge_evidence.md"
@@ -170,10 +170,10 @@ flowchart LR
 | `json.dumps (src/llm_wiki_engine/canon…son.py:indented_line_text)` | - | - | - | - |
 | `verification_receipt_to_payload` | `value: VerificationReceipt \| object` | - | - | `_receipt_to_payload(...)` |
 | `validate_verification_receipt` | `value: VerificationReceipt \| object` | `VerificationReceipt`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VerificationContractError`, `MAX_CHECKS_PER_RECEIPT` | - | `VerificationReceipt(...)` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | - | - | - | - |
 | `_receipt_to_payload` | `receipt: VerificationReceipt` | - | - | `{...}` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | - | - | - | - |
 | `check.to_payload` | - | - | - | - |
 
 ### Call data
@@ -181,15 +181,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | serialize_verification_receipt | formatted_json_bytes | 819 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
-| formatted_json_bytes | formatted_json_text(…).encode | 189 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | indented_line_text | 189 | `formatted_json_text(value)` |
+| formatted_json_bytes | formatted_json_text(…).encode | 193 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | indented_line_text | 193 | `formatted_json_text(value)` |
 | indented_line_text | json.dumps (src/llm_wiki_engine/canon…son.py:indented_line_text) | 50 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 | serialize_verification_receipt | verification_receipt_to_payload | 819 | `verification_receipt_to_payload(value)` |
 | verification_receipt_to_payload | validate_verification_receipt | 810 | `validate_verification_receipt(value)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
 | validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
 | _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 
 ### Boundary effects
@@ -200,7 +200,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 189 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 193 |
 | external_call | `indented_line_text` | `json.dumps` | 50 |
 | external_call | `validate_verification_receipt` | `isinstance` | 835 |
 | unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1136 |

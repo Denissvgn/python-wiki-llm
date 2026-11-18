@@ -30,14 +30,14 @@ sequenceDiagram
     participant p16 as _remember_syntax
     participant p17 as SharedValidationError
     participant p18 as portable_path_key
-    participant p19 as isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    participant p19 as isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)
     participant p20 as pages.items
-    participant p21 as set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    participant p21 as set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)
     participant p22 as canonical_path.endswith
     participant p23 as seen.add
     participant p24 as records.append
     participant p25 as records.sort
-    participant p26 as isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)
+    participant p26 as isinstance (src/llm_wiki_engine/knowl…normalized_markdown_bytes)
     participant p27 as hashlib.sha256(…).hexdigest
     participant p28 as payload.values
     participant p29 as value.decode
@@ -60,14 +60,14 @@ sequenceDiagram
     p6->>p16: _remember_syntax
     p9->>p17: SharedValidationError
     p10->>p18: portable_path_key
-    p0-->>p19: isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)
+    p0-->>p19: isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)(pages, Mapping)
     p0-->>p20: pages.items
-    p0-->>p21: set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    p0-->>p21: set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)
     p0-->>p22: canonical_path.endswith('.md')
     p0-->>p23: seen.add(canonical_path)
     p0-->>p24: records.append({...})
     p0-->>p25: records.sort(key=...)
-    p2-->>p26: isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)(value, bytes)
+    p2-->>p26: isinstance (src/llm_wiki_engine/knowl…normalized_markdown_bytes)(value, bytes)
     p5-->>p27: hashlib.sha256(…).hexdigest
     p3-->>p28: payload.values
     p2-->>p29: value.decode('utf-8')
@@ -112,9 +112,9 @@ Collector observations for 28 source steps with known totals: observed: 131, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `hash_markdown_snapshot` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `pages.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_repository_relative_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
@@ -127,9 +127,9 @@ Collector observations for 28 source steps with known totals: observed: 131, emi
 ```mermaid
 flowchart LR
     s1["1. hash_markdown_snapshot"]
-    s2["2. isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)"]
     s3["3. KnowledgeEnvelopeError"]
-    s4["4. set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)"]
+    s4["4. set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)"]
     s5["5. pages.items"]
     s6["6. _repository_relative_path"]
     s7["7. require_repository_relative_path"]
@@ -138,9 +138,9 @@ flowchart LR
     s10["10. type"]
     s11["11. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
     s12["12. any (src/llm_wiki_engine/validation.py:_syntax_key)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)(pages, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('markdown_pages', 'must be an object')"| s3
-    s1 -. "set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(data not statically known)" .-> s4
+    s1 -. "set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)(data not statically known)" .-> s4
     s1 -. "pages.items(data not statically known)" .-> s5
     s1 -->|"_repository_relative_path(path, 'markdown_pages.path')"| s6
     s6 -->|"require_repository_relative_path(…)"| s7
@@ -171,9 +171,9 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `hash_markdown_snapshot` | `pages: Mapping[str, str \| bytes]` | `Mapping`, `MARKDOWN_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)` | - | - | - | - |
+| `set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot)` | - | - | - | - |
 | `pages.items` | - | - | - | - |
 | `_repository_relative_path` | `value: object`, `field_name: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
@@ -187,9 +187,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_markdown_snapshot | isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot) | 785 | `isinstance(pages, Mapping)` |
+| hash_markdown_snapshot | isinstance (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot) | 785 | `isinstance(pages, Mapping)` |
 | hash_markdown_snapshot | KnowledgeEnvelopeError | 786 | `KnowledgeEnvelopeError('markdown_pages', 'must be an object')` |
-| hash_markdown_snapshot | set (src/llm_wiki_cli/services…py:hash_markdown_snapshot) | 788 | `set(data not statically known)` |
+| hash_markdown_snapshot | set (src/llm_wiki_engine/knowl…py:hash_markdown_snapshot) | 788 | `set(data not statically known)` |
 | hash_markdown_snapshot | pages.items | 789 | `pages.items(data not statically known)` |
 | hash_markdown_snapshot | _repository_relative_path | 790 | `_repository_relative_path(path, 'markdown_pages.path')` |
 | _repository_relative_path | require_repository_relative_path | 1506 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |

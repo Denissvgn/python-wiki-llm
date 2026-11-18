@@ -2,21 +2,17 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 42 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 37 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
-- [common](../modules/common.md)
-- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -31,7 +27,7 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
@@ -46,7 +42,6 @@
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -76,20 +71,20 @@ sequenceDiagram
     participant p13 as build_knowledge_read_view
     participant p14 as KnowledgeLoadResult
     participant p15 as source_selection_identity_from_generation_inputs
-    participant p16 as _validate_capture_options
-    participant p17 as _resolve_snapshot_selection
-    participant p18 as source_selection_inputs_from_generation_inputs
-    participant p19 as collect_wiki_pages
-    participant p20 as _override_text
-    participant p21 as _new_snapshot_buckets
-    participant p22 as _normalize_only_files
-    participant p23 as summarize_knowledge_view
-    participant p24 as _page_entries
-    participant p25 as _collect_source_selection_controls
-    participant p26 as _source_maps
-    participant p27 as _locate_exact_path
-    participant p28 as _selection_inputs_from_buckets
-    participant p29 as time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
+    participant p16 as provider
+    participant p17 as source_selection_inputs_from_generation_inputs
+    participant p18 as collect_wiki_pages
+    participant p19 as _override_text
+    participant p20 as summarize_knowledge_view
+    participant p21 as _page_entries
+    participant p22 as _source_maps
+    participant p23 as _locate_exact_path
+    participant p24 as _counts
+    participant p25 as StorageReadSession.read
+    participant p26 as build_asset_index
+    participant p27 as guard_maintenance_owner
+    participant p28 as _read_config
+    participant p29 as time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)
     participant p30 as Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)
     p0->>p1: resolve_source_selection
     p0->>p2: capture_source_selection_inputs
@@ -106,40 +101,40 @@ sequenceDiagram
     p0->>p13: build_knowledge_read_view
     p0->>p14: KnowledgeLoadResult
     p4->>p15: source_selection_identity_from_generation_inputs
-    p5->>p16: _validate_capture_options
-    p2->>p17: _resolve_snapshot_selection
-    p4->>p18: source_selection_inputs_from_generation_inputs
-    p9->>p19: collect_wiki_pages
-    p1->>p20: _override_text
-    p2->>p21: _new_snapshot_buckets
-    p5->>p22: _normalize_only_files
-    p6->>p23: summarize_knowledge_view
-    p9->>p24: _page_entries
-    p2->>p25: _collect_source_selection_controls
-    p9->>p26: _source_maps
-    p1->>p27: _locate_exact_path
-    p2->>p28: _selection_inputs_from_buckets
-    p0-->>p29: time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
+    p2->>p16: provider
+    p4->>p17: source_selection_inputs_from_generation_inputs
+    p9->>p18: collect_wiki_pages
+    p1->>p19: _override_text
+    p6->>p20: summarize_knowledge_view
+    p9->>p21: _page_entries
+    p9->>p22: _source_maps
+    p1->>p23: _locate_exact_path
+    p9->>p24: _counts
+    p3->>p25: StorageReadSession.read
+    p9->>p26: build_asset_index
+    p10->>p27: guard_maintenance_owner
+    p1->>p28: _read_config
+    p0-->>p29: time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)
     p1-->>p30: Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)
 ```
 
-> Call sequence diagram shows 30 of 2595 interactions; 2565 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2158 interactions; 2128 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 792 (791 omitted); unresolved 1 of 663 (662 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 695 (694 omitted); unresolved 1 of 492 (491 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_observability.py:load_snapshot_knowledge_observability` | 1 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_observability.py:load_snapshot_knowledge_observability` | 1 | - | external | 1 |
 | `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 4 | - | external | 1 |
-| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 4 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 6 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 4 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 5 |
 | `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | - | external | 3 |
 | `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 3 |
 | `src/llm_wiki_engine/source_selection.py:_selection_path` | 15 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 4 |
 | `src/llm_wiki_engine/source_selection.py:_require_selection_path` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 708 groups; 700 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 562 groups; 554 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -152,9 +147,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1141; effect analysis evaluated: 647, partial: 54, unavailable: 440. Counts include steps omitted from the displayed trace.
+Source steps: 972; effect analysis evaluated: 520, partial: 48, unavailable: 404. Counts include steps omitted from the displayed trace.
 
-Collector observations for 701 source steps with known totals: observed: 4181, emitted: 3866, omitted: 315. Unavailable totals are excluded.
+Collector observations for 568 source steps with known totals: observed: 3420, emitted: 3136, omitted: 284. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -163,8 +158,8 @@ Collector observations for 701 source steps with known totals: observed: 4181, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `load_snapshot_knowledge_observability` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
-| `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `resolve_source_selection` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_engine/sourc…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -178,8 +173,8 @@ Collector observations for 701 source steps with known totals: observed: 4181, e
 ```mermaid
 flowchart LR
     s1["1. load_snapshot_knowledge_observability"]
-    s2["2. time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)"]
-    s3["3. Path (src/llm_wiki_cli/services…t_knowledge_observability)"]
+    s2["2. time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)"]
+    s3["3. Path (src/llm_wiki_engine/knowl…t_knowledge_observability)"]
     s4["4. resolve_source_selection"]
     s5["5. Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)"]
     s6["6. Path (src/llm_wiki_engine/sourc…:resolve_source_selection)"]
@@ -189,8 +184,8 @@ flowchart LR
     s10["10. override.as_posix"]
     s11["11. os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text)"]
     s12["12. SourceSelectionError"]
-    s1 -. "time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)(data not statically known)" .-> s2
-    s1 -. "Path (src/llm_wiki_cli/services…t_knowledge_observability)(wiki_dir)" .-> s3
+    s1 -. "time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)(data not statically known)" .-> s2
+    s1 -. "Path (src/llm_wiki_engine/knowl…t_knowledge_observability)(wiki_dir)" .-> s3
     s1 -->|"resolve_source_selection(effective_src_dir, source_selection)"| s4
     s4 -. "Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)(data not statically known)" .-> s5
     s4 -. "Path (src/llm_wiki_engine/sourc…:resolve_source_selection)(root)" .-> s6
@@ -212,8 +207,8 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_snapshot_knowledge_observability` | `wiki_dir: str \| Path`, `src_dir: str \| Path \| None`, `source_selection: str \| Path \| None` | `SourceSelectionError`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError` | - | `_snapshot_result(...)`, `_snapshot_result(...)`, `_snapshot_result(...)`, `_snapshot_result(...)`, `_snapshot_result(...)` |
-| `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | - | - | - | - |
+| `time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…t_knowledge_observability)` | - | - | - | - |
 | `resolve_source_selection` | `root: str \| Path`, `override: str \| Path \| None` | `SOURCE_SELECTION_PATH` | - | `None`, `None`, `policy` |
 | `Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)` | - | - | - | - |
 | `Path (src/llm_wiki_engine/sourc…:resolve_source_selection)` | - | - | - | - |
@@ -228,9 +223,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability) | 546 | `time.perf_counter(data not statically known)` |
-| load_snapshot_knowledge_observability | Path (src/llm_wiki_cli/services…t_knowledge_observability) | 547 | `Path(wiki_dir)` |
-| load_snapshot_knowledge_observability | resolve_source_selection | 552 | `resolve_source_selection(effective_src_dir, source_selection)` |
+| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability) | 555 | `time.perf_counter(data not statically known)` |
+| load_snapshot_knowledge_observability | Path (src/llm_wiki_engine/knowl…t_knowledge_observability) | 556 | `Path(wiki_dir)` |
+| load_snapshot_knowledge_observability | resolve_source_selection | 561 | `resolve_source_selection(effective_src_dir, source_selection)` |
 | resolve_source_selection | Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root).resolve(data not statically known)` |
 | resolve_source_selection | Path (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root)` |
 | resolve_source_selection | SourceSelectionError | 608 | `SourceSelectionError('source_root', 'must resolve to a repository path')` |
@@ -248,7 +243,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 546 |
+| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 555 |
 | unresolved_call | `resolve_source_selection` | `Path(root).resolve` | 606 |
 | external_call | `_override_text` | `isinstance` | 583 |
 | unresolved_call | `_override_text` | `override.as_posix` | 583 |

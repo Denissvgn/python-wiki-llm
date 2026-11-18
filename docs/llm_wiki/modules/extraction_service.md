@@ -58,7 +58,6 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
-| `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
@@ -81,6 +80,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `llm_wiki_engine.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `llm_wiki_engine.host` | `HostCapabilityError`, `current_host`, `emit` |
 | `llm_wiki_engine.io` | `write_text_output` |
+| `llm_wiki_engine.knowledge_artifacts` | `require_validated_artifacts` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `llm_wiki_engine.path_policy` | `PathValidationError`, `validate_source_paths`, `validate_source_root` |
 | `llm_wiki_engine.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
@@ -110,10 +110,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (23) |
+| Inbound | `src` (22) |
 | Outbound | `src` (38) |
 
-> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

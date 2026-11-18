@@ -10,14 +10,14 @@ Bounded content-addressed persistence for advisory sync analysis captures.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_governance` | `governance_lock` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_engine.canonical_json` | `canonical_chunks` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `remove_guarded_tree`, `unlink_guarded_bytes` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
+| `llm_wiki_engine.knowledge_governance` | `governance_lock` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -27,31 +27,31 @@ Bounded content-addressed persistence for advisory sync analysis captures.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n2["src/llm_wiki_cli/services/sync_analysis_cache.py"]
-    n3["src/llm_wiki_cli/services/sync_analysis_storage.py"]
-    n4["src/llm_wiki_engine/canonical_json.py"]
-    n5["src/llm_wiki_engine/filesystem_guard.py"]
-    n6["src/llm_wiki_engine/io.py"]
+    n0["src/llm_wiki_cli/services/sync_analysis_cache.py"]
+    n1["src/llm_wiki_cli/services/sync_analysis_storage.py"]
+    n2["src/llm_wiki_engine/canonical_json.py"]
+    n3["src/llm_wiki_engine/filesystem_guard.py"]
+    n4["src/llm_wiki_engine/io.py"]
+    n5["src/llm_wiki_engine/knowledge_governance.py"]
+    n6["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n0 --> n1
+    n0 --> n4
     n0 --> n6
+    n1 --> n2
+    n1 --> n3
+    n1 --> n4
     n1 --> n5
     n1 --> n6
-    n2 --> n1
-    n2 --> n3
-    n2 --> n6
-    n3 --> n0
-    n3 --> n1
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
-    click n0 "../modules/knowledge_governance.md"
-    click n1 "../modules/knowledge_storage_io.md"
-    click n2 "../modules/sync_analysis_cache.md"
-    click n3 "../modules/sync_analysis_storage.md"
-    click n4 "../modules/canonical_json.md"
-    click n5 "../modules/filesystem_guard.md"
-    click n6 "../modules/io.md"
+    n5 --> n4
+    n6 --> n3
+    n6 --> n4
+    click n0 "../modules/sync_analysis_cache.md"
+    click n1 "../modules/sync_analysis_storage.md"
+    click n2 "../modules/canonical_json.md"
+    click n3 "../modules/filesystem_guard.md"
+    click n4 "../modules/io.md"
+    click n5 "../modules/knowledge_governance.md"
+    click n6 "../modules/knowledge_storage_io.md"
 ```
 
 ### Internal neighbors
@@ -59,11 +59,11 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [sync_analysis_cache](../modules/sync_analysis_cache.md) |
-| Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
+| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 
 ## Functions
 

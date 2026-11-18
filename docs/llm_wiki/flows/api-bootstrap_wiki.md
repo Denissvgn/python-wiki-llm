@@ -2,7 +2,7 @@
 
 **Entry point:** `bootstrap_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 49 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 51 more
 
 **Complete modules touched:**
 
@@ -25,7 +25,9 @@
 - [host](../modules/host.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -87,14 +89,14 @@ sequenceDiagram
     participant p17 as _first_use_guidance
     participant p18 as _preflight_bootstrap_governance
     participant p19 as _extract_bootstrap_inventory
-    participant p20 as guard_incomplete_bootstrap
+    participant p20 as attributes
     participant p21 as _is_pristine_bootstrap_target
-    participant p22 as load_adoption_marker
-    participant p23 as governance_writer_lock
-    participant p24 as _finish_if_empty_bootstrap_inventory
-    participant p25 as SyncManifest.load
-    participant p26 as storage_writer_lock
-    participant p27 as _bootstrap_result
+    participant p22 as governance_writer_lock
+    participant p23 as _finish_if_empty_bootstrap_inventory
+    participant p24 as load_adoption_marker
+    participant p25 as storage_writer_lock
+    participant p26 as _bootstrap_result
+    participant p27 as SyncManifest.load
     participant p28 as _recover
     participant p29 as str (src/llm_wiki_cli/api.py:bootstrap_wiki)
     participant p30 as Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
@@ -117,22 +119,22 @@ sequenceDiagram
     p9->>p17: _first_use_guidance
     p12->>p18: _preflight_bootstrap_governance
     p13->>p19: _extract_bootstrap_inventory
-    p8->>p20: guard_incomplete_bootstrap
+    p8->>p20: attributes
     p9->>p21: _is_pristine_bootstrap_target
-    p8->>p22: load_adoption_marker
-    p10->>p23: governance_writer_lock
-    p13->>p24: _finish_if_empty_bootstrap_inventory
-    p8->>p25: SyncManifest.load
-    p10->>p26: storage_writer_lock
-    p13->>p27: _bootstrap_result
+    p10->>p22: governance_writer_lock
+    p13->>p23: _finish_if_empty_bootstrap_inventory
+    p8->>p24: load_adoption_marker
+    p10->>p25: storage_writer_lock
+    p13->>p26: _bootstrap_result
+    p8->>p27: SyncManifest.load
     p11->>p28: _recover
     p0-->>p29: str (src/llm_wiki_cli/api.py:bootstrap_wiki)(exc)
     p5-->>p30: Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
 ```
 
-> Call sequence diagram shows 30 of 1418 interactions; 1388 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1423 interactions; 1393 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 405 (404 omitted); unresolved 1 of 333 (332 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 409 (408 omitted); unresolved 1 of 334 (333 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -144,9 +146,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 5 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 5 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 22 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
-| `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
+| `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_record_path` | 23 | - | unresolved | 2 |
-> Omission summary shows 8 of 413 groups; 405 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 415 groups; 407 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -161,7 +163,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 681; effect analysis evaluated: 529, partial: 35, unavailable: 117. Counts include steps omitted from the displayed trace.
 
-Collector observations for 564 source steps with known totals: observed: 3322, emitted: 3178, omitted: 144. Unavailable totals are excluded.
+Collector observations for 564 source steps with known totals: observed: 3325, emitted: 3181, omitted: 144. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

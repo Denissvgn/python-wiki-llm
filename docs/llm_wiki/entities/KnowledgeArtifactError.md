@@ -1,6 +1,6 @@
 # KnowledgeArtifactError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:88`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:90`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -24,20 +24,20 @@ Field-specific failure while planning a generated artifact commit.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeArtifactError (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n0["KnowledgeArtifactError (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/services/documentation_native.py"]
     n3["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n4["_decode_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n5["_nonnegative_integer (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n6["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["_reject_json_constant (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n9["_unique_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n10["_validate_artifact_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n11["_validate_asset_path_list (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n12["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n13["_validate_optional_surface_flow_fields (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n5["capture_committed_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["CommittedKnowledgeState.assert_current (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["src/llm_wiki_cli/services/maintenance_service.py"]
+    n8["src/llm_wiki_cli/services/sync_runtime.py"]
+    n9["_decode_json_object (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n10["_nonnegative_integer (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n11["_planned_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n12["_reject_json_constant (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n13["_surface_page_index (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -54,11 +54,11 @@ flowchart LR
     click n0 "../modules/knowledge_artifacts.md"
     click n2 "../modules/documentation_native.md"
     click n3 "../modules/documentation_wiki_input.md"
-    click n4 "../modules/knowledge_artifacts.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_artifacts.md"
-    click n7 "../modules/knowledge_artifacts.md"
-    click n8 "../modules/knowledge_artifacts.md"
+    click n4 "../modules/knowledge_generation.md"
+    click n5 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_orchestration.md"
+    click n7 "../modules/maintenance_service.md"
+    click n8 "../modules/sync_runtime.md"
     click n9 "../modules/knowledge_artifacts.md"
     click n10 "../modules/knowledge_artifacts.md"
     click n11 "../modules/knowledge_artifacts.md"
@@ -84,15 +84,15 @@ flowchart LR
 |---|---|---|---:|
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `capture_committed_knowledge` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 4 |
+| `CommittedKnowledgeState.assert_current` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `maintenance_service` | import | [maintenance_service](../modules/maintenance_service.md) | — |
+| `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_decode_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 4 |
 | `_nonnegative_integer` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_planned_write` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_reject_json_constant` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_surface_page_index` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 15 |
-| `_unique_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
-| `_validate_artifact_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 7 |
-| `_validate_asset_path_list` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 3 |
-| `_validate_manifest_knowledge_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 22 |
-| `_validate_optional_surface_flow_fields` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 
 > References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.

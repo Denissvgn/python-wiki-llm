@@ -31,17 +31,10 @@ retains its full inventory cost.
 
 | Source | Symbols |
 |--------|---------|
-| `.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
 | `.flow_followup` | `segment` |
 | `.implementation_evidence` | `compact_implementation_summary` |
-| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `_validated_artifacts_for_view` |
-| `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
-| `.knowledge_model` | `knowledge_index_to_payload` |
-| `.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
-| `.maintenance_status` | `compact_maintenance_summary` |
 | `.relationships` | `build_entity_relationship_summaries` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
@@ -53,9 +46,16 @@ retains its full inventory cost.
 | `itertools` | `islice` |
 | `json` | `json` |
 | `llm_wiki_engine.canonical_json` | `compact_text` |
+| `llm_wiki_engine.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
 | `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `_validated_artifacts_for_view` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
+| `llm_wiki_engine.knowledge_model` | `knowledge_index_to_payload` |
+| `llm_wiki_engine.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
+| `llm_wiki_engine.maintenance_status` | `compact_maintenance_summary` |
 | `llm_wiki_engine.validation` | `normalize_legacy_portable_relative_path`, `require_nonempty_text` |
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |

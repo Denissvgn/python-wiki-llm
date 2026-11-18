@@ -2,14 +2,13 @@
 
 **Entry point:** `install_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [current_contracts](../modules/current_contracts.md), [domain_pack](../modules/domain_pack.md), and 15 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [current_contracts](../modules/current_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 14 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
 - [ci_installer](../modules/ci_installer.md)
 - [current_contracts](../modules/current_contracts.md)
-- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
 - [io](../modules/io.md)
@@ -127,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 441; effect analysis evaluated: 221, partial: 20, unavailable: 200. Counts include steps omitted from the displayed trace.
 
-Collector observations for 241 source steps with known totals: observed: 1391, emitted: 1319, omitted: 72. Unavailable totals are excluded.
+Collector observations for 241 source steps with known totals: observed: 1390, emitted: 1318, omitted: 72. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,7 +1,7 @@
 # build_reuse_input_basis
 
 **Entry point:** `knowledge_reuse.build_reuse_input_basis`
-**Modules involved:** [host](../modules/host.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md)
+**Modules involved:** [host](../modules/host.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 
 > Capture the inputs of the deterministic built-in sync pipeline.
 
@@ -13,7 +13,8 @@
 3. `knowledge_orchestration.runtime_source_snapshot_hash`
 4. `knowledge_envelope.hash_inventory`
 5. `knowledge_orchestration.runtime_generation_options_hash`
-6. `knowledge_envelope.build_repository_record`
+6. `knowledge_reuse_format.repository_input_hash`
+7. `knowledge_envelope.build_repository_record`
 
 ## Touches
 
@@ -22,6 +23,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 
 ## Behavior
 

@@ -1,6 +1,6 @@
 # JsonSpool
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:139`
+**Location:** `src/llm_wiki_engine/storage_spool.py:139`
 **Kind:** Class
 **Bases:** `MutableMapping`
 **Module:** [storage_spool](../modules/storage_spool.md)
@@ -29,10 +29,10 @@ JSON values backed by one explicitly owned byte spool.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["JsonSpool (src/llm_wiki_cli/services/storage_spool.py)"]
+    n0["JsonSpool (src/llm_wiki_engine/storage_spool.py)"]
     n1["MutableMapping"]
-    n2["src/llm_wiki_cli/services/knowledge_audit.py"]
-    n3["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n2["src/llm_wiki_engine/knowledge_audit.py"]
+    n3["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

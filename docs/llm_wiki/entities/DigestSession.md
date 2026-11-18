@@ -1,13 +1,13 @@
 # _DigestSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_stream_audit.py:34`
+**Location:** `src/llm_wiki_engine/knowledge_stream_audit.py:34`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
 
 ## Description
 
-_Auto-generated from `_DigestSession` in `src/llm_wiki_cli/services/knowledge_stream_audit.py`._
+_Auto-generated from `_DigestSession` in `src/llm_wiki_engine/knowledge_stream_audit.py`._
 
 ## Attributes
 
@@ -26,8 +26,8 @@ _Auto-generated from `_DigestSession` in `src/llm_wiki_cli/services/knowledge_st
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_DigestSession (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
-    n1["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n0["_DigestSession (src/llm_wiki_engine/knowledge_stream_audit.py)"]
+    n1["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_stream_audit.md"
     click n1 "../modules/knowledge_stream_audit.md"

@@ -1,6 +1,6 @@
 # maintenance_status Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_status.py`
+**Path:** `src/llm_wiki_engine/maintenance_status.py`
 
 ## Description
 
@@ -19,19 +19,15 @@ retain their complete counts and omitted-detail qualifications.
 
 | Source | Symbols |
 |--------|---------|
-| `.extraction_service` | `InventoryResult` |
-| `.implementation_evidence` | `compare_implementation_observations` |
 | `.knowledge_storage` | `canonical_bytes` |
 | `.maintenance_evidence` | `MaintenanceCapture`, `owner_key`, `captured_observations_from_knowledge` |
-| `.maintenance_service` | `maintenance_report_from_captured` |
 | `.maintenance_state` | `canonical_hash`, `validate_maintenance_adoption`, `validate_maintenance_state` |
-| `.python_implementation` | `analysis_identity` |
-| `.source_snapshot` | `confirmed_missing_source_paths` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `replace`, `replace` |
 | `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.integrations` | `attributes`, `provider` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -41,7 +37,7 @@ retain their complete counts and omitted-detail qualifications.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/maintenance_status.py"]
+    n1["src/llm_wiki_engine/maintenance_status.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/maintenance_status.md"
@@ -54,20 +50,21 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (10) |
-| Outbound | `src` (9) |
+| Outbound | `src` (5) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceStatusReport](../entities/MaintenanceStatusReport.md) | 87 | — | — |
+| [MaintenanceStatusReport](../entities/MaintenanceStatusReport.md) | 94 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `compare_implementation_observations` | `(*args, **kwargs)` | — | — |
 | `_limit` | `(value)` | — | — |
 | `_history` | `(row, count)` | — | — |
 | `_trim_coverage` | `(result)` | — | Auxiliary details yield to existing record and basis observations. |

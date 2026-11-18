@@ -1,6 +1,6 @@
 # _GitCommandResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:81`
+**Location:** `src/llm_wiki_engine/knowledge_envelope.py:81`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_GitCommandResult` in `src/llm_wiki_cli/services/knowledge_envelope.py`._
+_Auto-generated from `_GitCommandResult` in `src/llm_wiki_engine/knowledge_envelope.py`._
 
 ## Attributes
 
@@ -30,10 +30,10 @@ _Auto-generated from `_GitCommandResult` in `src/llm_wiki_cli/services/knowledge
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_GitCommandResult (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n1["_parse_local_remote_config (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_run_effective_git_config (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n3["_run_git_result (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n0["_GitCommandResult (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n1["_parse_local_remote_config (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n2["_run_effective_git_config (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n3["_run_git_result (src/llm_wiki_engine/knowledge_envelope.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

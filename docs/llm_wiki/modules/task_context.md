@@ -15,9 +15,6 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render`, `fit_payload`, `validate_request` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view`, `normalize_supplied_paths` |
-| `.knowledge_consumption` | `load_knowledge_read_view` |
-| `.knowledge_envelope` | `hash_source_snapshot` |
-| `.knowledge_loader` | `KnowledgeStateLoadError` |
 | `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
 | `.task_context_v2` | `build_scoped_task_read`, `validate_scoped_bindings` |
@@ -30,6 +27,9 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `dataclasses` | `dataclass`, `replace` |
 | `json` | `json` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_source_snapshot` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |

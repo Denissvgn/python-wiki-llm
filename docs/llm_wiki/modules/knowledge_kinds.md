@@ -1,6 +1,6 @@
 # knowledge_kinds Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_kinds.py`
+**Path:** `src/llm_wiki_engine/knowledge_kinds.py`
 
 ## Description
 
@@ -47,27 +47,27 @@ validate the same way for every consumer.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/knowledge_index.py"]
-    n2["src/llm_wiki_cli/services/knowledge_kinds.py"]
-    n3["src/llm_wiki_cli/services/knowledge_model.py"]
-    n4["src/llm_wiki_engine/knowledge_graph.py"]
+    n1["src/llm_wiki_engine/knowledge_graph.py"]
+    n2["src/llm_wiki_engine/knowledge_index.py"]
+    n3["src/llm_wiki_engine/knowledge_kinds.py"]
+    n4["src/llm_wiki_engine/knowledge_model.py"]
     n5["src/llm_wiki_engine/wiki_surface.py"]
-    n0 --> n2
-    n1 --> n2
-    n1 --> n3
+    n0 --> n3
     n1 --> n5
     n2 --> n3
     n2 --> n4
     n2 --> n5
-    n3 --> n2
+    n3 --> n1
     n3 --> n4
     n3 --> n5
+    n4 --> n1
+    n4 --> n3
     n4 --> n5
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/knowledge_index.md"
-    click n2 "../modules/knowledge_kinds.md"
-    click n3 "../modules/knowledge_model.md"
-    click n4 "../modules/knowledge_graph.md"
+    click n1 "../modules/knowledge_graph.md"
+    click n2 "../modules/knowledge_index.md"
+    click n3 "../modules/knowledge_kinds.md"
+    click n4 "../modules/knowledge_model.md"
     click n5 "../modules/wiki_surface.md"
 ```
 
@@ -78,8 +78,8 @@ flowchart LR
 | Inbound | [engine___init__](../modules/engine___init__.md) |
 | Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [knowledge_model](../modules/knowledge_model.md) |
-| Outbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [knowledge_graph](../modules/knowledge_graph.md) |
+| Outbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
 
 ## Classes

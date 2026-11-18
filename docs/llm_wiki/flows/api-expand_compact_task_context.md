@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 17 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 4 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 > Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,14 +1,14 @@
 # validated_reserved_extensions
 
 **Entry point:** `knowledge_model._validated_reserved_extensions`
-**Modules involved:** [knowledge_graph](../modules/knowledge_graph.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_reuse](../modules/knowledge_reuse.md), [section_ownership](../modules/section_ownership.md)
+**Modules involved:** [knowledge_graph](../modules/knowledge_graph.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_reuse_format](../modules/knowledge_reuse_format.md), [section_ownership](../modules/section_ownership.md)
 
 > Validate application-owned, independently versioned v1 extensions.
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `knowledge_reuse.validate_reuse_commitment`
+1. `knowledge_reuse_format.validate_reuse_commitment`
 2. `knowledge_graph.typed_graph_from_knowledge_extensions`
 3. `section_ownership.validate_section_ownership`
 
@@ -16,7 +16,7 @@
 
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [section_ownership](../modules/section_ownership.md)
 
 ## Behavior

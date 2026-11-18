@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:859`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:864`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -48,7 +48,7 @@ Operational state; maintenance is present only after explicit adoption.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SyncManifest (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["SyncManifest (src/llm_wiki_engine/sync_manifest.py)"]
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n2["_preflight_team_source_selection (src/llm_wiki_cli/commands/team_cmd.py)"]
     n3["src/llm_wiki_cli/commands/trigger_cmd.py"]

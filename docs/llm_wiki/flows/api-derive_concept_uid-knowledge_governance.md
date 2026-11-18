@@ -11,7 +11,7 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p0 as derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)
     participant p1 as derive_concept_uid (src/llm_wiki_engine/concept_identity.py)
     participant p2 as GovernanceError
     participant p3 as validate_bundle_id
@@ -109,7 +109,7 @@ Collector observations for 15 source steps with known totals: observed: 52, emit
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `derive_concept_uid (src/llm_wiki_engine/concept_identity.py)` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -124,7 +124,7 @@ Collector observations for 15 source steps with known totals: observed: 52, emit
 
 ```mermaid
 flowchart LR
-    s1["1. derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    s1["1. derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)"]
     s2["2. derive_concept_uid (src/llm_wiki_engine/concept_identity.py)"]
     s3["3. validate_bundle_id"]
     s4["4. _machine_text"]
@@ -160,7 +160,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)` | `bundle_id: str`, `concept_kind: str`, `natural_key: str` | `ConceptIdentityError` | - | `_derive_identity_uid(...)` |
+| `derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)` | `bundle_id: str`, `concept_kind: str`, `natural_key: str` | `ConceptIdentityError` | - | `_derive_identity_uid(...)` |
 | `derive_concept_uid (src/llm_wiki_engine/concept_identity.py)` | `bundle_id: object`, `concept_kind: object`, `natural_key: object` | `CONCEPT_UID_HEX_LENGTH` | - | `...` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
@@ -177,7 +177,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py) | derive_concept_uid (src/llm_wiki_engine/concept_identity.py) | 411 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
+| derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py) | derive_concept_uid (src/llm_wiki_engine/concept_identity.py) | 411 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
 | derive_concept_uid (src/llm_wiki_engine/concept_identity.py) | validate_bundle_id | 534 | `validate_bundle_id(bundle_id)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance | 942 | `isinstance(value, str)` |

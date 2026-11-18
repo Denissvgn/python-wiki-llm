@@ -1,6 +1,6 @@
 # LinkSyntax
 
-**Location:** `src/llm_wiki_cli/services/knowledge_links.py:62`
+**Location:** `src/llm_wiki_engine/knowledge_links.py:62`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_links](../modules/knowledge_links.md)
@@ -26,13 +26,13 @@ Source syntax that produced one Markdown-owned observation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["LinkSyntax (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n0["LinkSyntax (src/llm_wiki_engine/knowledge_links.py)"]
     n1["Enum"]
     n2["str"]
-    n3["_index_source_link_occurrences (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["_validate_observation_source_syntax (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n3["_index_source_link_occurrences (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["_validate_observation_source_syntax (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0

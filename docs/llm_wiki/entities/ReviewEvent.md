@@ -1,6 +1,6 @@
 # ReviewEvent
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:241`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:241`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -36,14 +36,14 @@ One section-scoped, digest-bound human review event.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ReviewEvent (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["ReviewEvent (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n2["_parse_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["_review_event_digest_payload (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["_review_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n5["_validate_review_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["add_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n7["evaluate_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["_parse_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n3["_review_event_digest_payload (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["_review_event_summary (src/llm_wiki_engine/knowledge_governance.py)"]
+    n5["_validate_review_event_fields (src/llm_wiki_engine/knowledge_governance.py)"]
+    n6["add_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n7["evaluate_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

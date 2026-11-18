@@ -2,13 +2,12 @@
 
 **Entry point:** `__main__` (`process`)
 **Source:** [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 58 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 47 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -23,10 +22,10 @@
 - [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [host](../modules/host.md)
-- [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -34,21 +33,13 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_kinds](../modules/knowledge_kinds.md)
-- [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
-- [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
-- [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_state](../modules/maintenance_state.md)
-- [manifest_storage](../modules/manifest_storage.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
@@ -59,7 +50,6 @@
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
-- [sync_manifest](../modules/sync_manifest.md)
 - [typescript_helper_identity](../modules/typescript_helper_identity.md)
 - [validation](../modules/validation.md)
 - [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md)
@@ -68,7 +58,7 @@
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
 
-**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 3 more
+**Related modules:** [documentation_native](../modules/documentation_native.md), [helper_cache](../modules/helper_cache.md), [helper_preparation](../modules/helper_preparation.md), [helper_runtime](../modules/helper_runtime.md), and 1 more
 
 **Complete related modules:**
 
@@ -76,9 +66,7 @@
 - [helper_cache](../modules/helper_cache.md)
 - [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
-- [knowledge_loader](../modules/knowledge_loader.md)
 - [publication_config](../modules/publication_config.md)
-- [source_retirement](../modules/source_retirement.md)
 
 ## Call sequence
 
@@ -94,28 +82,28 @@ sequenceDiagram
     participant p4 as publication_path
     participant p5 as selected_helper_languages
     participant p6 as ensure_helper
-    participant p7 as load_knowledge_state
-    participant p8 as helper_operation
-    participant p9 as evaluate_documentation_native_freshness
-    participant p10 as _consumer_root
-    participant p11 as build_source_snapshot
-    participant p12 as _relative_path
-    participant p13 as locate_exact_repository_path
-    participant p14 as _native_source_snapshot_preflight
-    participant p15 as _safe
-    participant p16 as _generation_input_paths
-    participant p17 as preparation_cache_root
-    participant p18 as _collect_runtime
-    participant p19 as lookup_helper
-    participant p20 as guard_maintenance_owner
-    participant p21 as _retained_empty_paths
-    participant p22 as read_publication_json
-    participant p23 as _runtime_generation_options
-    participant p24 as _source_mismatches
-    participant p25 as _profile
-    participant p26 as validate_publication_config
-    participant p27 as _load_once
-    participant p28 as build_runtime_live_evaluation
+    participant p7 as helper_operation
+    participant p8 as evaluate_documentation_native_freshness
+    participant p9 as _consumer_root
+    participant p10 as build_source_snapshot
+    participant p11 as _relative_path
+    participant p12 as locate_exact_repository_path
+    participant p13 as _native_source_snapshot_preflight
+    participant p14 as _safe
+    participant p15 as _generation_input_paths
+    participant p16 as preparation_cache_root
+    participant p17 as _collect_runtime
+    participant p18 as lookup_helper
+    participant p19 as _retained_empty_paths
+    participant p20 as read_publication_json
+    participant p21 as _runtime_generation_options
+    participant p22 as _source_mismatches
+    participant p23 as _profile
+    participant p24 as validate_publication_config
+    participant p25 as build_runtime_live_evaluation
+    participant p26 as evaluate_knowledge_freshness
+    participant p27 as _lock
+    participant p28 as _check_profile_capacity
     participant p29 as argparse.ArgumentParser
     participant p30 as parser.add_argument
     p0->>p1: prepare
@@ -124,35 +112,35 @@ sequenceDiagram
     p1->>p4: publication_path
     p1->>p5: selected_helper_languages
     p1->>p6: ensure_helper
-    p1->>p7: load_knowledge_state
-    p1->>p8: helper_operation
-    p1->>p9: evaluate_documentation_native_freshness
-    p2->>p10: _consumer_root
-    p5->>p11: build_source_snapshot
-    p2->>p12: _relative_path
-    p2->>p13: locate_exact_repository_path
-    p9->>p14: _native_source_snapshot_preflight
-    p6->>p15: _safe
-    p9->>p16: _generation_input_paths
-    p6->>p17: preparation_cache_root
-    p9->>p18: _collect_runtime
-    p6->>p19: lookup_helper
-    p7->>p20: guard_maintenance_owner
-    p9->>p21: _retained_empty_paths
-    p2->>p22: read_publication_json
-    p9->>p23: _runtime_generation_options
-    p9->>p24: _source_mismatches
-    p6->>p25: _profile
-    p2->>p26: validate_publication_config
-    p7->>p27: _load_once
-    p9->>p28: build_runtime_live_evaluation
+    p1->>p7: helper_operation
+    p1->>p8: evaluate_documentation_native_freshness
+    p2->>p9: _consumer_root
+    p5->>p10: build_source_snapshot
+    p2->>p11: _relative_path
+    p2->>p12: locate_exact_repository_path
+    p8->>p13: _native_source_snapshot_preflight
+    p6->>p14: _safe
+    p8->>p15: _generation_input_paths
+    p6->>p16: preparation_cache_root
+    p8->>p17: _collect_runtime
+    p6->>p18: lookup_helper
+    p8->>p19: _retained_empty_paths
+    p2->>p20: read_publication_json
+    p8->>p21: _runtime_generation_options
+    p8->>p22: _source_mismatches
+    p6->>p23: _profile
+    p2->>p24: validate_publication_config
+    p8->>p25: build_runtime_live_evaluation
+    p8->>p26: evaluate_knowledge_freshness
+    p6->>p27: _lock
+    p6->>p28: _check_profile_capacity
     p0-->>p29: argparse.ArgumentParser(description=__doc__)
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2883 interactions; 2853 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2271 interactions; 2241 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 905 (904 omitted); unresolved 1 of 709 (708 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 746 (745 omitted); unresolved 1 of 602 (601 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
 | `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-> Omission summary shows 8 of 691 groups; 683 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 541 groups; 533 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +167,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1270; effect analysis evaluated: 822, partial: 50, unavailable: 398. Counts include steps omitted from the displayed trace.
+Source steps: 924; effect analysis evaluated: 643, partial: 30, unavailable: 251. Counts include steps omitted from the displayed trace.
 
-Collector observations for 872 source steps with known totals: observed: 5171, emitted: 4904, omitted: 267. Unavailable totals are excluded.
+Collector observations for 673 source steps with known totals: observed: 3734, emitted: 3606, omitted: 128. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

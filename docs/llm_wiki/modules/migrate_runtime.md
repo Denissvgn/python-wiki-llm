@@ -19,16 +19,9 @@ content is preserved under a Legacy Notes section.
 | `..config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.bootstrap_runtime` | `_build_relationships`, `_generate_entity_md`, `_generate_index_md`, `_generate_infrastructure_md`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.extraction_service` | `InventoryResult`, `_workflow_name`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `ArtifactWriteState` |
-| `.knowledge_envelope` | `RepositoryEvidence` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
-| `.knowledge_loader` | `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `build_runtime_knowledge_plan`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `runtime_generation_options` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `.migrate_service` | `MigrateError`, `MigrateOutcome`, `MigrateRequest`, `MigrateRequestError` |
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshotMutationError`, `SourceFileIntegrity`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
-| `.sync_manifest` | `MANIFEST_FILENAME`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
@@ -36,9 +29,16 @@ content is preserved under a Legacy Notes section.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes` |
 | `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit` |
 | `llm_wiki_engine.io` | `read_md`, `write_json_atomic`, `write_md` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `ArtifactWriteState` |
+| `llm_wiki_engine.knowledge_envelope` | `RepositoryEvidence` |
 | `llm_wiki_engine.knowledge_evidence` | `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError`, `load_knowledge_state` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.paths` | `normalize_source_path` |
 | `llm_wiki_engine.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest` |
 | `llm_wiki_engine.validation` | `path_is_in_top_level_directory` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `evaluate_surface_index` |

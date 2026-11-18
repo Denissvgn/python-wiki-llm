@@ -111,17 +111,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| generated_semantics_for_file | file_data.get | 549 | `file_data.get('module_docstring', '')` |
-| generated_semantics_for_file | _first_doc_line | 555 | `_first_doc_line(cls)` |
-| _first_doc_line | info.get | 523 | `info.get('docstring', '')` |
-| _first_doc_line | docstring.split | 524 | `docstring.split('\n')` |
-| generated_semantics_for_file | file_data.get | 556 | `file_data.get('classes', [...])` |
-| generated_semantics_for_file | _first_doc_line | 559 | `_first_doc_line(fn)` |
-| generated_semantics_for_file | file_data.get | 559 | `file_data.get('functions', [...])` |
-| generated_semantics_for_file | cls.get | 564 | `cls.get('docstring', '')` |
-| generated_semantics_for_file | attr.get | 567 | `attr.get('description')` |
-| generated_semantics_for_file | cls.get | 568 | `cls.get('attributes', [...])` |
-| generated_semantics_for_file | _first_doc_line | 571 | `_first_doc_line(method)` |
+| generated_semantics_for_file | file_data.get | 554 | `file_data.get('module_docstring', '')` |
+| generated_semantics_for_file | _first_doc_line | 560 | `_first_doc_line(cls)` |
+| _first_doc_line | info.get | 528 | `info.get('docstring', '')` |
+| _first_doc_line | docstring.split | 529 | `docstring.split('\n')` |
+| generated_semantics_for_file | file_data.get | 561 | `file_data.get('classes', [...])` |
+| generated_semantics_for_file | _first_doc_line | 564 | `_first_doc_line(fn)` |
+| generated_semantics_for_file | file_data.get | 564 | `file_data.get('functions', [...])` |
+| generated_semantics_for_file | cls.get | 569 | `cls.get('docstring', '')` |
+| generated_semantics_for_file | attr.get | 572 | `attr.get('description')` |
+| generated_semantics_for_file | cls.get | 573 | `cls.get('attributes', [...])` |
+| generated_semantics_for_file | _first_doc_line | 576 | `_first_doc_line(method)` |
 
 ### Boundary effects
 
@@ -131,14 +131,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 549 |
-| unresolved_call | `_first_doc_line` | `info.get` | 523 |
-| unresolved_call | `_first_doc_line` | `docstring.split` | 524 |
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 556 |
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 559 |
-| unresolved_call | `generated_semantics_for_file` | `cls.get` | 564 |
-| unresolved_call | `generated_semantics_for_file` | `attr.get` | 567 |
-| unresolved_call | `generated_semantics_for_file` | `cls.get` | 568 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 554 |
+| unresolved_call | `_first_doc_line` | `info.get` | 528 |
+| unresolved_call | `_first_doc_line` | `docstring.split` | 529 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 561 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 564 |
+| unresolved_call | `generated_semantics_for_file` | `cls.get` | 569 |
+| unresolved_call | `generated_semantics_for_file` | `attr.get` | 572 |
+| unresolved_call | `generated_semantics_for_file` | `cls.get` | 573 |
 | step_limit | `generated_semantics_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

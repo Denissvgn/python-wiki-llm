@@ -1,6 +1,6 @@
 # knowledge_freshness Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_freshness.py`
+**Path:** `src/llm_wiki_engine/knowledge_freshness.py`
 
 ## Description
 
@@ -51,7 +51,7 @@ turn unknown evidence into known evidence or alter freshness classification.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n1["src/llm_wiki_engine/knowledge_freshness.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_freshness.md"

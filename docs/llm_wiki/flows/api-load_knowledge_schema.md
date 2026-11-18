@@ -101,27 +101,27 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_schema | resources.files(…).joinpath | 720 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
-| load_knowledge_schema | resources.files | 720 | `resources.files('llm_wiki_cli.schemas')` |
-| load_knowledge_schema | json.loads | 723 | `json.loads(resource.read_text(...))` |
-| load_knowledge_schema | resource.read_text | 723 | `resource.read_text(encoding='utf-8')` |
-| load_knowledge_schema | KnowledgeModelError | 731 | `KnowledgeModelError('schema', ...)` |
-| load_knowledge_schema | isinstance | 734 | `isinstance(payload, dict)` |
-| load_knowledge_schema | KnowledgeModelError | 735 | `KnowledgeModelError('schema', 'packaged schema must be a JSON object')` |
+| load_knowledge_schema | resources.files(…).joinpath | 722 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
+| load_knowledge_schema | resources.files | 722 | `resources.files('llm_wiki_cli.schemas')` |
+| load_knowledge_schema | json.loads | 725 | `json.loads(resource.read_text(...))` |
+| load_knowledge_schema | resource.read_text | 725 | `resource.read_text(encoding='utf-8')` |
+| load_knowledge_schema | KnowledgeModelError | 733 | `KnowledgeModelError('schema', ...)` |
+| load_knowledge_schema | isinstance | 736 | `isinstance(payload, dict)` |
+| load_knowledge_schema | KnowledgeModelError | 737 | `KnowledgeModelError('schema', 'packaged schema must be a JSON object')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `resource.read_text` | `load_knowledge_schema` | 723 |
+| filesystem_read | `resource.read_text` | `load_knowledge_schema` | 725 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 720 |
-| external_call | `load_knowledge_schema` | `resources.files` | 720 |
-| external_call | `load_knowledge_schema` | `isinstance` | 734 |
+| unresolved_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 722 |
+| external_call | `load_knowledge_schema` | `resources.files` | 722 |
+| external_call | `load_knowledge_schema` | `isinstance` | 736 |
 
 ## Behavior
 

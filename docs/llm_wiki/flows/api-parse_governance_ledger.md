@@ -51,7 +51,7 @@ sequenceDiagram
     participant p26 as authored_event_time
     participant p27 as _machine_code
     participant p28 as _identity_ownership_key
-    participant p29 as str (src/llm_wiki_cli/services…y:parse_governance_ledger)
+    participant p29 as str (src/llm_wiki_engine/knowl…y:parse_governance_ledger)
     participant p30 as concepts_raw.items
     p0->>p1: _object
     p0->>p2: _exact_fields
@@ -81,7 +81,7 @@ sequenceDiagram
     p7->>p26: authored_event_time
     p7->>p27: _machine_code
     p9->>p28: _identity_ownership_key
-    p0-->>p29: str (src/llm_wiki_cli/services…y:parse_governance_ledger)(record[...])
+    p0-->>p29: str (src/llm_wiki_engine/knowl…y:parse_governance_ledger)(record[...])
     p0-->>p30: concepts_raw.items
 ```
 
@@ -98,8 +98,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:_object` | 2 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_engine/knowledge_governance.py:_object` | 2 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:require_exact_fields` | 16 | - | external | 9 |
 > Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

@@ -1,6 +1,6 @@
 # knowledge_storage_lifecycle Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage_lifecycle.py`
 
 ## Description
 
@@ -48,7 +48,7 @@ Cleanup plans bind the generation, root and exact candidate bytes. Apply verifie
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n1["src/llm_wiki_engine/knowledge_storage_lifecycle.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_storage_lifecycle.md"

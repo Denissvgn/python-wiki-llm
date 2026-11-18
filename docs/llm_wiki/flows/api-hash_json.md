@@ -85,10 +85,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_json | sha256_digest | 198 | `sha256_bytes(canonical_json_bytes(...))` |
+| hash_json | sha256_digest | 202 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
 | sha256_digest | hashlib.sha256 | 56 | `hashlib.sha256(data)` |
-| hash_json | compact_bytes | 198 | `canonical_json_bytes(value)` |
+| hash_json | compact_bytes | 202 | `canonical_json_bytes(value)` |
 | compact_bytes | compact_text(…).encode | 37 | `compact_text(value, allow_nan=allow_nan).encode('utf-8')` |
 | compact_bytes | compact_text | 37 | `compact_text(value, allow_nan=allow_nan)` |
 | compact_text | json.dumps | 32 | `json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)` |

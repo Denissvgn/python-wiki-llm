@@ -15,13 +15,13 @@ before producer compatibility. Unknown/unavailable measurements use null.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
-| `.knowledge_freshness` | `FRESHNESS_REASON_STATES`, `KNOWN_FRESHNESS_REASON_CODES`, `REASON_FRESHNESS_NOT_MODELED`, `REASON_LIVE_EVALUATION_NOT_PERFORMED`, `comparable_producer_components` |
-| `.knowledge_model` | `ComputedFreshness`, `ProducerComponent` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine` | `analysis_compatibility` |
 | `llm_wiki_engine.contracts` | `HEALTH_DETAILS_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_freshness` | `FRESHNESS_REASON_STATES`, `KNOWN_FRESHNESS_REASON_CODES`, `REASON_FRESHNESS_NOT_MODELED`, `REASON_LIVE_EVALUATION_NOT_PERFORMED`, `comparable_producer_components` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `ProducerComponent` |
 | `re` | `re` |
 | `typing` | `Any`, `NoReturn` |
 
@@ -30,45 +30,45 @@ before producer compatibility. Unknown/unavailable measurements use null.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n1["src/llm_wiki_cli/services/ci_report.py"]
-    n2["src/llm_wiki_cli/services/doctor_service.py"]
-    n3["src/llm_wiki_cli/services/health_contract.py"]
-    n4["src/llm_wiki_cli/services/health_details.py"]
-    n5["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n6["src/llm_wiki_cli/services/knowledge_model.py"]
-    n7["src/llm_wiki_engine/contracts.py"]
-    n1 --> n0
+    n0["src/llm_wiki_cli/services/ci_report.py"]
+    n1["src/llm_wiki_cli/services/doctor_service.py"]
+    n2["src/llm_wiki_cli/services/health_contract.py"]
+    n3["src/llm_wiki_cli/services/health_details.py"]
+    n4["src/llm_wiki_engine/analysis_compatibility.py"]
+    n5["src/llm_wiki_engine/contracts.py"]
+    n6["src/llm_wiki_engine/knowledge_freshness.py"]
+    n7["src/llm_wiki_engine/knowledge_model.py"]
+    n0 --> n1
+    n0 --> n2
+    n0 --> n4
+    n0 --> n5
     n1 --> n2
     n1 --> n3
+    n1 --> n4
+    n1 --> n5
     n1 --> n7
-    n2 --> n0
-    n2 --> n3
     n2 --> n4
+    n2 --> n5
     n2 --> n6
     n2 --> n7
-    n3 --> n0
+    n3 --> n2
+    n3 --> n4
     n3 --> n5
     n3 --> n6
     n3 --> n7
-    n4 --> n0
-    n4 --> n3
-    n4 --> n5
-    n4 --> n6
-    n4 --> n7
-    n5 --> n0
-    n5 --> n6
-    n5 --> n7
-    n6 --> n0
+    n6 --> n4
+    n6 --> n5
     n6 --> n7
-    click n0 "../modules/analysis_compatibility.md"
-    click n1 "../modules/ci_report.md"
-    click n2 "../modules/doctor_service.md"
-    click n3 "../modules/health_contract.md"
-    click n4 "../modules/health_details.md"
-    click n5 "../modules/knowledge_freshness.md"
-    click n6 "../modules/knowledge_model.md"
-    click n7 "../modules/llm_wiki_engine_contracts.md"
+    n7 --> n4
+    n7 --> n5
+    click n0 "../modules/ci_report.md"
+    click n1 "../modules/doctor_service.md"
+    click n2 "../modules/health_contract.md"
+    click n3 "../modules/health_details.md"
+    click n4 "../modules/analysis_compatibility.md"
+    click n5 "../modules/llm_wiki_engine_contracts.md"
+    click n6 "../modules/knowledge_freshness.md"
+    click n7 "../modules/knowledge_model.md"
 ```
 
 ### Internal neighbors
@@ -79,9 +79,9 @@ flowchart LR
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [health_details](../modules/health_details.md) |
 | Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [knowledge_freshness](../modules/knowledge_freshness.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |
-| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes
 

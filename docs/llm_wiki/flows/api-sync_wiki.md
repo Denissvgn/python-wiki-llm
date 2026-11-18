@@ -2,7 +2,7 @@
 
 **Entry point:** `sync_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 58 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 59 more
 
 **Complete modules touched:**
 
@@ -10,7 +10,6 @@
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
 - [api_contracts](../modules/api_contracts.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
@@ -24,6 +23,7 @@
 - [immutable](../modules/immutable.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -34,6 +34,7 @@
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -139,9 +140,9 @@ sequenceDiagram
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 1635 interactions; 1605 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1637 interactions; 1607 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 517 (516 omitted); unresolved 1 of 401 (400 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 519 (518 omitted); unresolved 1 of 402 (401 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -168,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 718; effect analysis evaluated: 509, partial: 37, unavailable: 172. Counts include steps omitted from the displayed trace.
+Source steps: 717; effect analysis evaluated: 509, partial: 37, unavailable: 171. Counts include steps omitted from the displayed trace.
 
-Collector observations for 546 source steps with known totals: observed: 3690, emitted: 3447, omitted: 243. Unavailable totals are excluded.
+Collector observations for 546 source steps with known totals: observed: 3691, emitted: 3448, omitted: 243. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

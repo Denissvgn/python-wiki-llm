@@ -25,7 +25,7 @@ sequenceDiagram
     participant p1 as validate_governance_ledger
     participant p2 as _validated_references
     participant p3 as _put_alias
-    participant p4 as derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p4 as derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)
     participant p5 as _identity_ownership_key
     participant p6 as _identity_value
     participant p7 as GovernanceError
@@ -50,12 +50,12 @@ sequenceDiagram
     participant p26 as _hash
     participant p27 as _review_evidence
     participant p28 as _actor
-    participant p29 as dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p30 as allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
+    participant p29 as dict (src/llm_wiki_engine/knowl…nce.py:reconcile_concepts)
+    participant p30 as allocations.items (src/llm_wiki_engine/knowl…nce.py:reconcile_concepts)
     p0->>p1: validate_governance_ledger
     p0->>p2: _validated_references
     p0->>p3: _put_alias
-    p0->>p4: derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p4: derive_concept_uid (src/llm_wiki_engine/knowledge_governance.py)
     p0->>p5: _identity_ownership_key
     p0->>p6: _identity_value
     p0->>p7: GovernanceError
@@ -80,8 +80,8 @@ sequenceDiagram
     p16->>p26: _hash
     p16->>p27: _review_evidence
     p14->>p28: _actor
-    p0-->>p29: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.concepts)
-    p0-->>p30: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
+    p0-->>p29: dict (src/llm_wiki_engine/knowl…nce.py:reconcile_concepts)(current.concepts)
+    p0-->>p30: allocations.items (src/llm_wiki_engine/knowl…nce.py:reconcile_concepts)
 ```
 
 > Call sequence diagram shows 30 of 412 interactions; 382 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -92,8 +92,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 21 |
+| `src/llm_wiki_engine/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
+| `src/llm_wiki_engine/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 21 |
 | `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
 | `src/llm_wiki_engine/concept_identity.py:_machine_text` | 8 | - | external | 6 |
 | `src/llm_wiki_engine/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
@@ -125,7 +125,7 @@ Collector observations for 114 source steps with known totals: observed: 609, em
 |---|---|---|---|---:|---:|---:|
 | `reconcile_concepts` | `available` | `partial` | `available` | `24` | `20` | `4` |
 | `validate_governance_ledger` | `available` | `partial` | `available` | `20` | `14` | `6` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -140,7 +140,7 @@ Collector observations for 114 source steps with known totals: observed: 609, em
 flowchart LR
     s1["1. reconcile_concepts"]
     s2["2. validate_governance_ledger"]
-    s3["3. isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)"]
+    s3["3. isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)"]
     s4["4. TypeError"]
     s5["5. GovernanceError"]
     s6["6. _bundle_id"]
@@ -151,7 +151,7 @@ flowchart LR
     s11["11. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
     s1 -->|"validate_governance_ledger(ledger)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s3
     s2 -. "TypeError('ledger must be a GovernanceLedger')" .-> s4
     s2 -->|"GovernanceError('schema_version', ..., code='governance-version-unsupported')"| s5
     s2 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s6
@@ -187,7 +187,7 @@ flowchart LR
 |---|---|---|---|---|
 | `reconcile_concepts` | `ledger: GovernanceLedger`, `concepts: Sequence[ConceptGovernanceReference]`, `moves: Mapping[str, str] \| None` | `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` | `allocations[...]`, `by_natural_key[...]`, `allocations[...]`, `allocations[...]`, `by_natural_key[...]` | `validate_governance_ledger(...)` |
 | `validate_governance_ledger` | `ledger: GovernanceLedger`, `expected_bundle_id: str \| None` | `GovernanceLedger`, `GOVERNANCE_SCHEMA_VERSION`, `GOVERNANCE_SCHEMA_VERSION`, `GovernanceAllocation`, `ConceptIdentityError`, `ALIAS_NATURAL_KEY`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` | `current_keys[...]`, `alias_counts[...]`, `alias_owners[...]` | `GovernanceLedger(...)` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
@@ -203,7 +203,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | reconcile_concepts | validate_governance_ledger | 963 | `validate_governance_ledger(ledger)` |
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 527 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 527 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError | 528 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 530 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 535 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |

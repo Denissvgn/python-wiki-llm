@@ -32,18 +32,7 @@ lives in :mod:`context_packet`, which loads none of the builders.
 | `.extraction_service` | `InventoryResult` |
 | `.extractor_helpers` | `SUPPORTED_HELPERS` |
 | `.helper_cache` | `HelperPreparationError` |
-| `.knowledge_consumption` | `KnowledgeReadView` |
-| `.knowledge_envelope` | `hash_source_snapshot` |
-| `.knowledge_governance` | `GOVERNANCE_LOCK_FILENAME`, `_governance_lock_root` |
-| `.knowledge_loader` | `KnowledgeLoadIssue` |
-| `.knowledge_model` | `ComputedFreshness` |
-| `.knowledge_observability` | `knowledge_freshness_disclosure` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.knowledge_verification` | `verification_summaries_for_concepts` |
-| `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
-| `.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary` |
 | `.plugins` | `runtime_plugin_fallback_root` |
-| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_snapshot` | `directory_identity`, `SourceSnapshot`, `SourceSnapshotError`, `SourceSnapshotMutationError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
@@ -57,8 +46,19 @@ lives in :mod:`context_packet`, which loads none of the builders.
 | `llm_wiki_engine.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat`, `guard_windows_directory_chain`, `hold_windows_readonly_file` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_source_snapshot` |
 | `llm_wiki_engine.knowledge_evidence` | `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_LOCK_FILENAME`, `_governance_lock_root` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeLoadIssue` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness` |
+| `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_disclosure` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.knowledge_verification` | `verification_summaries_for_concepts` |
+| `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
+| `llm_wiki_engine.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path` |
+| `llm_wiki_engine.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `llm_wiki_engine.wiki_surface_index` | `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `os` | `os` |
 | `pathlib` | `Path` |

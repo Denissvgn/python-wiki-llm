@@ -50,8 +50,8 @@ sequenceDiagram
     participant p26 as _exact_fields
     participant p27 as _string
     participant p28 as _receipt_hash
-    participant p29 as isinstance (src/llm_wiki_cli/services…ne_verification_summaries)
-    participant p30 as concept.extensions.get (src/llm_wiki_cli/services…on_summaries_for_concepts)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)
+    participant p30 as concept.extensions.get (src/llm_wiki_engine/knowl…on_summaries_for_concepts)
     p0->>p1: attach_machine_verification_read_view
     p0->>p2: verification_summaries_for_concepts
     p1->>p3: load_machine_verification_read_view
@@ -80,8 +80,8 @@ sequenceDiagram
     p11->>p26: _exact_fields
     p11->>p27: _string
     p11->>p28: _receipt_hash
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…ne_verification_summaries)(knowledge_view, KnowledgeReadView)
-    p2-->>p30: concept.extensions.get (src/llm_wiki_cli/services…on_summaries_for_concepts)(GOVERNANCE_EXTENSION_KEY)
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)(knowledge_view, KnowledgeReadView)
+    p2-->>p30: concept.extensions.get (src/llm_wiki_engine/knowl…on_summaries_for_concepts)(GOVERNANCE_EXTENSION_KEY)
 ```
 
 > Call sequence diagram shows 30 of 206 interactions; 176 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -92,14 +92,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_verification.py:machine_verification_summaries` | 1 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_verification.py:attach_machine_verification_read_view` | 4 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_verification.py:load_machine_verification_read_view` | 8 | - | external | 11 |
-| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 12 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_verification.py:machine_verification_summaries` | 1 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_verification.py:attach_machine_verification_read_view` | 4 | - | external | 3 |
+| `src/llm_wiki_engine/knowledge_verification.py:load_machine_verification_read_view` | 8 | - | external | 11 |
+| `src/llm_wiki_engine/verification_contracts.py:load_verification_receipt` | 12 | - | external | 1 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 14 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 14 | - | unresolved | 6 |
 | `src/llm_wiki_engine/host.py:current_host` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:load_verification_receipt` | 12 | - | unresolved | 1 |
 > Omission summary shows 8 of 36 groups; 28 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -124,41 +124,41 @@ Collector observations for 45 source steps with known totals: observed: 226, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `machine_verification_summaries` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ne_verification_summaries)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `MappingProxyType (src/llm_wiki_cli/services…ne_verification_summaries)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `MappingProxyType (src/llm_wiki_engine/knowl…ne_verification_summaries)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `attach_machine_verification_read_view` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `load_machine_verification_read_view` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
-| `isinstance (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `MachineVerificationReadView` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `load_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. machine_verification_summaries"]
-    s2["2. isinstance (src/llm_wiki_cli/services…ne_verification_summaries)"]
-    s3["3. MappingProxyType (src/llm_wiki_cli/services…ne_verification_summaries)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)"]
+    s3["3. MappingProxyType (src/llm_wiki_engine/knowl…ne_verification_summaries)"]
     s4["4. attach_machine_verification_read_view"]
-    s5["5. isinstance (src/llm_wiki_cli/services…ne_verification_read_view)"]
-    s6["6. TypeError (src/llm_wiki_cli/services…ne_verification_read_view)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view)"]
+    s6["6. TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view)"]
     s7["7. replace"]
     s8["8. load_machine_verification_read_view"]
-    s9["9. isinstance (src/llm_wiki_cli/services…verification_read_view, 1)"]
-    s10["10. TypeError (src/llm_wiki_cli/services…verification_read_view, 1)"]
+    s9["9. isinstance (src/llm_wiki_engine/knowl…verification_read_view, 1)"]
+    s10["10. TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1)"]
     s11["11. MachineVerificationReadView"]
     s12["12. load_verification_receipt"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…ne_verification_summaries)(knowledge_view, KnowledgeReadView)" .-> s2
-    s1 -. "MappingProxyType (src/llm_wiki_cli/services…ne_verification_summaries)({...})" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)(knowledge_view, KnowledgeReadView)" .-> s2
+    s1 -. "MappingProxyType (src/llm_wiki_engine/knowl…ne_verification_summaries)({...})" .-> s3
     s1 -->|"attach_machine_verification_read_view(wiki_dir, knowledge_view)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)" .-> s5
-    s4 -. "TypeError (src/llm_wiki_cli/services…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')" .-> s6
+    s4 -. "isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view)(knowledge_view, KnowledgeReadView)" .-> s5
+    s4 -. "TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')" .-> s6
     s4 -. "replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))" .-> s7
     s4 -->|"load_machine_verification_read_view(wiki_dir, knowledge_view)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…verification_read_view, 1)(knowledge_view, KnowledgeReadView)" .-> s9
-    s8 -. "TypeError (src/llm_wiki_cli/services…verification_read_view, 1)('knowledge_view must be a KnowledgeReadView')" .-> s10
+    s8 -. "isinstance (src/llm_wiki_engine/knowl…verification_read_view, 1)(knowledge_view, KnowledgeReadView)" .-> s9
+    s8 -. "TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1)('knowledge_view must be a KnowledgeReadView')" .-> s10
     s8 -->|"MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')"| s11
     s8 -->|"load_verification_receipt(Path(...))"| s12
     click s1 "../modules/knowledge_verification.md"
@@ -173,15 +173,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `machine_verification_summaries` | `wiki_dir: str \| Path`, `knowledge_view: KnowledgeReadView` | `KnowledgeReadView` | - | `MappingProxyType(...)`, `verification_summaries_for_concepts(...)` |
-| `isinstance (src/llm_wiki_cli/services…ne_verification_summaries)` | - | - | - | - |
-| `MappingProxyType (src/llm_wiki_cli/services…ne_verification_summaries)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries)` | - | - | - | - |
+| `MappingProxyType (src/llm_wiki_engine/knowl…ne_verification_summaries)` | - | - | - | - |
 | `attach_machine_verification_read_view` | `wiki_dir: str \| Path`, `knowledge_view: KnowledgeReadView` | `KnowledgeReadView`, `MachineVerificationAvailability` | - | `knowledge_view`, `replace(...)` |
-| `isinstance (src/llm_wiki_cli/services…ne_verification_read_view)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…ne_verification_read_view)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view)` | - | - | - | - |
 | `replace` | - | - | - | - |
 | `load_machine_verification_read_view` | `wiki_dir: str \| Path`, `knowledge_view: KnowledgeReadView` | `KnowledgeReadView`, `MachineVerificationAvailability`, `MachineVerificationAvailability`, `MachineVerificationAvailability`, `GOVERNANCE_EXTENSION_KEY`, `Mapping`, `MachineVerificationAvailability` | - | `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)` |
-| `isinstance (src/llm_wiki_cli/services…verification_read_view, 1)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…verification_read_view, 1)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…verification_read_view, 1)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1)` | - | - | - | - |
 | `MachineVerificationReadView` | - | - | - | - |
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
 
@@ -189,15 +189,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| machine_verification_summaries | isinstance (src/llm_wiki_cli/services…ne_verification_summaries) | 39 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| machine_verification_summaries | MappingProxyType (src/llm_wiki_cli/services…ne_verification_summaries) | 43 | `MappingProxyType({...})` |
+| machine_verification_summaries | isinstance (src/llm_wiki_engine/knowl…ne_verification_summaries) | 39 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| machine_verification_summaries | MappingProxyType (src/llm_wiki_engine/knowl…ne_verification_summaries) | 43 | `MappingProxyType({...})` |
 | machine_verification_summaries | attach_machine_verification_read_view | 44 | `attach_machine_verification_read_view(wiki_dir, knowledge_view)` |
-| attach_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…ne_verification_read_view) | 54 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| attach_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…ne_verification_read_view) | 55 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| attach_machine_verification_read_view | isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view) | 54 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| attach_machine_verification_read_view | TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view) | 55 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | attach_machine_verification_read_view | replace | 61 | `replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))` |
 | attach_machine_verification_read_view | load_machine_verification_read_view | 63 | `load_machine_verification_read_view(wiki_dir, knowledge_view)` |
-| load_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…verification_read_view, 1) | 76 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| load_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…verification_read_view, 1) | 77 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| load_machine_verification_read_view | isinstance (src/llm_wiki_engine/knowl…verification_read_view, 1) | 76 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| load_machine_verification_read_view | TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1) | 77 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | load_machine_verification_read_view | MachineVerificationReadView | 81 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
 | load_machine_verification_read_view | load_verification_receipt | 87 | `load_verification_receipt(Path(...))` |
 

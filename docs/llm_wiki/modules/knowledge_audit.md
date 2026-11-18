@@ -1,6 +1,6 @@
 # knowledge_audit Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_audit.py`
+**Path:** `src/llm_wiki_engine/knowledge_audit.py`
 
 ## Description
 
@@ -25,37 +25,37 @@ Derives record identities, owners, shared values and lookup aliases independentl
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n1["src/llm_wiki_cli/services/knowledge_audit.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n3["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n4["src/llm_wiki_cli/services/storage_sort.py"]
-    n5["src/llm_wiki_cli/services/storage_spool.py"]
-    n6["src/llm_wiki_engine/contracts.py"]
-    n0 --> n1
-    n0 --> n2
-    n0 --> n5
-    n0 --> n6
+    n0["src/llm_wiki_engine/contracts.py"]
+    n1["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n2["src/llm_wiki_engine/knowledge_audit.py"]
+    n3["src/llm_wiki_engine/knowledge_storage.py"]
+    n4["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n5["src/llm_wiki_engine/storage_sort.py"]
+    n6["src/llm_wiki_engine/storage_spool.py"]
+    n1 --> n0
     n1 --> n2
-    n1 --> n4
-    n1 --> n5
+    n1 --> n3
     n1 --> n6
-    n2 --> n1
+    n2 --> n0
+    n2 --> n3
+    n2 --> n5
     n2 --> n6
-    n3 --> n1
+    n3 --> n0
     n3 --> n2
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
+    n4 --> n0
     n4 --> n2
-    n5 --> n2
-    click n0 "../modules/knowledge_artifacts.md"
-    click n1 "../modules/knowledge_audit.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/knowledge_stream_audit.md"
-    click n4 "../modules/storage_sort.md"
-    click n5 "../modules/storage_spool.md"
-    click n6 "../modules/llm_wiki_engine_contracts.md"
+    n4 --> n3
+    n4 --> n5
+    n4 --> n6
+    n5 --> n3
+    n6 --> n3
+    click n0 "../modules/llm_wiki_engine_contracts.md"
+    click n1 "../modules/knowledge_artifacts.md"
+    click n2 "../modules/knowledge_audit.md"
+    click n3 "../modules/knowledge_storage.md"
+    click n4 "../modules/knowledge_stream_audit.md"
+    click n5 "../modules/storage_sort.md"
+    click n6 "../modules/storage_spool.md"
 ```
 
 ### Internal neighbors
@@ -65,10 +65,10 @@ flowchart LR
 | Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [storage_sort](../modules/storage_sort.md) |
 | Outbound | [storage_spool](../modules/storage_spool.md) |
-| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Functions
 

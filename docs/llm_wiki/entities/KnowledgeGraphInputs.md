@@ -37,7 +37,7 @@ Complete evaluated inputs for one pure graph materialization.
 flowchart LR
     n0["KnowledgeGraphInputs (src/llm_wiki_engine/knowledge_graph.py)"]
     n1["_application_knowledge_extensions (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n2["_add_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["_add_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
     n3["_limitations (src/llm_wiki_engine/knowledge_graph.py)"]
     n4["_materialization_state (src/llm_wiki_engine/knowledge_graph.py)"]
     n5["materialize_typed_graph (src/llm_wiki_engine/knowledge_graph.py)"]

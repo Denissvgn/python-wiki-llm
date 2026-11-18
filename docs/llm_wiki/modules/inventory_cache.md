@@ -13,7 +13,6 @@ Persistent inventory cache used by lint and CI validation.
 | `..` | `__version__` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.analysis_capture` | `capture_analysis` |
-| `.analysis_compatibility` | `digest` |
 | `.domain_pack` | `current_pack` |
 | `.extractor_registry` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS` |
 | `.plugins` | `lock_path`, `plugin_store` |
@@ -22,6 +21,7 @@ Persistent inventory cache used by lint and CI validation.
 | `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.analysis_compatibility` | `digest` |
 | `llm_wiki_engine.io` | `write_json_atomic` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `llm_wiki_engine.path_policy` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `is_agent_worktree_path` |

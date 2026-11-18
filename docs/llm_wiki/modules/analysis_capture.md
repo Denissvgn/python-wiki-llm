@@ -30,10 +30,9 @@ stored provenance.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `extractor_helpers` |
+| `.` | `extractor_helpers` |
 | `.helper_cache` | `cache_roots`, `validate_handle`, `lookup_helper` |
 | `.helper_runtime` | `current_helper_operation`, `pinned_helper` |
-| `.knowledge_envelope` | `hash_component_configuration` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `contextvars` | `ContextVar` |
@@ -43,8 +42,9 @@ stored provenance.
 | `hashlib` | `hashlib` |
 | `importlib.metadata` | `version` |
 | `json` | `json` |
-| `llm_wiki_engine` | `llm_wiki_engine` |
+| `llm_wiki_engine` | `analysis_compatibility`, `llm_wiki_engine` |
 | `llm_wiki_engine.immutable` | `FrozenDict`, `freeze` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_component_configuration` |
 | `pathlib` | `Path` |
 | `platform` | `platform` |
 | `re` | `re` |

@@ -2,21 +2,20 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), and 12 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [integrations](../modules/integrations.md), and 11 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
-- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -50,15 +49,15 @@ sequenceDiagram
     participant p18 as _document_to_payload
     participant p19 as _validated_reserved_extensions
     participant p20 as _validate_index_references
-    participant p21 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p21 as _object (src/llm_wiki_engine/knowledge_model.py)
     participant p22 as _parse_document
     participant p23 as validate_reuse_commitment
     participant p24 as _parse_repository
-    participant p25 as _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p25 as _locator (src/llm_wiki_engine/knowledge_model.py)
     participant p26 as _parse_snapshot
     participant p27 as typed_graph_from_knowledge_extensions
     participant p28 as _normalize_json_value
-    participant p29 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)
     participant p30 as current_validators().run
     p0->>p1: _emit_extensions
     p0->>p2: _bundle_to_payload
@@ -80,35 +79,35 @@ sequenceDiagram
     p3->>p18: _document_to_payload
     p5->>p19: _validated_reserved_extensions
     p5->>p20: _validate_index_references
-    p9->>p21: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p9->>p21: _object (src/llm_wiki_engine/knowledge_model.py)
     p16->>p22: _parse_document
     p19->>p23: validate_reuse_commitment
     p12->>p24: _parse_repository
-    p16->>p25: _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    p16->>p25: _locator (src/llm_wiki_engine/knowledge_model.py)
     p12->>p26: _parse_snapshot
     p19->>p27: typed_graph_from_knowledge_extensions
     p9->>p28: _normalize_json_value
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)(model, KnowledgeIndex)
     p5-->>p30: current_validators().run(model)
 ```
 
-> Call sequence diagram shows 30 of 1012 interactions; 982 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 864 interactions; 834 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 263 (262 omitted); unresolved 1 of 146 (145 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 186 (185 omitted); unresolved 1 of 127 (126 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 1 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 4 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 7 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 7 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_model.py:knowledge_index_to_payload` | 1 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_model.py:_emit_extensions` | 4 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_model.py:_object` | 7 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_model.py:_object` | 7 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 9 | - | external | 2 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 9 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 11 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 11 | - | unresolved | 1 |
-> Omission summary shows 8 of 239 groups; 231 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 200 groups; 192 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -121,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 604; effect analysis evaluated: 433, partial: 8, unavailable: 163. Counts include steps omitted from the displayed trace.
+Source steps: 552; effect analysis evaluated: 380, partial: 8, unavailable: 164. Counts include steps omitted from the displayed trace.
 
-Collector observations for 441 source steps with known totals: observed: 2020, emitted: 1893, omitted: 127. Unavailable totals are excluded.
+Collector observations for 388 source steps with known totals: observed: 1788, emitted: 1661, omitted: 127. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -132,13 +131,13 @@ Collector observations for 441 source steps with known totals: observed: 2020, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `knowledge_index_to_payload` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_emit_extensions` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_parse_extensions` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_object (src/llm_wiki_engine/knowledge_model.py)` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `dict (src/llm_wiki_engine/knowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -147,24 +146,24 @@ Collector observations for 441 source steps with known totals: observed: 2020, e
 ```mermaid
 flowchart LR
     s1["1. knowledge_index_to_payload"]
-    s2["2. isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)"]
     s3["3. TypeError"]
     s4["4. _emit_extensions"]
-    s5["5. isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions)"]
     s6["6. _parse_extensions"]
-    s7["7. _object (src/llm_wiki_cli/services/knowledge_model.py)"]
-    s8["8. dict (src/llm_wiki_cli/services…nowledge_model.py:_object)"]
+    s7["7. _object (src/llm_wiki_engine/knowledge_model.py)"]
+    s8["8. dict (src/llm_wiki_engine/knowledge_model.py:_object)"]
     s9["9. require_mapping"]
     s10["10. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s11["11. _validation_error"]
     s12["12. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)(model, KnowledgeIndex)" .-> s2
     s1 -. "TypeError('model must be a KnowledgeIndex')" .-> s3
     s1 -->|"_emit_extensions({...}, model.extensions, 'extensions')"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)(extensions, FrozenDict)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions)(extensions, FrozenDict)" .-> s5
     s4 -->|"_parse_extensions(extensions, path)"| s6
-    s6 -->|"_object (src/llm_wiki_cli/services/knowledge_model.py)(value, path)"| s7
-    s7 -. "dict (src/llm_wiki_cli/services…nowledge_model.py:_object)(require_mapping(...))" .-> s8
+    s6 -->|"_object (src/llm_wiki_engine/knowledge_model.py)(value, path)"| s7
+    s7 -. "dict (src/llm_wiki_engine/knowledge_model.py:_object)(require_mapping(...))" .-> s8
     s7 -->|"require_mapping(…)"| s9
     s9 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s10
     s9 -->|"_validation_error(error, error_context)"| s11
@@ -182,13 +181,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `knowledge_index_to_payload` | `model: KnowledgeIndex` | `KnowledgeIndex`, `KnowledgeModelError` | - | `_knowledge_index_to_payload_unchecked(...)` |
-| `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_emit_extensions` | `payload: dict[str, Any]`, `extensions: Extensions`, `path: str` | - | `payload[...]` | `payload` |
-| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions)` | - | - | - | - |
 | `_parse_extensions` | `value: object`, `path: str` | - | `result[...]` | `result` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR`, `_UTF8_ERROR` | - | `dict(...)` |
-| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | - | - | - | - |
+| `_object (src/llm_wiki_engine/knowledge_model.py)` | `value: object`, `path: str` | `_OBJECT_ERROR`, `_OBJECT_KEYS_ERROR`, `_UTF8_ERROR` | - | `dict(...)` |
+| `dict (src/llm_wiki_engine/knowledge_model.py:_object)` | - | - | - | - |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -198,14 +197,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 665 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError | 666 | `TypeError('model must be a KnowledgeIndex')` |
-| knowledge_index_to_payload | _emit_extensions | 669 | `_emit_extensions({...}, model.extensions, 'extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1988 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 1989 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1629 | `_object(value, path)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1696 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1697 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
+| knowledge_index_to_payload | isinstance (src/llm_wiki_engine/knowl…nowledge_index_to_payload) | 667 | `isinstance(model, KnowledgeIndex)` |
+| knowledge_index_to_payload | TypeError | 668 | `TypeError('model must be a KnowledgeIndex')` |
+| knowledge_index_to_payload | _emit_extensions | 671 | `_emit_extensions({...}, model.extensions, 'extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions) | 1990 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 1991 | `_parse_extensions(extensions, path)` |
+| _parse_extensions | _object (src/llm_wiki_engine/knowledge_model.py) | 1631 | `_object(value, path)` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1698 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | require_mapping | 1699 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
 | require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -218,9 +217,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `knowledge_index_to_payload` | `isinstance` | 665 |
-| external_call | `knowledge_index_to_payload` | `TypeError` | 666 |
-| external_call | `_emit_extensions` | `isinstance` | 1988 |
+| external_call | `knowledge_index_to_payload` | `isinstance` | 667 |
+| external_call | `knowledge_index_to_payload` | `TypeError` | 668 |
+| external_call | `_emit_extensions` | `isinstance` | 1990 |
 | external_call | `require_mapping` | `isinstance` | 783 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | step_limit | `knowledge_index_to_payload` | `first 12 steps` | 0 |

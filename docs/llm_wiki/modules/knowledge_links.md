@@ -1,6 +1,6 @@
 # knowledge_links Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_links.py`
+**Path:** `src/llm_wiki_engine/knowledge_links.py`
 
 ## Description
 
@@ -34,9 +34,9 @@ index builder.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n1["src/llm_wiki_cli/services/knowledge_index.py"]
-    n2["src/llm_wiki_cli/services/knowledge_links.py"]
-    n3["src/llm_wiki_cli/services/knowledge_model.py"]
+    n1["src/llm_wiki_engine/knowledge_index.py"]
+    n2["src/llm_wiki_engine/knowledge_links.py"]
+    n3["src/llm_wiki_engine/knowledge_model.py"]
     n4["src/llm_wiki_engine/validation.py"]
     n5["src/llm_wiki_engine/wiki_media.py"]
     n6["src/llm_wiki_engine/wiki_surface.py"]

@@ -1,6 +1,6 @@
 # KnowledgeReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:292`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:295`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -51,7 +51,7 @@ Validated, immutable-by-contract state for one native read operation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeReadView (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n0["KnowledgeReadView (src/llm_wiki_engine/knowledge_consumption.py)"]
     n1["src/llm_wiki_cli/api.py"]
     n2["_captured_query_service (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_freshness_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]

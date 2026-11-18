@@ -14,12 +14,13 @@ establish dependency, runtime behavior, or authored documentation correctness.
 | Source | Symbols |
 |--------|---------|
 | `.` | `python_implementation` |
-| `.analysis_compatibility` | `component_record` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.analysis_compatibility` | `component_record` |
+| `llm_wiki_engine.knowledge_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
 
@@ -41,17 +42,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (18) |
-| Outbound | `src` (2) |
+| Inbound | `src` (9) |
+| Outbound | `src` (3) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ImplementationComparison](../entities/ImplementationComparison.md) | 714 | — | — |
-| [ImplementationReport](../entities/ImplementationReport.md) | 739 | — | — |
+| [ImplementationComparison](../entities/ImplementationComparison.md) | 713 | — | — |
+| [ImplementationReport](../entities/ImplementationReport.md) | 738 | — | — |
 
 ## Functions
 

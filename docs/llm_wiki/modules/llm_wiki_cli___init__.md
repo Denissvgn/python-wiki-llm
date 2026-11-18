@@ -11,6 +11,7 @@ LLM Wiki CLI.
 | Source | Symbols |
 |--------|---------|
 | `importlib` | `metadata` |
+| `llm_wiki_engine` | `integrations` |
 | `pathlib` | `Path` |
 | `tomllib` | `tomllib` |
 
@@ -24,6 +25,7 @@ flowchart LR
     n2["src/llm_wiki_cli/__init__.py"]
     n0 --> n2
     n1 --> n2
+    n2 --> n1
     click n2 "../modules/llm_wiki_cli___init__.md"
 ```
 
@@ -35,8 +37,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (1) |
 | Inbound | `src` (15) |
+| Outbound | `src` (1) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -45,3 +48,4 @@ flowchart LR
 | `_provider_package_identity` | `() -> dict[str, str]` | — | — |
 | `_installed_identity` | `(distribution: metadata.Distribution) -> dict[str, str]` | — | — |
 | `_identity` | `(name: str, version: str, requires_python: str) -> dict[str, str]` | — | — |
+| `_provide_knowledge_core_integrations` | `() -> None` | — | Name this package's modules as the engine knowledge core's providers. |

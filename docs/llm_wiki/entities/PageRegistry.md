@@ -1,6 +1,6 @@
 # _PageRegistry
 
-**Location:** `src/llm_wiki_cli/services/knowledge_links.py:126`
+**Location:** `src/llm_wiki_engine/knowledge_links.py:126`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_links](../modules/knowledge_links.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_PageRegistry` in `src/llm_wiki_cli/services/knowledge_links.py`._
+_Auto-generated from `_PageRegistry` in `src/llm_wiki_engine/knowledge_links.py`._
 
 ## Attributes
 
@@ -27,12 +27,12 @@ _Auto-generated from `_PageRegistry` in `src/llm_wiki_cli/services/knowledge_lin
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_PageRegistry (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n1["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n2["_build_page_registry (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n3["_classify_target (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n4["_validate_asset_paths (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n5["_validate_page_content (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n0["_PageRegistry (src/llm_wiki_engine/knowledge_links.py)"]
+    n1["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n2["_build_page_registry (src/llm_wiki_engine/knowledge_links.py)"]
+    n3["_classify_target (src/llm_wiki_engine/knowledge_links.py)"]
+    n4["_validate_asset_paths (src/llm_wiki_engine/knowledge_links.py)"]
+    n5["_validate_page_content (src/llm_wiki_engine/knowledge_links.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

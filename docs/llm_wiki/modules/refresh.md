@@ -16,16 +16,16 @@ preserved history, with independent full native validation still required.
 
 | Source | Symbols |
 |--------|---------|
-| `..knowledge_consumption` | `load_knowledge_read_view` |
-| `..knowledge_observability` | `knowledge_freshness_disclosure` |
-| `..sync_manifest` | `SyncManifest` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
 | `.integrity` | `*` |
 | `.schema` | `*` |
 | `.workspace` | `*` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_disclosure` |
 | `llm_wiki_engine.markdown_sections` | `preserve_index_custom_sections` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 
 ## Local dependency map
 

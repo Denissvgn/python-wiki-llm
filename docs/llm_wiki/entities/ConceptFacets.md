@@ -1,6 +1,6 @@
 # ConceptFacets
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:389`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:391`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `ConceptFacets` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `ConceptFacets` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -28,9 +28,9 @@ _Auto-generated from `ConceptFacets` in `src/llm_wiki_cli/services/knowledge_mod
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptFacets (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_concept_for_page (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_parse_facets (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["ConceptFacets (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_concept_for_page (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_parse_facets (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_model.md"

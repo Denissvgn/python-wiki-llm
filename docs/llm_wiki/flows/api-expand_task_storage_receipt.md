@@ -28,14 +28,14 @@ sequenceDiagram
     participant p5 as canonical_bytes
     participant p6 as compact_storage_receipt
     participant p7 as require_portable_relative_path
-    participant p8 as _hash (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p8 as _hash (src/llm_wiki_engine/knowledge_storage.py)
     participant p9 as compact_line_bytes
     participant p10 as _encode_hash
     participant p11 as _default_path_error
     participant p12 as _fail
     participant p13 as _check_path_collision
     participant p14 as require_portable_path_component
-    participant p15 as _hash (src/llm_wiki_cli/services/storage_receipts.py)
+    participant p15 as _hash (src/llm_wiki_engine/storage_receipts.py)
     participant p16 as _file_path
     participant p17 as pack_path
     participant p18 as KnowledgeStorageError
@@ -45,9 +45,9 @@ sequenceDiagram
     participant p22 as _remember_syntax
     participant p23 as SharedValidationError
     participant p24 as portable_path_key
-    participant p25 as isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p26 as receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p27 as ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)
+    participant p25 as isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)
+    participant p26 as receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)
+    participant p27 as ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)
     p0->>p1: expand_storage_receipt
     p1->>p2: _decode_hash
     p1->>p3: is_portable_relative_path
@@ -55,14 +55,14 @@ sequenceDiagram
     p1->>p5: canonical_bytes
     p1->>p6: compact_storage_receipt
     p3->>p7: require_portable_relative_path
-    p4->>p8: _hash (src/llm_wiki_cli/services/knowledge_storage.py)
+    p4->>p8: _hash (src/llm_wiki_engine/knowledge_storage.py)
     p5->>p9: compact_line_bytes
     p2->>p10: _encode_hash
     p7->>p11: _default_path_error
     p8->>p12: _fail
     p7->>p13: _check_path_collision
     p7->>p14: require_portable_path_component
-    p1->>p15: _hash (src/llm_wiki_cli/services/storage_receipts.py)
+    p1->>p15: _hash (src/llm_wiki_engine/storage_receipts.py)
     p1->>p16: _file_path
     p1->>p17: pack_path
     p5->>p18: KnowledgeStorageError
@@ -72,12 +72,12 @@ sequenceDiagram
     p7->>p22: _remember_syntax
     p11->>p23: SharedValidationError
     p13->>p24: portable_path_key
-    p1-->>p25: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(receipt, Mapping)
-    p1-->>p26: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('schema_version')
-    p1-->>p27: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage receipt must be an object')
-    p1-->>p26: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('layout')
-    p1-->>p27: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')
-    p1-->>p26: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage_format')
+    p1-->>p25: isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)(receipt, Mapping)
+    p1-->>p26: receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('schema_version')
+    p1-->>p27: ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)('storage receipt must be an object')
+    p1-->>p26: receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('layout')
+    p1-->>p27: ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')
+    p1-->>p26: receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('storage_format')
 ```
 
 > Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -88,14 +88,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/storage_receipts.py:expand_storage_receipt` | 2 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/storage_receipts.py:expand_storage_receipt` | 2 | - | external | 33 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_decode_hash` | 23 | - | external | 5 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_decode_hash` | 23 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | - | external | 4 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | [src/llm_wiki_cli/services/storage_receipts.py](../modules/storage_receipts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_hash` | 33 | - | external | 2 |
+| `src/llm_wiki_engine/storage_receipts.py:expand_storage_receipt` | 2 | - | unresolved | 7 |
+| `src/llm_wiki_engine/storage_receipts.py:expand_storage_receipt` | 2 | - | external | 33 |
+| `src/llm_wiki_engine/storage_receipts.py:_decode_hash` | 23 | - | external | 5 |
+| `src/llm_wiki_engine/storage_receipts.py:_decode_hash` | 23 | - | unresolved | 1 |
+| `src/llm_wiki_engine/storage_receipts.py:_encode_hash` | 29 | - | external | 4 |
+| `src/llm_wiki_engine/storage_receipts.py:_encode_hash` | 29 | - | unresolved | 3 |
+| `src/llm_wiki_engine/storage_receipts.py:_encode_hash` | 29 | [src/llm_wiki_engine/storage_receipts.py](../modules/storage_receipts.md) | internal | 1 |
+| `src/llm_wiki_engine/storage_receipts.py:_hash` | 33 | - | external | 2 |
 > Omission summary shows 8 of 34 groups; 26 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -119,42 +119,42 @@ Collector observations for 42 source steps with known totals: observed: 159, emi
 |---|---|---|---|---:|---:|---:|
 | `expand_task_storage_receipt` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `expand_storage_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `required.update` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. expand_task_storage_receipt"]
     s2["2. expand_storage_receipt"]
-    s3["3. isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s4["4. ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s5["5. receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s6["6. receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s7["7. ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s8["8. receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
+    s3["3. isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s4["4. ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s5["5. receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s6["6. receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s7["7. ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s8["8. receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
     s9["9. required.update"]
     s10["10. set"]
-    s11["11. ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
-    s12["12. isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)"]
+    s11["11. ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
+    s12["12. isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)"]
     s1 -->|"expand_storage_receipt(receipt)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(receipt, Mapping)" .-> s3
-    s2 -. "ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage receipt must be an object')" .-> s4
-    s2 -. "receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('schema_version')" .-> s5
-    s2 -. "receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('layout')" .-> s6
-    s2 -. "ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')" .-> s7
-    s2 -. "receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage_format')" .-> s8
+    s2 -. "isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)(receipt, Mapping)" .-> s3
+    s2 -. "ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)('storage receipt must be an object')" .-> s4
+    s2 -. "receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('schema_version')" .-> s5
+    s2 -. "receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('layout')" .-> s6
+    s2 -. "ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')" .-> s7
+    s2 -. "receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)('storage_format')" .-> s8
     s2 -. "required.update({...})" .-> s9
     s2 -. "set(receipt)" .-> s10
-    s2 -. "ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact receipt fields')" .-> s11
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(files, list)" .-> s12
+    s2 -. "ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)('invalid compact receipt fields')" .-> s11
+    s2 -. "isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)(files, list)" .-> s12
     b0["mutation required.update"]
     s2 -. "mutation required.update" .-> b0
     b1["mutation result.update"]
@@ -175,32 +175,32 @@ flowchart LR
 |---|---|---|---|---|
 | `expand_task_storage_receipt` | `receipt: Mapping[str, Any]` | - | - | `expand_storage_receipt(...)` |
 | `expand_storage_receipt` | `receipt: Mapping[str, Any]` | `Mapping`, `RECEIPT_SCHEMA` | `result[...]` | `result` |
-| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
 | `required.update` | - | - | - | - |
 | `set` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | expand_task_storage_receipt | expand_storage_receipt | 1687 | `expand_storage_receipt(receipt)` |
-| expand_storage_receipt | isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt) | 94 | `isinstance(receipt, Mapping)` |
-| expand_storage_receipt | ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt) | 95 | `ValueError('storage receipt must be an object')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt) | 96 | `receipt.get('schema_version')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt) | 96 | `receipt.get('layout')` |
-| expand_storage_receipt | ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt) | 97 | `ValueError('expansion requires a compact version-3 receipt')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt) | 98 | `receipt.get('storage_format')` |
+| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 94 | `isinstance(receipt, Mapping)` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 95 | `ValueError('storage receipt must be an object')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 96 | `receipt.get('schema_version')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 96 | `receipt.get('layout')` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 97 | `ValueError('expansion requires a compact version-3 receipt')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 98 | `receipt.get('storage_format')` |
 | expand_storage_receipt | required.update | 103 | `required.update({...})` |
 | expand_storage_receipt | set | 104 | `set(receipt)` |
-| expand_storage_receipt | ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt) | 105 | `ValueError('invalid compact receipt fields')` |
-| expand_storage_receipt | isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt) | 107 | `isinstance(files, list)` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 105 | `ValueError('invalid compact receipt fields')` |
+| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 107 | `isinstance(files, list)` |
 
 ### Boundary effects
 

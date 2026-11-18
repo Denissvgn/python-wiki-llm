@@ -29,7 +29,6 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 |--------|---------|
 | `.` | `context_packet`, `context_service`, `context_packet_builder` |
 | `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes` |
-| `.context_request_format` | `validate_budget_request`, `validate_changes` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
 | `contextlib` | `nullcontext` |
@@ -37,6 +36,7 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 | `dataclasses` | `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.context_request_format` | `validate_budget_request`, `validate_changes` |
 | `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `llm_wiki_engine.host` | `emit` |
 | `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |

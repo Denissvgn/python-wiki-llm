@@ -1,6 +1,6 @@
 # SnapshotKnowledgeObservability
 
-**Location:** `src/llm_wiki_cli/services/knowledge_observability.py:390`
+**Location:** `src/llm_wiki_engine/knowledge_observability.py:399`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_observability](../modules/knowledge_observability.md)
@@ -27,9 +27,9 @@ One snapshot-only read view and its aggregate operational summary.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SnapshotKnowledgeObservability (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n1["_snapshot_result (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n2["load_snapshot_knowledge_observability (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n0["SnapshotKnowledgeObservability (src/llm_wiki_engine/knowledge_observability.py)"]
+    n1["_snapshot_result (src/llm_wiki_engine/knowledge_observability.py)"]
+    n2["load_snapshot_knowledge_observability (src/llm_wiki_engine/knowledge_observability.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_observability.md"

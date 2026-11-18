@@ -67,10 +67,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| using_validators | isinstance | 190 | `isinstance(registry, ValidatorRegistry)` |
-| using_validators | TypeError | 191 | `TypeError('registry must be a ValidatorRegistry')` |
-| using_validators | _ACTIVE_VALIDATORS.set | 192 | `_ACTIVE_VALIDATORS.set(registry)` |
-| using_validators | _ACTIVE_VALIDATORS.reset | 196 | `_ACTIVE_VALIDATORS.reset(token)` |
+| using_validators | isinstance | 205 | `isinstance(registry, ValidatorRegistry)` |
+| using_validators | TypeError | 206 | `TypeError('registry must be a ValidatorRegistry')` |
+| using_validators | _ACTIVE_VALIDATORS.set | 207 | `_ACTIVE_VALIDATORS.set(registry)` |
+| using_validators | _ACTIVE_VALIDATORS.reset | 211 | `_ACTIVE_VALIDATORS.reset(token)` |
 
 ### Boundary effects
 
@@ -80,9 +80,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_validators` | `isinstance` | 190 |
-| external_call | `using_validators` | `TypeError` | 191 |
-| unresolved_call | `using_validators` | `_ACTIVE_VALIDATORS.reset` | 196 |
+| external_call | `using_validators` | `isinstance` | 205 |
+| external_call | `using_validators` | `TypeError` | 206 |
+| unresolved_call | `using_validators` | `_ACTIVE_VALIDATORS.reset` | 211 |
 
 ## Behavior
 

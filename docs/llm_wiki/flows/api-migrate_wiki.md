@@ -19,7 +19,7 @@
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [imports](../modules/imports.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [io](../modules/io.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)

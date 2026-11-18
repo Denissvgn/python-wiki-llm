@@ -20,7 +20,7 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `context_service`, `lint_service` |
+| `.` | `context_service`, `lint_service` |
 | `..` | `api` |
 | `..api` | `LlmWikiApiError`, `build_documentation_query_service`, `query_documentation` |
 | `..api_types` | `KnowledgeMode` |
@@ -33,7 +33,6 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
 | `.helper_runtime` | `helper_operation` |
-| `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.maintenance_queue` | `validate_queue_limit` |
 | `.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
@@ -49,11 +48,12 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `ipaddress` | `ipaddress` |
 | `itertools` | `islice` |
 | `json` | `json` |
-| `llm_wiki_engine` | `circuit_breaker`, `wiki_surface` |
+| `llm_wiki_engine` | `analysis_compatibility`, `circuit_breaker`, `wiki_surface` |
 | `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `llm_wiki_engine.io` | `read_md` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
+| `llm_wiki_engine.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `llm_wiki_engine.request_json` | `MAX_REQUEST_BYTES` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |

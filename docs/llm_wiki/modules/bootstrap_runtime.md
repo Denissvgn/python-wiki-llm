@@ -41,18 +41,12 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
-| `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
-| `.knowledge_consumption` | `load_knowledge_read_view` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
-| `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
-| `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
 | `.relationships` | `build_entity_page_relationship_summaries` |
 | `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
-| `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle`, `is_pristine_wiki_target`, `migration_guidance`, `sync_guidance` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
@@ -66,9 +60,15 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `llm_wiki_engine.host` | `current_host`, `emit` |
 | `llm_wiki_engine.io` | `read_md`, `write_bytes_atomic`, `write_md` |
+| `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
+| `llm_wiki_engine.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
+| `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
 | `llm_wiki_engine.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
 | `llm_wiki_engine.paths` | `normalize_source_path`, `portable_source_root_label` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `llm_wiki_engine.validation` | `portable_page_component`, `posix_path_text` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |

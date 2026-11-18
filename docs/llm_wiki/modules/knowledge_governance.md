@@ -1,6 +1,6 @@
 # knowledge_governance Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_governance.py`
+**Path:** `src/llm_wiki_engine/knowledge_governance.py`
 
 ## Description
 
@@ -71,7 +71,7 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n1["src/llm_wiki_engine/knowledge_governance.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_governance.md"

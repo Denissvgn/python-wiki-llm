@@ -1,6 +1,6 @@
 # RelationshipLocation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:407`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:409`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -28,10 +28,10 @@ Half-open character offsets for a relationship observation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RelationshipLocation (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n3["_parse_relationship_location (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["RelationshipLocation (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n3["_parse_relationship_location (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

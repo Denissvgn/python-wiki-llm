@@ -17,7 +17,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -67,7 +67,7 @@ sequenceDiagram
     participant p22 as _live_source_selection_identity
     participant p23 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     participant p24 as attach_implementation_read_view
-    participant p25 as analysis_identity
+    participant p25 as analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     participant p26 as read_guarded
     participant p27 as attach_maintenance_view_from_inputs
     participant p28 as _assert_source_unchanged
@@ -97,7 +97,7 @@ sequenceDiagram
     p11->>p22: _live_source_selection_identity
     p11->>p23: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     p11->>p24: attach_implementation_read_view
-    p11->>p25: analysis_identity
+    p11->>p25: analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     p11->>p26: read_guarded
     p11->>p27: attach_maintenance_view_from_inputs
     p11->>p28: _assert_source_unchanged
@@ -105,9 +105,9 @@ sequenceDiagram
     p0-->>p30: _query_service(…).pages_for_symbol(query)
 ```
 
-> Call sequence diagram shows 30 of 924 interactions; 894 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 881 interactions; 851 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 370 (369 omitted); unresolved 1 of 208 (207 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 355 (354 omitted); unresolved 1 of 192 (191 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 6 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 15 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 17 | - | external | 3 |
-> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 206 groups; 198 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 347; effect analysis evaluated: 220, partial: 18, unavailable: 109. Counts include steps omitted from the displayed trace.
+Source steps: 335; effect analysis evaluated: 218, partial: 13, unavailable: 104. Counts include steps omitted from the displayed trace.
 
-Collector observations for 238 source steps with known totals: observed: 1488, emitted: 1383, omitted: 105. Unavailable totals are excluded.
+Collector observations for 231 source steps with known totals: observed: 1356, emitted: 1274, omitted: 82. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,6 +1,6 @@
 # sync_recovery Module
 
-**Path:** `src/llm_wiki_cli/services/sync_recovery.py`
+**Path:** `src/llm_wiki_engine/sync_recovery.py`
 
 ## Description
 
@@ -34,7 +34,6 @@ syncs discard only verified private scratch and retain unexpected contents.
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `_identity`, `read_guarded` |
 | `.maintenance_protocol` | `governance_writer_lock`, `storage_writer_lock` |
-| `.source_snapshot` | `SourceSnapshot` |
 | `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
@@ -57,7 +56,7 @@ syncs discard only verified private scratch and retain unexpected contents.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/sync_recovery.py"]
+    n1["src/llm_wiki_engine/sync_recovery.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/sync_recovery.md"
@@ -70,16 +69,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (11) |
+| Outbound | `src` (10) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 42 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
-| [NewPageJournal](../entities/NewPageJournal.md) | 138 | — | — |
+| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 44 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
+| [NewPageJournal](../entities/NewPageJournal.md) | 140 | — | — |
 
 ## Functions
 

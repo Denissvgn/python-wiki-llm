@@ -193,35 +193,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_module_observation | _normalize_module_observation | 213 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 428 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 511 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 512 | `_failure('', 'object-required', 'inventory object', file_data)` |
-| _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 513 | `file_data.get('language', MISSING_VALUE)` |
-| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 514 | `isinstance(language, str)` |
-| _inventory_language | _failure | 515 | `_failure('/language', 'nonempty-text', 'nonempty language string', language)` |
-| _inventory_language | _failure | 517 | `_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)` |
-| _normalize_module_observation | isinstance (src/llm_wiki_engine/knowl…malize_module_observation) | 429 | `isinstance(file_data, Mapping)` |
-| _normalize_module_observation | _record_array | 430 | `_record_array(file_data, 'classes', required=True)` |
+| normalize_module_observation | _normalize_module_observation | 217 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 432 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 515 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 516 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| _failure | _InventoryNormalizationError | 170 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
+| _inventory_language | file_data.get (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 517 | `file_data.get('language', MISSING_VALUE)` |
+| _inventory_language | isinstance (src/llm_wiki_engine/knowl…ce.py:_inventory_language) | 518 | `isinstance(language, str)` |
+| _inventory_language | _failure | 519 | `_failure('/language', 'nonempty-text', 'nonempty language string', language)` |
+| _inventory_language | _failure | 521 | `_failure('/language', 'supported-language', 'registered observation language', language, reason=UNKNOWN_UNSUPPORTED_LANGUAGE)` |
+| _normalize_module_observation | isinstance (src/llm_wiki_engine/knowl…malize_module_observation) | 433 | `isinstance(file_data, Mapping)` |
+| _normalize_module_observation | _record_array | 434 | `_record_array(file_data, 'classes', required=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 445 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 473 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 480 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 449 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 455 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 477 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 484 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_inventory_language` | `isinstance` | 511 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 513 |
-| external_call | `_inventory_language` | `isinstance` | 514 |
-| external_call | `_normalize_module_observation` | `isinstance` | 429 |
+| external_call | `_inventory_language` | `isinstance` | 515 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 517 |
+| external_call | `_inventory_language` | `isinstance` | 518 |
+| external_call | `_normalize_module_observation` | `isinstance` | 433 |
 | step_limit | `normalize_module_observation` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -1,6 +1,6 @@
 # ManifestTombstone
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:357`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:362`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -32,13 +32,13 @@ Evidence retained for a stale module/entity page.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ManifestTombstone (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["ManifestTombstone (src/llm_wiki_engine/sync_manifest.py)"]
     n1["_defer_sources_for_regeneration (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n2["_downgrade_incompatible_tombstones (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n3["_reconcile_active_structural_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_index.py"]
-    n5["ManifestTombstone.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n6["SyncManifest.build_from_inventory (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n4["src/llm_wiki_engine/knowledge_index.py"]
+    n5["ManifestTombstone.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
+    n6["SyncManifest.build_from_inventory (src/llm_wiki_engine/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

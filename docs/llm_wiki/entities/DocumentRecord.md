@@ -1,6 +1,6 @@
 # DocumentRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:352`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:354`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `DocumentRecord` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `DocumentRecord` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -30,10 +30,10 @@ _Auto-generated from `DocumentRecord` in `src/llm_wiki_cli/services/knowledge_mo
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DocumentRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_concept_for_page (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_document_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n3["_parse_document (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["DocumentRecord (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_concept_for_page (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_document_to_payload (src/llm_wiki_engine/knowledge_model.py)"]
+    n3["_parse_document (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -2,13 +2,12 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 75 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 74 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_json](../modules/canonical_json.md)
 - [canonical_pages](../modules/canonical_pages.md)
@@ -33,10 +32,10 @@
 - [health_policy](../modules/health_policy.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -155,9 +154,9 @@ sequenceDiagram
     p0-->>p30: lint.health_details.to_payload
 ```
 
-> Call sequence diagram shows 30 of 3435 interactions; 3405 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3437 interactions; 3407 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1110 (1109 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1113 (1112 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -171,7 +170,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | external | 10 |
-> Omission summary shows 8 of 934 groups; 926 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 935 groups; 927 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -184,9 +183,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1274; effect analysis evaluated: 975, partial: 50, unavailable: 249. Counts include steps omitted from the displayed trace.
+Source steps: 1273; effect analysis evaluated: 976, partial: 48, unavailable: 249. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1025 source steps with known totals: observed: 6128, emitted: 5875, omitted: 253. Unavailable totals are excluded.
+Collector observations for 1024 source steps with known totals: observed: 6084, emitted: 5837, omitted: 247. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

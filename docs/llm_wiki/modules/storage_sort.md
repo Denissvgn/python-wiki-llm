@@ -1,6 +1,6 @@
 # storage_sort Module
 
-**Path:** `src/llm_wiki_cli/services/storage_sort.py`
+**Path:** `src/llm_wiki_engine/storage_sort.py`
 
 ## Description
 
@@ -23,10 +23,10 @@ Orders complete audit records with bounded batches and external merge runs. Each
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_audit.py"]
-    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n2["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n3["src/llm_wiki_cli/services/storage_sort.py"]
+    n0["src/llm_wiki_engine/knowledge_audit.py"]
+    n1["src/llm_wiki_engine/knowledge_storage.py"]
+    n2["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n3["src/llm_wiki_engine/storage_sort.py"]
     n0 --> n1
     n0 --> n3
     n1 --> n0

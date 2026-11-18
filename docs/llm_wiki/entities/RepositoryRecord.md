@@ -1,6 +1,6 @@
 # RepositoryRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:300`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:302`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `RepositoryRecord` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `RepositoryRecord` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -31,10 +31,10 @@ _Auto-generated from `RepositoryRecord` in `src/llm_wiki_cli/services/knowledge_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RepositoryRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["build_repository_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_parse_repository (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n3["repository_identities_match (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["RepositoryRecord (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["build_repository_record (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n2["_parse_repository (src/llm_wiki_engine/knowledge_model.py)"]
+    n3["repository_identities_match (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

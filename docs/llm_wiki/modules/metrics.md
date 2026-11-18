@@ -14,14 +14,14 @@ _Auto-generated from `src/llm_wiki_cli/services/metrics.py`._
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `InventoryResult`, `get_inventory_result` |
-| `.knowledge_consumption` | `KnowledgeReadReason` |
-| `.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `.lint_service` | `_collect_documented_entities`, `_collect_documented_modules` |
 | `.source_snapshot` | `build_source_snapshot`, `capture_source_selection_inputs` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `datetime` | `datetime`, `timedelta`, `timezone` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadReason` |
+| `llm_wiki_engine.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `llm_wiki_engine.source_selection` | `resolve_source_selection` |
 | `pathlib` | `Path`, `PurePosixPath`, `PureWindowsPath` |
 | `re` | `re` |

@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as require_trimmed_text
     participant p27 as _receipt_to_payload
     participant p28 as VerificationReceiptError
-    participant p29 as isinstance (src/llm_wiki_cli/services…uate_verification_receipt)
+    participant p29 as isinstance (src/llm_wiki_engine/verif…uate_verification_receipt)
     participant p30 as add
     p0->>p1: validate_verification_receipt
     p0->>p2: VerificationReceiptEvaluation
@@ -70,7 +70,7 @@ sequenceDiagram
     p22->>p26: require_trimmed_text
     p1->>p27: _receipt_to_payload
     p1->>p28: VerificationReceiptError
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…uate_verification_receipt)(context, VerificationContext)
+    p0-->>p29: isinstance (src/llm_wiki_engine/verif…uate_verification_receipt)(context, VerificationContext)
     p0-->>p30: add(VerificationInvalidationReason.KNOWLEDGE_CHANGED)
 ```
 
@@ -82,9 +82,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 2 | - | external | 7 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 4 | - | unresolved | 1 |
+| `src/llm_wiki_engine/verification_contracts.py:validate_verification_receipt` | 2 | - | external | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 9 | - | external | 2 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 9 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 11 | - | external | 1 |
@@ -115,10 +115,10 @@ Collector observations for 68 source steps with known totals: observed: 271, emi
 |---|---|---|---|---:|---:|---:|
 | `evaluate_verification_receipt` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
@@ -130,10 +130,10 @@ Collector observations for 68 source steps with known totals: observed: 271, emi
 flowchart LR
     s1["1. evaluate_verification_receipt"]
     s2["2. validate_verification_receipt"]
-    s3["3. isinstance (src/llm_wiki_cli/services…date_verification_receipt)"]
+    s3["3. isinstance (src/llm_wiki_engine/verif…date_verification_receipt)"]
     s4["4. _receipt_to_payload"]
-    s5["5. dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)"]
-    s6["6. dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)"]
+    s5["5. dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)"]
+    s6["6. dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)"]
     s7["7. check.to_payload"]
     s8["8. _object"]
     s9["9. require_mapping"]
@@ -141,10 +141,10 @@ flowchart LR
     s11["11. _validation_error"]
     s12["12. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s1 -->|"validate_verification_receipt(receipt)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/verif…date_verification_receipt)(value, VerificationReceipt)" .-> s3
     s2 -->|"_receipt_to_payload(value)"| s4
-    s4 -. "dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)(receipt.evidence)" .-> s5
-    s4 -. "dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)(receipt.evaluated_snapshot)" .-> s6
+    s4 -. "dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)(receipt.evidence)" .-> s5
+    s4 -. "dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)(receipt.evaluated_snapshot)" .-> s6
     s4 -. "check.to_payload(data not statically known)" .-> s7
     s2 -->|"_object(payload, 'receipt')"| s8
     s8 -->|"require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))"| s9
@@ -165,10 +165,10 @@ flowchart LR
 |---|---|---|---|---|
 | `evaluate_verification_receipt` | `receipt: VerificationReceipt \| object`, `context: VerificationContext` | `VerificationContext`, `VerificationInvalidationReason`, `VerificationInvalidationReason`, `VerificationInvalidationReason`, `VerificationInvalidationReason`, `VerificationInvalidationReason`, `VerificationInvalidationReason` | - | `VerificationReceiptEvaluation(...)` |
 | `validate_verification_receipt` | `value: VerificationReceipt \| object` | `VerificationReceipt`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VerificationContractError`, `MAX_CHECKS_PER_RECEIPT` | - | `VerificationReceipt(...)` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | - | - | - | - |
 | `_receipt_to_payload` | `receipt: VerificationReceipt` | - | - | `{...}` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload)` | - | - | - | - |
 | `check.to_payload` | - | - | - | - |
 | `_object` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
@@ -181,10 +181,10 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | evaluate_verification_receipt | validate_verification_receipt | 1066 | `validate_verification_receipt(receipt)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
 | validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
 | _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 | validate_verification_receipt | _object | 838 | `_object(payload, 'receipt')` |
 | _object | require_mapping | 1470 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |

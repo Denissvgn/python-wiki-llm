@@ -1,6 +1,6 @@
 # KindRegistry
 
-**Location:** `src/llm_wiki_cli/services/knowledge_kinds.py:144`
+**Location:** `src/llm_wiki_engine/knowledge_kinds.py:144`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_kinds](../modules/knowledge_kinds.md)
@@ -41,14 +41,14 @@ Declared concept, relationship and typed-graph edge kinds.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KindRegistry (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n0["KindRegistry (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["current_kinds (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n3["KindRegistry.rejecting_undeclared (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n4["KindRegistry.with_concept_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n5["KindRegistry.with_graph_relationship_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n6["KindRegistry.with_relationship_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n7["using_kinds (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n2["current_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n3["KindRegistry.rejecting_undeclared (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n4["KindRegistry.with_concept_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n5["KindRegistry.with_graph_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n6["KindRegistry.with_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n7["using_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

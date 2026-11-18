@@ -30,8 +30,8 @@ flowchart LR
     n0["SectionOwnership (src/llm_wiki_engine/section_ownership.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/maintenance_evidence.py"]
-    n4["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n3["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n4["src/llm_wiki_engine/maintenance_evidence.py"]
     n5["_expected_persisted_ownership (src/llm_wiki_engine/section_ownership.py)"]
     n6["_normalise_section_record (src/llm_wiki_engine/section_ownership.py)"]
     n7["_scoped_hashes (src/llm_wiki_engine/section_ownership.py)"]
@@ -49,8 +49,8 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     click n0 "../modules/section_ownership.md"
-    click n3 "../modules/maintenance_evidence.md"
-    click n4 "../modules/sync_generated_sections.md"
+    click n3 "../modules/sync_generated_sections.md"
+    click n4 "../modules/maintenance_evidence.md"
     click n5 "../modules/section_ownership.md"
     click n6 "../modules/section_ownership.md"
     click n7 "../modules/section_ownership.md"
@@ -76,8 +76,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `maintenance_evidence` | import | [maintenance_evidence](../modules/maintenance_evidence.md) | — |
 | `sync_generated_sections` | import | [sync_generated_sections](../modules/sync_generated_sections.md) | — |
+| `maintenance_evidence` | import | [maintenance_evidence](../modules/maintenance_evidence.md) | — |
 | `_expected_persisted_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `_normalise_section_record` | call | [section_ownership](../modules/section_ownership.md) | 1 |
 | `_scoped_hashes` | type_reference | [section_ownership](../modules/section_ownership.md) | — |

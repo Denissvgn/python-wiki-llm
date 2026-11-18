@@ -2,12 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [search_cmd](../modules/search_cmd.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 35 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 34 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -17,7 +16,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_kinds](../modules/knowledge_kinds.md)
@@ -116,9 +115,9 @@ sequenceDiagram
     p1-->>p30: Path(…).expanduser
 ```
 
-> Call sequence diagram shows 30 of 1275 interactions; 1245 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1276 interactions; 1246 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 503 (502 omitted); unresolved 1 of 354 (353 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 503 (502 omitted); unresolved 1 of 355 (354 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,7 +131,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | external | 10 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -145,9 +144,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 419; effect analysis evaluated: 307, partial: 17, unavailable: 95. Counts include steps omitted from the displayed trace.
+Source steps: 419; effect analysis evaluated: 308, partial: 16, unavailable: 95. Counts include steps omitted from the displayed trace.
 
-Collector observations for 324 source steps with known totals: observed: 1724, emitted: 1663, omitted: 61. Unavailable totals are excluded.
+Collector observations for 324 source steps with known totals: observed: 1707, emitted: 1651, omitted: 56. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

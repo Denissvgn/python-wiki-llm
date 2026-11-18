@@ -1,6 +1,6 @@
 # ValidatorRegistry
 
-**Location:** `src/llm_wiki_cli/services/knowledge_validators.py:64`
+**Location:** `src/llm_wiki_engine/knowledge_validators.py:66`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_validators](../modules/knowledge_validators.md)
@@ -34,11 +34,11 @@ Ordered model validators plus the modules that define core parsing.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ValidatorRegistry (src/llm_wiki_cli/services/knowledge_validators.py)"]
+    n0["ValidatorRegistry (src/llm_wiki_engine/knowledge_validators.py)"]
     n1["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["current_validators (src/llm_wiki_cli/services/knowledge_validators.py)"]
-    n3["using_validators (src/llm_wiki_cli/services/knowledge_validators.py)"]
-    n4["ValidatorRegistry.with_validator (src/llm_wiki_cli/services/knowledge_validators.py)"]
+    n2["current_validators (src/llm_wiki_engine/knowledge_validators.py)"]
+    n3["using_validators (src/llm_wiki_engine/knowledge_validators.py)"]
+    n4["ValidatorRegistry.with_validator (src/llm_wiki_engine/knowledge_validators.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -1,6 +1,6 @@
 # ConceptFreshnessBasis
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:202`
+**Location:** `src/llm_wiki_engine/knowledge_freshness.py:202`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -39,10 +39,10 @@ does not establish compatible evidence, freshness or a committed repair.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptFreshnessBasis (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n1["_live_basis_details (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n2["_recorded_basis_details (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n3["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n0["ConceptFreshnessBasis (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n1["_live_basis_details (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n2["_recorded_basis_details (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n3["_result (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

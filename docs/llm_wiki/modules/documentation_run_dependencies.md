@@ -21,12 +21,8 @@ Imports shared by the mechanically split lifecycle modules.
 | `..documentation_review` | `DocumentationReviewError`, `DocumentationReviewLedger`, `DocumentationReviewPacket`, `apply_review_loop`, `create_review_ledger`, `normalize_review_findings`, `reconcile_review_ledger` |
 | `..documentation_wiki_input` | `SUPPORTED_MANIFEST_VERSIONS` |
 | `..documentation_worklist` | `DOCUMENTATION_WORKLIST_SCHEMA_VERSION`, `build_documentation_worklist` |
-| `..knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `..knowledge_consumption` | `KnowledgeReadView` |
-| `..knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `..skills` | `REFERENCE_DEPENDENT_SKILLS`, `REFERENCE_SKILL_ID`, `export_skills`, `list_bundled_skills` |
 | `..source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `..verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
 | `__future__` | `annotations` |
 | `copy` | `copy` |
 | `dataclasses` | `dataclass`, `field` |
@@ -38,8 +34,12 @@ Imports shared by the mechanically split lifecycle modules.
 | `llm_wiki_engine.contracts` | `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_SEMANTIC_READINESS_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION` |
 | `llm_wiki_engine.filesystem_guard` | `WindowsDirectoryGuardError`, `guard_windows_directory_chain` |
 | `llm_wiki_engine.io` | `read_md`, `write_bytes_atomic`, `write_text_output` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs` |
 | `llm_wiki_engine.validation` | `parse_utc_timestamp`, `portable_path_key`, `require_exact_fields`, `require_nonempty_text`, `require_portable_relative_path`, `require_sha256`, `require_trimmed_text_list`, `resolve_workspace_path` |
+| `llm_wiki_engine.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
 | `llm_wiki_engine.wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `strip_fenced_code_blocks` |
 | `llm_wiki_engine.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `os` | `os` |

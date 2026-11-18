@@ -2,16 +2,15 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [site_cmd](../modules/site_cmd.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 30 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 29 more
 
 **Complete modules touched:**
 
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -111,9 +110,9 @@ sequenceDiagram
     p1-->>p30: (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)
 ```
 
-> Call sequence diagram shows 30 of 2522 interactions; 2492 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2524 interactions; 2494 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 667 (666 omitted); unresolved 1 of 790 (789 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 667 (666 omitted); unresolved 1 of 793 (792 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/site_cmd.py:_hub_requested` | 17 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
-> Omission summary shows 8 of 555 groups; 547 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 556 groups; 548 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1066; effect analysis evaluated: 726, partial: 47, unavailable: 293. Counts include steps omitted from the displayed trace.
+Source steps: 1065; effect analysis evaluated: 727, partial: 45, unavailable: 293. Counts include steps omitted from the displayed trace.
 
-Collector observations for 773 source steps with known totals: observed: 4484, emitted: 4204, omitted: 280. Unavailable totals are excluded.
+Collector observations for 772 source steps with known totals: observed: 4440, emitted: 4166, omitted: 274. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

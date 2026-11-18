@@ -1,6 +1,6 @@
 # knowledge_consumption Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_consumption.py`
+**Path:** `src/llm_wiki_engine/knowledge_consumption.py`
 
 ## Description
 
@@ -21,7 +21,6 @@ rather than treating a fresh basis as an owning commit or review.
 
 | Source | Symbols |
 |--------|---------|
-| `.implementation_evidence` | `ImplementationReport`, `ImplementationReport`, `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `compare_knowledge_implementation`, `compare_knowledge_implementation` |
 | `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `LiveKnowledgeEvaluation`, `evaluate_knowledge_freshness` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
@@ -35,6 +34,8 @@ rather than treating a fresh basis as an owning commit or review.
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.knowledge_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
@@ -46,7 +47,7 @@ rather than treating a fresh basis as an owning commit or review.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n1["src/llm_wiki_engine/knowledge_consumption.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_consumption.md"
@@ -59,21 +60,21 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (24) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeAvailability](../entities/KnowledgeAvailability.md) | Enum | 46 | `str`, `Enum` | Knowledge capability available to every native read consumer. |
-| [KnowledgeReadMode](../entities/KnowledgeReadMode.md) | Enum | 55 | `str`, `Enum` | Whether a read session evaluates live concept freshness. |
-| [KnowledgeReadReason](../entities/KnowledgeReadReason.md) | Enum | 63 | `str`, `Enum` | Stable cross-consumer reasons for knowledge availability. |
-| [MachineVerificationAvailability](../entities/MachineVerificationAvailability.md) | Enum | 78 | `str`, `Enum` | Whether the read session evaluated a disposable machine receipt. |
-| [MachineVerificationReadView](../entities/MachineVerificationReadView.md) | Class | 116 | — | One receipt evaluation shared by all consumers in a read operation. |
-| [KnowledgeReadCounts](../entities/KnowledgeReadCounts.md) | Class | 270 | — | Aggregate counts derived only from a ready knowledge projection. |
-| [KnowledgeReadView](../entities/KnowledgeReadView.md) | Class | 292 | — | Validated, immutable-by-contract state for one native read operation. |
+| [KnowledgeAvailability](../entities/KnowledgeAvailability.md) | Enum | 49 | `str`, `Enum` | Knowledge capability available to every native read consumer. |
+| [KnowledgeReadMode](../entities/KnowledgeReadMode.md) | Enum | 58 | `str`, `Enum` | Whether a read session evaluates live concept freshness. |
+| [KnowledgeReadReason](../entities/KnowledgeReadReason.md) | Enum | 66 | `str`, `Enum` | Stable cross-consumer reasons for knowledge availability. |
+| [MachineVerificationAvailability](../entities/MachineVerificationAvailability.md) | Enum | 81 | `str`, `Enum` | Whether the read session evaluated a disposable machine receipt. |
+| [MachineVerificationReadView](../entities/MachineVerificationReadView.md) | Class | 119 | — | One receipt evaluation shared by all consumers in a read operation. |
+| [KnowledgeReadCounts](../entities/KnowledgeReadCounts.md) | Class | 273 | — | Aggregate counts derived only from a ready knowledge projection. |
+| [KnowledgeReadView](../entities/KnowledgeReadView.md) | Class | 295 | — | Validated, immutable-by-contract state for one native read operation. |
 
 ## Functions
 

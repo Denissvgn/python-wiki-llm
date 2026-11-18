@@ -1,6 +1,6 @@
 # ContextResponseError
 
-**Location:** `src/llm_wiki_cli/services/context_response_format.py:40`
+**Location:** `src/llm_wiki_cli/services/context_response_format.py:41`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_response_format](../modules/context_response_format.md)

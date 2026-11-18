@@ -1,6 +1,6 @@
 # maintenance_evidence Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_evidence.py`
+**Path:** `src/llm_wiki_engine/maintenance_evidence.py`
 
 ## Description
 
@@ -13,16 +13,15 @@ capture; omitted declarations and unselected inputs cannot prove deletion.
 
 | Source | Symbols |
 |--------|---------|
-| `.implementation_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `validate_concept_implementation`, `validate_implementation_evidence` |
 | `.knowledge_storage` | `digest` |
 | `.maintenance_state` | `MaintenanceError`, `canonical_hash`, `maintenance_core`, `new_identity`, `validate_maintenance_adoption`, `validate_maintenance_state`, `_maintenance_reconciliation`, `_has_reconciliation_owner` |
-| `.python_implementation` | `comparison_id` |
-| `.sync_transitions` | `PageTransitionPlan` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.integrations` | `attributes`, `provider` |
+| `llm_wiki_engine.knowledge_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY` |
 | `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
 | `llm_wiki_engine.section_ownership` | `SectionOwnership`, `observe_page_sections` |
 | `typing` | `Any`, `Callable` |
@@ -34,7 +33,7 @@ capture; omitted declarations and unselected inputs cannot prove deletion.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/maintenance_evidence.py"]
+    n1["src/llm_wiki_engine/maintenance_evidence.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/maintenance_evidence.md"
@@ -47,22 +46,25 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (8) |
+| Outbound | `src` (7) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 101 | — | — |
-| [_StrictMaintenanceReconciliation](../entities/StrictMaintenanceReconciliation.md) | 548 | — | — |
-| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 709 | — | — |
+| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 111 | — | — |
+| [_StrictMaintenanceReconciliation](../entities/StrictMaintenanceReconciliation.md) | 558 | — | — |
+| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 719 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `validate_concept_implementation` | `(*args, **kwargs)` | — | — |
+| `validate_implementation_evidence` | `(*args, **kwargs)` | — | — |
+| `comparison_id` | `(*args, **kwargs)` | — | — |
 | `captured_semantic_sections` | `(markdown: str, page_locator: str, page_kind, *, raw_content: bytes \| None = None) -> dict` | — | Exact raw section bytes joined to existing normalized ownership locators. |
 | `owner_key` | `(coordinate, target) -> str` | — | — |
 | `_mapping_values` | `(mapping)` | — | — |

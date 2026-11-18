@@ -2,17 +2,16 @@
 
 **Entry point:** `validate_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), [filesystem_guard](../modules/filesystem_guard.md), and 30 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 29 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
-- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -23,7 +22,7 @@
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
@@ -111,23 +110,23 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2480 interactions; 2450 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2471 interactions; 2441 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 710 (709 omitted); unresolved 1 of 429 (428 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 706 (705 omitted); unresolved 1 of 427 (426 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/maintenance_state.py:maintenance_core` | 3 | [src/llm_wiki_cli/services/maintenance_state.py](../modules/maintenance_state.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validator_identity` | 2 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validator_identity` | 2 | [src/llm_wiki_cli/services/knowledge_validators.py](../modules/knowledge_validators.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_validators.py:current_validators` | 6 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validator_identity` | 2 | [src/llm_wiki_cli/services/knowledge_kinds.py](../modules/knowledge_kinds.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_kinds.py:current_kinds` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validator_identity` | 2 | - | external | 5 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validator_identity` | 2 | [src/llm_wiki_cli/services/knowledge_index.py](../modules/knowledge_index.md) | internal | 2 |
-> Omission summary shows 8 of 579 groups; 571 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/maintenance_state.py:maintenance_core` | 3 | [src/llm_wiki_engine/integrations.py](../modules/integrations.md) | internal | 1 |
+| `src/llm_wiki_engine/integrations.py:attributes` | 4 | [src/llm_wiki_engine/integrations.py](../modules/integrations.md) | internal | 1 |
+| `src/llm_wiki_engine/integrations.py:provider` | 5 | - | external | 2 |
+| `src/llm_wiki_engine/integrations.py:provider` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_engine/integrations.py:provider` | 5 | [src/llm_wiki_engine/integrations.py](../modules/integrations.md) | internal | 1 |
+| `src/llm_wiki_engine/integrations.py:attributes` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/maintenance_state.py:maintenance_core` | 3 | [src/llm_wiki_engine/maintenance_state.py](../modules/maintenance_state.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_index.py:_validator_identity` | 2 | - | unresolved | 3 |
+> Omission summary shows 8 of 583 groups; 575 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1342; effect analysis evaluated: 762, partial: 41, unavailable: 539. Counts include steps omitted from the displayed trace.
+Source steps: 1339; effect analysis evaluated: 758, partial: 41, unavailable: 540. Counts include steps omitted from the displayed trace.
 
-Collector observations for 803 source steps with known totals: observed: 4099, emitted: 3914, omitted: 185. Unavailable totals are excluded.
+Collector observations for 799 source steps with known totals: observed: 4053, emitted: 3868, omitted: 185. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -153,48 +152,48 @@ Collector observations for 803 source steps with known totals: observed: 4099, e
 | `validate_knowledge_artifacts` | `available` | `partial` | `available` | `26` | `17` | `9` |
 | `_validator_identity` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `maintenance_core` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `attributes` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `provider` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `ValueError (src/llm_wiki_engine/integrations.py:provider)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_PROVIDED.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `IntegrationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `importlib.import_module` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/integrations.py:attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_engine/integrations.py:attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `MaintenanceCore` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `current_validators().identity` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_validators` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `_ACTIVE_VALIDATORS.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_kinds().identity` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_kinds` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `_ACTIVE_KINDS.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…ex.py:_validator_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_validation_callable_identity` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. validate_knowledge_artifacts"]
     s2["2. _validator_identity"]
     s3["3. maintenance_core"]
-    s4["4. MaintenanceCore"]
-    s5["5. current_validators().identity"]
-    s6["6. current_validators"]
-    s7["7. _ACTIVE_VALIDATORS.get"]
-    s8["8. current_kinds().identity"]
-    s9["9. current_kinds"]
-    s10["10. _ACTIVE_KINDS.get"]
-    s11["11. tuple (src/llm_wiki_cli/services…ex.py:_validator_identity)"]
-    s12["12. _validation_callable_identity"]
+    s4["4. attributes"]
+    s5["5. provider"]
+    s6["6. ValueError (src/llm_wiki_engine/integrations.py:provider)"]
+    s7["7. _PROVIDED.get"]
+    s8["8. IntegrationUnavailable"]
+    s9["9. importlib.import_module"]
+    s10["10. tuple (src/llm_wiki_engine/integrations.py:attributes)"]
+    s11["11. getattr (src/llm_wiki_engine/integrations.py:attributes)"]
+    s12["12. MaintenanceCore"]
     s1 -->|"_validator_identity(data not statically known)"| s2
     s2 -->|"maintenance_core(data not statically known)"| s3
-    s3 -->|"MaintenanceCore(validate_implementation_evidence)"| s4
-    s2 -. "current_validators().identity(data not statically known)" .-> s5
-    s2 -->|"current_validators(data not statically known)"| s6
-    s6 -. "_ACTIVE_VALIDATORS.get(data not statically known)" .-> s7
-    s2 -. "current_kinds().identity(data not statically known)" .-> s8
-    s2 -->|"current_kinds(data not statically known)"| s9
-    s9 -. "_ACTIVE_KINDS.get(data not statically known)" .-> s10
-    s2 -. "tuple (src/llm_wiki_cli/services…ex.py:_validator_identity)(...)" .-> s11
-    s2 -->|"_validation_callable_identity(getattr(...))"| s12
+    s3 -->|"attributes('implementation_evidence', 'validate_implementation_evidence')"| s4
+    s4 -->|"provider(capability)"| s5
+    s5 -. "ValueError (src/llm_wiki_engine/integrations.py:provider)(...)" .-> s6
+    s5 -. "_PROVIDED.get(capability)" .-> s7
+    s5 -->|"IntegrationUnavailable(...)"| s8
+    s5 -. "importlib.import_module(module)" .-> s9
+    s4 -. "tuple (src/llm_wiki_engine/integrations.py:attributes)(...)" .-> s10
+    s4 -. "getattr (src/llm_wiki_engine/integrations.py:attributes)(module, name)" .-> s11
+    s3 -->|"MaintenanceCore(validate_implementation_evidence)"| s12
     click s1 "../modules/knowledge_artifacts.md"
     click s2 "../modules/knowledge_index.md"
     click s3 "../modules/maintenance_state.md"
-    click s4 "../modules/maintenance_state.md"
-    click s6 "../modules/knowledge_validators.md"
-    click s9 "../modules/knowledge_kinds.md"
-    click s12 "../modules/knowledge_index.md"
+    click s4 "../modules/integrations.md"
+    click s5 "../modules/integrations.md"
+    click s8 "../modules/integrations.md"
+    click s12 "../modules/maintenance_state.md"
 ```
 
 ### Step data
@@ -204,31 +203,31 @@ flowchart LR
 | `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest`, `object_reader: Callable[[str, int], bytes] \| None`, `wiki_dir: str \| Path \| None`, `_validation_receipt: object \| None`, `_receipt_wiki_root: Path \| None`, `_storage_validation_receipt: object \| None` | `STORE_SCHEMA`, `PACKED_SCHEMAS`, `STORE_SCHEMA`, `PACKED_SCHEMAS`, `KNOWLEDGE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MAX_EXPANDED_BYTES` | - | `_validate_artifact_parity(...)` |
 | `_validator_identity` | - | `KNOWLEDGE_SCHEMA_VERSION` | - | `(...)` |
 | `maintenance_core` | - | `_CORE`, `_CORE` | `_CORE` | `_CORE` |
+| `attributes` | `capability: str`, `names: str` | - | - | `tuple(...)` |
+| `provider` | `capability: str` | `CAPABILITIES`, `CAPABILITIES` | - | `importlib.import_module(...)` |
+| `ValueError (src/llm_wiki_engine/integrations.py:provider)` | - | - | - | - |
+| `_PROVIDED.get` | - | - | - | - |
+| `IntegrationUnavailable` | - | - | - | - |
+| `importlib.import_module` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/integrations.py:attributes)` | - | - | - | - |
+| `getattr (src/llm_wiki_engine/integrations.py:attributes)` | - | - | - | - |
 | `MaintenanceCore` | - | - | - | - |
-| `current_validators().identity` | - | - | - | - |
-| `current_validators` | - | `DEFAULT_VALIDATORS` | - | `...` |
-| `_ACTIVE_VALIDATORS.get` | - | - | - | - |
-| `current_kinds().identity` | - | - | - | - |
-| `current_kinds` | - | `DEFAULT_KINDS` | - | `...` |
-| `_ACTIVE_KINDS.get` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…ex.py:_validator_identity)` | - | - | - | - |
-| `_validation_callable_identity` | `function`, `active` | `partial` | - | `(...)`, `(...)`, `(...)` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | _validator_identity | 316 | `_validator_identity(data not statically known)` |
+| validate_knowledge_artifacts | _validator_identity | 318 | `_validator_identity(data not statically known)` |
 | _validator_identity | maintenance_core | 374 | `maintenance_state.maintenance_core(data not statically known)` |
-| maintenance_core | MaintenanceCore | 958 | `MaintenanceCore(validate_implementation_evidence)` |
-| _validator_identity | current_validators().identity | 377 | `current_validators().identity(data not statically known)` |
-| _validator_identity | current_validators | 377 | `current_validators(data not statically known)` |
-| current_validators | _ACTIVE_VALIDATORS.get | 184 | `_ACTIVE_VALIDATORS.get(data not statically known)` |
-| _validator_identity | current_kinds().identity | 378 | `current_kinds().identity(data not statically known)` |
-| _validator_identity | current_kinds | 378 | `current_kinds(data not statically known)` |
-| current_kinds | _ACTIVE_KINDS.get | 266 | `_ACTIVE_KINDS.get(data not statically known)` |
-| _validator_identity | tuple (src/llm_wiki_cli/services…ex.py:_validator_identity) | 379 | `tuple(...)` |
-| _validator_identity | _validation_callable_identity | 379 | `_validation_callable_identity(getattr(...))` |
+| maintenance_core | attributes | 958 | `attributes('implementation_evidence', 'validate_implementation_evidence')` |
+| attributes | provider | 83 | `provider(capability)` |
+| provider | ValueError (src/llm_wiki_engine/integrations.py:provider) | 72 | `ValueError(...)` |
+| provider | _PROVIDED.get | 73 | `_PROVIDED.get(capability)` |
+| provider | IntegrationUnavailable | 75 | `IntegrationUnavailable(...)` |
+| provider | importlib.import_module | 78 | `importlib.import_module(module)` |
+| attributes | tuple (src/llm_wiki_engine/integrations.py:attributes) | 84 | `tuple(...)` |
+| attributes | getattr (src/llm_wiki_engine/integrations.py:attributes) | 84 | `getattr(module, name)` |
+| maintenance_core | MaintenanceCore | 960 | `MaintenanceCore(validate_implementation_evidence)` |
 
 ### Boundary effects
 
@@ -238,10 +237,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validator_identity` | `current_validators().identity` | 377 |
-| unresolved_call | `current_validators` | `_ACTIVE_VALIDATORS.get` | 184 |
-| unresolved_call | `_validator_identity` | `current_kinds().identity` | 378 |
-| unresolved_call | `current_kinds` | `_ACTIVE_KINDS.get` | 266 |
+| external_call | `provider` | `ValueError` | 72 |
+| unresolved_call | `provider` | `_PROVIDED.get` | 73 |
+| external_call | `provider` | `importlib.import_module` | 78 |
+| external_call | `attributes` | `getattr` | 84 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

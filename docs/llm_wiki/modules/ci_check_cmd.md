@@ -23,13 +23,13 @@ best effort.
 | `..services.extraction_jobs` | `extraction_job_request_from_args`, `print_extraction_job_plan` |
 | `..services.health_summary` | `ASSURANCE_DISCLOSURE`, `ci_health_rows`, `summary_cell` |
 | `..services.inventory_cache` | `InventoryCacheStats`, `cache_options_from_args`, `format_cache_stats`, `prepare_cache_options` |
-| `..services.knowledge_storage_diagnostics` | `storage_report` |
 | `..services.lint_service` | `LintIssue`, `build_report`, `render_markdown`, `render_text`, `report_to_dict` |
 | `..services.metrics` | `record_validation_event` |
 | `__future__` | `annotations` |
 | `dataclasses` | `replace` |
 | `json` | `json` |
 | `llm_wiki_engine.io` | `write_bytes_atomic` |
+| `llm_wiki_engine.knowledge_storage_diagnostics` | `storage_report` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `prepare_destination`, `stderr_warning` |
 | `pathlib` | `Path` |

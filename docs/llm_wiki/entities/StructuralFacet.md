@@ -1,6 +1,6 @@
 # StructuralFacet
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:372`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:374`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `StructuralFacet` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `StructuralFacet` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -29,10 +29,10 @@ _Auto-generated from `StructuralFacet` in `src/llm_wiki_cli/services/knowledge_m
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["StructuralFacet (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_structural_facet (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_parse_structural_facet (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["StructuralFacet (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_require_structure_state (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_structural_facet (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_parse_structural_facet (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

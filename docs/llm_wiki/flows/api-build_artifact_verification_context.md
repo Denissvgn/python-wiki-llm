@@ -2,22 +2,19 @@
 
 **Entry point:** `build_artifact_verification_context` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [implementation_evidence](../modules/implementation_evidence.md), and 14 more
+**Modules touched:** [integrations](../modules/integrations.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), and 10 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
-- [canonical_json](../modules/canonical_json.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
-- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -60,7 +57,7 @@ sequenceDiagram
     participant p26 as _validated_reserved_extensions
     participant p27 as _validate_index_references
     participant p28 as require_nonempty_text
-    participant p29 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
+    participant p29 as isinstance (src/llm_wiki_engine/verif…fact_verification_context)
     participant p30 as knowledge.extensions.get
     p0->>p1: _sha256
     p0->>p2: knowledge_index_to_payload
@@ -90,19 +87,19 @@ sequenceDiagram
     p12->>p26: _validated_reserved_extensions
     p12->>p27: _validate_index_references
     p16->>p28: require_nonempty_text
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
+    p0-->>p29: isinstance (src/llm_wiki_engine/verif…fact_verification_context)(knowledge, KnowledgeIndex)
     p0-->>p30: knowledge.extensions.get(governance_key)
 ```
 
-> Call sequence diagram shows 30 of 784 interactions; 754 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 699 interactions; 669 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 187 (186 omitted); unresolved 1 of 97 (96 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 143 (142 omitted); unresolved 1 of 86 (85 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/verification_contracts.py:build_artifact_verification_context` | 1 | - | external | 8 |
+| `src/llm_wiki_engine/verification_contracts.py:build_artifact_verification_context` | 1 | - | external | 8 |
 | `src/llm_wiki_engine/validation.py:require_sha256` | 5 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:require_sha256` | 5 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 7 | - | external | 1 |
@@ -110,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | - | unresolved | 1 |
-> Omission summary shows 8 of 184 groups; 176 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 169 groups; 161 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 501; effect analysis evaluated: 349, partial: 7, unavailable: 145. Counts include steps omitted from the displayed trace.
+Source steps: 471; effect analysis evaluated: 318, partial: 7, unavailable: 146. Counts include steps omitted from the displayed trace.
 
-Collector observations for 356 source steps with known totals: observed: 1636, emitted: 1519, omitted: 117. Unavailable totals are excluded.
+Collector observations for 325 source steps with known totals: observed: 1499, emitted: 1382, omitted: 117. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -134,8 +131,8 @@ Collector observations for 356 source steps with known totals: observed: 1636, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `build_artifact_verification_context` | `available` | `partial` | `available` | `15` | `14` | `1` |
-| `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/verif…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_sha256` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_sha256` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `isinstance (src/llm_wiki_engine/validation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -149,8 +146,8 @@ Collector observations for 356 source steps with known totals: observed: 1636, e
 ```mermaid
 flowchart LR
     s1["1. build_artifact_verification_context"]
-    s2["2. isinstance (src/llm_wiki_cli/services…fact_verification_context)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…fact_verification_context)"]
+    s2["2. isinstance (src/llm_wiki_engine/verif…fact_verification_context)"]
+    s3["3. TypeError (src/llm_wiki_engine/verif…fact_verification_context)"]
     s4["4. _sha256"]
     s5["5. require_sha256"]
     s6["6. isinstance (src/llm_wiki_engine/validation.py:require_sha256)"]
@@ -160,8 +157,8 @@ flowchart LR
     s10["10. require_trimmed_text"]
     s11["11. require_nonempty_text"]
     s12["12. isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…fact_verification_context)('knowledge must be a KnowledgeIndex')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/verif…fact_verification_context)(knowledge, KnowledgeIndex)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_engine/verif…fact_verification_context)('knowledge must be a KnowledgeIndex')" .-> s3
     s1 -->|"_sha256(knowledge_hash, 'knowledge_hash')"| s4
     s4 -->|"require_sha256(value, digest_error=VerificationContractError(...))"| s5
     s5 -. "isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)" .-> s6
@@ -184,8 +181,8 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_artifact_verification_context` | `knowledge: KnowledgeIndex`, `knowledge_hash: str`, `surface_index_hash: str`, `evaluated_envelope_hash: str`, `governance_hash: str \| None`, `scope_locator: str \| None`, `artifact_integrity: bool`, `artifact_diagnostics: Sequence[VerificationDiagnostic]` | `KnowledgeIndex`, `Mapping`, `Mapping` | `evidence[...]`, `evaluated_snapshot[...]` | `VerificationContext(...)` |
-| `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…fact_verification_context)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/verif…fact_verification_context)` | - | - | - | - |
 | `_sha256` | `value: object`, `field_name: str` | - | - | `require_sha256(...)` |
 | `require_sha256` | `value: object`, `digest_error: _ValidationError`, `text_error: _ValidationError \| None`, `error_context: str`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
 | `isinstance (src/llm_wiki_engine/validation.py:require_sha256)` | - | - | - | - |
@@ -200,8 +197,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_artifact_verification_context | isinstance (src/llm_wiki_cli/services…fact_verification_context) | 352 | `isinstance(knowledge, KnowledgeIndex)` |
-| build_artifact_verification_context | TypeError (src/llm_wiki_cli/services…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| build_artifact_verification_context | isinstance (src/llm_wiki_engine/verif…fact_verification_context) | 352 | `isinstance(knowledge, KnowledgeIndex)` |
+| build_artifact_verification_context | TypeError (src/llm_wiki_engine/verif…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
 | build_artifact_verification_context | _sha256 | 354 | `_sha256(knowledge_hash, 'knowledge_hash')` |
 | _sha256 | require_sha256 | 1454 | `require_sha256(value, digest_error=VerificationContractError(...))` |
 | require_sha256 | isinstance (src/llm_wiki_engine/validation.py:require_sha256) | 1159 | `isinstance(value, str)` |

@@ -1,6 +1,6 @@
 # ConceptKindSpec
 
-**Location:** `src/llm_wiki_cli/services/knowledge_kinds.py:68`
+**Location:** `src/llm_wiki_engine/knowledge_kinds.py:68`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_kinds](../modules/knowledge_kinds.md)
@@ -31,11 +31,11 @@ One concept kind and the page kinds its concepts may appear on.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptKindSpec (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n0["ConceptKindSpec (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1["src/llm_wiki_cli/engine/__init__.py"]
-    n2["_builtin_concept_specs (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n3["KindRegistry._check_concept (src/llm_wiki_cli/services/knowledge_kinds.py)"]
-    n4["KindRegistry.with_concept_kind (src/llm_wiki_cli/services/knowledge_kinds.py)"]
+    n2["_builtin_concept_specs (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n3["KindRegistry._check_concept (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n4["KindRegistry.with_concept_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

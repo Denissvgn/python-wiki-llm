@@ -2,13 +2,12 @@
 
 **Entry point:** `get_maintenance_status` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 65 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 66 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [context_packet](../modules/context_packet.md)
@@ -26,10 +25,11 @@
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -44,7 +44,7 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
@@ -58,6 +58,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
@@ -94,24 +95,24 @@ sequenceDiagram
     participant p8 as capture_committed_knowledge
     participant p9 as build_maintenance_status
     participant p10 as _capture
-    participant p11 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    participant p12 as capture_context_read
-    participant p13 as _wiki_files
-    participant p14 as first_unsafe_path_component
-    participant p15 as guard_incomplete_bootstrap
-    participant p16 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    participant p17 as load_adoption_marker
-    participant p18 as SyncManifest.load
-    participant p19 as _decode_json_object
-    participant p20 as validate_knowledge_artifacts
-    participant p21 as canonical_hash
-    participant p22 as owner_key
-    participant p23 as compare_implementation_observations
-    participant p24 as _validate_range
-    participant p25 as _validator_identity
-    participant p26 as pending_bootstrap
-    participant p27 as _storage_validator_identity
-    participant p28 as require
+    participant p11 as maintenance_report_from_captured (src/llm_wiki_cli/services/maintenance_service.py)
+    participant p12 as read_guarded (src/llm_wiki_engine/knowledge_storage_io.py)
+    participant p13 as capture_context_read
+    participant p14 as _wiki_files
+    participant p15 as first_unsafe_path_component
+    participant p16 as attributes
+    participant p17 as _identity (src/llm_wiki_engine/maintenance_state.py)
+    participant p18 as load_adoption_marker
+    participant p19 as SyncManifest.load
+    participant p20 as _decode_json_object
+    participant p21 as capture_maintenance_observations
+    participant p22 as validate_knowledge_artifacts
+    participant p23 as _native_prose_coherent
+    participant p24 as canonical_hash
+    participant p25 as owner_key
+    participant p26 as compare_implementation_observations
+    participant p27 as _validate_range
+    participant p28 as provider
     participant p29 as type (src/llm_wiki_cli/api.py:get_maintenance_status)
     participant p30 as prior.assert_current
     p0->>p1: get_maintenance_status_authority
@@ -124,31 +125,31 @@ sequenceDiagram
     p1->>p8: capture_committed_knowledge
     p1->>p9: build_maintenance_status
     p1->>p10: _capture
-    p6->>p11: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    p10->>p12: capture_context_read
-    p6->>p13: _wiki_files
-    p5->>p14: first_unsafe_path_component
-    p7->>p15: guard_incomplete_bootstrap
-    p4->>p16: _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    p7->>p17: load_adoption_marker
-    p7->>p18: SyncManifest.load
-    p8->>p19: _decode_json_object
-    p8->>p20: validate_knowledge_artifacts
-    p9->>p21: canonical_hash
-    p9->>p22: owner_key
-    p9->>p23: compare_implementation_observations
-    p11->>p24: _validate_range
-    p20->>p25: _validator_identity
-    p15->>p26: pending_bootstrap
-    p20->>p27: _storage_validator_identity
-    p16->>p28: require
+    p1->>p11: maintenance_report_from_captured (src/llm_wiki_cli/services/maintenance_service.py)
+    p6->>p12: read_guarded (src/llm_wiki_engine/knowledge_storage_io.py)
+    p10->>p13: capture_context_read
+    p6->>p14: _wiki_files
+    p5->>p15: first_unsafe_path_component
+    p7->>p16: attributes
+    p4->>p17: _identity (src/llm_wiki_engine/maintenance_state.py)
+    p7->>p18: load_adoption_marker
+    p7->>p19: SyncManifest.load
+    p8->>p20: _decode_json_object
+    p11->>p21: capture_maintenance_observations
+    p8->>p22: validate_knowledge_artifacts
+    p11->>p23: _native_prose_coherent
+    p9->>p24: canonical_hash
+    p9->>p25: owner_key
+    p9->>p26: compare_implementation_observations
+    p12->>p27: _validate_range
+    p16->>p28: provider
     p0-->>p29: type (src/llm_wiki_cli/api.py:get_maintenance_status)(live)
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2424 interactions; 2394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2567 interactions; 2537 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 829 (828 omitted); unresolved 1 of 571 (570 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 851 (850 omitted); unresolved 1 of 631 (630 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,12 +158,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:get_maintenance_status` | 1 | - | external | 3 |
 | `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | - | external | 2 |
-| `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | [src/llm_wiki_cli/services/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 1 |
-| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | - | external | 2 |
-| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
-| `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 596 groups; 588 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | [src/llm_wiki_engine/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 1 |
+| `src/llm_wiki_engine/maintenance_state.py:_identity` | 15 | - | external | 2 |
+| `src/llm_wiki_engine/maintenance_state.py:_identity` | 15 | [src/llm_wiki_engine/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
+| `src/llm_wiki_engine/maintenance_shapes.py:require` | 18 | [src/llm_wiki_engine/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
+> Omission summary shows 8 of 628 groups; 620 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -175,9 +176,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1025; effect analysis evaluated: 645, partial: 62, unavailable: 318. Counts include steps omitted from the displayed trace.
+Source steps: 1086; effect analysis evaluated: 676, partial: 64, unavailable: 346. Counts include steps omitted from the displayed trace.
 
-Collector observations for 707 source steps with known totals: observed: 4618, emitted: 4357, omitted: 261. Unavailable totals are excluded.
+Collector observations for 740 source steps with known totals: observed: 4763, emitted: 4495, omitted: 268. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

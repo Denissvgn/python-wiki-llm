@@ -1,6 +1,6 @@
 # StorageReadSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:313`
+**Location:** `src/llm_wiki_engine/knowledge_storage_io.py:313`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -33,19 +33,19 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["StorageReadSession (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
+    n0["StorageReadSession (src/llm_wiki_engine/knowledge_storage_io.py)"]
     n1["_write (src/llm_wiki_cli/commands/publication_candidate_cmd.py)"]
     n2["_write (src/llm_wiki_cli/commands/publication_cmd.py)"]
     n3["run (src/llm_wiki_cli/commands/reference_cmd.py)"]
     n4["inspect_targets (src/llm_wiki_cli/services/analysis_targets.py)"]
-    n5["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n6["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
-    n7["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
-    n8["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n9["_referenced_storage_report (src/llm_wiki_cli/services/knowledge_storage_diagnostics.py)"]
-    n10["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n11["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n12["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n6["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
+    n7["_prepare (src/llm_wiki_cli/services/publication_candidate.py)"]
+    n8["_provider (src/llm_wiki_cli/services/publication_candidate.py)"]
+    n9["_read_tree (src/llm_wiki_cli/services/publication_candidate.py)"]
+    n10["_file_hash (src/llm_wiki_cli/services/publication_impact.py)"]
+    n11["_target_hash (src/llm_wiki_cli/services/publication_impact.py)"]
+    n12["capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -63,14 +63,14 @@ flowchart LR
     click n2 "../modules/publication_cmd.md"
     click n3 "../modules/reference_cmd.md"
     click n4 "../modules/analysis_targets.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_maintenance.md"
-    click n7 "../modules/knowledge_reuse.md"
-    click n8 "../modules/knowledge_storage_access.md"
-    click n9 "../modules/knowledge_storage_diagnostics.md"
-    click n10 "../modules/knowledge_storage_lifecycle.md"
-    click n11 "../modules/knowledge_storage_lifecycle.md"
-    click n12 "../modules/knowledge_storage_lifecycle.md"
+    click n5 "../modules/knowledge_maintenance.md"
+    click n6 "../modules/knowledge_reuse.md"
+    click n7 "../modules/publication_candidate.md"
+    click n8 "../modules/publication_candidate.md"
+    click n9 "../modules/publication_candidate.md"
+    click n10 "../modules/publication_impact.md"
+    click n11 "../modules/publication_impact.md"
+    click n12 "../modules/publication_impact.md"
 ```
 
 ### Summary
@@ -87,13 +87,13 @@ flowchart LR
 | `_write` | call | [publication_cmd](../modules/publication_cmd.md) | 1 |
 | `run` | call | [reference_cmd](../modules/reference_cmd.md) | 1 |
 | `inspect_targets` | call | [analysis_targets](../modules/analysis_targets.md) | 1 |
-| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 1 |
-| `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
-| `_referenced_storage_report` | call | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) | 1 |
-| `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_prepare` | call | [publication_candidate](../modules/publication_candidate.md) | 1 |
+| `_provider` | call | [publication_candidate](../modules/publication_candidate.md) | 2 |
+| `_read_tree` | call | [publication_candidate](../modules/publication_candidate.md) | 1 |
+| `_file_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
+| `_target_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
+| `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 2 |
 
 > References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

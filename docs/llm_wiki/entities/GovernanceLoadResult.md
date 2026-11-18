@@ -1,6 +1,6 @@
 # GovernanceLoadResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:325`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:325`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `GovernanceLoadResult` in `src/llm_wiki_cli/services/knowledge_governance.py`._
+_Auto-generated from `GovernanceLoadResult` in `src/llm_wiki_engine/knowledge_governance.py`._
 
 ## Attributes
 
@@ -28,9 +28,9 @@ _Auto-generated from `GovernanceLoadResult` in `src/llm_wiki_cli/services/knowle
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceLoadResult (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceLoadResult (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["_prepare_existing_mutation (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
-    n2["load_governance (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["load_governance (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_governance.md"

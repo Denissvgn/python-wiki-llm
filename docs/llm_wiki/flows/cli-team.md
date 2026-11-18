@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 47 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 48 more
 
 **Complete modules touched:**
 
@@ -27,6 +27,7 @@
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
@@ -143,7 +144,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 1 |
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 20 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
-> Omission summary shows 8 of 673 groups; 665 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 674 groups; 666 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

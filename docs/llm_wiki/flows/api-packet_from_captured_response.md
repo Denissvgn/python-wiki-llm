@@ -109,12 +109,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/domain_pack.py:uses_builtin_context_source` | 2 | [src/llm_wiki_cli/services/domain_pack.py](../modules/domain_pack.md) | internal | 1 |
 | `src/llm_wiki_cli/services/domain_pack.py:current_pack` | 4 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_packet_builder.py:_packet_contract_for_request` | 7 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 12 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 12 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 12 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 21 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_packet_contract_for_request` | 7 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:hash_source_snapshot` | 12 | - | external | 3 |
+| `src/llm_wiki_engine/knowledge_envelope.py:hash_source_snapshot` | 12 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
+| `src/llm_wiki_engine/knowledge_envelope.py:hash_source_snapshot` | 12 | - | unresolved | 3 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_hash_structured` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_hash_structured` | 21 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
 > Omission summary shows 8 of 330 groups; 322 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -31,21 +31,21 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_request_format`, `context_packet_builder` |
-| `.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
+| `.` | `context_packet_builder` |
 | `.implementation_evidence` | `validate_implementation_summary` |
-| `.knowledge_envelope` | `KnowledgeEnvelopeError`, `validate_configured_public_identity` |
-| `.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
-| `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
-| `.maintenance_status` | `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
-| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine` | `context_request_format`, `wiki_surface` |
+| `llm_wiki_engine.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
 | `llm_wiki_engine.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_envelope` | `KnowledgeEnvelopeError`, `validate_configured_public_identity` |
 | `llm_wiki_engine.knowledge_evidence` | `canonical_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
+| `llm_wiki_engine.maintenance_status` | `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `llm_wiki_engine.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
 | `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |

@@ -1,6 +1,6 @@
 # MaintenanceError
 
-**Location:** `src/llm_wiki_cli/services/health_policy.py:109`
+**Location:** `src/llm_wiki_cli/services/health_policy.py:113`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [health_policy](../modules/health_policy.md)

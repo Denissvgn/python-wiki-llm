@@ -1,6 +1,6 @@
 # ReviewEvidence
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:223`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:223`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -30,11 +30,11 @@ The explicit evidence basis to which a review was authored.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ReviewEvidence (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n1["_parse_review_evidence (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n2["_review_evidence (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["add_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["current_review_evidence (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["ReviewEvidence (src/llm_wiki_engine/knowledge_governance.py)"]
+    n1["_parse_review_evidence (src/llm_wiki_engine/knowledge_governance.py)"]
+    n2["_review_evidence (src/llm_wiki_engine/knowledge_governance.py)"]
+    n3["add_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["current_review_evidence (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

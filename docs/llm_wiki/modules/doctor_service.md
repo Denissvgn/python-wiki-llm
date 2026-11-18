@@ -14,26 +14,26 @@ verification-receipt evaluation already produced by strict lint.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.extraction_jobs` | `ExtractionJobRequest` |
 | `.health_contract` | `validate_health_details` |
 | `.health_details` | `CapturedHealthDetails` |
 | `.health_policy` | `DoctorStatus`, `DOCTOR_EXIT_CODES`, `classify_health_sections` |
 | `.health_summary` | `ASSURANCE_DISCLOSURE`, `RELEASE_POLICY_UNAVAILABLE`, `assurance_rows`, `detailed_health_rows`, `health_policy`, `summary_cell` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
-| `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME` |
-| `.knowledge_model` | `ComputedFreshness`, `KnowledgeLoadState` |
-| `.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE`, `knowledge_freshness_disclosure` |
 | `.lint_service` | `LintIssue`, `LintReport`, `build_report` |
-| `.sync_manifest` | `SyncManifest` |
-| `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine` | `analysis_compatibility` |
 | `llm_wiki_engine.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `llm_wiki_engine.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `KnowledgeLoadState` |
+| `llm_wiki_engine.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE`, `knowledge_freshness_disclosure` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
+| `llm_wiki_engine.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `re` | `re` |

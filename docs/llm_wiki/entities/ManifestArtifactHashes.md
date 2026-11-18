@@ -1,6 +1,6 @@
 # ManifestArtifactHashes
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:446`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:451`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -34,11 +34,11 @@ All-or-none exact-byte commitment to the generated artifact set.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ManifestArtifactHashes (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["ManifestArtifactHashes (src/llm_wiki_engine/sync_manifest.py)"]
     n1["_validate_native_marker (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
-    n2["src/llm_wiki_cli/services/manifest_storage.py"]
-    n3["ManifestArtifactHashes.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n4["SyncManifest.with_artifact_hashes (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n2["src/llm_wiki_engine/manifest_storage.py"]
+    n3["ManifestArtifactHashes.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
+    n4["SyncManifest.with_artifact_hashes (src/llm_wiki_engine/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

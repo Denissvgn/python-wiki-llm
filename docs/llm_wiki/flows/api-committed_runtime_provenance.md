@@ -2,17 +2,16 @@
 
 **Entry point:** `committed_runtime_provenance` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 26 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), [immutable](../modules/immutable.md), and 25 more
 
 **Complete modules touched:**
 
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -24,7 +23,7 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
@@ -54,7 +53,7 @@ sequenceDiagram
     participant p7 as _absolute_path
     participant p8 as _validator_identity
     participant p9 as _storage_validator_identity
-    participant p10 as guard_incomplete_bootstrap
+    participant p10 as attributes
     participant p11 as validate_surface_index_bytes
     participant p12 as load_adoption_marker
     participant p13 as SyncManifest.load
@@ -66,13 +65,13 @@ sequenceDiagram
     participant p19 as _validated_index_data
     participant p20 as logical_digest
     participant p21 as _validate_artifact_parity
-    participant p22 as pending_bootstrap
+    participant p22 as provider
     participant p23 as _validation_module_identity
     participant p24 as _validate_surface_payload
     participant p25 as validate_knowledge_index
     participant p26 as first_unsafe_path_component
     participant p27 as _surface_page_index
-    participant p28 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    participant p28 as read_guarded (src/llm_wiki_engine/knowledge_storage_io.py)
     participant p29 as Path (src/llm_wiki_cli/services…pture_committed_knowledge)
     participant p30 as state.require_for
     p0->>p1: _previous_committed_artifacts
@@ -84,7 +83,7 @@ sequenceDiagram
     p4->>p7: _absolute_path
     p6->>p8: _validator_identity
     p6->>p9: _storage_validator_identity
-    p4->>p10: guard_incomplete_bootstrap
+    p4->>p10: attributes
     p6->>p11: validate_surface_index_bytes
     p4->>p12: load_adoption_marker
     p4->>p13: SyncManifest.load
@@ -96,34 +95,34 @@ sequenceDiagram
     p6->>p19: _validated_index_data
     p6->>p20: logical_digest
     p6->>p21: _validate_artifact_parity
-    p10->>p22: pending_bootstrap
+    p10->>p22: provider
     p9->>p23: _validation_module_identity
     p11->>p24: _validate_surface_payload
     p19->>p25: validate_knowledge_index
     p7->>p26: first_unsafe_path_component
     p11->>p27: _surface_page_index
-    p12->>p28: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    p12->>p28: read_guarded (src/llm_wiki_engine/knowledge_storage_io.py)
     p3-->>p29: Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)
     p1-->>p30: state.require_for(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 779 interactions; 749 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 782 interactions; 752 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 269 (268 omitted); unresolved 1 of 144 (143 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 272 (271 omitted); unresolved 1 of 146 (145 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 6 | - | external | 2 |
-> Omission summary shows 8 of 159 groups; 151 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_engine/maintenance_protocol.py:guard_maintenance_owner` | 6 | - | external | 2 |
+> Omission summary shows 8 of 158 groups; 150 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -136,9 +135,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 367; effect analysis evaluated: 198, partial: 24, unavailable: 145. Counts include steps omitted from the displayed trace.
+Source steps: 365; effect analysis evaluated: 196, partial: 24, unavailable: 145. Counts include steps omitted from the displayed trace.
 
-Collector observations for 222 source steps with known totals: observed: 1451, emitted: 1374, omitted: 77. Unavailable totals are excluded.
+Collector observations for 220 source steps with known totals: observed: 1438, emitted: 1361, omitted: 77. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -153,8 +152,8 @@ Collector observations for 222 source steps with known totals: observed: 1451, e
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -168,8 +167,8 @@ flowchart LR
     s5["5. Path (src/llm_wiki_cli/services…pture_committed_knowledge)"]
     s6["6. guard_maintenance_owner"]
     s7["7. _absolute_path"]
-    s8["8. Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
-    s9["9. os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
+    s8["8. Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)"]
+    s9["9. os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)"]
     s10["10. first_unsafe_path_component"]
     s11["11. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s12["12. os.fspath"]
@@ -179,8 +178,8 @@ flowchart LR
     s3 -. "Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)" .-> s5
     s3 -->|"guard_maintenance_owner(root, manifest)"| s6
     s6 -->|"_absolute_path(Path(...))"| s7
-    s7 -. "Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s8
-    s7 -. "os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(path)" .-> s9
+    s7 -. "Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s8
+    s7 -. "os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(path)" .-> s9
     s7 -->|"first_unsafe_path_component(path)"| s10
     s10 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s11
     s10 -. "os.fspath(path)" .-> s12
@@ -210,8 +209,8 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `guard_maintenance_owner` | `wiki_dir: str \| Path`, `manifest` | - | - | `None`, `None`, `marker` |
 | `_absolute_path` | `path: Path` | - | - | `path` |
-| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
@@ -225,9 +224,9 @@ flowchart LR
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
-| guard_maintenance_owner | _absolute_path | 111 | `_absolute_path(Path(...))` |
-| _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
-| _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
+| guard_maintenance_owner | _absolute_path | 112 | `_absolute_path(Path(...))` |
+| _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
+| _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |

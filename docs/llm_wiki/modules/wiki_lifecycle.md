@@ -14,7 +14,6 @@ Read-only classification for wiki bootstrap, sync, and migration routing.
 | `.current_contracts` | `current_contract_defaults` |
 | `.rendering_lifecycle` | `RenderReason` |
 | `.schema` | `SCHEMA_BLOCK_VERSION`, `SchemaRenderProfile` |
-| `.sync_manifest` | `MANIFEST_FILENAME` |
 | `.wiki_scaffold` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
@@ -23,6 +22,7 @@ Read-only classification for wiki bootstrap, sync, and migration routing.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.host` | `current_host` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `formatted_json_bytes` |
+| `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME` |
 | `llm_wiki_engine.wiki_surface` | `iter_directory_kinds`, `iter_page_kinds` |
 | `os` | `os` |
 | `pathlib` | `Path` |

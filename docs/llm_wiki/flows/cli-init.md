@@ -2,11 +2,10 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [init_cmd](../modules/init_cmd.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), and 72 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 71 more
 
 **Complete modules touched:**
 
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -29,10 +28,10 @@
 - [helper_runtime](../modules/helper_runtime.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [init_cmd](../modules/init_cmd.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -153,9 +152,9 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 4361 interactions; 4331 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4296 interactions; 4266 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1467 (1466 omitted); unresolved 1 of 1027 (1026 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1444 (1443 omitted); unresolved 1 of 1009 (1008 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -169,7 +168,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 19 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 19 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_engine/wiki_surface.py:iter_directory_kinds` | 22 | - | external | 1 |
-> Omission summary shows 8 of 1121 groups; 1113 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1109 groups; 1101 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -182,9 +181,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1868; effect analysis evaluated: 1227, partial: 90, unavailable: 551. Counts include steps omitted from the displayed trace.
+Source steps: 1844; effect analysis evaluated: 1215, partial: 84, unavailable: 545. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1317 source steps with known totals: observed: 8520, emitted: 7942, omitted: 578. Unavailable totals are excluded.
+Collector observations for 1299 source steps with known totals: observed: 8296, emitted: 7744, omitted: 552. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

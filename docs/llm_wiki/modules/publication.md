@@ -12,7 +12,6 @@ Supervisor-owned binding between a documentation run and mapped public prose.
 |--------|---------|
 | `..documentation_policy` | `capture_tree_baseline`, `hash_bytes` |
 | `..documentation_review` | `DocumentationReviewLedger` |
-| `..knowledge_governance` | `governance_lock` |
 | `..publication_candidate` | `_read_tree` |
 | `.contracts` | `DocumentationAgentResult`, `DocumentationIntegrityError`, `DocumentationRun`, `DocumentationTransitionError`, `RUN_CONTROL_DIR`, `_utc_now` |
 | `.integrity` | `_verify_read_only_inputs`, `_verify_read_only_inputs` |
@@ -21,6 +20,7 @@ Supervisor-owned binding between a documentation run and mapped public prose.
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_governance` | `governance_lock` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `tempfile` | `TemporaryDirectory` |

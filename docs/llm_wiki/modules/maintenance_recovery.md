@@ -1,6 +1,6 @@
 # maintenance_recovery Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_recovery.py`
+**Path:** `src/llm_wiki_engine/maintenance_recovery.py`
 
 ## Description
 
@@ -31,36 +31,29 @@ Complete maintenance recovery catalogs backed by immutable deduplicated bytes.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n3["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n4["src/llm_wiki_cli/services/maintenance_recovery.py"]
-    n5["src/llm_wiki_cli/services/maintenance_service.py"]
-    n6["src/llm_wiki_cli/services/maintenance_state.py"]
-    n7["src/llm_wiki_engine/filesystem_guard.py"]
+    n0["src/llm_wiki_cli/services/maintenance_service.py"]
+    n1["src/llm_wiki_engine/filesystem_guard.py"]
+    n2["src/llm_wiki_engine/knowledge_governance.py"]
+    n3["src/llm_wiki_engine/knowledge_storage.py"]
+    n4["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n5["src/llm_wiki_engine/maintenance_protocol.py"]
+    n6["src/llm_wiki_engine/maintenance_recovery.py"]
+    n7["src/llm_wiki_engine/maintenance_state.py"]
     n8["src/llm_wiki_engine/request_json.py"]
     n9["src/llm_wiki_engine/validation.py"]
+    n0 --> n1
+    n0 --> n2
+    n0 --> n3
+    n0 --> n4
+    n0 --> n5
+    n0 --> n6
+    n0 --> n7
+    n0 --> n8
     n0 --> n9
-    n2 --> n1
-    n2 --> n7
     n2 --> n9
-    n3 --> n0
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n6
-    n3 --> n7
-    n3 --> n8
-    n4 --> n0
     n4 --> n1
-    n4 --> n2
     n4 --> n3
-    n4 --> n6
-    n4 --> n7
-    n4 --> n8
     n4 --> n9
-    n5 --> n0
     n5 --> n1
     n5 --> n2
     n5 --> n3
@@ -68,17 +61,24 @@ flowchart LR
     n5 --> n6
     n5 --> n7
     n5 --> n8
-    n5 --> n9
     n6 --> n1
+    n6 --> n2
+    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    n6 --> n7
+    n6 --> n8
     n6 --> n9
-    click n0 "../modules/knowledge_governance.md"
-    click n1 "../modules/knowledge_storage.md"
-    click n2 "../modules/knowledge_storage_io.md"
-    click n3 "../modules/maintenance_protocol.md"
-    click n4 "../modules/maintenance_recovery.md"
-    click n5 "../modules/maintenance_service.md"
-    click n6 "../modules/maintenance_state.md"
-    click n7 "../modules/filesystem_guard.md"
+    n7 --> n3
+    n7 --> n9
+    click n0 "../modules/maintenance_service.md"
+    click n1 "../modules/filesystem_guard.md"
+    click n2 "../modules/knowledge_governance.md"
+    click n3 "../modules/knowledge_storage.md"
+    click n4 "../modules/knowledge_storage_io.md"
+    click n5 "../modules/maintenance_protocol.md"
+    click n6 "../modules/maintenance_recovery.md"
+    click n7 "../modules/maintenance_state.md"
     click n8 "../modules/request_json.md"
     click n9 "../modules/validation.md"
 ```
@@ -87,14 +87,14 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Inbound | [maintenance_service](../modules/maintenance_service.md) |
+| Inbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Outbound | [maintenance_state](../modules/maintenance_state.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [validation](../modules/validation.md) |
 

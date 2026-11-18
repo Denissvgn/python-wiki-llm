@@ -2,14 +2,13 @@
 
 **Entry point:** `get_knowledge_coverage` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 67 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), and 66 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [context_packet](../modules/context_packet.md)
@@ -29,10 +28,11 @@
 - [go_calls](../modules/go_calls.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -52,7 +52,6 @@
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
@@ -148,9 +147,9 @@ sequenceDiagram
     p1-->>p30: counts
 ```
 
-> Call sequence diagram shows 30 of 4254 interactions; 4224 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3995 interactions; 3965 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1347 (1346 omitted); unresolved 1 of 1368 (1367 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1239 (1238 omitted); unresolved 1 of 1305 (1304 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,13 +157,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/api.py:get_knowledge_coverage` | 1 | - | external | 6 |
 | `src/llm_wiki_cli/api.py:get_knowledge_coverage` | 1 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | external | 15 |
-| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | [src/llm_wiki_cli/services/knowledge_freshness.py](../modules/knowledge_freshness.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | external | 15 |
+| `src/llm_wiki_engine/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 6 |
+| `src/llm_wiki_engine/knowledge_coverage.py:build_knowledge_coverage` | 11 | [src/llm_wiki_engine/knowledge_freshness.py](../modules/knowledge_freshness.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:capture_context_read` | 35 | - | external | 37 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 48 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 49 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
-> Omission summary shows 8 of 1067 groups; 1059 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1020 groups; 1012 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -177,9 +176,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1540; effect analysis evaluated: 1042, partial: 74, unavailable: 424. Counts include steps omitted from the displayed trace.
+Source steps: 1452; effect analysis evaluated: 997, partial: 59, unavailable: 396. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1116 source steps with known totals: observed: 6616, emitted: 6296, omitted: 320. Unavailable totals are excluded.
+Collector observations for 1056 source steps with known totals: observed: 6021, emitted: 5750, omitted: 271. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -198,7 +197,7 @@ Collector observations for 1116 source steps with known totals: observed: 6616, 
 | `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `cast` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `build_knowledge_coverage` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
-| `isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…:build_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -213,7 +212,7 @@ flowchart LR
     s9["9. InvalidRequestError"]
     s10["10. cast"]
     s11["11. build_knowledge_coverage"]
-    s12["12. isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)"]
+    s12["12. isinstance (src/llm_wiki_engine/knowl…:build_knowledge_coverage)"]
     s1 -. "isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(value, bool)" .-> s2
     s1 -->|"InvalidRequestError('must be a boolean', code='invalid-request', details={...})"| s3
     s1 -. "isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(helper_cache_dir, (...))" .-> s4
@@ -224,7 +223,7 @@ flowchart LR
     s1 -->|"InvalidRequestError('service requires a native read view', code='invalid-request', details={...})"| s9
     s1 -. "cast(KnowledgeCoverageResult, build_knowledge_coverage(...))" .-> s10
     s1 -->|"build_knowledge_coverage(view)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)(view, KnowledgeReadView)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/knowl…:build_knowledge_coverage)(view, KnowledgeReadView)" .-> s12
     b0["mutation payload.update"]
     s11 -. "mutation payload.update" .-> b0
     click s1 "../modules/api.md"
@@ -252,7 +251,7 @@ flowchart LR
 | `InvalidRequestError` | - | - | - | - |
 | `cast` | - | - | - | - |
 | `build_knowledge_coverage` | `view: KnowledgeReadView` | `KnowledgeReadView`, `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `_KINDS`, `KNOWN_FRESHNESS_REASON_CODES`, `MAX_COVERAGE_BYTES` | `target[...]`, `target[...]`, `reasons[...]` | `payload`, `payload` |
-| `isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…:build_knowledge_coverage)` | - | - | - | - |
 
 ### Call data
 
@@ -268,7 +267,7 @@ flowchart LR
 | get_knowledge_coverage | InvalidRequestError | 1092 | `InvalidRequestError('service requires a native read view', code='invalid-request', details={...})` |
 | get_knowledge_coverage | cast | 1097 | `cast(KnowledgeCoverageResult, build_knowledge_coverage(...))` |
 | get_knowledge_coverage | build_knowledge_coverage | 1097 | `build_knowledge_coverage(view)` |
-| build_knowledge_coverage | isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage) | 23 | `isinstance(view, KnowledgeReadView)` |
+| build_knowledge_coverage | isinstance (src/llm_wiki_engine/knowl…:build_knowledge_coverage) | 23 | `isinstance(view, KnowledgeReadView)` |
 
 ### Boundary effects
 

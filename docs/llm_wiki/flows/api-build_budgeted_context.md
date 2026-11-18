@@ -2,14 +2,13 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 67 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 63 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
@@ -31,11 +30,10 @@
 - [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [host](../modules/host.md)
-- [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -50,9 +48,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
@@ -148,23 +144,23 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3543 interactions; 3513 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3502 interactions; 3472 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1213 (1212 omitted); unresolved 1 of 1106 (1105 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1209 (1208 omitted); unresolved 1 of 1099 (1098 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_request_format.py:validate_budget_request` | 3 | - | external | 10 |
-| `src/llm_wiki_cli/services/context_request_format.py:validate_budget_request` | 3 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 6 |
-| `src/llm_wiki_cli/services/context_request_format.py:validate_budget_request` | 3 | - | unresolved | 10 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 21 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 24 | - | external | 13 |
-| `src/llm_wiki_cli/services/context_request_format.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 891 groups; 883 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/context_request_format.py:validate_budget_request` | 3 | - | external | 10 |
+| `src/llm_wiki_engine/context_request_format.py:validate_budget_request` | 3 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 6 |
+| `src/llm_wiki_engine/context_request_format.py:validate_budget_request` | 3 | - | unresolved | 10 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 21 | - | external | 2 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 21 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 24 | - | external | 13 |
+| `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
+> Omission summary shows 8 of 868 groups; 860 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -177,9 +173,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1225; effect analysis evaluated: 842, partial: 53, unavailable: 330. Counts include steps omitted from the displayed trace.
+Source steps: 1195; effect analysis evaluated: 824, partial: 46, unavailable: 325. Counts include steps omitted from the displayed trace.
 
-Collector observations for 895 source steps with known totals: observed: 5511, emitted: 5264, omitted: 247. Unavailable totals are excluded.
+Collector observations for 870 source steps with known totals: observed: 5237, emitted: 5013, omitted: 224. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -190,41 +186,41 @@ Collector observations for 895 source steps with known totals: observed: 5511, e
 | `build_budgeted_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
 | `validate_budget_request` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
-| `isinstance (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `data.get (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `data.get (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `set (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `sorted (src/llm_wiki_cli/services…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_engine/conte…y:validate_budget_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. build_budgeted_context (src/llm_wiki_cli/api.py)"]
     s2["2. build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)"]
     s3["3. validate_budget_request"]
-    s4["4. isinstance (src/llm_wiki_cli/services…y:validate_budget_request)"]
-    s5["5. any (src/llm_wiki_cli/services…y:validate_budget_request)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…y:validate_budget_request)"]
+    s4["4. isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)"]
+    s5["5. any (src/llm_wiki_engine/conte…y:validate_budget_request)"]
+    s6["6. isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)"]
     s7["7. ProtocolRequestError"]
-    s8["8. data.get (src/llm_wiki_cli/services…y:validate_budget_request)"]
+    s8["8. data.get (src/llm_wiki_engine/conte…y:validate_budget_request)"]
     s9["9. ProtocolRequestError"]
-    s10["10. set (src/llm_wiki_cli/services…y:validate_budget_request)"]
+    s10["10. set (src/llm_wiki_engine/conte…y:validate_budget_request)"]
     s11["11. ProtocolRequestError"]
-    s12["12. sorted (src/llm_wiki_cli/services…y:validate_budget_request)"]
+    s12["12. sorted (src/llm_wiki_engine/conte…y:validate_budget_request)"]
     s1 -->|"build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)(…)"| s2
     s2 -->|"validate_budget_request(...)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…y:validate_budget_request)(data, Mapping)" .-> s4
-    s3 -. "any (src/llm_wiki_cli/services…y:validate_budget_request)(...)" .-> s5
-    s3 -. "isinstance (src/llm_wiki_cli/services…y:validate_budget_request)(key, str)" .-> s6
+    s3 -. "isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)(data, Mapping)" .-> s4
+    s3 -. "any (src/llm_wiki_engine/conte…y:validate_budget_request)(...)" .-> s5
+    s3 -. "isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)(key, str)" .-> s6
     s3 -->|"ProtocolRequestError('Request must be an object with string keys', 'request')"| s7
-    s3 -. "data.get (src/llm_wiki_cli/services…y:validate_budget_request)('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)" .-> s8
+    s3 -. "data.get (src/llm_wiki_engine/conte…y:validate_budget_request)('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)" .-> s8
     s3 -->|"ProtocolRequestError('Unsupported context budget protocol', 'protocol')"| s9
-    s3 -. "set (src/llm_wiki_cli/services…y:validate_budget_request)(data)" .-> s10
+    s3 -. "set (src/llm_wiki_engine/conte…y:validate_budget_request)(data)" .-> s10
     s3 -->|"ProtocolRequestError(..., ...)"| s11
-    s3 -. "sorted (src/llm_wiki_cli/services…y:validate_budget_request)(unknown)" .-> s12
+    s3 -. "sorted (src/llm_wiki_engine/conte…y:validate_budget_request)(unknown)" .-> s12
     b0["mutation legacy.update"]
     s2 -. "mutation legacy.update" .-> b0
     b1["mutation legacy.pop"]
@@ -253,15 +249,15 @@ flowchart LR
 | `build_budgeted_context (src/llm_wiki_cli/api.py)` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `counter: TokenCounter \| None`, `allow_external_src: bool`, `source_selection: str \| Path \| None`, `comparison_policy: str \| None` | - | - | `build(...)` |
 | `build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)` | `src_dir`, `wiki_dir`, `request`, `counter: TokenCounter \| None`, `allow_external_src`, `source_selection` | `context`, `context` | `changes[...]` | `result` |
 | `validate_budget_request` | `data: Mapping[str, Any]` | `Mapping`, `CONTEXT_BUDGET_PROTOCOL_VERSION`, `_V2_REQUEST_KEYS`, `KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_BUDGET_PROTOCOL_VERSION` | `legacy[...]`, `legacy[...]`, `legacy[...]` | `{...}` |
-| `isinstance (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
+| `any (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
+| `data.get (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
-| `set (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
+| `set (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
-| `sorted (src/llm_wiki_cli/services…y:validate_budget_request)` | - | - | - | - |
+| `sorted (src/llm_wiki_engine/conte…y:validate_budget_request)` | - | - | - | - |
 
 ### Call data
 
@@ -269,15 +265,15 @@ flowchart LR
 |---|---|---:|---|
 | build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1602 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_budget_request | 342 | `validate_request(...)` |
-| validate_budget_request | isinstance (src/llm_wiki_cli/services…y:validate_budget_request) | 381 | `isinstance(data, Mapping)` |
-| validate_budget_request | any (src/llm_wiki_cli/services…y:validate_budget_request) | 381 | `any(...)` |
-| validate_budget_request | isinstance (src/llm_wiki_cli/services…y:validate_budget_request) | 381 | `isinstance(key, str)` |
+| validate_budget_request | isinstance (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `isinstance(data, Mapping)` |
+| validate_budget_request | any (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `any(...)` |
+| validate_budget_request | isinstance (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `isinstance(key, str)` |
 | validate_budget_request | ProtocolRequestError | 382 | `ProtocolRequestError('Request must be an object with string keys', 'request')` |
-| validate_budget_request | data.get (src/llm_wiki_cli/services…y:validate_budget_request) | 383 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
+| validate_budget_request | data.get (src/llm_wiki_engine/conte…y:validate_budget_request) | 383 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
 | validate_budget_request | ProtocolRequestError | 384 | `ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
-| validate_budget_request | set (src/llm_wiki_cli/services…y:validate_budget_request) | 386 | `set(data)` |
+| validate_budget_request | set (src/llm_wiki_engine/conte…y:validate_budget_request) | 386 | `set(data)` |
 | validate_budget_request | ProtocolRequestError | 388 | `ProtocolRequestError(..., ...)` |
-| validate_budget_request | sorted (src/llm_wiki_cli/services…y:validate_budget_request) | 389 | `sorted(unknown)` |
+| validate_budget_request | sorted (src/llm_wiki_engine/conte…y:validate_budget_request) | 389 | `sorted(unknown)` |
 
 ### Boundary effects
 

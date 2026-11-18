@@ -101,12 +101,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_run/packet.py:build_documentation_agent_packet` | 1 | - | unresolved | 74 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | - | external | 4 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 31 | - | external | 4 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 34 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 34 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 34 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 31 | - | unresolved | 3 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 31 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 31 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_tree_paths` | 67 | - | unresolved | 12 |
 > Omission summary shows 8 of 95 groups; 87 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

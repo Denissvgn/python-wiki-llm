@@ -1,6 +1,6 @@
 # maintenance_shapes Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_shapes.py`
+**Path:** `src/llm_wiki_engine/maintenance_shapes.py`
 
 ## Description
 
@@ -20,9 +20,9 @@ Strict maintenance payload shapes without a JSON Schema runtime dependency.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n1["src/llm_wiki_cli/services/maintenance_shapes.py"]
-    n2["src/llm_wiki_cli/services/maintenance_state.py"]
+    n0["src/llm_wiki_engine/knowledge_storage.py"]
+    n1["src/llm_wiki_engine/maintenance_shapes.py"]
+    n2["src/llm_wiki_engine/maintenance_state.py"]
     n3["src/llm_wiki_engine/validation.py"]
     n1 --> n0
     n1 --> n3

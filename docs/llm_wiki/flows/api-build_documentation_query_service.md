@@ -17,7 +17,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -66,7 +66,7 @@ sequenceDiagram
     participant p18 as _live_source_selection_identity
     participant p19 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     participant p20 as attach_implementation_read_view
-    participant p21 as analysis_identity
+    participant p21 as analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     participant p22 as read_guarded
     participant p23 as attach_maintenance_view_from_inputs
     participant p24 as _assert_source_unchanged
@@ -96,7 +96,7 @@ sequenceDiagram
     p4->>p18: _live_source_selection_identity
     p4->>p19: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     p4->>p20: attach_implementation_read_view
-    p4->>p21: analysis_identity
+    p4->>p21: analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
     p4->>p22: read_guarded
     p4->>p23: attach_maintenance_view_from_inputs
     p4->>p24: _assert_source_unchanged
@@ -108,9 +108,9 @@ sequenceDiagram
     p0-->>p30: src_root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 1888 interactions; 1858 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1805 interactions; 1775 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 682 (681 omitted); unresolved 1 of 482 (481 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 653 (652 omitted); unresolved 1 of 452 (451 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -124,7 +124,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 12 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 16 | - | unresolved | 1 |
-> Omission summary shows 8 of 459 groups; 451 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 453 groups; 445 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -137,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 725; effect analysis evaluated: 435, partial: 26, unavailable: 264. Counts include steps omitted from the displayed trace.
+Source steps: 701; effect analysis evaluated: 421, partial: 21, unavailable: 259. Counts include steps omitted from the displayed trace.
 
-Collector observations for 461 source steps with known totals: observed: 2616, emitted: 2489, omitted: 127. Unavailable totals are excluded.
+Collector observations for 442 source steps with known totals: observed: 2385, emitted: 2281, omitted: 104. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

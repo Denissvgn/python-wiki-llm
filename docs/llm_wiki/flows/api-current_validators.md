@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| current_validators | _ACTIVE_VALIDATORS.get | 184 | `_ACTIVE_VALIDATORS.get(data not statically known)` |
+| current_validators | _ACTIVE_VALIDATORS.get | 199 | `_ACTIVE_VALIDATORS.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_validators` | `_ACTIVE_VALIDATORS.get` | 184 |
+| unresolved_call | `current_validators` | `_ACTIVE_VALIDATORS.get` | 199 |
 
 ## Behavior
 

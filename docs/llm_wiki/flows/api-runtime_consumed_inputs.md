@@ -169,8 +169,8 @@ flowchart LR
 | _merge_explicit_consumed_input | KnowledgeGenerationError | 1569 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
 | _merge_explicit_consumed_input | KnowledgeGenerationError | 1576 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
 | _merge_explicit_consumed_input | is_valid_sha256 | 1580 | `is_valid_sha256(content_hash)` |
-| is_valid_sha256 | isinstance (src/llm_wiki_engine/knowl…vidence.py:is_valid_sha256) | 176 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 176 | `_SHA256_RE.fullmatch(value)` |
+| is_valid_sha256 | isinstance (src/llm_wiki_engine/knowl…vidence.py:is_valid_sha256) | 180 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 180 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -185,8 +185,8 @@ flowchart LR
 | external_call | `runtime_consumed_inputs` | `isinstance` | 1498 |
 | external_call | `runtime_consumed_inputs` | `TypeError` | 1499 |
 | unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1501 |
-| external_call | `is_valid_sha256` | `isinstance` | 176 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 176 |
+| external_call | `is_valid_sha256` | `isinstance` | 180 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 180 |
 | step_limit | `runtime_consumed_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

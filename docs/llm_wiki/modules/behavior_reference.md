@@ -13,13 +13,13 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 | `.` | `cli_reference`, `current_contracts`, `skills`, `task_compact`, `task_contract` |
 | `..` | `config` |
 | `.helper_runtime` | `resolve_helper_policy` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `functools` | `lru_cache` |
 | `importlib` | `resources` |
 | `json` | `json` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |

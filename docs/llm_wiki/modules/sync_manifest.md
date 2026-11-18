@@ -1,6 +1,6 @@
 # sync_manifest Module
 
-**Path:** `src/llm_wiki_cli/services/sync_manifest.py`
+**Path:** `src/llm_wiki_engine/sync_manifest.py`
 
 ## Description
 
@@ -21,15 +21,13 @@ also selects exact retention paths for future lint and live native reads.
 
 | Source | Symbols |
 |--------|---------|
-| `.domain_pack` | `current_pack` |
 | `.knowledge_governance` | `governance_lock` |
-| `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
+| `.knowledge_reuse_format` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
 | `.knowledge_storage` | `decode_bytes`, `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
 | `.maintenance_state` | `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `ManifestStoreReader`, `build_manifest_store`, `current_manifest_format` |
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
-| `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Iterable`, `Mapping` |
@@ -37,13 +35,14 @@ also selects exact retention paths for future lint and live native reads.
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
+| `llm_wiki_engine.integrations` | `provider` |
 | `llm_wiki_engine.io` | `write_json_atomic` |
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `llm_wiki_engine.validation` | `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
-| `typing` | `TYPE_CHECKING`, `Any` |
+| `typing` | `Any` |
 
 ## Local dependency map
 
@@ -51,7 +50,7 @@ also selects exact retention paths for future lint and live native reads.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/sync_manifest.py"]
+    n1["src/llm_wiki_engine/sync_manifest.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/sync_manifest.md"
@@ -64,26 +63,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (44) |
-| Outbound | `src` (14) |
+| Outbound | `src` (13) |
 
-> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncManifestError](../entities/SyncManifestError.md) | 60 | `ValueError` | Field-specific validation failure for decoded manifest state. |
-| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 71 | — | Manifest state removed because it falls outside a selected source set. |
-| [ManifestPageSource](../entities/ManifestPageSource.md) | 147 | — | Last observed source coordinate for one module or entity page. |
-| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 252 | — | Known or explicitly unknown evidence for one active concept page. |
-| [ManifestTombstone](../entities/ManifestTombstone.md) | 357 | — | Evidence retained for a stale module/entity page. |
-| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 446 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 859 | — | Operational state; maintenance is present only after explicit adoption. |
+| [SyncManifestError](../entities/SyncManifestError.md) | 65 | `ValueError` | Field-specific validation failure for decoded manifest state. |
+| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 76 | — | Manifest state removed because it falls outside a selected source set. |
+| [ManifestPageSource](../entities/ManifestPageSource.md) | 152 | — | Last observed source coordinate for one module or entity page. |
+| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 257 | — | Known or explicitly unknown evidence for one active concept page. |
+| [ManifestTombstone](../entities/ManifestTombstone.md) | 362 | — | Evidence retained for a stale module/entity page. |
+| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 451 | — | All-or-none exact-byte commitment to the generated artifact set. |
+| [SyncManifest](../entities/SyncManifest.md) | 864 | — | Operational state; maintenance is present only after explicit adoption. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `current_pack` | `()` | — | The host's active domain pack, which classifies sources and names pages. |
 | `_validate_reason` | `(value: object, field_name: str) -> str` | — | — |
 | `_validate_repository_path` | `(value: object, field_name: str) -> str` | — | — |
 | `_validate_concept_page_path` | `(value: object, field_name: str) -> str` | — | — |

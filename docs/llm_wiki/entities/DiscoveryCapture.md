@@ -1,6 +1,6 @@
 # DiscoveryCapture
 
-**Location:** `src/llm_wiki_cli/services/search_discovery_capture.py:22`
+**Location:** `src/llm_wiki_engine/search_discovery_capture.py:22`
 **Kind:** Class
 **Bases:** —
 **Module:** [search_discovery_capture](../modules/search_discovery_capture.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `DiscoveryCapture` in `src/llm_wiki_cli/services/search_discovery_capture.py`._
+_Auto-generated from `DiscoveryCapture` in `src/llm_wiki_engine/search_discovery_capture.py`._
 
 ## Attributes
 
@@ -34,8 +34,8 @@ _Auto-generated from `DiscoveryCapture` in `src/llm_wiki_cli/services/search_dis
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DiscoveryCapture (src/llm_wiki_cli/services/search_discovery_capture.py)"]
-    n1["capture_discovery (src/llm_wiki_cli/services/search_discovery_capture.py)"]
+    n0["DiscoveryCapture (src/llm_wiki_engine/search_discovery_capture.py)"]
+    n1["capture_discovery (src/llm_wiki_engine/search_discovery_capture.py)"]
     n1 --> n0
     click n0 "../modules/search_discovery_capture.md"
     click n1 "../modules/search_discovery_capture.md"
