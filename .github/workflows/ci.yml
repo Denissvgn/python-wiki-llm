@@ -192,7 +192,10 @@ jobs:
         python -I reader/release/preflight_contracts.py check --repo "${RUNNER_TEMP}/owner-input/source"
         python -I reader/release/qualification.py create-venv --path "${RUNNER_TEMP}/owner-venv"
     - name: Install the exact frozen provider
-      run: python -m pip install "${RUNNER_TEMP}/owner-input/source/src" "${RUNNER_TEMP}/owner-input/source[dev,tokens]"
+      run: |
+        # Build the engine from a byte copy so the frozen tree gains no build output.
+        cp -R "${RUNNER_TEMP}/owner-input/source/src" "${RUNNER_TEMP}/owner-engine-src"
+        python -m pip install "${RUNNER_TEMP}/owner-engine-src" "${RUNNER_TEMP}/owner-input/source[dev,tokens]"
     - name: Install locked Node and npm for the prepared owner
       if: ${{ matrix.profile == 'prepared' }}
       run: bash reader/.github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine --install-root "${RUNNER_TEMP}/owner-node"
