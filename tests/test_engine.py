@@ -21,7 +21,7 @@ from llm_wiki_cli.engine import (
     NoProcessHost,
     current_host,
 )
-from llm_wiki_cli.services.analysis_compatibility import selected_policy
+from llm_wiki_engine.analysis_compatibility import selected_policy
 from llm_wiki_cli.services.helper_runtime import current_helper_operation
 
 ROOT = Path(__file__).resolve().parents[1]

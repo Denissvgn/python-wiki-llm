@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from llm_wiki_cli.commands import extract_cmd
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,

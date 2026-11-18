@@ -11,24 +11,24 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, knowledge_cmd, sync_cmd
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     CommitStage,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
     current_knowledge_format,
 )
-from llm_wiki_cli.services.knowledge_governance import load_governance
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_storage import GIT_FAILURE_BYTES, digest
-from llm_wiki_cli.services import knowledge_storage_lifecycle
-from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs
-from llm_wiki_cli.services.maintenance_protocol import (
+from llm_wiki_engine.knowledge_governance import load_governance
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_storage import GIT_FAILURE_BYTES, digest
+from llm_wiki_engine import knowledge_storage_lifecycle
+from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
+from llm_wiki_engine.maintenance_protocol import (
     ADOPTION_FILENAME,
     guard_maintenance_owner,
 )
-from llm_wiki_cli.services.manifest_storage import current_manifest_format
-from llm_wiki_cli.services.section_ownership import observe_page_sections
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.manifest_storage import current_manifest_format
+from llm_wiki_engine.section_ownership import observe_page_sections
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.knowledge_storage_scale import large_logical_payload
 
 

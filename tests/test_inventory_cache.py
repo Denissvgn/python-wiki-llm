@@ -15,7 +15,7 @@ from llm_wiki_cli.services.inventory_cache import (
     resolve_inventory_cache_path,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.commands.extract_cmd import get_inventory_result
 
 
@@ -158,7 +158,7 @@ def test_save_handles_atomic_replace_oserror(tmp_path, monkeypatch):
     def fail_replace(source, target):
         raise OSError("replace denied")
 
-    monkeypatch.setattr("llm_wiki_cli.services.io.os.replace", fail_replace)
+    monkeypatch.setattr("llm_wiki_engine.io.os.replace", fail_replace)
 
     cache.save({"version": 1}, {"app.py": {"hash": "sha256:new"}})
 

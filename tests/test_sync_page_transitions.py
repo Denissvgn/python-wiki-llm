@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
-from llm_wiki_cli.services.io import read_md
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_LOCK_FILENAME
-from llm_wiki_cli.services.maintenance_protocol import STORAGE_LOCK_FILENAME
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_LOCK_FILENAME
+from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync import _make_bootstrap_args, _make_sync_args
 
 
@@ -159,8 +159,8 @@ def _check_added_twin(
 ) -> None:
     from llm_wiki_cli import cli
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_governance import load_governance
-    from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
+    from llm_wiki_engine.knowledge_governance import load_governance
+    from llm_wiki_engine.wiki_surface import PageKind, mcp_uri
 
     original_doc = "A draft in module alpha."
     new_doc = "A draft in module beta."

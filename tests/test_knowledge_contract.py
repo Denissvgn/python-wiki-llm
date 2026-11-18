@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     REPOSITORY_IDENTITY_SOURCE_EXTENSION,
     ComputedFreshness,
     KnowledgeLoadState,
@@ -25,14 +25,14 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     repository_identities_match,
 )
-from llm_wiki_cli.services.wiki_media import iter_markdown_link_targets
-from llm_wiki_cli.services.wiki_surface import (
+from llm_wiki_engine.wiki_media import iter_markdown_link_targets
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     canonical_path,
     iter_page_kinds,
 )
-from llm_wiki_cli.services.wiki_surface_index import build_surface_index
+from llm_wiki_engine.wiki_surface_index import build_surface_index
 from tests import regenerate_knowledge_goldens
 from tests.knowledge_fixtures import (
     FIXTURE_CONSUMERS,

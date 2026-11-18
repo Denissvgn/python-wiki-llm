@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import search_service
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.search_discovery import DiscoveryError
+from llm_wiki_engine.search_discovery import DiscoveryError
 from tests.test_search_source_interfaces import owned_wiki as owned_wiki
 
 
@@ -72,7 +72,7 @@ def test_invalid_discovery_rejected_before_capture(tmp_path, monkeypatch, discov
 
 
 def test_output_limit_reason_survives_public_api_and_mcp(owned_wiki, monkeypatch):
-    from llm_wiki_cli.services import search_discovery
+    from llm_wiki_engine import search_discovery
 
     root, wiki, *_ = owned_wiki
     def exceed(*args, **kwargs):

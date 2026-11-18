@@ -15,15 +15,16 @@ import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd, trigger_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services import circuit_breaker, extraction_service, plugins
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_cli.services import extraction_service, plugins
+from llm_wiki_engine import circuit_breaker
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     SourceSelectionError,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_git_policy import (
     WikiGitDisposition,
     WikiGitPolicy,

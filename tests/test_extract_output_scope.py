@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli.api import InvalidRequestError, extract_source
 from llm_wiki_cli.services import extraction_service as service
 from llm_wiki_cli.services.dependencies import describe_unscanned_scopes
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 

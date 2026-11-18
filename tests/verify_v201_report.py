@@ -32,16 +32,16 @@ from llm_wiki_cli.services.doctor_service import DOCTOR_EXIT_CODES, _classify
 from llm_wiki_cli.services.entrypoints import build_flow
 from llm_wiki_cli.services.extraction_service import get_call_graph, resolve_call_edges
 from llm_wiki_cli.services.extractor_helpers import resolve_helper_cache_root
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ProducerComponentInput,
     build_producer_record,
 )
-from llm_wiki_cli.services.knowledge_evidence import ConceptObservationBasis
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_evidence import ConceptObservationBasis
+from llm_wiki_engine.knowledge_freshness import (
     LiveKnowledgeEvaluation,
     evaluate_knowledge_freshness,
 )
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
 from llm_wiki_cli.services.knowledge_orchestration import _producer_evidence
 from llm_wiki_cli.services.module_maps import build_module_dependency_maps
 

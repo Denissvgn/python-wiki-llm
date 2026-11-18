@@ -10,14 +10,14 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import publication_snapshot as snapshot
-from llm_wiki_cli.services.host import Host
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.host import Host
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from tests.test_knowledge_generation import _planner_inputs
 from tests.test_knowledge_loader import _write_fixture_pages
 from tests.test_snapshot_query_validation import STORAGE_FORMATS, _committed_snapshot

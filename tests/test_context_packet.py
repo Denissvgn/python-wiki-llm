@@ -35,13 +35,13 @@ from llm_wiki_cli.services.context_packet_builder import (
     compare_context_packet_basis,
     reconcile_context_packet,
 )
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import (
     GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,

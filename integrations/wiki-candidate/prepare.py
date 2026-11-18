@@ -15,14 +15,14 @@ from llm_wiki_cli.services.documentation_native import (
 from llm_wiki_cli.services.helper_cache import ensure_helper
 from llm_wiki_cli.services.helper_preparation import selected_helper_languages
 from llm_wiki_cli.services.helper_runtime import helper_operation
-from llm_wiki_cli.services.knowledge_evidence import hash_json
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.publication_config import (
     load_publication_config,
     publication_path,
     publication_source_root,
 )
-from llm_wiki_cli.services.source_retirement import retired_entity_mappings
+from llm_wiki_engine.source_retirement import retired_entity_mappings
 
 
 _PROVIDER = Path(__file__).resolve().parents[2]

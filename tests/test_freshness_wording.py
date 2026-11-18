@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 from llm_wiki_cli.services.health_summary import FRESHNESS_DISCLOSURE
 from llm_wiki_cli.services.mcp_server import McpWikiService
 

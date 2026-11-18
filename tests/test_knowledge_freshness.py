@@ -10,15 +10,15 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_evidence, knowledge_freshness
-from llm_wiki_cli.services.knowledge_evidence import ConceptObservationBasis
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine import knowledge_evidence, knowledge_freshness
+from llm_wiki_engine.knowledge_evidence import ConceptObservationBasis
+from llm_wiki_engine.knowledge_freshness import (
     ConceptFreshnessBasis,
     KnowledgeFreshnessError,
     LiveKnowledgeEvaluation,
     evaluate_knowledge_freshness,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceBasis,
     EvidenceState,

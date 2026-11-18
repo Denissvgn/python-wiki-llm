@@ -11,7 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import config as config_module
-from llm_wiki_cli.services import path_policy
+from llm_wiki_engine import path_policy
 from llm_wiki_cli.config import (
     AGENT_CHOICES,
     AgentConfigState,

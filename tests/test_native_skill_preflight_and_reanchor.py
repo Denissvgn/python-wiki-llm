@@ -17,13 +17,13 @@ from llm_wiki_cli.commands import (
     sync_cmd,
 )
 from llm_wiki_cli.services import schema, skills
-from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.knowledge_governance import (
     evaluate_review_event,
     load_governance,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
 
 
 SKILLS_ROOT = skills.BUNDLED_SKILLS_ROOT

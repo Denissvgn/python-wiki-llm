@@ -11,7 +11,7 @@ import re
 import subprocess
 from tempfile import TemporaryDirectory
 
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from llm_wiki_cli.services.publication_candidate import (
     MAX_FILE_BYTES,
     MAX_FILES,
@@ -27,7 +27,7 @@ from llm_wiki_cli.services.publication_delivery import (
     plan_rollback,
     split_delivery_tree,
 )
-from llm_wiki_cli.services.validation import require_portable_relative_path
+from llm_wiki_engine.validation import require_portable_relative_path
 
 
 _OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})")

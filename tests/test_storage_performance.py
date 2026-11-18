@@ -6,9 +6,9 @@ import random
 
 import pytest
 
-from llm_wiki_cli.services.canonical_json import canonical_chunks, scalar_size
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes, logical_digest
-from llm_wiki_cli.services import knowledge_storage, knowledge_packs, validation
+from llm_wiki_engine.canonical_json import canonical_chunks, scalar_size
+from llm_wiki_engine.knowledge_storage import canonical_bytes, logical_digest
+from llm_wiki_engine import knowledge_storage, knowledge_packs, validation
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 
 
@@ -28,11 +28,11 @@ def test_repacked_cached_members_match_pinned_zip_bytes(compression):
 @pytest.mark.parametrize("fmt", ["sharded-v2", "packed-v3", "packed-v3-deflate"])
 def test_spooled_plan_and_complete_streaming_audit(tmp_path, monkeypatch, fmt):
     from tests.test_knowledge_loader import _committed_state
-    from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_stream_audit import audit_knowledge_stream
-    from llm_wiki_cli.services.storage_spool import ByteSpool, SpooledArtifactWrite
-    from llm_wiki_cli.services.knowledge_storage_diagnostics import review_storage
+    from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_stream_audit import audit_knowledge_stream
+    from llm_wiki_engine.storage_spool import ByteSpool, SpooledArtifactWrite
+    from llm_wiki_engine.knowledge_storage_diagnostics import review_storage
     _, old, _ = _committed_state(tmp_path)
     expected = build_knowledge_commit_plan(tmp_path, surface_index_bytes=old.surface_index.content,
         knowledge_index_bytes=old.knowledge_index.content, manifest=old.committed_manifest, knowledge_format=fmt)
@@ -59,8 +59,8 @@ def test_spooled_plan_and_complete_streaming_audit(tmp_path, monkeypatch, fmt):
 
 
 def test_spill_limits_and_cancellation_cleanup():
-    from llm_wiki_cli.services.storage_spool import ByteSpool
-    from llm_wiki_cli.services.storage_sort import SortedRuns
+    from llm_wiki_engine.storage_spool import ByteSpool
+    from llm_wiki_engine.storage_sort import SortedRuns
     with pytest.raises(knowledge_storage.KnowledgeStorageError, match="quota"):
         with ByteSpool(max_bytes=4) as spool:
             spool["too-big"] = b"12345"
@@ -87,9 +87,9 @@ def test_spill_limits_and_cancellation_cleanup():
 @pytest.mark.parametrize("compression", ["stored", "deflate"])
 def test_validated_pack_reuse_avoids_compression_and_invalidates_changed_members(tmp_path, monkeypatch, compression):
     from tests.test_knowledge_loader import _committed_state
-    from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_index import _model_to_payload
+    from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_index import _model_to_payload
     _, old, _ = _committed_state(tmp_path)
     fmt = "packed-v3-deflate" if compression == "deflate" else "packed-v3"
     plan = build_knowledge_commit_plan(tmp_path, surface_index_bytes=old.surface_index.content,

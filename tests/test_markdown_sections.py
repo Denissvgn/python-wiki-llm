@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.markdown_sections import (
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.markdown_sections import (
     description_table_cells,
     mixed_table_projection,
     parse_markdown_document,

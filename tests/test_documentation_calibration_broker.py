@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import documentation_calibration_broker as broker
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION,
     P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION,
     P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION,

@@ -18,7 +18,7 @@ from llm_wiki_cli.extractors.python_bindings import (
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.extraction_service import get_inventory_result
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheOptions
-from llm_wiki_cli.services.knowledge_evidence import build_entity_observation_basis
+from llm_wiki_engine.knowledge_evidence import build_entity_observation_basis
 
 CLASS = "class Batch:\n    def cap(self, values):\n        return values[:3]\n"
 

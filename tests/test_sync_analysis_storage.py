@@ -7,7 +7,7 @@ import shutil
 import pytest
 
 from llm_wiki_cli.services import sync_analysis_storage as storage
-from llm_wiki_cli.services.knowledge_evidence import canonical_json_bytes, hash_json
+from llm_wiki_engine.knowledge_evidence import canonical_json_bytes, hash_json
 
 
 def payload():
@@ -347,7 +347,7 @@ def test_interruption_after_root_replacement_retains_superseded_ownership_for_re
 
 
 def test_shared_writer_lock_excludes_another_cache_publication(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.knowledge_governance import GovernanceConflictError
+    from llm_wiki_engine.knowledge_governance import GovernanceConflictError
 
     monkeypatch.setattr(storage, "MAX_SHARD_BYTES", 1024)
     path = tmp_path / "capture.json"

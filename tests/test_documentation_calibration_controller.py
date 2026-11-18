@@ -14,11 +14,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from llm_wiki_cli.services import (
-    documentation_calibration_controller as controller_module,
-    documentation_calibration_host_broker as host_broker,
-)
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_cli.services import documentation_calibration_controller as controller_module, documentation_calibration_host_broker as host_broker
+from llm_wiki_engine.contracts import (
     P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION,
     P0_CALIBRATION_AUTHORITY_GRANT_SCHEMA_VERSION,
     P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION,
@@ -42,7 +39,7 @@ from llm_wiki_cli.services.documentation_calibration_controller import (
     verify_calibration_run,
 )
 from llm_wiki_cli.services.documentation_run import prepare_documentation_run
-from llm_wiki_cli.services.protected_artifacts import (
+from llm_wiki_engine.protected_artifacts import (
     ProtectedArtifactStore,
     canonical_json_bytes,
 )

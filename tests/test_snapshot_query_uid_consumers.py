@@ -7,19 +7,19 @@ from copy import deepcopy
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.contracts import TYPED_GRAPH_EXTENSION_KEY
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.contracts import TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
 from llm_wiki_cli.services.task_contract import (
     TASK_REQUEST_SCHEMA_V2,
     normalize_task_request,

@@ -27,10 +27,10 @@ from llm_wiki_cli.services.context_packet_builder import (
 from llm_wiki_cli.services.context_service import (
     KnowledgeRequiredUnavailableError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from tests.knowledge_fixtures import (
     GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,

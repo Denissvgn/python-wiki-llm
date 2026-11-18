@@ -6,11 +6,11 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services import api_contracts as contract_service
 from llm_wiki_cli.services import knowledge_reuse
 from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KnowledgeArtifactError,
     _validate_surface_flow_routes,
 )
@@ -157,7 +157,7 @@ def test_recovery_from_legacy_route_failure_preserves_authored_behavior(
         encoding="utf-8",
     )
     if interrupted == "bootstrap":
-        from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
+        from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError
 
         before = {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
         with pytest.raises(SystemExit) as refused:

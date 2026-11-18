@@ -9,7 +9,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.services import context_service as context
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CONTEXT_BUDGET_PROTOCOL_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_PROTOCOL_VERSION,

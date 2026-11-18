@@ -8,8 +8,8 @@ import pytest
 
 from llm_wiki_cli.services import sync_analysis_cache as cache
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
-from llm_wiki_cli.services.knowledge_evidence import canonical_json_bytes
-from llm_wiki_cli.services.runtime_output import RuntimeDestination
+from llm_wiki_engine.knowledge_evidence import canonical_json_bytes
+from llm_wiki_engine.runtime_output import RuntimeDestination
 
 
 @pytest.fixture

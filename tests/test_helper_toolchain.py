@@ -22,7 +22,7 @@ from llm_wiki_cli.extractors.go_extractor import GoExtractor
 from llm_wiki_cli.extractors.haskell_extractor import HaskellExtractor
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 from llm_wiki_cli.services import extractor_helpers, helper_cache, helper_preparation
-from llm_wiki_cli.services.host import HostCapabilityError, using_host
+from llm_wiki_engine.host import HostCapabilityError, using_host
 
 REFUSED = "the host does not grant subprocesses"
 

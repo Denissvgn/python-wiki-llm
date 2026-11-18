@@ -10,8 +10,8 @@ import types
 
 import pytest
 
-from llm_wiki_cli.services import lockfile
-from llm_wiki_cli.services.lockfile import LockAcquisitionError, WikiLock
+from llm_wiki_engine import lockfile
+from llm_wiki_engine.lockfile import LockAcquisitionError, WikiLock
 
 
 class TestWikiLock:
@@ -56,7 +56,7 @@ class TestWikiLock:
 import sys
 import time
 from pathlib import Path
-from llm_wiki_cli.services.lockfile import WikiLock
+from llm_wiki_engine.lockfile import WikiLock
 
 with WikiLock(Path(sys.argv[1])):
     print("locked", flush=True)

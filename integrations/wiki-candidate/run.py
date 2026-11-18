@@ -8,7 +8,7 @@ import subprocess
 import sys
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.publication_candidate import _read_tree, validate_publication_receipt
 from llm_wiki_cli.services.publication_impact import read_publication_document
 

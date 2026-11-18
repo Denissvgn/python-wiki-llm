@@ -14,28 +14,28 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import documentation_queries
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
     build_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_evidence import formatted_json_bytes
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
     GovernanceActor,
@@ -50,17 +50,17 @@ from llm_wiki_cli.services.knowledge_governance import (
     review_scope_hash,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     Resolution,
     TargetClass,
 )
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.section_ownership import (
     observe_page_sections,
     section_ownership_extension,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.knowledge_fixtures import fixture_hash
 from tests.test_documentation_queries import _service
 from tests.test_knowledge_freshness import _live_evaluation
@@ -685,7 +685,7 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         if expected_state == ComputedFreshness.BASIS_INCOMPATIBLE.value:
             expected["hint"] = BASIS_INCOMPATIBLE_HINTS[expected_reason]
         if expected_state == ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value:
-            from llm_wiki_cli.services.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+            from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
             expected["hint"] = SOURCE_CHANGED_STRUCTURE_UNCHANGED
         assert freshness == expected
 

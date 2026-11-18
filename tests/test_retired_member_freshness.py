@@ -13,22 +13,22 @@ from llm_wiki_cli.services import ci_report, doctor_service
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
 from llm_wiki_cli.services.documentation_native import evaluate_documentation_native_freshness
 from llm_wiki_cli.services.health_details import capture_health_details
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     require_validated_artifacts,
     validate_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_coverage import build_knowledge_coverage
-from llm_wiki_cli.services.knowledge_evidence import UNKNOWN_ENTITY_NOT_FOUND
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
+from llm_wiki_engine.knowledge_evidence import UNKNOWN_ENTITY_NOT_FOUND
+from llm_wiki_engine.knowledge_freshness import (
     KnowledgeFreshnessError,
     evaluate_knowledge_freshness,
     evaluate_validated_knowledge_freshness,
 )
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness, KnowledgeLoadState
-from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness, KnowledgeLoadState
+from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 from tests.knowledge_fixtures import FIXTURE_SOURCE_PATH, fixture_hash
 from tests.test_entity_retirement import _snapshot
 from tests.test_entity_retirement_evidence import _retirement_inputs

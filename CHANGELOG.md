@@ -194,17 +194,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   published-format validators. The store borrows what depends on source
   analysis (implementation evidence, source snapshots, the active domain pack
   and a few issued state types) through `llm_wiki_engine.integrations`;
-  `agent-wiki-cli` provides them, and an operation that needs a missing
-  provider fails with `IntegrationUnavailable`. `pip install agent-wiki-cli` installs it
+  `agent-wiki-cli` provides them once `llm_wiki_cli` is imported, and an
+  operation that needs a missing provider fails with `IntegrationUnavailable`. `pip install agent-wiki-cli` installs it
   automatically; a source checkout installs it from `src/`
   (`pip install ./src .`). The old `llm_wiki_cli.services.<module>` import
   paths for the moved modules remain as aliases of the same modules, so
-  existing imports and patches keep working. Classes from these modules
+  existing imports and patches keep working; they are deprecated (see
+  Deprecated). Classes from these modules
   now report `llm_wiki_engine.<module>` as their `__module__`.
 - Wiki search results name their format: `llm-wiki search --format json`,
   MCP `search_wiki` and `api.search_wiki()` return
   `"schema_version": "llm-wiki-search-result/v1"`. The other fields are
   unchanged.
+- A Python module whose whole body redirects itself
+  (`sys.modules[__name__] = impl`) still counts as an alias, not a module of
+  its own, when it first announces its deprecation with one literal
+  `warnings.warn(..., DeprecationWarning)` or `PendingDeprecationWarning`
+  call. Such a shim gets no wiki page, like any other alias.
 - Bundled analysis helpers are built, probed and run through the engine's
   host. Under a `NoProcessHost` a helper is reported as unavailable instead
   of being started. Changed-file selection for context asks the host for Git
@@ -228,6 +234,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module that imports a sibling by bare name (`import helpers`) must switch
   to a relative import (`from . import helpers`). The unused
   `plugins.activate_plugin_paths()` helper is removed.
+
+### Deprecated
+
+- The `llm_wiki_cli.services.<module>` import paths of modules that moved to
+  `llm-wiki-engine` now raise a `DeprecationWarning` naming the
+  `llm_wiki_engine.<module>` path to use instead. They still return the same
+  module object and will be removed in a future release.
 
 ### Fixed
 

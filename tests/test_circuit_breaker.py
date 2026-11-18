@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from llm_wiki_cli.services.circuit_breaker import (
+from llm_wiki_engine.circuit_breaker import (
     BREAKER_TTL_ENV,
     DEFAULT_BREAKER_TTL_SECONDS,
     MAX_CONSECUTIVE_FAILURES,

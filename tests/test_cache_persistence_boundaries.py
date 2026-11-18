@@ -14,7 +14,7 @@ from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import analysis_capture
 from llm_wiki_cli.services.extraction_service import InventoryRequest, get_inventory_result
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheOptions
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.lint_service import build_report
 from llm_wiki_cli.services.sync_analysis_cache import EXTENSION, FILENAME
 

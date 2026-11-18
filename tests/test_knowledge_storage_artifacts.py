@@ -5,14 +5,14 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     CommitStage, KnowledgeArtifactError, build_knowledge_commit_plan,
     commit_knowledge_artifacts, require_validated_artifacts,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state, KnowledgeStateLoadError
-from llm_wiki_cli.services.knowledge_storage import STORE_SCHEMA
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.knowledge_loader import load_knowledge_state, KnowledgeStateLoadError
+from llm_wiki_engine.knowledge_storage import STORE_SCHEMA
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from tests.test_knowledge_loader import _committed_state
 
 
@@ -126,7 +126,7 @@ def test_selected_filesystem_read_binds_manifest_pages_and_final_recheck(tmp_pat
 
 
 def test_selected_page_mutation_prevents_a_live_scoped_return(tmp_path):
-    from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
     _, _, plan = migrate_plan(tmp_path)
     commit_knowledge_artifacts(plan)
     selected = capture_knowledge_slice(tmp_path, ["source:src/accounts.py"])
@@ -139,11 +139,11 @@ def test_selected_page_mutation_prevents_a_live_scoped_return(tmp_path):
 
 
 def test_v2_generation_does_not_serialize_a_monolithic_v1_file(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import knowledge_artifacts
+    from llm_wiki_engine import knowledge_artifacts
     _committed_state(tmp_path)
     loaded = load_knowledge_state(tmp_path)
     assert loaded.validated_artifacts is not None and loaded.manifest_basis is not None
-    from llm_wiki_cli.services.knowledge_artifacts import validated_artifact_bytes
+    from llm_wiki_engine.knowledge_artifacts import validated_artifact_bytes
     def unexpected(*args, **kwargs):
         raise AssertionError("v2 generation allocated a v1 serialization")
     monkeypatch.setattr(knowledge_artifacts, "_validated_index_serialization", unexpected)

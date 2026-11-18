@@ -20,7 +20,7 @@ from llm_wiki_cli.services import (
     skills,
     task_contract,
 )
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 
 
 def seal(contract):

@@ -15,12 +15,12 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import knowledge_orchestration, task_context_v2
 from llm_wiki_cli.services.context_packet_builder import ContextPacketUnavailableError
-from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_governance import load_governance
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+from llm_wiki_engine.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_governance import load_governance
+from llm_wiki_engine.knowledge_storage import canonical_bytes
 from llm_wiki_cli.services.maintenance_service import load_recovery_snapshot
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.workflow_fixtures import (
     BODY_PROSE, VIEW, compact_payload, mutate_source, prepare_workflow,
     record_workflow_trace, sync_workflow, task_request, write_description,

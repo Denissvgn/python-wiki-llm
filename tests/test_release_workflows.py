@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests import release_artifact_smoke
 
 

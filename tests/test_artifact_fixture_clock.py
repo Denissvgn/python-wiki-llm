@@ -8,7 +8,7 @@ import sys
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services.host import Host
+from llm_wiki_engine.host import Host
 from tests import artifact_fixture_clock, release_artifact_smoke as smoke
 
 

@@ -22,7 +22,7 @@ captures that output; the default resolves ``sys.stdout``/``sys.stderr`` on
 every write, so redirection and test capture keep working.
 
 A host built with ``events=`` also receives structured
-:class:`~llm_wiki_cli.services.engine_events.EngineEvent` objects for each
+:class:`~llm_wiki_engine.engine_events.EngineEvent` objects for each
 engine operation, including one ``message`` event per line written.
 
 This is the only engine module that touches ``subprocess``, ``os.environ``,

@@ -18,15 +18,15 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import obsidian_cmd
 from llm_wiki_cli.services import obsidian
 from llm_wiki_cli.services import source_snapshot as source_snapshot_module
-from llm_wiki_cli.services.knowledge_model import KnowledgeProjectionProfile
+from llm_wiki_engine.knowledge_model import KnowledgeProjectionProfile
 from llm_wiki_cli.services.knowledge_projection import KnowledgeProjection
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 
 def _ns(**kwargs):

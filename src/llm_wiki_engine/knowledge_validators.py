@@ -1,6 +1,6 @@
 """The checks every parsed knowledge index must pass, as one registry.
 
-:func:`~llm_wiki_cli.services.knowledge_model.parse_knowledge_index` first
+:func:`~llm_wiki_engine.knowledge_model.parse_knowledge_index` first
 parses the core record shapes, then runs each :class:`ModelValidator` of the
 active :class:`ValidatorRegistry` in order. The built-in registry checks
 implementation evidence, the maintenance projection and the governance
@@ -40,7 +40,7 @@ class ModelValidator:
     """One acceptance check run on every parsed knowledge index.
 
     ``check`` receives the parsed model and raises
-    :class:`~llm_wiki_cli.services.knowledge_model.KnowledgeModelError` to
+    :class:`~llm_wiki_engine.knowledge_model.KnowledgeModelError` to
     reject it; a ``ValueError``, ``TypeError`` or ``KeyError`` is reported as
     one too. ``modules`` are importable module names whose functions and
     upper-case policy values define the check; changing any of them

@@ -7,11 +7,11 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services import maintenance_recovery as recovery
-from llm_wiki_cli.services.knowledge_storage import digest
-from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError, load_adoption_marker, save_recovery_snapshot, snapshot_wiki
+from llm_wiki_engine import maintenance_recovery as recovery
+from llm_wiki_engine.knowledge_storage import digest
+from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError, load_adoption_marker, save_recovery_snapshot, snapshot_wiki
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority, load_recovery_snapshot
-from llm_wiki_cli.services.maintenance_state import new_identity
+from llm_wiki_engine.maintenance_state import new_identity
 
 
 @pytest.fixture
@@ -173,7 +173,7 @@ def test_complete_v1_and_v2_recovery_have_identical_semantics(tmp_path, monkeypa
 
 
 def test_recovery_lock_is_accepted_and_excludes_another_writer(tmp_path):
-    from llm_wiki_cli.services.knowledge_governance import governance_lock, GovernanceConflictError
+    from llm_wiki_engine.knowledge_governance import governance_lock, GovernanceConflictError
 
     store = tmp_path / "maintenance-preimages"
     with governance_lock(store, _lock_filename="maintenance-recovery.lock"):
@@ -183,7 +183,7 @@ def test_recovery_lock_is_accepted_and_excludes_another_writer(tmp_path):
 
 
 def test_blob_collection_cannot_race_unpublished_catalog_bytes(tmp_path, marker, monkeypatch):
-    from llm_wiki_cli.services.knowledge_governance import GovernanceConflictError
+    from llm_wiki_engine.knowledge_governance import GovernanceConflictError
 
     store = tmp_path / "maintenance-preimages"
     original_write = recovery._immutable_write

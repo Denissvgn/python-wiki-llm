@@ -15,30 +15,9 @@ from jsonschema import Draft202012Validator
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli import api_types
-from llm_wiki_cli.services import (
-    context_budget,
-    context_budget_format,
-    context_packet,
-    context_request_format,
-    contracts,
-    data_flow,
-    entrypoints,
-    extract_format,
-    maintenance_projection,
-    maintenance_queue,
-    maintenance_queue_format,
-    maintenance_state,
-    maintenance_status,
-    maintenance_status_format,
-    query_result_format,
-    search_lexical,
-    search_rank,
-    search_service,
-    surface_index_format,
-    wiki_surface,
-    wiki_surface_index,
-)
-from llm_wiki_cli.services.wiki_media import build_asset_index
+from llm_wiki_cli.services import context_budget, context_budget_format, context_packet, data_flow, entrypoints, maintenance_queue, search_service
+from llm_wiki_engine import context_request_format, contracts, extract_format, maintenance_projection, maintenance_queue_format, maintenance_state, maintenance_status, maintenance_status_format, query_result_format, search_lexical, search_rank, surface_index_format, wiki_surface, wiki_surface_index
+from llm_wiki_engine.wiki_media import build_asset_index
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     CONTEXT_PACKET_SCHEMA_VERSION,
@@ -739,7 +718,7 @@ def _check_maintenance_status(payload: object) -> dict[str, Any]:
 
 
 def test_maintenance_status_payloads_match_their_schema(tmp_path, monkeypatch, capsys):
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     monkeypatch.chdir(tmp_path)
     (tmp_path / "src").mkdir()
@@ -848,7 +827,7 @@ def _check_ledger_documents(stem: str, documents: list[object]) -> None:
 
 
 def test_maintenance_ledger_documents_match_their_schemas(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     validated: dict[str, list[object]] = {"maintenance-event-v1": [], "maintenance-basis-v1": []}
     original = maintenance_state.MaintenanceCore.validate_schema

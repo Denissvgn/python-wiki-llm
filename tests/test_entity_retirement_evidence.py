@@ -8,17 +8,17 @@ from dataclasses import replace
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KnowledgeArtifactError,
     validate_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_envelope import ConsumedInput, ConsumedInputKind
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_envelope import ConsumedInput, ConsumedInputKind
 from llm_wiki_cli.services.knowledge_generation import (
     KnowledgeGenerationError,
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     GovernanceActor,
     GovernanceLedger,
@@ -26,9 +26,9 @@ from llm_wiki_cli.services.knowledge_governance import (
     reconcile_concepts,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_engine.knowledge_model import (
     ActorKind,
     EvidenceState,
     KnowledgeLoadState,
@@ -41,7 +41,7 @@ from llm_wiki_cli.services.lint_service import (
     _check_entity_coverage,
     _check_knowledge_concepts,
 )
-from llm_wiki_cli.services.source_retirement import (
+from llm_wiki_engine.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,

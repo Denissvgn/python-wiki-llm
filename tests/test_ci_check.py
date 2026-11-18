@@ -20,7 +20,7 @@ from llm_wiki_cli.commands.lint_cmd import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import ci_report, plugins
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CI_CHECK_SCHEMA_VERSION,
     DOCTOR_SCHEMA_VERSION,
     PROTOCOL_VERSIONS,

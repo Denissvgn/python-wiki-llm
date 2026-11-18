@@ -7,8 +7,8 @@ from dataclasses import replace
 
 import pytest
 
-from llm_wiki_cli.services import io, knowledge_artifacts
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine import io, knowledge_artifacts
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     ArtifactWriteState,
     CommitStage,
@@ -17,16 +17,16 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     commit_knowledge_artifacts,
     validate_surface_index_bytes,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.knowledge_index import (
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_index import (
     build_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     SyncManifest,
 )
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     duplicate_entity_occurrences_fixture,
     one_module_two_entities_fixture,

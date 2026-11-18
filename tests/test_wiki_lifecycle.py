@@ -7,7 +7,7 @@ import pytest
 from llm_wiki_cli.config import AGENT_CHOICES
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.services import wiki_lifecycle, wiki_scaffold
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from llm_wiki_cli.services.wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -19,7 +19,7 @@ from llm_wiki_cli.services.wiki_scaffold import (
     INITIAL_WIKI_INDEX_MARKDOWN,
     INITIAL_WIKI_LOG_MARKDOWN,
 )
-from llm_wiki_cli.services.wiki_surface import iter_page_kinds
+from llm_wiki_engine.wiki_surface import iter_page_kinds
 
 
 def _write_init_scaffold(root, *, agent: bool = False):

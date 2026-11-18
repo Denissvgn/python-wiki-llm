@@ -6,9 +6,9 @@ from llm_wiki_cli.services.bootstrap_runtime import (
     build_entity_page_map,
     build_module_page_map,
 )
-from llm_wiki_cli.services.knowledge_evidence import semantic_hash_for_file
+from llm_wiki_engine.knowledge_evidence import semantic_hash_for_file
 from llm_wiki_cli.services.sync_analysis import SyncOwnershipError, compute_sync_diff
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     ManifestPageSource,
     ManifestTombstone,
     SyncManifest,

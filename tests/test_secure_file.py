@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from llm_wiki_cli.services import secure_file
+from llm_wiki_engine import secure_file
 
 
 def test_write_private_text_creates_parent_writes_text_and_restricts_permissions(

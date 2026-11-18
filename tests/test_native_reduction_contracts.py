@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
 from llm_wiki_cli.services import mcp_server, skills
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
 
 
 ROOT = Path(__file__).parents[1]

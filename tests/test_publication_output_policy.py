@@ -5,7 +5,7 @@ import json
 import pytest
 
 from llm_wiki_cli.services.publication_snapshot import assert_bootstrap_output_excluded
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 @pytest.fixture

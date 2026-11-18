@@ -9,27 +9,27 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services.contracts import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
 )
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     MachineVerificationAvailability,
     MachineVerificationReadView,
     build_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_freshness import (
     evaluate_knowledge_freshness,
 )
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GovernanceActor,
     GovernanceLedger,
     apply_governance_projection,
@@ -37,8 +37,8 @@ from llm_wiki_cli.services.knowledge_governance import (
     reconcile_concepts,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     KnowledgeLoadState,
     KnowledgeProjectionProfile,
@@ -46,7 +46,7 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
 from llm_wiki_cli.services.knowledge_projection import (

@@ -12,14 +12,15 @@ from typing import Any, Literal
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import search_service, search_source
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_io import StorageReadSession
+from llm_wiki_cli.services import search_service
+from llm_wiki_engine import search_source
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.search_lexical import rank_pages as rank_candidate
-from llm_wiki_cli.services.search_rank import rank_pages as rank_legacy
+from llm_wiki_engine.search_lexical import rank_pages as rank_candidate
+from llm_wiki_engine.search_rank import rank_pages as rank_legacy
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
 
 
 def _sha(raw):
@@ -185,7 +186,7 @@ def test_frozen_owned_source_arm_is_byte_equal_for_both_engines(owned_wiki, monk
 
 def test_unselected_and_unmapped_pages_filtered_before_reads(owned_wiki, monkeypatch):
     root, wiki, _, _, module, entity = owned_wiki
-    from llm_wiki_cli.services.sync_manifest import (
+    from llm_wiki_engine.sync_manifest import (
         EVIDENCE_NOT_RECORDED, ManifestEvidenceBaseline, ManifestPageSource,
     )
     manifest = SyncManifest.load(wiki)
@@ -366,7 +367,7 @@ def test_bundled_helper_owned_sentinels_are_excluded_without_execution(owned_wik
 
 
 def test_pure_augmentation_keeps_source_fences_and_unicode_inside_code():
-    from llm_wiki_cli.services.markdown_sections import parse_markdown_document
+    from llm_wiki_engine.markdown_sections import parse_markdown_document
 
     page = {"kind": "modules", "id": "owner", "uri": "llm-wiki://modules/owner",
             "path": "modules/owner.md", "title": "owner", "content": "# Owner\n"}

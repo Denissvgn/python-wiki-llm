@@ -9,8 +9,8 @@ import pytest
 
 from llm_wiki_cli.commands import context_cmd, extract_cmd, status_cmd
 from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.services import knowledge_consumption
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine import knowledge_consumption
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.rendering_lifecycle import (
     LifecycleStatus,
     ManagedLifecycleState,

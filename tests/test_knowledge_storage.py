@@ -6,11 +6,11 @@ from importlib.resources import files
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_storage import (
+from llm_wiki_engine.knowledge_storage import (
     MAX_OBJECT_BYTES, MAX_ROOT_BYTES, KnowledgeStorageError, KnowledgeStoreReader,
     build_knowledge_store, canonical_bytes, digest, object_path, parse_store_root,
 )
-from llm_wiki_cli.services.knowledge_storage_io import StorageReadSession, read_guarded
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 
 

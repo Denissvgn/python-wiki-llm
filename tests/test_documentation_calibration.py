@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import contracts
+from llm_wiki_engine import contracts
 from llm_wiki_cli.services import documentation_calibration as calibration
 from llm_wiki_cli.services.documentation_calibration import (
     DocumentationCalibrationError,

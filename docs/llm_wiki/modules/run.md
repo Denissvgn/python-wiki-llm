@@ -13,7 +13,7 @@ Verify consumer inputs and retain the exact public wiki candidate checked by CI.
 | `checkout` | `accepted_inputs`, `verified_checkout`, `verified_target` |
 | `difflib` | `difflib` |
 | `json` | `json` |
-| `llm_wiki_cli.services.knowledge_evidence` | `sha256_bytes` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
 | `llm_wiki_cli.services.publication_candidate` | `_read_tree`, `validate_publication_receipt` |
 | `llm_wiki_cli.services.publication_impact` | `read_publication_document` |
 | `os` | `os` |

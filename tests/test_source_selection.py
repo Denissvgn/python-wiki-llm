@@ -10,13 +10,13 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import context_service, extraction_service
-from llm_wiki_cli.services import source_selection as source_selection_module
+from llm_wiki_engine import source_selection as source_selection_module
 from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.extraction_service import (
     build_extract_payload,
     filter_source_diff,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_GENERATION_INPUT_KEY,
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,

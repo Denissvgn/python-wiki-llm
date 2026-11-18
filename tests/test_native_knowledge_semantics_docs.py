@@ -6,10 +6,10 @@ import shlex
 from pathlib import Path
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services.context_knowledge_contract import (
+from llm_wiki_engine.context_knowledge_contract import (
     context_knowledge_contract,
 )
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_PROTOCOL_VERSION,
     QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,

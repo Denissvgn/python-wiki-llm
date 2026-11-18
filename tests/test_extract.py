@@ -35,7 +35,7 @@ from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_read
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 PROJECT_ROOT = Path(__file__).parents[1]

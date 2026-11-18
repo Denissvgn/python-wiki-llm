@@ -4,12 +4,12 @@ from copy import deepcopy
 
 import pytest
 
-from llm_wiki_cli.services import maintenance_state as state_module
-from llm_wiki_cli.services.maintenance_evidence import (
+from llm_wiki_engine import maintenance_state as state_module
+from llm_wiki_engine.maintenance_evidence import (
     MaintenanceCapture, owner_key, reconcile_pending_maintenance,
 )
-from llm_wiki_cli.services.maintenance_state import canonical_hash, maintenance_core, new_identity
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+from llm_wiki_engine.maintenance_state import canonical_hash, maintenance_core, new_identity
+from llm_wiki_engine.knowledge_storage import canonical_bytes
 from tests.test_maintenance_reconciliation import marker
 from tests.test_maintenance_state import adopt, evidence, event, target
 

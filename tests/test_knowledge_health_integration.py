@@ -16,7 +16,7 @@ from llm_wiki_cli.services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
 )
-from llm_wiki_cli.services.runtime_output import RuntimeDestination
+from llm_wiki_engine.runtime_output import RuntimeDestination
 
 
 def _source(root):

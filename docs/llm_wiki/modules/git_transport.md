@@ -14,11 +14,11 @@ Fast-forward delivery to an initialized sibling wiki, verified through Git readb
 | `base64` | `base64` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass`, `field` |
-| `llm_wiki_cli.services.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `llm_wiki_cli.services.publication_candidate` | `MAX_FILE_BYTES`, `MAX_FILES`, `MAX_TREE_BYTES` |
 | `llm_wiki_cli.services.publication_config` | `publication_repository`, `validate_publication_config` |
 | `llm_wiki_cli.services.publication_delivery` | `CHECKPOINT_PATH`, `plan_delivery`, `plan_rollback`, `split_delivery_tree` |
-| `llm_wiki_cli.services.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

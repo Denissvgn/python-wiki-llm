@@ -12,9 +12,9 @@ import pytest
 from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import sync_analysis_cache
 from llm_wiki_cli.services.extraction_service import get_inventory_result
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
 from llm_wiki_cli.services.lint_service import build_report
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from tests.test_sync_page_transitions import _bootstrap_project, _draft_source, _sync, _author_description
 from tests.test_entity_retirement import _snapshot, _assert_retired

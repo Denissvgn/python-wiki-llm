@@ -19,12 +19,12 @@ from llm_wiki_cli.commands import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import extraction_service, plugins, team
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
     sha256_bytes,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_SCHEMA_VERSION,
     SourceSelectionError,
@@ -32,7 +32,7 @@ from llm_wiki_cli.services.source_selection import (
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_REPAIR_UNAVAILABLE,
     TOMBSTONE_SOURCE_MISSING,
     ManifestEvidenceBaseline,

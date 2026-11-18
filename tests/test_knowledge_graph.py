@@ -9,8 +9,8 @@ from copy import deepcopy
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli.services.contracts import TYPED_GRAPH_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.contracts import TYPED_GRAPH_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GraphConcept,
     KnowledgeGraphError,
@@ -20,7 +20,7 @@ from llm_wiki_cli.services.knowledge_graph import (
     serialize_typed_graph,
     validate_typed_graph,
 )
-from llm_wiki_cli.services.knowledge_model import load_knowledge_schema
+from llm_wiki_engine.knowledge_model import load_knowledge_schema
 
 
 def _coverage(observed: int = 1, emitted: int = 1) -> dict:

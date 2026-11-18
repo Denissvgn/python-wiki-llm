@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeReadView,
     MachineVerificationAvailability,
     MachineVerificationReadView,
@@ -16,12 +16,12 @@ from llm_wiki_cli.services.knowledge_projection import (
     project_knowledge,
     serialize_knowledge_projection,
 )
-from llm_wiki_cli.services.knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     load_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     VERIFICATION_RECEIPT_FILENAME,
     VerificationDiagnostic,

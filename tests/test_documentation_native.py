@@ -20,23 +20,23 @@ from llm_wiki_cli.services.documentation_native import (
     evaluate_documentation_native_freshness,
     refresh_documentation_native_projection,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     SyncManifest,
 )
-from llm_wiki_cli.services.wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )

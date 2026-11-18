@@ -20,7 +20,7 @@ from llm_wiki_cli.services.schema import (
     decode_managed_document_bytes,
 )
 from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES, reference_skill_state
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 # ---------------------------------------------------------------------------

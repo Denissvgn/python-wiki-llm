@@ -13,7 +13,7 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import knowledge_cmd
 import llm_wiki_cli.services.documentation_run as documentation_run_service
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.documentation_native import DocumentationNativeError
@@ -31,15 +31,15 @@ from llm_wiki_cli.services.documentation_run import (
     prepare_documentation_run,
     record_documentation_agent_result,
 )
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     VERIFICATION_RECEIPT_FILENAME,
     VerificationDiagnostic,

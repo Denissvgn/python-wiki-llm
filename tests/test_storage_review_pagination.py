@@ -10,13 +10,13 @@ import sys
 import pytest
 
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes, digest
-from llm_wiki_cli.services.knowledge_storage_diagnostics import review_storage, storage_report
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_diagnostics import review_storage, storage_report
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_knowledge_loader import _committed_state
 
 
@@ -167,7 +167,7 @@ def test_binding_includes_operation_root_location_and_selected_scope(tmp_path):
 
 def test_oversized_exact_identity_has_bounded_followup(tmp_path, monkeypatch):
     # This is a delivery-boundary control, not an accepted native extension name.
-    from llm_wiki_cli.services import knowledge_storage_diagnostics as owner
+    from llm_wiki_engine import knowledge_storage_diagnostics as owner
     key = "record:" + 'é"\\\n' * 5000
     monkeypatch.setattr(owner, "_review_records", lambda root: ({key: {"value": True}}, {"root": str(root)}))
     page = review_storage(tmp_path, max_bytes=1024)
@@ -239,7 +239,7 @@ def test_malformed_cursor_positions_are_rejected_on_valid_inputs(tmp_path):
 
 
 def test_record_chunk_byte_accounting_at_small_envelope_boundaries():
-    from llm_wiki_cli.services.knowledge_storage_diagnostics import _review_record_chunk
+    from llm_wiki_engine.knowledge_storage_diagnostics import _review_record_chunk
     for length in (1, 9, 99, 999, 1000):
         row = {"record_index": 0, "key": "example", "values": {"after": "雪" * length}}
         for maximum in (1024, 1025, 1026):

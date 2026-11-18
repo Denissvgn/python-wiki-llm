@@ -16,7 +16,8 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import extract_cmd, lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.services import metrics, team, wiki_media
+from llm_wiki_cli.services import metrics, team
+from llm_wiki_engine import wiki_media
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
 from llm_wiki_cli.services.inventory_cache import (
@@ -25,9 +26,9 @@ from llm_wiki_cli.services.inventory_cache import (
     InventoryCacheStats,
 )
 from llm_wiki_cli.services.lint_service import LintReport, _check_sync_manifest
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import MANIFEST_VERSION, SyncManifest
+from llm_wiki_engine.sync_manifest import MANIFEST_VERSION, SyncManifest
 
 
 def test_lint_blocks_legacy_manifest_against_live_source_selection(

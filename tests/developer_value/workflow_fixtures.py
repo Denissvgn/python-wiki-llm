@@ -13,7 +13,7 @@ from unittest.mock import patch
 from typing import Any
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 
 POLICY_SOURCE = '''from pathlib import Path
 import os

@@ -14,8 +14,8 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_envelope
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine import knowledge_envelope
+from llm_wiki_engine.knowledge_envelope import (
     AGGREGATE_INPUT_DOMAIN,
     CONFIGURATION_BASIS_UNKNOWN,
     CONSUMED_INPUT_KIND_PRECEDENCE,
@@ -44,8 +44,8 @@ from llm_wiki_cli.services.knowledge_envelope import (
     serialize_evaluated_envelope,
     validate_configured_public_identity,
 )
-from llm_wiki_cli.services.knowledge_evidence import is_valid_sha256, sha256_bytes
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256, sha256_bytes
+from llm_wiki_engine.knowledge_model import (
     REPOSITORY_IDENTITY_SOURCE_EXTENSION,
     ProducerRecord,
     RepositoryIdentitySource,
@@ -55,7 +55,7 @@ from llm_wiki_cli.services.knowledge_model import (
 from llm_wiki_cli.services.knowledge_orchestration import (
     collect_runtime_repository_evidence,
 )
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from tests.knowledge_fixtures import (
     producer_basis_fixtures,
@@ -231,7 +231,7 @@ def _initialized_git_repository(repository: Path) -> str:
 
 @_REQUIRES_GIT
 def test_local_boolean_overrides_global_input_without_losing_git_evidence(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import knowledge_envelope
+    from llm_wiki_engine import knowledge_envelope
 
     global_config = tmp_path / "global.gitconfig"
     global_config.write_text("[core]\n\tautocrlf = input\n", encoding="utf-8")

@@ -12,8 +12,8 @@ import pytest
 
 from llm_wiki_cli.services import publication_candidate as candidate
 from llm_wiki_cli.services import publication_impact as impact
-from llm_wiki_cli.services.host import Host
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.host import Host
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from tests.test_publication_impact import consumer as consumer
 
 

@@ -11,7 +11,7 @@ from llm_wiki_cli import api
 from llm_wiki_cli.commands import doctor_cmd
 from llm_wiki_cli.services import analysis_capture as capture
 from llm_wiki_cli.services import extraction_service, sync_analysis_cache
-from llm_wiki_cli.services.knowledge_envelope import ProducerComponentInput
+from llm_wiki_engine.knowledge_envelope import ProducerComponentInput
 
 
 @pytest.fixture

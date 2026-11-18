@@ -14,7 +14,7 @@ from typing import cast
 import pytest
 
 from llm_wiki_cli.services import documentation_policy as documentation_policy_module
-from llm_wiki_cli.services import filesystem_guard as filesystem_guard_module
+from llm_wiki_engine import filesystem_guard as filesystem_guard_module
 from llm_wiki_cli.services.documentation_policy import (
     DocumentationPolicyError,
     capture_tree_baseline,
@@ -22,7 +22,7 @@ from llm_wiki_cli.services.documentation_policy import (
     resolve_documentation_policy,
     source_tree_baseline,
 )
-from llm_wiki_cli.services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     _WindowsDirectoryGuardUnavailableError,
     WindowsIdentityUnavailableError,
     _WindowsPathHandleMetadata,

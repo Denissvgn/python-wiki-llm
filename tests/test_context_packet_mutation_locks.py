@@ -9,7 +9,7 @@ import pytest
 
 from llm_wiki_cli.services import context_packet
 from llm_wiki_cli.services import context_packet_builder
-from llm_wiki_cli.services.knowledge_governance import governance_lock
+from llm_wiki_engine.knowledge_governance import governance_lock
 
 
 @pytest.mark.parametrize("git_inside", [False, True])

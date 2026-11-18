@@ -17,7 +17,7 @@ from typing import Any, BinaryIO
 
 import pytest
 
-from llm_wiki_cli.services import filesystem_guard as guard
+from llm_wiki_engine import filesystem_guard as guard
 
 
 _EXPECTED_OMITTED = object()

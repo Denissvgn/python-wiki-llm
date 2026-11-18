@@ -894,7 +894,7 @@ class TestAnalyzeDependencies:
         assert startup_cycle_groups({"cycles": [["old.py", "other.py"]]}) == [(["old.py", "other.py"], False)]
 
     def test_valid_immutable_import_records_keep_erasure_in_graphs(self):
-        from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+        from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 
         record = MappingProxyType({"module": "./b", "name": "B", "type_only": True,
                                    "type_only_declaration": True, "runtime": "erased"})

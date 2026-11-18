@@ -907,7 +907,7 @@ def test_haskell_helper_requires_src_dir_argument(haskell_helper: Path):
 def test_haskell_inventory_evidence_contract(haskell_helper: Path, tmp_path):
     from copy import deepcopy
     from llm_wiki_cli.services.dependencies import build_dependency_graph
-    from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
+    from llm_wiki_engine.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
 
     source = _write_haskell(tmp_path, 'Model.hs', '''\
         module Model where

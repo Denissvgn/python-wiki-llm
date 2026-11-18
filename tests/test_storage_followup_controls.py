@@ -8,15 +8,15 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import knowledge_storage_io as storage
-from llm_wiki_cli.services import knowledge_governance as governance
-from llm_wiki_cli.services import knowledge_storage_lifecycle as lifecycle
+from llm_wiki_engine import knowledge_storage_io as storage
+from llm_wiki_engine import knowledge_governance as governance
+from llm_wiki_engine import knowledge_storage_lifecycle as lifecycle
 from llm_wiki_cli.services.context_session import _memory_size
-from llm_wiki_cli.services.knowledge_storage import ROOT_FILENAME, KnowledgeStorageError, build_knowledge_store, digest
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_storage import ROOT_FILENAME, KnowledgeStorageError, build_knowledge_store, digest
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, prune_knowledge_storage, restore_pruned_storage,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_loader import _committed_state
 from tests.test_knowledge_governance import _two_concept_ledger, HUMAN, FIXED_TIME
@@ -273,7 +273,7 @@ def test_restore_rechecks_generation_after_reading_backup_bytes(tmp_path, monkey
 
 
 def test_restore_refuses_a_valid_newer_generation(tmp_path):
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     root, name, _ = orphan_fixture(tmp_path)
     applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
     migrate_knowledge_storage(root, to='packed-v4-deflate', recovery_dir=tmp_path / 'new-generation')

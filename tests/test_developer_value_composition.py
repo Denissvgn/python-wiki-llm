@@ -13,18 +13,18 @@ from hashlib import sha256
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.knowledge_governance import (
     load_governance,
     evaluate_review_event,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME, snapshot_wiki
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage import canonical_bytes
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME, snapshot_wiki
 from llm_wiki_cli.services.mcp_server import McpWikiService, McpWikiError
-from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from tests.developer_value.oracles import apply_source_mutation, apply_prose_mutation
 from tests.developer_value.fixtures import (
     POLICY_SOURCE,

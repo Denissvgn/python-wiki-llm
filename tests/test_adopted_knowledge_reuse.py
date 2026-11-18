@@ -11,12 +11,10 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import (
-    knowledge_artifacts, knowledge_generation, knowledge_orchestration,
-    knowledge_reuse, sync_analysis_cache,
-)
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+from llm_wiki_cli.services import knowledge_generation, knowledge_orchestration, knowledge_reuse, sync_analysis_cache
+from llm_wiki_engine import knowledge_artifacts
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 
@@ -107,7 +105,7 @@ def test_maintenance_acknowledgment_rebinds_lifecycle_without_losing_fast_path(l
 
 def test_reconciliation_change_cannot_use_committed_noop_hint(legacy, monkeypatch):
     _sync(rebuild_knowledge=True)
-    from llm_wiki_cli.services import maintenance_evidence
+    from llm_wiki_engine import maintenance_evidence
 
     original = maintenance_evidence.reconcile_pending_maintenance
 
@@ -191,8 +189,8 @@ def test_source_mutation_after_fast_result_is_rejected_by_outer_final_verificati
 
 @pytest.mark.parametrize("budget_phase", ["capture", "recheck"])
 def test_raw_markdown_inspection_budget_falls_back_to_guarded_generation(legacy, monkeypatch, budget_phase):
-    from llm_wiki_cli.services import knowledge_storage_io
-    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+    from llm_wiki_engine import knowledge_storage_io
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     _sync(rebuild_knowledge=True)
     before = snapshot_wiki("wiki")
@@ -224,8 +222,8 @@ def test_raw_markdown_inspection_budget_falls_back_to_guarded_generation(legacy,
 
 @pytest.mark.parametrize("growth", [1, "exhaust-capture"])
 def test_page_growth_after_budget_preflight_cannot_be_treated_as_a_cache_miss(legacy, monkeypatch, growth):
-    from llm_wiki_cli.services import knowledge_storage_io
-    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+    from llm_wiki_engine import knowledge_storage_io
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     _sync(rebuild_knowledge=True)
     total = sum(page.path.stat().st_size for page in collect_wiki_pages("wiki"))
@@ -258,7 +256,7 @@ def test_page_growth_after_budget_preflight_cannot_be_treated_as_a_cache_miss(le
 
 
 def test_page_removed_before_budget_preflight_is_rejected(legacy, monkeypatch):
-    from llm_wiki_cli.services import knowledge_storage_io, wiki_surface
+    from llm_wiki_engine import knowledge_storage_io, wiki_surface
 
     _sync(rebuild_knowledge=True)
     original_check = knowledge_reuse.maintenance_reuse_check
@@ -284,8 +282,8 @@ def test_page_removed_before_budget_preflight_is_rejected(legacy, monkeypatch):
 
 
 def test_late_budget_exhaustion_does_not_hide_an_evicted_page_mutation(legacy, monkeypatch):
-    from llm_wiki_cli.services import knowledge_storage_io
-    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+    from llm_wiki_engine import knowledge_storage_io
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     notes = Path("wiki/guides")
     notes.mkdir(exist_ok=True)
@@ -326,8 +324,8 @@ def test_late_budget_exhaustion_does_not_hide_an_evicted_page_mutation(legacy, m
 
 @pytest.mark.parametrize("mutate", [False, True])
 def test_reserved_raw_markdown_recheck_has_exact_budget_and_rejects_mutation(legacy, monkeypatch, mutate):
-    from llm_wiki_cli.services import knowledge_storage_io
-    from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+    from llm_wiki_engine import knowledge_storage_io
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     _sync(rebuild_knowledge=True)
     before = snapshot_wiki("wiki")

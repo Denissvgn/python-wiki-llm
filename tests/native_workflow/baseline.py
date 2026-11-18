@@ -16,8 +16,8 @@ from pathlib import Path
 import statistics
 from typing import Any
 
-from llm_wiki_cli.services.knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
-from llm_wiki_cli.services.validation import is_portable_relative_path
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
+from llm_wiki_engine.validation import is_portable_relative_path
 from tests.native_workflow.oracles import verify_corpus
 from tests.native_workflow.run_trace import identity, inspect_campaign, validate_manifest
 from tests.provider_conformance.model import canonical_json

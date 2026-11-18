@@ -13,7 +13,7 @@ from llm_wiki_cli.services.cli_reference import (
     render_cli_reference,
     validate_cli_contract,
 )
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from llm_wiki_cli.services import publication_impact as impact
 from llm_wiki_cli.services.publication_config import validate_publication_config
 from llm_wiki_cli.services.publication_contracts import (

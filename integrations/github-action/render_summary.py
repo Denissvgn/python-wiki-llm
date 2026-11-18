@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from llm_wiki_cli.services.ci_report import validate_doctor_payload
-from llm_wiki_cli.services.contracts import DOCTOR_V3_SCHEMA_VERSION
+from llm_wiki_engine.contracts import DOCTOR_V3_SCHEMA_VERSION
 from llm_wiki_cli.services.health_summary import (
     ASSURANCE_DISCLOSURE,
     FRESHNESS_DISCLOSURE,

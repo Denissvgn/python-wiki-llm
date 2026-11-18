@@ -16,14 +16,14 @@ from llm_wiki_cli.commands import bootstrap_cmd, migrate_cmd, sync_cmd
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME, SyncManifest
 from llm_wiki_cli.services import team
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ConceptObservationBasis,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.paths import is_test_source_path
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.paths import is_test_source_path
+from llm_wiki_engine.sync_manifest import (
     ManifestEvidenceBaseline,
     ManifestTombstone,
     TOMBSTONE_UNKNOWN_PROVENANCE,

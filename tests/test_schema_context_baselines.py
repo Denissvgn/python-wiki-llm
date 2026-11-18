@@ -11,7 +11,7 @@ import pytest
 
 from llm_wiki_cli.services import context_packet, context_service
 from llm_wiki_cli.services import context_packet_builder
-from llm_wiki_cli.services.contracts import CONTEXT_PROTOCOL_VERSION
+from llm_wiki_engine.contracts import CONTEXT_PROTOCOL_VERSION
 from llm_wiki_cli.services.schema import (
     SCHEMA_FILENAMES,
     SchemaRenderProfile,

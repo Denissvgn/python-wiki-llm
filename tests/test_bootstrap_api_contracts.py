@@ -16,7 +16,7 @@ from llm_wiki_cli.services.infrastructure_sync import (
     INFRASTRUCTURE_GENERATION_INPUT_KEY,
     INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
 )
-from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
+from llm_wiki_engine.knowledge_envelope import ConsumedInputKind
 
 
 def _args(project: Path, wiki: Path, **overrides):

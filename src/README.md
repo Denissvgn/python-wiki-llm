@@ -27,8 +27,9 @@ The knowledge store does not analyze sources itself. Concept implementation
 evidence, source snapshots, the active domain pack and a few issued state
 types come from the application through `llm_wiki_engine.integrations`, which
 names a provider module for each capability. `agent-wiki-cli` provides all of
-them. An operation that needs a capability nobody provided fails with
-`IntegrationUnavailable`.
+them as soon as `llm_wiki_cli` is imported, so a program that uses the engine
+next to the CLI imports `llm_wiki_cli` first. An operation that needs a
+capability nobody provided fails with `IntegrationUnavailable`.
 
 The import package is `llm_wiki_engine`. It requires Python 3.11 or later.
 
@@ -38,9 +39,10 @@ pip install llm-wiki-engine
 
 The code-documentation CLI, [`agent-wiki-cli`](https://pypi.org/project/agent-wiki-cli/),
 depends on an exact version of this package. Both are released together and
-share one version number. Its
-`llm_wiki_cli.services.<module>` import paths for these modules stay
-available as aliases of the same modules.
+share one version number. Its older
+`llm_wiki_cli.services.<module>` import paths for these modules still work as
+aliases of the same modules, but they are deprecated: importing one raises a
+`DeprecationWarning` that names the `llm_wiki_engine.<module>` path to use.
 
 Source: <https://github.com/Denissvgn/python-wiki-llm>, in the `src/`
 directory. Licensed under the MIT License.

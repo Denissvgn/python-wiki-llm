@@ -55,9 +55,9 @@ def semantic_payload(result):
 
 def committed_capture(root, result, *, bundles=True):
     from dataclasses import replace
-    from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
-    from llm_wiki_cli.services.knowledge_evidence import hash_json
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     from llm_wiki_cli.services.sync_analysis_cache import EXTENSION, SCHEMA
     from tests.test_knowledge_loader import _committed_state
     _, original, _ = _committed_state(root)

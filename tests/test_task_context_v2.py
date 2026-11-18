@@ -11,15 +11,15 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.context_session import build_delta, apply_task_delta
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
-from llm_wiki_cli.services.io import decode_markdown_bytes
-from llm_wiki_cli.services.knowledge_storage import digest
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
-from llm_wiki_cli.services.storage_receipts import expand_storage_receipt
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_engine.io import decode_markdown_bytes
+from llm_wiki_engine.knowledge_storage import digest
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.storage_receipts import expand_storage_receipt
 from llm_wiki_cli.services.task_compact import VIEW_REQUEST_SCHEMA
 from llm_wiki_cli.services.task_contract import TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.native_workflow.oracles import source_facts
 from tests.test_knowledge_storage_artifacts import migrate_plan
 from tests.test_task_compact import reseal_canonical
@@ -163,7 +163,7 @@ def test_rehashed_native_page_binding_tampering_is_rejected(project, mutation):
 
 @pytest.mark.parametrize("deny_write", [False, True])
 def test_canonical_equivalent_newline_mutation_after_capture_still_refuses(project, monkeypatch, deny_write):
-    from llm_wiki_cli.services import knowledge_storage_access
+    from llm_wiki_engine import knowledge_storage_access
 
     wiki, page, req = _newline_native_project(project, "\n", "sharded-v2")
     if deny_write:

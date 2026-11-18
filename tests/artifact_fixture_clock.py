@@ -42,8 +42,8 @@ def _run_inline(code, arguments):
 def main():
     # Imports still resolve from the consumer interpreter's installed package.
     # This helper is invoked with -I, outside the candidate source tree.
-    from llm_wiki_cli.services import maintenance_state
-    from llm_wiki_cli.services.host import Host
+    from llm_wiki_engine import maintenance_state
+    from llm_wiki_engine.host import Host
 
     # Adoption identity is a generated input, just like the architectural date.
     # Freeze only this fixture allocation; compare all resulting bytes unchanged.

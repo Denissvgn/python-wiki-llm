@@ -10,7 +10,7 @@ from zipfile import ZipFile
 import pytest
 import yaml
 
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from tests.test_publication_candidate import accept_topics
 from tests.test_wiki_delivery_transport import commit, git, head, prepare
 from tests.test_wiki_delivery_transport import repos as repos

@@ -13,13 +13,13 @@ import pytest
 
 from llm_wiki_cli import api, api_types, cli
 from llm_wiki_cli.commands.maintenance_cmd import _render_status
-from llm_wiki_cli.services.maintenance_protocol import (
+from llm_wiki_engine.maintenance_protocol import (
     ADOPTION_FILENAME,
     snapshot_wiki,
     save_recovery_snapshot,
     load_adoption_marker,
 )
-from llm_wiki_cli.services.request_json import MAX_REQUEST_BYTES
+from llm_wiki_engine.request_json import MAX_REQUEST_BYTES
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 

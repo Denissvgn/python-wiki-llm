@@ -12,7 +12,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
-from llm_wiki_cli.services.progress import (
+from llm_wiki_engine.progress import (
     Progress,
     current_progress,
     observed_phase,

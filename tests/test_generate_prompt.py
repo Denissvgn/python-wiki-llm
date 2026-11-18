@@ -15,13 +15,13 @@ import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd
 from llm_wiki_cli.services.documentation_queries import DocumentationQueryError
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_git_policy import (
     WikiGitDisposition,
     WikiGitPolicy,

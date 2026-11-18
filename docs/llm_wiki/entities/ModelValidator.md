@@ -12,7 +12,7 @@
 One acceptance check run on every parsed knowledge index.
 
 ``check`` receives the parsed model and raises
-:class:`~llm_wiki_cli.services.knowledge_model.KnowledgeModelError` to
+:class:`~llm_wiki_engine.knowledge_model.KnowledgeModelError` to
 reject it; a ``ValueError``, ``TypeError`` or ``KeyError`` is reported as
 one too. ``modules`` are importable module names whose functions and
 upper-case policy values define the check; changing any of them

@@ -14,13 +14,13 @@ Protected GitHub Actions entry point for reviewed wiki delivery.
 | `importlib` | `importlib` |
 | `io` | `BytesIO` |
 | `json` | `json` |
-| `llm_wiki_cli.services.knowledge_evidence` | `hash_json`, `sha256_bytes` |
-| `llm_wiki_cli.services.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_cli.services.publication_candidate` | `MAX_FILE_BYTES`, `MAX_FILES`, `MAX_TREE_BYTES`, `_provider`, `validate_publication_receipt` |
 | `llm_wiki_cli.services.publication_config` | `publication_ref_name`, `read_publication_json`, `validate_publication_config` |
 | `llm_wiki_cli.services.publication_delivery` | `validate_rollback_review` |
 | `llm_wiki_cli.services.publication_impact` | `MAX_JSON_BYTES`, `compare_publication_impact`, `read_publication_document` |
-| `llm_wiki_cli.services.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |

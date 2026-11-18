@@ -821,12 +821,15 @@ def module_alias_target(tree: ast.Module) -> str:
     """Return the imported binding of a static self-module shim, else ``""``.
 
     Only one unconditional assignment through an unshadowed ``sys`` import
-    qualifies. Other executable statements, declarations, rebinding and
-    conditional/dynamic redirects retain their own inventory entry. This is a
-    syntactic classification, not execution of the imported object.
+    qualifies. Before it, the shim may announce its own deprecation with one
+    literal ``warnings.warn(..., DeprecationWarning)`` call. Other executable
+    statements, declarations, rebinding and conditional/dynamic redirects
+    retain their own inventory entry. This is a syntactic classification, not
+    execution of the imported object.
     """
     bindings: dict[str, str] = {}
     target_name = ""
+    warned = False
     for statement in tree.body:
         if isinstance(statement, ast.Pass) or (
             isinstance(statement, ast.Expr)
@@ -843,6 +846,9 @@ def module_alias_target(tree: ast.Module) -> str:
             bindings.update(imported)
             continue
         if _static_type_checking_block(statement, bindings):
+            continue
+        if not warned and _static_deprecation_warning(statement, bindings):
+            warned = True
             continue
         if (not isinstance(statement, ast.Assign)
                 or len(statement.targets) != 1
@@ -879,6 +885,47 @@ def _static_import_bindings(statement: ast.AST) -> dict[str, str] | None:
             return None
         bindings[name] = module
     return bindings
+
+
+_DEPRECATION_CATEGORIES = frozenset({"DeprecationWarning", "PendingDeprecationWarning"})
+
+
+def _static_deprecation_warning(statement: ast.AST, bindings: dict[str, str]) -> bool:
+    """Recognize ``warnings.warn("literal", DeprecationWarning, stacklevel=N)``."""
+    if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+        return False
+    call = statement.value
+    function = call.func
+    if (
+        not isinstance(function, ast.Attribute)
+        or function.attr != "warn"
+        or not isinstance(function.value, ast.Name)
+        or bindings.get(function.value.id) != "warnings"
+    ):
+        return False
+    arguments = list(call.args)
+    keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+    if None in keywords or not set(keywords) <= {"category", "stacklevel"}:
+        return False
+    if len(arguments) == 2 and "category" not in keywords:
+        keywords["category"] = arguments.pop()
+    if len(arguments) != 1:
+        return False
+    message, category = arguments[0], keywords.get("category")
+    if not isinstance(message, ast.Constant) or not isinstance(message.value, str):
+        return False
+    if (
+        not isinstance(category, ast.Name)
+        or category.id not in _DEPRECATION_CATEGORIES
+        or category.id in bindings
+    ):
+        return False
+    stacklevel = keywords.get("stacklevel")
+    return stacklevel is None or (
+        isinstance(stacklevel, ast.Constant)
+        and type(stacklevel.value) is int
+        and stacklevel.value >= 1
+    )
 
 
 def _static_type_checking_block(statement: ast.AST, bindings: dict[str, str]) -> bool:

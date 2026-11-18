@@ -10,11 +10,11 @@ import sys
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_governance import load_governance
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_governance import load_governance
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.workflow_fixtures import (
     BODY_PROSE, DEFAULT_PROSE, INITIAL_PROSE, prepare_workflow, mutate_source, record_workflow_trace,
     run_behavior_oracle, sync_workflow, write_description, task_request, compact_payload,

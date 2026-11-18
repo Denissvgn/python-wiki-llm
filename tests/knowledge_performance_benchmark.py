@@ -32,11 +32,11 @@ from typing import Any, Callable, Protocol, TypeVar, cast
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services.context_session import SessionReply
-from llm_wiki_cli.services.knowledge_artifacts import KnowledgeCommitPlan, build_knowledge_commit_plan
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes
-from llm_wiki_cli.services.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report, review_storage
+from llm_wiki_engine.knowledge_artifacts import KnowledgeCommitPlan, build_knowledge_commit_plan
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
+from llm_wiki_engine.knowledge_storage import canonical_bytes
+from llm_wiki_engine.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report, review_storage
 from llm_wiki_cli.services.task_contract import TaskContext
 
 T = TypeVar("T")
@@ -111,7 +111,7 @@ def profile_summary(profiler, label):
             filename = str(Path(filename).relative_to(ROOT))
         rows.append({"file": filename, "line": line, "function": name, "calls": calls,
                      "primitive_calls": primitive, "own_seconds": own, "cumulative_seconds": cumulative})
-    from llm_wiki_cli.services.knowledge_storage import KnowledgeStoreReader
+    from llm_wiki_engine.knowledge_storage import KnowledgeStoreReader
     lines, first_line = inspect.getsourcelines(KnowledgeStoreReader._expand)
     last_line = first_line + len(lines)
     attribution = {"scalar_canonical_calls": 0, "path_component_calls": 0}
@@ -175,16 +175,16 @@ def worker(workload, profiled):
             if workload == "incremental_write":
                 if not ALLOW_WRITES:
                     raise ValueError("--allow-writes is required")
-                from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+                from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
                 commit_knowledge_artifacts(plan)
             return plan
         if workload == "inspect_scoped":
             return review_storage(WIKI, limit=1, selectors=[SELECTORS["concept"]])
         if workload == "audit_stream":
-            from llm_wiki_cli.services.knowledge_stream_audit import audit_knowledge_stream
+            from llm_wiki_engine.knowledge_stream_audit import audit_knowledge_stream
             return audit_knowledge_stream(WIKI)
         if workload in {"prune_preview", "prune_apply"}:
-            from llm_wiki_cli.services.knowledge_storage_lifecycle import prune_knowledge_storage
+            from llm_wiki_engine.knowledge_storage_lifecycle import prune_knowledge_storage
             if workload == "prune_apply" and not ALLOW_WRITES:
                 raise ValueError("--allow-writes is required")
             return prune_knowledge_storage(WIKI, dry_run=workload == "prune_preview")
@@ -261,7 +261,7 @@ def worker(workload, profiled):
     details["git_pack_bytes"] = git_pack_bytes(ROOT)
     if ALLOW_WRITES:
         details["recovery_bytes"] = sum(p.stat().st_size for p in ROOT.parent.glob("recovery*/**/*") if p.is_file())
-        from llm_wiki_cli.services.knowledge_storage_lifecycle import prune_knowledge_storage
+        from llm_wiki_engine.knowledge_storage_lifecycle import prune_knowledge_storage
         try:
             details["orphan_bytes"] = prune_knowledge_storage(WIKI)["bytes"]
         except ValueError as exc:

@@ -11,30 +11,26 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import bootstrap_cmd, doctor_cmd
-from llm_wiki_cli.services import (
-    doctor_service,
-    extraction_service,
-    knowledge_verification,
-    lint_service,
-)
-from llm_wiki_cli.services.contracts import DOCTOR_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_cli.services import doctor_service, extraction_service, lint_service
+from llm_wiki_engine import knowledge_verification
+from llm_wiki_engine.contracts import DOCTOR_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadIssue,
     KnowledgeLoadResult,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.knowledge_observability import KnowledgePhaseDurations
-from llm_wiki_cli.services.knowledge_verification import (
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_observability import KnowledgePhaseDurations
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
 )
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     DoctorExitFixture,
     doctor_exit_fixtures,

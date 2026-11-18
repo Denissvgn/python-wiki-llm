@@ -12,16 +12,16 @@ import pytest
 
 from llm_wiki_cli.cli import main
 from llm_wiki_cli.services import wiki_git_delivery as delivery
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
-from llm_wiki_cli.services.paths import shell_quote
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.paths import shell_quote
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.wiki_git_policy import (
     classify_wiki_git_policy,
     WikiGitDisposition,

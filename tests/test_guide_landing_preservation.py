@@ -8,7 +8,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services.documentation_worklist import build_documentation_worklist
-from llm_wiki_cli.services.markdown_sections import GENERATED_INDEX_INTROS
+from llm_wiki_engine.markdown_sections import GENERATED_INDEX_INTROS
 
 
 PURPOSE = (

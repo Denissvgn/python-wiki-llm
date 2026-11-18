@@ -14,10 +14,10 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import analysis_capture
 from llm_wiki_cli.services.context_packet_builder import capture_context_read
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
-from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.maintenance_status import compact_maintenance_summary
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 from tests.test_knowledge_commands import _write_reviewed_description
 from tests.test_maintenance_read_projections import _context

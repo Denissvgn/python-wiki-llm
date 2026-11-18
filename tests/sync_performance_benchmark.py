@@ -59,17 +59,17 @@ def instrument() -> tuple[Counter, list]:
     targets = {
         "llm_wiki_cli.commands.sync_cmd": ("_extract_current_inventory", "_build_sync_graph_observations"),
         "llm_wiki_cli.services.knowledge_generation": ("build_knowledge_generation_plan",),
-        "llm_wiki_cli.services.knowledge_graph": ("materialize_typed_graph",),
-        "llm_wiki_cli.services.knowledge_index": ("build_knowledge_index",),
-        "llm_wiki_cli.services.knowledge_model": ("parse_knowledge_index",),
-        "llm_wiki_cli.services.knowledge_artifacts": ("validate_knowledge_artifacts",),
-        "llm_wiki_cli.services.knowledge_packs": ("build_packed_store",),
-        "llm_wiki_cli.services.maintenance_protocol": ("snapshot_wiki", "save_recovery_snapshot"),
+        "llm_wiki_engine.knowledge_graph": ("materialize_typed_graph",),
+        "llm_wiki_engine.knowledge_index": ("build_knowledge_index",),
+        "llm_wiki_engine.knowledge_model": ("parse_knowledge_index",),
+        "llm_wiki_engine.knowledge_artifacts": ("validate_knowledge_artifacts",),
+        "llm_wiki_engine.knowledge_packs": ("build_packed_store",),
+        "llm_wiki_engine.maintenance_protocol": ("snapshot_wiki", "save_recovery_snapshot"),
         "llm_wiki_cli.extractors.python_bindings": ("analyze_python_bindings",),
     }
     for module in targets:
         importlib.import_module(module)
-    from llm_wiki_cli.services.progress import phase
+    from llm_wiki_engine.progress import phase
     counts: Counter = Counter()
     replacements = []
     for module_name, names in targets.items():

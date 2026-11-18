@@ -10,9 +10,10 @@ import sys
 
 import pytest
 
-from llm_wiki_cli.services import analysis_compatibility as ac, analysis_capture as capture
+from llm_wiki_cli.services import analysis_capture as capture
+from llm_wiki_engine import analysis_compatibility as ac
 from llm_wiki_cli.services import ci_report, doctor_service, lint_service
-from llm_wiki_cli.services.knowledge_envelope import ProducerComponentInput, build_producer_record
+from llm_wiki_engine.knowledge_envelope import ProducerComponentInput, build_producer_record
 from tests.test_knowledge_health_refresh import recorded_project as recorded_project, _version
 
 
@@ -213,7 +214,7 @@ def test_native_portable_observation_contract(tmp_path, pytestconfig):
     from llm_wiki_cli import __version__
     from llm_wiki_cli.config import EXTRACTOR_REGISTRY
     from llm_wiki_cli.services.extraction_service import get_inventory_result
-    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+    from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 
     fixture_path = Path(__file__).with_name("fixtures") / "analysis-portability.json"
     fixture = json.loads(fixture_path.read_text("utf-8"))
@@ -252,7 +253,7 @@ def test_plain_caller_metadata_is_not_an_authorized_capture():
 
 
 def test_isolated_comparison_versions_match_public_protocol_registry():
-    from llm_wiki_cli.services import contracts
+    from llm_wiki_engine import contracts
     assert ac.SCHEMA == contracts.ANALYSIS_COMPATIBILITY_SCHEMA_VERSION
     assert ac.COMPARISON_SCHEMA == contracts.ANALYSIS_COMPARISON_SCHEMA_VERSION
     assert ac.SCHEMA in contracts.PROTOCOL_VERSIONS

@@ -10,12 +10,12 @@ import pytest
 
 import llm_wiki_cli.api as api
 from llm_wiki_cli.services import mcp_server
-from llm_wiki_cli.services.contracts import TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.contracts import TYPED_GRAPH_EXTENSION_KEY
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,

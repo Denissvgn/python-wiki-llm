@@ -69,7 +69,7 @@ def generate(work: Path, tier: str, *, governed=False, manifest_heavy=False):
     command("sync", "--src-dir", str(source), "--wiki-dir", str(wiki), "--jobs", "1", "--no-plugins", "--progress", "never")
     if governed:
         command("knowledge", "init", "--wiki-dir", str(wiki), "--bundle-id", "kb_perf_260916")
-        from llm_wiki_cli.services.knowledge_governance import (
+        from llm_wiki_engine.knowledge_governance import (
             GovernanceAlias, load_governance, save_governance,
         )
         from dataclasses import replace
@@ -82,12 +82,12 @@ def generate(work: Path, tier: str, *, governed=False, manifest_heavy=False):
         save_governance(wiki, replace(ledger, aliases=aliases))
         command("sync", "--src-dir", str(source), "--wiki-dir", str(wiki), "--jobs", "1", "--no-plugins", "--progress", "never")
     if manifest_heavy:
-        from llm_wiki_cli.services.sync_manifest import SyncManifest
+        from llm_wiki_engine.sync_manifest import SyncManifest
         manifest = SyncManifest.load(wiki)
         for info in manifest.sources.values():
             info["benchmark_notes"] = "large source metadata\n" * 1000
         manifest.save(wiki)
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     validation_started = time.perf_counter_ns()
     state = load_knowledge_state(wiki)
     assert state.knowledge is not None and state.manifest_basis is not None
@@ -95,7 +95,7 @@ def generate(work: Path, tier: str, *, governed=False, manifest_heavy=False):
     assert set(oracle["service_names"]) <= titles
     assert set(state.manifest_basis.sources) == set(files)
     assert "Stop recursive work" in page.read_text()
-    from llm_wiki_cli.services.contracts import TYPED_GRAPH_EXTENSION_KEY
+    from llm_wiki_engine.contracts import TYPED_GRAPH_EXTENSION_KEY
     graph = state.knowledge.extensions[TYPED_GRAPH_EXTENSION_KEY]
     calls = {(e["from"].get("locator"), e["target"].get("locator")) for e in graph["edges"] if e["kind"] == "calls"}
     for i in range(TIERS[tier][0]):

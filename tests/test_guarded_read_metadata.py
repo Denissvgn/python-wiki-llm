@@ -9,12 +9,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_storage_io as storage
+from llm_wiki_engine import knowledge_storage_io as storage
 from llm_wiki_cli.services import source_snapshot as sources
-from llm_wiki_cli.services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError, WindowsFileGuardError, fresh_no_follow_stat,
 )
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 
 
 def metadata(**changes):

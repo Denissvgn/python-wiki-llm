@@ -14,7 +14,7 @@ import tempfile
 def capture(fixture_path: Path, output: Path, helper_cache_dir: str) -> dict:
     from llm_wiki_cli import __version__
     from llm_wiki_cli.services.extraction_service import get_inventory_result
-    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+    from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 
     raw = fixture_path.read_bytes()
     fixture = json.loads(raw)

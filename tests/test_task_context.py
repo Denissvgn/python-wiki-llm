@@ -10,7 +10,7 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import task_context, source_snapshot
 from llm_wiki_cli.services.task_contract import TASK_REQUEST_SCHEMA, TASK_RESULT_SCHEMA
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.native_workflow.oracles import source_facts
 
 

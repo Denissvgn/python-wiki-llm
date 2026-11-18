@@ -10,7 +10,7 @@ from llm_wiki_cli.extractors.common import discover_source_files
 from llm_wiki_cli.services import extractor_helpers as helpers
 from llm_wiki_cli.services import helper_cache as cache
 from llm_wiki_cli.services.helper_runtime import EXTRACTOR_REGISTRY, required_helper_languages
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import (
     build_source_snapshot,
     source_snapshot_matches_current_files,

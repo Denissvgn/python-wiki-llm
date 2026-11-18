@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 from llm_wiki_cli.services.extraction_service import get_inventory_result
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.maintenance_evidence import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.maintenance_evidence import (
     MaintenanceCapture,
     captured_observations_from_knowledge,
     maintenance_transfers_from_page_plan,
@@ -167,7 +167,7 @@ def test_no_plan_is_no_implicit_move_proof():
 def _real_adopted(tmp_path, monkeypatch, capsys):
     from llm_wiki_cli import api
     from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
@@ -184,7 +184,7 @@ def test_real_sync_verified_source_move_retains_class_record_id_and_history(
     tmp_path, monkeypatch, capsys
 ):
     from llm_wiki_cli import cli
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
     import sys
 
     state = _real_adopted(tmp_path, monkeypatch, capsys)
@@ -219,7 +219,7 @@ def test_real_ambiguous_source_move_cannot_guess_or_clear_durable_history(
     tmp_path, monkeypatch, capsys
 ):
     from llm_wiki_cli import cli
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
     import sys
 
     state = _real_adopted(tmp_path, monkeypatch, capsys)

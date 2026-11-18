@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import wiki_surface
-from llm_wiki_cli.services.wiki_surface import PageKind, SurfaceRole
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.wiki_surface import PageKind, SurfaceRole
 
 
 def _write(path: Path, content: str = "# Page\n\n") -> None:

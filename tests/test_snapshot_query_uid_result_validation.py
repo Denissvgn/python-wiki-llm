@@ -5,13 +5,14 @@ from __future__ import annotations
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import knowledge_graph, knowledge_model, task_context
+from llm_wiki_cli.services import task_context
+from llm_wiki_engine import knowledge_graph, knowledge_model
 from llm_wiki_cli.services.task_contract import (
     TASK_REQUEST_SCHEMA_V2,
     normalize_task_request,
 )
 from llm_wiki_cli.services.task_context_v2 import validate_scoped_bindings
-from llm_wiki_cli.services.workflow_profile import WorkflowRequestError
+from llm_wiki_engine.workflow_profile import WorkflowRequestError
 from tests.test_snapshot_query_validation import _history_snapshot
 from tests.test_task_compact import reseal_canonical
 

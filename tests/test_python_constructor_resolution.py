@@ -21,7 +21,7 @@ from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     _minimal_oversized_query_result,
 )
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     KnowledgeGraphInputs,
     GraphConcept,
     materialize_typed_graph,
@@ -558,7 +558,7 @@ def test_empty_supplied_inventory_with_native_view_is_not_snapshot_origin(
     tmp_path, monkeypatch
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
+    from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
     from llm_wiki_cli.services.documentation_query_builder import (
         build_snapshot_documentation_query_service,
     )

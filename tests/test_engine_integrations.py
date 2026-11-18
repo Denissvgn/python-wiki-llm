@@ -91,4 +91,4 @@ def test_attributes_are_read_at_call_time(monkeypatch):
     monkeypatch.setattr(module, "validate_concept_implementation", marker)
     assert integrations.attributes("implementation_evidence", "validate_concept_implementation") == (marker,)
     knowledge_model = importlib.import_module("llm_wiki_engine.knowledge_model")
-    assert knowledge_model is importlib.import_module("llm_wiki_cli.services.knowledge_model")
+    assert knowledge_model is importlib.import_module("llm_wiki_engine.knowledge_model")

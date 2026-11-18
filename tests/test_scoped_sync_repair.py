@@ -10,10 +10,11 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services import knowledge_evidence as ke, knowledge_reuse, scoped_sync_repair as scoped
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+from llm_wiki_cli.services import knowledge_reuse, scoped_sync_repair as scoped
+from llm_wiki_engine import knowledge_evidence as ke
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 from llm_wiki_cli.services.maintenance_service import load_recovery_snapshot
 from tests.test_sync_guard_diagnostics import _decode_command, _preview_command
 
@@ -471,7 +472,7 @@ def test_scoped_evidence_inputs_keep_count_and_ratio_review(tmp_path, monkeypatc
 
 
 def test_helper_mutation_at_publication_checkpoint_is_refused(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.knowledge_artifacts import CommitStage
+    from llm_wiki_engine.knowledge_artifacts import CommitStage
 
     wiki = _project(tmp_path, monkeypatch)
     before = snapshot_wiki(wiki)
@@ -549,7 +550,7 @@ def test_symlinked_requested_source_cannot_escape_selection(tmp_path, monkeypatc
 
 @pytest.mark.parametrize('page', ['modules/f000.md', 'modules/f001.md', 'log.md'])
 def test_markdown_mutation_at_publication_checkpoint_is_refused(tmp_path, monkeypatch, page):
-    from llm_wiki_cli.services.knowledge_artifacts import CommitStage
+    from llm_wiki_engine.knowledge_artifacts import CommitStage
 
     wiki = _project(tmp_path, monkeypatch)
     before = snapshot_wiki(wiki)

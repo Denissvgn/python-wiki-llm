@@ -12,7 +12,7 @@ from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.services import extractor_helpers as helpers
 from llm_wiki_cli.services import helper_cache
 from llm_wiki_cli.services.helper_preparation import ensure_source_helpers
-from llm_wiki_cli.services.source_selection import SourceSelectionError
+from llm_wiki_engine.source_selection import SourceSelectionError
 
 
 @pytest.fixture(autouse=True)

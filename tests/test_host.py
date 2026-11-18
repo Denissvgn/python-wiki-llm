@@ -11,8 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import change_selection, circuit_breaker, knowledge_storage_lifecycle, paths
-from llm_wiki_cli.services.host import (
+from llm_wiki_cli.services import change_selection
+from llm_wiki_engine import circuit_breaker, knowledge_storage_lifecycle, paths
+from llm_wiki_engine.host import (
     Host,
     HostCapabilityError,
     NoProcessHost,

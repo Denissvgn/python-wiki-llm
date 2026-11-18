@@ -14,15 +14,15 @@ from llm_wiki_cli.services import context_packet, context_service
 from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import python_implementation
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.services import analysis_compatibility
+from llm_wiki_engine import analysis_compatibility
 from llm_wiki_cli.services.analysis_capture import capture_analysis
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeReadMode,
     attach_implementation_read_view,
     build_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_freshness import LiveKnowledgeEvaluation
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_freshness import LiveKnowledgeEvaluation
 from llm_wiki_cli.services.documentation_query_builder import (
     build_live_documentation_query_service,
 )
@@ -406,7 +406,7 @@ def test_missing_confirmation_rejects_directory_mutation_during_absence_check(
     )
     created = False
     if context_packet_builder.os.name == "nt":
-        from llm_wiki_cli.services import filesystem_guard
+        from llm_wiki_engine import filesystem_guard
 
         real_stat = filesystem_guard.fresh_no_follow_stat
 

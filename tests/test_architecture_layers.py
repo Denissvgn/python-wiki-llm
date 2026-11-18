@@ -21,9 +21,10 @@ VALIDATION_PATH = (
     if (ENGINE_ROOT / "validation.py").is_file()
     else SERVICES_ROOT / "validation.py"
 )
-VALIDATION_MODULE = "llm_wiki_cli.services.validation"
+VALIDATION_MODULE = "llm_wiki_engine.validation"
 # The shared module lives in the engine; the services path is its alias.
-VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_engine.validation"})
+# Code may still spell the deprecated alias; the adapter analysis follows both.
+VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_cli.services.validation"})
 NON_ADAPTER_VALIDATION_HELPERS = frozenset(
     {
         # These utilities are intentionally used inside substantive domain
@@ -1110,7 +1111,7 @@ def test_command_import_guard_allows_service_relative_imports(tmp_path: Path) ->
     path.write_text(
         "from .. import validation\n"
         "from ... import api\n"
-        "importlib.import_module('llm_wiki_cli.services.validation')\n",
+        "importlib.import_module('llm_wiki_engine.validation')\n",
         encoding="utf-8",
     )
 

@@ -12,7 +12,9 @@ Every service module must be classified, so a new module states its layer.
 from __future__ import annotations
 
 import ast
+import json
 import subprocess
+import warnings
 import sys
 from pathlib import Path
 
@@ -877,9 +879,15 @@ ENGINE_MODULES = frozenset(
     path.stem for path in ENGINE_ROOT.glob("*.py") if path.name != "__init__.py"
 )
 ALIAS_TEMPLATE = (
-    '"""Compatibility alias for :mod:`llm_wiki_engine.{name}`."""\n\n'
-    "import sys\n\n"
+    '"""Deprecated alias for :mod:`llm_wiki_engine.{name}`."""\n\n'
+    "import sys\n"
+    "import warnings\n\n"
     "from llm_wiki_engine import {name}\n\n"
+    "warnings.warn(\n"
+    '    "llm_wiki_cli.services.{name} is deprecated; import llm_wiki_engine.{name} instead",\n'
+    "    DeprecationWarning,\n"
+    "    stacklevel=2,\n"
+    ")\n"
     "sys.modules[__name__] = {name}\n"
 )
 
@@ -947,6 +955,75 @@ def test_service_path_is_a_static_alias_of_the_engine_module(name: str) -> None:
 
     shim = PACKAGE_ROOT / "services" / f"{name}.py"
     assert shim.read_text(encoding="utf-8") == ALIAS_TEMPLATE.format(name=name)
-    assert importlib.import_module(f"{_SERVICES}.{name}") is importlib.import_module(
-        f"{ENGINE_PACKAGE}.{name}"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        alias = importlib.import_module(f"{_SERVICES}.{name}")
+    assert alias is importlib.import_module(f"{ENGINE_PACKAGE}.{name}")
+
+
+def test_each_alias_warns_once_naming_its_engine_module_at_the_importer(tmp_path: Path) -> None:
+    names = sorted(ENGINE_MODULES - ENGINE_NATIVE_MODULES)
+    importer = tmp_path / "importer.py"
+    # Plain import statements, twice each: only the first import warns.
+    statements = "".join(f"    import llm_wiki_cli.services.{name}\n" for name in names)
+    importer.write_text(
+        "import json, warnings\n"
+        "with warnings.catch_warnings(record=True) as caught:\n"
+        "    warnings.simplefilter('always')\n"
+        + statements + statements
+        + "print(json.dumps([[str(w.message), w.category.__name__, w.filename] for w in caught]))\n",
+        encoding="utf-8",
     )
+    src = PACKAGE_ROOT.parent
+    probe = f"import sys; sys.path.insert(0, {str(src)!r}); sys.path.insert(0, {str(tmp_path)!r}); import importer"
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True
+    )
+    caught = json.loads(result.stdout)
+    deprecations = [row for row in caught if row[1] == "DeprecationWarning"]
+    assert [row[0] for row in deprecations] == [
+        f"llm_wiki_cli.services.{name} is deprecated; import llm_wiki_engine.{name} instead"
+        for name in names
+    ]
+    # Python skips importlib's own frames, so the importing file is blamed.
+    assert {row[2] for row in deprecations} == {str(importer)}
+
+
+# Analyses that must still recognize code written against a deprecated alias.
+LEGACY_SPELLINGS = {
+    "test_architecture_layers.py": frozenset({"llm_wiki_cli.services.validation"}),
+}
+
+
+def test_this_repository_never_imports_a_deprecated_alias() -> None:
+    aliases = {f"{_SERVICES}.{name}" for name in ENGINE_MODULES - ENGINE_NATIVE_MODULES}
+    roots = [PACKAGE_ROOT, PACKAGE_ROOT.parents[1] / "integrations", PACKAGE_ROOT.parents[1] / "release"]
+    tests_root = Path(__file__).resolve().parent
+    found: list[str] = []
+    for path in [p for root in roots for p in _source_paths(root)] + sorted(tests_root.rglob("*.py")):
+        if path == Path(__file__).resolve() or "fixtures" in path.relative_to(path.parents[len(path.parents) - 1]).parts:
+            continue
+        if path.parent == PACKAGE_ROOT / "services" and path.stem in ENGINE_MODULES:
+            continue  # the aliases themselves
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        in_package = PACKAGE_ROOT in path.parents
+        package = _module_name(path, PACKAGE_ROOT).split(".") if in_package else []
+        if in_package and path.name != "__init__.py":
+            package = package[:-1]
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                targets = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                base = package[: len(package) - (node.level - 1)] if node.level else []
+                module = ".".join([*base, *([node.module] if node.module else [])])
+                targets = [module, *(f"{module}.{alias.name}" for alias in node.names)]
+            else:
+                continue
+            found.extend(f"{path.name}:{node.lineno}:{target}" for target in targets if target in aliases)
+        text = path.read_text(encoding="utf-8")
+        allowed = LEGACY_SPELLINGS.get(path.name, frozenset())
+        found.extend(
+            f"{path.name}:{name}" for name in aliases - allowed
+            if f'"{name}"' in text or f"'{name}'" in text
+        )
+    assert found == []

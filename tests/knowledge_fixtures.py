@@ -17,8 +17,9 @@ from dataclasses import asdict, dataclass, is_dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
-from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_model import (
+import llm_wiki_cli  # noqa: F401 - registers the knowledge core's providers
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_model import (
     REPOSITORY_IDENTITY_SOURCE_EXTENSION,
     ComputedFreshness,
     KnowledgeLoadState,
@@ -28,8 +29,8 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.wiki_media import normalize_markdown_link_target
-from llm_wiki_cli.services.wiki_surface_index import (
+from llm_wiki_engine.wiki_media import normalize_markdown_link_target
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     build_surface_index,
 )

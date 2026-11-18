@@ -18,10 +18,10 @@ Prepare the selected helpers and check a consumer's existing native evidence.
 | `llm_wiki_cli.services.helper_cache` | `ensure_helper` |
 | `llm_wiki_cli.services.helper_preparation` | `selected_helper_languages` |
 | `llm_wiki_cli.services.helper_runtime` | `helper_operation` |
-| `llm_wiki_cli.services.knowledge_evidence` | `hash_json` |
-| `llm_wiki_cli.services.knowledge_loader` | `load_knowledge_state` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_loader` | `load_knowledge_state` |
 | `llm_wiki_cli.services.publication_config` | `load_publication_config`, `publication_path`, `publication_source_root` |
-| `llm_wiki_cli.services.source_retirement` | `retired_entity_mappings` |
+| `llm_wiki_engine.source_retirement` | `retired_entity_mappings` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |

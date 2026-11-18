@@ -10,7 +10,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
-from llm_wiki_cli.services.normalization_diagnostics import (
+from llm_wiki_engine.normalization_diagnostics import (
     DIAGNOSTIC_PREFIX, DIAGNOSTIC_SCHEMA, MAX_DIAGNOSTIC_BYTES, NormalizationDiagnostic,
 )
 from tests.test_captured_evidence_diagnostics import _view
@@ -249,10 +249,10 @@ def test_old_reason_only_failure_does_not_gain_a_synthetic_pointer(tmp_path):
 
 
 def test_runtime_basis_and_freshness_transport_detail_without_persisting_it(tmp_path):
-    from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
+    from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
     from llm_wiki_cli.services.knowledge_orchestration import _runtime_live_concept_bases
-    from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-    from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline
+    from llm_wiki_engine.knowledge_evidence import sha256_bytes
+    from llm_wiki_engine.sync_manifest import ManifestEvidenceBaseline
     from tests.test_knowledge_lint import _loaded_knowledge
     from tests.test_knowledge_freshness import _live_evaluation
 
@@ -308,7 +308,8 @@ def test_redacted_mapping_keys_keep_a_resolvable_ancestor_through_nested_arrays(
 
 
 def test_missing_value_sentinel_is_bound_to_shared_producer_identity(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import analysis_capture as capture, knowledge_evidence as ke
+    from llm_wiki_cli.services import analysis_capture as capture
+    from llm_wiki_engine import knowledge_evidence as ke
 
     data = {'classes': [], 'functions': []}
     assert not _module_basis(data).is_known

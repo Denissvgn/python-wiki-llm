@@ -25,14 +25,14 @@ import sys
 import llm_wiki_cli
 from importlib.metadata import distribution
 from llm_wiki_cli import api
-from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_model import load_knowledge_schema
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_model import load_knowledge_schema
 
 target = Path(sys.argv[1]).resolve()
 Path(llm_wiki_cli.__file__).resolve().relative_to(target)
 import llm_wiki_engine
 Path(llm_wiki_engine.__file__).resolve().relative_to(target)
-import llm_wiki_cli.services.validation as _alias, llm_wiki_engine.validation as _engine
+import llm_wiki_engine.validation as _alias, llm_wiki_engine.validation as _engine
 assert _alias is _engine
 schema = load_knowledge_schema()
 assert KNOWLEDGE_SCHEMA_VERSION == "llm-wiki-knowledge/v1"

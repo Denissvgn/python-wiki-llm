@@ -15,10 +15,10 @@ from llm_wiki_cli.engine import (
     NoProcessHost,
     RelationshipKindSpec,
 )
-from llm_wiki_cli.services import knowledge_index as index
-from llm_wiki_cli.services import knowledge_model as model
-from llm_wiki_cli.services.knowledge_kinds import current_kinds, using_kinds
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine import knowledge_index as index
+from llm_wiki_engine import knowledge_model as model
+from llm_wiki_engine.knowledge_kinds import current_kinds, using_kinds
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_validation_receipt import _consume

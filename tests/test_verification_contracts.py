@@ -7,10 +7,10 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services import verification_contracts as verification
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine import verification_contracts as verification
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     INTERNAL_LINKS_CHECKER_ID,
     MAX_DIAGNOSTICS_PER_CHECK,

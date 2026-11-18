@@ -13,8 +13,8 @@ Bind a local candidate action to the consumer checkout and accepted inputs.
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
-| `llm_wiki_cli.services.knowledge_evidence` | `sha256_bytes` |
-| `llm_wiki_cli.services.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_cli.services.publication_candidate` | `MAX_FILE_BYTES`, `_read_tree` |
 | `llm_wiki_cli.services.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `_relative_path`, `publication_control_overlap`, `publication_path` |
 | `llm_wiki_cli.services.publication_impact` | `MAX_JSON_BYTES` |

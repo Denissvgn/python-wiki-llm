@@ -10,9 +10,9 @@ import yaml
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
-from llm_wiki_cli.services import knowledge_storage_lifecycle as lifecycle
-from llm_wiki_cli.services.knowledge_storage import (
+from llm_wiki_engine import knowledge_storage_diagnostics as diagnostics
+from llm_wiki_engine import knowledge_storage_lifecycle as lifecycle
+from llm_wiki_engine.knowledge_storage import (
     KnowledgeStorageError,
     build_knowledge_store,
 )

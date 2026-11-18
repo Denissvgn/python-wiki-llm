@@ -9,8 +9,8 @@ import pytest
 from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import sync_transition_execution as execution
 from llm_wiki_cli.services.sync_transitions import PageTransitionError
-from llm_wiki_cli.services.io import read_md
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync_analysis import _inventory, _manifest
 from tests.test_sync_page_transitions import (
     _assert_consistent, _author_description, _bootstrap_project, _draft_source, _sync,
@@ -399,7 +399,7 @@ def test_governance_identity_reuse_conflicts_before_any_page_write(tmp_path, mon
 
 def test_governance_moves_follow_the_plan_not_a_legacy_name_guess(tmp_path):
     from llm_wiki_cli.services.sync_analysis import SyncDiff
-    from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
+    from llm_wiki_engine.wiki_surface import PageKind, mcp_uri
 
     manifest = _manifest(_inventory(alpha=["Draft"], beta=["Other"]))
     wiki = _wiki(tmp_path, manifest)
@@ -520,8 +520,8 @@ def test_source_move_with_case_only_page_rename_does_not_deprecate_live_page(tmp
 def test_cycle_sync_commits_correct_metadata_and_converges(tmp_path, monkeypatch, scope):
     from dataclasses import replace
     from llm_wiki_cli.commands import bootstrap_cmd
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_model import KnowledgeLoadState
     from tests.test_sync import _make_bootstrap_args
 
     project = tmp_path / "project"

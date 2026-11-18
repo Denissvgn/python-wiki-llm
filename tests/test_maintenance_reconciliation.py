@@ -10,16 +10,16 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services.extraction_service import get_inventory_result
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.maintenance_evidence import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.maintenance_evidence import (
     captured_observations_from_knowledge,
     reconcile_pending_maintenance,
 )
-from llm_wiki_cli.services.maintenance_projection import (
+from llm_wiki_engine.maintenance_projection import (
     project_maintenance_knowledge,
     validate_maintenance_projection,
 )
-from llm_wiki_cli.services.maintenance_state import (
+from llm_wiki_engine.maintenance_state import (
     MaintenanceError,
     canonical_hash,
     maintenance_core,
@@ -155,7 +155,7 @@ def test_initial_targets_are_real_semantic_sections_and_never_human_review(proje
 
 def test_restored_prose_reanchors_deleted_target_without_current_source_owner(project):
     """Retained prose can return while the original source remains unselected."""
-    from llm_wiki_cli.services.maintenance_projection import validate_maintenance_prose
+    from llm_wiki_engine.maintenance_projection import validate_maintenance_prose
 
     guard, initial = adopted(project)
     missing = capture(project, previous=initial, markdown="# Batch\n")
@@ -374,8 +374,8 @@ def test_exact_prose_line_ending_change_invalidates_old_acknowledgment_basis(pro
 
 
 def test_exact_cp1252_and_crlf_prose_bytes_are_qualified_without_utf8_substitution():
-    from llm_wiki_cli.services.maintenance_evidence import captured_semantic_sections
-    from llm_wiki_cli.services.knowledge_storage import digest
+    from llm_wiki_engine.maintenance_evidence import captured_semantic_sections
+    from llm_wiki_engine.knowledge_storage import digest
 
     prose = "## Description\r\n\r\nCafé — owned policy.\r\n\r\n"
     text = "# Batch\r\n\r\n" + prose + "## Methods\r\n\r\nGenerated fields.\r\n"
@@ -443,7 +443,7 @@ def test_bound_omission_keeps_durable_work_and_cannot_invent_source_deletion(pro
 
 
 def test_projection_record_limit_is_disclosed_and_never_discards_authority(project):
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
 
     text = "# Batch\n\n## Description\n\n" + "\n".join(
         f"### Owned {i}\n\nRationale {i}.\n" for i in range(140)

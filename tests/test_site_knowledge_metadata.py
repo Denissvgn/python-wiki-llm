@@ -13,7 +13,7 @@ import pytest
 
 from llm_wiki_cli.commands import site_cmd
 from llm_wiki_cli.services import site_export
-from llm_wiki_cli.services.knowledge_model import KnowledgeProjectionProfile
+from llm_wiki_engine.knowledge_model import KnowledgeProjectionProfile
 from llm_wiki_cli.services.knowledge_projection import KnowledgeProjection
 from llm_wiki_cli.services.site_export import (
     SiteExportError,
@@ -23,7 +23,7 @@ from llm_wiki_cli.services.site_export import (
     export_site_hub,
     export_site_mirror,
 )
-from llm_wiki_cli.services.wiki_surface import collect_wiki_pages
+from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
 
 def _write(path: Path, content: str) -> None:

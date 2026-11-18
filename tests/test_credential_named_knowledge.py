@@ -7,19 +7,19 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services.io import read_md, write_md
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.io import read_md, write_md
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME, load_governance,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state, KnowledgeStateLoadError
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state, KnowledgeStateLoadError
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     export_knowledge_v1, migrate_knowledge_storage, recover_knowledge_storage,
 )
-from llm_wiki_cli.services.section_ownership import observe_page_sections
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.section_ownership import observe_page_sections
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.test_knowledge_storage_lifecycle import snapshot
 
 
@@ -194,7 +194,7 @@ def test_migration_rejects_authored_changes_after_commit(credential_named_wiki, 
 
 @pytest.mark.parametrize("dry_run", [False, True])
 def test_migration_rejects_newline_race_after_capture(credential_named_wiki, tmp_path, monkeypatch, dry_run):
-    from llm_wiki_cli.services import knowledge_storage_lifecycle
+    from llm_wiki_engine import knowledge_storage_lifecycle
 
     root, _selectors, _command = credential_named_wiki
     page = root / "entities" / "RuntimeSecretField.md"

@@ -12,7 +12,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import doctor_cmd
 from llm_wiki_cli.services import analysis_targets as targets
-from llm_wiki_cli.services import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 ROOT = Path(__file__).parents[1]
 

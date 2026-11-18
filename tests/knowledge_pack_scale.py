@@ -10,13 +10,13 @@ import subprocess
 import time
 import tracemalloc
 
-from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_packs import PACK_NAME, build_packed_store, open_knowledge_store
-from llm_wiki_cli.services.knowledge_storage import digest
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_packs import PACK_NAME, build_packed_store, open_knowledge_store
+from llm_wiki_engine.knowledge_storage import digest
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from tests.knowledge_storage_scale import large_logical_payload
 from tests.test_knowledge_loader import _committed_state
 

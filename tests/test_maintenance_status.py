@@ -5,12 +5,12 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services.maintenance_status import (
+from llm_wiki_engine.maintenance_status import (
     build_maintenance_status,
     compact_maintenance_summary,
     validate_maintenance_summary,
 )
-from llm_wiki_cli.services.maintenance_state import canonical_hash
+from llm_wiki_engine.maintenance_state import canonical_hash
 from llm_wiki_cli.services.python_implementation import analysis_identity
 from llm_wiki_cli.services.extraction_service import get_inventory_result
 from tests.test_maintenance_reconciliation import (
@@ -203,7 +203,7 @@ def test_summary_wrong_container_types_are_rejected_as_malformed(project, field)
 
 def test_exact_selected_record_takes_precedence_over_large_unrelated_coverage(project):
     from dataclasses import replace
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
 
     guard, state = adopted(project)
     value = report(project, state, guard)
@@ -239,7 +239,7 @@ def test_exact_selected_record_takes_precedence_over_large_unrelated_coverage(pr
 
 def test_large_per_path_history_is_bounded_without_omitting_expected_basis(project):
     from dataclasses import replace
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
 
     guard, state = adopted(project)
     value = report(project, state, guard)
@@ -262,7 +262,7 @@ def test_large_per_path_history_is_bounded_without_omitting_expected_basis(proje
 
 def test_full_per_path_summary_counts_survive_128_record_projection_limit(project):
     from dataclasses import replace
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
 
     guard, state = adopted(project)
     value = report(project, state, guard)
@@ -286,7 +286,7 @@ def test_full_per_path_summary_counts_survive_128_record_projection_limit(projec
 
 def test_queue_bounds_long_candidate_targets_and_preserves_complete_counts(project):
     from dataclasses import replace
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
     from llm_wiki_cli.services.maintenance_queue import compose_queue
 
     guard, state = adopted(project)
@@ -337,9 +337,9 @@ def test_long_legal_record_outweighs_unrelated_coverage_in_generic_and_path_read
     from dataclasses import replace
     from pathlib import Path
     from llm_wiki_cli.services.implementation_evidence import validate_coordinate
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes
-    from llm_wiki_cli.services.maintenance_evidence import MaintenanceCapture, owner_key
-    from llm_wiki_cli.services.maintenance_state import maintenance_core
+    from llm_wiki_engine.knowledge_storage import canonical_bytes
+    from llm_wiki_engine.maintenance_evidence import MaintenanceCapture, owner_key
+    from llm_wiki_engine.maintenance_state import maintenance_core
 
     guard, state = adopted(project)
     record_id = next(iter(state["records"]))

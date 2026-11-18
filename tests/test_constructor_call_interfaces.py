@@ -27,9 +27,9 @@ from llm_wiki_cli.services.extraction_service import (
 )
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.mcp_server import McpWikiService
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.entrypoints import build_flow
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,

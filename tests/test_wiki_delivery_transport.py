@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.publication_candidate import (
     _read_tree,
     check_publication_candidate,
@@ -473,7 +473,7 @@ def test_lost_push_acknowledgement_reconciled_by_fresh_readback(
 def test_manual_checkpoint_change_never_establishes_a_new_delivery_base(
     repos, tmp_path, change
 ):
-    from llm_wiki_cli.services.knowledge_evidence import canonical_json_bytes, hash_json
+    from llm_wiki_engine.knowledge_evidence import canonical_json_bytes, hash_json
 
     source, options = repos
     transport.deliver(**prepare(source, tmp_path), **options)

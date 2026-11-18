@@ -11,7 +11,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import native_inspection, task_context
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.token_counting import EstimatedCounter
 
 
@@ -239,7 +239,7 @@ def test_declared_legacy_native_corruption_is_not_capability_unavailable(tmp_pat
 
 
 def test_plain_discovery_does_not_reload_an_uncaptured_maintenance_owner(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     monkeypatch.chdir(tmp_path)
     _source(tmp_path, selected=False)

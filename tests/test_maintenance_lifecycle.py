@@ -8,20 +8,20 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
-from llm_wiki_cli.services.maintenance_protocol import guard_maintenance_owner
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 
-from llm_wiki_cli.services.knowledge_artifacts import CommitStage
-from llm_wiki_cli.services.maintenance_protocol import (
+from llm_wiki_engine.knowledge_artifacts import CommitStage
+from llm_wiki_engine.maintenance_protocol import (
     ADOPTION_FILENAME, MaintenanceProtocolError, snapshot_wiki,
     maintenance_write_operation,
 )
 from llm_wiki_cli.services.maintenance_service import (
     recover_maintenance_authority, load_recovery_snapshot,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
 
 
 def test_adopt_edit_sync_restart_retains_pending(tmp_path, monkeypatch, capsys):
@@ -126,7 +126,7 @@ def test_manifest_publication_refuses_external_prose_before_commit(tmp_path, mon
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     manifest_path = (wiki / ".llm-wiki-manifest.json").absolute()
     previous = manifest_path.read_bytes()
-    from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
 
     with pytest.raises(MaintenanceProtocolError, match="outside"):
         with maintenance_write_operation(wiki):
@@ -168,8 +168,8 @@ def test_adopted_human_governance_review_retains_ordinary_pending(tmp_path, monk
     wiki = _legacy(tmp_path, monkeypatch)
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     from tests.test_knowledge_cmd import _run
-    from llm_wiki_cli.services.knowledge_governance import load_governance
-    from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.knowledge_governance import load_governance
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 
     ordinary = SyncManifest.load(wiki).maintenance_state
     _run(["init", "--wiki-dir", str(wiki), "--bundle-id", "kb_adopted_review"])
@@ -217,7 +217,7 @@ def test_governance_fault_retains_complete_recoverable_ordinary_authority(tmp_pa
     adopted = adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     from tests.test_knowledge_cmd import _run
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
 
     def interrupt(plan):
         return commit_knowledge_artifacts(plan,
@@ -241,8 +241,8 @@ def test_complete_recovery_rejects_rehashed_governance_damage(tmp_path, monkeypa
     wiki = _legacy(tmp_path, monkeypatch)
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     from tests.test_knowledge_cmd import _run
-    from llm_wiki_cli.services.maintenance_protocol import save_recovery_snapshot, load_adoption_marker
-    from llm_wiki_cli.services.knowledge_storage import canonical_bytes, digest
+    from llm_wiki_engine.maintenance_protocol import save_recovery_snapshot, load_adoption_marker
+    from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
 
     _run(["init", "--wiki-dir", str(wiki), "--bundle-id", "kb_recovery_authority"])
     files = snapshot_wiki(wiki)
@@ -269,7 +269,7 @@ def test_dirty_prose_sync_fault_restores_exact_inputs_then_converges(tmp_path, m
     adopted = adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     from tests.test_knowledge_commands import _write_reviewed_description
     from llm_wiki_cli.services import knowledge_orchestration
-    from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
 
     page = wiki / "entities/Batch.md"
     _write_reviewed_description(page, "New authored prose retained through interrupted sync.")
@@ -310,7 +310,7 @@ def test_reserved_maintenance_projection_cannot_publish_with_legacy_owner(tmp_pa
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
     view = load_knowledge_state(wiki)
     assert view.knowledge is not None and view.validated_artifacts is not None
-    from llm_wiki_cli.services.knowledge_artifacts import (
+    from llm_wiki_engine.knowledge_artifacts import (
         build_knowledge_commit_plan, validated_artifact_bytes, KnowledgeArtifactError,
     )
     from llm_wiki_cli.services.knowledge_reuse import REUSE_INPUT_KEY
@@ -330,12 +330,12 @@ def test_selected_read_rejects_rehashed_projection_without_authority(tmp_path, m
     wiki = _legacy(tmp_path, monkeypatch)
     legacy = SyncManifest.load(wiki)
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+    from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
     migrate_knowledge_storage(wiki, to="sharded-v2", recovery_dir="storage-recovery")
-    from llm_wiki_cli.services.knowledge_storage import digest, KnowledgeStorageError
-    from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
+    from llm_wiki_engine.knowledge_storage import digest, KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
     from llm_wiki_cli.services.knowledge_reuse import REUSE_INPUT_KEY
-    from llm_wiki_cli.services.knowledge_artifacts import validated_artifact_bytes
+    from llm_wiki_engine.knowledge_artifacts import validated_artifact_bytes
     import shutil
 
     view = load_knowledge_state(wiki)
@@ -356,7 +356,7 @@ def test_selected_read_rejects_rehashed_projection_without_authority(tmp_path, m
     assert full.status == KnowledgeLoadState.INVALID and full.knowledge is None
     assert rebuilt == []
     from llm_wiki_cli.services.knowledge_orchestration import capture_committed_knowledge
-    from llm_wiki_cli.services.knowledge_artifacts import KnowledgeArtifactError
+    from llm_wiki_engine.knowledge_artifacts import KnowledgeArtifactError
     with pytest.raises(KnowledgeArtifactError, match="adopted manifest owner"):
         capture_committed_knowledge(orphan, owner)
     with pytest.raises(KnowledgeStorageError, match="requires an adopted owner"):
@@ -369,8 +369,8 @@ def test_nested_maintenance_parse_errors_never_become_repair_seeds(tmp_path, mon
     wiki = _legacy(tmp_path, monkeypatch)
     legacy = SyncManifest.load(wiki)
     adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
-    from llm_wiki_cli.services.knowledge_storage import digest
-    from llm_wiki_cli.services.knowledge_artifacts import formatted_json_bytes, KnowledgeArtifactError
+    from llm_wiki_engine.knowledge_storage import digest
+    from llm_wiki_engine.knowledge_artifacts import formatted_json_bytes, KnowledgeArtifactError
     from llm_wiki_cli.services.knowledge_orchestration import capture_committed_knowledge
     from llm_wiki_cli.services.knowledge_reuse import REUSE_INPUT_KEY
     import shutil

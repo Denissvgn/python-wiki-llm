@@ -16,13 +16,14 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import knowledge_consumption, mcp_server, source_snapshot
+from llm_wiki_cli.services import mcp_server, source_snapshot
+from llm_wiki_engine import knowledge_consumption
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
 from tests.knowledge_fixtures import fixture_hash
 from tests.test_documentation_queries import _service
 from tests.test_knowledge_freshness import _live_evaluation

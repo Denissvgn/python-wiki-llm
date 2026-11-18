@@ -127,7 +127,7 @@ def _extract_rust(
 def test_rust_inventory_evidence_contract(tmp_path):
     from copy import deepcopy
     from llm_wiki_cli.services.dependencies import build_dependency_graph
-    from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
+    from llm_wiki_engine.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
 
     source = _make_rs(tmp_path, 'model.rs', '''\
         use std::fmt::Debug;

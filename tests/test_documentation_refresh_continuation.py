@@ -10,7 +10,7 @@ import pytest
 import llm_wiki_cli.services.documentation_run as documentation_run_service
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.bootstrap_service import BootstrapResult
-from llm_wiki_cli.services.contracts import DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION
+from llm_wiki_engine.contracts import DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION
 from llm_wiki_cli.services.documentation_run import (
     DocumentationIntegrityError,
     DocumentationRunError,
@@ -19,8 +19,8 @@ from llm_wiki_cli.services.documentation_run import (
     record_documentation_agent_result,
 )
 from llm_wiki_cli.services.documentation_run.refresh import _prior_generated_descriptions
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
 
 
 def _write_description_manifest(wiki: Path, version: int) -> None:
@@ -38,7 +38,7 @@ def _write_description_manifest(wiki: Path, version: int) -> None:
     })
     payload = manifest.to_payload()
     if version == 6:
-        from llm_wiki_cli.services.manifest_storage import build_manifest_store
+        from llm_wiki_engine.manifest_storage import build_manifest_store
         store = build_manifest_store(payload)
         for name, raw in store.objects.items():
             path = wiki / name
@@ -60,7 +60,7 @@ def test_prior_generated_descriptions_follow_manifest_storage(tmp_path, version)
 
 
 def test_prior_generated_descriptions_reject_missing_catalog(tmp_path):
-    from llm_wiki_cli.services.manifest_storage import object_path
+    from llm_wiki_engine.manifest_storage import object_path
     _write_description_manifest(tmp_path, 6)
     root = json.loads((tmp_path / MANIFEST_FILENAME).read_bytes())
     (tmp_path / object_path(root["catalogs"]["sources"]["hash"])).unlink()

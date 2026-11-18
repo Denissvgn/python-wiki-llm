@@ -8,12 +8,12 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services import knowledge_coverage
+from llm_wiki_engine import knowledge_coverage
 from llm_wiki_cli.services import context_packet_builder
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_coverage import build_knowledge_coverage
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness, EvidenceState
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness, EvidenceState
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_loader import _committed_state

@@ -6,9 +6,9 @@ import json
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from llm_wiki_cli.services.publication_config import validate_publication_config
-from llm_wiki_cli.services.markdown_sections import parse_markdown_document
+from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_cli.services import publication_impact as impact
 
 
@@ -1138,7 +1138,7 @@ def test_real_native_section_and_preamble_dependencies(consumer, preamble):
         from llm_wiki_cli.services.knowledge_generation import (
             build_knowledge_generation_plan,
         )
-        from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+        from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
 
         fixture = one_module_two_entities_fixture()
         fixture = replace(

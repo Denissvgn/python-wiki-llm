@@ -6,7 +6,7 @@
 
 The checks every parsed knowledge index must pass, as one registry.
 
-:func:`~llm_wiki_cli.services.knowledge_model.parse_knowledge_index` first
+:func:`~llm_wiki_engine.knowledge_model.parse_knowledge_index` first
 parses the core record shapes, then runs each :class:`ModelValidator` of the
 active :class:`ValidatorRegistry` in order. The built-in registry checks
 implementation evidence, the maintenance projection and the governance

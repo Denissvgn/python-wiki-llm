@@ -9,9 +9,9 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import bootstrap_recovery as recovery
 from llm_wiki_cli.services import helper_cache
-from llm_wiki_cli.services import knowledge_governance as governance
+from llm_wiki_engine import knowledge_governance as governance
 from llm_wiki_cli.services.helper_runtime import PreparedHelperHandle
-from llm_wiki_cli.services.wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
+from llm_wiki_engine.wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
 
 
 @pytest.fixture

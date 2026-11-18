@@ -21,9 +21,9 @@ from llm_wiki_cli.services.bootstrap_service import (
     BootstrapRequest,
     BootstrapResult,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.sync_manifest import MANIFEST_VERSION, SyncManifest
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.sync_manifest import MANIFEST_VERSION, SyncManifest
 
 
 def _tree(root: Path) -> dict[str, bytes]:
@@ -39,7 +39,7 @@ def test_public_bootstrap_preserves_adopted_owner_recovery_before_existing_targe
     tmp_path, monkeypatch, capsys, damage
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
+    from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"

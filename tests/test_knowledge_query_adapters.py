@@ -9,12 +9,8 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import (
-    context_packet,
-    context_service,
-    documentation_query_builder,
-    knowledge_consumption,
-)
+from llm_wiki_cli.services import context_packet, context_service, documentation_query_builder
+from llm_wiki_engine import knowledge_consumption
 from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import mcp_server
 
@@ -986,7 +982,7 @@ def _counted_stage(counters, name, callback):
 
 
 def _materialize_ready_packet_project(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
     from tests.knowledge_fixtures import (
         materialize_fixture_tree,
         one_module_two_entities_fixture,
@@ -1241,8 +1237,8 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 def scale_knowledge_view(tmp_path_factory):
     from dataclasses import replace
 
-    from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     from tests.test_knowledge_loader import _committed_state
     from tests.test_knowledge_freshness import _live_evaluation
     from tests.test_knowledge_performance import _stress_knowledge

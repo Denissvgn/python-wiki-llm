@@ -33,8 +33,8 @@ from llm_wiki_cli.services.extractor_helpers import (
     prepare_typescript,
     resolve_helper_cache_root,
 )
-from llm_wiki_cli.services.source_selection import SourceSelectionError
-from llm_wiki_cli.services.paths import render_shell_command
+from llm_wiki_engine.source_selection import SourceSelectionError
+from llm_wiki_engine.paths import render_shell_command
 
 
 @pytest.mark.parametrize("language", extractor_helpers.SUPPORTED_HELPERS)

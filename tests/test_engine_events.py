@@ -20,8 +20,8 @@ from llm_wiki_cli.engine import (
     SyncError,
     SyncRequest,
 )
-from llm_wiki_cli.services.engine_events import current_operation, operation_identity
-from llm_wiki_cli.services.host import MessageStream, discarding_stdout, emit, using_host
+from llm_wiki_engine.engine_events import current_operation, operation_identity
+from llm_wiki_engine.host import MessageStream, discarding_stdout, emit, using_host
 
 BILLING = "class Invoice:\n    total: int\n\n\ndef bill(invoice: Invoice) -> int:\n    return invoice.total\n"
 

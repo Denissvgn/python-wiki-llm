@@ -27,19 +27,19 @@ from llm_wiki_cli.services.infrastructure_sync import (
     with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
-from llm_wiki_cli.services.knowledge_evidence import is_valid_sha256
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.section_ownership import (
     SectionOwnership,
     observe_page_sections,
 )
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 
 
 def _bootstrap_args(project: Path, wiki: Path, **overrides):
@@ -98,13 +98,13 @@ def _write_fixture(project: Path) -> None:
 
 
 def _manifest(wiki: Path) -> dict:
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
     return SyncManifest.load(wiki).to_payload()
 
 
 def _json_artifact(wiki: Path, filename: str) -> dict:
     if filename == ".llm-wiki-knowledge.json":
-        from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+        from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
         knowledge = load_knowledge_state(wiki).knowledge
         assert knowledge is not None
         return knowledge_index_to_payload(knowledge)

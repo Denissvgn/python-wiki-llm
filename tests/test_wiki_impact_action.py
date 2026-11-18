@@ -217,7 +217,7 @@ def _run(
 
 
 def _report(*, complete=True, review=False) -> dict:
-    from llm_wiki_cli.services.knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
 
     findings = []
     coverage = {"total": 0, "mapped": 0, "excluded": 0, "unmapped": 0}
@@ -318,7 +318,7 @@ def test_report_policy_keeps_required_failures_and_incomplete_evidence_blocking(
 def test_review_required_threshold_rejects_an_unready_report_without_pending_findings(
     tmp_path,
 ):
-    from llm_wiki_cli.services.knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
 
     report = _report()
     report["ready"] = False
@@ -363,7 +363,7 @@ def test_invalid_or_unavailable_report_cannot_emit_ready_output(tmp_path, corrup
     elif corruption == "schema":
         report["schema_version"] = "unknown/v1"
     elif corruption == "resealed-coverage":
-        from llm_wiki_cli.services.knowledge_evidence import hash_json
+        from llm_wiki_engine.knowledge_evidence import hash_json
 
         report["coverage"]["total"] = 1
         report["report_id"] = hash_json(

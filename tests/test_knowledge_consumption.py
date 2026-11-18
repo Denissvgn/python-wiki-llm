@@ -8,10 +8,10 @@ from dataclasses import replace
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_consumption
-from llm_wiki_cli.services.io import write_bytes_atomic
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine import knowledge_consumption
+from llm_wiki_engine.io import write_bytes_atomic
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadCounts,
     KnowledgeReadMode,
@@ -20,22 +20,22 @@ from llm_wiki_cli.services.knowledge_consumption import (
     build_knowledge_read_view,
     open_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_evidence import formatted_json_bytes
-from llm_wiki_cli.services.knowledge_freshness import KnowledgeFreshnessError
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.knowledge_freshness import KnowledgeFreshnessError
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
     KnowledgeLoadState,
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import fixture_hash, one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_freshness import _live_evaluation

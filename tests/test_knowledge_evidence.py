@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
     UNKNOWN_ENTITY_NOT_FOUND,
@@ -743,7 +743,7 @@ def test_frozen_evidence_corpus_covers_exact_registered_language_families():
 
 @pytest.mark.parametrize('language', ['python', 'javascript', 'typescript', 'go', 'rust', 'haskell'])
 def test_registered_family_hashes_locations_and_rejection_persistence(language):
-    from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline
+    from llm_wiki_engine.sync_manifest import ManifestEvidenceBaseline
     data = json.loads(_PRODUCER_CORPUS.read_text())[language]
     expected = json.loads(_PRODUCER_EXPECTATIONS.read_text())['cases'][language]
     module = _module_basis(data)

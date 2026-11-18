@@ -7,9 +7,9 @@ import json
 import pytest
 
 from llm_wiki_cli.engine import DEFAULT_VALIDATORS, Engine, ModelValidator, NoProcessHost, ValidatorRegistry
-from llm_wiki_cli.services import knowledge_index as index
-from llm_wiki_cli.services import knowledge_model as model
-from llm_wiki_cli.services.knowledge_validators import current_validators, using_validators
+from llm_wiki_engine import knowledge_index as index
+from llm_wiki_engine import knowledge_model as model
+from llm_wiki_engine.knowledge_validators import current_validators, using_validators
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_validation_receipt import _consume

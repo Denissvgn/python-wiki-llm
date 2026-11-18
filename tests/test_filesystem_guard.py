@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from llm_wiki_cli.services import filesystem_guard as guard
+from llm_wiki_engine import filesystem_guard as guard
 
 
 pytestmark = pytest.mark.skipif(os.name == "nt", reason="POSIX descriptor contracts")

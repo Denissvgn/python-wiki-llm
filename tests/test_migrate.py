@@ -27,36 +27,36 @@ from llm_wiki_cli.commands.migrate_cmd import (
     _split_location,
 )
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.extractor_helpers import (
     ENV_CACHE_DIR,
     resolve_helper_cache_root,
     typescript_dependencies_ready,
 )
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
     hash_file,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState, WorkingTreeState
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState, WorkingTreeState
 from llm_wiki_cli.services.knowledge_orchestration import (
     build_runtime_knowledge_plan,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     SourceSelectionError,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     ManifestEvidenceBaseline,
     ManifestPageSource,
     SyncManifest,
 )
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 NODE_AVAILABLE = shutil.which("node") is not None
 TYPESCRIPT_READY = typescript_dependencies_ready(Path(__file__).parents[1])

@@ -12,7 +12,8 @@ from unittest.mock import Mock
 import pytest
 
 from llm_wiki_cli.commands import ci_check_cmd
-from llm_wiki_cli.services import ci_report, runtime_output
+from llm_wiki_cli.services import ci_report
+from llm_wiki_engine import runtime_output
 from llm_wiki_cli.services.inventory_cache import InventoryCacheStats
 from llm_wiki_cli.services.lint_service import LintIssue, LintReport
 
@@ -72,7 +73,7 @@ def test_no_report_preserves_check_exit_and_json(
 
 
 def test_optional_storage_gate_uses_the_existing_report_and_exit(report_setup, monkeypatch, capsys):
-    from llm_wiki_cli.services import knowledge_storage_diagnostics
+    from llm_wiki_engine import knowledge_storage_diagnostics
     monkeypatch.setattr(knowledge_storage_diagnostics, "storage_report", lambda *a, **kw: {
         "ok": False, "failures": [{"path": ".llm-wiki-knowledge.json", "reason": "git-file-policy"}],
         "warnings": [], "git": {"ok": False, "complete": False}})

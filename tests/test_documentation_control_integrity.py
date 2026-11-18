@@ -11,7 +11,7 @@ import pytest
 
 import llm_wiki_cli.services.documentation_run as documentation_run_service
 import llm_wiki_cli.services.skills as skills_service
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.documentation_run import (

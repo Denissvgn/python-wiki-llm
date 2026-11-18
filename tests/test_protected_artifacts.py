@@ -14,8 +14,8 @@ from typing import cast
 
 import pytest
 
-import llm_wiki_cli.services.protected_artifacts as protected_artifacts
-from llm_wiki_cli.services.protected_artifacts import (
+import llm_wiki_engine.protected_artifacts as protected_artifacts
+from llm_wiki_engine.protected_artifacts import (
     ProtectedArtifactDurabilityError,
     ProtectedArtifactIntegrityError,
     ProtectedArtifactLimitError,

@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli.services import publication_maintenance as maintenance
 from llm_wiki_cli.services.documentation_run import prepare_documentation_run
 from llm_wiki_cli.services.documentation_run import publication as mapped
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.publication_candidate import export_publication_candidate
 from tests.test_publication_candidate import accept_topics, configure
 from tests.test_publication_impact import consumer as consumer

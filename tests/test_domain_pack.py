@@ -26,7 +26,8 @@ from llm_wiki_cli.engine import (
 )
 from llm_wiki_cli.extractors.common import LANGUAGE_EXTENSIONS
 
-from llm_wiki_cli.services import bootstrap_runtime, markdown_sections, sync_manifest
+from llm_wiki_cli.services import bootstrap_runtime
+from llm_wiki_engine import markdown_sections, sync_manifest
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.domain_pack import current_pack, uses_default_pack, using_pack
 from llm_wiki_cli.services.entrypoints import build_flow
