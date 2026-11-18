@@ -15,9 +15,9 @@ from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render, fit_payload, validate_request as budget_request
 from .documentation_query_builder import build_documentation_query_service_from_view, normalize_supplied_paths
-from .knowledge_consumption import load_knowledge_read_view
-from .knowledge_loader import KnowledgeStateLoadError
-from .knowledge_envelope import hash_source_snapshot
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError
+from llm_wiki_engine.knowledge_envelope import hash_source_snapshot
 from llm_wiki_engine.io import first_unsafe_path_component
 from .search_service import SEARCH_KINDS, page_records, search_records
 from .source_snapshot import SourceSnapshotError

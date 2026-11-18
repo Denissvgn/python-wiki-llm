@@ -31,7 +31,7 @@ from ..extractors.common import (
     is_bundled_helper_implementation_path,
 )
 from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     FaultInjector,
     KnowledgeArtifactError,
@@ -43,7 +43,7 @@ from .knowledge_artifacts import (
     require_validated_artifacts,
     validated_artifact_bytes,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     EvaluatedEnvelope,
     ConsumedInput,
     ConsumedInputKind,
@@ -63,8 +63,8 @@ from llm_wiki_engine.knowledge_evidence import (
     build_module_observation_basis,
     is_valid_sha256,
 )
-from .knowledge_freshness import LiveKnowledgeEvaluation
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_freshness import LiveKnowledgeEvaluation
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     ConceptGovernanceReference,
     GovernanceConflictError,
@@ -88,7 +88,7 @@ from .knowledge_generation import (
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     KnowledgeIndex,
     ObservationScope,
     ProducerRecord,
@@ -100,7 +100,7 @@ from llm_wiki_engine.source_selection import (
     selection_may_contain_path,
     with_source_selection_generation_input,
 )
-from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
 from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
@@ -236,11 +236,11 @@ def capture_committed_knowledge(
     manifest: SyncManifest | None,
 ) -> CommittedKnowledgeState:
     from llm_wiki_engine.immutable import freeze
-    from .knowledge_artifacts import _decode_json_object
-    from .knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_artifacts import _decode_json_object
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     root = Path(wiki_dir).resolve()
-    from .maintenance_protocol import guard_maintenance_owner, ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner, ADOPTION_FILENAME
 
     maintenance_marker = guard_maintenance_owner(root, manifest)
     captured = {}
@@ -446,7 +446,7 @@ def build_runtime_knowledge_plan(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
-    from .maintenance_protocol import ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
     from .source_snapshot import confirmed_missing_source_paths
 
     marker_bytes = committed_state.captured_bytes.get(ADOPTION_FILENAME)
@@ -612,7 +612,7 @@ def build_runtime_live_evaluation(
     if not isinstance(inputs.infrastructure_inventory, Mapping):
         raise TypeError("inputs.infrastructure_inventory must be a mapping")
 
-    from .analysis_compatibility import has_contract
+    from llm_wiki_engine.analysis_compatibility import has_contract
     if not has_contract(inputs.knowledge.bundle.producer):
         inputs = replace(inputs, analysis_components=None)
     inventory = dict(inputs.inventory)
@@ -920,7 +920,7 @@ def finalize_runtime_knowledge(
             fault_injector=fault_injector,
         )
 
-    from .maintenance_protocol import governance_writer_lock
+    from llm_wiki_engine.maintenance_protocol import governance_writer_lock
 
     with governance_writer_lock(root):
         try:

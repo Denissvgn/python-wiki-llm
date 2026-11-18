@@ -165,7 +165,7 @@ def main():
     args = parser.parse_args()
 
     with _report_cli_errors():
-        from .services.analysis_compatibility import comparison_scope
+        from llm_wiki_engine.analysis_compatibility import comparison_scope
         from .services.helper_runtime import helper_operation
         helper_policy = _helper_preparation_policy(args)
         with comparison_scope(getattr(args, "comparison_policy", "auto")):

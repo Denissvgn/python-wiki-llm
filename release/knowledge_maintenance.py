@@ -17,7 +17,7 @@ CONFIG_SCHEMA = "agent-wiki-release-knowledge-maintenance/v1"
 CONFIG_V2_SCHEMA = "agent-wiki-release-knowledge-maintenance/v2"
 VERIFICATION_SCHEMA = "agent-wiki-release-knowledge-verification/v1"
 LEAF_PATH = "src/llm_wiki_cli/services/health_policy.py"
-POLICY_INPUTS = (LEAF_PATH, "src/llm_wiki_cli/services/analysis_compatibility.py",
+POLICY_INPUTS = (LEAF_PATH, "src/llm_wiki_engine/analysis_compatibility.py",
                  "src/llm_wiki_cli/services/analysis_contracts.json", "release/knowledge_maintenance.py")
 
 

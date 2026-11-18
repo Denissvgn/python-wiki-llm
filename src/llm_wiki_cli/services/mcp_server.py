@@ -7,7 +7,7 @@ surface that does not require an MCP runtime.
 
 from __future__ import annotations
 
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 import ipaddress
 import json
@@ -62,7 +62,7 @@ from llm_wiki_engine.knowledge_graph import (
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
 )
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
 )

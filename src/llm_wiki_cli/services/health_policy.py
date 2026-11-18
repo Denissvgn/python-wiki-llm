@@ -83,12 +83,16 @@ def classify_health_sections(
 
 
 # Import the same stdlib leaf in installed and isolated frozen-harness modes.
+# It lives in the engine package, a sibling of this package in both layouts.
 if __package__:
-    from . import analysis_compatibility as ac
+    from llm_wiki_engine import analysis_compatibility as ac
 else:
     import importlib.util
     from pathlib import Path
-    _spec = importlib.util.spec_from_file_location("_release_analysis_compatibility", Path(__file__).with_name("analysis_compatibility.py"))
+    _spec = importlib.util.spec_from_file_location(
+        "_release_analysis_compatibility",
+        Path(__file__).resolve().parents[2] / "llm_wiki_engine" / "analysis_compatibility.py",
+    )
     assert _spec and _spec.loader
     ac = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(ac)

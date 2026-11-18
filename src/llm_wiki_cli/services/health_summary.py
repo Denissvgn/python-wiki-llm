@@ -10,7 +10,7 @@ from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 from llm_wiki_engine.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
 
@@ -162,7 +162,7 @@ def _diagnostic_anchor(group: Mapping) -> str:
 def _display_hint(record: Mapping, health: Mapping | None) -> str | None:
     hint = record.get("hint")
     if health is not None and record["category"] == "knowledge_freshness":
-        from .knowledge_observability import knowledge_freshness_hint
+        from llm_wiki_engine.knowledge_observability import knowledge_freshness_hint
 
         reasons = {record.get("reason_code")}
         for match in re.findall(r"\[reason=([a-z0-9-]+(?:,[a-z0-9-]+)*)\]", record["message"]):

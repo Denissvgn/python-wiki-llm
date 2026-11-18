@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from llm_wiki_engine.host import current_host
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 from collections import OrderedDict
 from collections.abc import Callable, Mapping

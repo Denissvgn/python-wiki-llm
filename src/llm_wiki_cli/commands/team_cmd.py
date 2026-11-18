@@ -18,7 +18,7 @@ from ..services.source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from ..services.sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
 
 
 def _render_issues_text(title: str, issues: list[dict]) -> str:

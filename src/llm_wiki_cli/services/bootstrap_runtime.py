@@ -93,11 +93,11 @@ from .infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from llm_wiki_engine.io import read_md, write_bytes_atomic, write_md
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceError,
     load_governance,
@@ -151,7 +151,7 @@ from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
 from llm_wiki_engine.validation import (
     portable_page_component,
     posix_path_text as shared_posix_path_text,
@@ -6643,7 +6643,7 @@ def _finalize_bootstrap(
     if state.options.knowledge_format is None:
         from types import SimpleNamespace
         from .current_contracts import upgrade_current_knowledge
-        from .knowledge_consumption import load_knowledge_read_view
+        from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 
         # Use the exact writer capture: no second inventory with different
         # helper, plugin, include-tests or source-selection authority.
@@ -6658,7 +6658,7 @@ def _finalize_bootstrap(
                 knowledge_view=view))
         assert state.summary is not None
         state.summary["current_contracts"] = current
-        from .knowledge_packs import LOCAL_PACKED_SCHEMA
+        from llm_wiki_engine.knowledge_packs import LOCAL_PACKED_SCHEMA
         state.summary["knowledge_schema_version"] = LOCAL_PACKED_SCHEMA
         if current.get("recovery_dir"):
             _emit_bootstrap(state, f"Native setup recovery: {current['recovery_dir']}")
@@ -6795,7 +6795,7 @@ def _execute_bootstrap_options(
     *,
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
-    from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
     from .bootstrap_recovery import bootstrap_write_operation, pending_bootstrap
 
     interrupted = not _workspace_refresh_authorized and pending_bootstrap(options.wiki_dir)

@@ -9,7 +9,7 @@ import re
 import subprocess
 from typing import Mapping
 
-from .context_request_format import (  # re-exported: format checks live there
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
     portable_path as portable_path,
     validate_changes as validate_changes,
 )

@@ -21,7 +21,7 @@ from .reference_providers import (
     current_reference_providers,
     reference_provider,
 )
-from .sync_manifest import ManifestPageSource
+from llm_wiki_engine.sync_manifest import ManifestPageSource
 from llm_wiki_engine.validation import (
     portable_path_key,
     require_repository_relative_path,

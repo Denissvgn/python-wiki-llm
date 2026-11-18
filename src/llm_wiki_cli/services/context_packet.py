@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from . import context_request_format
+from llm_wiki_engine import context_request_format
 from llm_wiki_engine import wiki_surface
 from llm_wiki_engine.contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
@@ -30,7 +30,7 @@ from llm_wiki_engine.contracts import (
     QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
     TYPED_GRAPH_SCHEMA_VERSION,
 )
-from .context_request_format import (
+from llm_wiki_engine.context_request_format import (
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
     CONTEXT_COVERAGE_LIMITATION_LIMIT,
 )
@@ -39,11 +39,11 @@ from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     sha256_bytes,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     KnowledgeEnvelopeError,
     validate_configured_public_identity,
 )
-from .knowledge_freshness import (
+from llm_wiki_engine.knowledge_freshness import (
     KNOWN_FRESHNESS_REASON_CODES,
     REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION,
 )
@@ -56,7 +56,7 @@ from llm_wiki_engine.knowledge_graph import (
     GRAPH_RESOLUTIONS,
     is_supported_relationship_kind,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     ConceptKind,
     EvidenceState,
@@ -935,7 +935,7 @@ def _validate_explicit_knowledge_response(
         required=required,
     )
     if "maintenance" in data:
-        from .maintenance_status import validate_maintenance_summary
+        from llm_wiki_engine.maintenance_status import validate_maintenance_summary
         try:
             validate_maintenance_summary(data["maintenance"])
         except (ValueError, TypeError) as exc:
@@ -1521,7 +1521,7 @@ def _validate_explicit_concept(
             value["implementation"], f"{field}.implementation"
         )
     if "maintenance" in value:
-        from .maintenance_status import validate_maintenance_summary
+        from llm_wiki_engine.maintenance_status import validate_maintenance_summary
         try:
             validate_maintenance_summary(value["maintenance"])
         except (ValueError, TypeError) as exc:

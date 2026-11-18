@@ -94,9 +94,9 @@ from llm_wiki_engine.filesystem_guard import (
     guard_windows_directory_chain,
 )
 from llm_wiki_engine.io import read_md, write_bytes_atomic, write_text_output
-from ..knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from ..knowledge_consumption import KnowledgeReadView
-from ..knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
 from ..skills import (
     REFERENCE_DEPENDENT_SKILLS,
     REFERENCE_SKILL_ID,
@@ -113,7 +113,7 @@ from llm_wiki_engine.validation import (
     require_trimmed_text_list,
     resolve_workspace_path,
 )
-from ..verification_contracts import VERIFICATION_RECEIPT_FILENAME
+from llm_wiki_engine.verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from llm_wiki_engine.wiki_media import (
     iter_markdown_link_targets,
     local_link_path,

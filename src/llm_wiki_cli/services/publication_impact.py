@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
-from .knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from .publication_links import public_atx_section
 from .publication_config import load_publication_config, publication_path
 from .publication_contracts import (

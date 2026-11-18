@@ -14,8 +14,8 @@ from llm_wiki_engine.contracts import (
     SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
 )
 from .services.extraction_jobs import ExtractionJobsAction
-from .services.knowledge_governance import ACTOR_KINDS, ALIAS_LOCATOR, ALIAS_NATURAL_KEY
-from .services.knowledge_model import KnowledgeProjectionProfile
+from llm_wiki_engine.knowledge_governance import ACTOR_KINDS, ALIAS_LOCATOR, ALIAS_NATURAL_KEY
+from llm_wiki_engine.knowledge_model import KnowledgeProjectionProfile
 from .services.maintenance_queue import (
     DEFAULT_QUEUE_LIMIT,
     MAX_QUEUE_LIMIT,

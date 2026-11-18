@@ -15,7 +15,7 @@ from typing import Any
 
 from .. import _provider_package_identity
 from llm_wiki_engine.knowledge_evidence import hash_json
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 
 
 CLI_CONTRACT_SCHEMA_VERSION = "llm-wiki-cli-contract/v1"

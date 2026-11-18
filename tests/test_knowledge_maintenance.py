@@ -835,7 +835,7 @@ def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, availab
     if selected is not None:
         shutil.copytree(selected, tmp_path / download["with"]["path"])
     tools = tmp_path / "incoming/tools"
-    for relative in ("release/knowledge_maintenance.py", RELEASE["LEAF_PATH"], "src/llm_wiki_cli/services/analysis_compatibility.py", "src/llm_wiki_cli/services/analysis_contracts.json"):
+    for relative in ("release/knowledge_maintenance.py", RELEASE["LEAF_PATH"], "src/llm_wiki_engine/analysis_compatibility.py", "src/llm_wiki_cli/services/analysis_contracts.json"):
         target = tools / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / relative, target)

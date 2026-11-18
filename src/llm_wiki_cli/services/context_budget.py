@@ -20,7 +20,7 @@ from .change_selection import (
     changes_from_args,
     select_changes,
 )
-from .context_request_format import (  # re-exported: format checks live there
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
     validate_budget_request as validate_request,
     validate_changes as validate_changes,
 )

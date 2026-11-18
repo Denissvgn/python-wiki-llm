@@ -23,20 +23,20 @@ from ..config import DEFAULT_WIKI_DIR, PathValidationError, validate_path, valid
 from llm_wiki_engine.concept_identity import AliasType, identity_coordinate_key
 from llm_wiki_engine.io import read_md, write_json_atomic, write_md
 from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
-from .knowledge_storage_io import read_guarded
-from .knowledge_storage import MAX_EXPANDED_BYTES
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     ArtifactWriteState,
 )
-from .knowledge_envelope import RepositoryEvidence
+from llm_wiki_engine.knowledge_envelope import RepositoryEvidence
 from llm_wiki_engine.knowledge_evidence import is_valid_sha256, sha256_bytes
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceError,
     load_governance,
 )
-from .knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
@@ -62,7 +62,7 @@ from .source_snapshot import (
     capture_source_selection_inputs,
     source_snapshot_matches_current_files,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     MANIFEST_STATE_UNAVAILABLE,
     SyncManifest,

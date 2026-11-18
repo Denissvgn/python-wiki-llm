@@ -17,7 +17,7 @@ from llm_wiki_engine.filesystem_guard import (
     unlink_guarded_bytes,
 )
 from llm_wiki_engine.knowledge_evidence import hash_json
-from ..knowledge_governance import governance_lock
+from llm_wiki_engine.knowledge_governance import governance_lock
 from ..publication_candidate import _read_tree
 from .contracts import (
     DocumentationAgentResult,

@@ -30,7 +30,7 @@ import uuid
 from . import extractor_helpers as helpers
 from llm_wiki_engine.host import current_host
 from llm_wiki_engine.io import first_unsafe_path_component, write_json_atomic
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 
 if TYPE_CHECKING:
     from .helper_runtime import PreparedHelperHandle

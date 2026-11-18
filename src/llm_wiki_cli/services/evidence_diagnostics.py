@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from .knowledge_consumption import KnowledgeReadView
-from .knowledge_model import ComputedFreshness, ConceptRecord, EvidenceState
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_model import ComputedFreshness, ConceptRecord, EvidenceState
 
 
 def _label(value: str | None) -> str:

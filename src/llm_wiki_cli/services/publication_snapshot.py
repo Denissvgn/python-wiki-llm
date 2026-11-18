@@ -12,14 +12,14 @@ from typing import Any
 from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY
 from llm_wiki_engine.io import decode_markdown_bytes
 from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
-from .knowledge_governance import GOVERNANCE_FILENAME
-from .knowledge_model import _bundle_to_payload
-from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
-from .knowledge_storage_io import _absolute_path
-from .knowledge_storage_lifecycle import _committed_inputs
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_model import _bundle_to_payload
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import _absolute_path
+from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
 from llm_wiki_engine.markdown_sections import parse_markdown_document
-from .maintenance_protocol import guard_maintenance_owner
-from .sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from llm_wiki_engine.wiki_surface import collect_wiki_pages
 from llm_wiki_engine.validation import require_portable_relative_path
 

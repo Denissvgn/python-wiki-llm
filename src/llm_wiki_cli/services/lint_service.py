@@ -56,36 +56,36 @@ from .lint_request import LintRequest, LintRequestError
 from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError
 from llm_wiki_engine.progress import phase as progress_phase
 from llm_wiki_engine.io import read_md
-from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from .analysis_compatibility import comparison_entrypoint
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.analysis_compatibility import comparison_entrypoint
 from .health_details import CapturedHealthDetails, capture_health_details
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     MachineVerificationAvailability,
     build_knowledge_read_view,
 )
-from .knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadIssue,
     KnowledgeLoadResult,
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
     KnowledgeLoadState,
     ObservationScope,
 )
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_FILENAME,
     evaluate_review_event,
     load_governance,
 )
 from llm_wiki_engine.validation import path_is_in_top_level_directory
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
     freshness_analysis_diagnostic,
@@ -98,7 +98,7 @@ from .knowledge_orchestration import (
     build_runtime_live_evaluation,
     runtime_generation_options,
 )
-from .knowledge_verification import attach_machine_verification_read_view
+from llm_wiki_engine.knowledge_verification import attach_machine_verification_read_view
 from .plugins import (
     PluginError,
     iter_components,
@@ -119,20 +119,20 @@ from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .source_retirement import (
+from llm_wiki_engine.source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
     source_retirement_projection,
     retained_empty_module_paths,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     ManifestPageSource,
     SyncManifest,
     SyncManifestError,
 )
-from .verification_contracts import (
+from llm_wiki_engine.verification_contracts import (
     VERIFICATION_RECEIPT_FILENAME,
     VerificationResult,
     load_verification_receipt,

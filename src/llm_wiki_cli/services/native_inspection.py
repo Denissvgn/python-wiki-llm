@@ -14,7 +14,7 @@ from .documentation_query_builder import (
     build_documentation_query_service_from_view,
     build_snapshot_documentation_query_service,
 )
-from .knowledge_coverage import MAX_COVERAGE_BYTES, build_knowledge_coverage
+from llm_wiki_engine.knowledge_coverage import MAX_COVERAGE_BYTES, build_knowledge_coverage
 
 
 NATIVE_INSPECTION_SCHEMA_VERSION = "llm-wiki-native-inspection/v1"

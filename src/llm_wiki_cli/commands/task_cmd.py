@@ -33,7 +33,7 @@ def _parent_stamps(path):
 
 def _compact_outputs(args):
     """Pin explicit artifact destinations before any workspace capture."""
-    from ..services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     if not getattr(args, "canonical_output", None):
         raise ValueError("Compact delivery requires --canonical-output")
@@ -140,7 +140,7 @@ def run(args):
     except (ValueError, api.LlmWikiApiError) as exc:
         invalid = isinstance(exc, (ValueError, api.InvalidRequestError))
         details = getattr(exc, "details", None) or {}
-        from ..services.knowledge_storage import KnowledgeStorageError
+        from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 
         cause: BaseException | None = exc
         seen = set()

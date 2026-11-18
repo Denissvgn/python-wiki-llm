@@ -6,29 +6,23 @@ import os
 import sys
 import hashlib
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, replace
+from dataclasses import replace
 from pathlib import Path
 
 from llm_wiki_engine.host import current_host
 from .. import __version__
 from llm_wiki_engine.contracts import KNOWLEDGE_REUSE_SCHEMA_VERSION
 from llm_wiki_engine.knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
-
-REUSE_INPUT_KEY = "knowledge_reuse"
-REUSE_EXTENSION_KEY = "llm-wiki/knowledge-reuse-v1"
-_HASH_FIELDS = frozenset(
-    {
-        "source_snapshot_hash",
-        "inventory_hash",
-        "generation_options_hash",
-        "implementation_hash",
-        "markdown_snapshot_hash",
-        "assets_hash",
-        "repository_hash",
-        "lifecycle_hash",
-        "observation_inputs_hash",
-    }
+from llm_wiki_engine.knowledge_reuse_format import (  # noqa: F401 - the reuse format's names stay available here
+    REUSE_EXTENSION_KEY,
+    REUSE_INPUT_KEY,
+    _HASH_FIELDS,
+    manifest_lifecycle_hash,
+    repository_input_hash,
+    validate_reuse_artifact_parity,
+    validate_reuse_commitment,
 )
+
 _STABLE_IMPLEMENTATION_GAPS = frozenset(
     {
         "observation-limit",
@@ -47,34 +41,6 @@ def _file_hash(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return "sha256:" + digest.hexdigest()
-
-
-def validate_reuse_commitment(value: object) -> dict:
-    if not isinstance(value, Mapping) or set(value) != _HASH_FIELDS | {
-        "schema_version"
-    }:
-        raise ValueError(
-            "knowledge reuse must contain the exact versioned input commitments"
-        )
-    if value["schema_version"] != KNOWLEDGE_REUSE_SCHEMA_VERSION:
-        raise ValueError("unsupported knowledge reuse schema")
-    if any(not is_valid_sha256(value[field]) for field in _HASH_FIELDS):
-        raise ValueError("knowledge reuse inputs must be SHA-256 commitments")
-    return dict(value)
-
-
-def manifest_lifecycle_hash(manifest) -> str:
-    payload = manifest.to_payload()
-    payload.pop("artifact_hashes", None)
-    generation_inputs = dict(payload["generation_inputs"])
-    generation_inputs.pop(REUSE_INPUT_KEY, None)
-    payload["generation_inputs"] = generation_inputs
-    return hash_json(payload)
-
-
-def repository_input_hash(record) -> str:
-    # Hash the normalized public record, never raw remotes or credentials.
-    return hash_json(asdict(replace(record, evaluated_revision="unknown")))
 
 
 def implementation_hash() -> str | None:
@@ -109,7 +75,7 @@ def implementation_hash() -> str | None:
 
 def wiki_input_hashes(wiki_dir: str | Path) -> tuple[str, str]:
     from llm_wiki_engine.io import read_md
-    from .knowledge_envelope import hash_markdown_snapshot
+    from llm_wiki_engine.knowledge_envelope import hash_markdown_snapshot
     from llm_wiki_engine.validation import resolve_portable_workspace_path
     from llm_wiki_engine.wiki_media import build_asset_index
     from llm_wiki_engine.wiki_surface import collect_wiki_pages
@@ -156,31 +122,6 @@ def rebind_maintenance_reuse(knowledge, manifest):
     return replace(knowledge, extensions={**knowledge.extensions, REUSE_EXTENSION_KEY: commitment}), manifest
 
 
-def validate_reuse_artifact_parity(knowledge, manifest) -> None:
-    """A manifest hint alone never authorizes reuse of a projection."""
-    value = knowledge.extensions.get(REUSE_EXTENSION_KEY)
-    if value is None:
-        # Older writers/readers can preserve unknown manifest metadata; it is
-        # unusable as a shortcut without the matching committed extension.
-        return
-    value = validate_reuse_commitment(value)
-    if manifest.generation_inputs.get(REUSE_INPUT_KEY) != value:
-        raise ValueError("manifest and knowledge reuse commitments differ")
-    from .knowledge_envelope import INVENTORY_HASH_EXTENSION
-
-    snapshot = knowledge.bundle.snapshot
-    expected = {
-        "source_snapshot_hash": snapshot.source_snapshot_hash,
-        "inventory_hash": snapshot.extensions[INVENTORY_HASH_EXTENSION],
-        "generation_options_hash": snapshot.generation_options_hash,
-        "markdown_snapshot_hash": snapshot.markdown_snapshot_hash,
-        "repository_hash": repository_input_hash(knowledge.bundle.repository),
-        "lifecycle_hash": manifest_lifecycle_hash(manifest),
-    }
-    if any(value[field] != commitment for field, commitment in expected.items()):
-        raise ValueError("knowledge reuse does not match its committed artifact inputs")
-
-
 def observation_inputs_hash(
     *,
     entrypoint_observations: Mapping,
@@ -213,8 +154,8 @@ def build_reuse_input_basis(
     observation_inputs_hash=None,
 ) -> dict[str, object] | None:
     """Capture the inputs of the deterministic built-in sync pipeline."""
-    from .knowledge_envelope import build_repository_record, hash_inventory
-    from .knowledge_governance import GOVERNANCE_FILENAME
+    from llm_wiki_engine.knowledge_envelope import build_repository_record, hash_inventory
+    from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
     from .knowledge_orchestration import (
         runtime_generation_options_hash,
         runtime_source_snapshot_hash,
@@ -275,11 +216,11 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
     It never allocates an identity, changes review history or publishes evidence.
     """
     from llm_wiki_engine.io import decode_markdown_bytes
-    from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
-    from .knowledge_storage_io import StorageReadSession
-    from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
-    from .maintenance_protocol import guard_maintenance_owner
-    from .maintenance_state import MaintenanceError
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from llm_wiki_engine.maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
+    from llm_wiki_engine.maintenance_state import MaintenanceError
     from .python_implementation import analysis_identity
     from .source_snapshot import confirmed_missing_source_paths
     from llm_wiki_engine.wiki_surface import collect_wiki_pages
@@ -331,7 +272,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
         missing_source_paths=missing, analysis_compatibility_hash=analysis_hash,
         previous_state=owner, known_absent_pages=absent,
     )
-    from .source_retirement import retired_entity_mappings
+    from llm_wiki_engine.source_retirement import retired_entity_mappings
     retired = retired_entity_mappings(manifest)
 
     def has_selected_owner(row):
@@ -359,7 +300,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
                     if (issue.get("record_id") is None or issue["record_id"] == record_id)
                     and (issue.get("coordinate") is None or issue["coordinate"] == row["coordinate"])
                     and issue.get("canonical_path") == row["target"]["canonical_path"]]
-        from .maintenance_evidence import owner_key
+        from llm_wiki_engine.maintenance_evidence import owner_key
 
         if not recorded or any(has_selected_owner(row)
                                or capture.by_owner.get(owner_key(row["coordinate"], row["target"])) != row
@@ -382,7 +323,7 @@ def maintenance_reuse_check(wiki_dir, manifest, knowledge, inventory_result, sou
 
 def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
     """Return the ordinary result shape using already captured, validated bytes."""
-    from .knowledge_artifacts import (
+    from llm_wiki_engine.knowledge_artifacts import (
         ArtifactWriteState,
         KnowledgeCommitResult,
         PlannedArtifactWrite,
@@ -408,8 +349,8 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
                 needs_write=False,
             )
         )
-    from .knowledge_packs import PACKED_SCHEMAS, packed_format
-    from .knowledge_storage import STORE_SCHEMA
+    from llm_wiki_engine.knowledge_packs import PACKED_SCHEMAS, packed_format
+    from llm_wiki_engine.knowledge_storage import STORE_SCHEMA
     import json
     storage_root = json.loads(writes[1].content)
     storage_format = "sharded-v2" if storage_root.get("schema_version") == STORE_SCHEMA else "v1"

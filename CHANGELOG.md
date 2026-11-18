@@ -187,8 +187,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and digests, the host boundary, path and request validation, guarded
   filesystem writes and wiki file I/O, path, ignore-file and source-selection
   rules, protected-artifact checks, the knowledge graph and evidence
-  vocabularies, wiki surface, media and surface-index rules, search ranking
-  and the published-format validators. `pip install agent-wiki-cli` installs it
+  vocabularies, the knowledge store (model, index, governance, packed
+  storage, the sync manifest, maintenance state and recovery, freshness,
+  consumption and verification), analysis-compatibility records, wiki
+  surface, media and surface-index rules, search ranking and the
+  published-format validators. The store borrows what depends on source
+  analysis (implementation evidence, source snapshots, the active domain pack
+  and a few issued state types) through `llm_wiki_engine.integrations`;
+  `agent-wiki-cli` provides them, and an operation that needs a missing
+  provider fails with `IntegrationUnavailable`. `pip install agent-wiki-cli` installs it
   automatically; a source checkout installs it from `src/`
   (`pip install ./src .`). The old `llm_wiki_cli.services.<module>` import
   paths for the moved modules remain as aliases of the same modules, so

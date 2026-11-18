@@ -48,6 +48,10 @@ UNKNOWN_ENTITY_NOT_FOUND = "entity-occurrence-not-found"
 _SUPPORTED_OBSERVATION_LANGUAGES = frozenset(
     {"go", "haskell", "javascript", "python", "rust", "typescript"}
 )
+# Concept extensions that carry implementation evidence and its declarations.
+IMPLEMENTATION_KEY = "llm-wiki/implementation"
+DECLARATIONS_KEY = "llm-wiki/implementation-declarations"
+
 _LOCATION_ONLY_KEYS = frozenset({"line", "end_line", "decorator_line"})
 _ENTITY_NONSTRUCTURAL_KEYS = _LOCATION_ONLY_KEYS | frozenset(
     {

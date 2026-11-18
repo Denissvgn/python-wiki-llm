@@ -68,3 +68,28 @@ try:
 except (OSError, ValueError):
     # Keep a loose source copy importable when its metadata is unavailable.
     __version__ = "0.0.0"
+
+
+def _provide_knowledge_core_integrations() -> None:
+    """Name this package's modules as the engine knowledge core's providers.
+
+    Only module names are recorded; each module is imported when first used.
+    """
+    from llm_wiki_engine import integrations
+
+    services = __name__ + ".services."
+    integrations.provide({
+        "implementation_evidence": services + "implementation_evidence",
+        "implementation_analysis": services + "python_implementation",
+        "source_snapshots": services + "source_snapshot",
+        "bootstrap_recovery": services + "bootstrap_recovery",
+        "committed_knowledge": services + "knowledge_orchestration",
+        "page_transitions": services + "sync_transitions",
+        "entity_ownership": services + "sync_analysis",
+        "maintenance_reports": services + "maintenance_service",
+        "inventory_results": services + "extraction_service",
+        "domain_packs": services + "domain_pack",
+    })
+
+
+_provide_knowledge_core_integrations()

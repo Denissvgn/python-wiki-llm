@@ -165,7 +165,7 @@ def run(args) -> None:
         comparison_policy=getattr(args, "comparison_policy", "auto"),
     )
     if getattr(args, "storage_check", False) or storage_base is not None:
-        from ..services.knowledge_storage_diagnostics import storage_report
+        from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
         try:
             storage = storage_report(wiki_dir, git_base=storage_base, git_head=storage_head)
         except ValueError as exc:

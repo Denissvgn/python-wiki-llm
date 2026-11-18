@@ -14,7 +14,7 @@ Workflow:
 
 from __future__ import annotations
 
-from .maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
+from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
 from contextlib import nullcontext
 from contextvars import ContextVar
@@ -89,7 +89,7 @@ from llm_wiki_engine.io import read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
-from .source_retirement import (
+from llm_wiki_engine.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
     SourceRetirementError,
     discover_retired_entities,
@@ -97,11 +97,11 @@ from .source_retirement import (
     historical_entity_semantics,
     with_entity_retirement_state,
 )
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
-from .knowledge_envelope import RepositoryEvidence, build_repository_record
+from llm_wiki_engine.knowledge_envelope import RepositoryEvidence, build_repository_record
 from . import knowledge_reuse
 from . import sync_analysis_cache
 from llm_wiki_engine.knowledge_evidence import hash_file
@@ -109,7 +109,7 @@ from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
 )
 from llm_wiki_engine.knowledge_evidence import semantic_hash_for_file
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GOVERNANCE_LOCK_FILENAME,
     GovernanceError,
@@ -166,7 +166,7 @@ from .source_snapshot import (
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     LEGACY_EVIDENCE_UNAVAILABLE,
     MANIFEST_FILENAME,
@@ -2614,7 +2614,7 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
 def _load_or_seed_manifest(
     options: _SyncRunOptions,
 ) -> tuple[Optional["SyncManifest"], bool]:
-    from .maintenance_protocol import guard_maintenance_owner
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
 
     guard_maintenance_owner(options.wiki_dir)
     state = classify_wiki_lifecycle(options.wiki_dir)
@@ -4042,7 +4042,7 @@ def _try_sync_knowledge_reuse(
         maintenance_recheck()
     committed_state.assert_current()
     from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
-    from .knowledge_storage_io import _absolute_path
+    from llm_wiki_engine.knowledge_storage_io import _absolute_path
 
     write_basis = ACTIVE_WRITE_BASIS.get()
     if write_basis is not None and write_basis.root == _absolute_path(options.wiki_dir):
@@ -4059,10 +4059,10 @@ def _try_sync_knowledge_reuse(
 def _preflight_page_transition_governance(wiki_dir, plan, diff) -> None:
     if not (wiki_dir / GOVERNANCE_FILENAME).is_file():
         return
-    from .knowledge_governance import (
+    from llm_wiki_engine.knowledge_governance import (
         ConceptGovernanceReference, natural_key_for, reconcile_concepts,
     )
-    from .knowledge_model import PAGE_KIND_TO_CONCEPT_KIND
+    from llm_wiki_engine.knowledge_model import PAGE_KIND_TO_CONCEPT_KIND
 
     ledger = load_governance(wiki_dir).ledger
     references = []
@@ -4109,8 +4109,8 @@ def _plan_source_page_transitions(
     retired = discover_retired_entities(manifest, inventory)
     repairs = {item.path: item for item in plan.retained_page_repairs}
     from .sync_transitions import RetainedPageRepair
-    from .knowledge_storage import MAX_EXPANDED_BYTES
-    from .knowledge_storage_io import StorageReadSession
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
     live_paths = {item.final_path for item in plan.transitions}
     outgoing_paths = {item.old_path for item in plan.transitions if item.previous_owner != item.owner}
     with StorageReadSession(wiki_dir).phase() as reader:
@@ -5501,7 +5501,7 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
-    from .sync_recovery import capture_new_sync_pages, SyncRecoveryError
+    from llm_wiki_engine.sync_recovery import capture_new_sync_pages, SyncRecoveryError
 
     try:
         if prepared.repair_boundary is not None:
@@ -5579,14 +5579,14 @@ def _exit_code(exc: SystemExit) -> int:
 def run_request(request: SyncRequest) -> None:
     """Run one sync for a command: output goes to the host, stops raise SyncAborted."""
     options = _sync_run_options_from_request(request)
-    from .maintenance_protocol import maintenance_write_operation, MaintenanceProtocolError
+    from llm_wiki_engine.maintenance_protocol import maintenance_write_operation, MaintenanceProtocolError
 
     prune = request.prune_storage
     recovery = request.storage_recovery_dir
     if recovery is not None:
         if not prune:
             raise ValueError("--storage-recovery-dir requires --prune-storage")
-        from .knowledge_storage_lifecycle import _outside_tree
+        from llm_wiki_engine.knowledge_storage_lifecycle import _outside_tree
         _outside_tree(Path(recovery), options.wiki_dir)
     try:
         with maintenance_write_operation(options.wiki_dir, dry_run=options.dry_run) as basis:
@@ -5597,7 +5597,7 @@ def run_request(request: SyncRequest) -> None:
     if prune and options.dry_run:
         emit("Storage cleanup will validate and prune unreferenced objects after successful sync.")
     elif prune:
-        from .knowledge_storage_lifecycle import finalize_knowledge_storage
+        from llm_wiki_engine.knowledge_storage_lifecycle import finalize_knowledge_storage
         cleaned = finalize_knowledge_storage(options.wiki_dir, recovery_dir=recovery)
         recorder = _OUTCOME.get()
         if recorder is not None:
@@ -5608,7 +5608,7 @@ def run_request(request: SyncRequest) -> None:
 
 
 def _run_sync_options(options, write_basis=None) -> None:
-    from .knowledge_artifacts import KnowledgeArtifactError
+    from llm_wiki_engine.knowledge_artifacts import KnowledgeArtifactError
 
     try:
         try:

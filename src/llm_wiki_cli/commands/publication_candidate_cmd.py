@@ -11,8 +11,8 @@ from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )
-from ..services.knowledge_storage import KnowledgeStorageError
-from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, _absolute_path
 from ..services.publication_config import (
     load_publication_config,
     publication_control_overlap,

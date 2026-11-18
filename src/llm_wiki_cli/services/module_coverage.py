@@ -16,8 +16,8 @@ from ..extractors.python_extractor import (
     _static_type_checking_block,
     module_alias_target,
 )
-from .knowledge_storage import KnowledgeStorageError
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 from .python_imports import PythonModuleIndex
 from llm_wiki_engine.source_selection import SourceSelectionError, locate_exact_repository_path
 from .source_snapshot import SourceSnapshot

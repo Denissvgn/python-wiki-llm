@@ -13,7 +13,7 @@ from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve
 from llm_wiki_engine.io import first_unsafe_path_component, write_bytes_atomic
 from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 from llm_wiki_engine.progress import observed_phase, record_counts
 from llm_wiki_engine.runtime_output import warn
 from . import sync_analysis_storage
@@ -41,7 +41,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
 
     ordinary_owner = None
     if manifest.maintenance_state is not None:
-        from .maintenance_state import MaintenanceError, _identity
+        from llm_wiki_engine.maintenance_state import MaintenanceError, _identity
 
         state = manifest.maintenance_state
         ordinary_owner = state.get("adoption_id") if isinstance(state, Mapping) else None
@@ -187,7 +187,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
                         or _payload_hash(candidate) != commitment.get("payload_hash")):
                     reason = "cache-content-mismatch"
                 else:
-                    from .knowledge_envelope import hash_inventory, INVENTORY_HASH_EXTENSION
+                    from llm_wiki_engine.knowledge_envelope import hash_inventory, INVENTORY_HASH_EXTENSION
                     assert artifacts is not None
                     if hash_inventory(candidate["inventory"]) != artifacts.knowledge.bundle.snapshot.extensions[INVENTORY_HASH_EXTENSION]:
                         reason = "inventory-commitment-mismatch"
@@ -290,7 +290,7 @@ def generated_sections_match(root, artifacts):
     prior = {row["page_locator"]: row for row in artifacts.knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]}
     for concept in artifacts.knowledge.concepts:
         path = root / concept.document.canonical_path
-        from .knowledge_storage import KnowledgeStorageError
+        from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
         try:
             content = read_guarded(path, MAX_PAGE_BYTES).content.decode("utf-8")
         except (OSError, ValueError) as exc:

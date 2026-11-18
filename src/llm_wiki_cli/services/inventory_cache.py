@@ -232,7 +232,7 @@ def build_inventory_cache_key(
 ) -> dict[str, Any] | None:
     """Return a cache key only if all selected bundled helpers were observed."""
     from .analysis_capture import capture_analysis
-    from .analysis_compatibility import digest
+    from llm_wiki_engine.analysis_compatibility import digest
     from .domain_pack import current_pack
 
     languages = {language for language, files in source_snapshot.files_by_language.items() if files}

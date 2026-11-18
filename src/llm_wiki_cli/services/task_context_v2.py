@@ -23,11 +23,11 @@ from .dependencies import analyze_dependencies
 from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 from .documentation_query_builder import assemble_documentation_query_service
 from .extraction_service import InventoryResult
-from .knowledge_envelope import ConsumedInput, hash_source_snapshot
+from llm_wiki_engine.knowledge_envelope import ConsumedInput, hash_source_snapshot
 from llm_wiki_engine.knowledge_graph import KnowledgeGraphError, _normalise_edge
-from .knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
-from .knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
-from .knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
+from llm_wiki_engine.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
 from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_engine.section_ownership import observe_page_sections
 from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
@@ -127,13 +127,13 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
     collections = _native_collections(request) if request is not None else None
     if ((request is not None and "storage_options" in request)
             or (native is not None and native.slice.to_payload().get("storage_format") == "packed-v4")):
-        from .knowledge_storage import COLLECTIONS
+        from llm_wiki_engine.knowledge_storage import COLLECTIONS
         result.update(schema_version=PROJECTED_RECEIPT_SCHEMA, layout="expanded-v1", storage_format=None,
                       collections=collections or sorted(COLLECTIONS[:5]),
                       validation_scope="selected-committed-collections" if collections is not None else "selected-committed-records")
     if native is None:
         if request is not None and request.get("storage_options", {}).get("receipt") == "compact-v1":
-            from .storage_receipts import compact_storage_receipt
+            from llm_wiki_engine.storage_receipts import compact_storage_receipt
             return compact_storage_receipt(result)
         return result
     selected = native.slice.to_payload()
@@ -156,7 +156,7 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
         read_operations=native.session.reads + recheck["operations"],
         expanded_bytes=selected["work"]["expanded_bytes"])
     if request is not None and request.get("storage_options", {}).get("receipt") == "compact-v1":
-        from .storage_receipts import compact_storage_receipt
+        from llm_wiki_engine.storage_receipts import compact_storage_receipt
         return compact_storage_receipt(result)
     return result
 
@@ -203,7 +203,7 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit, impl
         if comparison is not None:
             qualified["implementation"] = comparison.to_payload()
     if native.maintenance_validation is not None:
-        from .maintenance_status import LIMITATIONS, validate_maintenance_summary
+        from llm_wiki_engine.maintenance_status import LIMITATIONS, validate_maintenance_summary
         record_projection = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {})
         bounds = record_projection.get("bounds", {})
         total = bounds.get("observations_total", 0)
@@ -492,7 +492,7 @@ def validate_scoped_bindings(payload, normalized, profile):
     storage = payload["storage"]
     compact = normalized.get("storage_options", {}).get("receipt") == "compact-v1"
     if compact:
-        from .storage_receipts import expand_storage_receipt
+        from llm_wiki_engine.storage_receipts import expand_storage_receipt
         storage = expand_storage_receipt(storage)
     projected = isinstance(storage, dict) and storage.get("schema_version") == PROJECTED_RECEIPT_SCHEMA
     packed = isinstance(storage, dict) and (storage.get("schema_version") == PACKED_RECEIPT_SCHEMA
@@ -507,7 +507,7 @@ def validate_scoped_bindings(payload, normalized, profile):
     if projected != ("storage_options" in normalized or storage.get("storage_format") == "packed-v4"):
         raise ValueError("storage receipt version differs from the request")
     if projected:
-        from .knowledge_storage import COLLECTIONS
+        from llm_wiki_engine.knowledge_storage import COLLECTIONS
         if (storage["layout"] != "expanded-v1" or storage["collections"] != (selected_collections or sorted(COLLECTIONS[:5]))
                 or storage["storage_format"] not in {None, "sharded-v2", "packed-v3", "packed-v4"}
                 or (storage["storage_format"] is None) != (storage["status"] != "scoped")):
@@ -532,7 +532,7 @@ def validate_scoped_bindings(payload, normalized, profile):
         names.add(item["path"])
     ranges = storage.get("ranges", [])
     if packed:
-        from .knowledge_packs import PACK_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_INDEX_BYTES, MAX_PACK_BYTES
+        from llm_wiki_engine.knowledge_packs import PACK_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_INDEX_BYTES, MAX_PACK_BYTES
         if (storage["archive_validation_scope"] != "selected-members" or storage["status"] != "scoped"
                 or not isinstance(ranges, list) or len(ranges) > 100_000):
             raise ValueError("invalid packed storage scope")
@@ -604,7 +604,7 @@ def validate_scoped_bindings(payload, normalized, profile):
             if _native_key(fact["selector"]) not in _concept_aliases(concept):
                 raise ValueError("native observation does not match its exact selector")
             if "maintenance" in concept:
-                from .maintenance_status import validate_maintenance_summary
+                from llm_wiki_engine.maintenance_status import validate_maintenance_summary
                 summary = validate_maintenance_summary(concept["maintenance"])
                 bound = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {}).get("bounds", {})
                 if (summary["analysis_scope"] != "selected-header" or summary["availability"] != "partial" or summary["live_evaluation_performed"] or summary["pending"] or summary["acknowledged"] or summary["total"] != bound.get("observations_total") or summary["unavailable"] != summary["total"]):

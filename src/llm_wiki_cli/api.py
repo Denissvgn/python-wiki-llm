@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .services import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 import argparse
 import inspect
@@ -140,7 +140,7 @@ from .services.documentation_query_builder import (
     normalize_supplied_paths,
     supplied_paths_from_unified_diff,
 )
-from .services.knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
@@ -194,7 +194,7 @@ from .services.entrypoints import build_flow
 from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .services.source_snapshot import SourceSnapshotError
 from llm_wiki_engine.source_selection import SourceSelectionError
-from .services.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
 from .services.native_inspection import NATIVE_INSPECTION_SCHEMA_VERSION
 
 if TYPE_CHECKING:
@@ -675,9 +675,9 @@ def _raise_api_error(exc: Exception) -> NoReturn:
 
 def _is_maintenance_error(exc: Exception) -> bool:
     return type(exc).__module__ in {
-        "llm_wiki_cli.services.maintenance_protocol",
-        "llm_wiki_cli.services.maintenance_shapes",
-        "llm_wiki_cli.services.maintenance_state",
+        "llm_wiki_engine.maintenance_protocol",
+        "llm_wiki_engine.maintenance_shapes",
+        "llm_wiki_engine.maintenance_state",
     } and type(exc).__name__ in {"MaintenanceProtocolError", "MaintenanceError"}
 
 
@@ -863,8 +863,8 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
 
 def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
-    from .services.knowledge_loader import KnowledgeStateLoadError
-    from .services.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
     from llm_wiki_engine.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
@@ -1056,11 +1056,11 @@ def get_knowledge_coverage(
     apply only to a new live capture; this operation never initializes agents
     or writes projections.
     """
-    from .services.knowledge_consumption import (
+    from llm_wiki_engine.knowledge_consumption import (
         KnowledgeReadView,
         load_knowledge_read_view,
     )
-    from .services.knowledge_coverage import build_knowledge_coverage
+    from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
 
     for field, value in (("live", live), ("allow_external_src", allow_external_src)):
         if not isinstance(value, bool):
@@ -1682,7 +1682,7 @@ def validate_task_context(
 @_api_boundary
 def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
     """Expand compact storage proof data; validate its task binding separately."""
-    from .services.storage_receipts import expand_storage_receipt
+    from llm_wiki_engine.storage_receipts import expand_storage_receipt
 
     return expand_storage_receipt(receipt)
 
@@ -1893,7 +1893,7 @@ def acknowledge_maintenance(
 ) -> MaintenanceAcknowledgmentResult:
     """Acknowledge exactly reviewed current source/prose with an explicit actor."""
     from .services.maintenance_service import acknowledge_maintenance_authority
-    from .services.maintenance_state import _detached, maintenance_core
+    from llm_wiki_engine.maintenance_state import _detached, maintenance_core
     if type(allow_external_src) is not bool:
         raise ValueError("allow_external_src must be a boolean")
     basis = _detached(expected_basis)
@@ -1923,7 +1923,7 @@ def recover_maintenance(
 ) -> MaintenanceRecoveryResult:
     """Restore verified authority; unanchored authored bytes require later sync."""
     from .services.maintenance_service import recover_maintenance_authority
-    from .services.maintenance_state import _identity
+    from llm_wiki_engine.maintenance_state import _identity
     if type(allow_prepared_adoption) is not bool or type(allow_captured_preimage) is not bool:
         raise ValueError("Maintenance recovery modes must be booleans")
     _identity(expected_adoption_id)

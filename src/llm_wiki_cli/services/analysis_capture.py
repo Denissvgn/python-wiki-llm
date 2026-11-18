@@ -12,7 +12,7 @@ import platform
 import re
 import sys
 
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 from llm_wiki_engine.immutable import FrozenDict, freeze
 from copy import deepcopy
 
@@ -373,7 +373,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
 
 def attach(component, captured: Mapping | None):
     from dataclasses import replace
-    from .knowledge_envelope import hash_component_configuration
+    from llm_wiki_engine.knowledge_envelope import hash_component_configuration
     if ac.EXTENSION in component.extensions:
         raise ValueError("analysis compatibility is owned by the producer")
     if captured is None:

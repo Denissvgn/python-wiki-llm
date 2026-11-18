@@ -31,8 +31,10 @@ def test_the_default_registry_runs_the_reserved_extension_checks_in_order() -> N
     assert current_validators() is DEFAULT_VALIDATORS
     modules = DEFAULT_VALIDATORS.modules()
     assert len(modules) == len(set(modules))
-    assert "llm_wiki_cli.services.knowledge_model" in modules
-    assert "llm_wiki_cli.services.knowledge_validators" in modules
+    assert "llm_wiki_engine.knowledge_model" in modules
+    assert "llm_wiki_engine.knowledge_validators" in modules
+    # The host's implementation evidence still defines part of what is accepted.
+    assert "llm_wiki_cli.services.implementation_evidence" in modules
 
 
 def test_an_added_validator_applies_only_inside_its_scope(tmp_path) -> None:

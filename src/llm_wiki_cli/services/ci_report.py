@@ -25,14 +25,14 @@ from llm_wiki_engine.contracts import (
     DOCTOR_V3_SCHEMA_VERSION,
 )
 from .doctor_service import compose_doctor_report
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 from .health_contract import HealthDetailsError, validate_health_details
 from .health_summary import (
     ASSURANCE_DISCLOSURE, FRESHNESS_DISCLOSURE,
     assurance_rows, captured_analysis_diagnostic, detailed_health_rows,
     diagnostic_groups, freshness_counts, reason_list, render_validation_markdown, summary_cell,
 )
-from .knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
+from llm_wiki_engine.knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
 from .lint_service import LintReport, report_to_dict
 
 

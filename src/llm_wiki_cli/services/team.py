@@ -24,7 +24,7 @@ from llm_wiki_engine.validation import (
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
 TEAM_CONFIG_PATH = Path(".llm-wiki") / "team.json"
 TEAM_CONFIG_VERSION = 1
@@ -393,7 +393,7 @@ def check_team_conventions(
     from .canonical_pages import canonical_generated_pages
     from .extraction_service import get_docker_inventory
     from .infrastructure_inventory import get_yaml_infrastructure_inventory
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     wiki_path = request.wiki_path
     try:
@@ -640,7 +640,7 @@ def _manifest_content(
         build_entity_page_map,
         build_module_page_map,
     )
-    from .sync_manifest import (
+    from llm_wiki_engine.sync_manifest import (
         MANIFEST_STATE_UNAVAILABLE,
         SyncManifest,
         prune_manifest_for_source_selection,
@@ -728,7 +728,7 @@ def _manifest_resolution_state_from_conflict(
     SyncManifest | None,
     str,
 ]:
-    from .sync_manifest import MANIFEST_VERSION, SyncManifest, SyncManifestError
+    from llm_wiki_engine.sync_manifest import MANIFEST_VERSION, SyncManifest, SyncManifestError
 
     variants = _conflict_variants(text)
     parsed: list[dict] = []
@@ -1046,7 +1046,7 @@ def resolve_conflicts(
         build_source_snapshot,
         capture_source_selection_inputs,
     )
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     wiki_path = Path(wiki_dir)
     policy = resolve_source_selection(src_dir, source_selection)
@@ -1111,7 +1111,7 @@ def resolve_conflicts(
     resolved: list[dict[str, str]] = []
     unresolved: list[dict[str, str]] = []
 
-    from .knowledge_storage_lifecycle import is_storage_path
+    from llm_wiki_engine.knowledge_storage_lifecycle import is_storage_path
 
     conflicts = []
     for path in sorted(p for p in wiki_path.rglob("*") if p.is_file()):
@@ -1158,7 +1158,7 @@ def resolve_conflicts(
             continue
         if write:
             from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
-            from .knowledge_storage_io import _absolute_path
+            from llm_wiki_engine.knowledge_storage_io import _absolute_path
 
             normalized = new_content.replace("\r\n", "\n").replace("\r", "\n")
             atomic_write_guarded_bytes(_absolute_path(path), normalized.encode(), expected_existing=captured)

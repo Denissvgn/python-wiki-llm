@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Mapping
 
 from .bootstrap_runtime import _generate_entity_md, _generate_module_md
-from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
-from .knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from llm_wiki_engine.markdown_sections import (
     description_table_cells,
     is_placeholder_description,
@@ -19,7 +19,7 @@ from llm_wiki_engine.markdown_sections import (
     preserve_table_description_cells,
 )
 from llm_wiki_engine.section_ownership import observe_page_sections, SectionOwnership
-from .sync_manifest import ManifestPageSource
+from llm_wiki_engine.sync_manifest import ManifestPageSource
 from .sync_transitions import (
     PageTransitionError,
     PageTransitionPlan,

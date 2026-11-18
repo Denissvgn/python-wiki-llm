@@ -263,7 +263,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
         {"_validate_portable_component", "validate_portable_relative_path"}
     ),
     "relationships": frozenset({"_detail_line"}),
-    "infrastructure_sync": frozenset({"_valid_repository_path"}),
+    "infrastructure_state": frozenset({"_valid_repository_path"}),
     "imports": frozenset({"_path_under", "_path_under_scope"}),
     "mcp_server": frozenset({"_normalise_source_path", "_posix_string"}),
     "obsidian": frozenset(

@@ -24,7 +24,7 @@ from llm_wiki_engine import wiki_surface
 from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat
 from llm_wiki_engine.canonical_json import compact_bytes
 from llm_wiki_engine.io import read_md, write_md
-from .knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
+from llm_wiki_engine.knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
 from .knowledge_projection import (
     UNKNOWN_VALUE as UNKNOWN_KNOWLEDGE_VALUE,
     KnowledgeProjection,

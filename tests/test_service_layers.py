@@ -28,6 +28,7 @@ ENGINE_LAYERS = frozenset({"primitive", "kernel"})
 # Domain-free helpers: encodings, digests, paths, guarded I/O.
 PRIMITIVE_SERVICES = frozenset(
     {
+        "analysis_compatibility",
         "canonical_json",
         "circuit_breaker",
         "contracts",
@@ -157,7 +158,6 @@ KERNEL_SERVICES = frozenset(
 ANALYSIS_SERVICES = frozenset(
     {
         "analysis_capture",
-        "analysis_compatibility",
         "analysis_targets",
         "api_contracts",
         "api_diff",
@@ -332,12 +332,7 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.plugins",
         }
     ),
-    "context_session": frozenset(
-        {
-            "llm_wiki_cli",
-            "services.analysis_compatibility",
-        }
-    ),
+    "context_session": frozenset({"llm_wiki_cli"}),
     "documentation_queries": frozenset(
         {
             "services.dependencies",
@@ -356,61 +351,30 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.source_path_diagnostics",
         }
     ),
-    "knowledge_artifacts": frozenset(
+    "domain_pack": frozenset(
         {
-            "services.implementation_evidence",
-            "services.infrastructure_sync",
+            "extractors.common",
+            "services.helper_preparation",
+            "services.helper_runtime",
         }
     ),
-    "knowledge_consumption": frozenset({"services.implementation_evidence"}),
-    "knowledge_freshness": frozenset({"services.analysis_compatibility"}),
     "knowledge_maintenance": frozenset(
         {
             "extractors.common",
             "llm_wiki_cli",
             "services.analysis_capture",
-            "services.analysis_compatibility",
             "services.extractor_helpers",
             "services.extractor_registry",
             "services.health_policy",
             "services.knowledge_orchestration",
         }
     ),
-    "knowledge_model": frozenset(
-        {
-            "services.analysis_compatibility",
-            "services.implementation_evidence",
-        }
-    ),
-    "knowledge_validators": frozenset({"services.implementation_evidence"}),
-    # The code-docs pack reaches its extractors and bundled helper toolchain on
-    # demand (function-level imports).
-    "domain_pack": frozenset(
-        {"extractors.common", "services.helper_preparation", "services.helper_runtime"}
-    ),
-    # The code-docs pack's built-in reference providers capture the installed
-    # CLI contract and behavior facts on demand (function-level imports).
-    "reference_providers": frozenset({"services.behavior_reference", "services.cli_reference"}),
     "knowledge_reuse": frozenset(
         {
             "llm_wiki_cli",
             "services.extraction_service",
             "services.knowledge_orchestration",
             "services.python_implementation",
-        }
-    ),
-    "knowledge_storage": frozenset({"services.implementation_evidence"}),
-    "knowledge_storage_access": frozenset({"services.implementation_evidence"}),
-    "maintenance_evidence": frozenset(
-        {
-            "services.implementation_evidence",
-            "services.python_implementation",
-        }
-    ),
-    "maintenance_protocol": frozenset(
-        {
-            "services.bootstrap_recovery",
-            "services.knowledge_orchestration",
         }
     ),
     "maintenance_queue": frozenset(
@@ -426,49 +390,31 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.python_implementation",
         }
     ),
-    "maintenance_state": frozenset(
+    "reference_providers": frozenset(
         {
-            "services.implementation_evidence",
-            "services.python_implementation",
-        }
-    ),
-    "maintenance_status": frozenset(
-        {
-            "services.extraction_service",
-            "services.implementation_evidence",
-            "services.python_implementation",
+            "services.behavior_reference",
+            "services.cli_reference",
         }
     ),
     "scoped_sync_repair": frozenset(
         {
             "services.analysis_capture",
-            "services.analysis_compatibility",
             "services.implementation_evidence",
             "services.knowledge_orchestration",
         }
     ),
-    "source_retirement": frozenset({"services.sync_analysis"}),
     "source_snapshot": frozenset(
         {
             "extractors.common",
             "services.extractor_registry",
         }
     ),
-    "storage_receipts": frozenset(
-        {
-            "services.knowledge_packs",
-            "services.knowledge_storage",
-        }
-    ),
-    "storage_sort": frozenset({"services.knowledge_storage"}),
-    "storage_spool": frozenset({"services.knowledge_storage"}),
     "sync_transitions": frozenset(
         {
             "services.bootstrap_runtime",
             "services.sync_analysis",
         }
     ),
-    "task_compact_delivery": frozenset({"services.analysis_compatibility"}),
     "task_context": frozenset({"services.analysis_capture"}),
     "task_context_v2": frozenset(
         {
@@ -906,8 +852,6 @@ FORMAT_MODULES = (
     "surface_index_format", "extract_format", "maintenance_status_format",
     "maintenance_queue_format",
 )
-# Stdlib-only release policy module that knowledge freshness wording reads.
-FORMAT_ANALYSIS_ALLOWANCE = frozenset({"analysis_compatibility"})
 
 
 @pytest.mark.parametrize("module", FORMAT_MODULES)
@@ -925,7 +869,7 @@ def test_format_modules_load_no_builders_or_analyzers(module: str) -> None:
     services = {name.removeprefix(f"{_SERVICES}.") for name in loaded if name.startswith(f"{_SERVICES}.")}
 
     assert not {name for name in loaded if name.startswith("llm_wiki_cli.extractors")}
-    assert services <= PRIMITIVE_SERVICES | KERNEL_SERVICES | FORMAT_ANALYSIS_ALLOWANCE
+    assert services <= PRIMITIVE_SERVICES | KERNEL_SERVICES
     assert not services & {"context_packet_builder", "context_service", "context_budget", "change_selection"}
 
 
@@ -942,7 +886,8 @@ ALIAS_TEMPLATE = (
 
 def test_engine_modules_keep_their_engine_layer_classification() -> None:
     assert ENGINE_MODULES
-    assert sorted(ENGINE_MODULES - (PRIMITIVE_SERVICES | KERNEL_SERVICES)) == []
+    moved = ENGINE_MODULES - ENGINE_NATIVE_MODULES
+    assert sorted(moved - (PRIMITIVE_SERVICES | KERNEL_SERVICES)) == []
 
 
 def test_engine_package_imports_only_the_standard_library_and_itself() -> None:
@@ -987,7 +932,16 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
     assert result.stdout.split() == []
 
 
-@pytest.mark.parametrize("name", sorted(ENGINE_MODULES))
+# Engine modules written for the engine, which never had a services path.
+ENGINE_NATIVE_MODULES = frozenset({"infrastructure_state", "integrations", "knowledge_reuse_format"})
+
+
+def test_engine_native_modules_have_no_services_path() -> None:
+    assert ENGINE_NATIVE_MODULES <= ENGINE_MODULES
+    assert not [name for name in ENGINE_NATIVE_MODULES if (PACKAGE_ROOT / "services" / f"{name}.py").exists()]
+
+
+@pytest.mark.parametrize("name", sorted(ENGINE_MODULES - ENGINE_NATIVE_MODULES))
 def test_service_path_is_a_static_alias_of_the_engine_module(name: str) -> None:
     import importlib
 

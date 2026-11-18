@@ -8,8 +8,8 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, read_config
-from .knowledge_consumption import KnowledgeReadReason
-from .knowledge_observability import KnowledgeAggregateSummary
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadReason
+from llm_wiki_engine.knowledge_observability import KnowledgeAggregateSummary
 
 METRICS_FILENAME = "llm-wiki-metrics.jsonl"
 REDACTED_ABSOLUTE_PATH = "<redacted-absolute-path>"

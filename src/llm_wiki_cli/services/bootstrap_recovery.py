@@ -15,10 +15,10 @@ from llm_wiki_engine.filesystem_guard import (
     remove_guarded_tree,
     unlink_guarded_bytes,
 )
-from .knowledge_governance import _governance_lock_root
-from .knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
-from .knowledge_storage_io import _absolute_path, read_guarded
-from .maintenance_protocol import (
+from llm_wiki_engine.knowledge_governance import _governance_lock_root
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_io import _absolute_path, read_guarded
+from llm_wiki_engine.maintenance_protocol import (
     MaintenanceProtocolError,
     WikiWriteBasis,
     governance_writer_lock,

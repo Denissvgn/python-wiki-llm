@@ -17,7 +17,8 @@ from llm_wiki_engine.host import current_host
 from .extractor_registry import EXTRACTOR_REGISTRY
 from llm_wiki_engine.path_policy import validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
-from . import extractor_helpers, analysis_compatibility as ac
+from . import extractor_helpers
+from llm_wiki_engine import analysis_compatibility as ac
 from .analysis_capture import capture_analysis, attach
 from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
 from .health_policy import (
@@ -29,25 +30,25 @@ from .health_policy import (
     verify_policy,
     _binding,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ProducerComponentInput,
     build_producer_record,
     hash_source_snapshot,
 )
 from llm_wiki_engine.knowledge_evidence import hash_json
-from .knowledge_model import _parse_bundle, parse_knowledge_index
+from llm_wiki_engine.knowledge_model import _parse_bundle, parse_knowledge_index
 from .knowledge_orchestration import (
     _producer_evidence,
     _infrastructure_extractor_component,
     runtime_generation_options,
     runtime_generation_options_hash,
 )
-from .knowledge_packs import parse_packed_root
-from .knowledge_storage import parse_store_root
-from .knowledge_storage_io import StorageReadSession, read_guarded
+from llm_wiki_engine.knowledge_packs import parse_packed_root
+from llm_wiki_engine.knowledge_storage import parse_store_root
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded
 from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import build_source_snapshot
-from .sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 MAX_EVIDENCE_BYTES = 64 * 1024 * 1024

@@ -153,9 +153,9 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             operation="wiki search")
     if not guarded:
         return _published(search_records(page_records(wiki_root, kinds, reader=reader), query, limit=limit, mode=mode))
-    from .knowledge_storage import KnowledgeStorageError
-    from .knowledge_storage_io import StorageReadSession
-    from .search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from llm_wiki_engine.search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
     from llm_wiki_engine.source_selection import path_is_selected, validate_persisted_source_selection_identity
     from llm_wiki_engine.workflow_profile import canonical_json
 
@@ -214,7 +214,7 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             ranked_pages = original_pages
         result = _published(search_records(ranked_pages, query, limit=limit, mode=mode))
         if discovery is not None:
-            from .search_discovery_capture import capture_discovery
+            from llm_wiki_engine.search_discovery_capture import capture_discovery
             from llm_wiki_engine.search_discovery import DiscoveryError, enrich_search
             returned = {match["path"]: pages_by_path[match["path"]] for match in result["results"]}
             captured = capture_discovery(wiki_root, wiki_reads, returned, manifest=manifest)

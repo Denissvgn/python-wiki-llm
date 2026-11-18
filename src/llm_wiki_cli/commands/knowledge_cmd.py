@@ -17,9 +17,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 from contextlib import contextmanager
-from ..services.maintenance_protocol import maintenance_write_operation, governance_writer_lock
+from llm_wiki_engine.maintenance_protocol import maintenance_write_operation, governance_writer_lock
 
-from ..services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     KnowledgeCommitPlan,
     ValidatedKnowledgeArtifacts,
@@ -27,8 +27,8 @@ from ..services.knowledge_artifacts import (
     commit_knowledge_artifacts,
     validate_knowledge_artifacts,
 )
-from ..services.knowledge_consumption import build_knowledge_read_view
-from ..services.knowledge_governance import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_governance import (
     ACTOR_KINDS,
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
@@ -58,19 +58,19 @@ from ..services.knowledge_governance import (
     validate_governance_ledger,
 )
 from llm_wiki_engine.io import first_unsafe_path_component
-from ..services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from ..services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     KnowledgeIndex,
     KnowledgeLoadState,
     Lifecycle,
 )
-from ..services.knowledge_observability import knowledge_freshness_disclosure
-from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
-from ..services.verification_contracts import (
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_disclosure
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.verification_contracts import (
     VerificationResult,
     build_artifact_verification_context,
     verify,
@@ -229,7 +229,7 @@ def _assert_snapshot_unchanged(
     wiki_dir: Path,
     snapshot: _ArtifactSnapshot,
 ) -> None:
-    from ..services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
     for relative, expected_object in snapshot.validated.storage_objects.items():
         if read_guarded(wiki_dir / relative, len(expected_object)).content != expected_object:
             raise GovernanceError("knowledge", "committed storage object changed", code="governance-conflict")
@@ -803,7 +803,7 @@ def _status_payload(
 
 def _run_coverage(args) -> None:
     from ..api import LlmWikiApiError, get_knowledge_coverage
-    from ..services.knowledge_coverage import render_knowledge_coverage
+    from llm_wiki_engine.knowledge_coverage import render_knowledge_coverage
 
     try:
         payload = get_knowledge_coverage(

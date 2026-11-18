@@ -20,7 +20,7 @@ from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
 from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
-from .context_request_format import (  # re-exported: format checks live there
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH as CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
     CONTEXT_COVERAGE_LIMITATION_LIMIT as CONTEXT_COVERAGE_LIMITATION_LIMIT,
 )
@@ -30,7 +30,7 @@ from .dependencies import (
     detect_cycles,
     topological_order,
 )
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
     KnowledgeReadView,
@@ -38,7 +38,7 @@ from .knowledge_consumption import (
 )
 from llm_wiki_engine.canonical_json import compact_text
 from llm_wiki_engine.immutable import freeze
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     ValidatedKnowledgeArtifacts,
     require_validated_artifacts,
 )
@@ -49,9 +49,9 @@ from llm_wiki_engine.knowledge_graph import (
     KnowledgeGraphError,
     typed_graph_from_knowledge_extensions,
 )
-from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
-from .knowledge_model import knowledge_index_to_payload
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_observability import (
     freshness_analysis_diagnostic,
     knowledge_freshness_hint,
     knowledge_status_payload,
@@ -2407,7 +2407,7 @@ class DocumentationGraphQueryService:
 
             result["implementation"] = compact_implementation_summary(compact["implementation"])
         if "maintenance" in compact:
-            from .maintenance_status import compact_maintenance_summary
+            from llm_wiki_engine.maintenance_status import compact_maintenance_summary
             result["maintenance"] = compact_maintenance_summary(compact["maintenance"])
         freshness = result.get("freshness")
         if isinstance(freshness, dict) and freshness.get("state") is None:

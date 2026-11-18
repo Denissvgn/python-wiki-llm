@@ -8,7 +8,7 @@ from .infrastructure_sync import (
     build_infrastructure_page_map,
     infrastructure_evidence_by_page,
 )
-from .sync_manifest import SyncManifest, TOMBSTONE_SOURCE_MISSING
+from llm_wiki_engine.sync_manifest import SyncManifest, TOMBSTONE_SOURCE_MISSING
 
 
 def canonical_generated_pages(

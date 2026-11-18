@@ -44,23 +44,23 @@ from .documentation_queries import (
 from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .extraction_service import InventoryResult
-from .knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
 from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     sha256_bytes,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     hash_source_snapshot,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
 )
 from .source_snapshot import directory_identity
 from llm_wiki_engine.io import first_unsafe_path_component
-from .knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
 from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat, guard_windows_directory_chain, hold_windows_readonly_file
-from .knowledge_observability import knowledge_freshness_disclosure
-from .knowledge_verification import verification_summaries_for_concepts
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_disclosure
+from llm_wiki_engine.knowledge_verification import verification_summaries_for_concepts
 from .plugins import runtime_plugin_fallback_root
 from .source_snapshot import (
     SourceSnapshot,
@@ -616,14 +616,14 @@ def capture_context_read(
 
     # Broken adopted authority must be diagnosed before source-retirement or
     # selection helpers attempt to consume its owner as ordinary metadata.
-    from .maintenance_protocol import ADOPTION_FILENAME, guard_maintenance_owner, MaintenanceProtocolError
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME, guard_maintenance_owner, MaintenanceProtocolError
 
     marker_path = wiki_root / ADOPTION_FILENAME
     if marker_path.exists() or marker_path.is_symlink():
         try:
             guard_maintenance_owner(wiki_root)
         except MaintenanceProtocolError as exc:
-            from .knowledge_loader import KnowledgeLoadIssue
+            from llm_wiki_engine.knowledge_loader import KnowledgeLoadIssue
 
             raise ContextPacketAuthorityError((KnowledgeLoadIssue(
                 "maintenance-" + exc.reason, ADOPTION_FILENAME, str(exc)),)) from exc
@@ -682,7 +682,7 @@ def capture_context_read(
         _assert_source_unchanged(source_snapshot, _source_anchor(source_snapshot))
 
     helper_options: dict[str, Any] = {"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}
-    from .source_retirement import retained_empty_module_paths_from_wiki
+    from llm_wiki_engine.source_retirement import retained_empty_module_paths_from_wiki
     empty_paths = retained_empty_module_paths_from_wiki(wiki_root)
     if empty_paths:
         helper_options["retain_empty_paths"] = empty_paths
@@ -847,7 +847,7 @@ def capture_context_read(
         basis_incompatible = True
     raw_pages = None
     if capture_implementation_observations and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None:
-        from .knowledge_storage_io import read_guarded
+        from llm_wiki_engine.knowledge_storage_io import read_guarded
         raw_pages = {path: read_guarded(wiki_root / path, max_wiki_bytes or 64 * 1024 * 1024).content for path in surface_evaluation.content_by_path}
         _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
     captured = CapturedContextRead(
@@ -873,7 +873,7 @@ def capture_context_read(
         raw_content_by_page=_freeze_json(raw_pages) if raw_pages is not None else None,
         capture_implementation_requested=capture_implementation_observations,
     )
-    from .maintenance_status import attach_maintenance_status
+    from llm_wiki_engine.maintenance_status import attach_maintenance_status
     captured = attach_maintenance_status(captured)
     _assert_source_inputs_unchanged(source_snapshot, source_anchor)
     _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
@@ -1088,7 +1088,7 @@ def _build_knowledge_context_from_captured_read(
         knowledge["freshness_evaluated"] = False
     maintenance_report = captured.knowledge_view.maintenance_report
     if selection_requested and maintenance_report is not None:
-        from .maintenance_status import compact_maintenance_summary
+        from llm_wiki_engine.maintenance_status import compact_maintenance_summary
         knowledge = dict(knowledge)
         knowledge["maintenance"] = compact_maintenance_summary(maintenance_report)
     enrichment["knowledge"] = knowledge

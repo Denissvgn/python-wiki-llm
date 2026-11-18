@@ -28,7 +28,7 @@ from ..services.source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from ..services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from ..services.team import TeamConfigError, team_prompt_template_default
 from ..cli_declarations import DEFAULT_MAX_PROMPT_BYTES
 from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact

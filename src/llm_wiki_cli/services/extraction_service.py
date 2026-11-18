@@ -869,7 +869,7 @@ def _prepare_inventory_build_context(
     implementation_cache_hashes = {}
     extraction_cache_hashes = {}
     if request.implementation_cache_artifacts is not None:
-        from .knowledge_artifacts import require_validated_artifacts
+        from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
         artifacts = require_validated_artifacts(request.implementation_cache_artifacts)
         commitment = artifacts.knowledge.extensions.get("llm-wiki/sync-analysis-v2")
         if isinstance(commitment, Mapping) and commitment.get("schema_version") == "llm-wiki-sync-analysis/v2":

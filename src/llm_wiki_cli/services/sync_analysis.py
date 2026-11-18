@@ -16,7 +16,7 @@ from .bootstrap_runtime import (
     build_module_page_map,
 )
 from llm_wiki_engine.knowledge_evidence import hash_file, semantic_hash_for_file
-from .sync_manifest import ManifestPageSource, SyncManifest
+from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
 from llm_wiki_engine.validation import is_portable_path_component, portable_path_key
 
 

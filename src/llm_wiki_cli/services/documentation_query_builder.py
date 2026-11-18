@@ -24,12 +24,12 @@ from .documentation_queries import (
     QUERY_IDENTITY_BYTE_LIMIT,
 )
 from .entrypoints import build_flow
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeReadView,
     attach_implementation_read_view,
     load_knowledge_read_view,
 )
-from .knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
@@ -38,7 +38,7 @@ from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
 from llm_wiki_engine.validation import require_portable_relative_path
 from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .source_snapshot import SourceSnapshot, build_source_snapshot, capture_source_selection_inputs
@@ -677,8 +677,8 @@ def build_live_documentation_query_service(
         )
     if (isinstance(knowledge_view, KnowledgeReadView) and inventory_result is not None
             and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None):
-        from .maintenance_status import attach_maintenance_view_from_inputs
-        from .knowledge_storage_io import read_guarded
+        from llm_wiki_engine.maintenance_status import attach_maintenance_view_from_inputs
+        from llm_wiki_engine.knowledge_storage_io import read_guarded
         maintenance_surface = surface_evaluation if selected_paths is None else surface_evaluator(wiki_root, inventory, src_dir=source_root, entry_points=entrypoints)
         raw_pages = {path: read_guarded(wiki_root / path, 64 * 1024 * 1024).content for path in maintenance_surface.content_by_path}
         knowledge_view = attach_maintenance_view_from_inputs(knowledge_view, inventory_result,

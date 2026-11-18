@@ -15,7 +15,7 @@ from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from llm_wiki_engine.contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 from .health_details import CapturedHealthDetails
 from .health_contract import validate_health_details
 from .health_policy import DoctorStatus, DOCTOR_EXIT_CODES, classify_health_sections
@@ -24,21 +24,21 @@ from .health_summary import (
     detailed_health_rows, health_policy, summary_cell,
 )
 from .extraction_jobs import ExtractionJobRequest
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     MachineVerificationAvailability,
 )
-from .knowledge_governance import GOVERNANCE_EXTENSION_KEY, GOVERNANCE_FILENAME
-from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from .knowledge_model import ComputedFreshness, KnowledgeLoadState
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_EXTENSION_KEY, GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_model import ComputedFreshness, KnowledgeLoadState
+from llm_wiki_engine.knowledge_observability import (
     UNEVALUATED_FRESHNESS_DISCLOSURE,
     knowledge_freshness_disclosure,
 )
 from .lint_service import LintIssue, LintReport, build_report
-from .sync_manifest import SyncManifest
-from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 

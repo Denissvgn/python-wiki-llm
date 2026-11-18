@@ -14,19 +14,19 @@ import json
 from typing import Any
 
 from llm_wiki_engine.contracts import HEALTH_DETAILS_SCHEMA_VERSION
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 from .health_contract import (
     COMPARABLE_STATES,
     EXAMPLE_LIMIT,
     FRESHNESS_STATES,
     HealthDetailsError,
 )
-from .knowledge_artifacts import require_validated_artifacts
-from .knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
 from llm_wiki_engine.knowledge_evidence import canonical_json_text, hash_json
-from .knowledge_envelope import hash_source_snapshot
-from .knowledge_freshness import structural_freshness_modeled
-from .knowledge_model import ProducerComponent, ProducerRecord
+from llm_wiki_engine.knowledge_envelope import hash_source_snapshot
+from llm_wiki_engine.knowledge_freshness import structural_freshness_modeled
+from llm_wiki_engine.knowledge_model import ProducerComponent, ProducerRecord
 from .source_snapshot import SourceSnapshot
 
 

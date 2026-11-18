@@ -13,10 +13,9 @@ import json
 import re
 from types import MappingProxyType
 
+from llm_wiki_engine.knowledge_evidence import DECLARATIONS_KEY, IMPLEMENTATION_KEY
 from . import python_implementation as pi
 
-IMPLEMENTATION_KEY = "llm-wiki/implementation"
-DECLARATIONS_KEY = "llm-wiki/implementation-declarations"
 DECLARATIONS_SCHEMA = "llm-wiki-implementation-declarations/v1"
 SCOPES = frozenset({"module", "class", "callable"})
 ANALYSIS_SCOPES = frozenset({"snapshot", "selected-source", "full-inventory"})
@@ -383,7 +382,7 @@ def validate_implementation_declarations(value) -> dict:
 
 def analysis_hash_from_producer(producer) -> str | None:
     """Reconstruct the recorded issuer identity from committed component records."""
-    from .analysis_compatibility import component_record
+    from llm_wiki_engine.analysis_compatibility import component_record
 
     tool = producer.get("tool") if isinstance(producer, Mapping) else producer.tool
     extractors = (

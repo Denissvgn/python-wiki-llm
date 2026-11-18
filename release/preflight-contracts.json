@@ -319,7 +319,7 @@
       ],
       "condition": "",
       "cost": "moderate",
-      "declaration_sha256": "9cba0ebaefb5fd1e6c608bee3b14d4960defb622f177ea1805894af7ba987765",
+      "declaration_sha256": "31791df3c28526600b78de2cde11cf552aa8edf5a253371a2ac098e7894cbaaf",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -1402,7 +1402,7 @@
     },
     {
       "owner": "release/knowledge_maintenance.py",
-      "path": "src/llm_wiki_cli/services/analysis_compatibility.py",
+      "path": "src/llm_wiki_engine/analysis_compatibility.py",
       "purpose": "Policy producer compatibility identity"
     },
     {

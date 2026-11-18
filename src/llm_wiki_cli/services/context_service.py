@@ -32,7 +32,7 @@ from llm_wiki_engine.host import current_host
 from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError, validate_path, validate_source_root
 from llm_wiki_engine import wiki_surface
 from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
-from .context_request_format import (  # re-exported: format checks live there
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
     _CONCEPT_FILTER_KEYS as _CONCEPT_FILTER_KEYS,
     _CONTEXT_QUERY_LIMIT as _CONTEXT_QUERY_LIMIT,
     _EVIDENCE_FILTER_VALUES as _EVIDENCE_FILTER_VALUES,
@@ -76,24 +76,24 @@ from .extraction_jobs import (
 )
 from llm_wiki_engine.io import write_text_output, write_utf8_stdout
 from .infrastructure_inventory import get_yaml_infrastructure_inventory
-from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     build_knowledge_read_view,
 )
-from .knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadResult,
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
     KnowledgeLoadState,
 )
-from .knowledge_observability import knowledge_freshness_hint
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_hint
 from .plugins import runtime_project_plugins_enabled
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
@@ -101,11 +101,11 @@ from .knowledge_orchestration import (
     build_runtime_live_evaluation,
     runtime_generation_options,
 )
-from .knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from .sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from .source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
@@ -2045,7 +2045,7 @@ def _knowledge_enriched_page_ref(
                 )
             maintenance = concept.get("maintenance")
             if isinstance(maintenance, Mapping):
-                from .maintenance_status import compact_maintenance_summary
+                from llm_wiki_engine.maintenance_status import compact_maintenance_summary
                 status["maintenance"] = compact_maintenance_summary(maintenance)
     enriched["knowledge"] = status
     return enriched
@@ -2592,7 +2592,7 @@ def _context_knowledge_projection_declared(
     surface_path: Path,
     knowledge_path: Path,
 ) -> bool:
-    from .maintenance_protocol import ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 
     if any(
         path.exists() or path.is_symlink() for path in (surface_path, knowledge_path, wiki_root / ADOPTION_FILENAME)
@@ -2779,7 +2779,7 @@ def _build_context_impl(
         expected_selection_inputs=selection_inputs,
     )
 
-    from .source_retirement import retained_empty_module_paths_from_wiki
+    from llm_wiki_engine.source_retirement import retained_empty_module_paths_from_wiki
     empty_paths = retained_empty_module_paths_from_wiki(wiki_root)
     empty_options: dict[str, Any] = {"retain_empty_paths": empty_paths} if empty_paths else {}
     collected_inventory = get_inventory(

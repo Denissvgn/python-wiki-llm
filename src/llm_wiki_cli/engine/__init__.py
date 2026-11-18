@@ -122,8 +122,8 @@ from ..services.domain_pack import (
     SourceClassifier,
     StemPageNamer,
 )
-from ..services.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
-from ..services.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
+from llm_wiki_engine.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
+from llm_wiki_engine.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
 from ..services.lint_request import LintRequest, LintRequestError
 from ..services.reference_providers import (
     BUILTIN_REFERENCE_PROVIDERS,
@@ -272,7 +272,7 @@ class Engine:
         pack: DomainPack = CODE_DOCS_PACK,
         publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS,
     ) -> None:
-        from ..services.analysis_compatibility import selected_policy
+        from llm_wiki_engine.analysis_compatibility import selected_policy
 
         host = Host() if host is None else host
         if not isinstance(host, Host):
@@ -325,11 +325,11 @@ class Engine:
     @contextmanager
     def operation(self) -> Iterator[Operation]:
         """Apply this engine's grants to all work inside the block."""
-        from ..services.analysis_compatibility import comparison_scope
+        from llm_wiki_engine.analysis_compatibility import comparison_scope
         from ..services.domain_pack import using_pack
         from ..services.helper_runtime import helper_operation, helper_policy
-        from ..services.knowledge_kinds import using_kinds
-        from ..services.knowledge_validators import using_validators
+        from llm_wiki_engine.knowledge_kinds import using_kinds
+        from llm_wiki_engine.knowledge_validators import using_validators
         from ..services.publication_targets import using_publication_targets
 
         with ExitStack() as stack:

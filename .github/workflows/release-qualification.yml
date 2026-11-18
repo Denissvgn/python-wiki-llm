@@ -244,7 +244,7 @@ jobs:
             release/analysis_conformance.py \
             release/knowledge-maintenance.json \
             src/llm_wiki_cli/services/health_policy.py \
-            src/llm_wiki_cli/services/analysis_compatibility.py \
+            src/llm_wiki_engine/analysis_compatibility.py \
             src/llm_wiki_cli/services/analysis_contracts.json \
             release/dependency_downloads.py \
             release/hosted_evidence.py \

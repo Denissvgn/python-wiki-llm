@@ -11,7 +11,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from . import context_packet, context_request_format
+from . import context_packet
+from llm_wiki_engine import context_request_format
 from llm_wiki_engine.context_knowledge_contract import KNOWLEDGE_MODE_VALUES
 from llm_wiki_engine.contracts import CONTEXT_KNOWLEDGE_PROTOCOL_VERSION, CONTEXT_PROTOCOL_VERSION
 

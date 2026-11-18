@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import re
 
-from . import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 SCHEMA = "llm-wiki-analysis-target-prerequisites/v1"
 MAX_TARGET_BYTES = 65536
@@ -295,11 +295,11 @@ def compare_targets(records, targets, *, rules=None):
 def inspect_targets(wiki_dir, targets):
     """Read committed producer headers, without source discovery or extraction."""
     from .health_policy import digest, strict_json
-    from .knowledge_model import _parse_bundle, parse_knowledge_index
-    from .knowledge_packs import parse_packed_root
-    from .knowledge_storage import parse_store_root
-    from .knowledge_storage_io import StorageReadSession
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.knowledge_model import _parse_bundle, parse_knowledge_index
+    from llm_wiki_engine.knowledge_packs import parse_packed_root
+    from llm_wiki_engine.knowledge_storage import parse_store_root
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     records, binding, reason = {}, None, None
     try:
@@ -351,7 +351,7 @@ def inspect_targets(wiki_dir, targets):
 
 def load_targets(path):
     from .health_policy import strict_json
-    from .knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     value = strict_json(read_guarded(Path(path), MAX_TARGET_BYTES).content)
     if set(value) != {"targets"}:

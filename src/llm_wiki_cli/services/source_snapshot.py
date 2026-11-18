@@ -39,7 +39,7 @@ from llm_wiki_engine.validation import portable_path_key, require_repository_rel
 from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata, guard_windows_directory_chain
 
 if TYPE_CHECKING:
-    from .knowledge_envelope import ConsumedInput
+    from llm_wiki_engine.knowledge_envelope import ConsumedInput
 
 _DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".json"}
 _PACKAGE_MARKER_NAMES = {
@@ -319,7 +319,7 @@ class SourceSnapshot:
     ) -> tuple[ConsumedInput, ...]:
         """Return canonical consumed inputs from already captured hashes."""
 
-        from .knowledge_envelope import consumed_inputs_from_captured_hashes
+        from llm_wiki_engine.knowledge_envelope import consumed_inputs_from_captured_hashes
 
         content_hashes = self.hashes_for(paths)
         candidate_kinds = {
