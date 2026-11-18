@@ -203,7 +203,7 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     baseline = _json_command(monkeypatch, capsys, ["doctor", *common], 0)
     assert baseline["status"] == "healthy"
     page = wiki / "entities/Removed.md"
-    page.write_text(page.read_text() + "\n## Notes\n\nRetain authored history.\n", encoding="utf-8")
+    page.write_text(page.read_text(encoding="utf-8") + "\n## Notes\n\nRetain authored history.\n", encoding="utf-8")
     _sync_command(monkeypatch, capsys, common)
     source = project / "pkg" / ("shapes" + suffix)
     source.write_text(("# empty\n" if suffix == ".py" else "// empty\n") if empty else kept)
@@ -213,8 +213,8 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     stable = _snapshot(wiki)
     _sync_command(monkeypatch, capsys, common)
     assert _snapshot(wiki) == stable
-    assert page.read_text().startswith(SOURCE_MEMBER_REMOVED_HEADER)
-    assert "Retain authored history." in page.read_text()
+    assert page.read_text(encoding="utf-8").startswith(SOURCE_MEMBER_REMOVED_HEADER)
+    assert "Retain authored history." in page.read_text(encoding="utf-8")
     for strict in (False, True):
         args = ["doctor", *common, *(["--strict"] if strict else [])]
         health = _json_command(monkeypatch, capsys, args, 0)
@@ -234,8 +234,8 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     _sync_command(monkeypatch, capsys, common)
     revived = _json_command(monkeypatch, capsys, ["doctor", *common], 0)
     assert revived["status"] == "healthy"
-    assert SOURCE_MEMBER_REMOVED_HEADER not in page.read_text()
-    assert "Retain authored history." in page.read_text()
+    assert SOURCE_MEMBER_REMOVED_HEADER not in page.read_text(encoding="utf-8")
+    assert "Retain authored history." in page.read_text(encoding="utf-8")
     loaded = load_knowledge_state(wiki)
     assert loaded.validated_artifacts is not None
     assert loaded.validated_artifacts.retired_locators == frozenset()
