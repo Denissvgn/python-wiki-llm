@@ -24,7 +24,7 @@ VALIDATION_PATH = (
 VALIDATION_MODULE = "llm_wiki_engine.validation"
 # The shared module lives in the engine; the services path is its alias.
 # Code may still spell the deprecated alias; the adapter analysis follows both.
-VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_engine.validation"})
+VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_cli.services.validation"})
 NON_ADAPTER_VALIDATION_HELPERS = frozenset(
     {
         # These utilities are intentionally used inside substantive domain
