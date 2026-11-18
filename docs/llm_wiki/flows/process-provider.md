@@ -68,22 +68,22 @@ sequenceDiagram
     p2-->>p9: Path (integrations/wiki-candidate/provider.py:setup)(tempfile.mkdtemp(...))
 ```
 
-> Call sequence diagram shows 30 of 110 interactions; 80 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 114 interactions; 84 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 56 (40 omitted); unresolved 10 of 49 (39 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 16 of 56 (40 omitted); unresolved 10 of 53 (43 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `integrations/wiki-candidate/provider.py:_installed_files` | 9 | - | unresolved | 17 |
+| `integrations/wiki-candidate/provider.py:_installed_files` | 9 | - | unresolved | 21 |
 | `integrations/wiki-candidate/provider.py:_installed_files` | 9 | - | external | 8 |
 | `integrations/wiki-candidate/provider.py:verify` | 2 | [integrations/wiki-candidate/provider.py](../modules/provider.md) | internal | 1 |
 | `integrations/wiki-candidate/provider.py:verify` | 2 | - | unresolved | 4 |
 | `integrations/wiki-candidate/provider.py:verify` | 2 | - | external | 6 |
-| `integrations/wiki-candidate/provider.py:setup` | 53 | - | external | 11 |
-| `integrations/wiki-candidate/provider.py:setup` | 53 | - | unresolved | 8 |
-| `integrations/wiki-candidate/provider.py:build_input` | 77 | - | unresolved | 10 |
+| `integrations/wiki-candidate/provider.py:setup` | 57 | - | external | 11 |
+| `integrations/wiki-candidate/provider.py:setup` | 57 | - | unresolved | 8 |
+| `integrations/wiki-candidate/provider.py:build_input` | 81 | - | unresolved | 10 |
 > Omission summary shows 8 of 9 groups; 1 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -181,14 +181,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| __main__ | verify | 162 | `verify(Path(...), Path(...), sys.argv[...], sys.argv[...])` |
-| verify | Path(…).resolve (integrations/wiki-candidate/provider.py:verify) | 49 | `Path(llm_wiki_cli.__file__).resolve(data not statically known)` |
-| verify | Path (integrations/wiki-candidate/provider.py:verify) | 49 | `Path(llm_wiki_cli.__file__)` |
-| verify | tomllib.loads | 50 | `tomllib.loads(...)` |
-| verify | (…).read_text (integrations/wiki-candidate/provider.py:verify) | 50 | `(source / 'pyproject.toml').read_text(encoding='utf-8')` |
-| verify | metadata.version | 51 | `metadata.version('agent-wiki-cli')` |
-| verify | ValueError (integrations/wiki-candidate/provider.py:verify) | 53 | `ValueError('Installed provider version differs from the pinned source')` |
-| verify | _installed_files | 54 | `_installed_files(package, ..., ...)` |
+| __main__ | verify | 168 | `verify(Path(...), Path(...), sys.argv[...], sys.argv[...])` |
+| verify | Path(…).resolve (integrations/wiki-candidate/provider.py:verify) | 55 | `Path(llm_wiki_cli.__file__).resolve(data not statically known)` |
+| verify | Path (integrations/wiki-candidate/provider.py:verify) | 55 | `Path(llm_wiki_cli.__file__)` |
+| verify | tomllib.loads | 56 | `tomllib.loads(...)` |
+| verify | (…).read_text (integrations/wiki-candidate/provider.py:verify) | 56 | `(source / 'pyproject.toml').read_text(encoding='utf-8')` |
+| verify | metadata.version | 57 | `metadata.version('agent-wiki-cli')` |
+| verify | ValueError (integrations/wiki-candidate/provider.py:verify) | 59 | `ValueError('Installed provider version differs from the pinned source')` |
+| verify | _installed_files | 60 | `_installed_files(package, ..., ...)` |
 | _installed_files | package.is_relative_to | 24 | `package.is_relative_to(...)` |
 | _installed_files | Path(…).resolve (integrations/wiki-candida…vider.py:_installed_files) | 24 | `Path(sys.prefix).resolve(data not statically known)` |
 | _installed_files | Path (integrations/wiki-candida…vider.py:_installed_files) | 24 | `Path(sys.prefix)` |
@@ -197,8 +197,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `files.update` | `verify` | 62 |
-| filesystem_write | `receipt.write_text` | `verify` | 68 |
+| mutation | `files.update` | `verify` | 68 |
+| filesystem_write | `receipt.write_text` | `verify` | 74 |
 | filesystem_read | `path.read_bytes` | `_installed_files` | 34 |
 | filesystem_read | `original.read_bytes` | `_installed_files` | 35 |
 
@@ -206,11 +206,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `verify` | `Path(llm_wiki_cli.__file__).resolve` | 49 |
-| external_call | `verify` | `tomllib.loads` | 50 |
-| unresolved_call | `verify` | `(source / 'pyproject.toml').read_text` | 50 |
-| external_call | `verify` | `metadata.version` | 51 |
-| external_call | `verify` | `ValueError` | 53 |
+| unresolved_call | `verify` | `Path(llm_wiki_cli.__file__).resolve` | 55 |
+| external_call | `verify` | `tomllib.loads` | 56 |
+| unresolved_call | `verify` | `(source / 'pyproject.toml').read_text` | 56 |
+| external_call | `verify` | `metadata.version` | 57 |
+| external_call | `verify` | `ValueError` | 59 |
 | unresolved_call | `_installed_files` | `package.is_relative_to` | 24 |
 | unresolved_call | `_installed_files` | `Path(sys.prefix).resolve` | 24 |
 | step_limit | `__main__` | `first 12 steps` | 0 |

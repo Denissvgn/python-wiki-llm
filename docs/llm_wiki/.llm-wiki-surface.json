@@ -41809,7 +41809,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 62,
+              "line": 68,
               "step": "verify",
               "step_index": 2,
               "target": "files.update"
@@ -41817,7 +41817,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 68,
+              "line": 74,
               "step": "verify",
               "step_index": 2,
               "target": "receipt.write_text"
@@ -41842,31 +41842,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 49,
+              "line": 55,
               "step": "verify",
               "target": "Path(llm_wiki_cli.__file__).resolve"
             },
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 56,
               "step": "verify",
               "target": "tomllib.loads"
             },
             {
               "kind": "unresolved_call",
-              "line": 50,
+              "line": 56,
               "step": "verify",
               "target": "(source / 'pyproject.toml').read_text"
             },
             {
               "kind": "external_call",
-              "line": 51,
+              "line": 57,
               "step": "verify",
               "target": "metadata.version"
             },
             {
               "kind": "external_call",
-              "line": 53,
+              "line": 59,
               "step": "verify",
               "target": "ValueError"
             },
@@ -41898,7 +41898,7 @@
           "modules_touched": [
             "integrations/wiki-candidate/provider.py"
           ],
-          "step_count": 111,
+          "step_count": 115,
           "truncated": false
         }
       },
@@ -76978,5 +76978,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:8a626ae255b13d0238f669e10f3022457e5ef4725dae89b11d85df43f3263b5f"
+  "source_hash": "sha256:70ae440a9a3000c9d13032a795051a50827befa40685c9fc8622b1569882dc21"
 }
