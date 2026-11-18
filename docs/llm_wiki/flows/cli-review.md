@@ -88,7 +88,7 @@ sequenceDiagram
     participant p27 as _validate_capture_options
     participant p28 as _current_windows_user_sid
     participant p29 as getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p30 as Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
+    participant p30 as Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
     p0->>p1: validate_source_root
     p0->>p2: _preflight_review_source_selection
     p0->>p3: _read_patch
@@ -118,7 +118,7 @@ sequenceDiagram
     p23->>p27: _validate_capture_options
     p24->>p28: _current_windows_user_sid
     p0-->>p29: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')
-    p5-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
+    p5-->>p30: Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
 ```
 
 > Call sequence diagram shows 30 of 2186 interactions; 2156 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -130,13 +130,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/review_cmd.py:run` | 1 | - | external | 22 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 7 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 8 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 8 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 8 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 7 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 8 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 8 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 8 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 7 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 7 | - | external | 10 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 7 | - | unresolved | 6 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 7 | - | external | 10 |
 > Omission summary shows 8 of 582 groups; 574 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -170,7 +170,7 @@ Collector observations for 543 source steps with known totals: observed: 3084, e
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
@@ -185,7 +185,7 @@ flowchart LR
     s8["8. validate_path"]
     s9["9. PathValidationError"]
     s10["10. (…).resolve"]
-    s11["11. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s11["11. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s12["12. current_host"]
     s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')" .-> s2
     s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
@@ -196,7 +196,7 @@ flowchart LR
     s7 -->|"validate_path(path, label)"| s8
     s8 -->|"PathValidationError(...)"| s9
     s8 -. "(…).resolve(data not statically known)" .-> s10
-    s8 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s11
+    s8 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s11
     s8 -->|"current_host(data not statically known)"| s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -235,7 +235,7 @@ flowchart LR
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
 | `(…).resolve` | - | - | - | - |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 
 ### Call data
@@ -251,7 +251,7 @@ flowchart LR
 | validate_source_root | validate_path | 125 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 100 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 101 | `current_host(data not statically known)` |
 
 ### Boundary effects

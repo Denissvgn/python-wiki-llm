@@ -29,12 +29,12 @@ verification-receipt evaluation already produced by strict lint.
 | `.lint_service` | `LintIssue`, `LintReport`, `build_report` |
 | `.sync_manifest` | `SyncManifest` |
 | `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass` |
 | `llm_wiki_engine.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `llm_wiki_engine.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |

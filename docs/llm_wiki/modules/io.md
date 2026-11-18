@@ -1,6 +1,6 @@
 # io Module
 
-**Path:** `src/llm_wiki_cli/services/io.py`
+**Path:** `src/llm_wiki_engine/io.py`
 
 ## Description
 
@@ -36,7 +36,7 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/io.py"]
+    n1["src/llm_wiki_engine/io.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/io.md"

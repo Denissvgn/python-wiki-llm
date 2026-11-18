@@ -1,6 +1,6 @@
 # surface_index_format Module
 
-**Path:** `src/llm_wiki_cli/services/surface_index_format.py`
+**Path:** `src/llm_wiki_engine/surface_index_format.py`
 
 ## Description
 
@@ -31,22 +31,22 @@ the index does not carry, so only its shape is checked.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/surface_index_format.py"]
-    n2["src/llm_wiki_cli/services/wiki_surface_index.py"]
-    n3["src/llm_wiki_engine/validation.py"]
-    n4["src/llm_wiki_engine/wiki_surface.py"]
+    n1["src/llm_wiki_engine/surface_index_format.py"]
+    n2["src/llm_wiki_engine/validation.py"]
+    n3["src/llm_wiki_engine/wiki_surface.py"]
+    n4["src/llm_wiki_engine/wiki_surface_index.py"]
     n0 --> n1
     n1 --> n2
     n1 --> n3
     n1 --> n4
-    n2 --> n3
-    n2 --> n4
+    n3 --> n2
+    n4 --> n2
     n4 --> n3
     click n0 "../modules/engine___init__.md"
     click n1 "../modules/surface_index_format.md"
-    click n2 "../modules/wiki_surface_index.md"
-    click n3 "../modules/validation.md"
-    click n4 "../modules/wiki_surface.md"
+    click n2 "../modules/validation.md"
+    click n3 "../modules/wiki_surface.md"
+    click n4 "../modules/wiki_surface_index.md"
 ```
 
 ### Internal neighbors
@@ -54,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
-| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 | Outbound | [validation](../modules/validation.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 
 ## Classes
 

@@ -28,20 +28,20 @@ evidence: diagnosis and an authorized owning writer retain distinct roles.
 |--------|---------|
 | `..config` | `AGENT_CHOICES`, `AgentConfigInspection`, `AgentConfigState`, `CLI_AGENTS`, `DEFAULT_WIKI_DIR`, `PathValidationError`, `config_requires_manual_recovery`, `get_agent_config_path`, `inspect_config`, `require_committed_config`, `require_config_inspection_unchanged`, `require_safe_config_path`, `validate_path`, `write_config` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `current_contract_defaults`, `upgrade_current_knowledge` |
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks`, `remove_legacy_hooks` |
 | `.rendering_lifecycle` | `reference_recovery_command`, `select_render_profile` |
 | `.schema` | `SCHEMA_FILENAMES`, `ManagedSchemaBlockError`, `ManagedSchemaBlockState`, `ManagedSchemaPathError`, `SchemaRenderProfile`, `build_schema_content`, `build_upgraded_schema_content`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `encode_managed_document_text`, `installed_skill_block_contents`, `require_managed_schema_profile`, `require_replaceable_managed_schema`, `require_safe_schema_path`, `strip_wiki_block` |
 | `.skills` | `REFERENCE_SKILL_ID`, `ReferenceSkillState`, `_provision_reference_skill_guarded`, `skills_install_dir`, `verify_reference_skill` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.sync_runtime` | `run_request` |
 | `.sync_service` | `SyncRequest` |
 | `.upgrade_service` | `UpgradeError`, `UpgradeOutcome`, `UpgradeRequest`, `UpgradeRequestError` |
 | `.wiki_lifecycle` | `WikiScaffoldPathError`, `provision_wiki_scaffold`, `require_safe_wiki_scaffold` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
 | `llm_wiki_engine.host` | `current_host`, `emit`, `recording_errors` |
 | `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |

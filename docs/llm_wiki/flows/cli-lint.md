@@ -152,9 +152,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/lint_service.py:lint_request_from_args` | 2 | - | external | 21 |
 | `src/llm_wiki_cli/services/lint_service.py:run` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 29 | - | external | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 32 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 32 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 36 | - | unresolved | 1 |
 > Omission summary shows 8 of 527 groups; 519 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

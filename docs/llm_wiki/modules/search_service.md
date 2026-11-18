@@ -11,21 +11,21 @@ Shares wiki page discovery and ranked or substring search across public consumer
 | Source | Symbols |
 |--------|---------|
 | `.documentation_query_builder` | `normalize_documentation_query_limit`, `validate_live_query_source_selection` |
-| `.io` | `read_md`, `decode_markdown_bytes` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `StorageReadSession` |
-| `.path_policy` | `validate_path`, `validate_source_root` |
 | `.search_discovery_capture` | `capture_discovery` |
 | `.search_source` | `MAX_SOURCE_INDEX_BYTES`, `capture_source_index`, `captured_manifest`, `source_page_selected` |
-| `.source_selection` | `resolve_source_selection`, `path_is_selected`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable` |
 | `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.io` | `read_md`, `decode_markdown_bytes` |
+| `llm_wiki_engine.path_policy` | `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.query_result_format` | `SEARCH_RESULT_SCHEMA_VERSION` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `enrich_search` |
 | `llm_wiki_engine.search_lexical` | `rank_pages` |
 | `llm_wiki_engine.search_rank` | `MAX_SEARCH_BYTES`, `MAX_SEARCH_PAGES`, `rank_pages` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection`, `path_is_selected`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.workflow_profile` | `canonical_json` |
 | `pathlib` | `Path` |
 | `re` | `re` |

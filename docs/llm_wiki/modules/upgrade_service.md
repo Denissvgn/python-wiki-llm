@@ -13,10 +13,10 @@ Importing this module is cheap; the upgrade lives in
 
 | Source | Symbols |
 |--------|---------|
-| `.path_policy` | `DEFAULT_WIKI_DIR` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Sequence` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `Literal` |
 
@@ -26,17 +26,17 @@ Importing this module is cheap; the upgrade lives in
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/path_policy.py"]
-    n2["src/llm_wiki_cli/services/upgrade_runtime.py"]
-    n3["src/llm_wiki_cli/services/upgrade_service.py"]
+    n1["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n2["src/llm_wiki_cli/services/upgrade_service.py"]
+    n3["src/llm_wiki_engine/path_policy.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n3
+    n1 --> n2
     n2 --> n3
-    n3 --> n1
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/path_policy.md"
-    click n2 "../modules/upgrade_runtime.md"
-    click n3 "../modules/upgrade_service.md"
+    click n1 "../modules/upgrade_runtime.md"
+    click n2 "../modules/upgrade_service.md"
+    click n3 "../modules/path_policy.md"
 ```
 
 ### Internal neighbors

@@ -17,11 +17,11 @@ agent's project directory: ``.claude/skills`` for Claude and the neutral
 
 | Source | Symbols |
 |--------|---------|
-| `.io` | `first_unsafe_path_component`, `read_md`, `write_md` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component`, `read_md`, `write_md` |
 | `llm_wiki_engine.validation` | `require_safe_base_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |

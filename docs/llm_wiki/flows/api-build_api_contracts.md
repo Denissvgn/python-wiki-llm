@@ -96,11 +96,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 3 | - | unresolved | 10 |
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 3 | - | external | 4 |
 | `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 3 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 8 |
-| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 7 |
-| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | external | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/source_selection.py:_selection_path` | 21 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 4 |
+| `src/llm_wiki_engine/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 7 |
+| `src/llm_wiki_engine/source_selection.py:_selection_path` | 21 | - | external | 2 |
+| `src/llm_wiki_engine/source_selection.py:_selection_path` | 21 | - | unresolved | 1 |
 > Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

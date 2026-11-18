@@ -141,10 +141,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | [src/llm_wiki_cli/services/documentation_native.py](../modules/documentation_native.md) | internal | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
-| `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 8 |
+| `src/llm_wiki_engine/source_selection.py:_override_text` | 20 | - | external | 3 |
 > Omission summary shows 8 of 848 groups; 840 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

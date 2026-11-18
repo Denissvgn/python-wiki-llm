@@ -16,15 +16,15 @@ Persistent inventory cache used by lint and CI validation.
 | `.analysis_compatibility` | `digest` |
 | `.domain_pack` | `current_pack` |
 | `.extractor_registry` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS` |
-| `.io` | `write_json_atomic` |
-| `.path_policy` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `.plugins` | `lock_path`, `plugin_store` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.io` | `write_json_atomic` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.path_policy` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `WarningSink`, `prepare_destination`, `stderr_warning`, `warn` |
 | `os` | `os` |

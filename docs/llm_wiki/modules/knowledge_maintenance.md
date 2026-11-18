@@ -21,11 +21,8 @@ Read-only candidate/producer preflight and bound health-policy commands.
 | `.knowledge_packs` | `parse_packed_root` |
 | `.knowledge_storage` | `parse_store_root` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
-| `.path_policy` | `validate_path`, `validate_source_root` |
-| `.source_selection` | `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `hashlib` | `hashlib` |
@@ -36,6 +33,9 @@ Read-only candidate/producer preflight and bound health-policy commands.
 | `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `llm_wiki_engine.host` | `current_host` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.path_policy` | `validate_path`, `validate_source_root` |
+| `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |

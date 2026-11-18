@@ -13,19 +13,19 @@
 sequenceDiagram
     participant p0 as windows_object_identity
     participant p1 as windows_object_identity_from_values
-    participant p2 as int (src/llm_wiki_cli/services…py:windows_object_identity)
+    participant p2 as int (src/llm_wiki_engine/files…py:windows_object_identity)
     participant p3 as getattr
     participant p4 as WindowsIdentityUnavailableError
     participant p5 as WindowsObjectIdentity
-    participant p6 as int (src/llm_wiki_cli/services…bject_identity_from_values)
+    participant p6 as int (src/llm_wiki_engine/files…bject_identity_from_values)
     p0->>p1: windows_object_identity_from_values
-    p0-->>p2: int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))
+    p0-->>p2: int (src/llm_wiki_engine/files…py:windows_object_identity)(getattr(...))
     p0-->>p3: getattr(result, 'st_dev', 0)
-    p0-->>p2: int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))
+    p0-->>p2: int (src/llm_wiki_engine/files…py:windows_object_identity)(getattr(...))
     p0-->>p3: getattr(result, 'st_ino', 0)
     p1->>p4: WindowsIdentityUnavailableError
     p1->>p5: WindowsObjectIdentity
-    p1-->>p6: int (src/llm_wiki_cli/services…bject_identity_from_values)(device)
+    p1-->>p6: int (src/llm_wiki_engine/files…bject_identity_from_values)(device)
 ```
 
 > Call sequence diagram shows 8 of 8 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -54,10 +54,10 @@ Collector observations for 2 source steps with known totals: observed: 7, emitte
 | `windows_object_identity_from_values` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `WindowsIdentityUnavailableError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `WindowsObjectIdentity` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `int (src/llm_wiki_cli/services…bject_identity_from_values)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int (src/llm_wiki_engine/files…bject_identity_from_values)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int (src/llm_wiki_engine/files…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int (src/llm_wiki_engine/files…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -66,18 +66,18 @@ flowchart LR
     s2["2. windows_object_identity_from_values"]
     s3["3. WindowsIdentityUnavailableError"]
     s4["4. WindowsObjectIdentity"]
-    s5["5. int (src/llm_wiki_cli/services…bject_identity_from_values)"]
-    s6["6. int (src/llm_wiki_cli/services…py:windows_object_identity)"]
+    s5["5. int (src/llm_wiki_engine/files…bject_identity_from_values)"]
+    s6["6. int (src/llm_wiki_engine/files…py:windows_object_identity)"]
     s7["7. getattr"]
-    s8["8. int (src/llm_wiki_cli/services…py:windows_object_identity)"]
+    s8["8. int (src/llm_wiki_engine/files…py:windows_object_identity)"]
     s9["9. getattr"]
     s1 -->|"windows_object_identity_from_values(device=int(...), file_id=int(...), context=context)"| s2
     s2 -->|"WindowsIdentityUnavailableError(...)"| s3
     s2 -->|"WindowsObjectIdentity(device=int(...), file_id=file_id)"| s4
-    s2 -. "int (src/llm_wiki_cli/services…bject_identity_from_values)(device)" .-> s5
-    s1 -. "int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))" .-> s6
+    s2 -. "int (src/llm_wiki_engine/files…bject_identity_from_values)(device)" .-> s5
+    s1 -. "int (src/llm_wiki_engine/files…py:windows_object_identity)(getattr(...))" .-> s6
     s1 -. "getattr(result, 'st_dev', 0)" .-> s7
-    s1 -. "int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))" .-> s8
+    s1 -. "int (src/llm_wiki_engine/files…py:windows_object_identity)(getattr(...))" .-> s8
     s1 -. "getattr(result, 'st_ino', 0)" .-> s9
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/filesystem_guard.md"
@@ -93,10 +93,10 @@ flowchart LR
 | `windows_object_identity_from_values` | `device: int`, `file_id: int`, `context: str` | - | - | `WindowsObjectIdentity(...)` |
 | `WindowsIdentityUnavailableError` | - | - | - | - |
 | `WindowsObjectIdentity` | - | - | - | - |
-| `int (src/llm_wiki_cli/services…bject_identity_from_values)` | - | - | - | - |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | - | - | - | - |
+| `int (src/llm_wiki_engine/files…bject_identity_from_values)` | - | - | - | - |
+| `int (src/llm_wiki_engine/files…py:windows_object_identity)` | - | - | - | - |
 | `getattr` | - | - | - | - |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | - | - | - | - |
+| `int (src/llm_wiki_engine/files…py:windows_object_identity)` | - | - | - | - |
 | `getattr` | - | - | - | - |
 
 ### Call data
@@ -106,10 +106,10 @@ flowchart LR
 | windows_object_identity | windows_object_identity_from_values | 108 | `windows_object_identity_from_values(device=int(...), file_id=int(...), context=context)` |
 | windows_object_identity_from_values | WindowsIdentityUnavailableError | 124 | `WindowsIdentityUnavailableError(...)` |
 | windows_object_identity_from_values | WindowsObjectIdentity | 127 | `WindowsObjectIdentity(device=int(...), file_id=file_id)` |
-| windows_object_identity_from_values | int (src/llm_wiki_cli/services…bject_identity_from_values) | 128 | `int(device)` |
-| windows_object_identity | int (src/llm_wiki_cli/services…py:windows_object_identity) | 109 | `int(getattr(...))` |
+| windows_object_identity_from_values | int (src/llm_wiki_engine/files…bject_identity_from_values) | 128 | `int(device)` |
+| windows_object_identity | int (src/llm_wiki_engine/files…py:windows_object_identity) | 109 | `int(getattr(...))` |
 | windows_object_identity | getattr | 109 | `getattr(result, 'st_dev', 0)` |
-| windows_object_identity | int (src/llm_wiki_cli/services…py:windows_object_identity) | 110 | `int(getattr(...))` |
+| windows_object_identity | int (src/llm_wiki_engine/files…py:windows_object_identity) | 110 | `int(getattr(...))` |
 | windows_object_identity | getattr | 110 | `getattr(result, 'st_ino', 0)` |
 
 ### Boundary effects

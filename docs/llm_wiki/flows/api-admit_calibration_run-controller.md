@@ -94,7 +94,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/protected_artifacts.py](../modules/protected_artifacts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_engine/protected_artifacts.py](../modules/protected_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | - | unresolved | 4 |

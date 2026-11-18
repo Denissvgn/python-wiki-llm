@@ -17,13 +17,13 @@ Turn independently reviewed workspace edits into consumer-owned Markdown patches
 | `.publication_candidate` | `MAX_FILE_BYTES`, `MAX_TREE_BYTES`, `_candidate_path`, `_hashes`, `_read_tree`, `check_publication_candidate` |
 | `.publication_config` | `PUBLICATION_CONFIG_PATH`, `publication_control_overlap`, `publication_path` |
 | `.publication_targets` | `publication_target` |
-| `.source_selection` | `resolve_source_selection` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `difflib` | `difflib` |
 | `io` | `StringIO` |
 | `json` | `json` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection` |
 | `os.path` | `os.path` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
@@ -43,11 +43,11 @@ flowchart LR
     n7["src/llm_wiki_cli/services/publication_config.py"]
     n8["src/llm_wiki_cli/services/publication_maintenance.py"]
     n9["src/llm_wiki_cli/services/publication_targets.py"]
-    n10["src/llm_wiki_cli/services/source_selection.py"]
-    n11["src/llm_wiki_engine/knowledge_evidence.py"]
+    n10["src/llm_wiki_engine/knowledge_evidence.py"]
+    n11["src/llm_wiki_engine/source_selection.py"]
     n0 --> n6
     n0 --> n8
-    n0 --> n10
+    n0 --> n11
     n1 --> n5
     n1 --> n6
     n1 --> n7
@@ -57,13 +57,13 @@ flowchart LR
     n3 --> n2
     n3 --> n4
     n3 --> n6
-    n3 --> n11
+    n3 --> n10
     n6 --> n5
     n6 --> n7
     n6 --> n9
-    n6 --> n11
+    n6 --> n10
     n7 --> n9
-    n7 --> n10
+    n7 --> n11
     n8 --> n2
     n8 --> n3
     n8 --> n4
@@ -84,8 +84,8 @@ flowchart LR
     click n7 "../modules/publication_config.md"
     click n8 "../modules/publication_maintenance.md"
     click n9 "../modules/publication_targets.md"
-    click n10 "../modules/source_selection.md"
-    click n11 "../modules/knowledge_evidence.md"
+    click n10 "../modules/knowledge_evidence.md"
+    click n11 "../modules/source_selection.md"
 ```
 
 ### Internal neighbors
@@ -101,8 +101,8 @@ flowchart LR
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_targets](../modules/publication_targets.md) |
-| Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Outbound | [source_selection](../modules/source_selection.md) |
 
 ## Functions
 

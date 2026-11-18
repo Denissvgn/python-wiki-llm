@@ -17,12 +17,12 @@ _Auto-generated from `src/llm_wiki_cli/services/metrics.py`._
 | `.knowledge_consumption` | `KnowledgeReadReason` |
 | `.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `.lint_service` | `_collect_documented_entities`, `_collect_documented_modules` |
-| `.source_selection` | `resolve_source_selection` |
 | `.source_snapshot` | `build_source_snapshot`, `capture_source_selection_inputs` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `datetime` | `datetime`, `timedelta`, `timezone` |
 | `json` | `json` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection` |
 | `pathlib` | `Path`, `PurePosixPath`, `PureWindowsPath` |
 | `re` | `re` |
 | `typing` | `Any` |

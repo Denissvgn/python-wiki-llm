@@ -135,8 +135,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/lint_service.py:execute_lint` | 14 | - | external | 3 |
 | `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 17 | - | external | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 20 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 20 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | - | unresolved | 5 |
 > Omission summary shows 8 of 205 groups; 197 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

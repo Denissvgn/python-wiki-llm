@@ -33,12 +33,10 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
 | `.helper_runtime` | `helper_operation` |
-| `.io` | `read_md` |
 | `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.maintenance_queue` | `validate_queue_limit` |
 | `.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
-| `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.task_context` | `_counter` |
 | `.task_contract` | `normalize_task_request` |
@@ -54,9 +52,11 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `llm_wiki_engine` | `circuit_breaker`, `wiki_surface` |
 | `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
+| `llm_wiki_engine.io` | `read_md` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `llm_wiki_engine.request_json` | `MAX_REQUEST_BYTES` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `llm_wiki_engine.task_compact_readable` | `readable_session_metadata` |
 | `llm_wiki_engine.validation` | `posix_path_text`, `require_portable_relative_path` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |

@@ -1,6 +1,6 @@
 # ProtectedArtifactError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:76`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:76`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -22,12 +22,12 @@ Base error for protected artifact storage.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactError (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactError (src/llm_wiki_engine/protected_artifacts.py)"]
     n1["RuntimeError"]
-    n2["ProtectedArtifactDurabilityError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n3["ProtectedArtifactIntegrityError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n4["ProtectedArtifactLimitError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n5["ProtectedArtifactLockError (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n2["ProtectedArtifactDurabilityError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n3["ProtectedArtifactIntegrityError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n4["ProtectedArtifactLimitError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n5["ProtectedArtifactLockError (src/llm_wiki_engine/protected_artifacts.py)"]
     n6["src/llm_wiki_cli/services/calibration/controller.py"]
     n0 --> n1
     n2 --> n0

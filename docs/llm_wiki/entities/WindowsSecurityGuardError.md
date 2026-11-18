@@ -1,6 +1,6 @@
 # WindowsSecurityGuardError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:56`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:56`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,18 +22,18 @@ Raised when a Windows object lacks the required restrictive DACL.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsSecurityGuardError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsSecurityGuardError (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["OSError"]
-    n2["_current_windows_user_sid (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n3["_private_windows_security_attributes (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n4["_verify_windows_handle_restrictive_dacl (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n5["_windows_handle_owner_sid (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n6["_windows_sid_string (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n7["verify_windows_restrictive_dacl (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n8["windows_current_user_sid (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n9["windows_path_owner_sid (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n10["src/llm_wiki_cli/services/path_policy.py"]
-    n11["src/llm_wiki_cli/services/protected_artifacts.py"]
+    n2["_current_windows_user_sid (src/llm_wiki_engine/filesystem_guard.py)"]
+    n3["_private_windows_security_attributes (src/llm_wiki_engine/filesystem_guard.py)"]
+    n4["_verify_windows_handle_restrictive_dacl (src/llm_wiki_engine/filesystem_guard.py)"]
+    n5["_windows_handle_owner_sid (src/llm_wiki_engine/filesystem_guard.py)"]
+    n6["_windows_sid_string (src/llm_wiki_engine/filesystem_guard.py)"]
+    n7["verify_windows_restrictive_dacl (src/llm_wiki_engine/filesystem_guard.py)"]
+    n8["windows_current_user_sid (src/llm_wiki_engine/filesystem_guard.py)"]
+    n9["windows_path_owner_sid (src/llm_wiki_engine/filesystem_guard.py)"]
+    n10["src/llm_wiki_engine/path_policy.py"]
+    n11["src/llm_wiki_engine/protected_artifacts.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

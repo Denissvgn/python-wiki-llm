@@ -33,10 +33,10 @@ sequenceDiagram
     participant p19 as descriptor.fileno
     participant p20 as fcntl.flock
     participant p21 as descriptor.close
-    participant p22 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p22 as Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)
     participant p23 as wiki_dir.resolve
     participant p24 as type
-    participant p25 as os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p25 as os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)
     p0->>p1: first_unsafe_path_component
     p0->>p2: GovernanceError
     p0->>p3: _governance_lock_root
@@ -63,10 +63,10 @@ sequenceDiagram
     p0-->>p19: descriptor.fileno
     p0-->>p20: fcntl.flock(descriptor, fcntl.LOCK_UN)
     p0-->>p21: descriptor.close
-    p1-->>p22: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))
+    p1-->>p22: Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(os.fspath(...))
     p3-->>p23: wiki_dir.resolve(strict=False)
     p4-->>p24: type(error)
-    p1-->>p25: os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(path)
+    p1-->>p25: os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(path)
 ```
 
 > Call sequence diagram shows 30 of 72 interactions; 42 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -77,13 +77,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 17 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | - | external | 17 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 4 | - | unresolved | 6 |
 | `src/llm_wiki_engine/host.py:current_host` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 33 | - | external | 7 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:_lock_open_diagnostic` | 50 | - | external | 5 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -108,10 +108,10 @@ Collector observations for 6 source steps with known totals: observed: 47, emitt
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
-| `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
@@ -123,10 +123,10 @@ flowchart LR
     s2["2. GovernanceError"]
     s3["3. Path (src/llm_wiki_cli/services…ernance.py:governance_lock)"]
     s4["4. first_unsafe_path_component"]
-    s5["5. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s6["6. os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s7["7. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s8["8. os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
+    s5["5. Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
+    s6["6. os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
+    s7["7. Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
+    s8["8. os.path.abspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)"]
     s9["9. lexical.is_absolute"]
     s10["10. current_host().cwd"]
     s11["11. current_host"]
@@ -134,10 +134,10 @@ flowchart LR
     s1 -->|"GovernanceError('lock', 'unknown mutation lock')"| s2
     s1 -. "Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)" .-> s3
     s1 -->|"first_unsafe_path_component(root)"| s4
-    s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s5
-    s4 -. "os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(path)" .-> s6
-    s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))" .-> s7
-    s4 -. "os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(lexical)" .-> s8
+    s4 -. "Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(os.fspath(...))" .-> s5
+    s4 -. "os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(path)" .-> s6
+    s4 -. "Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(os.path.abspath(...))" .-> s7
+    s4 -. "os.path.abspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)(lexical)" .-> s8
     s4 -. "lexical.is_absolute(data not statically known)" .-> s9
     s4 -. "current_host().cwd(data not statically known)" .-> s10
     s4 -->|"current_host(data not statically known)"| s11
@@ -160,10 +160,10 @@ flowchart LR
 | `GovernanceError` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component)` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
 | `current_host().cwd` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
@@ -176,10 +176,10 @@ flowchart LR
 | governance_lock | GovernanceError | 883 | `GovernanceError('lock', 'unknown mutation lock')` |
 | governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 884 | `Path(wiki_dir)` |
 | governance_lock | first_unsafe_path_component | 885 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component) | 52 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…irst_unsafe_path_component) | 60 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 60 | `os.path.abspath(lexical)` |
 | first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
 | first_unsafe_path_component | current_host().cwd | 67 | `current_host().cwd(data not statically known)` |
 | first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |

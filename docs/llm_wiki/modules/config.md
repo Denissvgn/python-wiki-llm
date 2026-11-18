@@ -11,15 +11,15 @@ Shared constants and utilities for agent-wiki-cli.
 | Source | Symbols |
 |--------|---------|
 | `.services.extractor_registry` | `DOCKERFILE_PATTERNS`, `COMPOSE_PATTERNS`, `EXTRACTOR_REGISTRY` |
-| `.services.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
-| `.services.gitignore` | `_GitignoreRule`, `GitIgnoreMatcher`, `_normalize_gitignore_trailing_spaces`, `_parse_gitignore_text`, `_parse_gitignore_file`, `_match_gitignore_pattern`, `_rule_matches`, `build_gitignore_matcher`, `is_ignored_by_gitignore` |
-| `.services.io` | `first_unsafe_path_component` |
-| `.services.path_policy` | `DEFAULT_WIKI_DIR`, `EXCLUDED_DIRS`, `AGENT_WORKTREE_DIR_PATTERNS`, `_normalized_rel_parts`, `is_agent_worktree_path`, `PathValidationError`, `validate_path`, `validate_source_root`, `validate_source_paths` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
+| `llm_wiki_engine.gitignore` | `_GitignoreRule`, `GitIgnoreMatcher`, `_normalize_gitignore_trailing_spaces`, `_parse_gitignore_text`, `_parse_gitignore_file`, `_match_gitignore_pattern`, `_rule_matches`, `build_gitignore_matcher`, `is_ignored_by_gitignore` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `EXCLUDED_DIRS`, `AGENT_WORKTREE_DIR_PATTERNS`, `_normalized_rel_parts`, `is_agent_worktree_path`, `PathValidationError`, `validate_path`, `validate_source_root`, `validate_source_paths` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 

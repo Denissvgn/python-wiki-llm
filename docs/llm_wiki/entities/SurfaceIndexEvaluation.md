@@ -1,6 +1,6 @@
 # SurfaceIndexEvaluation
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface_index.py:39`
+**Location:** `src/llm_wiki_engine/wiki_surface_index.py:39`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface_index](../modules/wiki_surface_index.md)
@@ -30,12 +30,12 @@ One collected canonical-page view reused by projection builders.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SurfaceIndexEvaluation (src/llm_wiki_cli/services/wiki_surface_index.py)"]
+    n0["SurfaceIndexEvaluation (src/llm_wiki_engine/wiki_surface_index.py)"]
     n1["src/llm_wiki_cli/services/context_packet_builder.py"]
     n2["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n3["_evaluate_runtime_surface (src/llm_wiki_cli/services/documentation_native.py)"]
     n4["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n5["evaluate_surface_index (src/llm_wiki_cli/services/wiki_surface_index.py)"]
+    n5["evaluate_surface_index (src/llm_wiki_engine/wiki_surface_index.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

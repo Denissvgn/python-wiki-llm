@@ -115,13 +115,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/generate_prompt_cmd.py:run` | 1 | - | external | 20 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 4 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 4 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 17 | - | external | 10 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 17 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 17 | - | unresolved | 6 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 17 | - | external | 10 |
 > Omission summary shows 8 of 400 groups; 392 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -151,11 +151,11 @@ Collector observations for 380 source steps with known totals: observed: 2090, e
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
@@ -166,22 +166,22 @@ flowchart LR
     s4["4. validate_path"]
     s5["5. PathValidationError"]
     s6["6. (…).resolve"]
-    s7["7. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s7["7. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s8["8. current_host"]
     s9["9. _ACTIVE.get"]
     s10["10. current_host().cwd().resolve"]
-    s11["11. current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s11["11. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s12["12. current_host"]
     s1 -. "getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s2
     s1 -. "getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'src_dir', '.')" .-> s3
     s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s4
     s4 -->|"PathValidationError(...)"| s5
     s4 -. "(…).resolve(data not statically known)" .-> s6
-    s4 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s7
+    s4 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s7
     s4 -->|"current_host(data not statically known)"| s8
     s8 -. "_ACTIVE.get(data not statically known)" .-> s9
     s4 -. "current_host().cwd().resolve(data not statically known)" .-> s10
-    s4 -. "current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s11
+    s4 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s11
     s4 -->|"current_host(data not statically known)"| s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -222,11 +222,11 @@ flowchart LR
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
 | `(…).resolve` | - | - | - | - |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 | `_ACTIVE.get` | - | - | - | - |
 | `current_host().cwd().resolve` | - | - | - | - |
-| `current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 
 ### Call data
@@ -238,11 +238,11 @@ flowchart LR
 | run | validate_path | 646 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 100 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 101 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
 | validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_cli/services…h_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 102 | `current_host(data not statically known)` |
 
 ### Boundary effects

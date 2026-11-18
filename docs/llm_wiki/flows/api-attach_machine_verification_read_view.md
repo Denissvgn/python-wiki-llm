@@ -97,8 +97,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_verification.py:attach_machine_verification_read_view` | 1 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_verification.py:load_machine_verification_read_view` | 5 | - | external | 11 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | - | external | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_engine/host.py:current_host` | 18 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
@@ -136,7 +136,7 @@ Collector observations for 59 source steps with known totals: observed: 269, emi
 | `load_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `Path (src/llm_wiki_cli/services…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -151,7 +151,7 @@ flowchart LR
     s9["9. load_verification_receipt"]
     s10["10. Path (src/llm_wiki_cli/services…load_verification_receipt)"]
     s11["11. first_unsafe_path_component"]
-    s12["12. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s12["12. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s1 -. "isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')" .-> s3
     s1 -. "replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))" .-> s4
@@ -162,7 +162,7 @@ flowchart LR
     s5 -->|"load_verification_receipt(Path(...))"| s9
     s9 -. "Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)" .-> s10
     s9 -->|"first_unsafe_path_component(root)"| s11
-    s11 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s12
+    s11 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s12
     b0["mutation pending_parts.pop"]
     s11 -. "mutation pending_parts.pop" .-> b0
     click s1 "../modules/knowledge_verification.md"
@@ -189,7 +189,7 @@ flowchart LR
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
 | `Path (src/llm_wiki_cli/services…load_verification_receipt)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 
 ### Call data
 
@@ -205,7 +205,7 @@ flowchart LR
 | load_machine_verification_read_view | load_verification_receipt | 87 | `load_verification_receipt(Path(...))` |
 | load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 985 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 
 ### Boundary effects
 

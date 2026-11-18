@@ -15,7 +15,6 @@ Complete, read-only native page commitments for documentation publication.
 | `.bootstrap_service` | `BootstrapRequest`, `BootstrapServiceError` |
 | `.documentation_native` | `DocumentationNativeError`, `evaluate_documentation_native_freshness` |
 | `.helper_runtime` | `helper_operation`, `helper_operation` |
-| `.io` | `decode_markdown_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_model` | `_bundle_to_payload` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
@@ -28,6 +27,7 @@ Complete, read-only native page commitments for documentation publication.
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |

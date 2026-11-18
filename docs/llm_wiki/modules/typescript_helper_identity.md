@@ -16,12 +16,12 @@ receipts without preparing tools, migrating caches or executing target source.
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `fresh_no_follow_stat` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -33,25 +33,25 @@ receipts without preparing tools, migrating caches or executing target source.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n1["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n2["src/llm_wiki_cli/services/io.py"]
-    n3["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n4["src/llm_wiki_cli/services/typescript_helper_identity.py"]
+    n1["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n2["src/llm_wiki_cli/services/typescript_helper_identity.py"]
+    n3["src/llm_wiki_engine/filesystem_guard.py"]
+    n4["src/llm_wiki_engine/io.py"]
     n5["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n4
-    n3 --> n1
-    n3 --> n2
-    n3 --> n5
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n5
+    n1 --> n3
+    n1 --> n4
+    n1 --> n5
+    n2 --> n1
+    n2 --> n3
+    n2 --> n4
+    n2 --> n5
     click n0 "../modules/extractor_helpers.md"
-    click n1 "../modules/filesystem_guard.md"
-    click n2 "../modules/io.md"
-    click n3 "../modules/knowledge_storage_io.md"
-    click n4 "../modules/typescript_helper_identity.md"
+    click n1 "../modules/knowledge_storage_io.md"
+    click n2 "../modules/typescript_helper_identity.md"
+    click n3 "../modules/filesystem_guard.md"
+    click n4 "../modules/io.md"
     click n5 "../modules/validation.md"
 ```
 
@@ -60,9 +60,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [extractor_helpers](../modules/extractor_helpers.md) |
+| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Functions

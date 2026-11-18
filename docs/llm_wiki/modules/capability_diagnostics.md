@@ -25,9 +25,9 @@ overrides follow the same resolution rules as explicit preparation.
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.doctor_service` | `build_doctor_report`, `_render_doctor_payload` |
 | `.helper_cache` | `_profile_slots`, `cache_roots`, `preparation_cache_root`, `cache_roots` |
-| `.path_policy` | `validate_source_root` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.path_policy` | `validate_source_root` |
 | `llm_wiki_engine.paths` | `render_shell_command` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -45,13 +45,13 @@ flowchart LR
     n3["src/llm_wiki_cli/services/doctor_service.py"]
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
     n5["src/llm_wiki_cli/services/helper_cache.py"]
-    n6["src/llm_wiki_cli/services/path_policy.py"]
-    n7["src/llm_wiki_cli/services/plugins.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n6["src/llm_wiki_cli/services/plugins.py"]
+    n7["src/llm_wiki_cli/services/source_snapshot.py"]
+    n8["src/llm_wiki_engine/path_policy.py"]
     n9["src/llm_wiki_engine/paths.py"]
     n0 --> n2
     n0 --> n3
-    n1 --> n6
+    n1 --> n8
     n2 --> n1
     n2 --> n3
     n2 --> n4
@@ -63,17 +63,17 @@ flowchart LR
     n4 --> n5
     n4 --> n9
     n5 --> n4
-    n8 --> n1
-    n8 --> n6
+    n7 --> n1
+    n7 --> n8
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/common.md"
     click n2 "../modules/capability_diagnostics.md"
     click n3 "../modules/doctor_service.md"
     click n4 "../modules/extractor_helpers.md"
     click n5 "../modules/helper_cache.md"
-    click n6 "../modules/path_policy.md"
-    click n7 "../modules/plugins.md"
-    click n8 "../modules/source_snapshot.md"
+    click n6 "../modules/plugins.md"
+    click n7 "../modules/source_snapshot.md"
+    click n8 "../modules/path_policy.md"
     click n9 "../modules/paths.md"
 ```
 
@@ -86,9 +86,9 @@ flowchart LR
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [helper_cache](../modules/helper_cache.md) |
-| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [plugins](../modules/plugins.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [paths](../modules/paths.md) |
 
 ## Functions

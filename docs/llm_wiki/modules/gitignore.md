@@ -1,6 +1,6 @@
 # gitignore Module
 
-**Path:** `src/llm_wiki_cli/services/gitignore.py`
+**Path:** `src/llm_wiki_engine/gitignore.py`
 
 ## Description
 
@@ -26,31 +26,31 @@ flowchart LR
     n0["src/llm_wiki_cli/config.py"]
     n1["src/llm_wiki_cli/extractors/common.py"]
     n2["src/llm_wiki_cli/extractors/python_extractor.py"]
-    n3["src/llm_wiki_cli/services/gitignore.py"]
-    n4["src/llm_wiki_cli/services/path_policy.py"]
-    n5["src/llm_wiki_cli/services/source_path_diagnostics.py"]
-    n6["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n3
-    n0 --> n4
-    n1 --> n3
-    n1 --> n4
+    n3["src/llm_wiki_cli/services/source_path_diagnostics.py"]
+    n4["src/llm_wiki_cli/services/source_snapshot.py"]
+    n5["src/llm_wiki_engine/gitignore.py"]
+    n6["src/llm_wiki_engine/path_policy.py"]
+    n0 --> n5
+    n0 --> n6
+    n1 --> n5
+    n1 --> n6
     n2 --> n1
-    n2 --> n3
+    n2 --> n5
+    n3 --> n1
     n3 --> n4
-    n5 --> n1
-    n5 --> n3
-    n5 --> n4
+    n3 --> n5
+    n3 --> n6
+    n4 --> n1
+    n4 --> n5
+    n4 --> n6
     n5 --> n6
-    n6 --> n1
-    n6 --> n3
-    n6 --> n4
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
     click n2 "../modules/python_extractor.md"
-    click n3 "../modules/gitignore.md"
-    click n4 "../modules/path_policy.md"
-    click n5 "../modules/source_path_diagnostics.md"
-    click n6 "../modules/source_snapshot.md"
+    click n3 "../modules/source_path_diagnostics.md"
+    click n4 "../modules/source_snapshot.md"
+    click n5 "../modules/gitignore.md"
+    click n6 "../modules/path_policy.md"
 ```
 
 ### Internal neighbors

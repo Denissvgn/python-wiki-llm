@@ -106,27 +106,27 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -140,7 +140,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -497,11 +497,11 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py",
             "src/llm_wiki_cli/services/calibration/broker.py"
@@ -603,12 +603,12 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -617,13 +617,13 @@
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -637,7 +637,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -671,7 +671,7 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 3003,
           "truncated": true
@@ -1091,7 +1091,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "atomic_write_executable_bytes",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "atomic_write_executable_bytes"
       },
       "evidence": {
@@ -1130,13 +1130,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 36,
+              "line": 34,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 38,
+              "line": 36,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
@@ -1160,8 +1160,8 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 366,
           "truncated": true
@@ -1175,7 +1175,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "atomic_write_guarded_bytes",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "atomic_write_guarded_bytes"
       },
       "evidence": {
@@ -1214,19 +1214,19 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 36,
+              "line": 34,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 38,
+              "line": 36,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
             {
               "kind": "unresolved_call",
-              "line": 39,
+              "line": 37,
               "step": "before_wiki_write",
               "target": "ACTIVE_SYNC_JOURNAL.get"
             },
@@ -1250,8 +1250,8 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 393,
           "truncated": true
@@ -1265,7 +1265,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "atomic_write_private_bytes",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "atomic_write_private_bytes"
       },
       "evidence": {
@@ -1375,7 +1375,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 433,
           "truncated": true
@@ -1511,7 +1511,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
@@ -1862,7 +1862,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
@@ -1870,18 +1870,18 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -1901,7 +1901,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/paths.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
@@ -1994,13 +1994,13 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/api_contracts.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/packages.py",
             "src/llm_wiki_cli/services/python_imports.py",
-            "src/llm_wiki_cli/services/path_policy.py"
+            "src/llm_wiki_engine/path_policy.py"
           ],
           "step_count": 961,
           "truncated": true
@@ -2196,10 +2196,10 @@
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/token_counting.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -2209,12 +2209,12 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_packet.py",
@@ -2231,7 +2231,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -2369,10 +2369,10 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py"
           ],
@@ -2560,16 +2560,16 @@
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_cli/services/context_service.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -2585,7 +2585,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
@@ -2830,7 +2830,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/dependency_versions.py",
-            "src/llm_wiki_cli/services/path_policy.py"
+            "src/llm_wiki_engine/path_policy.py"
           ],
           "step_count": 120,
           "truncated": false
@@ -2920,19 +2920,19 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/doctor_service.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/lint_service.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -3122,7 +3122,7 @@
             "src/llm_wiki_cli/services/documentation_run/publication.py",
             "src/llm_wiki_cli/services/publication_candidate.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_engine/validation.py",
@@ -3132,7 +3132,7 @@
             "src/llm_wiki_cli/services/documentation_run/workspace.py",
             "src/llm_wiki_cli/services/documentation_run/contracts.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 479,
           "truncated": true
@@ -3200,16 +3200,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -3311,7 +3311,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py"
@@ -3927,9 +3927,9 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
@@ -4082,8 +4082,8 @@
             "src/llm_wiki_cli/services/maintenance_projection.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
@@ -4377,13 +4377,13 @@
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -4399,7 +4399,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/python_implementation.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
@@ -4734,10 +4734,10 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
             "src/llm_wiki_cli/services/context_request_format.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -4747,12 +4747,12 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_packet.py",
@@ -4769,7 +4769,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -4878,10 +4878,10 @@
             "src/llm_wiki_cli/services/context_packet_builder.py",
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -4893,11 +4893,11 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_packet.py",
@@ -4913,7 +4913,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -5097,7 +5097,7 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
@@ -5131,12 +5131,12 @@
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/gitignore.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/gitignore.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/normalization_diagnostics.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
@@ -5338,11 +5338,11 @@
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
@@ -5526,7 +5526,7 @@
             "src/llm_wiki_cli/services/packages.py",
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py"
+            "src/llm_wiki_engine/path_policy.py"
           ],
           "step_count": 613,
           "truncated": true
@@ -5659,16 +5659,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -5757,16 +5757,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -5795,7 +5795,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "canonical_json_bytes",
-        "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+        "source_path": "src/llm_wiki_engine/protected_artifacts.py",
         "symbol": "canonical_json_bytes"
       },
       "evidence": {
@@ -5828,7 +5828,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/canonical_json.py"
           ],
           "step_count": 8,
@@ -5931,10 +5931,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -5949,10 +5949,10 @@
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -5968,7 +5968,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/wiki_media.py",
@@ -6189,7 +6189,7 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/publication_impact.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/domain_pack.py",
@@ -6267,7 +6267,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 413,
           "truncated": true
@@ -6372,11 +6372,11 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/publication_targets.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
@@ -7082,11 +7082,11 @@
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -7096,7 +7096,7 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 862,
           "truncated": true
@@ -7175,11 +7175,11 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
@@ -7280,11 +7280,11 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
@@ -7755,7 +7755,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 274,
           "truncated": true
@@ -7919,7 +7919,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 324,
           "truncated": true
@@ -8435,11 +8435,11 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/context_packet_builder.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/context_packet.py"
           ],
           "step_count": 394,
@@ -8679,7 +8679,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "create_private_windows_directory",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "create_private_windows_directory"
       },
       "evidence": {
@@ -8742,7 +8742,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 191,
           "truncated": false
@@ -9240,16 +9240,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -9321,15 +9321,15 @@
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -9881,10 +9881,10 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py",
             "src/llm_wiki_cli/services/calibration/broker.py"
@@ -9978,14 +9978,14 @@
           "modules_touched": [
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/doctor_service.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/lint_service.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -10003,7 +10003,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/dockerfile_parser.py",
@@ -10128,7 +10128,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "ensure_guarded_directory",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "ensure_guarded_directory"
       },
       "evidence": {
@@ -10198,7 +10198,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 231,
           "truncated": false
@@ -10388,13 +10388,13 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_native.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
@@ -11095,15 +11095,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -11284,8 +11284,8 @@
             "src/llm_wiki_cli/services/knowledge_projection.py",
             "src/llm_wiki_engine/concept_identity.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/site_html_check.py"
@@ -11389,11 +11389,11 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/publication_candidate.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/publication_targets.py",
@@ -11407,11 +11407,11 @@
             "src/llm_wiki_cli/services/publication_references.py",
             "src/llm_wiki_cli/services/publication_links.py",
             "src/llm_wiki_cli/services/publication_snapshot.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/gitignore.py",
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 1863,
           "truncated": true
@@ -11606,15 +11606,15 @@
           "modules_touched": [
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/extraction_service.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/packages.py",
@@ -11781,7 +11781,7 @@
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
@@ -11811,14 +11811,14 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/knowledge_generation.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_engine/concept_identity.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
@@ -12038,16 +12038,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -12124,16 +12124,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -12291,7 +12291,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "fresh_no_follow_stat",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "fresh_no_follow_stat"
       },
       "evidence": {
@@ -12312,7 +12312,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 2,
           "truncated": false
@@ -12568,7 +12568,7 @@
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/task_compact.py",
             "src/llm_wiki_cli/services/skills.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py"
           ],
           "step_count": 600,
@@ -12670,11 +12670,11 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py"
           ],
@@ -12822,15 +12822,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -13012,10 +13012,10 @@
             "src/llm_wiki_cli/services/knowledge_coverage.py",
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -13027,11 +13027,11 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -13048,7 +13048,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/wiki_media.py",
@@ -13168,10 +13168,10 @@
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_engine/validation.py",
@@ -13200,13 +13200,13 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/python_implementation.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -13219,7 +13219,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -13564,7 +13564,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py"
           ],
           "step_count": 73,
@@ -13579,7 +13579,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "guard_windows_directory_chain",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "guard_windows_directory_chain"
       },
       "evidence": {
@@ -13649,7 +13649,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 213,
           "truncated": false
@@ -13663,7 +13663,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "guarded_tree_manifest",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "guarded_tree_manifest"
       },
       "evidence": {
@@ -13733,7 +13733,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 336,
           "truncated": false
@@ -14075,7 +14075,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 357,
           "truncated": true
@@ -14766,7 +14766,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 311,
           "truncated": true
@@ -14838,10 +14838,10 @@
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/native_inspection.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -14851,11 +14851,11 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -14871,7 +14871,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
@@ -14965,8 +14965,8 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/ci_installer.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
@@ -14979,9 +14979,9 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 1112,
           "truncated": true
@@ -15087,8 +15087,8 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/ci_installer.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/publication_config.py",
             "src/llm_wiki_cli/services/reference_providers.py",
@@ -15103,9 +15103,9 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 1480,
           "truncated": true
@@ -16235,12 +16235,12 @@
             "src/llm_wiki_cli/services/lint_request.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/lint_service.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/health_details.py",
@@ -16344,15 +16344,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -16439,7 +16439,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/api.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py"
@@ -16523,7 +16523,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
@@ -16688,7 +16688,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/concept_identity.py",
@@ -16782,7 +16782,7 @@
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
@@ -16952,13 +16952,13 @@
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
@@ -17066,7 +17066,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
@@ -17158,7 +17158,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/api_contracts.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py"
           ],
           "step_count": 99,
@@ -17231,14 +17231,14 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/knowledge_observability.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -17258,12 +17258,12 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
@@ -17356,7 +17356,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
@@ -17446,7 +17446,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py"
@@ -17885,21 +17885,21 @@
             "src/llm_wiki_cli/services/migrate_service.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/migrate_runtime.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/engine_events.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
@@ -17916,7 +17916,7 @@
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py"
+            "src/llm_wiki_engine/wiki_surface_index.py"
           ],
           "step_count": 1114,
           "truncated": true
@@ -18325,7 +18325,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "move_windows_path_write_through",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "move_windows_path_write_through"
       },
       "evidence": {
@@ -18382,7 +18382,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 17,
           "truncated": false
@@ -19580,7 +19580,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "open_windows_guarded_lock_file",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "open_windows_guarded_lock_file"
       },
       "evidence": {
@@ -19649,7 +19649,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 170,
           "truncated": false
@@ -19663,7 +19663,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "open_windows_private_write_file",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "open_windows_private_write_file"
       },
       "evidence": {
@@ -19732,7 +19732,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 169,
           "truncated": false
@@ -19746,7 +19746,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "open_windows_readonly_file",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "open_windows_readonly_file"
       },
       "evidence": {
@@ -19815,7 +19815,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 171,
           "truncated": false
@@ -19984,12 +19984,12 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_engine/packet_field_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/change_selection.py",
             "src/llm_wiki_engine/host.py",
@@ -20070,16 +20070,16 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -21298,8 +21298,8 @@
             "src/llm_wiki_cli/services/calibration/controller.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/calibration/broker.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/calibration/contracts.py"
@@ -21474,7 +21474,7 @@
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
@@ -21483,8 +21483,8 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
@@ -21802,7 +21802,7 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/maintenance_projection.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
@@ -22235,15 +22235,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -22538,10 +22538,10 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/packet_field_policy.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -22549,12 +22549,12 @@
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -22567,7 +22567,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -22663,10 +22663,10 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/packet_field_policy.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -22675,11 +22675,11 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -22695,7 +22695,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -22958,7 +22958,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py",
@@ -23094,7 +23094,7 @@
             "src/llm_wiki_cli/services/documentation_policy.py",
             "src/llm_wiki_cli/services/publication_candidate.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_engine/validation.py",
@@ -23171,10 +23171,10 @@
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -23197,13 +23197,13 @@
             "src/llm_wiki_engine/concept_identity.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py"
           ],
           "step_count": 1907,
@@ -23465,10 +23465,10 @@
             "src/llm_wiki_cli/services/documentation_native.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -23479,7 +23479,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/wiki_surface.py",
@@ -23497,12 +23497,12 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -23528,7 +23528,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_engine/concept_identity.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
@@ -23611,15 +23611,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -23708,7 +23708,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "remove_guarded_tree",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "remove_guarded_tree"
       },
       "evidence": {
@@ -23824,7 +23824,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 386,
           "truncated": false
@@ -24811,7 +24811,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "replace_windows_file_write_through",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "replace_windows_file_write_through"
       },
       "evidence": {
@@ -24868,7 +24868,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 18,
           "truncated": false
@@ -26525,7 +26525,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py"
           ],
           "step_count": 41,
@@ -27091,10 +27091,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py"
+            "src/llm_wiki_engine/path_policy.py"
           ],
           "step_count": 239,
           "truncated": true
@@ -27733,8 +27733,8 @@
             "src/llm_wiki_cli/commands/install_ci_cmd.py",
             "src/llm_wiki_cli/services/ci_installer.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/publication_config.py",
             "src/llm_wiki_cli/services/reference_providers.py",
@@ -27747,9 +27747,9 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_cli/services/current_contracts.py",
@@ -27845,14 +27845,14 @@
           "modules_touched": [
             "src/llm_wiki_cli/commands/knowledge_cmd.py",
             "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -27860,7 +27860,7 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_cli/services/maintenance_projection.py",
@@ -27898,12 +27898,12 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -27916,7 +27916,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -28427,9 +28427,9 @@
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 434,
           "truncated": true
@@ -29806,7 +29806,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 339,
           "truncated": true
@@ -30045,7 +30045,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 311,
           "truncated": true
@@ -30522,9 +30522,9 @@
             "src/llm_wiki_cli/services/extraction_jobs.py",
             "src/llm_wiki_cli/services/scoped_sync_repair.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -30536,11 +30536,11 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/sync_transition_execution.py",
             "src/llm_wiki_cli/services/sync_transitions.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_engine/immutable.py",
@@ -30792,15 +30792,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -31035,7 +31035,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "unlink_guarded_bytes",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "unlink_guarded_bytes"
       },
       "evidence": {
@@ -31069,37 +31069,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 36,
+              "line": 34,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 38,
+              "line": 36,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
             {
               "kind": "unresolved_call",
-              "line": 39,
+              "line": 37,
               "step": "before_wiki_write",
               "target": "ACTIVE_SYNC_JOURNAL.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 41,
+              "line": 39,
               "step": "before_wiki_write",
               "target": "journal.before_write"
             },
             {
               "kind": "unresolved_call",
-              "line": 42,
+              "line": 40,
               "step": "before_wiki_write",
               "target": "ACTIVE_BOOTSTRAP_JOURNAL.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 44,
+              "line": 42,
               "step": "before_wiki_write",
               "target": "bootstrap.before_write"
             },
@@ -31123,8 +31123,8 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 324,
           "truncated": true
@@ -33021,7 +33021,7 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
@@ -33297,9 +33297,9 @@
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/source_selection.py"
+            "src/llm_wiki_engine/source_selection.py"
           ],
           "step_count": 497,
           "truncated": true
@@ -33445,7 +33445,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "validate_portable_relative_path",
-        "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+        "source_path": "src/llm_wiki_engine/protected_artifacts.py",
         "symbol": "validate_portable_relative_path"
       },
       "evidence": {
@@ -33502,7 +33502,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/validation.py"
           ],
           "step_count": 68,
@@ -34439,9 +34439,9 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 214,
           "truncated": true
@@ -34591,11 +34591,11 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/calibration/controller.py",
-            "src/llm_wiki_cli/services/protected_artifacts.py",
+            "src/llm_wiki_engine/protected_artifacts.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/calibration/contracts.py",
             "src/llm_wiki_cli/services/calibration/host_broker.py"
           ],
@@ -34744,11 +34744,11 @@
             "src/llm_wiki_cli/services/documentation_run/contracts.py",
             "src/llm_wiki_cli/services/documentation_run/integrity.py",
             "src/llm_wiki_cli/services/documentation_wiki_input.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/documentation_policy.py",
             "src/llm_wiki_cli/services/publication_candidate.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/publication_delivery.py",
             "src/llm_wiki_cli/services/documentation_run/workspace.py",
@@ -34769,7 +34769,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "verify_windows_restrictive_dacl",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "verify_windows_restrictive_dacl"
       },
       "evidence": {
@@ -34826,7 +34826,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 184,
           "truncated": false
@@ -34840,7 +34840,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "windows_current_user_sid",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "windows_current_user_sid"
       },
       "evidence": {
@@ -34915,7 +34915,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 46,
           "truncated": false
@@ -34929,7 +34929,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "windows_object_identity",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "windows_object_identity"
       },
       "evidence": {
@@ -34956,7 +34956,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 9,
           "truncated": false
@@ -34970,7 +34970,7 @@
       "detector": "builtin",
       "entry_point": {
         "label": "windows_object_identity_from_values",
-        "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+        "source_path": "src/llm_wiki_engine/filesystem_guard.py",
         "symbol": "windows_object_identity_from_values"
       },
       "evidence": {
@@ -34984,7 +34984,7 @@
         },
         "flow": {
           "modules_touched": [
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 4,
           "truncated": false
@@ -35210,9 +35210,9 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 241,
           "truncated": true
@@ -35299,13 +35299,13 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/api_diff_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/api_diff.py",
             "src/llm_wiki_cli/services/api_contracts.py",
-            "src/llm_wiki_cli/services/source_selection.py"
+            "src/llm_wiki_engine/source_selection.py"
           ],
           "step_count": 506,
           "truncated": true
@@ -35377,10 +35377,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -35399,15 +35399,15 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -35433,7 +35433,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_cli/services/schema.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -35720,21 +35720,21 @@
           "modules_touched": [
             "src/llm_wiki_cli/commands/ci_check_cmd.py",
             "src/llm_wiki_engine/runtime_output.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/extraction_jobs.py",
             "src/llm_wiki_cli/services/lint_service.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -35799,7 +35799,7 @@
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_engine/knowledge_graph.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/ci_report.py",
             "src/llm_wiki_cli/services/doctor_service.py",
             "src/llm_wiki_cli/services/health_policy.py",
@@ -35890,9 +35890,9 @@
             "src/llm_wiki_cli/services/token_counting.py",
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
@@ -35901,7 +35901,7 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
@@ -35914,7 +35914,7 @@
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -35926,7 +35926,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
           "step_count": 1529,
@@ -36156,7 +36156,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/doctor_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/analysis_targets.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -36181,15 +36181,15 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/capability_diagnostics.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/helper_cache.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
             "src/llm_wiki_cli/services/extractor_helpers.py",
@@ -36331,14 +36331,14 @@
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_engine/engine_events.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/packages.py",
@@ -36368,7 +36368,7 @@
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 3371,
           "truncated": true
@@ -36509,18 +36509,18 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/generate_prompt_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/wiki_git_policy.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -36685,20 +36685,20 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/init_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/schema.py",
             "src/llm_wiki_cli/services/helper_preparation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extractor_helpers.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
             "src/llm_wiki_cli/services/helper_cache.py",
@@ -36728,7 +36728,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_engine/section_ownership.py",
             "src/llm_wiki_engine/markdown_sections.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -36737,7 +36737,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
@@ -36751,7 +36751,7 @@
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
@@ -36892,14 +36892,14 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/install_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/config.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/schema.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 402,
           "truncated": true
@@ -37056,8 +37056,8 @@
             "src/llm_wiki_cli/commands/install_ci_cmd.py",
             "src/llm_wiki_cli/services/ci_installer.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/source_selection.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/publication_config.py",
             "src/llm_wiki_cli/services/reference_providers.py",
@@ -37070,9 +37070,9 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_cli/services/current_contracts.py",
@@ -37168,14 +37168,14 @@
           "modules_touched": [
             "src/llm_wiki_cli/commands/knowledge_cmd.py",
             "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -37183,7 +37183,7 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_cli/services/maintenance_projection.py",
@@ -37221,12 +37221,12 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -37239,7 +37239,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -37329,13 +37329,13 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/lint_service.py",
             "src/llm_wiki_cli/services/lint_request.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -37353,7 +37353,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/dockerfile_parser.py",
@@ -37521,12 +37521,12 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_engine/canonical_json.py",
@@ -37534,9 +37534,9 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
@@ -37550,7 +37550,7 @@
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -37559,7 +37559,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
@@ -37578,7 +37578,7 @@
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/maintenance_recovery.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/maintenance_queue.py",
             "src/llm_wiki_engine/request_json.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
@@ -37662,10 +37662,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/mcp_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py"
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py"
           ],
           "step_count": 138,
           "truncated": false
@@ -37766,18 +37766,18 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/metrics_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/metrics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -37906,17 +37906,17 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/obsidian_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/obsidian.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -37962,7 +37962,7 @@
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 3138,
           "truncated": true
@@ -38096,11 +38096,11 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/plugin_samples.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/schema.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 385,
           "truncated": true
@@ -38243,16 +38243,16 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/prepare_extractors_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/helper_preparation.py",
             "src/llm_wiki_cli/services/extractor_helpers.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
@@ -38363,15 +38363,15 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -38399,7 +38399,7 @@
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 1917,
           "truncated": true
@@ -38508,10 +38508,10 @@
             "src/llm_wiki_cli/commands/queue_cmd.py",
             "src/llm_wiki_cli/services/maintenance_queue.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -38521,12 +38521,12 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_request_format.py",
@@ -38544,7 +38544,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
@@ -38680,12 +38680,12 @@
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/task_compact.py",
             "src/llm_wiki_cli/services/skills.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py"
+            "src/llm_wiki_engine/filesystem_guard.py"
           ],
           "step_count": 864,
           "truncated": true
@@ -38941,12 +38941,12 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/review_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/review_service.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -38958,7 +38958,7 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/change_selection.py",
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/impact.py",
@@ -38977,13 +38977,13 @@
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/entrypoints.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/api_contracts.py",
             "src/llm_wiki_engine/paths.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 2187,
           "truncated": true
@@ -39102,20 +39102,20 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/search_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/search_service.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -39246,7 +39246,7 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/site_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/site_export.py",
             "src/llm_wiki_engine/validation.py",
@@ -39275,8 +39275,8 @@
             "src/llm_wiki_engine/knowledge_graph.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/site_html_check.py"
           ],
@@ -39416,11 +39416,11 @@
           "modules_touched": [
             "src/llm_wiki_cli/commands/skills_cmd.py",
             "src/llm_wiki_cli/services/skills.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/config.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py"
           ],
           "step_count": 314,
@@ -39570,20 +39570,20 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/status_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_engine/wiki_surface.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -39597,7 +39597,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_engine/wiki_media.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/bootstrap_recovery.py",
@@ -39752,11 +39752,11 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/task_cmd.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/request_json.py",
             "src/llm_wiki_engine/workflow_profile.py",
             "src/llm_wiki_cli/api.py",
@@ -39770,14 +39770,14 @@
             "src/llm_wiki_cli/services/context_request_format.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/change_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/knowledge_storage_access.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/storage_receipts.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
@@ -39799,11 +39799,11 @@
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_engine/wiki_surface_index.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/task_implementation.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 1459,
           "truncated": true
@@ -39912,17 +39912,17 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/team_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/team.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_engine/immutable.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -39931,7 +39931,7 @@
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -40083,10 +40083,10 @@
             "src/llm_wiki_cli/commands/trigger_cmd.py",
             "src/llm_wiki_engine/circuit_breaker.py",
             "src/llm_wiki_engine/lockfile.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/metrics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
@@ -40094,12 +40094,12 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/domain_pack.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/team.py",
@@ -40257,17 +40257,17 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/commands/uninstall_cmd.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/legacy_hooks.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_cli/services/schema.py",
             "src/llm_wiki_cli/services/skills.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/ci_installer.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py"
+            "src/llm_wiki_engine/wiki_write_basis.py"
           ],
           "step_count": 1182,
           "truncated": true
@@ -41628,18 +41628,18 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/knowledge_maintenance.py",
-            "src/llm_wiki_cli/services/path_policy.py",
+            "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/domain_pack.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
@@ -41823,7 +41823,7 @@
           "modules_touched": [
             "integrations/wiki-impact/observe.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/domain_pack.py",
@@ -41952,7 +41952,7 @@
           "modules_touched": [
             "integrations/wiki-candidate/prepare.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/domain_pack.py",
@@ -41961,10 +41961,10 @@
             "src/llm_wiki_cli/services/helper_preparation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/path_policy.py",
-            "src/llm_wiki_cli/services/gitignore.py",
+            "src/llm_wiki_engine/path_policy.py",
+            "src/llm_wiki_engine/gitignore.py",
             "src/llm_wiki_cli/services/helper_cache.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/helper_runtime.py",
             "src/llm_wiki_cli/services/extractor_helpers.py",
@@ -41972,7 +41972,7 @@
             "src/llm_wiki_cli/services/typescript_helper_identity.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
-            "src/llm_wiki_cli/services/wiki_write_basis.py",
+            "src/llm_wiki_engine/wiki_write_basis.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -42282,7 +42282,7 @@
           "modules_touched": [
             "integrations/wiki-candidate/delivery/publish.py",
             "src/llm_wiki_cli/services/publication_config.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_engine/source_selection.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/reference_providers.py",
             "src/llm_wiki_cli/services/domain_pack.py",
@@ -42297,8 +42297,8 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_engine/io.py",
+            "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_cli/services/publication_delivery.py"
           ],
           "step_count": 1003,
@@ -42560,7 +42560,7 @@
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/validation.py",
-            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_engine/io.py",
             "src/llm_wiki_engine/host.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/publication_delivery.py",
@@ -45355,8 +45355,7 @@
       "outgoing_internal_links": [
         "modules/knowledge_orchestration.md",
         "modules/maintenance_protocol.md",
-        "modules/sync_runtime.md",
-        "modules/wiki_write_basis.md"
+        "modules/sync_runtime.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py",
@@ -47568,7 +47567,7 @@
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/gitignore.py",
+      "source_path": "src/llm_wiki_engine/gitignore.py",
       "title": "GitIgnoreMatcher"
     },
     {
@@ -47582,7 +47581,7 @@
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/gitignore.py",
+      "source_path": "src/llm_wiki_engine/gitignore.py",
       "title": "_GitignoreRule"
     },
     {
@@ -51248,7 +51247,7 @@
         "modules/wiki_write_basis.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/wiki_write_basis.py",
+      "source_path": "src/llm_wiki_engine/wiki_write_basis.py",
       "title": "PageWriteObserver"
     },
     {
@@ -51267,7 +51266,7 @@
         "modules/sync_runtime.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/path_policy.py",
+      "source_path": "src/llm_wiki_engine/path_policy.py",
       "title": "PathValidationError"
     },
     {
@@ -51451,7 +51450,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactDurabilityError"
     },
     {
@@ -51464,7 +51463,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactError"
     },
     {
@@ -51477,7 +51476,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactIntegrityError"
     },
     {
@@ -51489,7 +51488,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactLimitError"
     },
     {
@@ -51501,7 +51500,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactLockError"
     },
     {
@@ -51514,7 +51513,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "ProtectedArtifactStore"
     },
     {
@@ -52984,7 +52983,7 @@
         "modules/source_selection.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/source_selection.py",
+      "source_path": "src/llm_wiki_engine/source_selection.py",
       "title": "SourceSelectionError"
     },
     {
@@ -53021,10 +53020,11 @@
         "modules/documentation_run_dependencies.md",
         "modules/extraction_service.md",
         "modules/mcp_server.md",
-        "modules/source_selection.md"
+        "modules/source_selection.md",
+        "modules/source_snapshot.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/source_selection.py",
+      "source_path": "src/llm_wiki_engine/source_selection.py",
       "title": "SourceSelectionPolicy"
     },
     {
@@ -53255,7 +53255,7 @@
         "modules/surface_index_format.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/surface_index_format.py",
+      "source_path": "src/llm_wiki_engine/surface_index_format.py",
       "title": "SurfaceIndexError"
     },
     {
@@ -53271,7 +53271,7 @@
         "modules/wiki_surface_index.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/wiki_surface_index.py",
+      "source_path": "src/llm_wiki_engine/wiki_surface_index.py",
       "title": "SurfaceIndexEvaluation"
     },
     {
@@ -54363,6 +54363,7 @@
         "modules/bootstrap_runtime.md",
         "modules/concept_identity.md",
         "modules/knowledge_artifacts.md",
+        "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
         "modules/knowledge_links.md",
         "modules/knowledge_storage_lifecycle.md",
@@ -54371,8 +54372,7 @@
         "modules/surface_index_format.md",
         "modules/sync_runtime.md",
         "modules/sync_transitions.md",
-        "modules/wiki_surface.md",
-        "modules/wiki_surface_index.md"
+        "modules/wiki_surface.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_engine/wiki_surface.py",
@@ -54448,7 +54448,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsDirectoryGuardError"
     },
     {
@@ -54461,7 +54461,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "_WindowsDirectoryGuardUnavailableError"
     },
     {
@@ -54474,7 +54474,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsDurabilityError"
     },
     {
@@ -54486,10 +54486,11 @@
         "modules/controller.md",
         "modules/documentation_policy.md",
         "modules/documentation_wiki_input.md",
-        "modules/filesystem_guard.md"
+        "modules/filesystem_guard.md",
+        "modules/knowledge_storage_io.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsFileGuardError"
     },
     {
@@ -54503,7 +54504,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsIdentityUnavailableError"
     },
     {
@@ -54516,7 +54517,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsObjectIdentity"
     },
     {
@@ -54529,7 +54530,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "_WindowsPathHandleMetadata"
     },
     {
@@ -54543,7 +54544,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "WindowsSecurityGuardError"
     },
     {
@@ -54638,7 +54639,7 @@
         "modules/wiki_write_basis.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/wiki_write_basis.py",
+      "source_path": "src/llm_wiki_engine/wiki_write_basis.py",
       "title": "WriteBasis"
     },
     {
@@ -56166,7 +56167,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "filesystem_guard Module"
     },
     {
@@ -56266,7 +56267,7 @@
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/gitignore.py",
+      "source_path": "src/llm_wiki_engine/gitignore.py",
       "title": "gitignore Module"
     },
     {
@@ -56707,7 +56708,7 @@
         "modules/io.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/io.py",
+      "source_path": "src/llm_wiki_engine/io.py",
       "title": "io Module"
     },
     {
@@ -57905,7 +57906,7 @@
         "modules/path_policy.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/path_policy.py",
+      "source_path": "src/llm_wiki_engine/path_policy.py",
       "title": "path_policy Module"
     },
     {
@@ -58037,7 +58038,7 @@
         "modules/validation.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "protected_artifacts Module"
     },
     {
@@ -59086,7 +59087,7 @@
         "modules/source_selection.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/source_selection.py",
+      "source_path": "src/llm_wiki_engine/source_selection.py",
       "title": "source_selection Module"
     },
     {
@@ -59214,7 +59215,7 @@
         "modules/wiki_surface_index.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/surface_index_format.py",
+      "source_path": "src/llm_wiki_engine/surface_index_format.py",
       "title": "surface_index_format Module"
     },
     {
@@ -59970,7 +59971,7 @@
         "modules/wiki_surface_index.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/wiki_surface_index.py",
+      "source_path": "src/llm_wiki_engine/wiki_surface_index.py",
       "title": "wiki_surface_index Module"
     },
     {
@@ -59989,13 +59990,12 @@
         "modules/knowledge_orchestration.md",
         "modules/maintenance_protocol.md",
         "modules/maintenance_service.md",
-        "modules/source_snapshot.md",
         "modules/sync_recovery.md",
         "modules/sync_runtime.md",
         "modules/wiki_write_basis.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/wiki_write_basis.py",
+      "source_path": "src/llm_wiki_engine/wiki_write_basis.py",
       "title": "wiki_write_basis Module"
     },
     {
@@ -65010,7 +65010,7 @@
         "modules/path_policy.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/path_policy.py",
+      "source_path": "src/llm_wiki_engine/path_policy.py",
       "title": "validate_source_root"
     },
     {
@@ -65799,7 +65799,7 @@
         "modules/wiki_write_basis.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "atomic_write_executable_bytes"
     },
     {
@@ -65812,7 +65812,7 @@
         "modules/wiki_write_basis.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "atomic_write_guarded_bytes"
     },
     {
@@ -65824,7 +65824,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "atomic_write_private_bytes"
     },
     {
@@ -67214,7 +67214,7 @@
         "modules/protected_artifacts.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "canonical_json_bytes"
     },
     {
@@ -67893,7 +67893,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "create_private_windows_directory"
     },
     {
@@ -68285,7 +68285,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "ensure_guarded_directory"
     },
     {
@@ -68893,7 +68893,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "fresh_no_follow_stat"
     },
     {
@@ -69280,7 +69280,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "guard_windows_directory_chain"
     },
     {
@@ -69292,7 +69292,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "guarded_tree_manifest"
     },
     {
@@ -70467,7 +70467,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "move_windows_path_write_through"
     },
     {
@@ -70704,7 +70704,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "open_windows_guarded_lock_file"
     },
     {
@@ -70716,7 +70716,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "open_windows_private_write_file"
     },
     {
@@ -70728,7 +70728,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "open_windows_readonly_file"
     },
     {
@@ -71836,7 +71836,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "remove_guarded_tree"
     },
     {
@@ -72009,7 +72009,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "replace_windows_file_write_through"
     },
     {
@@ -73389,7 +73389,7 @@
         "modules/wiki_write_basis.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "unlink_guarded_bytes"
     },
     {
@@ -73945,7 +73945,7 @@
         "modules/validation.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/protected_artifacts.py",
+      "source_path": "src/llm_wiki_engine/protected_artifacts.py",
       "title": "validate_portable_relative_path"
     },
     {
@@ -74180,7 +74180,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "verify_windows_restrictive_dacl"
     },
     {
@@ -74192,7 +74192,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "windows_current_user_sid"
     },
     {
@@ -74204,7 +74204,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "windows_object_identity"
     },
     {
@@ -74216,7 +74216,7 @@
         "modules/filesystem_guard.md"
       ],
       "role": "mixed",
-      "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
+      "source_path": "src/llm_wiki_engine/filesystem_guard.py",
       "title": "windows_object_identity_from_values"
     },
     {
@@ -77150,5 +77150,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:1afc950dfcb686d3897100eda381c61b6da7ba74fb9a58be9066e8aaeaa17606"
+  "source_hash": "sha256:7464207066bfc6921763edd899f4697c09f9b96369e40ea31d51a6fa8e6d949b"
 }

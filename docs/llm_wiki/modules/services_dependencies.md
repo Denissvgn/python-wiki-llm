@@ -40,7 +40,6 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `executes_at_import`, `is_bundled_helper_implementation_path` |
 | `.dependency_versions` | `build_dependency_version_details` |
 | `.imports` | `build_module_path_resolver` |
-| `.path_policy` | `is_agent_worktree_path` |
 | `.python_imports` | `is_python_source` |
 | `.python_stdlib` | `python_stdlib_module_names` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
@@ -50,6 +49,7 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `hashlib` | `hashlib` |
 | `heapq` | `heapq` |
 | `json` | `json` |
+| `llm_wiki_engine.path_policy` | `is_agent_worktree_path` |
 | `llm_wiki_engine.validation` | `nearest_path_scope`, `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `os` | `os` |
 | `pathlib` | `Path` |

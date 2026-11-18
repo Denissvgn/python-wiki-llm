@@ -1,6 +1,6 @@
 # source_selection Module
 
-**Path:** `src/llm_wiki_cli/services/source_selection.py`
+**Path:** `src/llm_wiki_engine/source_selection.py`
 
 ## Description
 
@@ -34,7 +34,7 @@ identity and input commitments. Resolution supports the default
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/source_selection.py"]
+    n1["src/llm_wiki_engine/source_selection.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/source_selection.md"

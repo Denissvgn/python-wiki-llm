@@ -32,14 +32,14 @@ follow unsafe paths.
 | `.entrypoints` | `get_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `_snapshot_path_is_selection_input`, `filter_source_diff`, `get_inventory_result` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `collect_wiki_pages` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 

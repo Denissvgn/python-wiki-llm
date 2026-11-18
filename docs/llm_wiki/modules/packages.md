@@ -15,12 +15,12 @@ source root).  Each discovered package is represented as a
 
 | Source | Symbols |
 |--------|---------|
-| `.path_policy` | `EXCLUDED_DIRS` |
 | `.python_imports` | `normalized_root`, `under_root` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.path_policy` | `EXCLUDED_DIRS` |
 | `llm_wiki_engine.validation` | `nearest_path_scope` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
@@ -36,9 +36,9 @@ flowchart LR
     n0["src/llm_wiki_cli/services/extraction_service.py"]
     n1["src/llm_wiki_cli/services/imports.py"]
     n2["src/llm_wiki_cli/services/packages.py"]
-    n3["src/llm_wiki_cli/services/path_policy.py"]
-    n4["src/llm_wiki_cli/services/python_imports.py"]
-    n5["src/llm_wiki_cli/services/source_snapshot.py"]
+    n3["src/llm_wiki_cli/services/python_imports.py"]
+    n4["src/llm_wiki_cli/services/source_snapshot.py"]
+    n5["src/llm_wiki_engine/path_policy.py"]
     n6["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n2
@@ -54,14 +54,14 @@ flowchart LR
     n2 --> n4
     n2 --> n5
     n2 --> n6
-    n5 --> n3
-    n5 --> n6
+    n4 --> n5
+    n4 --> n6
     click n0 "../modules/extraction_service.md"
     click n1 "../modules/imports.md"
     click n2 "../modules/packages.md"
-    click n3 "../modules/path_policy.md"
-    click n4 "../modules/python_imports.md"
-    click n5 "../modules/source_snapshot.md"
+    click n3 "../modules/python_imports.md"
+    click n4 "../modules/source_snapshot.md"
+    click n5 "../modules/path_policy.md"
     click n6 "../modules/validation.md"
 ```
 
@@ -71,9 +71,9 @@ flowchart LR
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [imports](../modules/imports.md) |
-| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [python_imports](../modules/python_imports.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ### External packages

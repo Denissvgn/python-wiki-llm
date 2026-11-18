@@ -56,7 +56,6 @@ A host built with ``events=`` also receives structured
 | `..services.migrate_service` | `MigrateError`, `MigrateOutcome`, `MigrateRequest`, `MigrateRequestError` |
 | `..services.publication_targets` | `DEFAULT_PUBLICATION_TARGETS`, `GitHubWikiTarget`, `PublicationTarget`, `PublicationTargetRegistry`, `using_publication_targets` |
 | `..services.reference_providers` | `BUILTIN_REFERENCE_PROVIDERS`, `BehaviorFactsProvider`, `CliContractProvider`, `ContractFileProvider`, `ReferenceProvider` |
-| `..services.surface_index_format` | `SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexError`, `validate_surface_index` |
 | `..services.sync_runtime` | `execute_sync` |
 | `..services.sync_service` | `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError` |
 | `..services.upgrade_runtime` | `execute_upgrade` |
@@ -71,6 +70,7 @@ A host built with ``events=`` also receives structured
 | `llm_wiki_engine.maintenance_queue_format` | `MAINTENANCE_QUEUE_SCHEMA_VERSION`, `MaintenanceQueueError`, `validate_maintenance_queue` |
 | `llm_wiki_engine.maintenance_status_format` | `MAINTENANCE_STATUS_SCHEMA_VERSION`, `MaintenanceStatusError`, `validate_maintenance_status` |
 | `llm_wiki_engine.query_result_format` | `DOCUMENTATION_QUERY_SCHEMA_VERSION`, `SEARCH_RESULT_SCHEMA_VERSION`, `QueryResultError`, `validate_documentation_query_result`, `validate_search_result` |
+| `llm_wiki_engine.surface_index_format` | `SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexError`, `validate_surface_index` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `typing` | `TYPE_CHECKING`, `Any`, `Literal`, `ParamSpec`, `TypeVar` |

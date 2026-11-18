@@ -11,8 +11,6 @@ Immutable adoption detection and guarded maintenance publication basis.
 | Source | Symbols |
 |--------|---------|
 | `.bootstrap_recovery` | `guard_incomplete_bootstrap` |
-| `.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `governance_lock`, `governance_lock` |
 | `.knowledge_orchestration` | `CommittedKnowledgeState`, `CommittedKnowledgeState` |
 | `.knowledge_packs` | `PACK_NAME`, `index_path`, `index_page_path` |
@@ -24,7 +22,6 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files` |
 | `.storage_spool` | `ByteSpool` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `asyncio` | `asyncio` |
 | `collections.abc` | `Iterator`, `Mapping`, `MutableMapping` |
@@ -32,8 +29,11 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `threading` | `threading` |

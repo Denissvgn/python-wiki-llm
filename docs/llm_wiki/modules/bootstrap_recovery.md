@@ -10,18 +10,18 @@ Recover only journaled first-use output before capturing fresh evidence.
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `remove_guarded_tree`, `unlink_guarded_bytes` |
 | `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
 | `.maintenance_protocol` | `MaintenanceProtocolError`, `WikiWriteBasis`, `governance_writer_lock`, `storage_writer_lock`, `guard_maintenance_owner`, `save_recovery_snapshot`, `snapshot_wiki` |
 | `.wiki_lifecycle` | `is_pristine_wiki_target` |
-| `.wiki_write_basis` | `ACTIVE_BOOTSTRAP_JOURNAL` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `remove_guarded_tree`, `unlink_guarded_bytes` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_BOOTSTRAP_JOURNAL` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `tempfile` | `tempfile` |
@@ -34,15 +34,15 @@ Recover only journaled first-use output before capturing fresh evidence.
 flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_recovery.py"]
     n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n3["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n7["src/llm_wiki_cli/services/wiki_lifecycle.py"]
-    n8["src/llm_wiki_cli/services/wiki_write_basis.py"]
-    n9["src/llm_wiki_engine/request_json.py"]
-    n10["src/llm_wiki_engine/validation.py"]
+    n2["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n3["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n4["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n5["src/llm_wiki_cli/services/maintenance_protocol.py"]
+    n6["src/llm_wiki_cli/services/wiki_lifecycle.py"]
+    n7["src/llm_wiki_engine/filesystem_guard.py"]
+    n8["src/llm_wiki_engine/request_json.py"]
+    n9["src/llm_wiki_engine/validation.py"]
+    n10["src/llm_wiki_engine/wiki_write_basis.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
@@ -53,35 +53,35 @@ flowchart LR
     n0 --> n9
     n0 --> n10
     n1 --> n0
-    n1 --> n3
+    n1 --> n2
+    n1 --> n5
     n1 --> n6
-    n1 --> n7
-    n1 --> n10
-    n2 --> n8
-    n3 --> n8
-    n3 --> n10
+    n1 --> n9
+    n2 --> n9
+    n2 --> n10
+    n4 --> n3
+    n4 --> n7
+    n4 --> n9
+    n5 --> n0
     n5 --> n2
+    n5 --> n3
     n5 --> n4
+    n5 --> n7
+    n5 --> n8
     n5 --> n10
-    n6 --> n0
-    n6 --> n2
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n8
-    n6 --> n9
-    n7 --> n2
+    n6 --> n7
+    n7 --> n10
     click n0 "../modules/bootstrap_recovery.md"
     click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/filesystem_guard.md"
-    click n3 "../modules/knowledge_governance.md"
-    click n4 "../modules/knowledge_storage.md"
-    click n5 "../modules/knowledge_storage_io.md"
-    click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/wiki_lifecycle.md"
-    click n8 "../modules/wiki_write_basis.md"
-    click n9 "../modules/request_json.md"
-    click n10 "../modules/validation.md"
+    click n2 "../modules/knowledge_governance.md"
+    click n3 "../modules/knowledge_storage.md"
+    click n4 "../modules/knowledge_storage_io.md"
+    click n5 "../modules/maintenance_protocol.md"
+    click n6 "../modules/wiki_lifecycle.md"
+    click n7 "../modules/filesystem_guard.md"
+    click n8 "../modules/request_json.md"
+    click n9 "../modules/validation.md"
+    click n10 "../modules/wiki_write_basis.md"
 ```
 
 ### Internal neighbors
@@ -90,15 +90,15 @@ flowchart LR
 |---|---|
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
-| Outbound | [wiki_write_basis](../modules/wiki_write_basis.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [validation](../modules/validation.md) |
+| Outbound | [wiki_write_basis](../modules/wiki_write_basis.md) |
 
 ## Functions
 

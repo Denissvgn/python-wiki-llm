@@ -22,8 +22,6 @@ content against the filesystem owner, root, or offline modification.
 | `..documentation_policy` | `DocumentationPolicyError`, `TreeBaseline`, `compare_tree_baseline`, `hash_bytes` |
 | `..documentation_run` | `POLICY_FILENAME`, `RUN_CONTROL_DIR`, `DocumentationRun`, `DocumentationRunError` |
 | `..documentation_worklist` | `DOCUMENTATION_WORKLIST_SCHEMA_VERSION`, `WORK_ITEM_PRIORITIES`, `WORK_ITEM_STATUSES` |
-| `..filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `guard_windows_directory_chain`, `open_windows_readonly_file` |
-| `..protected_artifacts` | `ProtectedArtifactError`, `ProtectedArtifactIntegrityError`, `ProtectedArtifactStore`, `canonical_json_bytes`, `validate_portable_relative_path` |
 | `.broker` | `OciAdmissionProbeRequest`, `OciRuntimeConfig`, `create_oci_admission_probe_environment`, `execute_oci_admission_probe`, `OciDispatchContext`, `OciRuntimeConfig`, `dispatch_oci_agent`, `OciDispatchReceipt`, `OciRuntimeConfig`, `OciRuntimeConfig`, `validate_execution_manifest` |
 | `.contracts` | `DocumentationCalibrationError`, `validate_flow_evidence_census` |
 | `.host_broker` | `require_attestation_authentication`, `HostBrokerAuthenticationError`, `HostBrokerAuthenticationUnavailable`, `require_receipt_authentication` |
@@ -34,6 +32,8 @@ content against the filesystem owner, root, or offline modification.
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_engine.contracts` | `CALIBRATION_CONTROLLER_MAX_PACKET_BYTES`, `P0_CALIBRATION_ACCESS_EVENT_SCHEMA_VERSION`, `P0_CALIBRATION_ADMISSION_SCHEMA_VERSION`, `P0_CALIBRATION_AMBIGUOUS_RECOVERY_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_AUTHORITY_GRANT_SCHEMA_VERSION`, `P0_CALIBRATION_CONTROL_RECORD_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_EMERGENCY_REJECTION_SCHEMA_VERSION`, `P0_CALIBRATION_EVIDENCE_BUNDLE_SCHEMA_VERSION`, `P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION`, `P0_CALIBRATION_FROZEN_INTAKE_SCHEMA_VERSION`, `P0_CALIBRATION_ISOLATION_ATTESTATION_SCHEMA_VERSION`, `P0_CALIBRATION_LABEL_FIELD_CONTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_OPTIMIZER_SEARCH_CONTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_ROLE_CAPABILITY_MATRIX_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_RUNTIME_BINDINGS_SCHEMA_VERSION`, `P0_CALIBRATION_TASK_ORACLE_SCHEMA_VERSION`, `P0_CALIBRATION_TRANSITION_SCHEMA_VERSION`, `P0_CALIBRATION_TRANSACTION_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION` |
+| `llm_wiki_engine.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `guard_windows_directory_chain`, `open_windows_readonly_file` |
+| `llm_wiki_engine.protected_artifacts` | `ProtectedArtifactError`, `ProtectedArtifactIntegrityError`, `ProtectedArtifactStore`, `canonical_json_bytes`, `validate_portable_relative_path` |
 | `llm_wiki_engine.redaction` | `COMMON_TOKEN_PATTERNS`, `PRIVATE_KEY_BLOCK_RE`, `SENSITIVE_ASSIGNMENT_RE`, `SENSITIVE_NATURAL_LANGUAGE_RE`, `URI_USERINFO_RE` |
 | `llm_wiki_engine.validation` | `format_field_differences`, `parse_utc_timestamp`, `paths_overlap`, `require_bool`, `require_choice`, `require_exact_fields`, `require_mapping`, `require_nonnegative_int`, `require_positive_int`, `require_sha256`, `require_trimmed_text`, `require_trimmed_text_list`, `require_uuid` |
 | `os` | `os` |

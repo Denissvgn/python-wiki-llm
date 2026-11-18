@@ -78,7 +78,7 @@ sequenceDiagram
     participant p27 as _selection_mismatch_issues
     participant p28 as _begin_publication_export
     participant p29 as getattr (src/llm_wiki_cli/commands/site_cmd.py:run)
-    participant p30 as (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)
+    participant p30 as (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)
     p0->>p1: validate_path
     p0->>p2: _validate_hub_args
     p0->>p3: _load_hub_knowledge_projections
@@ -108,7 +108,7 @@ sequenceDiagram
     p6->>p27: _selection_mismatch_issues
     p4->>p28: _begin_publication_export
     p0-->>p29: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'site_action', None)
-    p1-->>p30: (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)
+    p1-->>p30: (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)
 ```
 
 > Call sequence diagram shows 30 of 2522 interactions; 2492 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -120,13 +120,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/site_cmd.py:run` | 1 | - | external | 37 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 6 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 6 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 6 | - | unresolved | 4 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 6 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 10 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_hub_requested` | 17 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | - | external | 3 |
-| `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 21 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 > Omission summary shows 8 of 555 groups; 547 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -157,7 +157,7 @@ Collector observations for 773 source steps with known totals: observed: 4484, e
 | `getattr (src/llm_wiki_cli/commands/site_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -172,7 +172,7 @@ flowchart LR
     s5["5. getattr (src/llm_wiki_cli/commands/site_cmd.py:run)"]
     s6["6. validate_path"]
     s7["7. PathValidationError"]
-    s8["8. (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s8["8. (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s9["9. current_host().cwd"]
     s10["10. current_host"]
     s11["11. _ACTIVE.get"]
@@ -183,7 +183,7 @@ flowchart LR
     s1 -. "getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'out_dir')" .-> s5
     s1 -->|"validate_path(out_dir, '--out-dir')"| s6
     s6 -->|"PathValidationError(...)"| s7
-    s6 -. "(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)(data not statically known)" .-> s8
+    s6 -. "(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s8
     s6 -. "current_host().cwd(data not statically known)" .-> s9
     s6 -->|"current_host(data not statically known)"| s10
     s10 -. "_ACTIVE.get(data not statically known)" .-> s11
@@ -212,7 +212,7 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/commands/site_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 | `current_host().cwd` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 | `_ACTIVE.get` | - | - | - | - |
@@ -228,7 +228,7 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/site_cmd.py:run) | 133 | `getattr(args, 'out_dir')` |
 | run | validate_path | 134 | `validate_path(out_dir, '--out-dir')` |
 | validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/services…h_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
 | validate_path | current_host().cwd | 101 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 101 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |

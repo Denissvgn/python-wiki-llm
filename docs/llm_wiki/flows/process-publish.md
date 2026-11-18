@@ -122,7 +122,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/wiki-candidate/delivery/publish.py:run` | 2 | - | unresolved | 26 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 25 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 25 | - | external | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 28 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 28 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 1 |
 > Omission summary shows 8 of 196 groups; 188 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

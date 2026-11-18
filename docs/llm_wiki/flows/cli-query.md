@@ -88,7 +88,7 @@ sequenceDiagram
     participant p27 as windows_current_user_sid
     participant p28 as _normalize_query_limit
     participant p29 as json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)
-    participant p30 as Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
+    participant p30 as Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
     p0->>p1: load_request
     p0->>p2: query_documentation
     p0->>p3: write_text_output
@@ -118,7 +118,7 @@ sequenceDiagram
     p9->>p27: windows_current_user_sid
     p5->>p28: _normalize_query_limit
     p0-->>p29: json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)(result, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=False)
-    p3-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
+    p3-->>p30: Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
 ```
 
 > Call sequence diagram shows 30 of 1916 interactions; 1886 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.

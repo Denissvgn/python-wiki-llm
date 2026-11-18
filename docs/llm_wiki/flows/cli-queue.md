@@ -173,10 +173,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_queue.py:build_maintenance_queue` | 2 | [src/llm_wiki_cli/services/maintenance_queue.py](../modules/maintenance_queue.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 3 | - | external | 3 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:capture_context_read` | 7 | - | external | 37 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 20 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 20 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 25 | - | unresolved | 1 |
 > Omission summary shows 8 of 1140 groups; 1132 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

@@ -18,7 +18,6 @@ is merely being loaded.
 | Source | Symbols |
 |--------|---------|
 | `..api` | `LlmWikiApiError`, `get_knowledge_coverage` |
-| `..services.io` | `first_unsafe_path_component` |
 | `..services.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeCommitPlan`, `ValidatedKnowledgeArtifacts`, `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts` |
 | `..services.knowledge_consumption` | `build_knowledge_read_view` |
 | `..services.knowledge_coverage` | `render_knowledge_coverage` |
@@ -30,13 +29,14 @@ is merely being loaded.
 | `..services.maintenance_protocol` | `maintenance_write_operation`, `governance_writer_lock` |
 | `..services.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest` |
 | `..services.verification_contracts` | `VerificationResult`, `build_artifact_verification_context`, `verify`, `verify_and_write_receipt` |
-| `..services.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `.knowledge_storage_cmd` | `run` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 | `typing` | `cast` |

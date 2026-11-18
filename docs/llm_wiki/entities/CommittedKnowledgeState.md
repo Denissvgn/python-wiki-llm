@@ -41,7 +41,6 @@ flowchart LR
     n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
     n7["_preflight_sync_governance (src/llm_wiki_cli/services/sync_runtime.py)"]
     n8["_try_sync_knowledge_reuse (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n9["src/llm_wiki_cli/services/wiki_write_basis.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -50,7 +49,6 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
-    n9 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/knowledge_orchestration.md"
     click n2 "../modules/knowledge_orchestration.md"
@@ -60,7 +58,6 @@ flowchart LR
     click n6 "../modules/maintenance_protocol.md"
     click n7 "../modules/sync_runtime.md"
     click n8 "../modules/sync_runtime.md"
-    click n9 "../modules/wiki_write_basis.md"
 ```
 
 ### Summary
@@ -82,4 +79,3 @@ flowchart LR
 | `maintenance_protocol` | import | [maintenance_protocol](../modules/maintenance_protocol.md) | — |
 | `_preflight_sync_governance` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_try_sync_knowledge_reuse` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
-| `wiki_write_basis` | import | [wiki_write_basis](../modules/wiki_write_basis.md) | — |

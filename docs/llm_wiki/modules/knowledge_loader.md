@@ -10,20 +10,20 @@ Loads one coherent committed native snapshot under the caller’s reject, rebuil
 
 | Source | Symbols |
 |--------|---------|
-| `.io` | `read_md` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `ValidatedKnowledgeArtifacts`, `validate_knowledge_artifacts`, `validate_surface_index_bytes` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_markdown_snapshot` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `validate_governance_projection` |
 | `.knowledge_model` | `KnowledgeIndex`, `KnowledgeLoadState` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.io` | `read_md` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.wiki_surface` | `WikiSurfacePathError`, `collect_wiki_pages` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
 

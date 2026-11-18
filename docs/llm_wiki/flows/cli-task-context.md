@@ -141,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | external | 13 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | unresolved | 2 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 5 |
 > Omission summary shows 8 of 317 groups; 309 further groups are not expanded here. Counts above include all omitted interactions.

@@ -1,6 +1,6 @@
 # protected_artifacts Module
 
-**Path:** `src/llm_wiki_cli/services/protected_artifacts.py`
+**Path:** `src/llm_wiki_engine/protected_artifacts.py`
 
 ## Description
 
@@ -46,25 +46,25 @@ not authenticity.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/calibration/controller.py"]
-    n1["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n2["src/llm_wiki_cli/services/protected_artifacts.py"]
-    n3["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n4["src/llm_wiki_engine/canonical_json.py"]
+    n1["src/llm_wiki_cli/services/sync_transition_execution.py"]
+    n2["src/llm_wiki_engine/canonical_json.py"]
+    n3["src/llm_wiki_engine/filesystem_guard.py"]
+    n4["src/llm_wiki_engine/protected_artifacts.py"]
     n5["src/llm_wiki_engine/validation.py"]
-    n0 --> n1
-    n0 --> n2
+    n0 --> n3
+    n0 --> n4
     n0 --> n5
-    n2 --> n1
-    n2 --> n4
-    n2 --> n5
-    n3 --> n1
-    n3 --> n2
-    n3 --> n5
+    n1 --> n3
+    n1 --> n4
+    n1 --> n5
+    n4 --> n2
+    n4 --> n3
+    n4 --> n5
     click n0 "../modules/controller.md"
-    click n1 "../modules/filesystem_guard.md"
-    click n2 "../modules/protected_artifacts.md"
-    click n3 "../modules/sync_transition_execution.md"
-    click n4 "../modules/canonical_json.md"
+    click n1 "../modules/sync_transition_execution.md"
+    click n2 "../modules/canonical_json.md"
+    click n3 "../modules/filesystem_guard.md"
+    click n4 "../modules/protected_artifacts.md"
     click n5 "../modules/validation.md"
 ```
 
@@ -74,8 +74,8 @@ flowchart LR
 |---|---|
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [canonical_json](../modules/canonical_json.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

@@ -14,11 +14,11 @@ They are never executed or written to a hook path.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `AGENT_CHOICES`, `validate_path` |
-| `.filesystem_guard` | `unlink_guarded_bytes` |
-| `.io` | `first_unsafe_path_component` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.filesystem_guard` | `unlink_guarded_bytes` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.paths` | `display_project_path`, `shell_quote` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -34,43 +34,43 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/status_cmd.py"]
     n2["src/llm_wiki_cli/commands/uninstall_cmd.py"]
     n3["src/llm_wiki_cli/config.py"]
-    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n5["src/llm_wiki_cli/services/io.py"]
-    n6["src/llm_wiki_cli/services/legacy_hooks.py"]
-    n7["src/llm_wiki_cli/services/mcp_server.py"]
-    n8["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n4["src/llm_wiki_cli/services/legacy_hooks.py"]
+    n5["src/llm_wiki_cli/services/mcp_server.py"]
+    n6["src/llm_wiki_cli/services/upgrade_runtime.py"]
+    n7["src/llm_wiki_engine/filesystem_guard.py"]
+    n8["src/llm_wiki_engine/io.py"]
     n9["src/llm_wiki_engine/paths.py"]
-    n0 --> n6
+    n0 --> n4
     n1 --> n3
-    n1 --> n5
-    n1 --> n6
+    n1 --> n4
+    n1 --> n8
     n1 --> n9
     n2 --> n3
     n2 --> n4
-    n2 --> n5
-    n2 --> n6
+    n2 --> n7
+    n2 --> n8
     n2 --> n9
-    n3 --> n4
-    n3 --> n5
+    n3 --> n7
+    n3 --> n8
+    n4 --> n3
+    n4 --> n7
+    n4 --> n8
+    n4 --> n9
+    n5 --> n3
+    n5 --> n4
+    n5 --> n8
     n6 --> n3
     n6 --> n4
-    n6 --> n5
-    n6 --> n9
-    n7 --> n3
-    n7 --> n5
-    n7 --> n6
-    n8 --> n3
-    n8 --> n4
-    n8 --> n6
+    n6 --> n7
     click n0 "../modules/hook_cmd.md"
     click n1 "../modules/status_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
     click n3 "../modules/config.md"
-    click n4 "../modules/filesystem_guard.md"
-    click n5 "../modules/io.md"
-    click n6 "../modules/legacy_hooks.md"
-    click n7 "../modules/mcp_server.md"
-    click n8 "../modules/upgrade_runtime.md"
+    click n4 "../modules/legacy_hooks.md"
+    click n5 "../modules/mcp_server.md"
+    click n6 "../modules/upgrade_runtime.md"
+    click n7 "../modules/filesystem_guard.md"
+    click n8 "../modules/io.md"
     click n9 "../modules/paths.md"
 ```
 

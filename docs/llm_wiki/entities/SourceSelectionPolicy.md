@@ -1,6 +1,6 @@
 # SourceSelectionPolicy
 
-**Location:** `src/llm_wiki_cli/services/source_selection.py:181`
+**Location:** `src/llm_wiki_engine/source_selection.py:181`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_selection](../modules/source_selection.md)
@@ -36,7 +36,7 @@ Validated, immutable source-selection policy bound to one repository.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SourceSelectionPolicy (src/llm_wiki_cli/services/source_selection.py)"]
+    n0["SourceSelectionPolicy (src/llm_wiki_engine/source_selection.py)"]
     n1["src/llm_wiki_cli/services/documentation_policy.py"]
     n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n3["_build_extract_source_snapshot (src/llm_wiki_cli/services/extraction_service.py)"]
@@ -44,10 +44,11 @@ flowchart LR
     n5["filter_source_diff (src/llm_wiki_cli/services/extraction_service.py)"]
     n6["_source_selection_pin (src/llm_wiki_cli/services/mcp_server.py)"]
     n7["McpWikiService._assert_source_selection_pin_current (src/llm_wiki_cli/services/mcp_server.py)"]
-    n8["_policy_from_content (src/llm_wiki_cli/services/source_selection.py)"]
-    n9["_validate_policy_filesystem (src/llm_wiki_cli/services/source_selection.py)"]
-    n10["canonical_selection_payload (src/llm_wiki_cli/services/source_selection.py)"]
-    n11["path_is_selected (src/llm_wiki_cli/services/source_selection.py)"]
+    n8["_captured_snapshot_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n9["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n10["_empty_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_hash_extra_inventory_path (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n12["_new_snapshot_buckets (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -59,6 +60,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/source_selection.md"
     click n1 "../modules/documentation_policy.md"
     click n2 "../modules/documentation_run_dependencies.md"
@@ -67,10 +69,11 @@ flowchart LR
     click n5 "../modules/extraction_service.md"
     click n6 "../modules/mcp_server.md"
     click n7 "../modules/mcp_server.md"
-    click n8 "../modules/source_selection.md"
-    click n9 "../modules/source_selection.md"
-    click n10 "../modules/source_selection.md"
-    click n11 "../modules/source_selection.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/source_snapshot.md"
+    click n10 "../modules/source_snapshot.md"
+    click n11 "../modules/source_snapshot.md"
+    click n12 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -90,10 +93,10 @@ flowchart LR
 | `filter_source_diff` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_source_selection_pin` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `McpWikiService._assert_source_selection_pin_current` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
-| `_policy_from_content` | call | [source_selection](../modules/source_selection.md) | 1 |
-| `_policy_from_content` | type_reference | [source_selection](../modules/source_selection.md) | — |
-| `_validate_policy_filesystem` | type_reference | [source_selection](../modules/source_selection.md) | — |
-| `canonical_selection_payload` | type_reference | [source_selection](../modules/source_selection.md) | — |
-| `path_is_selected` | type_reference | [source_selection](../modules/source_selection.md) | — |
+| `_captured_snapshot_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_empty_source_snapshot` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_hash_extra_inventory_path` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 
 > References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.

@@ -20,7 +20,6 @@ responsibilities outside the core package.
 | Source | Symbols |
 |--------|---------|
 | `.` | `_restore_legacy_definition_modules` |
-| `..wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `hashlib` | `hashlib` |
@@ -28,6 +27,7 @@ responsibilities outside the core package.
 | `llm_wiki_engine.contracts` | `P0_CALIBRATION_PREFLIGHT_SCHEMA_VERSION`, `P0_CALIBRATION_SHADOW_SCHEMA_VERSION`, `P0_CALIBRATION_VERDICT_SCHEMA_VERSION`, `P0_FLOW_CENSUS_SCHEMA_VERSION` |
 | `llm_wiki_engine.validation` | `bool_or_none`, `filtered_trimmed_text_list`, `nonnegative_int_or_none`, `normalize_optional_portable_relative_path`, `trimmed_text_or_none` |
 | `llm_wiki_engine.wiki_surface` | `is_safe_page_id` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `typing` | `Any`, `Iterable`, `Mapping`, `Optional`, `Sequence` |
@@ -42,10 +42,10 @@ flowchart LR
     n1["src/llm_wiki_cli/services/calibration/contracts.py"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n4["src/llm_wiki_cli/services/wiki_surface_index.py"]
-    n5["src/llm_wiki_engine/contracts.py"]
-    n6["src/llm_wiki_engine/validation.py"]
-    n7["src/llm_wiki_engine/wiki_surface.py"]
+    n4["src/llm_wiki_engine/contracts.py"]
+    n5["src/llm_wiki_engine/validation.py"]
+    n6["src/llm_wiki_engine/wiki_surface.py"]
+    n7["src/llm_wiki_engine/wiki_surface_index.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n0
@@ -55,23 +55,23 @@ flowchart LR
     n1 --> n7
     n2 --> n0
     n2 --> n1
+    n2 --> n4
     n2 --> n5
-    n2 --> n6
     n3 --> n1
     n3 --> n4
     n3 --> n5
-    n3 --> n6
-    n4 --> n6
-    n4 --> n7
+    n3 --> n7
+    n6 --> n5
+    n7 --> n5
     n7 --> n6
     click n0 "../modules/calibration___init__.md"
     click n1 "../modules/calibration_contracts.md"
     click n2 "../modules/controller.md"
     click n3 "../modules/documentation_run_dependencies.md"
-    click n4 "../modules/wiki_surface_index.md"
-    click n5 "../modules/llm_wiki_engine_contracts.md"
-    click n6 "../modules/validation.md"
-    click n7 "../modules/wiki_surface.md"
+    click n4 "../modules/llm_wiki_engine_contracts.md"
+    click n5 "../modules/validation.md"
+    click n6 "../modules/wiki_surface.md"
+    click n7 "../modules/wiki_surface_index.md"
 ```
 
 ### Internal neighbors
@@ -82,10 +82,10 @@ flowchart LR
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Outbound | [calibration___init__](../modules/calibration___init__.md) |
-| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [validation](../modules/validation.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 
 ## Classes
 

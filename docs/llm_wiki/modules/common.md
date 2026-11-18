@@ -20,10 +20,10 @@ context while retaining the legacy meaning of `present`.
 
 | Source | Symbols |
 |--------|---------|
-| `..services.gitignore` | `GitIgnoreMatcher`, `build_gitignore_matcher` |
-| `..services.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.gitignore` | `GitIgnoreMatcher`, `build_gitignore_matcher` |
+| `llm_wiki_engine.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |

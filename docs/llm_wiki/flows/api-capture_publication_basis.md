@@ -103,9 +103,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | - | external | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 9 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 10 | - | external | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 9 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:_is_link_or_reparse_stat` | 10 | - | external | 4 |
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 6 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_relative_path` | 22 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_text` | 24 | - | external | 6 |
@@ -143,7 +143,7 @@ Collector observations for 179 source steps with known totals: observed: 856, em
 | `path_is_link_or_reparse` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_is_link_or_reparse_stat` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `stat.S_ISLNK` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_engine/sourc…:_is_link_or_reparse_stat)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -158,7 +158,7 @@ flowchart LR
     s9["9. path_is_link_or_reparse"]
     s10["10. _is_link_or_reparse_stat"]
     s11["11. stat.S_ISLNK"]
-    s12["12. getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat)"]
+    s12["12. getattr (src/llm_wiki_engine/sourc…:_is_link_or_reparse_stat)"]
     s1 -->|"capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)(consumer_root, config_path=config_path, target_dir=target_dir, baseline=baseline)"| s2
     s2 -. "Path(…).absolute(data not statically known)" .-> s3
     s2 -. "Path (src/llm_wiki_cli/services…capture_publication_basis)(consumer_root)" .-> s4
@@ -169,7 +169,7 @@ flowchart LR
     s6 -->|"path_is_link_or_reparse(root)"| s9
     s9 -->|"_is_link_or_reparse_stat(path.lstat(...))"| s10
     s10 -. "stat.S_ISLNK(metadata.st_mode)" .-> s11
-    s10 -. "getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat)(metadata, 'st_file_attributes', 0)" .-> s12
+    s10 -. "getattr (src/llm_wiki_engine/sourc…:_is_link_or_reparse_stat)(metadata, 'st_file_attributes', 0)" .-> s12
     b0["mutation source_paths.update"]
     s2 -. "mutation source_paths.update" .-> b0
     b1["mutation source_paths.update"]
@@ -200,7 +200,7 @@ flowchart LR
 | `path_is_link_or_reparse` | `path: Path` | - | - | `_is_link_or_reparse_stat(...)`, `False` |
 | `_is_link_or_reparse_stat` | `metadata: os.stat_result` | `stat` | - | `True`, `bool(...)` |
 | `stat.S_ISLNK` | - | - | - | - |
-| `getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat)` | - | - | - | - |
+| `getattr (src/llm_wiki_engine/sourc…:_is_link_or_reparse_stat)` | - | - | - | - |
 
 ### Call data
 
@@ -216,7 +216,7 @@ flowchart LR
 | _consumer_root | path_is_link_or_reparse | 183 | `path_is_link_or_reparse(root)` |
 | path_is_link_or_reparse | _is_link_or_reparse_stat | 309 | `_is_link_or_reparse_stat(path.lstat(...))` |
 | _is_link_or_reparse_stat | stat.S_ISLNK | 299 | `stat.S_ISLNK(metadata.st_mode)` |
-| _is_link_or_reparse_stat | getattr (src/llm_wiki_cli/services…:_is_link_or_reparse_stat) | 301 | `getattr(metadata, 'st_file_attributes', 0)` |
+| _is_link_or_reparse_stat | getattr (src/llm_wiki_engine/sourc…:_is_link_or_reparse_stat) | 301 | `getattr(metadata, 'st_file_attributes', 0)` |
 
 ### Boundary effects
 

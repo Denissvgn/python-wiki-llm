@@ -13,7 +13,6 @@ Setup distinguishes untouched scaffolds from established canonical wikis and inc
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `ensure_guarded_directory` |
 | `.knowledge_artifacts` | `current_knowledge_format` |
 | `.knowledge_consumption` | `load_knowledge_read_view` |
 | `.knowledge_storage_lifecycle` | `_committed_inputs`, `migrate_knowledge_storage`, `_absolute_path` |
@@ -24,6 +23,7 @@ Setup distinguishes untouched scaffolds from established canonical wikis and inc
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `ensure_guarded_directory` |
 | `pathlib` | `Path` |
 | `tempfile` | `tempfile` |
 

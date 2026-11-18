@@ -18,7 +18,6 @@ and release a recovery probe through the failure path.
 | `..services.extraction_service` | `filter_source_diff`, `get_call_graph`, `get_inventory_result`, `print_inventory_failures` |
 | `..services.metrics` | `record_event` |
 | `..services.plugins` | `PluginError` |
-| `..services.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `..services.sync_manifest` | `SyncManifest` |
 | `..services.team` | `TeamConfigError`, `team_prompt_template_default` |
@@ -28,6 +27,7 @@ and release a recovery probe through the failure path.
 | `llm_wiki_engine` | `circuit_breaker` |
 | `llm_wiki_engine.lockfile` | `LockAcquisitionError`, `WikiLock` |
 | `llm_wiki_engine.secure_file` | `write_private_text` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `math` | `math` |
 | `os` | `os` |
 | `pathlib` | `Path` |

@@ -32,11 +32,11 @@ flowchart LR
     n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
     n8["src/llm_wiki_cli/services/migrate_runtime.py"]
     n9["src/llm_wiki_cli/services/source_retirement.py"]
-    n10["src/llm_wiki_cli/services/surface_index_format.py"]
-    n11["src/llm_wiki_cli/services/sync_runtime.py"]
-    n12["src/llm_wiki_cli/services/sync_transitions.py"]
-    n13["_validated_page_source_overrides (src/llm_wiki_cli/services/wiki_surface_index.py)"]
-    n14["src/llm_wiki_engine/concept_identity.py"]
+    n10["src/llm_wiki_cli/services/sync_runtime.py"]
+    n11["src/llm_wiki_cli/services/sync_transitions.py"]
+    n12["src/llm_wiki_engine/concept_identity.py"]
+    n13["src/llm_wiki_engine/knowledge_graph.py"]
+    n14["src/llm_wiki_engine/surface_index_format.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -60,11 +60,11 @@ flowchart LR
     click n7 "../modules/knowledge_storage_lifecycle.md"
     click n8 "../modules/migrate_runtime.md"
     click n9 "../modules/source_retirement.md"
-    click n10 "../modules/surface_index_format.md"
-    click n11 "../modules/sync_runtime.md"
-    click n12 "../modules/sync_transitions.md"
-    click n13 "../modules/wiki_surface_index.md"
-    click n14 "../modules/concept_identity.md"
+    click n10 "../modules/sync_runtime.md"
+    click n11 "../modules/sync_transitions.md"
+    click n12 "../modules/concept_identity.md"
+    click n13 "../modules/knowledge_graph.md"
+    click n14 "../modules/surface_index_format.md"
 ```
 
 ### Summary
@@ -91,10 +91,10 @@ flowchart LR
 | `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |
 | `migrate_runtime` | import | [migrate_runtime](../modules/migrate_runtime.md) | — |
 | `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |
-| `surface_index_format` | import | [surface_index_format](../modules/surface_index_format.md) | — |
 | `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |
 | `sync_transitions` | import | [sync_transitions](../modules/sync_transitions.md) | — |
-| `_validated_page_source_overrides` | call | [wiki_surface_index](../modules/wiki_surface_index.md) | 3 |
 | `concept_identity` | import | [concept_identity](../modules/concept_identity.md) | — |
+| `knowledge_graph` | import | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `surface_index_format` | import | [surface_index_format](../modules/surface_index_format.md) | — |
 
 > References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

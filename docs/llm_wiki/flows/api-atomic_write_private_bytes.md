@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as _restore_posix_entry_between
     participant p27 as _windows_api_path
     participant p28 as _close_windows_handle
-    participant p29 as Path (src/llm_wiki_cli/services…tomic_write_private_bytes)
+    participant p29 as Path (src/llm_wiki_engine/files…tomic_write_private_bytes)
     participant p30 as target.is_absolute
     p0->>p1: _atomic_write_private_bytes_windows
     p0->>p2: _atomic_write_private_bytes_posix
@@ -70,7 +70,7 @@ sequenceDiagram
     p10->>p26: _restore_posix_entry_between
     p4->>p27: _windows_api_path
     p9->>p28: _close_windows_handle
-    p0-->>p29: Path (src/llm_wiki_cli/services…tomic_write_private_bytes)(path)
+    p0-->>p29: Path (src/llm_wiki_engine/files…tomic_write_private_bytes)(path)
     p0-->>p30: target.is_absolute
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:atomic_write_private_bytes` | 1 | - | external | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_atomic_write_private_bytes_windows` | 8 | - | external | 16 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | external | 14 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 8 |
+| `src/llm_wiki_engine/filesystem_guard.py:atomic_write_private_bytes` | 1 | - | external | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_atomic_write_private_bytes_windows` | 8 | - | external | 16 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | external | 9 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 11 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | external | 14 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | unresolved | 3 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 19 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 8 |
 > Omission summary shows 8 of 60 groups; 52 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -114,41 +114,41 @@ Collector observations for 69 source steps with known totals: observed: 473, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `atomic_write_private_bytes` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `Path (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/files…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_atomic_write_private_bytes_windows` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_windows_directory_chain` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. atomic_write_private_bytes"]
-    s2["2. Path (src/llm_wiki_cli/services…tomic_write_private_bytes)"]
+    s2["2. Path (src/llm_wiki_engine/files…tomic_write_private_bytes)"]
     s3["3. target.is_absolute"]
-    s4["4. OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)"]
-    s5["5. OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)"]
-    s7["7. TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)"]
+    s4["4. OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)"]
+    s5["5. OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)"]
+    s6["6. isinstance (src/llm_wiki_engine/files…tomic_write_private_bytes)"]
+    s7["7. TypeError (src/llm_wiki_engine/files…tomic_write_private_bytes)"]
     s8["8. _atomic_write_private_bytes_windows"]
-    s9["9. uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)"]
-    s10["10. uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)"]
+    s9["9. uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)"]
+    s10["10. uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)"]
     s11["11. guard_windows_directory_chain"]
     s12["12. WindowsDirectoryGuardError"]
-    s1 -. "Path (src/llm_wiki_cli/services…tomic_write_private_bytes)(path)" .-> s2
+    s1 -. "Path (src/llm_wiki_engine/files…tomic_write_private_bytes)(path)" .-> s2
     s1 -. "target.is_absolute(data not statically known)" .-> s3
-    s1 -. "OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)(...)" .-> s4
-    s1 -. "OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)(...)" .-> s5
-    s1 -. "isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)(data, bytes)" .-> s6
-    s1 -. "TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)('Private atomic output data must be bytes.')" .-> s7
+    s1 -. "OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)(...)" .-> s4
+    s1 -. "OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)(...)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_engine/files…tomic_write_private_bytes)(data, bytes)" .-> s6
+    s1 -. "TypeError (src/llm_wiki_engine/files…tomic_write_private_bytes)('Private atomic output data must be bytes.')" .-> s7
     s1 -->|"_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)"| s8
-    s8 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)(data not statically known)" .-> s9
-    s8 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)(data not statically known)" .-> s10
+    s8 -. "uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)(data not statically known)" .-> s9
+    s8 -. "uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)(data not statically known)" .-> s10
     s8 -->|"guard_windows_directory_chain(Path(...), relative_components)"| s11
     s11 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s12
     b0["filesystem_write quarantine.unlink"]
@@ -178,15 +178,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `atomic_write_private_bytes` | `path: Path`, `data: bytes`, `expected_existing: bytes \| None \| object` | `os` | - | `target` |
-| `Path (src/llm_wiki_cli/services…tomic_write_private_bytes)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…tomic_write_private_bytes)` | - | - | - | - |
 | `target.is_absolute` | - | - | - | - |
-| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | - | - | - | - |
-| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | - | - | - | - |
+| `OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | - | - | - | - |
+| `OSError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/files…tomic_write_private_bytes)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/files…tomic_write_private_bytes)` | - | - | - | - |
 | `_atomic_write_private_bytes_windows` | `target: Path`, `data: bytes`, `expected_existing: bytes \| None \| object`, `require_single_link: bool` | `_EXPECTED_EXISTING_UNSET` | - | - |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | - | - | - | - |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | - | - | - | - |
+| `uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)` | - | - | - | - |
+| `uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows)` | - | - | - | - |
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
 
@@ -194,15 +194,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| atomic_write_private_bytes | Path (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1560 | `Path(path)` |
+| atomic_write_private_bytes | Path (src/llm_wiki_engine/files…tomic_write_private_bytes) | 1560 | `Path(path)` |
 | atomic_write_private_bytes | target.is_absolute | 1561 | `target.is_absolute(data not statically known)` |
-| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1562 | `OSError(...)` |
-| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1564 | `OSError(...)` |
-| atomic_write_private_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1565 | `isinstance(data, bytes)` |
-| atomic_write_private_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1566 | `TypeError('Private atomic output data must be bytes.')` |
+| atomic_write_private_bytes | OSError (src/llm_wiki_engine/files…tomic_write_private_bytes) | 1562 | `OSError(...)` |
+| atomic_write_private_bytes | OSError (src/llm_wiki_engine/files…tomic_write_private_bytes) | 1564 | `OSError(...)` |
+| atomic_write_private_bytes | isinstance (src/llm_wiki_engine/files…tomic_write_private_bytes) | 1565 | `isinstance(data, bytes)` |
+| atomic_write_private_bytes | TypeError (src/llm_wiki_engine/files…tomic_write_private_bytes) | 1566 | `TypeError('Private atomic output data must be bytes.')` |
 | atomic_write_private_bytes | _atomic_write_private_bytes_windows | 1568 | `_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2474 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2475 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows) | 2474 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_engine/files…ite_private_bytes_windows) | 2475 | `uuid.uuid4(data not statically known)` |
 | _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2479 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 

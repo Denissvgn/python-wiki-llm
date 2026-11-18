@@ -22,22 +22,22 @@ sequenceDiagram
     participant p8 as _current_windows_user_sid
     participant p9 as _windows_sid_string
     participant p10 as WindowsSecurityGuardError
-    participant p11 as ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)
+    participant p11 as ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)
     participant p12 as create_file
     participant p13 as Path
-    participant p14 as ctypes.byref (src/llm_wiki_cli/services…indows_private_write_file)
-    participant p15 as wintypes.HANDLE (src/llm_wiki_cli/services…indows_private_write_file)
-    participant p16 as ctypes.WinError (src/llm_wiki_cli/services…indows_private_write_file)
-    participant p17 as ctypes.get_last_error (src/llm_wiki_cli/services…indows_private_write_file)
-    participant p18 as int (src/llm_wiki_cli/services…indows_private_write_file)
+    participant p14 as ctypes.byref (src/llm_wiki_engine/files…indows_private_write_file)
+    participant p15 as wintypes.HANDLE (src/llm_wiki_engine/files…indows_private_write_file)
+    participant p16 as ctypes.WinError (src/llm_wiki_engine/files…indows_private_write_file)
+    participant p17 as ctypes.get_last_error (src/llm_wiki_engine/files…indows_private_write_file)
+    participant p18 as int (src/llm_wiki_engine/files…indows_private_write_file)
     participant p19 as str
     participant p20 as msvcrt.open_osfhandle
     participant p21 as getattr
-    participant p22 as ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
+    participant p22 as ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)
     participant p23 as os.path.abspath
-    participant p24 as ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)
+    participant p24 as ctypes.WinDLL (src/llm_wiki_engine/files…s_handle_restrictive_dacl)
     participant p25 as os.fspath
-    participant p26 as int (src/llm_wiki_cli/services…ndows_regular_file_handle)
+    participant p26 as int (src/llm_wiki_engine/files…ndows_regular_file_handle)
     p0->>p1: _private_windows_security_attributes
     p0->>p2: _assert_windows_regular_file_handle
     p0->>p3: _verify_windows_handle_restrictive_dacl
@@ -48,26 +48,26 @@ sequenceDiagram
     p1->>p8: _current_windows_user_sid
     p8->>p9: _windows_sid_string
     p1->>p10: WindowsSecurityGuardError
-    p0-->>p11: ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)('kernel32', use_last_error=True)
+    p0-->>p11: ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)('kernel32', use_last_error=True)
     p0-->>p12: create_file(_windows_api_path(...), ..., 0, ctypes.byref(...), 1, ..., None)
     p0-->>p13: Path(path)
-    p0-->>p14: ctypes.byref (src/llm_wiki_cli/services…indows_private_write_file)(security)
-    p0-->>p15: wintypes.HANDLE (src/llm_wiki_cli/services…indows_private_write_file)(...)
-    p0-->>p16: ctypes.WinError (src/llm_wiki_cli/services…indows_private_write_file)(ctypes.get_last_error(...))
-    p0-->>p17: ctypes.get_last_error (src/llm_wiki_cli/services…indows_private_write_file)
-    p0-->>p18: int (src/llm_wiki_cli/services…indows_private_write_file)(handle)
+    p0-->>p14: ctypes.byref (src/llm_wiki_engine/files…indows_private_write_file)(security)
+    p0-->>p15: wintypes.HANDLE (src/llm_wiki_engine/files…indows_private_write_file)(...)
+    p0-->>p16: ctypes.WinError (src/llm_wiki_engine/files…indows_private_write_file)(ctypes.get_last_error(...))
+    p0-->>p17: ctypes.get_last_error (src/llm_wiki_engine/files…indows_private_write_file)
+    p0-->>p18: int (src/llm_wiki_engine/files…indows_private_write_file)(handle)
     p0-->>p13: Path(path)
     p0-->>p19: str(path)
     p0-->>p20: msvcrt.open_osfhandle(native_handle, ...)
     p0-->>p21: getattr(os, 'O_BINARY', 0)
     p0-->>p21: getattr(os, 'O_NOINHERIT', 0)
-    p1-->>p22: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('advapi32', use_last_error=True)
+    p1-->>p22: ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)('advapi32', use_last_error=True)
     p5-->>p23: os.path.abspath(os.fspath(...))
-    p3-->>p24: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)('advapi32', use_last_error=True)
-    p1-->>p22: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('kernel32', use_last_error=True)
+    p3-->>p24: ctypes.WinDLL (src/llm_wiki_engine/files…s_handle_restrictive_dacl)('advapi32', use_last_error=True)
+    p1-->>p22: ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)('kernel32', use_last_error=True)
     p5-->>p25: os.fspath(path)
-    p2-->>p26: int (src/llm_wiki_cli/services…ndows_regular_file_handle)(information.dwFileAttributes)
-    p3-->>p24: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)('kernel32', use_last_error=True)
+    p2-->>p26: int (src/llm_wiki_engine/files…ndows_regular_file_handle)(information.dwFileAttributes)
+    p3-->>p24: ctypes.WinDLL (src/llm_wiki_engine/files…s_handle_restrictive_dacl)('kernel32', use_last_error=True)
 ```
 
 > Call sequence diagram shows 30 of 168 interactions; 138 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -78,14 +78,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_private_windows_security_attributes` | 4 | - | external | 7 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | - | external | 19 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | - | external | 8 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_close_windows_handle` | 48 | - | external | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_private_windows_security_attributes` | 4 | - | external | 7 |
+| `src/llm_wiki_engine/filesystem_guard.py:_current_windows_user_sid` | 9 | - | external | 19 |
+| `src/llm_wiki_engine/filesystem_guard.py:_current_windows_user_sid` | 9 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_current_windows_user_sid` | 9 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_sid_string` | 35 | - | external | 8 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_sid_string` | 35 | - | unresolved | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_sid_string` | 35 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_close_windows_handle` | 48 | - | external | 2 |
 > Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -109,42 +109,42 @@ Collector observations for 13 source steps with known totals: observed: 81, emit
 |---|---|---|---|---:|---:|---:|
 | `open_windows_private_write_file` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `WindowsFileGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_private_windows_security_attributes` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_current_windows_user_sid` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.POINTER (src/llm_wiki_engine/files…_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. open_windows_private_write_file"]
     s2["2. WindowsFileGuardError"]
-    s3["3. ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)"]
+    s3["3. ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)"]
     s4["4. _private_windows_security_attributes"]
-    s5["5. ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)"]
-    s6["6. ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)"]
-    s7["7. ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)"]
-    s8["8. ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)"]
+    s5["5. ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)"]
+    s6["6. ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)"]
+    s7["7. ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)"]
+    s8["8. ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)"]
     s9["9. _current_windows_user_sid"]
-    s10["10. ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)"]
-    s11["11. ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)"]
-    s12["12. ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)"]
+    s10["10. ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)"]
+    s11["11. ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)"]
+    s12["12. ctypes.POINTER (src/llm_wiki_engine/files…_current_windows_user_sid)"]
     s1 -->|"WindowsFileGuardError('Private Windows file creation is unavailable on this platform.')"| s2
-    s1 -. "ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)('kernel32', use_last_error=True)" .-> s3
+    s1 -. "ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)('kernel32', use_last_error=True)" .-> s3
     s1 -->|"_private_windows_security_attributes(directory=False)"| s4
-    s4 -. "ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('advapi32', use_last_error=True)" .-> s5
-    s4 -. "ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('kernel32', use_last_error=True)" .-> s6
-    s4 -. "ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)(wintypes.LPVOID)" .-> s7
-    s4 -. "ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)(wintypes.DWORD)" .-> s8
+    s4 -. "ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)('advapi32', use_last_error=True)" .-> s5
+    s4 -. "ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)('kernel32', use_last_error=True)" .-> s6
+    s4 -. "ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)(wintypes.LPVOID)" .-> s7
+    s4 -. "ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)(wintypes.DWORD)" .-> s8
     s4 -->|"_current_windows_user_sid(data not statically known)"| s9
-    s9 -. "ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)('advapi32', use_last_error=True)" .-> s10
-    s9 -. "ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)('kernel32', use_last_error=True)" .-> s11
-    s9 -. "ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)(wintypes.HANDLE)" .-> s12
+    s9 -. "ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)('advapi32', use_last_error=True)" .-> s10
+    s9 -. "ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)('kernel32', use_last_error=True)" .-> s11
+    s9 -. "ctypes.POINTER (src/llm_wiki_engine/files…_current_windows_user_sid)(wintypes.HANDLE)" .-> s12
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/filesystem_guard.md"
     click s4 "../modules/filesystem_guard.md"
@@ -157,32 +157,32 @@ flowchart LR
 |---|---|---|---|---|
 | `open_windows_private_write_file` | `path: Path` | `os`, `os` | `create_file.argtypes`, `create_file.restype` | `descriptor` |
 | `WindowsFileGuardError` | - | - | - | - |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file)` | - | - | - | - |
 | `_private_windows_security_attributes` | `directory: bool` | - | `convert.argtypes`, `convert.restype`, `local_free.argtypes`, `local_free.restype` | - |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
-| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
-| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes)` | - | - | - | - |
 | `_current_windows_user_sid` | - | `ctypes` | `open_process_token.argtypes`, `open_process_token.restype`, `get_token_information.argtypes`, `get_token_information.restype`, `get_current_process.argtypes`, `get_current_process.restype` | `_windows_sid_string(...)` |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
-| `ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_engine/files…_current_windows_user_sid)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | open_windows_private_write_file | WindowsFileGuardError | 567 | `WindowsFileGuardError('Private Windows file creation is unavailable on this platform.')` |
-| open_windows_private_write_file | ctypes.WinDLL (src/llm_wiki_cli/services…indows_private_write_file) | 572 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| open_windows_private_write_file | ctypes.WinDLL (src/llm_wiki_engine/files…indows_private_write_file) | 572 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
 | open_windows_private_write_file | _private_windows_security_attributes | 586 | `_private_windows_security_attributes(directory=False)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 955 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 956 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 961 | `ctypes.POINTER(wintypes.LPVOID)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 962 | `ctypes.POINTER(wintypes.DWORD)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes) | 955 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_engine/files…ndows_security_attributes) | 956 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes) | 961 | `ctypes.POINTER(wintypes.LPVOID)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_engine/files…ndows_security_attributes) | 962 | `ctypes.POINTER(wintypes.DWORD)` |
 | _private_windows_security_attributes | _current_windows_user_sid | 976 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 1004 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 1005 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid) | 1010 | `ctypes.POINTER(wintypes.HANDLE)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid) | 1004 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_engine/files…_current_windows_user_sid) | 1005 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_engine/files…_current_windows_user_sid) | 1010 | `ctypes.POINTER(wintypes.HANDLE)` |
 
 ### Boundary effects
 

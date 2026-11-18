@@ -23,9 +23,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `.knowledge_storage_access` | `ScopedKnowledgeRead`, `capture_knowledge_slice` |
 | `.knowledge_storage_io` | `ReadObservation`, `StorageReadSession`, `range_batches` |
 | `.maintenance_status` | `LIMITATIONS`, `validate_maintenance_summary`, `validate_maintenance_summary` |
-| `.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.python_implementation` | `analysis_identity` |
-| `.source_selection` | `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
 | `.storage_receipts` | `compact_storage_receipt`, `compact_storage_receipt`, `expand_storage_receipt` |
 | `.task_context` | `TaskRead`, `_LIVE_FACETS`, `_NATIVE_FACETS`, `_cancel`, `_counter`, `_result_body`, `plan_source_read`, `_result_fields` |
@@ -38,7 +36,9 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY` |
 | `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_normalise_edge` |
 | `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.section_ownership` | `observe_page_sections` |
+| `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |

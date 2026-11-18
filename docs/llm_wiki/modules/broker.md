@@ -29,7 +29,6 @@ evidence against the filesystem owner, root, or offline modification.
 | Source | Symbols |
 |--------|---------|
 | `.` | `_restore_legacy_definition_modules` |
-| `..filesystem_guard` | `atomic_write_private_bytes` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass` |
@@ -37,6 +36,7 @@ evidence against the filesystem owner, root, or offline modification.
 | `json` | `json` |
 | `llm_wiki_engine.canonical_json` | `compact_line_bytes` |
 | `llm_wiki_engine.contracts` | `OCI_MAX_PACKET_BYTES`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION`, `P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION`, `P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes` |
 | `llm_wiki_engine.redaction` | `LIKELY_SECRET_RE`, `SENSITIVE_KEYS` |
 | `llm_wiki_engine.validation` | `is_canonical_uuid`, `path_is_within`, `require_bounded_int`, `require_bounded_text`, `require_exact_fields`, `require_int`, `require_mapping`, `require_nonempty_text`, `require_sha256`, `require_string_tuple`, `require_uuid` |
 | `os` | `os` |
@@ -59,9 +59,9 @@ flowchart LR
     n0["src/llm_wiki_cli/services/calibration/__init__.py"]
     n1["src/llm_wiki_cli/services/calibration/broker.py"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
-    n3["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n4["src/llm_wiki_engine/canonical_json.py"]
-    n5["src/llm_wiki_engine/contracts.py"]
+    n3["src/llm_wiki_engine/canonical_json.py"]
+    n4["src/llm_wiki_engine/contracts.py"]
+    n5["src/llm_wiki_engine/filesystem_guard.py"]
     n6["src/llm_wiki_engine/redaction.py"]
     n7["src/llm_wiki_engine/validation.py"]
     n0 --> n1
@@ -74,16 +74,16 @@ flowchart LR
     n1 --> n7
     n2 --> n0
     n2 --> n1
-    n2 --> n3
+    n2 --> n4
     n2 --> n5
     n2 --> n6
     n2 --> n7
     click n0 "../modules/calibration___init__.md"
     click n1 "../modules/broker.md"
     click n2 "../modules/controller.md"
-    click n3 "../modules/filesystem_guard.md"
-    click n4 "../modules/canonical_json.md"
-    click n5 "../modules/llm_wiki_engine_contracts.md"
+    click n3 "../modules/canonical_json.md"
+    click n4 "../modules/llm_wiki_engine_contracts.md"
+    click n5 "../modules/filesystem_guard.md"
     click n6 "../modules/redaction.md"
     click n7 "../modules/validation.md"
 ```
@@ -95,9 +95,9 @@ flowchart LR
 | Inbound | [calibration___init__](../modules/calibration___init__.md) |
 | Inbound | [controller](../modules/controller.md) |
 | Outbound | [calibration___init__](../modules/calibration___init__.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [redaction](../modules/redaction.md) |
 | Outbound | [validation](../modules/validation.md) |
 

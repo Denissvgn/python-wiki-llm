@@ -19,7 +19,6 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 
 | Source | Symbols |
 |--------|---------|
-| `..services.gitignore` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
 | `..services.python_calls` | `PYTHON_LEXICAL_FUNCTIONS_SCHEMA` |
 | `..services.python_implementation` | `capture`, `envelope`, `producer` |
@@ -31,6 +30,7 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections` | `Counter` |
+| `llm_wiki_engine.gitignore` | `build_gitignore_matcher` |
 | `pathlib` | `Path` |
 | `symtable` | `symtable` |
 | `sys` | `sys` |
@@ -46,19 +46,19 @@ flowchart LR
     n3["src/llm_wiki_cli/extractors/python_contracts.py"]
     n4["src/llm_wiki_cli/extractors/python_extractor.py"]
     n5["src/llm_wiki_cli/services/extraction_service.py"]
-    n6["src/llm_wiki_cli/services/gitignore.py"]
-    n7["src/llm_wiki_cli/services/imports.py"]
-    n8["src/llm_wiki_cli/services/module_coverage.py"]
-    n9["src/llm_wiki_cli/services/python_calls.py"]
-    n10["src/llm_wiki_cli/services/python_implementation.py"]
-    n11["src/llm_wiki_cli/services/python_observations.py"]
-    n0 --> n6
+    n6["src/llm_wiki_cli/services/imports.py"]
+    n7["src/llm_wiki_cli/services/module_coverage.py"]
+    n8["src/llm_wiki_cli/services/python_calls.py"]
+    n9["src/llm_wiki_cli/services/python_implementation.py"]
+    n10["src/llm_wiki_cli/services/python_observations.py"]
+    n11["src/llm_wiki_engine/gitignore.py"]
+    n0 --> n11
     n4 --> n0
     n4 --> n1
     n4 --> n2
     n4 --> n3
     n4 --> n6
-    n4 --> n7
+    n4 --> n8
     n4 --> n9
     n4 --> n10
     n4 --> n11
@@ -66,26 +66,26 @@ flowchart LR
     n5 --> n2
     n5 --> n3
     n5 --> n4
-    n5 --> n7
+    n5 --> n6
+    n5 --> n8
     n5 --> n9
     n5 --> n10
-    n5 --> n11
-    n7 --> n0
-    n8 --> n4
-    n9 --> n2
-    n9 --> n7
+    n6 --> n0
+    n7 --> n4
+    n8 --> n2
+    n8 --> n6
     click n0 "../modules/common.md"
     click n1 "../modules/fastapi_contracts.md"
     click n2 "../modules/python_bindings.md"
     click n3 "../modules/python_contracts.md"
     click n4 "../modules/python_extractor.md"
     click n5 "../modules/extraction_service.md"
-    click n6 "../modules/gitignore.md"
-    click n7 "../modules/imports.md"
-    click n8 "../modules/module_coverage.md"
-    click n9 "../modules/python_calls.md"
-    click n10 "../modules/python_implementation.md"
-    click n11 "../modules/python_observations.md"
+    click n6 "../modules/imports.md"
+    click n7 "../modules/module_coverage.md"
+    click n8 "../modules/python_calls.md"
+    click n9 "../modules/python_implementation.md"
+    click n10 "../modules/python_observations.md"
+    click n11 "../modules/gitignore.md"
 ```
 
 ### Internal neighbors
@@ -98,11 +98,11 @@ flowchart LR
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
 | Outbound | [python_bindings](../modules/python_bindings.md) |
 | Outbound | [python_contracts](../modules/python_contracts.md) |
-| Outbound | [gitignore](../modules/gitignore.md) |
 | Outbound | [imports](../modules/imports.md) |
 | Outbound | [python_calls](../modules/python_calls.md) |
 | Outbound | [python_implementation](../modules/python_implementation.md) |
 | Outbound | [python_observations](../modules/python_observations.md) |
+| Outbound | [gitignore](../modules/gitignore.md) |
 
 ## Classes
 

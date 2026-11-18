@@ -162,8 +162,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | [src/llm_wiki_cli/services/knowledge_freshness.py](../modules/knowledge_freshness.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:capture_context_read` | 35 | - | external | 37 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_source_root` | 48 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 7 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 49 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_source_root` | 48 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 49 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 > Omission summary shows 8 of 1067 groups; 1059 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

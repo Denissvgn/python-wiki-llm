@@ -33,11 +33,9 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 
 | Source | Symbols |
 |--------|---------|
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_model` | `ConceptKind`, `ConceptRecord`, `EvidenceState`, `KnowledgeIndex`, `Lifecycle` |
-| `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Iterator`, `Mapping`, `Sequence` |
@@ -51,10 +49,12 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 | `llm_wiki_engine.concept_identity` | `AliasType`, `ConceptAllocation`, `ConceptIdentityError`, `derive_concept_uid`, `identity_coordinate_key`, `natural_key_for`, `validate_alias_value`, `validate_bundle_id`, `validate_concept_kind`, `validate_concept_uid`, `validate_locator`, `validate_natural_key` |
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `GOVERNANCE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.knowledge_evidence` | `canonical_json_text`, `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `llm_wiki_engine.knowledge_graph` | `validate_typed_graph`, `GRAPH_INPUT_NAMES`, `GraphConcept`, `KnowledgeGraphInputs`, `materialize_typed_graph`, `validate_typed_graph`, `DEFAULT_EVIDENCE_LIMIT`, `relationship_edge_key` |
 | `llm_wiki_engine.validation` | `require_exact_fields`, `require_list`, `require_mapping`, `require_no_control_characters`, `require_nonnegative_int`, `require_sha256` |
 | `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |
+| `llm_wiki_engine.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path` |

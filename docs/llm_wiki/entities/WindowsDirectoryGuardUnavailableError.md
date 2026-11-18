@@ -1,6 +1,6 @@
 # _WindowsDirectoryGuardUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:48`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:48`
 **Kind:** Class
 **Bases:** `WindowsDirectoryGuardError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,10 +22,10 @@ Raised when Windows denies access required to pin a directory.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_WindowsDirectoryGuardUnavailableError (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n1["WindowsDirectoryGuardError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["_WindowsDirectoryGuardUnavailableError (src/llm_wiki_engine/filesystem_guard.py)"]
+    n1["WindowsDirectoryGuardError (src/llm_wiki_engine/filesystem_guard.py)"]
     n2["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n3["_open_windows_directory_guard (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n3["_open_windows_directory_guard (src/llm_wiki_engine/filesystem_guard.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

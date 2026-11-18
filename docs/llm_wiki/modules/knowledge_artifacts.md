@@ -24,10 +24,8 @@ silently accept a different retirement claim.
 | Source | Symbols |
 |--------|---------|
 | `.` | `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.implementation_evidence` | `validate_concept_implementation`, `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.io` | `write_bytes_atomic` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
 | `.knowledge_index` | `_validated_index_data`, `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validation_callable_identity`, `_validation_module_identity`, `_validation_policy_value`, `_validator_identity`, `_has_validation_operation`, `_validated_index_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
@@ -43,7 +41,6 @@ silently accept a different retirement claim.
 | `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.storage_spool` | `SpooledArtifactWrite`, `spool_write` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Callable`, `Mapping` |
@@ -52,13 +49,16 @@ silently accept a different retirement claim.
 | `json` | `json` |
 | `llm_wiki_engine` | `canonical_json` |
 | `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.io` | `write_bytes_atomic` |
 | `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |

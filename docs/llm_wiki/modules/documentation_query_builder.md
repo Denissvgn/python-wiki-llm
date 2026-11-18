@@ -21,17 +21,17 @@ Shared construction for supported documentation query services.
 | `.maintenance_status` | `attach_maintenance_view_from_inputs` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_path_diagnostics` | `source_path_diagnostics` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
 | `itertools` | `islice` |
 | `llm_wiki_engine` | `wiki_surface` |
 | `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |

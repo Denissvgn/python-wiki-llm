@@ -13,7 +13,6 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 | Source | Symbols |
 |--------|---------|
 | `.implementation_evidence` | `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY`, `validate_concept_implementation`, `validate_implementation_collection` |
-| `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `_decode_json_object`, `_decode_json_object`, `_decode_json_object` |
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `_validate_selected_supersession_edges` |
@@ -32,6 +31,7 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 | `json` | `json` |
 | `llm_wiki_engine.concept_identity` | `natural_key_for` |
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
 

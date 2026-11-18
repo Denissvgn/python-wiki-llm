@@ -171,10 +171,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | external | 19 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
@@ -206,12 +206,12 @@ Collector observations for 1616 source steps with known totals: observed: 9940, 
 | `_wiki_root` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `current_host().cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
@@ -221,23 +221,23 @@ flowchart LR
     s3["3. _wiki_root"]
     s4["4. Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)"]
     s5["5. first_unsafe_path_component"]
-    s6["6. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s7["7. os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s8["8. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s9["9. os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s6["6. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s7["7. os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s8["8. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s9["9. os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s10["10. lexical.is_absolute"]
-    s11["11. current_host().cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s11["11. current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s12["12. current_host"]
     s1 -->|"run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)(args)"| s2
     s2 -->|"_wiki_root(args.wiki_dir)"| s3
     s3 -. "Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)(value)" .-> s4
     s3 -->|"first_unsafe_path_component(root)"| s5
-    s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s6
-    s5 -. "os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(path)" .-> s7
-    s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))" .-> s8
-    s5 -. "os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(lexical)" .-> s9
+    s5 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s6
+    s5 -. "os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(path)" .-> s7
+    s5 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.path.abspath(...))" .-> s8
+    s5 -. "os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(lexical)" .-> s9
     s5 -. "lexical.is_absolute(data not statically known)" .-> s10
-    s5 -. "current_host().cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)(data not statically known)" .-> s11
+    s5 -. "current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(data not statically known)" .-> s11
     s5 -->|"current_host(data not statically known)"| s12
     b0["output print"]
     s2 -. "output print" .-> b0
@@ -265,12 +265,12 @@ flowchart LR
 | `_wiki_root` | `value: str \| Path` | - | - | `root` |
 | `Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
-| `current_host().cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
 
 ### Call data
@@ -281,12 +281,12 @@ flowchart LR
 | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 17 | `_wiki_root(args.wiki_dir)` |
 | _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 107 | `Path(value)` |
 | _wiki_root | first_unsafe_path_component | 108 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 52 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 60 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `os.path.abspath(lexical)` |
 | first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | current_host().cwd (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `current_host().cwd(data not statically known)` |
+| first_unsafe_path_component | current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 67 | `current_host().cwd(data not statically known)` |
 | first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |
 
 ### Boundary effects

@@ -54,7 +54,6 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
-| `.io` | `read_md` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `evaluate_review_event`, `load_governance` |
@@ -66,17 +65,14 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.lint_request` | `LintRequest`, `LintRequestError` |
 | `.metrics` | `record_validation_event` |
 | `.module_coverage` | `classify_uncovered_python_sources` |
-| `.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection`, `retained_empty_module_paths` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `ManifestPageSource`, `SyncManifest`, `SyncManifestError` |
 | `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue` |
 | `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME`, `VerificationResult`, `load_verification_receipt` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance`, `sync_guidance` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping` |
@@ -86,9 +82,13 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `json` | `json` |
 | `llm_wiki_engine` | `wiki_media` |
 | `llm_wiki_engine.host` | `emit` |
+| `llm_wiki_engine.io` | `read_md` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `llm_wiki_engine.progress` | `phase` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.validation` | `path_is_in_top_level_directory` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `is_safe_page_id`, `iter_page_kinds` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

@@ -10,7 +10,6 @@ Read-only completeness of an owned native snapshot under effective Git policy.
 
 | Source | Symbols |
 |--------|---------|
-| `.io` | `decode_markdown_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
 | `.knowledge_storage_diagnostics` | `_git` |
@@ -21,6 +20,7 @@ Read-only completeness of an owned native snapshot under effective Git policy.
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -31,54 +31,54 @@ Read-only completeness of an owned native snapshot under effective Git policy.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/knowledge_storage_cmd.py"]
-    n1["src/llm_wiki_cli/services/io.py"]
-    n2["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n3["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n7["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n8["src/llm_wiki_cli/services/wiki_git_delivery.py"]
-    n9["src/llm_wiki_cli/services/wiki_git_policy.py"]
+    n1["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n3["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
+    n4["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n5["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
+    n7["src/llm_wiki_cli/services/wiki_git_delivery.py"]
+    n8["src/llm_wiki_cli/services/wiki_git_policy.py"]
+    n9["src/llm_wiki_engine/io.py"]
+    n0 --> n2
     n0 --> n3
     n0 --> n4
     n0 --> n5
-    n0 --> n6
-    n0 --> n8
-    n2 --> n1
-    n4 --> n3
-    n4 --> n5
-    n4 --> n6
+    n0 --> n7
+    n1 --> n9
+    n3 --> n2
+    n3 --> n4
+    n3 --> n5
+    n4 --> n2
+    n4 --> n9
     n5 --> n1
+    n5 --> n2
     n5 --> n3
+    n5 --> n4
+    n5 --> n6
+    n5 --> n9
     n6 --> n1
     n6 --> n2
-    n6 --> n3
     n6 --> n4
-    n6 --> n5
-    n6 --> n7
+    n6 --> n9
     n7 --> n1
     n7 --> n2
     n7 --> n3
+    n7 --> n4
     n7 --> n5
-    n8 --> n1
-    n8 --> n2
-    n8 --> n3
-    n8 --> n4
-    n8 --> n5
-    n8 --> n6
-    n8 --> n7
-    n8 --> n9
+    n7 --> n6
+    n7 --> n8
+    n7 --> n9
     click n0 "../modules/knowledge_storage_cmd.md"
-    click n1 "../modules/io.md"
-    click n2 "../modules/knowledge_governance.md"
-    click n3 "../modules/knowledge_storage.md"
-    click n4 "../modules/knowledge_storage_diagnostics.md"
-    click n5 "../modules/knowledge_storage_io.md"
-    click n6 "../modules/knowledge_storage_lifecycle.md"
-    click n7 "../modules/maintenance_protocol.md"
-    click n8 "../modules/wiki_git_delivery.md"
-    click n9 "../modules/wiki_git_policy.md"
+    click n1 "../modules/knowledge_governance.md"
+    click n2 "../modules/knowledge_storage.md"
+    click n3 "../modules/knowledge_storage_diagnostics.md"
+    click n4 "../modules/knowledge_storage_io.md"
+    click n5 "../modules/knowledge_storage_lifecycle.md"
+    click n6 "../modules/maintenance_protocol.md"
+    click n7 "../modules/wiki_git_delivery.md"
+    click n8 "../modules/wiki_git_policy.md"
+    click n9 "../modules/io.md"
 ```
 
 ### Internal neighbors
@@ -86,7 +86,6 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md) |
-| Outbound | [io](../modules/io.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) |
@@ -94,6 +93,7 @@ flowchart LR
 | Outbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
 | Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Outbound | [wiki_git_policy](../modules/wiki_git_policy.md) |
+| Outbound | [io](../modules/io.md) |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # SourceSelectionError
 
-**Location:** `src/llm_wiki_cli/services/source_selection.py:39`
+**Location:** `src/llm_wiki_engine/source_selection.py:39`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_selection](../modules/source_selection.md)
@@ -24,7 +24,7 @@ Field-specific failure loading or validating source selection.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SourceSelectionError (src/llm_wiki_cli/services/source_selection.py)"]
+    n0["SourceSelectionError (src/llm_wiki_engine/source_selection.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
     n3["src/llm_wiki_cli/commands/init_cmd.py"]

@@ -1,6 +1,6 @@
 # wiki_surface_index Module
 
-**Path:** `src/llm_wiki_cli/services/wiki_surface_index.py`
+**Path:** `src/llm_wiki_engine/wiki_surface_index.py`
 
 ## Description
 
@@ -30,7 +30,7 @@ Machine-readable index for generated wiki surfaces.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n1["src/llm_wiki_engine/wiki_surface_index.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/wiki_surface_index.md"

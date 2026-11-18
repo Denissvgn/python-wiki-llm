@@ -17,12 +17,12 @@ canonical pages, durable aliases or runtime import equivalence.
 | `.knowledge_storage` | `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `.python_imports` | `PythonModuleIndex` |
-| `.source_selection` | `SourceSelectionError`, `locate_exact_repository_path` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `locate_exact_repository_path` |
 | `pathlib` | `PurePosixPath` |
 
 ## Local dependency map
@@ -36,8 +36,8 @@ flowchart LR
     n3["src/llm_wiki_cli/services/lint_service.py"]
     n4["src/llm_wiki_cli/services/module_coverage.py"]
     n5["src/llm_wiki_cli/services/python_imports.py"]
-    n6["src/llm_wiki_cli/services/source_selection.py"]
-    n7["src/llm_wiki_cli/services/source_snapshot.py"]
+    n6["src/llm_wiki_cli/services/source_snapshot.py"]
+    n7["src/llm_wiki_engine/source_selection.py"]
     n2 --> n1
     n3 --> n4
     n3 --> n6
@@ -48,15 +48,15 @@ flowchart LR
     n4 --> n5
     n4 --> n6
     n4 --> n7
-    n7 --> n6
+    n6 --> n7
     click n0 "../modules/python_extractor.md"
     click n1 "../modules/knowledge_storage.md"
     click n2 "../modules/knowledge_storage_io.md"
     click n3 "../modules/lint_service.md"
     click n4 "../modules/module_coverage.md"
     click n5 "../modules/python_imports.md"
-    click n6 "../modules/source_selection.md"
-    click n7 "../modules/source_snapshot.md"
+    click n6 "../modules/source_snapshot.md"
+    click n7 "../modules/source_selection.md"
 ```
 
 ### Internal neighbors
@@ -68,8 +68,8 @@ flowchart LR
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [python_imports](../modules/python_imports.md) |
-| Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [source_selection](../modules/source_selection.md) |
 
 ## Functions
 

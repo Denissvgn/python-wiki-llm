@@ -45,13 +45,10 @@ ownership. Ordinary callers retain the same publication protocol.
 | `.knowledge_storage_io` | `read_guarded` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `.python_implementation` | `analysis_identity` |
-| `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.sync_analysis_cache` | `EXTENSION` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
 | `.sync_transitions` | `PageTransitionPlan` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
-| `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
@@ -60,6 +57,9 @@ ownership. Ordinary callers retain the same publication protocol.
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any`, `TYPE_CHECKING` |
@@ -82,7 +82,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (12) |
+| Inbound | `src` (11) |
 | Outbound | `src` (26) |
 
 > All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.

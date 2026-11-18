@@ -15,8 +15,6 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 | Source | Symbols |
 |--------|---------|
 | `.context_packet_builder` | `capture_context_read` |
-| `.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
-| `.io` | `decode_markdown_bytes`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `validated_artifact_bytes`, `validate_knowledge_artifacts`, `KnowledgeArtifactError` |
 | `.knowledge_envelope` | `hash_source_snapshot`, `ConsumedInput`, `is_valid_sha256`, `hash_markdown_snapshot`, `is_valid_sha256` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `validate_governance_projection` |
@@ -33,15 +31,17 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 | `.python_implementation` | `analysis_identity`, `analysis_identity` |
 | `.source_snapshot` | `confirmed_missing_source_paths`, `source_snapshot_matches_current_files`, `build_source_snapshot`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifest`, `SyncManifest`, `SyncManifest` |
-| `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes`, `decode_markdown_bytes` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant`, `_pairs`, `_constant` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path`, `is_portable_relative_path` |
 | `llm_wiki_engine.wiki_surface` | `collect_wiki_pages` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `pathlib` | `Path`, `Path` |
 
 ## Local dependency map

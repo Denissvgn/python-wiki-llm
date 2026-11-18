@@ -1,6 +1,6 @@
 # _WindowsPathHandleMetadata
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:83`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:83`
 **Kind:** Class
 **Bases:** —
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -27,9 +27,9 @@ Metadata with consistent semantics across Windows path and handle stats.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_WindowsPathHandleMetadata (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["_WindowsPathHandleMetadata (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["_assert_windows_path_handle_metadata (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
-    n2["_windows_path_handle_metadata (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n2["_windows_path_handle_metadata (src/llm_wiki_engine/filesystem_guard.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/filesystem_guard.md"

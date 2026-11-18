@@ -12,7 +12,6 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 |--------|---------|
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
-| `.path_policy` | `is_agent_worktree_path` |
 | `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
@@ -20,6 +19,7 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.path_policy` | `is_agent_worktree_path` |
 | `llm_wiki_engine.validation` | `path_is_under`, `path_is_under_scope` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |

@@ -15,13 +15,13 @@ write roots instead of inferring permission from the current working directory.
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `WindowsIdentityUnavailableError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata` |
-| `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `WindowsIdentityUnavailableError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
@@ -38,15 +38,15 @@ flowchart LR
     n2["src/llm_wiki_cli/services/documentation_policy.py"]
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n4["src/llm_wiki_cli/services/documentation_run/publication.py"]
-    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n6["src/llm_wiki_cli/services/source_selection.py"]
-    n7["src/llm_wiki_cli/services/source_snapshot.py"]
+    n5["src/llm_wiki_cli/services/source_snapshot.py"]
+    n6["src/llm_wiki_engine/filesystem_guard.py"]
+    n7["src/llm_wiki_engine/source_selection.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n6
+    n0 --> n5
     n0 --> n7
     n1 --> n2
-    n1 --> n5
+    n1 --> n6
     n2 --> n5
     n2 --> n6
     n2 --> n7
@@ -55,17 +55,17 @@ flowchart LR
     n3 --> n6
     n3 --> n7
     n4 --> n2
-    n4 --> n5
-    n7 --> n5
-    n7 --> n6
+    n4 --> n6
+    n5 --> n6
+    n5 --> n7
     click n0 "../modules/api.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/documentation_policy.md"
     click n3 "../modules/documentation_run_dependencies.md"
     click n4 "../modules/publication.md"
-    click n5 "../modules/filesystem_guard.md"
-    click n6 "../modules/source_selection.md"
-    click n7 "../modules/source_snapshot.md"
+    click n5 "../modules/source_snapshot.md"
+    click n6 "../modules/filesystem_guard.md"
+    click n7 "../modules/source_selection.md"
 ```
 
 ### Internal neighbors
@@ -76,9 +76,9 @@ flowchart LR
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Inbound | [publication](../modules/publication.md) |
+| Outbound | [source_snapshot](../modules/source_snapshot.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Classes
 

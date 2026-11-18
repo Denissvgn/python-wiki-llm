@@ -42,12 +42,12 @@ helper, and the active Node runtime remains a separate requirement.
 | `.helper_cache` | `_legacy_handle`, `cache_roots`, `user_helper_cache_root`, `cache_roots`, `lookup_helper`, `validate_handle`, `cache_roots`, `lookup_helper`, `validate_handle`, `_native_binary`, `_native_fingerprint` |
 | `.helper_runtime` | `current_helper_operation`, `pinned_helper`, `pinned_helper`, `pinned_helper`, `current_helper_operation`, `pinned_helper` |
 | `.inventory_cache` | `ENV_CACHE_DIR` |
-| `.io` | `first_unsafe_path_component` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_engine.host` | `HostCapabilityError`, `current_host` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.paths` | `render_shell_command` |
 | `os` | `os` |
 | `pathlib` | `Path` |

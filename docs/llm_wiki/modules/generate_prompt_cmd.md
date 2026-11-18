@@ -21,7 +21,6 @@ mutations.
 | `..services.extraction_service` | `filter_source_diff` |
 | `..services.metrics` | `record_event`, `resolve_agent` |
 | `..services.plugins` | `PluginError`, `render_prompt_template` |
-| `..services.source_selection` | `resolve_source_selection` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `..services.team` | `TeamConfigError`, `team_prompt_template_default` |
 | `..services.wiki_git_policy` | `WikiGitDisposition`, `WikiGitPolicy`, `classify_wiki_git_policy` |
@@ -29,6 +28,7 @@ mutations.
 | `llm_wiki_engine.paths` | `shell_quote` |
 | `llm_wiki_engine.redaction` | `redact_credentials` |
 | `llm_wiki_engine.secure_file` | `write_private_text` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |

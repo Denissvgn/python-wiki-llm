@@ -1,6 +1,6 @@
 # path_policy Module
 
-**Path:** `src/llm_wiki_cli/services/path_policy.py`
+**Path:** `src/llm_wiki_engine/path_policy.py`
 
 ## Description
 
@@ -29,7 +29,7 @@ agent worktrees and validation of wiki and source roots.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/path_policy.py"]
+    n1["src/llm_wiki_engine/path_policy.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/path_policy.md"

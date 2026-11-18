@@ -13,9 +13,9 @@ Importing this module is cheap; the migration lives in
 
 | Source | Symbols |
 |--------|---------|
-| `.path_policy` | `DEFAULT_WIKI_DIR` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `Literal` |
 
@@ -28,7 +28,7 @@ flowchart LR
     n1["src/llm_wiki_cli/engine/__init__.py"]
     n2["src/llm_wiki_cli/services/migrate_runtime.py"]
     n3["src/llm_wiki_cli/services/migrate_service.py"]
-    n4["src/llm_wiki_cli/services/path_policy.py"]
+    n4["src/llm_wiki_engine/path_policy.py"]
     n0 --> n2
     n0 --> n3
     n1 --> n2

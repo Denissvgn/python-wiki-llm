@@ -28,7 +28,6 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `.knowledge_storage_lifecycle` | `stored_object_paths` |
 | `.manifest_storage` | `OBJECT_NAME`, `OBJECT_LIMIT` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
 | `binascii` | `binascii` |
@@ -36,6 +35,7 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `json` | `json` |
 | `llm_wiki_engine.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |

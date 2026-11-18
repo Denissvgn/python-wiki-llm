@@ -57,7 +57,6 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
 | `.services.search_service` | `search_wiki` |
-| `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
 | `.services.storage_receipts` | `expand_storage_receipt` |
 | `.services.sync_runtime` | `execute_sync` |
@@ -67,7 +66,6 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
 | `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
-| `.services.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
@@ -82,7 +80,9 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `llm_wiki_engine.host` | `discarding_output`, `discarding_output`, `discarding_output` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `pathlib` | `Path` |
 | `re` | `re` |

@@ -82,10 +82,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
 | `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 3 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 1 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 1 |
 | `src/llm_wiki_engine/wiki_surface.py:collect_wiki_pages` | 15 | - | external | 1 |
 | `src/llm_wiki_engine/wiki_surface.py:collect_wiki_pages` | 15 | - | unresolved | 4 |
 | `src/llm_wiki_engine/wiki_surface.py:_collect_directory_pages` | 18 | - | unresolved | 7 |
@@ -122,7 +122,7 @@ Collector observations for 26 source steps with known totals: observed: 102, emi
 | `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -137,7 +137,7 @@ flowchart LR
     s9["9. current_host().cwd().resolve"]
     s10["10. current_host().cwd"]
     s11["11. current_host"]
-    s12["12. resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)"]
+    s12["12. resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s1 -->|"_validate_wiki_dir(wiki_dir)"| s2
     s2 -->|"validate_path(wiki_dir, '--wiki-dir')"| s3
     s3 -->|"PathValidationError(...)"| s4
@@ -148,7 +148,7 @@ flowchart LR
     s3 -. "current_host().cwd().resolve(data not statically known)" .-> s9
     s3 -. "current_host().cwd(data not statically known)" .-> s10
     s3 -->|"current_host(data not statically known)"| s11
-    s3 -. "resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)(cwd)" .-> s12
+    s3 -. "resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)(cwd)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
     click s3 "../modules/path_policy.md"
@@ -172,7 +172,7 @@ flowchart LR
 | `current_host().cwd().resolve` | - | - | - | - |
 | `current_host().cwd` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
-| `resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path)` | - | - | - | - |
+| `resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
@@ -188,7 +188,7 @@ flowchart LR
 | validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
 | validate_path | current_host().cwd | 102 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 102 | `current_host(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/services…h_policy.py:validate_path) | 104 | `resolved.relative_to(cwd)` |
+| validate_path | resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 

@@ -4697,3 +4697,19 @@ Existing permissions, validation bounds and native authority remain separate.
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 0
 - Generated surface pages retired: 3
+
+## 2026-11-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `4.1.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:87564fbfa03cec5f3a3f2d4b70c22f9eb908d8450dd4861f8350e436cbe0f587`
+- Pages created: 0
+- Pages updated: 227
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1673
+- Pages deprecated: 0
+- Semantic fields preserved: 73
+- Moved entities: `GitIgnoreMatcher` (src/llm_wiki_cli/services/gitignore.py → src/llm_wiki_engine/gitignore.py), `PageWriteObserver` (src/llm_wiki_cli/services/wiki_write_basis.py → src/llm_wiki_engine/wiki_write_basis.py), `PathValidationError` (src/llm_wiki_cli/services/path_policy.py → src/llm_wiki_engine/path_policy.py), `ProtectedArtifactDurabilityError` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `ProtectedArtifactError` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `ProtectedArtifactIntegrityError` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `ProtectedArtifactLimitError` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `ProtectedArtifactLockError` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `ProtectedArtifactStore` (src/llm_wiki_cli/services/protected_artifacts.py → src/llm_wiki_engine/protected_artifacts.py), `SourceSelectionError` (src/llm_wiki_cli/services/source_selection.py → src/llm_wiki_engine/source_selection.py), `SourceSelectionPolicy` (src/llm_wiki_cli/services/source_selection.py → src/llm_wiki_engine/source_selection.py), `SurfaceIndexError` (src/llm_wiki_cli/services/surface_index_format.py → src/llm_wiki_engine/surface_index_format.py), `SurfaceIndexEvaluation` (src/llm_wiki_cli/services/wiki_surface_index.py → src/llm_wiki_engine/wiki_surface_index.py), `WindowsDirectoryGuardError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WindowsDurabilityError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WindowsFileGuardError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WindowsIdentityUnavailableError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WindowsObjectIdentity` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WindowsSecurityGuardError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `WriteBasis` (src/llm_wiki_cli/services/wiki_write_basis.py → src/llm_wiki_engine/wiki_write_basis.py), `_GitignoreRule` (src/llm_wiki_cli/services/gitignore.py → src/llm_wiki_engine/gitignore.py), `_WindowsDirectoryGuardUnavailableError` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py), `_WindowsPathHandleMetadata` (src/llm_wiki_cli/services/filesystem_guard.py → src/llm_wiki_engine/filesystem_guard.py)

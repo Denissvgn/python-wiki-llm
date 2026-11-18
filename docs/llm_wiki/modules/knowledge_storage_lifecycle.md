@@ -14,8 +14,6 @@ Cleanup plans bind the generation, root and exact candidate bytes. Apply verifie
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
-| `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitPlan`, `PlannedArtifactWrite`, `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `current_knowledge_format`, `validate_knowledge_artifacts`, `validated_artifact_bytes`, `_commit_sharded` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_index` | `serialize_knowledge_index` |
@@ -30,12 +28,14 @@ Cleanup plans bind the generation, root and exact candidate bytes. Apply verifie
 | `.manifest_storage` | `OBJECT_NAME`, `DIRECTORY`, `validate_catalog` |
 | `.storage_spool` | `ByteSpool`, `ByteSpool` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `contextlib` | `nullcontext` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
 | `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
 | `llm_wiki_engine.wiki_surface` | `WikiSurfaceError`, `validate_exact_page_coordinate` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |

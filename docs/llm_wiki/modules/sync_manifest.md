@@ -22,8 +22,6 @@ also selects exact retention paths for future lint and live native reads.
 | Source | Symbols |
 |--------|---------|
 | `.domain_pack` | `current_pack` |
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
-| `.io` | `write_json_atomic` |
 | `.knowledge_governance` | `governance_lock` |
 | `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
 | `.knowledge_storage` | `decode_bytes`, `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
@@ -31,7 +29,6 @@ also selects exact retention paths for future lint and live native reads.
 | `.maintenance_state` | `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `ManifestStoreReader`, `build_manifest_store`, `current_manifest_format` |
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
-| `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -39,7 +36,10 @@ also selects exact retention paths for future lint and live native reads.
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
+| `llm_wiki_engine.io` | `write_json_atomic` |
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `llm_wiki_engine.validation` | `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |

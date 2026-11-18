@@ -32,18 +32,18 @@ presence means captured input, not recognition as a supported format.
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
 | `.domain_pack` | `current_pack` |
 | `.extractor_registry` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS` |
-| `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata`, `guard_windows_directory_chain`, `fresh_no_follow_stat` |
-| `.gitignore` | `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text` |
 | `.knowledge_envelope` | `ConsumedInput`, `consumed_inputs_from_captured_hashes` |
-| `.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
-| `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `contextlib` | `ExitStack` |
 | `dataclasses` | `dataclass`, `field` |
 | `fnmatch` | `fnmatch` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata`, `guard_windows_directory_chain`, `fresh_no_follow_stat` |
+| `llm_wiki_engine.gitignore` | `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text` |
+| `llm_wiki_engine.path_policy` | `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -68,10 +68,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (59) |
+| Inbound | `src` (58) |
 | Outbound | `src` (10) |
 
-> All 68 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 67 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

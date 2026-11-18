@@ -12,7 +12,6 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 |--------|---------|
 | `..` | `__version__` |
 | `.extraction_service` | `EXTRACTOR_REGISTRY` |
-| `.io` | `read_md`, `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `PlannedArtifactWrite` |
 | `.knowledge_envelope` | `hash_markdown_snapshot`, `INVENTORY_HASH_EXTENSION`, `build_repository_record`, `hash_inventory` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
@@ -34,6 +33,7 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `llm_wiki_engine` | `llm_wiki_engine` |
 | `llm_wiki_engine.contracts` | `KNOWLEDGE_REUSE_SCHEMA_VERSION` |
 | `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.io` | `read_md`, `decode_markdown_bytes` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
 | `llm_wiki_engine.validation` | `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_media` | `build_asset_index` |

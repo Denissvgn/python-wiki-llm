@@ -1,6 +1,6 @@
 # ProtectedArtifactDurabilityError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:92`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:92`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -22,12 +22,12 @@ Raised when committed filesystem metadata cannot be made durable.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactDurabilityError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n1["ProtectedArtifactError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n2["_create_or_require_empty_root (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n3["_fsync_directory (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n4["ProtectedArtifactStore._open_windows_lock (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n5["ProtectedArtifactStore._write_windows (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactDurabilityError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n1["ProtectedArtifactError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n2["_create_or_require_empty_root (src/llm_wiki_engine/protected_artifacts.py)"]
+    n3["_fsync_directory (src/llm_wiki_engine/protected_artifacts.py)"]
+    n4["ProtectedArtifactStore._open_windows_lock (src/llm_wiki_engine/protected_artifacts.py)"]
+    n5["ProtectedArtifactStore._write_windows (src/llm_wiki_engine/protected_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

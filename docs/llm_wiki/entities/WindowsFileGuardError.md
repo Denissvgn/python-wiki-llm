@@ -1,6 +1,6 @@
 # WindowsFileGuardError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:52`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:52`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,20 +22,20 @@ Raised when a Windows input file cannot be opened without redirection.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsFileGuardError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsFileGuardError (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["OSError"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
     n3["src/llm_wiki_cli/services/documentation_policy.py"]
     n4["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n5["_assert_windows_regular_file_handle (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n6["_atomic_write_guarded_bytes_windows (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n7["_atomic_write_private_bytes_windows (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n8["_guarded_tree_entry_windows_path (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n9["_open_windows_file_metadata_guard (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n10["_open_windows_readonly_file_handle (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n11["_unlink_guarded_bytes (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n12["_windows_handle_information (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n13["hold_windows_readonly_file (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n6["_assert_windows_regular_file_handle (src/llm_wiki_engine/filesystem_guard.py)"]
+    n7["_atomic_write_guarded_bytes_windows (src/llm_wiki_engine/filesystem_guard.py)"]
+    n8["_atomic_write_private_bytes_windows (src/llm_wiki_engine/filesystem_guard.py)"]
+    n9["_guarded_tree_entry_windows_path (src/llm_wiki_engine/filesystem_guard.py)"]
+    n10["_open_windows_file_metadata_guard (src/llm_wiki_engine/filesystem_guard.py)"]
+    n11["_open_windows_readonly_file_handle (src/llm_wiki_engine/filesystem_guard.py)"]
+    n12["_unlink_guarded_bytes (src/llm_wiki_engine/filesystem_guard.py)"]
+    n13["_windows_handle_information (src/llm_wiki_engine/filesystem_guard.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -53,7 +53,7 @@ flowchart LR
     click n2 "../modules/controller.md"
     click n3 "../modules/documentation_policy.md"
     click n4 "../modules/documentation_wiki_input.md"
-    click n5 "../modules/filesystem_guard.md"
+    click n5 "../modules/knowledge_storage_io.md"
     click n6 "../modules/filesystem_guard.md"
     click n7 "../modules/filesystem_guard.md"
     click n8 "../modules/filesystem_guard.md"
@@ -83,6 +83,7 @@ flowchart LR
 | `controller` | import | [controller](../modules/controller.md) | — |
 | `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `knowledge_storage_io` | import | [knowledge_storage_io](../modules/knowledge_storage_io.md) | — |
 | `_assert_windows_regular_file_handle` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 | `_atomic_write_guarded_bytes_windows` | call | [filesystem_guard](../modules/filesystem_guard.md) | 3 |
 | `_atomic_write_private_bytes_windows` | call | [filesystem_guard](../modules/filesystem_guard.md) | 3 |
@@ -91,6 +92,5 @@ flowchart LR
 | `_open_windows_readonly_file_handle` | call | [filesystem_guard](../modules/filesystem_guard.md) | 5 |
 | `_unlink_guarded_bytes` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 | `_windows_handle_information` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
-| `hold_windows_readonly_file` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
 
 > References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

@@ -1,6 +1,6 @@
 # ProtectedArtifactLockError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:88`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:88`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -22,9 +22,9 @@ Raised when the controller root lock cannot be acquired.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactLockError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n1["ProtectedArtifactError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n2["ProtectedArtifactStore.lock (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactLockError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n1["ProtectedArtifactError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n2["ProtectedArtifactStore.lock (src/llm_wiki_engine/protected_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/protected_artifacts.md"

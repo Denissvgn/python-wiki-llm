@@ -22,9 +22,9 @@ sequenceDiagram
     participant p8 as _remember_syntax
     participant p9 as SharedValidationError
     participant p10 as portable_path_key
-    participant p11 as os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)
-    participant p12 as raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)
-    participant p13 as isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)
+    participant p11 as os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)
+    participant p12 as raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)
+    participant p13 as isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)
     participant p14 as isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p15 as os.fspath (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p16 as raw.encode
@@ -51,9 +51,9 @@ sequenceDiagram
     p1->>p8: _remember_syntax
     p3->>p9: SharedValidationError
     p4->>p10: portable_path_key
-    p0-->>p11: os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)(relative)
-    p0-->>p12: raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)('\\', '/')
-    p0-->>p13: isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)(raw, str)
+    p0-->>p11: os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)(relative)
+    p0-->>p12: raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)('\\', '/')
+    p0-->>p13: isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)(raw, str)
     p1-->>p14: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))
     p1-->>p15: os.fspath (src/llm_wiki_engine/valid…ire_portable_relative_path)(value)
     p1-->>p14: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw, str)
@@ -111,9 +111,9 @@ Collector observations for 16 source steps with known totals: observed: 74, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `validate_portable_relative_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `require_portable_relative_path` | `available` | `partial` | `available` | `21` | `11` | `10` |
 | `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
@@ -126,9 +126,9 @@ Collector observations for 16 source steps with known totals: observed: 74, emit
 ```mermaid
 flowchart LR
     s1["1. validate_portable_relative_path"]
-    s2["2. os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)"]
-    s3["3. isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)"]
-    s4["4. raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)"]
+    s2["2. os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)"]
+    s3["3. isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)"]
+    s4["4. raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)"]
     s5["5. require_portable_relative_path"]
     s6["6. isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)"]
     s7["7. _default_path_error"]
@@ -137,9 +137,9 @@ flowchart LR
     s10["10. isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)"]
     s11["11. _default_path_error"]
     s12["12. _syntax_key"]
-    s1 -. "os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)(relative)" .-> s2
-    s1 -. "isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)(raw, str)" .-> s3
-    s1 -. "raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)('\\', '/')" .-> s4
+    s1 -. "os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)(relative)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)(raw, str)" .-> s3
+    s1 -. "raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)('\\', '/')" .-> s4
     s1 -->|"require_portable_relative_path(…)"| s5
     s5 -. "isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))" .-> s6
     s5 -->|"_default_path_error(value)"| s7
@@ -161,9 +161,9 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `validate_portable_relative_path` | `relative: str \| Path`, `normalize_backslashes: bool` | - | - | `require_portable_relative_path(...)` |
-| `os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…ate_portable_relative_path)` | - | - | - | - |
-| `raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path)` | - | - | - | - |
+| `raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path)` | - | - | - | - |
 | `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
 | `isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
@@ -177,9 +177,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_portable_relative_path | os.fspath (src/llm_wiki_cli/services…ate_portable_relative_path) | 107 | `os.fspath(relative)` |
-| validate_portable_relative_path | isinstance (src/llm_wiki_cli/services…ate_portable_relative_path) | 108 | `isinstance(raw, str)` |
-| validate_portable_relative_path | raw.replace (src/llm_wiki_cli/services…ate_portable_relative_path) | 108 | `raw.replace('\\', '/')` |
+| validate_portable_relative_path | os.fspath (src/llm_wiki_engine/prote…ate_portable_relative_path) | 107 | `os.fspath(relative)` |
+| validate_portable_relative_path | isinstance (src/llm_wiki_engine/prote…ate_portable_relative_path) | 108 | `isinstance(raw, str)` |
+| validate_portable_relative_path | raw.replace (src/llm_wiki_engine/prote…ate_portable_relative_path) | 108 | `raw.replace('\\', '/')` |
 | validate_portable_relative_path | require_portable_relative_path | 109 | `require_portable_relative_path(raw, normalize_backslashes=normalize_backslashes, text_error=ProtectedArtifactIntegrityError(...), relative_error=ProtectedArtifactIntegrityError(...), non_nfc_error=ProtectedArtifactIntegrityError(...), nonportable_error=ProtectedArtifactIntegrityError(...), reserved_error=ProtectedArtifactIntegrityError(...))` |
 | require_portable_relative_path | isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |

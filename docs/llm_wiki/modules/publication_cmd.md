@@ -10,7 +10,6 @@ Read-only public wiki impact and explicit review record preparation.
 
 | Source | Symbols |
 |--------|---------|
-| `..services.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `..services.knowledge_storage` | `KnowledgeStorageError` |
 | `..services.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
 | `..services.publication_config` | `load_publication_config`, `publication_control_overlap`, `publication_input_controls` |
@@ -19,6 +18,7 @@ Read-only public wiki impact and explicit review record preparation.
 | `..services.source_snapshot` | `_is_package_marker` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `os` | `sep` |
 | `pathlib` | `Path` |
@@ -32,17 +32,17 @@ flowchart LR
     n0["src/llm_wiki_cli/commands/docs_cmd.py"]
     n1["src/llm_wiki_cli/commands/publication_candidate_cmd.py"]
     n2["src/llm_wiki_cli/commands/publication_cmd.py"]
-    n3["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n6["src/llm_wiki_cli/services/publication_config.py"]
-    n7["src/llm_wiki_cli/services/publication_contracts.py"]
-    n8["src/llm_wiki_cli/services/publication_impact.py"]
-    n9["src/llm_wiki_cli/services/source_snapshot.py"]
+    n3["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n4["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n5["src/llm_wiki_cli/services/publication_config.py"]
+    n6["src/llm_wiki_cli/services/publication_contracts.py"]
+    n7["src/llm_wiki_cli/services/publication_impact.py"]
+    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_engine/filesystem_guard.py"]
     n10["src/llm_wiki_engine/knowledge_evidence.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
+    n0 --> n9
     n1 --> n2
     n1 --> n3
     n1 --> n4
@@ -59,25 +59,25 @@ flowchart LR
     n2 --> n8
     n2 --> n9
     n2 --> n10
-    n5 --> n3
-    n5 --> n4
+    n4 --> n3
+    n4 --> n9
+    n6 --> n5
+    n6 --> n10
+    n7 --> n4
+    n7 --> n5
     n7 --> n6
     n7 --> n10
-    n8 --> n5
-    n8 --> n6
-    n8 --> n7
-    n8 --> n10
-    n9 --> n3
+    n8 --> n9
     click n0 "../modules/docs_cmd.md"
     click n1 "../modules/publication_candidate_cmd.md"
     click n2 "../modules/publication_cmd.md"
-    click n3 "../modules/filesystem_guard.md"
-    click n4 "../modules/knowledge_storage.md"
-    click n5 "../modules/knowledge_storage_io.md"
-    click n6 "../modules/publication_config.md"
-    click n7 "../modules/publication_contracts.md"
-    click n8 "../modules/publication_impact.md"
-    click n9 "../modules/source_snapshot.md"
+    click n3 "../modules/knowledge_storage.md"
+    click n4 "../modules/knowledge_storage_io.md"
+    click n5 "../modules/publication_config.md"
+    click n6 "../modules/publication_contracts.md"
+    click n7 "../modules/publication_impact.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/filesystem_guard.md"
     click n10 "../modules/knowledge_evidence.md"
 ```
 
@@ -87,13 +87,13 @@ flowchart LR
 |---|---|
 | Inbound | [docs_cmd](../modules/docs_cmd.md) |
 | Inbound | [publication_candidate_cmd](../modules/publication_candidate_cmd.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [publication_contracts](../modules/publication_contracts.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 
 ## Functions

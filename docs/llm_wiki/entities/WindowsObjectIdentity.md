@@ -1,6 +1,6 @@
 # WindowsObjectIdentity
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:69`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:69`
 **Kind:** Class
 **Bases:** —
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -29,10 +29,10 @@ Immutable Windows device and file identifier exposed by a real stat call.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsObjectIdentity (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsObjectIdentity (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["_workspace_identity (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
-    n2["windows_object_identity (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n3["windows_object_identity_from_values (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n2["windows_object_identity (src/llm_wiki_engine/filesystem_guard.py)"]
+    n3["windows_object_identity_from_values (src/llm_wiki_engine/filesystem_guard.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

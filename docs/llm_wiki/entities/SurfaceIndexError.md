@@ -1,6 +1,6 @@
 # SurfaceIndexError
 
-**Location:** `src/llm_wiki_cli/services/surface_index_format.py:58`
+**Location:** `src/llm_wiki_engine/surface_index_format.py:58`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [surface_index_format](../modules/surface_index_format.md)
@@ -22,20 +22,20 @@ A surface index does not follow its format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SurfaceIndexError (src/llm_wiki_cli/services/surface_index_format.py)"]
+    n0["SurfaceIndexError (src/llm_wiki_engine/surface_index_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_asset_path (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n4["_assets (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n5["_count (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n6["_counts (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n7["_dependency_pages (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n8["_exact (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n9["_flows (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n10["_list (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n11["_object (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n12["_pages (src/llm_wiki_cli/services/surface_index_format.py)"]
-    n13["_portable (src/llm_wiki_cli/services/surface_index_format.py)"]
+    n3["_asset_path (src/llm_wiki_engine/surface_index_format.py)"]
+    n4["_assets (src/llm_wiki_engine/surface_index_format.py)"]
+    n5["_count (src/llm_wiki_engine/surface_index_format.py)"]
+    n6["_counts (src/llm_wiki_engine/surface_index_format.py)"]
+    n7["_dependency_pages (src/llm_wiki_engine/surface_index_format.py)"]
+    n8["_exact (src/llm_wiki_engine/surface_index_format.py)"]
+    n9["_flows (src/llm_wiki_engine/surface_index_format.py)"]
+    n10["_list (src/llm_wiki_engine/surface_index_format.py)"]
+    n11["_object (src/llm_wiki_engine/surface_index_format.py)"]
+    n12["_pages (src/llm_wiki_engine/surface_index_format.py)"]
+    n13["_portable (src/llm_wiki_engine/surface_index_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

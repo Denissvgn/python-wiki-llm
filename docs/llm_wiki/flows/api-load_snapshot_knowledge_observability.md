@@ -90,7 +90,7 @@ sequenceDiagram
     participant p27 as _locate_exact_path
     participant p28 as _selection_inputs_from_buckets
     participant p29 as time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
-    participant p30 as Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)
+    participant p30 as Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)
     p0->>p1: resolve_source_selection
     p0->>p2: capture_source_selection_inputs
     p0->>p3: SyncManifest.load
@@ -120,7 +120,7 @@ sequenceDiagram
     p1->>p27: _locate_exact_path
     p2->>p28: _selection_inputs_from_buckets
     p0-->>p29: time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
-    p1-->>p30: Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)
+    p1-->>p30: Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)
 ```
 
 > Call sequence diagram shows 30 of 2595 interactions; 2565 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -132,13 +132,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_observability.py:load_snapshot_knowledge_observability` | 1 | - | external | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 4 | - | external | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 4 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 6 |
-| `src/llm_wiki_cli/services/source_selection.py:_override_text` | 8 | - | external | 3 |
-| `src/llm_wiki_cli/services/source_selection.py:_override_text` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:_override_text` | 8 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
-| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 15 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 4 | - | external | 1 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 4 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 6 |
+| `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | - | external | 3 |
+| `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_engine/source_selection.py:_override_text` | 8 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 3 |
+| `src/llm_wiki_engine/source_selection.py:_selection_path` | 15 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 4 |
+| `src/llm_wiki_engine/source_selection.py:_require_selection_path` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 708 groups; 700 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -166,13 +166,13 @@ Collector observations for 701 source steps with known totals: observed: 4181, e
 | `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `resolve_source_selection` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/sourc…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_override_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/sourc…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `override.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
@@ -181,24 +181,24 @@ flowchart LR
     s2["2. time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)"]
     s3["3. Path (src/llm_wiki_cli/services…t_knowledge_observability)"]
     s4["4. resolve_source_selection"]
-    s5["5. Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)"]
-    s6["6. Path (src/llm_wiki_cli/services…:resolve_source_selection)"]
+    s5["5. Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)"]
+    s6["6. Path (src/llm_wiki_engine/sourc…:resolve_source_selection)"]
     s7["7. SourceSelectionError"]
     s8["8. _override_text"]
-    s9["9. isinstance (src/llm_wiki_cli/services…lection.py:_override_text)"]
+    s9["9. isinstance (src/llm_wiki_engine/sourc…lection.py:_override_text)"]
     s10["10. override.as_posix"]
-    s11["11. os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)"]
+    s11["11. os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text)"]
     s12["12. SourceSelectionError"]
     s1 -. "time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)(data not statically known)" .-> s2
     s1 -. "Path (src/llm_wiki_cli/services…t_knowledge_observability)(wiki_dir)" .-> s3
     s1 -->|"resolve_source_selection(effective_src_dir, source_selection)"| s4
-    s4 -. "Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)(data not statically known)" .-> s5
-    s4 -. "Path (src/llm_wiki_cli/services…:resolve_source_selection)(root)" .-> s6
+    s4 -. "Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)(data not statically known)" .-> s5
+    s4 -. "Path (src/llm_wiki_engine/sourc…:resolve_source_selection)(root)" .-> s6
     s4 -->|"SourceSelectionError('source_root', 'must resolve to a repository path')"| s7
     s4 -->|"_override_text(override)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…lection.py:_override_text)(override, Path)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/sourc…lection.py:_override_text)(override, Path)" .-> s9
     s8 -. "override.as_posix(data not statically known)" .-> s10
-    s8 -. "os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)(override)" .-> s11
+    s8 -. "os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text)(override)" .-> s11
     s8 -->|"SourceSelectionError('source_selection', 'override must be a repository-relative path')"| s12
     click s1 "../modules/knowledge_observability.md"
     click s4 "../modules/source_selection.md"
@@ -215,13 +215,13 @@ flowchart LR
 | `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | - | - | - | - |
 | `resolve_source_selection` | `root: str \| Path`, `override: str \| Path \| None` | `SOURCE_SELECTION_PATH` | - | `None`, `None`, `policy` |
-| `Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…:resolve_source_selection)` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/sourc…:resolve_source_selection)` | - | - | - | - |
 | `SourceSelectionError` | - | - | - | - |
 | `_override_text` | `override: str \| Path` | `Path` | - | `_selection_path(...)` |
-| `isinstance (src/llm_wiki_cli/services…lection.py:_override_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/sourc…lection.py:_override_text)` | - | - | - | - |
 | `override.as_posix` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text)` | - | - | - | - |
 | `SourceSelectionError` | - | - | - | - |
 
 ### Call data
@@ -231,13 +231,13 @@ flowchart LR
 | load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability) | 546 | `time.perf_counter(data not statically known)` |
 | load_snapshot_knowledge_observability | Path (src/llm_wiki_cli/services…t_knowledge_observability) | 547 | `Path(wiki_dir)` |
 | load_snapshot_knowledge_observability | resolve_source_selection | 552 | `resolve_source_selection(effective_src_dir, source_selection)` |
-| resolve_source_selection | Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection) | 606 | `Path(root).resolve(data not statically known)` |
-| resolve_source_selection | Path (src/llm_wiki_cli/services…:resolve_source_selection) | 606 | `Path(root)` |
+| resolve_source_selection | Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root).resolve(data not statically known)` |
+| resolve_source_selection | Path (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root)` |
 | resolve_source_selection | SourceSelectionError | 608 | `SourceSelectionError('source_root', 'must resolve to a repository path')` |
 | resolve_source_selection | _override_text | 615 | `_override_text(override)` |
-| _override_text | isinstance (src/llm_wiki_cli/services…lection.py:_override_text) | 583 | `isinstance(override, Path)` |
+| _override_text | isinstance (src/llm_wiki_engine/sourc…lection.py:_override_text) | 583 | `isinstance(override, Path)` |
 | _override_text | override.as_posix | 583 | `override.as_posix(data not statically known)` |
-| _override_text | os.fspath (src/llm_wiki_cli/services…lection.py:_override_text) | 583 | `os.fspath(override)` |
+| _override_text | os.fspath (src/llm_wiki_engine/sourc…lection.py:_override_text) | 583 | `os.fspath(override)` |
 | _override_text | SourceSelectionError | 585 | `SourceSelectionError('source_selection', 'override must be a repository-relative path')` |
 
 ### Boundary effects

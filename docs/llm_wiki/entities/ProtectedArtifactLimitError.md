@@ -1,6 +1,6 @@
 # ProtectedArtifactLimitError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:84`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:84`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -22,14 +22,14 @@ Raised when an artifact or protected root exceeds its byte limit.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactLimitError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n1["ProtectedArtifactError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n2["_assert_within_limit (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n3["_read_bounded_fd (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n4["_validate_maximum_bytes (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n5["_validate_optional_root_bytes (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n6["ProtectedArtifactStore._enforce_root_quota (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n7["ProtectedArtifactStore._read_windows (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactLimitError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n1["ProtectedArtifactError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n2["_assert_within_limit (src/llm_wiki_engine/protected_artifacts.py)"]
+    n3["_read_bounded_fd (src/llm_wiki_engine/protected_artifacts.py)"]
+    n4["_validate_maximum_bytes (src/llm_wiki_engine/protected_artifacts.py)"]
+    n5["_validate_optional_root_bytes (src/llm_wiki_engine/protected_artifacts.py)"]
+    n6["ProtectedArtifactStore._enforce_root_quota (src/llm_wiki_engine/protected_artifacts.py)"]
+    n7["ProtectedArtifactStore._read_windows (src/llm_wiki_engine/protected_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

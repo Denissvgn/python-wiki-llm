@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as _WindowsDirectoryGuardUnavailableError
     participant p27 as WindowsDurabilityError
     participant p28 as _current_windows_user_sid
-    participant p29 as Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    participant p29 as Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)
     participant p30 as target.is_absolute
     p0->>p1: atomic_write_guarded_bytes
     p1->>p2: _atomic_write_guarded_bytes_windows
@@ -70,7 +70,7 @@ sequenceDiagram
     p11->>p26: _WindowsDirectoryGuardUnavailableError
     p14->>p27: WindowsDurabilityError
     p13->>p28: _current_windows_user_sid
-    p1-->>p29: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)
+    p1-->>p29: Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)(path)
     p1-->>p30: target.is_absolute
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:atomic_write_guarded_bytes` | 2 | - | external | 4 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 9 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 9 | - | external | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_atomic_write_guarded_bytes_windows` | 19 | - | external | 19 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 22 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 22 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 30 | - | external | 14 |
+| `src/llm_wiki_engine/filesystem_guard.py:atomic_write_guarded_bytes` | 2 | - | external | 4 |
+| `src/llm_wiki_engine/wiki_write_basis.py:before_wiki_write` | 9 | - | unresolved | 6 |
+| `src/llm_wiki_engine/wiki_write_basis.py:before_wiki_write` | 9 | - | external | 3 |
+| `src/llm_wiki_engine/filesystem_guard.py:_atomic_write_guarded_bytes_windows` | 19 | - | external | 19 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 22 | - | external | 9 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 22 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 22 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 30 | - | external | 14 |
 > Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -115,42 +115,42 @@ Collector observations for 53 source steps with known totals: observed: 376, emi
 |---|---|---|---|---:|---:|---:|
 | `atomic_write_executable_bytes` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `atomic_write_guarded_bytes` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `before_wiki_write` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `basis.before_write` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. atomic_write_executable_bytes"]
     s2["2. atomic_write_guarded_bytes"]
-    s3["3. Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s3["3. Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)"]
     s4["4. target.is_absolute"]
-    s5["5. OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
-    s6["6. OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
-    s7["7. isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
-    s8["8. TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s5["5. OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)"]
+    s6["6. OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)"]
+    s7["7. isinstance (src/llm_wiki_engine/files…tomic_write_guarded_bytes)"]
+    s8["8. TypeError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)"]
     s9["9. before_wiki_write"]
-    s10["10. ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s10["10. ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s11["11. basis.before_write"]
-    s12["12. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s12["12. Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s1 -->|"atomic_write_guarded_bytes(path, data, mode=448, require_single_link=False, expected_existing=expected_existing)"| s2
-    s2 -. "Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)" .-> s3
+    s2 -. "Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)(path)" .-> s3
     s2 -. "target.is_absolute(data not statically known)" .-> s4
-    s2 -. "OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)" .-> s5
-    s2 -. "OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)" .-> s6
-    s2 -. "isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(data, bytes)" .-> s7
-    s2 -. "TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)('Guarded output data must be bytes.')" .-> s8
+    s2 -. "OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)(...)" .-> s5
+    s2 -. "OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)(...)" .-> s6
+    s2 -. "isinstance (src/llm_wiki_engine/files…tomic_write_guarded_bytes)(data, bytes)" .-> s7
+    s2 -. "TypeError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)('Guarded output data must be bytes.')" .-> s8
     s2 -->|"before_wiki_write(target, data)"| s9
-    s9 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s10
+    s9 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(data not statically known)" .-> s10
     s9 -. "basis.before_write(Path(...), content)" .-> s11
-    s9 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s12
+    s9 -. "Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(path)" .-> s12
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/filesystem_guard.md"
     click s9 "../modules/wiki_write_basis.md"
@@ -162,32 +162,32 @@ flowchart LR
 |---|---|---|---|---|
 | `atomic_write_executable_bytes` | `path: Path`, `data: bytes`, `expected_existing: bytes \| None \| object` | - | - | `atomic_write_guarded_bytes(...)` |
 | `atomic_write_guarded_bytes` | `path: Path`, `data: bytes`, `mode: int`, `require_single_link: bool`, `expected_existing: bytes \| None \| object` | `os` | - | `target` |
-| `Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | - | - | - | - |
 | `target.is_absolute` | - | - | - | - |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | - | - | - | - |
+| `OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/files…tomic_write_guarded_bytes)` | - | - | - | - |
 | `before_wiki_write` | `path: str \| Path`, `content: bytes \| None` | - | - | - |
-| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 | `basis.before_write` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | atomic_write_executable_bytes | atomic_write_guarded_bytes | 1596 | `atomic_write_guarded_bytes(path, data, mode=448, require_single_link=False, expected_existing=expected_existing)` |
-| atomic_write_guarded_bytes | Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1615 | `Path(path)` |
+| atomic_write_guarded_bytes | Path (src/llm_wiki_engine/files…tomic_write_guarded_bytes) | 1615 | `Path(path)` |
 | atomic_write_guarded_bytes | target.is_absolute | 1616 | `target.is_absolute(data not statically known)` |
-| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1617 | `OSError(...)` |
-| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1619 | `OSError(...)` |
-| atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
-| atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes) | 1617 | `OSError(...)` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_engine/files…tomic_write_guarded_bytes) | 1619 | `OSError(...)` |
+| atomic_write_guarded_bytes | isinstance (src/llm_wiki_engine/files…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
+| atomic_write_guarded_bytes | TypeError (src/llm_wiki_engine/files…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
 | atomic_write_guarded_bytes | before_wiki_write | 1624 | `before_wiki_write(target, data)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 38 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 38 | `Path(path)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 34 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 36 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 36 | `Path(path)` |
 
 ### Boundary effects
 
@@ -202,8 +202,8 @@ flowchart LR
 | external_call | `atomic_write_guarded_bytes` | `OSError` | 1619 |
 | external_call | `atomic_write_guarded_bytes` | `isinstance` | 1620 |
 | external_call | `atomic_write_guarded_bytes` | `TypeError` | 1621 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 36 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 38 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 34 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 36 |
 | step_limit | `atomic_write_executable_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_executable_bytes` | `depth limit` | 0 |
 

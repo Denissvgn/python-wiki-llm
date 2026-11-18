@@ -49,7 +49,6 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.helper_cache` | `HelperPreparationError` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.io` | `write_text_output`, `write_utf8_stdout` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
 | `.knowledge_loader` | `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
@@ -59,13 +58,10 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME` |
 | `.maintenance_status` | `compact_maintenance_summary` |
-| `.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.plugins` | `runtime_project_plugins_enabled` |
 | `.source_retirement` | `retained_empty_module_paths_from_wiki` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
@@ -77,8 +73,12 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
 | `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `llm_wiki_engine.host` | `current_host`, `emit` |
+| `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.progress` | `Progress` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `llm_wiki_engine.validation` | `nonnegative_int_or_none` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `shlex` | `shlex` |

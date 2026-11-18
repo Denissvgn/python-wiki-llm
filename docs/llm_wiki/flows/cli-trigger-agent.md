@@ -120,8 +120,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/trigger_cmd.py:run` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_lock_wait_seconds` | 18 | - | external | 5 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync` | 25 | - | external | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 27 | [src/llm_wiki_cli/services/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_cli/services/path_policy.py:validate_path` | 27 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 27 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 27 | - | unresolved | 5 |
 > Omission summary shows 8 of 242 groups; 234 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
