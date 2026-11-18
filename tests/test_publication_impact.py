@@ -336,8 +336,18 @@ def test_section_dependency_retains_source_evidence():
 
 
 @pytest.fixture
-def consumer(tmp_path, monkeypatch):
+def consumer(tmp_path, monkeypatch, prepared_workspace):
+    if prepared_workspace.enabled:
+        lease = prepared_workspace("publication-account-consumer/v1")
+        monkeypatch.chdir(lease.root)
+        lease.populate(_build_consumer)
+        return lease.root
     monkeypatch.chdir(tmp_path)
+    _build_consumer(tmp_path)
+    return tmp_path
+
+
+def _build_consumer(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "src/accounts.py").write_text("class Account:\n    pass\n")
     api.bootstrap_wiki("src", "wiki")
@@ -351,7 +361,6 @@ def consumer(tmp_path, monkeypatch):
     (tmp_path / "public/Accounts.md").write_text(
         "# Accounts\n\nAccounts identify people.\n"
     )
-    return tmp_path
 
 
 def invoke(monkeypatch, *args):

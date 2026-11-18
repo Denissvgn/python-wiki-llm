@@ -974,3 +974,31 @@ def test_bot_ruleset_permission_failure_is_a_setup_block(controller):
     assert result["status"] == "blocked_setup"
     assert "Administration(read)" in result["reason"]
     assert not backing.mutations
+
+
+@pytest.mark.parametrize(("status", "conclusion", "expected"), [
+    ("in_progress", None, "pending"), ("queued", None, "pending"),
+    ("completed", "failure", "failed"), ("completed", "cancelled", "failed"),
+    ("completed", "success", "success"),
+])
+def test_ci_status_reports_latest_exact_attempt_before_boolean_admission(controller, status, conclusion, expected):
+    newest = workflow_run(run_id=20, attempt=2, conclusion=conclusion)
+    newest["status"] = status
+    controller.client.runs[20] = newest
+    result = controller.ci_status(CANDIDATE)
+    assert result["status"] == expected and result["run_id"] == 20 and result["attempt"] == 2
+    assert controller.ci_success(CANDIDATE) == (expected == "success")
+    assert not controller.client.mutations
+
+
+def test_ci_status_missing_run_stays_pending_without_authority(controller):
+    controller.client.runs.clear()
+    assert controller.ci_status(CANDIDATE) == {"status": "missing", "candidate_sha": CANDIDATE}
+    assert not controller.ci_success(CANDIDATE) and not controller.client.mutations
+
+
+def test_pending_ci_cannot_use_foreign_repository_metadata(controller):
+    run = controller.client.runs[10]
+    run.update(status="in_progress", conclusion=None, repository={"full_name": "foreign/project"})
+    with pytest.raises(qa.AutomationError, match="repository mismatch"):
+        controller.ci_status(CANDIDATE)

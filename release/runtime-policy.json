@@ -2,7 +2,8 @@
   "schema_version": "agent-wiki-runtime-contract/v1",
   "profiles": {
     "knowledge-linux": {"platform": "linux", "arch": "x64", "platform_version": "24.04", "python": ["3.13.18"]},
-    "windows-core": {"platform": "win32", "arch": "x64", "platform_version": null, "python": ["3.13.17"]}
+    "windows-core": {"platform": "win32", "arch": "x64", "platform_version": null, "python": ["3.13.17"]},
+    "coverage-linux": {"platform": "linux", "arch": "x64", "platform_version": "24.04", "python": ["3.11.18"]}
   },
   "consumers": [
     {"id": "capture", "profile": "knowledge-linux", "path": ".github/workflows/reviewed-wiki-capture.yml", "job": "capture", "selection": "setup-python"},
@@ -13,6 +14,9 @@
     {"id": "windows-plan", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows-plan", "selection": "setup-python"},
     {"id": "windows-shards", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows-shards", "selection": "plan-python"},
     {"id": "windows-core", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "core-windows", "selection": "plan-python-fallback"},
+    {"id": "contract-probe-linux", "profile": "coverage-linux", "path": ".github/workflows/release-contract-checks.yml", "job": "linux", "selection": "setup-python"},
+    {"id": "contract-probe-windows", "profile": "windows-core", "path": ".github/workflows/release-contract-checks.yml", "job": "windows", "selection": "setup-python"},
+    {"id": "contract-canary", "profile": "coverage-linux", "path": ".github/workflows/release-qualification.yml", "job": "contract-canary", "selection": "setup-python"},
     {"id": "windows-canary", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "windows-canary", "selection": "setup-python"},
     {"id": "windows-native", "profile": "windows-core", "path": ".github/workflows/release-qualification.yml", "job": "windows-native", "selection": "setup-python"},
     {"id": "windows-probe", "profile": "windows-core", "path": ".github/workflows/windows-measurement.yml", "job": "measurement", "selection": "matrix-python"}

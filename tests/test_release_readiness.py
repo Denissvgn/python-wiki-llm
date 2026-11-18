@@ -72,6 +72,7 @@ def manifest(tmp_path):
         ("3.13.16", "win32", None),
         ("3.13.17", "win32", None),
         ("3.13.18", "linux", "24.04"),
+        ("3.11.18", "linux", "24.04"),
     ]:
         rows.append(
             {
@@ -111,7 +112,7 @@ def test_complete_runtime_contract_admits_every_owner_but_grants_no_execution_pr
     assert {
         (row["profile"], row["python"])
         for row in result["runtime_contract"]["availability"]
-    } == {("knowledge-linux", "3.13.18"), ("windows-core", "3.13.17")}
+    } == {("knowledge-linux", "3.13.18"), ("windows-core", "3.13.17"), ("coverage-linux", "3.11.18")}
     assert (
         result["target_execution_verified"] is result["publication_authority"] is False
     )

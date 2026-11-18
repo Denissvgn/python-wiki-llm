@@ -326,7 +326,7 @@ class Coordinator:
             return self.result("blocked_setup", reason=str(exc))
         return None
 
-    def authenticate(self, event: dict) -> dict:
+    def authenticate(self, event: dict, *, require_complete: bool = True) -> dict:
         payload = event.get("workflow_run")
         if not isinstance(payload, dict):
             raise AutomationError("completed workflow_run event is required")
@@ -342,7 +342,7 @@ class Coordinator:
         path = str(run.get("path", "")).split("@", 1)[0]
         require(path == workflow.get("path"), "workflow path mismatch")
         require((path, run.get("name"), workflow.get("name")) in {(CI_PATH, "CI", "CI"), (QUALIFICATION_PATH, "Release qualification", "Release qualification")}, "unexpected workflow identity")
-        require(run.get("status") == "completed", "workflow is not completed")
+        require(not require_complete or run.get("status") == "completed", "workflow is not completed")
         sha = run.get("head_sha")
         require(isinstance(sha, str) and SHA.fullmatch(sha), "invalid run head SHA")
         require(payload.get("head_sha") == sha and payload.get("workflow_id") == run.get("workflow_id"), "event/API identity mismatch")
@@ -359,16 +359,23 @@ class Coordinator:
         return run
 
     def ci_success(self, sha: str) -> bool:
+        return self.ci_status(sha)["status"] == "success"
+
+    def ci_status(self, sha: str) -> dict:
         runs = self.client.list(f"/actions/workflows/ci.yml/runs?head_sha={sha}&event=push", "workflow_runs")
         # Latest attempt of a matching run governs readiness; an old success
         # cannot mask its failed rerun.
         for summary in sorted(runs, key=lambda x: x.get("id", 0), reverse=True):
-            if summary.get("status") != "completed":
-                return False
-            run = self.authenticate({"workflow_run": summary})
+            run = self.authenticate({"workflow_run": summary}, require_complete=False)
+            require(run.get("head_sha") == sha, "CI candidate differs")
+            if run.get("status") != "completed":
+                return {"status": "pending", "candidate_sha": sha,
+                        "run_id": run["id"], "attempt": run["run_attempt"]}
             if run.get("event") == "push" and run.get("head_branch") == "main":
-                return run.get("conclusion") == "success"
-        return False
+                return {"status": "success" if run.get("conclusion") == "success" else "failed",
+                        "candidate_sha": sha, "run_id": run["id"], "attempt": run["run_attempt"],
+                        "conclusion": run.get("conclusion")}
+        return {"status": "missing", "candidate_sha": sha}
 
     def receipts(self, sha: str) -> list[dict]:
         rows = self.client.list(f"/commits/{sha}/check-runs?check_name={urllib.parse.quote(CHECK)}", "check_runs")

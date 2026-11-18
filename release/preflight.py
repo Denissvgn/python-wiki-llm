@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
@@ -248,7 +249,7 @@ def _runtime_hash(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _environment(root: Path) -> dict:
+def _environment(root: Path, *, qualification_go: bool = False) -> dict:
     # Launcher spelling is deliberately retained: resolving a venv symlink changes isolation.
     try:
         import llm_wiki_cli as provider
@@ -270,13 +271,15 @@ def _environment(root: Path) -> dict:
         "prefix": sys.prefix,
         "base_prefix": sys.base_prefix,
         "provider": installed,
+        "ignored_routine_overrides": ["LLM_WIKI_GO"] if not qualification_go and "LLM_WIKI_GO" in os.environ else [],
+        "go_resolution": "explicit-qualification" if qualification_go and os.environ.get("LLM_WIKI_GO") else "PATH",
         "tools": {
             name: _version(command, root)
             for name, command in {
                 "node": ["node", "--version"],
                 "npm": ["npm", "--version"],
                 "actionlint": ["actionlint", "--version"],
-                "go": [os.environ.get("LLM_WIKI_GO", "go"), "version"],
+                "go": [os.environ.get("LLM_WIKI_GO", "go") if qualification_go else "go", "version"],
                 "rust": ["rustc", "--version"],
                 "cargo": ["cargo", "--version"],
                 "haskell": [os.environ.get("LLM_WIKI_GHC", "ghc"), "--numeric-version"],
@@ -440,6 +443,7 @@ def _capture_binding(root: Path) -> dict:
 def _maintenance(root: Path) -> dict:
     from release import knowledge_maintenance as maintenance
     from release import preflight_targets
+    from release.preparation import source_status
 
     config = root / "release/knowledge-maintenance.json"
     if not config.exists():
@@ -453,6 +457,9 @@ def _maintenance(root: Path) -> dict:
         targets = preflight_targets.inspect(
             root, policy["wiki_dir"], lambda name: _read(root / name)
         )
+        sources = source_status(root, policy)
+        capture_required = policy["mode"] == "required" and (
+            sources["status"] == "capture-required" or targets["status"] == "capture-required")
         return {
             "policy": policy["policy"],
             "mode": policy["mode"],
@@ -460,7 +467,9 @@ def _maintenance(root: Path) -> dict:
             "binding": "current",
             "version": maintenance.version_check(root, policy),
             "target_runtime": targets,
-            "status": "hosted-proof-required"
+            "sources": sources,
+            "reason": "Review and merge target-host wiki capture before final rehearsal" if capture_required else None,
+            "status": "blocked" if capture_required else "hosted-proof-required"
             if policy["mode"] == "required"
             else policy["mode"],
         }
@@ -477,6 +486,7 @@ def _maintenance(root: Path) -> dict:
                 "target_runtime": preflight_targets.inspect(
                     root, declared["wiki_dir"], lambda name: _read(root / name)
                 ),
+                "sources": source_status(root, declared),
             }
         return {"status": "blocked", "reason": str(exc)[:2000]}
 
@@ -799,7 +809,8 @@ def _outcome(
 
 
 def _execute(
-    plan_path: Path, work: Path, operation: str, stages: tuple[str, ...]
+    plan_path: Path, work: Path, operation: str, stages: tuple[str, ...],
+    progress: Callable[[str, str], None] | None = None,
 ) -> dict:
     from release import preflight_runner as runner
 
@@ -846,6 +857,8 @@ def _execute(
         ]
     else:
         for stage in stages:
+            if progress:
+                progress(stage, "running")
             attempt = runner.execute_stage(
                 stage,
                 repo=root,
@@ -855,6 +868,8 @@ def _execute(
                 version=plan["readiness"]["version"],
             )
             attempts.append(attempt)
+            if progress:
+                progress(stage, attempt["status"])
             if attempt["status"] != "passed":
                 break
     if operation == "run":
@@ -903,9 +918,10 @@ def prepare(plan_path: Path, work: Path) -> dict:
 
 
 def run_plan(
-    plan_path: Path, work: Path, stages: tuple[str, ...] | None = None
+    plan_path: Path, work: Path, stages: tuple[str, ...] | None = None,
+    *, progress: Callable[[str, str], None] | None = None,
 ) -> dict:
-    return _execute(plan_path, work, "run", stages or STAGES)
+    return _execute(plan_path, work, "run", stages or STAGES, progress)
 
 
 def verify_receipt(path: Path) -> dict:

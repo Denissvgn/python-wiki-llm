@@ -77,7 +77,11 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_core_shard_runner.py",
         "tests/test_release_readiness.py",
         "tests/test_measurement_canary.py",
+        "tests/test_contract_canary.py",
         "tests/test_manual_release.py",
+        "tests/test_session_report.py",
+        "tests/test_release_startup_recovery.py",
+        "tests/test_release_resources.py",
     ),
     "portability": (
         "tests/test_readonly_subprocess_stdin.py",
@@ -476,8 +480,12 @@ def validate_workflow_contracts(repository_root: Path) -> list[str]:
             row = expected.get(name, {})
             if "admission" not in row.get("needs", []) or "needs.admission.result == 'success'" not in row.get("condition", ""):
                 errors.append(f"qualification producer {name} bypasses release admission")
-        if set(expected.get("admission", {}).get("needs", [])) != {"readiness", "windows-canary", "smoke-parity"}:
-            errors.append("release admission must join runtime, native consumer and literal artifact parity")
+        if set(expected.get("admission", {}).get("needs", [])) != {"readiness", "contract-canary", "windows-canary", "smoke-parity", "knowledge-maintenance"}:
+            errors.append("release admission must join runtime, frozen contracts, native consumer, literal artifact parity and knowledge maintenance")
+        if expected.get("action", {}).get("needs") != ["freeze", "readiness"]:
+            errors.append("hosted Action must precede release admission")
+        if expected.get("knowledge-maintenance", {}).get("needs") != ["freeze", "action", "readiness"]:
+            errors.append("knowledge maintenance must consume the early hosted Action")
         if "windows-native" not in expected.get("core-windows", {}).get("needs", []) or "core-windows-shards" in expected.get("windows-native", {}).get("needs", []):
             errors.append("native Windows evidence must run independently and join the core gate")
         if "core-ubuntu" not in expected.get("bundle", {}).get("needs", []):
@@ -788,9 +796,46 @@ def run_contract_groups(
     return value
 
 
+def release_input_errors(root: Path) -> list[str]:
+    """Check release bump inputs on a clean checkout before installing build tools."""
+    import tomllib
+
+    project = tomllib.loads(_read(root / "pyproject.toml").decode("utf-8"))
+    version = project["project"]["version"]
+    changelog = _read(root / "CHANGELOG.md").decode("utf-8")
+    headings = re.findall(r"^## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}$", changelog, re.M)
+    errors = []
+    if not headings or headings[0] != version or headings.count(version) != 1:
+        errors.append(f"CHANGELOG.md first released version must match project.version {version}")
+    previous = "v" + headings[1] if len(headings) > 1 else ""
+    for label, target in (("Unreleased", "v" + version + "...HEAD"), (version, previous + "...v" + version)):
+        links = re.findall(r"^\[" + re.escape(label) + r"\]:\s+(\S+)\s*$", changelog, re.M)
+        if len(links) != 1 or not links[0].endswith("/compare/" + target):
+            errors.append(f"CHANGELOG.md [{label}] must compare the release target {version}")
+    path = root / "tests/test_package_metadata.py"
+    module = ast.parse(_read(path), filename=str(path))
+    targets = []
+    for function in module.body:
+        if isinstance(function, ast.FunctionDef) and function.name == "test_project_version_is_release_target":
+            for statement in function.body:
+                if isinstance(statement, ast.Assert) and isinstance(statement.test, ast.Compare):
+                    test = statement.test
+                    if (ast.unparse(test.left) == "data['project']['version']" and len(test.ops) == 1
+                            and isinstance(test.ops[0], ast.Eq) and isinstance(test.comparators[0], ast.Constant)):
+                        targets.append(test.comparators[0].value)
+    if targets != [version]:
+        errors.append(f"tests/test_package_metadata.py release-target assertion must match {version}")
+    for relative in ("build", "dist", "src/agent_wiki_cli.egg-info"):
+        if (root / relative).exists() or (root / relative).is_symlink():
+            errors.append(f"Preserve and resolve unexpected build residue: {relative}")
+    return errors
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="operation", required=True)
+    inputs = subparsers.add_parser("inputs")
+    inputs.add_argument("--repo", type=Path, default=Path.cwd())
     check = subparsers.add_parser("check")
     check.add_argument("--repo", type=Path, default=Path.cwd())
     groups = subparsers.add_parser("groups")
@@ -802,6 +847,10 @@ def main(argv: list[str] | None = None) -> int:
     groups.add_argument("--python", default=sys.executable)
     args = parser.parse_args(argv)
     try:
+        if args.operation == "inputs":
+            errors = release_input_errors(args.repo)
+            print(json.dumps({"errors": errors, "publication_authority": False}))
+            return int(bool(errors))
         value = (
             qualification_contract(args.repo)
             if args.operation == "check"
@@ -811,7 +860,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(value, sort_keys=True, indent=2))
         return 0 if value.get("state", "passed") == "passed" else 1
-    except (ContractError, OSError) as exc:
+    except (ContractError, OSError, KeyError, ValueError, SyntaxError) as exc:
         print(
             json.dumps(
                 {

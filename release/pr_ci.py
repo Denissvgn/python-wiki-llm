@@ -166,7 +166,7 @@ def write_json(path: Path, value: Any) -> None:
 
 def git(root: Path, *args: str) -> bytes:
     process = subprocess.Popen(
-        ["git", "-C", str(root), *args],
+        ["git", "--no-replace-objects", "-C", str(root), *args],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
     )
@@ -357,7 +357,7 @@ def blobs(root: Path, catalog: dict[str, tuple[str, str]]) -> dict[str, bytes]:
     if not identifiers:
         return {}
     metadata = subprocess.run(
-        ["git", "-C", str(root), "cat-file", "--batch-check"],
+        ["git", "--no-replace-objects", "-C", str(root), "cat-file", "--batch-check"],
         input=("\n".join(identifiers) + "\n").encode(),
         capture_output=True,
         check=False,
@@ -377,7 +377,7 @@ def blobs(root: Path, catalog: dict[str, tuple[str, str]]) -> dict[str, bytes]:
         total += size + len(oid) + 32
         require(total <= MAX_SOURCE, "source inventory exceeds byte bound before read")
     process = subprocess.run(
-        ["git", "-C", str(root), "cat-file", "--batch"],
+        ["git", "--no-replace-objects", "-C", str(root), "cat-file", "--batch"],
         input=("\n".join(identifiers) + "\n").encode(),
         capture_output=True,
         check=False,
@@ -477,6 +477,87 @@ def proposal(body: str | None, groups: dict) -> dict:
         selector(test)
     require(value["groups"] or value["tests"], "empty agent proposal")
     return value
+
+
+TYPESCRIPT_FIXTURE = "require_prepared_diagnostics_helper"
+OWNER_INPUTS = {
+    "tests/conftest.py", "release/skip-allowlist.json",
+    ".github/workflows/release-qualification.yml",
+    "release/helper_ownership.py", "release/contract_canary.py",
+    "src/llm_wiki_cli/services/extractor_helpers.py",
+    "src/llm_wiki_cli/services/typescript_helper_identity.py",
+}
+
+
+def _uses_typescript(function) -> bool:
+    aliases = {TYPESCRIPT_FIXTURE}
+    for expr in ast.walk(function):
+        if not isinstance(expr, ast.Assign):
+            continue
+        source = expr.value
+        direct = isinstance(source, ast.Name) and source.id in aliases
+        lookup = (isinstance(source, ast.Call) and isinstance(source.func, ast.Attribute)
+                  and source.func.attr == "getfixturevalue" and any(
+                      isinstance(arg, ast.Constant) and arg.value == TYPESCRIPT_FIXTURE for arg in source.args))
+        if direct or lookup:
+            aliases.update(target.id for target in expr.targets if isinstance(target, ast.Name))
+    for call in ast.walk(function):
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id in aliases:
+            languages = [*call.args[:1], *(kw.value for kw in call.keywords if kw.arg == "language")]
+            if any(isinstance(value, ast.Constant) and value.value == "typescript" for value in languages):
+                return True
+    return False
+
+
+def _typescript_fixtures(body, inherited):
+    fixtures = set(inherited)
+    for _ in range(len(body) + 1):
+        previous = len(fixtures)
+        for func in body:
+            if not isinstance(func, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for decorator in func.decorator_list:
+                name = decorator.func if isinstance(decorator, ast.Call) else decorator
+                if not ((isinstance(name, ast.Attribute) and name.attr == "fixture")
+                        or (isinstance(name, ast.Name) and name.id == "fixture")):
+                    continue
+                if _uses_typescript(func) or any(a.arg in fixtures for a in (*func.args.args, *func.args.kwonlyargs)):
+                    exposed = func.name
+                    if isinstance(decorator, ast.Call):
+                        for kw in decorator.keywords:
+                            if kw.arg == "name" and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
+                                exposed = kw.value.value
+                    fixtures.add(exposed)
+        if len(fixtures) == previous:
+            break
+    return fixtures
+
+
+def typescript_families(after: dict[str, bytes], changed: set[str]) -> list[str]:
+    """Resolve affected literal TypeScript consumers and their local/shared fixtures."""
+    inspect_all = bool(changed & OWNER_INPUTS)
+    paths = [p for p in (after if inspect_all else changed) if p in after and
+             p.startswith("tests/") and Path(p).name.startswith("test_") and p.endswith(".py")]
+    if not paths:
+        return []
+    shared = _typescript_fixtures(ast.parse(after.get("tests/conftest.py", b"")).body, ())
+    families = set()
+    for path in paths:
+        raw = after[path]
+        if TYPESCRIPT_FIXTURE.encode() not in raw and not any(f.encode() in raw for f in shared):
+            continue
+        tree = ast.parse(raw, filename=path)
+        fixtures = _typescript_fixtures(tree.body, shared)
+        scopes = [("", tree.body), *[(item.name + "::", item.body) for item in tree.body
+                                      if isinstance(item, ast.ClassDef) and item.name.startswith("Test")]]
+        for prefix, definitions in scopes:
+            local = _typescript_fixtures(definitions, fixtures) if prefix else fixtures
+            for func in definitions:
+                if not isinstance(func, (ast.FunctionDef, ast.AsyncFunctionDef)) or not func.name.startswith("test_"):
+                    continue
+                if _uses_typescript(func) or any(a.arg in local for a in (*func.args.args, *func.args.kwonlyargs)):
+                    families.add(selector(path + "::" + prefix + func.name))
+    return sorted(families)
 
 
 def select(
@@ -636,6 +717,9 @@ def select(
             )
     # Exact existing skip declarations become conditional edges in a PR plan,
     # never a claim that this subset is a complete core baseline.
+    families = typescript_families(after, {p for row in rows for p in (row["path"], row["old"])})
+    if families:
+        jobs.add("typescript-ownership")
     edges = []
     while True:
         changed = False
@@ -677,6 +761,8 @@ def select(
             break
     for lane in lanes:
         helpers.setdefault(lane, set())
+        if any(matches(s, f) or matches(f, s) for s in lanes[lane] for f in families):
+            helpers[lane].add("typescript")
         if lane == "toolchains":
             for test in lanes[lane]:
                 helpers[lane].update(policy["owners"].get(test.partition("::")[0], []))
@@ -703,6 +789,7 @@ def select(
         "dev" if docs_only else "dev,mcp,tokens" if "mcp-sdk" in jobs else "dev,tokens"
     )
     return {
+        "typescript_families": families,
         "groups": sorted(groups),
         "reasons": reasons,
         "proposal": addition,
@@ -740,6 +827,8 @@ def additive_floor(floor: dict, effective: dict) -> None:
         set(floor["groups"]) <= set(effective["groups"]),
         "impact removed a mandatory contract",
     )
+    require(set(floor.get("typescript_families", [])) <= set(effective.get("typescript_families", [])),
+            "impact removed a conditional test family")
     for lane, data in floor["lanes"].items():
         require(lane in effective["lanes"], "impact removed a native owner")
         target = effective["lanes"][lane]
@@ -792,7 +881,7 @@ def enrich_impact(
     provider_python: Path | None = None,
 ) -> dict:
     floor = {
-        key: plan[key]
+        key: plan.get(key, [])
         for key in (
             "groups",
             "reasons",
@@ -800,6 +889,7 @@ def enrich_impact(
             "lanes",
             "jobs",
             "skip_edges",
+            "typescript_families",
             "qualification",
         )
     }
@@ -870,7 +960,7 @@ def enrich_impact(
                 imports_index=index,
             )
             candidate = json.loads(canonical(current))
-            for field in ("groups", "jobs"):
+            for field in ("groups", "jobs", "typescript_families"):
                 candidate[field] = sorted(set(candidate[field]) | set(addition[field]))
             for lane, value in addition["lanes"].items():
                 if lane not in candidate["lanes"]:
@@ -1650,6 +1740,7 @@ def outputs(plan: dict, plan_path: Path) -> None:
         ),
     }
     for job in (
+        "typescript-ownership",
         "typecheck",
         "mcp-sdk",
         "p0-oci-integration",

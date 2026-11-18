@@ -240,7 +240,8 @@ REQUIRED_JOBS = {
 def required_jobs(core_layout: str = "unsharded") -> set[str]:
     result = set(REQUIRED_JOBS)
     if core_layout == "platform-sharded":
-        result |= {"Early qualification readiness", "Native Windows release canary", "Require release admission"}
+        result |= {"Early qualification readiness", "Frozen release fixture and coverage contracts",
+                   "Native Windows release canary", "Require release admission"}
     return result
 
 

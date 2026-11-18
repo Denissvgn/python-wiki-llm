@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 from release import core_shards as s
+from release import core_schedule
 
 ROOT = Path(__file__).parents[1]
 
@@ -23,7 +24,7 @@ def workflow():
 
 def test_native_shadow_has_complete_bounded_matrices_and_attempt_specific_artifacts():
     value = workflow()
-    assert value["permissions"] == {"contents": "read"}
+    assert value["permissions"] == {"contents": "read", "actions": "read"}
     events = value.get("on", value.get(True))
     assert set(events) == {"workflow_dispatch"}  # Full references run only as an explicit release verification.
     jobs = value["jobs"]
@@ -31,14 +32,15 @@ def test_native_shadow_has_complete_bounded_matrices_and_attempt_specific_artifa
         job = jobs[name]
         assert job["strategy"]["fail-fast"] is False
         assert job["strategy"]["max-parallel"] == 3
-        matrix = job["strategy"]["matrix"]["include"]
+        assert job["strategy"]["matrix"] == "${{ fromJSON(needs.freeze.outputs." + name + "-matrix) }}"
+        matrix = core_schedule.matrices(ROOT, scope="all", windows_shards=2, history="committed", fixtures=False)[name]["include"]
         assert len(matrix) == len(s.PROFILES) * replicas
         for lane in s.PROFILES:
             rows = [row for row in matrix if row["lane"] == lane]
             assert len(rows) == replicas
             assert all(
                 row["os"] == s.PROFILES[lane]["os"]
-                and row["python"] == s.PROFILES[lane]["python"]
+                and row["python"].startswith(s.PROFILES[lane]["python"])
                 for row in rows
             )
             if name == "shards":

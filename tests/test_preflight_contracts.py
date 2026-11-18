@@ -52,6 +52,25 @@ def change_registry(root, edit):
     path.write_text(json.dumps(value))
 
 
+@pytest.mark.parametrize("omitted", ["contract-canary", "knowledge-maintenance"])
+def test_rebound_registry_cannot_drop_an_early_admission_owner(repository, omitted):
+    path = repository / p.WORKFLOW
+    text = path.read_text()
+    before = "needs: [readiness, contract-canary, windows-canary, smoke-parity, knowledge-maintenance]"
+    after = before.replace(omitted + ", ", "").replace(", " + omitted + "]", "]")
+    assert before in text
+    path.write_text(text.replace(before, after, 1))
+    _, actual = p.workflow_declarations(repository)
+
+    def rebind(value):
+        row = next(r for r in value["jobs"] if r["id"] == "admission")
+        row["needs"].remove(omitted)
+        row["declaration_sha256"] = p._digest(actual["admission"])
+
+    change_registry(repository, rebind)
+    assert any("release admission must join" in e for e in p.validate_workflow_contracts(repository))
+
+
 def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repository):
     before = {
         x.relative_to(repository): x.read_bytes()

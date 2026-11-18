@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import types
+import time
 from pathlib import Path
 
 import pytest
@@ -233,8 +235,10 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
     if helper_cache_base is None:
         pytest.skip(_MULTILANGUAGE_HELPER_SKIP_REASON)
     source = tmp_path / "python-wiki-llm"
+    started = time.monotonic()
     _copy_repo(repo_root, source)
     before = _file_hashes(source)
+    copied = time.monotonic()
     monkeypatch.setenv(ENV_CACHE_DIR, str(helper_cache_base))
     monkeypatch.chdir(source)
 
@@ -255,6 +259,7 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
             knowledge_format="sharded-v2",
         )
     )
+    bootstrapped = time.monotonic()
     bootstrap_summary = json.loads(capsys.readouterr().out)
     assert bootstrap_summary["schema_version"] == "llm-wiki-bootstrap-summary/v1"
     assert bootstrap_summary["flows"] > 0
@@ -271,6 +276,7 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
             output_format="json",
         )
     )
+    exported = time.monotonic()
     site_export = json.loads(capsys.readouterr().out)
     assert site_export["ok"] is True
     assert site_export["format"] == "mkdocs"
@@ -350,6 +356,13 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
         for path in (wiki_dir / "modules").glob("*.md")
     )
     assert _file_hashes(source) == before
+    timing = os.environ.get("LLM_WIKI_TEST_DOGFOOD_TIMING")
+    if timing:
+        with Path(timing).open("x", encoding="utf-8") as stream:
+            json.dump({"copy_and_initial_hash_seconds": copied - started,
+                       "bootstrap_seconds": bootstrapped - copied, "export_seconds": exported - bootstrapped,
+                       "validation_seconds": time.monotonic() - exported}, stream)
+
 
 
 def test_documentation_dogfood_multilanguage_no_cache_convergence(

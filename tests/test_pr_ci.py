@@ -725,6 +725,42 @@ def test_public_behavior_contract_owners_include_installed_and_review_consumers(
         assert "tests/test_package_metadata.py" in selection["lanes"]["minimum-python"]["selectors"]
 
 
+def test_integrity_action_change_selects_fast_native_contracts_and_real_action():
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests,
+                       [changed("integrations/wiki-integrity/action.yml")], None, {"entries": []}, imports_index={})
+    contracts = {
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_has_bounded_portable_inputs",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_isolates_python_modules_from_candidate_source",
+        "tests/test_wiki_integrity_action.py::test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence",
+    }
+    assert contracts <= set(result["lanes"]["ubuntu"]["selectors"])
+    assert contracts <= set(result["lanes"]["windows"]["selectors"])
+    assert "action" in result["jobs"]
+
+
+@pytest.mark.parametrize("path", ["release/core_coverage.py", "release/contract_canary.py", "release/preflight_runner.py"])
+def test_release_producer_change_keeps_windows_fixtures_and_ubuntu_coverage_owners(path):
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    allowlist = json.loads((ROOT / "release/skip-allowlist.json").read_bytes())
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None, allowlist, imports_index={})
+    expected = {"tests/test_core_shard_runner.py", "tests/test_preflight_runner.py", "tests/test_preflight_contracts.py"}
+    assert expected <= set(result["lanes"]["windows"]["selectors"])
+    assert expected <= set(result["lanes"]["ubuntu"]["selectors"])
+    assert result["skip_edges"]
+
+
+@pytest.mark.parametrize("path", ["release/session_report.py", "release/release_resources.py", "release/manual_release.py", "release/preflight_runner.py"])
+def test_release_recovery_changes_keep_native_readers_and_guarded_cleanup_consumers(path):
+    tests = {p.relative_to(ROOT).as_posix(): b"" for p in (ROOT / "tests").rglob("test_*.py")}
+    result = ci.select(ci.policy_load(ROOT / "release"), tests, tests, [changed(path)], None, {"entries": []}, imports_index={})
+    expected = {"tests/test_session_report.py", "tests/test_release_startup_recovery.py", "tests/test_release_resources.py", "tests/test_manual_release.py", "tests/test_preflight_runner.py"}
+    for lane in ("ubuntu", "windows", "macos"):
+        assert expected <= set(result["lanes"][lane]["selectors"])
+    assert "typecheck" in result["jobs"]
+
+
 def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     policy, sources
 ):
@@ -1051,3 +1087,44 @@ def test_a_new_run_during_download_invalidates_an_old_success(monkeypatch):
     client.get = get
     with pytest.raises(ci.SelectionError, match="newer PR run"):
         ci.reuse_main(ROOT, ROOT / "release", "f" * 40, "owner/repo", 200, 1, client)
+
+
+def test_trusted_base_selects_new_helper_family_on_exact_merge(tmp_path, policy, sources):
+    root, trusted, event, _ = fixture_repository(tmp_path, policy, sources)
+    git(root, "switch", "codex/fixture")
+    (root/"tests/test_new_consumer.py").write_text(
+        "def test_new(require_prepared_diagnostics_helper):\n"
+        "    require_prepared_diagnostics_helper('typescript')\n"
+    )
+    head = commit(root, "introduce helper consumer without any owner entry")
+    git(root, "switch", "main")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=ci@example.invalid",
+        "merge", "--no-ff", "-qm", "current PR test merge", head)
+    candidate = git(root, "rev-parse", "HEAD")
+    event["pull_request"]["base"]["sha"], event["pull_request"]["head"]["sha"] = git(root,"rev-parse",candidate+"^1"), head
+    plan = ci.make_plan(root, trusted, event, candidate, "owner/repo", 11, 1)
+    assert plan["typescript_families"] == ["tests/test_new_consumer.py::test_new"]
+    assert "typescript-ownership" in plan["jobs"]
+    assert plan["head_sha"] == head and plan["candidate_sha"] == candidate
+
+
+@pytest.mark.parametrize("changed", ["mode", "blob", "parents", "truncated"])
+def test_pr_source_evidence_requires_actual_tree_and_both_parents(tmp_path, policy, sources, changed):
+    from release import pr_evidence
+
+    root, trusted, event, candidate = fixture_repository(tmp_path, policy, sources)
+    plan = ci.make_plan(root, trusted, event, candidate, "owner/repo", 21, 1)
+    head = event["pull_request"]["head"]["sha"]
+    local = dict(plan, candidate_sha=head)
+    tree = {"sha":plan["candidate_tree"],"truncated":False,"tree":[
+        {"path":p,"mode":m,"type":"blob","sha":sha} for p,(m,sha) in ci.tree(root,head).items()]}
+    merge = {"sha":candidate,"parents":[{"sha":plan["base_sha"]},{"sha":head}],"tree":{"sha":tree["sha"]}}
+    assert pr_evidence.compare(root,local,plan,merge,tree)["selection_verified"] is True
+    if changed == "parents":
+        merge["parents"].reverse()
+    elif changed == "truncated":
+        tree["truncated"] = True
+    else:
+        tree["tree"][0]["sha" if changed == "blob" else "mode"] = "0"*40 if changed == "blob" else "100777"
+    with pytest.raises(ValueError):
+        pr_evidence.compare(root,local,plan,merge,tree)

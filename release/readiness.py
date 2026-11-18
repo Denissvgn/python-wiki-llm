@@ -54,6 +54,9 @@ REQUIRED_CONSUMERS = {
     "rd10": ("knowledge-linux", QUALIFICATION_WORKFLOW, "action", "setup-python"),
     "artifact-smoke": ("knowledge-linux", QUALIFICATION_WORKFLOW, "artifact-smoke", "setup-python"),
     "readiness": ("knowledge-linux", QUALIFICATION_WORKFLOW, "readiness", "setup-python"),
+    "contract-canary": ("coverage-linux", QUALIFICATION_WORKFLOW, "contract-canary", "setup-python"),
+    "contract-probe-linux": ("coverage-linux", ".github/workflows/release-contract-checks.yml", "linux", "setup-python"),
+    "contract-probe-windows": ("windows-core", ".github/workflows/release-contract-checks.yml", "windows", "setup-python"),
     "windows-plan": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows-plan", "setup-python"),
     "windows-shards": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows-shards", "plan-python"),
     "windows-core": ("windows-core", QUALIFICATION_WORKFLOW, "core-windows", "plan-python-fallback"),
@@ -297,7 +300,7 @@ def runtime_contract(
     profiles, consumers = contract["profiles"], contract["consumers"]
     if (
         not isinstance(profiles, dict)
-        or set(profiles) != {"knowledge-linux", "windows-core"}
+        or set(profiles) != {"knowledge-linux", "windows-core", "coverage-linux"}
         or not isinstance(consumers, list)
     ):
         raise ReadinessError("Invalid runtime profiles/consumers")
@@ -321,10 +324,7 @@ def runtime_contract(
             raise ReadinessError(
                 "Runtime profile requires exact platform/interpreter versions"
             )
-    if (
-        len(profiles["knowledge-linux"]["python"]) != 1
-        or len(profiles["windows-core"]["python"]) != 1
-    ):
+    if any(len(profile["python"]) != 1 for profile in profiles.values()):
         raise ReadinessError(
             "Single execution runtimes and their native probe coverage must agree"
         )
@@ -545,9 +545,9 @@ def capabilities(
         or len(stages) != len(set(stages))
     ):
         raise ReadinessError("Invalid selected local stages")
-    environment = (
-        environment if environment is not None else preflight._environment(root)
-    )
+    if environment is None:
+        explicit_owner = "go" in (native_languages or ()) or os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1"
+        environment = preflight._environment(root, qualification_go=True) if explicit_owner else preflight._environment(root)
     helper = helper if helper is not None else preflight._helper(root, environment)
     rows, blockers, pending = [], [], []
     if native_languages is None:

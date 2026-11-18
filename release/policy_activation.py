@@ -75,7 +75,8 @@ def _tar_files(raw: bytes, required: tuple[str, ...]) -> dict[str, bytes]:
     return result
 
 
-def _artifact(client: Any, artifact: dict, job: dict, run: dict) -> tuple[dict[str, bytes], dict]:
+def _artifact(client: Any, artifact: dict, job: dict, run: dict, *,
+              retained_archive: bytes | None = None) -> tuple[dict[str, bytes], dict]:
     workflow = artifact.get("workflow_run", {})
     hosted.require(
         artifact.get("expired") is False and type(artifact.get("id")) is int and artifact["id"] > 0
@@ -91,7 +92,7 @@ def _artifact(client: Any, artifact: dict, job: dict, run: dict) -> tuple[dict[s
     )
     digest = artifact.get("digest")
     hosted.require(isinstance(digest, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", digest) is not None, "invalid GitHub artifact digest")
-    raw = client.archive(artifact["id"])
+    raw = client.archive(artifact["id"]) if retained_archive is None else retained_archive
     hosted.require(isinstance(raw, bytes) and "sha256:" + hosted.sha256(raw) == digest, "GitHub artifact archive digest mismatch")
     inventory = hosted.zip_inventory(raw)
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
