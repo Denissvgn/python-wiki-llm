@@ -771,7 +771,7 @@ jobs:
           python -m pytest \
             tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
             -q -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli --cov=llm_wiki_engine \
             --cov-report= --cov-fail-under=0 \
             --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
           python -I - <<'PY'
@@ -812,6 +812,7 @@ jobs:
           -o xfail_strict=true
           --junitxml="../evidence/${{ matrix.lane }}.xml"
           --cov=llm_wiki_cli
+          --cov=llm_wiki_engine
           --cov-report="xml:../evidence/coverage-${{ matrix.lane }}.xml"
           --cov-fail-under=87
 
@@ -1189,7 +1190,7 @@ jobs:
           -W error
           -o xfail_strict=true
           --junitxml="../evidence/core-ubuntu-3.11.xml"
-          --cov=llm_wiki_cli --cov-report="xml:../evidence/coverage-core-ubuntu-3.11.xml" --cov-fail-under=87
+          --cov=llm_wiki_cli --cov=llm_wiki_engine --cov-report="xml:../evidence/coverage-core-ubuntu-3.11.xml" --cov-fail-under=87
 
       - name: Verify scoped evidence repair on native Windows and Linux
         id: scoped-evidence
@@ -1240,7 +1241,7 @@ jobs:
           python -m pytest \
             tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
             -q -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli --cov=llm_wiki_engine \
             --cov-report= --cov-fail-under=0 \
             --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
           python -I - <<'PY'

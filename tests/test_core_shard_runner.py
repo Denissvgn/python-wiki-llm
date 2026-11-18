@@ -225,18 +225,18 @@ def coverage_fixture(tmp_path, lines):
     output = tmp_path / ("data-" + "-".join(map(str, lines)))
     output.mkdir()
     data = CoverageData(basename=str(output / "coverage.data"))
-    data.add_lines({"/owned/package/owned.py": set(lines)})
+    data.add_lines({"/owned/src/llm_wiki_cli/owned.py": set(lines)})
     data.write()
-    sources = r.source_manifest(package)
+    sources = r.source_manifest(package.parent)
     r.q.write_json(
         output / "coverage.json",
         {
             "schema_version": r.COVERAGE_SCHEMA,
-            "source_roots": ["/owned/package"],
+            "source_roots": ["/owned/src"],
             "sources": sources,
-            "statements": r.statement_map(package, output / "coverage.data", package.parents[1]),
+            "statements": r.statement_map(package.parent, output / "coverage.data", package.parents[1]),
             "lines": r.coverage_rows(
-                output / "coverage.data", ["/owned/package"], sources
+                output / "coverage.data", ["/owned/src"], sources
             ),
         },
     )
@@ -260,9 +260,9 @@ def canonical_linux_artifact(directory):
         assert sorted(observed) == record["lines"][Path(name).relative_to(Path(roots[0])).as_posix()]
     data.erase()
     data = CoverageData(basename=str(directory / "coverage.data"))
-    data.add_lines({"/owned/package/" + name: lines for name, lines in record["lines"].items()})
+    data.add_lines({"/owned/src/" + name: lines for name, lines in record["lines"].items()})
     data.write()
-    record["source_roots"] = ["/owned/package"]
+    record["source_roots"] = ["/owned/src"]
     r.q.write_json(directory / "coverage.json", record)
 
 
@@ -295,22 +295,22 @@ def multiline_coverage_artifact(tmp_path, monkeypatch, request):
     directory = tmp_path / "input"
     directory.mkdir()
     data = CoverageData(basename=str(directory / "coverage.data"))
-    data.add_lines({"/owned/package/owned.py": events})
+    data.add_lines({"/owned/src/llm_wiki_cli/owned.py": events})
     data.write()
-    sources = r.source_manifest(package)
+    sources = r.source_manifest(package.parent)
     r.q.write_json(directory / "coverage.json", {
-        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/package"],
+        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/src"],
         "sources": sources,
-        "statements": r.statement_map(package, directory / "coverage.data", package.parents[1]),
-        "lines": {"owned.py": sorted(events)},
+        "statements": r.statement_map(package.parent, directory / "coverage.data", package.parents[1]),
+        "lines": {"llm_wiki_cli/owned.py": sorted(events)},
     })
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     result = r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
     assert result["percent"] == pytest.approx(100 * 11 / 12)
     canonical_linux_artifact(output)
-    assert r.s.read(output / "coverage.json")["lines"] == {"owned.py": sorted(events)}
+    assert r.s.read(output / "coverage.json")["lines"] == {"llm_wiki_cli/owned.py": sorted(events)}
     return package, directory, output
 
 
@@ -322,7 +322,7 @@ def test_pure_coverage_reader_preserves_raw_union_for_multiline_statement_hits(m
         directory / "coverage.data", directory / "coverage.json",
         output / "coverage.data", output / "coverage.json",
     )}
-    core_coverage.validate_combination(output, [directory], package, r.s.read)
+    core_coverage.validate_combination(output, [directory], package.parent, r.s.read)
     assert {path: r.q.sha256_file(path) for path in before} == before
 
 
@@ -342,7 +342,7 @@ def test_multiline_coverage_reader_rejects_rehashed_xml_hits(multiline_coverage_
     tree.getroot().set("line-rate", str(covered / len(lines)))
     tree.write(path)
     with pytest.raises(ValueError, match="coverage XML hits differ from raw union"):
-        core_coverage.validate_combination(output, [directory], package, r.s.read)
+        core_coverage.validate_combination(output, [directory], package.parent, r.s.read)
 
 
 def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
@@ -350,13 +350,13 @@ def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
 ):
     package, first = coverage_fixture(tmp_path, [1])
     _, second = coverage_fixture(tmp_path, [2])
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     value = r.s.plan(NODES, context(), 2)
     output = tmp_path / "combined"
     output.mkdir()
     result = r.combine_coverage(value, [first, second], package.parents[1], output)
     assert result["percent"] == 100
-    assert r.s.read(output / "coverage.json")["lines"] == {"owned.py": [1, 2]}
+    assert r.s.read(output / "coverage.json")["lines"] == {"llm_wiki_cli/owned.py": [1, 2]}
     partial = tmp_path / "partial"
     partial.mkdir()
     with pytest.raises(r.q.QualificationError, match="below 87%"):
@@ -372,24 +372,24 @@ def test_empty_module_entry_event_preserves_coverage_without_counting_a_statemen
     data = CoverageData(basename=str(directory / "coverage.data"))
     data.read()
     # Native Python 3.10 reports line 1; Python 3.11 reports virtual line 0.
-    data.add_lines({"/owned/package/__init__.py": {entry}})
+    data.add_lines({"/owned/src/llm_wiki_cli/__init__.py": {entry}})
     data.write()
     raw_digest = r.q.sha256_file(directory / "coverage.data")
-    sources = r.source_manifest(package)
-    rows = r.coverage_rows(directory / "coverage.data", ["/owned/package"], sources)
-    assert rows["__init__.py"] == expected and sources["__init__.py"]["line_count"] == 0
+    sources = r.source_manifest(package.parent)
+    rows = r.coverage_rows(directory / "coverage.data", ["/owned/src"], sources)
+    assert rows["llm_wiki_cli/__init__.py"] == expected and sources["llm_wiki_cli/__init__.py"]["line_count"] == 0
     assert r.q.sha256_file(directory / "coverage.data") == raw_digest
     r.q.write_json(
         directory / "coverage.json",
         {
             "schema_version": r.COVERAGE_SCHEMA,
-            "source_roots": ["/owned/package"],
+            "source_roots": ["/owned/src"],
             "sources": sources,
-            "statements": r.statement_map(package, directory / "coverage.data", package.parents[1]),
+            "statements": r.statement_map(package.parent, directory / "coverage.data", package.parents[1]),
             "lines": rows,
         },
     )
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     report = r.combine_coverage(
@@ -418,13 +418,13 @@ def test_empty_module_compatibility_does_not_accept_invalid_coverage_lines(
         (package / "owned.py").write_bytes(b"")
     data = CoverageData(basename=str(directory / "coverage.data"))
     data.erase()
-    data.add_lines({"/owned/package/owned.py": set(lines)})
+    data.add_lines({"/owned/src/llm_wiki_cli/owned.py": set(lines)})
     data.write()
     with pytest.raises(
-        r.q.QualificationError, match="invalid executed coverage line in owned.py"
+        r.q.QualificationError, match="invalid executed coverage line in llm_wiki_cli/owned.py"
     ):
         r.coverage_rows(
-            directory / "coverage.data", ["/owned/package"], r.source_manifest(package)
+            directory / "coverage.data", ["/owned/src"], r.source_manifest(package.parent)
         )
 
 
@@ -433,12 +433,12 @@ def test_coverage_rejects_wrong_source_partial_data_and_outside_paths(
     tmp_path, monkeypatch, mutation
 ):
     package, directory = coverage_fixture(tmp_path, [1, 2])
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     record = r.s.read(directory / "coverage.json")
     if mutation == "source":
-        record["sources"]["owned.py"]["sha256"] = "0" * 64
+        record["sources"]["llm_wiki_cli/owned.py"]["sha256"] = "0" * 64
     elif mutation == "lines":
-        record["lines"]["owned.py"] = [1]
+        record["lines"]["llm_wiki_cli/owned.py"] = [1]
     elif mutation == "outside":
         data = CoverageData(basename=str(directory / "coverage.data"))
         data.read()
@@ -465,12 +465,12 @@ def test_coverage_combines_verified_installed_and_checkout_aliases(tmp_path):
     )
     data.write()
     roots = [
-        "/owned/checkout/src/llm_wiki_cli",
-        "/owned/venv/site-packages/llm_wiki_cli",
+        "/owned/checkout/src",
+        "/owned/venv/site-packages",
     ]
-    sources = {"owned.py": {"sha256": "a" * 64, "line_count": 2}}
+    sources = {"llm_wiki_cli/owned.py": {"sha256": "a" * 64, "line_count": 2}}
     assert r.coverage_rows(tmp_path / "coverage.data", roots, sources) == {
-        "owned.py": [1, 2]
+        "llm_wiki_cli/owned.py": [1, 2]
     }
     with pytest.raises(r.q.QualificationError, match="outside"):
         r.coverage_rows(tmp_path / "coverage.data", roots[:1], sources)
@@ -479,36 +479,52 @@ def test_coverage_combines_verified_installed_and_checkout_aliases(tmp_path):
 @pytest.mark.parametrize("distinct_alias", [False, True])
 def test_coverage_export_has_unique_verified_roots(tmp_path, monkeypatch, distinct_alias):
     checkout = tmp_path / "candidate"
-    source = checkout / "src/llm_wiki_cli"
-    source.mkdir(parents=True)
-    (source / "owned.py").write_bytes(b"VALUE = 1\n")
-    package = source
+    source = checkout / "src"
+    parent = source
+    parents = [source]
     if distinct_alias:
-        package = tmp_path / "site-packages/llm_wiki_cli"
-        package.mkdir(parents=True)
-        (package / "owned.py").write_bytes(b"VALUE = 1\n")
+        parent = tmp_path / "site-packages"
+        parents.append(parent)
+    for directory in parents:
+        for package in r.PROVIDER_PACKAGES:
+            (directory / package).mkdir(parents=True)
+            (directory / package / "owned.py").write_bytes(b"VALUE = 1\n")
+    # Both distributions resolve their packages inside one installed parent.
     monkeypatch.setattr(r.importlib.metadata, "distribution", lambda name: SimpleNamespace(
-        locate_file=lambda name: package,
+        locate_file=lambda package: parent / package,
     ))
-    expected = [package.as_posix()]
+    expected = [parent.as_posix()]
     if distinct_alias:
         expected.append(source.as_posix())
 
     def verified_rows(data, roots, sources):
         assert roots == expected
         assert sources == r.source_manifest(source)
-        return {"owned.py": [1]}
+        assert set(sources) == {f"{package}/owned.py" for package in r.PROVIDER_PACKAGES}
+        return {"llm_wiki_cli/owned.py": [1]}
 
     data = CoverageData(basename=str(tmp_path / "coverage.data"))
-    data.add_lines({str(package / "owned.py"): {1}})
+    data.add_lines({str(parent / "llm_wiki_cli/owned.py"): {1}})
     data.write()
     monkeypatch.setattr(r, "coverage_rows", verified_rows)
     r.export_coverage(checkout, tmp_path)
     assert r.s.read(tmp_path / "coverage.json")["source_roots"] == expected
     if distinct_alias:
-        (package / "owned.py").write_bytes(b"CHANGED = 2\n")
+        (parent / "llm_wiki_engine/owned.py").write_bytes(b"CHANGED = 2\n")
         with pytest.raises(r.q.QualificationError, match="source bytes differ"):
             r.export_coverage(checkout, tmp_path)
+
+
+def test_installed_cli_and_engine_must_share_one_parent(tmp_path, monkeypatch):
+    checkout = tmp_path / "candidate"
+    for package in r.PROVIDER_PACKAGES:
+        (checkout / "src" / package).mkdir(parents=True)
+    homes = {"agent-wiki-cli": tmp_path / "one", "llm-wiki-engine": tmp_path / "two"}
+    monkeypatch.setattr(r.importlib.metadata, "distribution", lambda name: SimpleNamespace(
+        locate_file=lambda package: homes[name] / package,
+    ))
+    with pytest.raises(r.q.QualificationError, match="side by side"):
+        r.package_root(checkout)
 
 
 @pytest.mark.parametrize(
@@ -1103,28 +1119,28 @@ def test_pure_promotion_reader_replays_raw_coverage_union_without_third_party_re
     from release import core_coverage
     package, first = coverage_fixture(tmp_path, [1])
     _, second = coverage_fixture(tmp_path, [2])
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     r.combine_coverage(r.s.plan(NODES, context(), 2), [first, second], package.parents[1], output)
     canonical_linux_artifact(output)
-    core_coverage.validate_combination(output, [first, second], package, r.s.read)
+    core_coverage.validate_combination(output, [first, second], package.parent, r.s.read)
     data = CoverageData(basename=str(second / "coverage.data"))
     data.erase()
-    data.add_lines({"/owned/package/owned.py": {1}})
+    data.add_lines({"/owned/src/llm_wiki_cli/owned.py": {1}})
     data.write()
     with pytest.raises(ValueError, match="receipt differs"):
-        core_coverage.validate_combination(output, [first, second], package, r.s.read)
+        core_coverage.validate_combination(output, [first, second], package.parent, r.s.read)
 
 
 def test_unexecuted_source_files_cannot_disappear_from_coverage_denominator(tmp_path, monkeypatch):
     package, first = coverage_fixture(tmp_path, [1, 2])
     (package / "unexecuted.py").write_text("third = 3\nfourth = 4\n")
     record = r.s.read(first / "coverage.json")
-    record["sources"] = r.source_manifest(package)
-    record["statements"] = r.statement_map(package, first / "coverage.data", package.parents[1])
+    record["sources"] = r.source_manifest(package.parent)
+    record["statements"] = r.statement_map(package.parent, first / "coverage.data", package.parents[1])
     r.q.write_json(first / "coverage.json", record)
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     with pytest.raises(r.q.QualificationError, match="below 87%"):
@@ -1156,22 +1172,22 @@ def test_qualifying_ubuntu_command_replays_complete_inventory_and_raw_coverage(t
     })
     shards = tmp_path / "workers"
     shards.mkdir()
-    sources = r.source_manifest(package)
+    sources = r.source_manifest(package.parent)
     for index in range(2):
         directory = execution(shards / str(index), plan, index)
         data = CoverageData(basename=str(directory / "coverage.data"))
-        data.add_lines({"/owned/package/owned.py": {index + 1}})
+        data.add_lines({"/owned/src/llm_wiki_cli/owned.py": {index + 1}})
         data.write()
         r.q.write_json(directory / "coverage.json", {
             "schema_version": r.COVERAGE_SCHEMA, "sources": sources,
-            "statements": r.statement_map(package, directory / "coverage.data", root),
-            "source_roots": ["/owned/package"], "lines": {"owned.py": [index + 1]},
+            "statements": r.statement_map(package.parent, directory / "coverage.data", root),
+            "source_roots": ["/owned/src"], "lines": {"llm_wiki_cli/owned.py": [index + 1]},
         })
         receipt = r.s.read(directory / "execution.json")
         receipt["files"].update({name: r.q.sha256_file(directory / name) for name in ("coverage.data", "coverage.json")})
         r.q.write_json(directory / "execution.json", receipt)
     monkeypatch.setattr(r, "context", lambda args: current)
-    monkeypatch.setattr(r, "package_root", lambda source: package)
+    monkeypatch.setattr(r, "package_root", lambda source: package.parent)
     native_combine = r.combine_coverage
 
     def linux_combine(*args):
@@ -1187,7 +1203,7 @@ def test_qualifying_ubuntu_command_replays_complete_inventory_and_raw_coverage(t
     r.s.validate_aggregation(output, preparation, [shards / "0", shards / "1"],
         current["identity"], current["harness_sha256"], current["run_id"], current["run_attempt"], allowlist, source_root=root)
     recorded = r.s.read(output / "coverage.json")
-    recorded["lines"]["owned.py"] = [1]
+    recorded["lines"]["llm_wiki_cli/owned.py"] = [1]
     r.q.write_json(output / "coverage.json", recorded)
     aggregation = r.s.read(output / "aggregation.json")
     aggregation["files"]["coverage.json"] = r.q.sha256_file(output / "coverage.json")
@@ -1322,7 +1338,7 @@ def test_coverage_additional_source_directory_is_rejected_before_collection(tmp_
     (package / "owned.py").write_text("VALUE = 1\n")
     (tmp_path / "pytest.ini").write_text("[pytest]\n")
     (tmp_path / ".coveragerc").write_text("[run]\nsource_dirs = ../unowned\n")
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     with pytest.raises(r.q.QualificationError, match="additional source directories"):
         r.probe_coverage_transport(tmp_path)
 
@@ -1400,7 +1416,7 @@ def test_windows_coverage_prefix_cannot_enter_canonical_linux_transport(tmp_path
 
     package, directory = coverage_fixture(tmp_path, [1])
     path = directory / "coverage.data"
-    sources = r.source_manifest(package)
+    sources = r.source_manifest(package.parent)
     before = r.q.sha256_file(path)
     with pytest.raises(r.q.QualificationError, match="invalid coverage source prefix"):
         r.coverage_rows(path, [prefix], sources)
@@ -1417,7 +1433,7 @@ def test_pure_coverage_reader_rejects_oversized_bitset_before_expansion(tmp_path
     with closing(sqlite3.connect(path)) as connection, connection:
         connection.execute("UPDATE line_bits SET numbits = ?", (b"\xff" * 1024,))
     with pytest.raises(ValueError, match="bitset exceeds frozen source"):
-        core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package))
+        core_coverage.raw_lines(path, ["/owned/src"], r.source_manifest(package.parent))
 
 
 def test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line(tmp_path, monkeypatch):
@@ -1427,20 +1443,20 @@ def test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line(tmp_
     path = directory / "coverage.data"
     data = CoverageData(basename=str(path))
     data.erase()
-    data.add_lines({"/owned/package/owned.py": set(range(1, 10))})
+    data.add_lines({"/owned/src/llm_wiki_cli/owned.py": set(range(1, 10))})
     data.write()
     r.q.write_json(directory / "coverage.json", {
-        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/package"],
-        "sources": r.source_manifest(package),
-        "statements": r.statement_map(package, path, package.parents[1]),
-        "lines": {"owned.py": list(range(1, 10))},
+        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/src"],
+        "sources": r.source_manifest(package.parent),
+        "statements": r.statement_map(package.parent, path, package.parents[1]),
+        "lines": {"llm_wiki_cli/owned.py": list(range(1, 10))},
     })
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], package.parents[1], output)
     canonical_linux_artifact(output)
-    core_coverage.validate_combination(output, [directory], package, r.s.read)
+    core_coverage.validate_combination(output, [directory], package.parent, r.s.read)
     xml_path = output / "coverage-core-ubuntu-3.11.xml"
     tree = ET.parse(xml_path)
     for node in tree.getroot().iter("class"):
@@ -1454,7 +1470,7 @@ def test_coverage_statement_map_rejects_rehashed_omitted_uncovered_xml_line(tmp_
     tree.getroot().set("line-rate", "1")
     tree.write(xml_path)
     with pytest.raises(ValueError, match="omitted executable statements"):
-        core_coverage.validate_combination(output, [directory], package, r.s.read)
+        core_coverage.validate_combination(output, [directory], package.parent, r.s.read)
 
 
 def test_nested_nonpackage_provider_file_keeps_its_coverage_denominator(tmp_path, monkeypatch):
@@ -1463,10 +1479,10 @@ def test_nested_nonpackage_provider_file_keeps_its_coverage_denominator(tmp_path
     nested.parent.mkdir(parents=True)
     nested.write_text("never_executed = 1\nnever_executed_again = 2\n")
     record = r.s.read(directory / "coverage.json")
-    record["sources"] = r.source_manifest(package)
-    record["statements"] = r.statement_map(package, directory / "coverage.data", package.parents[1])
+    record["sources"] = r.source_manifest(package.parent)
+    record["statements"] = r.statement_map(package.parent, directory / "coverage.data", package.parents[1])
     r.q.write_json(directory / "coverage.json", record)
-    monkeypatch.setattr(r, "package_root", lambda root: package)
+    monkeypatch.setattr(r, "package_root", lambda root: package.parent)
     output = tmp_path / "combined"
     output.mkdir()
     with pytest.raises(r.q.QualificationError, match="below 87%"):
@@ -1519,10 +1535,10 @@ def test_raw_coverage_connection_closes_on_success_and_every_failure(tmp_path, m
     monkeypatch.setattr(core_coverage.sqlite3, "connect", tracked_connect)
     try:
         if failure is None:
-            assert core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package)) == {"owned.py": [1, 2]}
+            assert core_coverage.raw_lines(path, ["/owned/src"], r.source_manifest(package.parent)) == {"llm_wiki_cli/owned.py": [1, 2]}
         else:
             with pytest.raises(ValueError if failure == "schema" else sqlite3.DatabaseError):
-                core_coverage.raw_lines(path, ["/owned/package"], r.source_manifest(package))
+                core_coverage.raw_lines(path, ["/owned/src"], r.source_manifest(package.parent))
         assert len(connections) == 1 and connections[0].close_count == 1
         with pytest.raises(sqlite3.ProgrammingError, match="closed database"):
             connections[0].execute("SELECT 1")
@@ -1532,3 +1548,52 @@ def test_raw_coverage_connection_closes_on_success_and_every_failure(tmp_path, m
         for connection in connections:
             if connection.close_count == 0:
                 connection.close()
+
+
+@linux_coverage_producer
+def test_cli_and_engine_coverage_join_one_unambiguous_inventory(tmp_path, monkeypatch):
+    from release import core_coverage
+
+    parent = tmp_path / "candidate/src"
+    files = {
+        "llm_wiki_cli/__init__.py": b"VALUE = 1\nOTHER = 2\n",
+        "llm_wiki_engine/__init__.py": b"ENGINE = 1\nUNUSED = 2\n",
+        "llm_wiki_engine/store.py": b"STORE = 1\n",
+    }
+    for name, content in files.items():
+        (parent / name).parent.mkdir(parents=True, exist_ok=True)
+        (parent / name).write_bytes(content)
+    # A file beside the packages is not provider code.
+    (parent / "release_build_backend.py").write_bytes(b"BACKEND = 1\n")
+    directory = tmp_path / "input"
+    directory.mkdir()
+    executed = {"llm_wiki_cli/__init__.py": {1, 2}, "llm_wiki_engine/__init__.py": {1, 2}, "llm_wiki_engine/store.py": {1}}
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.add_lines({"/owned/src/" + name: lines for name, lines in executed.items()})
+    data.write()
+    sources = r.source_manifest(parent)
+    assert set(sources) == set(files)
+    r.q.write_json(directory / "coverage.json", {
+        "schema_version": r.COVERAGE_SCHEMA, "source_roots": ["/owned/src"], "sources": sources,
+        "statements": r.statement_map(parent, directory / "coverage.data", parent.parent),
+        "lines": r.coverage_rows(directory / "coverage.data", ["/owned/src"], sources),
+    })
+    monkeypatch.setattr(r, "package_root", lambda root: parent)
+    output = tmp_path / "combined"
+    output.mkdir()
+    result = r.combine_coverage(r.s.plan(NODES, context(), 2), [directory], parent.parent, output)
+    assert result["percent"] == 100
+    xml = ET.parse(output / "coverage-core-ubuntu-3.11.xml").getroot()
+    assert sorted(entry.attrib["filename"] for entry in xml.iter("class")) == sorted(files)
+    canonical_linux_artifact(output)
+    core_coverage.validate_combination(output, [directory], parent, r.s.read)
+    assert core_coverage.COVERAGE_SCHEMA == r.COVERAGE_SCHEMA
+    assert core_coverage.PROVIDER_PACKAGES == r.PROVIDER_PACKAGES
+
+
+def test_coverage_workers_measure_the_cli_and_the_engine():
+    import inspect
+
+    flags = inspect.getsource(r.worker)
+    assert '*(f"--cov={package}" for package in PROVIDER_PACKAGES)' in flags
+    assert r.PROVIDER_PACKAGES == ("llm_wiki_cli", "llm_wiki_engine")

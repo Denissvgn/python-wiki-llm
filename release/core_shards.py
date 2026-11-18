@@ -817,7 +817,7 @@ def validate_aggregation(
         assert spec is not None and spec.loader is not None
         coverage = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(coverage)
-        coverage.validate_combination(directory, shards, source_root / "src/llm_wiki_cli", read)
+        coverage.validate_combination(directory, shards, source_root / "src", read)
     return record
 
 

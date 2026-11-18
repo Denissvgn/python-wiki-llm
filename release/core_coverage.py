@@ -22,12 +22,22 @@ def require(condition: bool, message: str) -> None:
         raise ValueError(message)
 
 
-def source_manifest(package: Path) -> dict:
-    paths = sorted(package.rglob("*.py"))
+# The provider is the CLI and the engine it pins; coverage names each source
+# file relative to their shared parent directory (``src`` or site-packages).
+PROVIDER_PACKAGES = ("llm_wiki_cli", "llm_wiki_engine")
+COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v3"
+
+
+def source_manifest(parent: Path) -> dict:
+    require((parent / PROVIDER_PACKAGES[0]).is_dir(), "coverage source inventory is empty")
+    paths = sorted(
+        path for package in PROVIDER_PACKAGES if (parent / package).is_dir()
+        for path in (parent / package).rglob("*.py")
+    )
     require(bool(paths), "coverage source inventory is empty")
     require(not any(path.is_symlink() for path in paths), "redirected coverage source")
     return {
-        path.relative_to(package).as_posix(): {
+        path.relative_to(parent).as_posix(): {
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "line_count": len(path.read_bytes().splitlines()),
         }
@@ -137,14 +147,14 @@ def logical_statement_hits(source: bytes, executed: list[int]) -> set[int]:
     return hits
 
 
-def validate_combination(directory: Path, shards: list[Path], package: Path, load) -> None:
-    sources = source_manifest(package)
+def validate_combination(directory: Path, shards: list[Path], parent: Path, load) -> None:
+    sources = source_manifest(parent)
     union: dict[str, set[int]] = {name: set() for name in sources}
     statement_map = None
     for shard in shards:
         receipt = load(shard / "coverage.json")
         require(set(receipt) == {"schema_version", "sources", "source_roots", "statements", "lines"}
-                and receipt["schema_version"] == "agent-wiki-core-shard-coverage/v2"
+                and receipt["schema_version"] == COVERAGE_SCHEMA
                 and receipt["sources"] == sources, "coverage source identity differs")
         current_statements = statement_inventory(receipt, sources)
         if statement_map is None:
@@ -158,7 +168,7 @@ def validate_combination(directory: Path, shards: list[Path], package: Path, loa
         raise ValueError("coverage is missing every shard statement inventory")
     joined = load(directory / "coverage.json")
     require(set(joined) == {"schema_version", "sources", "source_roots", "statements", "lines"}
-            and joined["schema_version"] == "agent-wiki-core-shard-coverage/v2"
+            and joined["schema_version"] == COVERAGE_SCHEMA
             and joined["sources"] == sources, "combined coverage source identity differs")
     require(statement_inventory(joined, sources) == statement_map, "combined coverage statement inventory differs")
     require(joined["lines"] == {name: sorted(lines) for name, lines in union.items()}
@@ -170,12 +180,12 @@ def validate_combination(directory: Path, shards: list[Path], package: Path, loa
     statements = covered = 0
     for entry in xml.iter("class"):
         name = entry.attrib["filename"]
-        prefix = "src/llm_wiki_cli/"
+        prefix = "src/"
         if name.startswith(prefix):
             name = name[len(prefix):]
         require(name in sources and name not in seen, "coverage XML source inventory differs")
         seen.add(name)
-        source = (package / name).read_bytes()
+        source = (parent / name).read_bytes()
         require(hashlib.sha256(source).hexdigest() == sources[name]["sha256"],
                 "coverage XML source identity differs")
         # XML uses logical statements; the checked raw union remains physical.

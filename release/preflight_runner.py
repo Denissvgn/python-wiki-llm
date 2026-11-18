@@ -640,6 +640,7 @@ def stage_commands(
         if platform.system() == "Linux":
             core_command += (
                 "--cov=llm_wiki_cli",
+                "--cov=llm_wiki_engine",
                 "--cov-report=xml:" + str(scratch / "coverage-host-core.xml"),
                 "--cov-fail-under=87",
             )
