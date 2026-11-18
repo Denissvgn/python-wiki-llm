@@ -288,7 +288,9 @@ jobs:
           && (needs.typescript-ownership.result == 'success'
               || (needs.plan.outputs.typescript-ownership != 'true' && needs.typescript-ownership.result == 'skipped')) }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    # Windows runs every selected case in one worker, so a broad selection
+    # needs more time there than the parallel Linux lane.
+    timeout-minutes: ${{ matrix.lane == 'windows' && 150 || 90 }}
     permissions:
       contents: read
     strategy:
