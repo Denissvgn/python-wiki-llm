@@ -35,8 +35,14 @@ def _installed_files(package: Path, expected: Path, declared, prefix: str = "") 
         if raw != original.read_bytes():
             raise ValueError(f"Installed provider differs from pinned source: {prefix}{relative}")
         files[relative] = hashlib.sha256(raw).hexdigest()
-    required = set(declared) | {p.relative_to(expected).as_posix() for p in expected.rglob("*.py")
-                                if "__pycache__" not in p.parts}
+    # Package data may be declared by glob, as setuptools accepts.
+    required = {p.relative_to(expected).as_posix() for p in expected.rglob("*.py")
+                if "__pycache__" not in p.parts}
+    for pattern in declared:
+        matched = {p.relative_to(expected).as_posix() for p in expected.glob(pattern) if p.is_file()}
+        if not matched:
+            raise ValueError(f"Declared package data matches no pinned source file: {prefix}{pattern}")
+        required |= matched
     if not required <= files.keys():
         raise ValueError("Installed provider is missing declared package files")
     return {prefix + name: digest for name, digest in files.items()}
