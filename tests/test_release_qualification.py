@@ -2723,7 +2723,10 @@ def test_build_output_needs_a_matching_engine(tmp_path, problem):
         qualification._build_files(root)
 
 
-def _lockstep_project(root: Path, version="4.2.0", engine="4.2.0", pin="llm-wiki-engine==4.2.0"):
+def _lockstep_project(
+    root: Path, version: str = "4.2.0", engine: str | None = "4.2.0",
+    pin: str | None = "llm-wiki-engine==4.2.0",
+):
     (root / "src").mkdir(parents=True)
     dependencies = f'["{pin}"]' if pin else "[]"
     (root / "pyproject.toml").write_text(

@@ -31,6 +31,7 @@ SCRIPTS = (
 def test_helper_scripts_import_from_this_checkout_without_side_effects(tmp_path, monkeypatch):
     # Importing happened at collection; nothing may have written beside them.
     for module in SCRIPTS:
+        assert module.__file__ is not None
         path = Path(module.__file__).resolve()
         assert path.is_relative_to(ROOT)
         assert path.parent.name in {"tests", "release"}

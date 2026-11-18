@@ -1479,7 +1479,7 @@ def _build_files(dist: Path) -> dict[str, Path]:
     """One build output: the CLI pair in ``dist`` and the engine pair in ``dist/engine``."""
     wheel, sdist = _dist_files(dist)
     engine_wheel, engine_sdist = _dist_files(dist / "engine")
-    files = dict(zip(ARTIFACT_KINDS, (wheel, sdist, engine_wheel, engine_sdist)))
+    files: dict[str, Path] = dict(zip(ARTIFACT_KINDS, (wheel, sdist, engine_wheel, engine_sdist)))
     _require_artifact_names(files)
     return files
 

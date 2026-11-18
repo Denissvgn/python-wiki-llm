@@ -10,6 +10,7 @@ from ..services import sync_runtime as _service
 if TYPE_CHECKING:
     # Mirror legacy exports for static consumers; runtime imports remain aliases.
     from ..services.sync_runtime import (
+        MANIFEST_FILENAME as MANIFEST_FILENAME,
         MANIFEST_VERSION as MANIFEST_VERSION,
         MAX_SURFACE_CREATED_PAGES as MAX_SURFACE_CREATED_PAGES,
         PageKind as PageKind,
@@ -34,10 +35,12 @@ if TYPE_CHECKING:
         _apply_prepared_sync as _apply_prepared_sync,
         _build_generated_section_context as _build_generated_section_context,
         _build_sync_graph_observations as _build_sync_graph_observations,
+        _compute_diff as _compute_diff,
         _deprecate_existing_page as _deprecate_existing_page,
         _detect_sync_entry_points as _detect_sync_entry_points,
         _exit_if_large_unforced_diff as _exit_if_large_unforced_diff,
         _extract_current_inventory as _extract_current_inventory,
+        _hash_file as _hash_file,
         _finalize_prepared_sync as _finalize_prepared_sync,
         _generate_module_md as _generate_module_md,
         _generator_refresh_diff as _generator_refresh_diff,
@@ -68,7 +71,6 @@ if TYPE_CHECKING:
         analyze_data_flow_detailed as analyze_data_flow_detailed,
         build_data_flow_context as build_data_flow_context,
         build_source_snapshot as build_source_snapshot,
-        date as date,
         execute_sync as execute_sync,
         finalize_runtime_knowledge as finalize_runtime_knowledge,
         get_inventory_result as get_inventory_result,

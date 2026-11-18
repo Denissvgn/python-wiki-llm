@@ -24,7 +24,7 @@ def _engine_uses() -> dict[str, set[str]]:
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
                 continue
-            arguments = [a.value for a in node.args if isinstance(a, ast.Constant)]
+            arguments = [a.value for a in node.args if isinstance(a, ast.Constant) and isinstance(a.value, str)]
             if node.func.id == "attributes" and arguments:
                 uses.setdefault(arguments[0], set()).update(arguments[1:])
         for node in ast.walk(tree):
@@ -36,6 +36,7 @@ def _engine_uses() -> dict[str, set[str]]:
                 and node.value.func.id == "provider"
                 and node.value.args
                 and isinstance(node.value.args[0], ast.Constant)
+                and isinstance(node.value.args[0].value, str)
             ):
                 uses.setdefault(node.value.args[0].value, set()).add(node.attr)
     return uses
