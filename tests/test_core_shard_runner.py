@@ -1550,7 +1550,6 @@ def test_raw_coverage_connection_closes_on_success_and_every_failure(tmp_path, m
                 connection.close()
 
 
-@linux_coverage_producer
 def test_cli_and_engine_coverage_join_one_unambiguous_inventory(tmp_path, monkeypatch):
     from release import core_coverage
 

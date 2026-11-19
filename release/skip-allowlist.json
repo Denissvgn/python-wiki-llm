@@ -2924,12 +2924,6 @@
     },
     {
       "lane": "core-windows-3.13",
-      "node_id": "tests/test_core_shard_runner.py::test_cli_and_engine_coverage_join_one_unambiguous_inventory",
-      "owner_lane": "core-ubuntu-3.11",
-      "reason": "canonical coverage producer requires POSIX filesystem paths"
-    },
-    {
-      "lane": "core-windows-3.13",
       "node_id": "tests/test_core_shard_runner.py::test_compatible_coverage_report_settings_remain_supported[contexts = ^$]",
       "owner_lane": "core-ubuntu-3.11",
       "reason": "canonical coverage producer requires POSIX filesystem paths"
