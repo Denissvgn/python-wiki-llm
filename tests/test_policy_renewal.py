@@ -341,6 +341,10 @@ def test_workflow_has_clear_choices_main_binding_and_no_publishing():
     )
     assert "publish" not in workflow["jobs"]
     assert workflow["permissions"]["contents"] == "read"
+    environment = next(step for step in steps if step.get("name") == "Create the renewal environment")
+    # Evaluation imports the source snapshot code of both distributions.
+    assert "--require-hashes -r release/validation-requirements.txt" in environment["run"]
+    assert "--no-build-isolation --no-deps ./src ." in environment["run"]
 
 
 def test_prepare_without_pr_credentials_reports_reviewable_artifact(
