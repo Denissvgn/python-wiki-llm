@@ -56,7 +56,11 @@ jobs:
         with:
           python-version: "3.13"
       - name: Create the renewal environment
-        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+        run: |
+          "${{ steps.python.outputs.python-path }}" -m venv .venv
+          # The wiki capture check reads the source snapshot through both packages.
+          .venv/bin/python -m pip install --require-hashes -r release/validation-requirements.txt
+          .venv/bin/python -m pip install --no-build-isolation --no-deps ./src .
       - name: Acquire optional approval PR credentials
         id: app
         if: ${{ inputs.operation == 'prepare' && vars.RELEASE_AUTOMATION_APP_CLIENT_ID != '' && env.HAS_APP_KEY == 'true' }}
