@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-11-19
+
 ### Added
 
 - `llm_wiki_cli.engine` embeds wiki operations in another application. An
@@ -1955,7 +1957,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...v5.0.0
 [4.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.0...v4.0.1
